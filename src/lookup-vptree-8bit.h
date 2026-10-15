@@ -46,12 +46,12 @@ SIXELSTATUS
 sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
                                    unsigned char const *palette,
                                    int ncolors,
-                                   int depth,
-                                   int parallel_dither_active);
+                                   int depth);
 
 int
-sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t *tree,
-                             unsigned char const *pixel);
+sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
+                             unsigned char const *pixel,
+                             int hint);
 
 #ifdef __cplusplus
 }

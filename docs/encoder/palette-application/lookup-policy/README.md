@@ -82,7 +82,7 @@ and dominant costs differ materially:
   array layout.
 - [`fhedt`](#policy-fhedt): separable three-dimensional Euclidean distance
   transform.
-- [`vptree`](#policy-vptree): metric VP-tree and safe previous-color cache.
+- [`vptree`](#policy-vptree): metric VP-tree with neighbor-list refinement from a caller hint.
 - [`rbc`](#policy-rbc): Random Ball Cover cluster pruning.
 - [`mahalanobis`](#policy-mahalanobis): exhaustive normalized lookup in deterministic RBC cluster order.
 - [Measured quality and speed comparison](#measured-quality-and-speed-comparison):
@@ -1061,16 +1061,15 @@ These are consequences of the triangle inequality. The implementation stores
 squared full distances but takes square roots where it compares them with the
 node radius.
 
-### Safe previous-color cache
+### Safe radius
 
-Serial traversal offers the previous result as a likely palette index. Let
-`c[i]` be that index and let:
+Let `c[i]` be a palette color and let:
 
 ```text
 s[i] = min_(j != i) d(c[i], c[j])
 ```
 
-If the new candidate satisfies:
+If a query satisfies:
 
 ```text
 d(x, c[i]) <= s[i] / 2
@@ -1084,50 +1083,53 @@ d(x, c[j]) >= d(c[i], c[j]) - d(x, c[i])
              >= d(x, c[i])
 ```
 
-So `c[i]` is still a nearest color. In squared-distance storage the threshold
-is:
+So `c[i]` is a nearest color. In squared-distance storage the threshold is:
 
 ```text
 safe_dist2[i] = nearest_palette_dist2[i] / 4
 ```
 
-This test is also applied to pivots encountered during traversal. It is a proof
-radius, not an approximation tolerance. The cache is disabled during parallel
-dithering because a single previous-color history is not meaningful across
-independent worker traversal.
+The tree search applies this test to the pivots it visits. It is a proof radius, not an approximation tolerance.
+
+### Previous-color refinement
+
+Dither queries arrive in scan order, and adjacent queries usually map to the same or a neighboring color. The dither loops therefore pass the index they mapped for the previous pixel as the `hint` of the lookup contract's `map_pixel_hint()` ([`include/6cells.idl`](../../../../include/6cells.idl)), and `vptree` refines that start with Orchard's neighbor-list method. Without a usable hint, as for the first pixel of a band or a plain `map_pixel()` call, the tree search supplies the start.
+
+Preparation stores, for every palette color, all palette colors sorted by distance from it. For a query `x` and current center `c`, any color `p` at least as close to `x` as `c` satisfies:
+
+```text
+d(c, p) <= d(c, x) + d(x, p) <= 2 d(c, x)
+```
+
+The scan of `c`'s list therefore stops at the first neighbor with `d(c,p)^2 > 4 d(c,x)^2`. When it finds a color strictly closer than `c`, that color becomes the center and the scan restarts from its list. Each restart strictly decreases the center distance, so the walk terminates. When a scan completes without a move, `c` is at the minimum distance and every color at that distance has been examined.
+
+Among equally near colors the refinement returns the lowest index. The result is thus a function of the query alone: the start, and hence the previous pixel, affects only the work, never the answer. The hint is owned by the caller's scan loop, so the prepared tree keeps no scan history and one instance can serve concurrent bands.
+
+The float32 neighbor distances are stored rounded toward zero and the float32 scan bound carries a relative slack far above the rounding error of the double query distances. Both adjustments can only lengthen a scan, never end it before a color that could win. The 8-bit backend uses exact integer distances.
 
 ### Guarantee
 
-The current VP-tree is nearest-distance exact in its policy metric, both with
-and without the safe cache. The cache and tree pruning follow metric bounds.
-Tie index can differ from the first-index order of an exhaustive scan.
+`vptree` is nearest-distance exact in its policy metric. Among equally near colors it returns the lowest palette index, the same choice as a first-index exhaustive scan in the same metric, independent of scan order, previous results, and band partitioning.
 
-If the cache threshold were enlarged beyond `s[i]/2`, the proof would no
-longer hold and the result would become approximate. That could still improve
-an image: in a smooth gradient, deliberate index stability can reduce palette
-chatter, extend SIXEL runs, and alter error-diffusion feedback beneficially.
-It can also add banding. Exactness, perceptual quality, speed, and encoded size
-must therefore be measured separately.
+Earlier revisions kept the previous result inside the lookup object, returned whichever equally near color the tree traversal or that cache reached first, and disabled the cache in parallel dithering. Outputs can therefore differ from those revisions only at exact distance ties.
 
-For float32 unequal-range formats, this exactness is relative to the
-range-normalized metric, not the unnormalized metric used by `none`.
+For float32 unequal-range formats, this exactness is relative to the range-normalized metric, not the unnormalized metric used by `none`.
 
 ### Cost
 
-Computing `s[i]` compares every palette pair and dominates current preparation:
+Computing `s[i]` and sorting the neighbor lists compare every palette pair and dominate preparation:
 
 ```text
 safe-radius preparation     Theta(K^2)
+neighbor-list preparation   Theta(K^2 log K)
 tree construction           at least Theta(K log K), with recursive allocation
-typical balanced query      O(log K)
-worst query                 Theta(K)
-safe-cache hit              Theta(1)
-extra space                 Theta(K)
+first query (tree)          O(log K) typical, Theta(K) worst
+refined query               proportional to the neighbors inside 2 d(c,x),
+                            plus one list scan per center move
+extra space                 Theta(K^2)
 ```
 
-Calling the lookup logarithmic without qualification would be misleading. A
-query ball can intersect both sides repeatedly, especially when the metric has
-weak separation.
+With `K = 256` the neighbor lists occupy 512 KiB per prepared instance. A refined query is cheap when consecutive pixels are close in color, which error diffusion and natural images usually provide; a query far from its hint pays for the moves toward its nearest color. Calling the lookup logarithmic or constant without qualification would be misleading.
 
 ### Name and sources
 
@@ -1135,7 +1137,7 @@ weak separation.
 algorithms in
 [“Data Structures and Algorithms for Nearest Neighbor Search in General Metric Spaces”](https://citeseerx.ist.psu.edu/document?doi=ef5f36cb8ed5a1bdd2f564d65b87ce88e0536c1a&repid=rep1&type=pdf).
 
-The previous-index design was informed by libimagequant's
+The neighbor-list refinement follows Michael T. Orchard's “A fast nearest-neighbor search algorithm” (ICASSP 1991). The previous-index design was informed by libimagequant's
 [VP-tree nearest-color search and nearest-other-color radius](https://github.com/ImageOptim/libimagequant/blob/2883dbd955fe9007bf33d7b64f6eafaf9fec4d6a/nearest.c#L128-L225)
 and its [remapping loop, which passes the previous result as a guess](https://github.com/ImageOptim/libimagequant/blob/2883dbd955fe9007bf33d7b64f6eafaf9fec4d6a/remap.c#L165-L220).
 libsixel's exact threshold and lifecycle remain its own implementation

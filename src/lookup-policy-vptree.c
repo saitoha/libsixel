@@ -318,8 +318,7 @@ sixel_lookup_policy_vptree_configure_float32(
                                                    lut->palette,
                                                    lut->ncolors,
                                                    lut->depth,
-                                                   lut->weights,
-                                                   request->parallel_dither_active);
+                                                   lut->weights);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_vptree: VP-tree configure failed.");
@@ -360,8 +359,7 @@ sixel_lookup_policy_vptree_configure_8bit(
     status = sixel_lookup_vptree_8bit_configure(lut->vptree,
                                                 request->palette,
                                                 request->reqcolor,
-                                                request->depth,
-                                                request->parallel_dither_active);
+                                                request->depth);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_vptree: VP-tree configure failed.");
@@ -375,7 +373,8 @@ sixel_lookup_policy_vptree_configure_8bit(
 static int
 sixel_lookup_policy_vptree_map_float32(
     sixel_lookup_policy_vptree_float32_t const *lut,
-    unsigned char const *pixel)
+    unsigned char const *pixel,
+    int hint)
 {
     float const *sample;
 
@@ -386,19 +385,20 @@ sixel_lookup_policy_vptree_map_float32(
     }
 
     sample = (float const *)(void const *)pixel;
-    return sixel_lookup_vptree_float32_map(lut->vptree, sample);
+    return sixel_lookup_vptree_float32_map(lut->vptree, sample, hint);
 }
 
 static int
 sixel_lookup_policy_vptree_map_8bit(sixel_lookup_policy_vptree_8bit_t const *lut,
-                                    unsigned char const *pixel)
+                                    unsigned char const *pixel,
+                                    int hint)
 {
     if (lut == NULL || pixel == NULL || lut->vptree_ready == 0
             || lut->vptree == NULL) {
         return 0;
     }
 
-    return sixel_lookup_vptree_8bit_map(lut->vptree, pixel);
+    return sixel_lookup_vptree_8bit_map(lut->vptree, pixel, hint);
 }
 
 static void
@@ -628,9 +628,10 @@ sixel_lookup_policy_vptree_prepare_float32(
 }
 
 static int
-sixel_lookup_policy_vptree_map_pixel_8bit(
+sixel_lookup_policy_vptree_map_pixel_hint_8bit(
     sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel)
+    unsigned char const *pixel,
+    int hint)
 {
     sixel_lookup_policy_vptree_object_t const *object;
 
@@ -646,13 +647,23 @@ sixel_lookup_policy_vptree_map_pixel_8bit(
 
     return sixel_lookup_policy_vptree_map_8bit(
         &object->state_8bit,
-        pixel);
+        pixel,
+        hint);
 }
 
 static int
-sixel_lookup_policy_vptree_map_pixel_float32(
+sixel_lookup_policy_vptree_map_pixel_8bit(
     sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixel)
+{
+    return sixel_lookup_policy_vptree_map_pixel_hint_8bit(policy, pixel, -1);
+}
+
+static int
+sixel_lookup_policy_vptree_map_pixel_hint_float32(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel,
+    int hint)
 {
     sixel_lookup_policy_vptree_object_t const *object;
 
@@ -668,29 +679,16 @@ sixel_lookup_policy_vptree_map_pixel_float32(
 
     return sixel_lookup_policy_vptree_map_float32(
         &object->state_float,
-        pixel);
+        pixel,
+        hint);
 }
 
-/* This policy has no use for a scan hint; the result is map_pixel()'s. */
 static int
-sixel_lookup_policy_vptree_map_pixel_hint_8bit(
+sixel_lookup_policy_vptree_map_pixel_float32(
     sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel,
-    int hint)
+    unsigned char const *pixel)
 {
-    (void)hint;
-    return sixel_lookup_policy_vptree_map_pixel_8bit(policy, pixel);
-}
-
-/* This policy has no use for a scan hint; the result is map_pixel()'s. */
-static int
-sixel_lookup_policy_vptree_map_pixel_hint_float32(
-    sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel,
-    int hint)
-{
-    (void)hint;
-    return sixel_lookup_policy_vptree_map_pixel_float32(policy, pixel);
+    return sixel_lookup_policy_vptree_map_pixel_hint_float32(policy, pixel, -1);
 }
 
 static sixel_lookup_policy_vtbl_t

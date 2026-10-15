@@ -52,6 +52,12 @@ typedef struct sixel_lookup_vptree_8bit_pair {
     int distance;
 } sixel_lookup_vptree_8bit_pair_t;
 
+/* One entry of a palette color's neighbor list (exact squared distance). */
+typedef struct sixel_lookup_vptree_8bit_neighbor {
+    int distance;
+    int index;
+} sixel_lookup_vptree_8bit_neighbor_t;
+
 struct sixel_lookup_vptree_8bit {
     sixel_allocator_t *allocator;
     unsigned char const *palette;
@@ -61,28 +67,33 @@ struct sixel_lookup_vptree_8bit {
     int node_count;
     int root;
     int *safe_dist2;
-    int cache_enabled;
-    int cached_index;
+    sixel_lookup_vptree_8bit_neighbor_t *neighbors;
 };
 
 /*
  * VP-tree lookup flow summary:
  *
- *   [cached index] --dist--> (safe?) --yes--> return cached
- *                       |
- *                       no
- *                       v
- *   [VP-tree traversal] --pivot dist--> (safe?) --yes--> return pivot
- *                       |
- *                       v
- *                 branch+bound search
+ *   [caller hint] ------+
+ *                       +--> start --> [neighbor-list refinement] --> index
+ *   [VP-tree search] ---+    (no usable hint)
+ *
+ * Successive dither queries are close to each other, so the index the caller
+ * mapped for the previous pixel is usually the answer or next to it.  Refinement (Orchard's method) scans
+ * the start color's neighbors in order of palette distance.  Any color at
+ * least as close to the query q as the current center c lies within twice
+ * |q - c| of c (triangle inequality), so the scan stops at the first
+ * neighbor beyond 4 * |q - c|^2 and moves to a strictly closer color when it
+ * finds one.  The result is the nearest color, and among equally near colors
+ * the lowest index, whatever the start: the hint therefore changes speed
+ * but never the answer, which keeps serial and parallel dithering
+ * identical.  The VP-tree supplies the start when the caller has no hint.
+ * The tree keeps no scan history, so concurrent queries are safe.
  *
  * The safe distance for each palette entry is computed once as:
  *
  *   safe_dist2[i] = nearest_palette_dist2[i] / 4
  *
- * This allows early confirmation of the nearest palette entry while
- * preserving correctness.
+ * The VP-tree search uses it to confirm a pivot early.
  */
 static void
 sixel_lookup_vptree_8bit_release(sixel_lookup_vptree_8bit_t *tree)
@@ -95,9 +106,12 @@ sixel_lookup_vptree_8bit_release(sixel_lookup_vptree_8bit_t *tree)
         sixel_allocator_free(tree->allocator, tree->safe_dist2);
         tree->safe_dist2 = NULL;
     }
+    if (tree->neighbors != NULL) {
+        sixel_allocator_free(tree->allocator, tree->neighbors);
+        tree->neighbors = NULL;
+    }
     tree->node_count = 0;
     tree->root = -1;
-    tree->cached_index = -1;
 }
 
 static int
@@ -227,6 +241,103 @@ sixel_lookup_vptree_8bit_pair_compare(void const *left,
     return 0;
 }
 
+static SIXELSTATUS
+sixel_lookup_vptree_8bit_prepare_neighbors(sixel_lookup_vptree_8bit_t *tree)
+{
+    sixel_lookup_vptree_8bit_pair_t *pairs;
+    sixel_lookup_vptree_8bit_neighbor_t *list;
+    int index;
+    int other;
+
+    pairs = (sixel_lookup_vptree_8bit_pair_t *)sixel_allocator_malloc(
+        tree->allocator,
+        (size_t)tree->ncolors * sizeof(sixel_lookup_vptree_8bit_pair_t));
+    if (pairs == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (index = 0; index < tree->ncolors; ++index) {
+        for (other = 0; other < tree->ncolors; ++other) {
+            pairs[other].index = other;
+            pairs[other].distance =
+                sixel_lookup_vptree_8bit_palette_distance(tree, index, other);
+        }
+        qsort(pairs,
+              (size_t)tree->ncolors,
+              sizeof(sixel_lookup_vptree_8bit_pair_t),
+              sixel_lookup_vptree_8bit_pair_compare);
+        list = tree->neighbors + (size_t)index * (size_t)tree->ncolors;
+        for (other = 0; other < tree->ncolors; ++other) {
+            list[other].distance = pairs[other].distance;
+            list[other].index = pairs[other].index;
+        }
+    }
+
+    sixel_allocator_free(tree->allocator, pairs);
+    return SIXEL_OK;
+}
+
+/*
+ * Neighbor-list refinement from start (see the flow summary above).  Integer
+ * distances are exact, so the scan bound needs no slack.
+ */
+static int
+sixel_lookup_vptree_8bit_refine(sixel_lookup_vptree_8bit_t const *tree,
+                                unsigned char const *pixel,
+                                int start)
+{
+    sixel_lookup_vptree_8bit_neighbor_t const *list;
+    int center;
+    int best_index;
+    int candidate;
+    int position;
+    int moved;
+    int center_distance;
+    int best_distance;
+    int distance;
+    int limit;
+
+    center = start;
+    center_distance = sixel_lookup_vptree_8bit_pixel_distance(tree,
+                                                              pixel,
+                                                              center);
+    best_index = center;
+    best_distance = center_distance;
+    for (;;) {
+        list = tree->neighbors + (size_t)center * (size_t)tree->ncolors;
+        /* 4 * 3 * 255^2 stays far below INT_MAX. */
+        limit = center_distance * 4;
+        moved = 0;
+        for (position = 0; position < tree->ncolors; ++position) {
+            if (list[position].distance > limit) {
+                break;
+            }
+            candidate = list[position].index;
+            if (candidate == center) {
+                continue;
+            }
+            distance = sixel_lookup_vptree_8bit_pixel_distance(tree,
+                                                               pixel,
+                                                               candidate);
+            if (distance < best_distance
+                    || (distance == best_distance
+                        && candidate < best_index)) {
+                best_distance = distance;
+                best_index = candidate;
+                if (distance < center_distance) {
+                    moved = 1;
+                    break;
+                }
+            }
+        }
+        if (moved == 0) {
+            return best_index;
+        }
+        center = best_index;
+        center_distance = best_distance;
+    }
+}
+
 static int
 sixel_lookup_vptree_8bit_build(sixel_lookup_vptree_8bit_t *tree,
                                int *indices,
@@ -344,7 +455,7 @@ sixel_lookup_vptree_8bit_build(sixel_lookup_vptree_8bit_t *tree,
 }
 
 static int
-sixel_lookup_vptree_8bit_search(sixel_lookup_vptree_8bit_t *tree,
+sixel_lookup_vptree_8bit_search(sixel_lookup_vptree_8bit_t const *tree,
                                 int node_index,
                                 unsigned char const *pixel,
                                 int *best_index,
@@ -448,7 +559,6 @@ sixel_lookup_vptree_8bit_create(sixel_allocator_t *allocator,
     memset(tree, 0, sizeof(sixel_lookup_vptree_8bit_t));
     tree->allocator = allocator;
     tree->root = -1;
-    tree->cached_index = -1;
 
     *tree_out = tree;
     return SIXEL_OK;
@@ -469,8 +579,7 @@ SIXELSTATUS
 sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
                                    unsigned char const *palette,
                                    int ncolors,
-                                   int depth,
-                                   int parallel_dither_active)
+                                   int depth)
 {
     SIXELSTATUS status;
     int *indices;
@@ -487,8 +596,6 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
     tree->palette = palette;
     tree->ncolors = ncolors;
     tree->depth = depth;
-    tree->cache_enabled = (parallel_dither_active == 0);
-    tree->cached_index = -1;
 
     tree->nodes = (sixel_lookup_vptree_8bit_node_t *)sixel_allocator_malloc(
         tree->allocator,
@@ -525,6 +632,27 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
         return SIXEL_BAD_ALLOCATION;
     }
 
+    tree->neighbors = (sixel_lookup_vptree_8bit_neighbor_t *)
+        sixel_allocator_malloc(
+            tree->allocator,
+            (size_t)ncolors * (size_t)ncolors
+                * sizeof(sixel_lookup_vptree_8bit_neighbor_t));
+    if (tree->neighbors == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_vptree_8bit_configure: neighbor allocation failed.");
+        sixel_allocator_free(tree->allocator, indices);
+        sixel_lookup_vptree_8bit_release(tree);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    status = sixel_lookup_vptree_8bit_prepare_neighbors(tree);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_vptree_8bit_configure: neighbor allocation failed.");
+        sixel_allocator_free(tree->allocator, indices);
+        sixel_lookup_vptree_8bit_release(tree);
+        return status;
+    }
+
     for (index = 0; index < ncolors; ++index) {
         indices[index] = index;
     }
@@ -542,43 +670,29 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
 }
 
 int
-sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t *tree,
-                             unsigned char const *pixel)
+sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
+                             unsigned char const *pixel,
+                             int hint)
 {
     int best_index;
     int best_distance;
-    int cached_index;
-    int distance;
 
     if (tree == NULL || pixel == NULL || tree->root < 0) {
         return 0;
     }
 
-    best_index = 0;
-    best_distance = INT_MAX;
-    if (tree->cache_enabled && tree->cached_index >= 0) {
-        cached_index = tree->cached_index;
-        distance = sixel_lookup_vptree_8bit_pixel_distance(tree,
-                                                           pixel,
-                                                           cached_index);
-        if (distance <= tree->safe_dist2[cached_index]) {
-            return cached_index;
-        }
-        best_distance = distance;
-        best_index = cached_index;
+    best_index = hint;
+    if (best_index < 0 || best_index >= tree->ncolors) {
+        best_index = 0;
+        best_distance = INT_MAX;
+        (void)sixel_lookup_vptree_8bit_search(tree,
+                                        tree->root,
+                                        pixel,
+                                        &best_index,
+                                        &best_distance);
     }
 
-    (void)sixel_lookup_vptree_8bit_search(tree,
-                                          tree->root,
-                                          pixel,
-                                          &best_index,
-                                          &best_distance);
-
-    if (tree->cache_enabled) {
-        tree->cached_index = best_index;
-    }
-
-    return best_index;
+    return sixel_lookup_vptree_8bit_refine(tree, pixel, best_index);
 }
 
 /* emacs Local Variables:      */
