@@ -674,6 +674,20 @@ sixel_decoder_parallel_reserve_columns(sixel_decoder_worker_context_t *context,
     return 0;
 }
 
+/* Highest and lowest set row of a six-bit sixel pattern (index 0 unused). */
+static signed char const sixel_parallel_top_row[64] = {
+    -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
+};
+static signed char const sixel_parallel_low_row[64] = {
+    -1, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
+};
+
 /* Parse the body once. Ordinary workers retain band columns locally;
  * undither requests retain the validation-only pass because their later
  * chunk parser also needs the preceding band's reconstruction halo. */
@@ -703,6 +717,11 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     int status;
     int r;
     int retain;
+    int columns_band;
+    int first_painted_row;
+    int last_painted_row;
+    int last_set_row;
+    int max_color_index;
 
     anchor = context->anchor;
     width = context->width;
@@ -713,10 +732,12 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     status = (-1);
     retain = context->undither == NULL && !context->validate_only;
     context->painted_outside_raster = 0;
-    context->first_painted_row = (-1);
-    context->last_painted_row = (-1);
-    context->max_color_index = (-1);
-    context->last_set_row = (-1);
+    /* Paint extents stay in locals while parsing and are published at end
+     * on every exit, as the context fields previously were. */
+    first_painted_row = (-1);
+    last_painted_row = (-1);
+    last_set_row = (-1);
+    max_color_index = (-1);
 
     if (context->logger != NULL) {
         sixel_timeline_logger_logf(context->logger,
@@ -791,6 +812,10 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
         }
     }
     color = sixel_column_color((unsigned int)color_index);
+    /* The column storage of a band changes only when the band does: reserve
+     * and locate it once per band instead of once per run. */
+    columns = NULL;
+    columns_band = (-1);
     while (cursor < limit) {
         ch = *cursor;
         if (ch >= '?' && ch <= '~') {
@@ -799,13 +824,16 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
             if (pos_x > INT_MAX - repeat) {
                 goto end;
             }
-            if (retain &&
-                    sixel_decoder_parallel_reserve_columns(context,
+            if (retain && pos_y / 6 != columns_band) {
+                if (sixel_decoder_parallel_reserve_columns(context,
                                                            pos_y / 6) != 0) {
-                goto end;
+                    goto end;
+                }
+                columns_band = pos_y / 6;
+                columns = columns_band < context->column_capacity ?
+                    context->columns +
+                        (size_t)columns_band * (size_t)width : NULL;
             }
-            columns = retain && pos_y / 6 < context->column_capacity ?
-                context->columns + (size_t)(pos_y / 6) * (size_t)width : NULL;
             /* One word update per literal; aggregate the six row bits once
              * per run, preserving unset-column cursor movement. */
             if (retain && repeat == 1 && pos_x < width && columns != NULL) {
@@ -839,24 +867,24 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
                 ++cursor;
             }
             if (rows != 0) {
-                for (r = 5; (rows & (1 << r)) == 0; --r) {}
+                r = sixel_parallel_top_row[rows];
                 if (pos_y > INT_MAX - r) {
                     goto end;
                 }
-                if (pos_y + r > context->last_set_row) {
-                    context->last_set_row = pos_y + r;
+                if (pos_y + r > last_set_row) {
+                    last_set_row = pos_y + r;
                 }
                 if (effective_repeat > 0) {
-                    if (context->last_set_row > context->last_painted_row) {
-                        context->last_painted_row = context->last_set_row;
+                    if (last_set_row > last_painted_row) {
+                        last_painted_row = last_set_row;
                     }
-                    for (r = 0; (rows & (1 << r)) == 0; ++r) {}
-                    if (context->first_painted_row < 0 ||
-                            pos_y + r < context->first_painted_row) {
-                        context->first_painted_row = pos_y + r;
+                    r = sixel_parallel_low_row[rows];
+                    if (first_painted_row < 0 ||
+                            pos_y + r < first_painted_row) {
+                        first_painted_row = pos_y + r;
                     }
-                    if (color_index > context->max_color_index) {
-                        context->max_color_index = color_index;
+                    if (color_index > max_color_index) {
+                        max_color_index = color_index;
                     }
                 }
             }
@@ -943,6 +971,10 @@ sixel_decoder_parallel_direct_parse(sixel_decoder_worker_context_t *context)
     }
     status = 0;
 end:
+    context->first_painted_row = first_painted_row;
+    context->last_painted_row = last_painted_row;
+    context->last_set_row = last_set_row;
+    context->max_color_index = max_color_index;
     if (context->logger != NULL) {
         sixel_timeline_logger_logf(context->logger,
             retain ? "parse" : "scan", "decoder",
