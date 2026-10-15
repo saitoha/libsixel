@@ -55,8 +55,22 @@ sixel_column_store(uint64_t *dst, uint64_t color, int bits, int repeat)
     uint64_t paint;
     int x;
 
+    if (bits == 0) {
+        /* An empty sixel only advances the cursor. Repeated empties are
+         * the bulk of size-policy cursor skips; touching them is wasted. */
+        return;
+    }
     mask = sixel_column_row_masks[bits];
     paint = (color & mask) | ((uint64_t)bits << 48);
+    if (bits == 63) {
+        /* All six rows are replaced and fully covered, and byte seven is
+         * always zero, so the result does not depend on the old word. This
+         * is the common size-policy underpaint, often hundreds of columns. */
+        for (x = 0; x < repeat; ++x) {
+            dst[x] = paint;
+        }
+        return;
+    }
     for (x = 0; x < repeat; ++x) {
         dst[x] = (dst[x] & ~mask) | paint;
     }

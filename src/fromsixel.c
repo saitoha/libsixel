@@ -565,6 +565,21 @@ parser_context_store_ormode_run(parser_context_t *context,
     x = context->pos_x;
     last = -1;
     rows = 0;
+    if (context->repeat_count > 1) {
+        /* The caller proved that the whole repeat fits before width. */
+        bits = *p++ - '?';
+        sixel_ormode_store(low + x, spread, bits, context->repeat_count);
+        if (high_spread != 0) {
+            sixel_ormode_store(high + x, high_spread, bits,
+                               context->repeat_count);
+        }
+        x += context->repeat_count;
+        if (bits != 0) {
+            last = x - 1;
+            rows = bits;
+        }
+        context->repeat_count = 1;
+    }
     while (p < end && *p >= '?' && *p <= '~' && x < width) {
         bits = *p++ - '?';
         low[x] |= (uint64_t)bits * spread;
@@ -619,6 +634,17 @@ parser_context_store_normal_run(parser_context_t *context,
     rows = 0;
     if (image->depth != 4 && context->color_index > image->ncolors) {
         image->ncolors = context->color_index;
+    }
+    if (context->repeat_count > 1) {
+        /* The caller proved that the whole repeat fits before width. */
+        bits = *p++ - '?';
+        sixel_column_store(columns + x, color, bits, context->repeat_count);
+        x += context->repeat_count;
+        if (bits != 0) {
+            last = x - 1;
+            rows = bits;
+        }
+        context->repeat_count = 1;
     }
     while (p < end && *p >= '?' && *p <= '~' && x < width) {
         bits = *p++ - '?';
@@ -1510,20 +1536,21 @@ sixel_decode_raw_impl(
                                 context->attributed_pv <= 0 ||
                                 context->pos_y <=
                                     context->attributed_pv - 6) &&
-                                context->repeat_count == 1 &&
                                 context->pos_x >= 0 &&
                                 context->pos_x < image->width &&
                                 context->pos_y >= 0 &&
                                 context->pos_y <= image->height - 6) {
-                            /* Only literal runs need a trusted width.
-                             * Repeated or scalar paint avoids this setup. */
+                            /* Runs, including a leading repeat, stop before
+                             * the trusted width; clipping stays scalar. */
                             run_width = image->width;
                             if (trust_raster_size &&
                                     context->attributed_ph > 0 &&
                                     run_width > context->attributed_ph) {
                                 run_width = context->attributed_ph;
                             }
-                            if (context->pos_x < run_width) {
+                            if (context->pos_x < run_width &&
+                                    context->repeat_count <=
+                                        run_width - context->pos_x) {
                                 p = parser_context_store_ormode_run(
                                     context, image, p, p0 + len, run_width);
                                 continue;
@@ -1548,20 +1575,21 @@ sixel_decode_raw_impl(
                                  context->attributed_pv <= 0 ||
                                  context->pos_y <=
                                      context->attributed_pv - 6) &&
-                                context->repeat_count == 1 &&
                                 context->pos_x >= 0 &&
                                 context->pos_x < image->width &&
                                 context->pos_y >= 0 &&
                                 context->pos_y <= image->height - 6) {
-                            /* Only literal runs need a trusted width.
-                             * Repeated or scalar paint avoids this setup. */
+                            /* Runs, including a leading repeat, stop before
+                             * the trusted width; clipping stays scalar. */
                             run_width = image->width;
                             if (trust_raster_size &&
                                     context->attributed_ph > 0 &&
                                     run_width > context->attributed_ph) {
                                 run_width = context->attributed_ph;
                             }
-                            if (context->pos_x < run_width) {
+                            if (context->pos_x < run_width &&
+                                    context->repeat_count <=
+                                        run_width - context->pos_x) {
                                 p = parser_context_store_normal_run(
                                     context, image, p, p0 + len, run_width);
                                 continue;

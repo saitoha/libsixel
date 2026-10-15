@@ -34,6 +34,10 @@ sixel_ormode_store(uint64_t *dst, uint64_t spread, int bits, int repeat)
     int x;
 
     pattern = (uint64_t)bits * spread;
+    if (pattern == 0) {
+        /* Empty sixels and unused planes only advance the cursor. */
+        return;
+    }
     for (x = 0; x < repeat; ++x) {
         dst[x] |= pattern;
     }
