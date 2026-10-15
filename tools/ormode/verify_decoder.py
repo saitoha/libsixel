@@ -72,7 +72,7 @@ def main():
         "src/fromsixel.c",
         "src/decoder-parallel.c",
         "src/decoder-image.h",
-        "src/decoder-ormode.h",
+        "src/decoder-ormode.h", "src/decoder-columns.h",
     ]
     result = dict(manifest)
     result.update(

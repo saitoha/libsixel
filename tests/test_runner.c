@@ -138,6 +138,12 @@ int test_video_decode_0090(int argc, char **argv);
 int test_decoder_0091(int argc, char **argv);
 int test_decoder_0092(int argc, char **argv);
 int test_decoder_0093(int argc, char **argv);
+int test_decoder_0094(int argc, char **argv);
+int test_decoder_0095(int argc, char **argv);
+int test_decoder_0096(int argc, char **argv);
+int test_decoder_0097(int argc, char **argv);
+int test_decoder_0098(int argc, char **argv);
+int test_decoder_0099(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -5730,6 +5736,18 @@ static test_entry_t const test_entries[] = {
     { "decoder/0091_parallel_inherited_register", test_decoder_0091 },
     { "decoder/0092_parallel_prefix_clipping", test_decoder_0092 },
     { "decoder/0093_parallel_large_clipped_scan", test_decoder_0093 },
+    { "decoder/0094_normal_columns_patterns",
+      test_decoder_0094 },
+    { "decoder/0095_normal_columns_palette_history",
+      test_decoder_0095 },
+    { "decoder/0096_normal_columns_wide_fallback",
+      test_decoder_0096 },
+    { "decoder/0097_normal_columns_growth_clip",
+      test_decoder_0097 },
+    { "decoder/0098_normal_columns_band_ranges",
+      test_decoder_0098 },
+    { "decoder/0099_normal_columns_allocation_failure",
+      test_decoder_0099 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },

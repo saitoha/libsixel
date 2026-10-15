@@ -50,6 +50,8 @@ typedef struct image_buffer {
     /* One word per band column; high planes are allocated only above 255. */
     uint64_t *ormode_planes;
     uint64_t *ormode_high_planes;
+    /* Ordinary overwrite mode: six byte indexes plus paint coverage. */
+    uint64_t *normal_columns;
     int palette[SIXEL_PALETTE_MAX_DECODER];
 } image_buffer_t;
 
@@ -72,6 +74,11 @@ image_buffer_enable_ormode(image_buffer_t *image,
 
 SIXEL_INTERNAL_API void
 image_buffer_finalize_ormode(image_buffer_t *image);
+
+/* Materialize disjoint band ranges without changing shared parser state.
+ * The caller owns validated bounds 0 <= first <= end <= ceil(height / 6). */
+SIXEL_INTERNAL_API void
+image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end);
 
 SIXELSTATUS image_buffer_resize(image_buffer_t *image,
                                 int width,

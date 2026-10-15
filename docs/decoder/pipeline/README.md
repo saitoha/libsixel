@@ -53,6 +53,27 @@ The main body controls have distinct effects:
 
 The active color register and cursor position are therefore part of decoding state, not metadata that can be interpreted after the pixel plane has been built. A palette redefinition after paint is particularly important: earlier pixels used the old register value, while later pixels use the new value.
 
+## Ordinary-mode band columns
+
+The ordinary serial parser accumulates overwrite paint in [`decoder-columns.h`](../../../src/decoder-columns.h). Each six-row band has one `uint64_t` per column: byte lanes 0 through 5 hold color-register indexes, byte 6 holds the six painted-row bits, and byte 7 is unused. This is an internal working representation; public APIs still return their documented row-major pixel formats.
+
+For each data character, a constant 64-entry table supplies the byte mask of its selected rows. One masked word replacement overwrites those indexes and ORs in coverage. Register selection prepares the six replicated color bytes once. Repeats update consecutive column words, while adjacent unrepeated data characters stay in an inner loop until a control or the raster edge requires the general parser. Register zero is a painted color when its coverage bit is set, so it cannot be confused with an untouched column.
+
+`image_buffer_finalize_normal_bands(image, first, end)` materializes the half-open band range `[first, end)` as sequential output rows, including a partial last band. It selects byte-index, wide-index or RGBA loops outside the pixel loop. RGBA resolves through the current mapped palette. Unpainted samples preserve the initialized destination value; optional paint masks come from the coverage bits. Asking for a mask does not change pixels. The function does not update shared parser state, allowing a caller to assign independent band ranges. Raster growth and final cropping copy complete column words alongside the destination's initialized background and mask state.
+
+The parser uses the ordinary pixel painter for these cases:
+
+| Condition | Transition and reason |
+| --- | --- |
+| A register of 256 or greater is selected | Materialize accumulated columns before subsequent paint, then keep the ordinary painter. A byte lane cannot represent a wide register, even when a later selection returns to the byte range. |
+| RGBA receives a palette definition after data characters | Materialize with the palette in effect before the definition and then keep paint-time RGBA stores. Indexed output can retain columns because its contract returns indexes and the final palette. |
+| A late raster declaration enables a parallel attempt after column accumulation | Materialize before handing the destination to the existing parallel painter. A declined attempt continues with the ordinary painter so earlier published pixels remain authoritative. |
+| Explicit sequence composition | Keep the ordinary painter from the start. Its untouched samples belong to the retained canvas from previous packets rather than a fresh single-image decode. |
+
+The first parallel attempt normally precedes serial paint. Successful parallel decoding therefore allocates no normal column storage; a clean decline can use band columns. OR mode retains its separate plane representation and final-palette semantics. Entering OR mode discards ordinary columns because the OR plane canvas replaces the complete returned image. Normal indexed columns are materialized before any undither or other reconstruction consumer reads the raster.
+
+Dimension, repeat and cursor overflow checks still guard the general paint path. The contiguous loop runs only within an allocated complete band; the general path owns partial bands, trusted-raster clipping and growth. A column allocation checks the rounded band-count product independently of the output allocation, and allocation failures release all owned buffers without publishing partial output.
+
 ## Raster declaration versus observed paint
 
 Raster attributes are useful allocation evidence, but a real stream can paint outside its declared rectangle. This can happen naturally when a height is not a multiple of SIXEL's six-row unit, and malformed or producer-specific streams can disagree in either dimension.
@@ -137,7 +158,7 @@ Parallelism is therefore expected to preserve the same observable image as seria
 
 Let `B` be the input byte count and `P = width × height` the returned pixel count. A serial decode is usefully accounted for as `parse_and_paint(B) + materialize(P)`. Optional reconstruction and resize add further pixel-proportional passes; PNG compression adds a separate writer cost whose constant factors depend on backend and image content.
 
-The indexed path uses approximately one byte per pixel plus palette and paint-state storage. Direct RGBA uses four output bytes per pixel. Packed conversion may require both an intermediate RGBA image and the requested destination buffer. Dequantization and resizing introduce their own source, destination, mask, or work buffers, so peak memory must be evaluated by execution path rather than by final file size.
+The indexed path uses approximately one byte per pixel plus palette and paint-state storage. Direct RGBA uses four output bytes per pixel. Ordinary serial band columns additionally use eight bytes per column per six-row band, or approximately 4/3 bytes per pixel before rounding; that storage is released at materialization. Packed conversion may require both an intermediate RGBA image and the requested destination buffer. Dequantization and resizing introduce their own source, destination, mask, or work buffers, so peak memory must be evaluated by execution path rather than by final file size.
 
 Parallel decoding adds a validation scan, span state, row-range analysis, worker setup, and synchronization before paint. Those fixed costs can make small inputs slower than the serial path. On sufficiently large inputs, disjoint paint ranges can amortize the scan and scheduling cost. The checked-in threading measurements deliberately separate decoder intervals from PNG serialization so a slow writer is not misreported as a decoder scaling failure.
 
@@ -247,6 +268,12 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-34 | Identity and null mapping preserve the original packed decode contract. | [tests/processing/decoder/0050_palette_map_identity.t](../../../tests/processing/decoder/0050_palette_map_identity.t) |
 | DP-35 | GPU fast4 reconstruction uses mapped pixels and palette on available backends. | [tests/processing/decoder/0051_palette_map_gpu.t](../../../tests/processing/decoder/0051_palette_map_gpu.t) |
 | DP-36 | A later palette definition selects clean parallel fallback without losing or remapping stored colors. | [tests/processing/decoder/0052_palette_map_parallel_fallback.t](../../../tests/processing/decoder/0052_palette_map_parallel_fallback.t) |
+| DP-37 | Overwrite order, all six-bit patterns, painted register zero and sparse coverage remain identical with or without a paint mask. | [tests/processing/decoder/0094_normal_columns_patterns.t](../../../tests/processing/decoder/0094_normal_columns_patterns.t) |
+| DP-38 | Palette redefinition preserves direct paint-time colors while indexed output retains the final palette. | [tests/processing/decoder/0095_normal_columns_palette_history.t](../../../tests/processing/decoder/0095_normal_columns_palette_history.t) |
+| DP-39 | Selecting a wide register preserves earlier byte-index paint and the existing output-depth conversion. | [tests/processing/decoder/0096_normal_columns_wide_fallback.t](../../../tests/processing/decoder/0096_normal_columns_wide_fallback.t) |
+| DP-40 | Band storage preserves paint and coverage across raster growth, final cropping and trusted clipping. | [tests/processing/decoder/0097_normal_columns_growth_clip.t](../../../tests/processing/decoder/0097_normal_columns_growth_clip.t) |
+| DP-41 | Materializing a band range changes only its rows, including a partial final band, at every output depth. | [tests/processing/decoder/0098_normal_columns_band_ranges.t](../../../tests/processing/decoder/0098_normal_columns_band_ranges.t) |
+| DP-42 | Failure at any normal-column allocation or growth step releases owned buffers and publishes no partial output. | [tests/processing/decoder/0099_normal_columns_allocation_failure.t](../../../tests/processing/decoder/0099_normal_columns_allocation_failure.t) |
 
 ### Coverage boundary
 

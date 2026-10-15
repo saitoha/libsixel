@@ -237,6 +237,7 @@ amalgamation_headers = files(
   '../src/encoder.h',
   '../src/decoder.h',
   '../src/decoder-image.h',
+  '../src/decoder-columns.h',
   '../src/decoder-parallel.h',
   '../src/fromgif.h',
   '../src/frompnm.h',

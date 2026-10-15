@@ -255,6 +255,7 @@ srcs = [
   'decoder-parallel.h',
   'decoder-image.h',
   'decoder-ormode.h',
+  'decoder-columns.h',
   'options.c',
   'options-registry.c',
   'options-registry.h',

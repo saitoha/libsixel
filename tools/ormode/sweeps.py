@@ -175,7 +175,7 @@ def decoder_only(source, reference, output, baseline=None):
     base.ENV["DYLD_LIBRARY_PATH"] = str(source / "src/.libs")
     sources = [source / name for name in [
         "src/fromsixel.c", "src/decoder-parallel.c", "src/decoder-image.h",
-        "src/decoder-ormode.h", "tools/ormode/decode-bench.c",
+        "src/decoder-ormode.h", "src/decoder-columns.h", "tools/ormode/decode-bench.c",
     ]]
     metadata = {
         "platform": platform.platform(),

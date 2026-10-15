@@ -430,6 +430,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0091_parallel_inherited_register.c \
 	processing/decoder/0092_parallel_prefix_clipping.c \
 	processing/decoder/0093_parallel_large_clipped_scan.c \
+	processing/decoder/0094_normal_columns_patterns.c \
+	processing/decoder/0095_normal_columns_palette_history.c \
+	processing/decoder/0096_normal_columns_wide_fallback.c \
+	processing/decoder/0097_normal_columns_growth_clip.c \
+	processing/decoder/0098_normal_columns_band_ranges.c \
+	processing/decoder/0099_normal_columns_allocation_failure.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
@@ -4123,6 +4129,12 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0091_parallel_inherited_register.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0092_parallel_prefix_clipping.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0093_parallel_large_clipped_scan.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0094_normal_columns_patterns.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0095_normal_columns_palette_history.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0096_normal_columns_wide_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0097_normal_columns_growth_clip.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0098_normal_columns_band_ranges.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0099_normal_columns_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
@@ -9403,6 +9415,12 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0093_parallel_large_clipped_scan.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po \
 	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
@@ -12696,6 +12714,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0091_PARALLEL_INHERITED_REGISTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0092_PARALLEL_PREFIX_CLIPPING \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0093_PARALLEL_LARGE_CLIPPED_SCAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0094_NORMAL_COLUMNS_PATTERNS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_NORMAL_COLUMNS_PALETTE_HISTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_NORMAL_COLUMNS_WIDE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_NORMAL_COLUMNS_GROWTH_CLIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_NORMAL_COLUMNS_BAND_RANGES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_NORMAL_COLUMNS_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HISTORY_REVISIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -15797,6 +15821,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0091_parallel_inherited_register.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0092_parallel_prefix_clipping.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0093_parallel_large_clipped_scan.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0094_normal_columns_patterns.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0095_normal_columns_palette_history.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0096_normal_columns_wide_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0097_normal_columns_growth_clip.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0098_normal_columns_band_ranges.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0099_normal_columns_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
@@ -20407,6 +20437,24 @@ processing/decoder/test_runner-0092_parallel_prefix_clipping.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0093_parallel_large_clipped_scan.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0094_normal_columns_patterns.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0095_normal_columns_palette_history.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0096_normal_columns_wide_fallback.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0097_normal_columns_growth_clip.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0098_normal_columns_band_ranges.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0099_normal_columns_allocation_failure.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/cms/$(am__dirstamp):
@@ -33009,6 +33057,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0091_parallel_inherited_register.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0092_parallel_prefix_clipping.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0093_parallel_large_clipped_scan.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
@@ -39283,6 +39337,90 @@ processing/decoder/test_runner-0093_parallel_large_clipped_scan.obj: processing/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0093_parallel_large_clipped_scan.c' object='processing/decoder/test_runner-0093_parallel_large_clipped_scan.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0093_parallel_large_clipped_scan.obj `if test -f 'processing/decoder/0093_parallel_large_clipped_scan.c'; then $(CYGPATH_W) 'processing/decoder/0093_parallel_large_clipped_scan.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0093_parallel_large_clipped_scan.c'; fi`
+
+processing/decoder/test_runner-0094_normal_columns_patterns.o: processing/decoder/0094_normal_columns_patterns.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0094_normal_columns_patterns.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Tpo -c -o processing/decoder/test_runner-0094_normal_columns_patterns.o `test -f 'processing/decoder/0094_normal_columns_patterns.c' || echo '$(srcdir)/'`processing/decoder/0094_normal_columns_patterns.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Tpo processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0094_normal_columns_patterns.c' object='processing/decoder/test_runner-0094_normal_columns_patterns.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0094_normal_columns_patterns.o `test -f 'processing/decoder/0094_normal_columns_patterns.c' || echo '$(srcdir)/'`processing/decoder/0094_normal_columns_patterns.c
+
+processing/decoder/test_runner-0094_normal_columns_patterns.obj: processing/decoder/0094_normal_columns_patterns.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0094_normal_columns_patterns.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Tpo -c -o processing/decoder/test_runner-0094_normal_columns_patterns.obj `if test -f 'processing/decoder/0094_normal_columns_patterns.c'; then $(CYGPATH_W) 'processing/decoder/0094_normal_columns_patterns.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0094_normal_columns_patterns.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Tpo processing/decoder/$(DEPDIR)/test_runner-0094_normal_columns_patterns.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0094_normal_columns_patterns.c' object='processing/decoder/test_runner-0094_normal_columns_patterns.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0094_normal_columns_patterns.obj `if test -f 'processing/decoder/0094_normal_columns_patterns.c'; then $(CYGPATH_W) 'processing/decoder/0094_normal_columns_patterns.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0094_normal_columns_patterns.c'; fi`
+
+processing/decoder/test_runner-0095_normal_columns_palette_history.o: processing/decoder/0095_normal_columns_palette_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0095_normal_columns_palette_history.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Tpo -c -o processing/decoder/test_runner-0095_normal_columns_palette_history.o `test -f 'processing/decoder/0095_normal_columns_palette_history.c' || echo '$(srcdir)/'`processing/decoder/0095_normal_columns_palette_history.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Tpo processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0095_normal_columns_palette_history.c' object='processing/decoder/test_runner-0095_normal_columns_palette_history.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0095_normal_columns_palette_history.o `test -f 'processing/decoder/0095_normal_columns_palette_history.c' || echo '$(srcdir)/'`processing/decoder/0095_normal_columns_palette_history.c
+
+processing/decoder/test_runner-0095_normal_columns_palette_history.obj: processing/decoder/0095_normal_columns_palette_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0095_normal_columns_palette_history.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Tpo -c -o processing/decoder/test_runner-0095_normal_columns_palette_history.obj `if test -f 'processing/decoder/0095_normal_columns_palette_history.c'; then $(CYGPATH_W) 'processing/decoder/0095_normal_columns_palette_history.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0095_normal_columns_palette_history.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Tpo processing/decoder/$(DEPDIR)/test_runner-0095_normal_columns_palette_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0095_normal_columns_palette_history.c' object='processing/decoder/test_runner-0095_normal_columns_palette_history.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0095_normal_columns_palette_history.obj `if test -f 'processing/decoder/0095_normal_columns_palette_history.c'; then $(CYGPATH_W) 'processing/decoder/0095_normal_columns_palette_history.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0095_normal_columns_palette_history.c'; fi`
+
+processing/decoder/test_runner-0096_normal_columns_wide_fallback.o: processing/decoder/0096_normal_columns_wide_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0096_normal_columns_wide_fallback.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Tpo -c -o processing/decoder/test_runner-0096_normal_columns_wide_fallback.o `test -f 'processing/decoder/0096_normal_columns_wide_fallback.c' || echo '$(srcdir)/'`processing/decoder/0096_normal_columns_wide_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Tpo processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0096_normal_columns_wide_fallback.c' object='processing/decoder/test_runner-0096_normal_columns_wide_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0096_normal_columns_wide_fallback.o `test -f 'processing/decoder/0096_normal_columns_wide_fallback.c' || echo '$(srcdir)/'`processing/decoder/0096_normal_columns_wide_fallback.c
+
+processing/decoder/test_runner-0096_normal_columns_wide_fallback.obj: processing/decoder/0096_normal_columns_wide_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0096_normal_columns_wide_fallback.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Tpo -c -o processing/decoder/test_runner-0096_normal_columns_wide_fallback.obj `if test -f 'processing/decoder/0096_normal_columns_wide_fallback.c'; then $(CYGPATH_W) 'processing/decoder/0096_normal_columns_wide_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0096_normal_columns_wide_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Tpo processing/decoder/$(DEPDIR)/test_runner-0096_normal_columns_wide_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0096_normal_columns_wide_fallback.c' object='processing/decoder/test_runner-0096_normal_columns_wide_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0096_normal_columns_wide_fallback.obj `if test -f 'processing/decoder/0096_normal_columns_wide_fallback.c'; then $(CYGPATH_W) 'processing/decoder/0096_normal_columns_wide_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0096_normal_columns_wide_fallback.c'; fi`
+
+processing/decoder/test_runner-0097_normal_columns_growth_clip.o: processing/decoder/0097_normal_columns_growth_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0097_normal_columns_growth_clip.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Tpo -c -o processing/decoder/test_runner-0097_normal_columns_growth_clip.o `test -f 'processing/decoder/0097_normal_columns_growth_clip.c' || echo '$(srcdir)/'`processing/decoder/0097_normal_columns_growth_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Tpo processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0097_normal_columns_growth_clip.c' object='processing/decoder/test_runner-0097_normal_columns_growth_clip.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0097_normal_columns_growth_clip.o `test -f 'processing/decoder/0097_normal_columns_growth_clip.c' || echo '$(srcdir)/'`processing/decoder/0097_normal_columns_growth_clip.c
+
+processing/decoder/test_runner-0097_normal_columns_growth_clip.obj: processing/decoder/0097_normal_columns_growth_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0097_normal_columns_growth_clip.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Tpo -c -o processing/decoder/test_runner-0097_normal_columns_growth_clip.obj `if test -f 'processing/decoder/0097_normal_columns_growth_clip.c'; then $(CYGPATH_W) 'processing/decoder/0097_normal_columns_growth_clip.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0097_normal_columns_growth_clip.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Tpo processing/decoder/$(DEPDIR)/test_runner-0097_normal_columns_growth_clip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0097_normal_columns_growth_clip.c' object='processing/decoder/test_runner-0097_normal_columns_growth_clip.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0097_normal_columns_growth_clip.obj `if test -f 'processing/decoder/0097_normal_columns_growth_clip.c'; then $(CYGPATH_W) 'processing/decoder/0097_normal_columns_growth_clip.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0097_normal_columns_growth_clip.c'; fi`
+
+processing/decoder/test_runner-0098_normal_columns_band_ranges.o: processing/decoder/0098_normal_columns_band_ranges.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0098_normal_columns_band_ranges.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Tpo -c -o processing/decoder/test_runner-0098_normal_columns_band_ranges.o `test -f 'processing/decoder/0098_normal_columns_band_ranges.c' || echo '$(srcdir)/'`processing/decoder/0098_normal_columns_band_ranges.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Tpo processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0098_normal_columns_band_ranges.c' object='processing/decoder/test_runner-0098_normal_columns_band_ranges.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0098_normal_columns_band_ranges.o `test -f 'processing/decoder/0098_normal_columns_band_ranges.c' || echo '$(srcdir)/'`processing/decoder/0098_normal_columns_band_ranges.c
+
+processing/decoder/test_runner-0098_normal_columns_band_ranges.obj: processing/decoder/0098_normal_columns_band_ranges.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0098_normal_columns_band_ranges.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Tpo -c -o processing/decoder/test_runner-0098_normal_columns_band_ranges.obj `if test -f 'processing/decoder/0098_normal_columns_band_ranges.c'; then $(CYGPATH_W) 'processing/decoder/0098_normal_columns_band_ranges.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0098_normal_columns_band_ranges.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Tpo processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0098_normal_columns_band_ranges.c' object='processing/decoder/test_runner-0098_normal_columns_band_ranges.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0098_normal_columns_band_ranges.obj `if test -f 'processing/decoder/0098_normal_columns_band_ranges.c'; then $(CYGPATH_W) 'processing/decoder/0098_normal_columns_band_ranges.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0098_normal_columns_band_ranges.c'; fi`
+
+processing/decoder/test_runner-0099_normal_columns_allocation_failure.o: processing/decoder/0099_normal_columns_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0099_normal_columns_allocation_failure.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Tpo -c -o processing/decoder/test_runner-0099_normal_columns_allocation_failure.o `test -f 'processing/decoder/0099_normal_columns_allocation_failure.c' || echo '$(srcdir)/'`processing/decoder/0099_normal_columns_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0099_normal_columns_allocation_failure.c' object='processing/decoder/test_runner-0099_normal_columns_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0099_normal_columns_allocation_failure.o `test -f 'processing/decoder/0099_normal_columns_allocation_failure.c' || echo '$(srcdir)/'`processing/decoder/0099_normal_columns_allocation_failure.c
+
+processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj: processing/decoder/0099_normal_columns_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Tpo -c -o processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj `if test -f 'processing/decoder/0099_normal_columns_allocation_failure.c'; then $(CYGPATH_W) 'processing/decoder/0099_normal_columns_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0099_normal_columns_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0099_normal_columns_allocation_failure.c' object='processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0099_normal_columns_allocation_failure.obj `if test -f 'processing/decoder/0099_normal_columns_allocation_failure.c'; then $(CYGPATH_W) 'processing/decoder/0099_normal_columns_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0099_normal_columns_allocation_failure.c'; fi`
 
 processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c
