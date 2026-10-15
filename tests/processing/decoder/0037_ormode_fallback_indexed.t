@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/encoder/output/or-mode/README.md
-# Check all final pixels through the public decoder entry point.
+# Check serial OR output with a gather launch failure configured.
 set -eux
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {

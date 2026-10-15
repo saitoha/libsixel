@@ -10,48 +10,43 @@ The default span lengths are nearly equal. `SIXEL_PARALLEL_SKEW` can bias the di
 
 ## Parallel direct path
 
-The ordinary parallel path validates its byte spans before painting:
+The ordinary parallel path parses every owned band once into private column words:
 
 ```text
-serial parser reaches parallel anchor
+serial parser establishes raster and palette
                  |
-                 v
        split payload into N byte spans
                  |
-                 v
-       parallel validation/state scan
+       align starts to six-row band boundaries
+                 |
+       parallel parse into local columns
                  |
              join all N
                  |
-                 v
-       derive each span's painted rows
+       prefix sum of disjoint byte-span band counts
+       validate extents / trusted clipping
                  |
-     overlap? ----+---- yes -> serial fallback
-                 |
-                 no
-                 v
-       create all N paint workers
-                 |
+       create all N gather workers
        all-ready release barrier
                  |
-                 v
-          parallel paint + join
+       parallel columns-to-pixels gather + join
                  |
-                 v
-       continue serial parser/output
+             publish output
 ```
 
-Each scan searches backward from its useful boundary for the nearest `#`, then reads that register number forward with the same bounds and clamping as the parser. If none exists before the boundary, it inherits the serial parser's initial register. It never parses the whole prefix to recover state. It counts `-` bytes in its original disjoint byte span and records relative painted-row bounds. Counting original spans avoids double-counting when useful starts converge on the same later band. After joining all scans, the controller takes a prefix sum of these counts, adds the delimiter skipped for boundary alignment, and converts row bounds to absolute positions. Height validation and trusted-raster clipping happen before the direct paint overlap check. Paint reuses the cached useful byte offset, register and absolute row offset without reading earlier payload bytes. The controller releases all paint workers together only when those row ranges are ordered and disjoint. The shared pixel and paint-mask buffers can then be updated without locks because no two workers own the same row.
+Each worker searches backward from its useful boundary for the nearest `#`, then reads that register number forward with the parser's numeric bounds. Without a preceding selector it inherits the serial anchor's register. It does not parse the complete prefix. Within its useful span, it interprets data, repeats and controls once, counts delimiters in its original disjoint byte span, and records relative painted-row bounds and the largest register. Consecutive literal data bytes update column words in one loop. Each word contains six byte indexes and six independent coverage bits, using the [serial column representation](../decoder/pipeline/README.md#ordinary-mode-band-columns).
 
-An arbitrary byte split is advanced to the next SIXEL `-` boundary. This normally aligns useful work to complete six-row bands; it does not create an automatic five-row overlap. Several short byte spans can, however, converge on the same later boundary and describe overlapping rows. The current implementation detects that case after scan and falls back before paint rather than attempting an unsafe parallel write.
+An arbitrary split advances to the next `-` boundary unless it already follows one. A span whose aligned start exceeds its original end is empty. The preceding nonempty span owns the intervening complete band, so converging boundaries never duplicate band ownership. The controller sums original-span counts after all parsers join, adds the delimiter skipped for alignment, assigns absolute rows and validates extents. A row-overlap rejection pass is unnecessary for well-formed ordinary input: accepted spans own distinct bands by construction. Data after an embedded ST retains the legacy thread-budget-dependent behavior. An ignored tail is counted for absolute offsets; if starts also converge, the controller reconstructs the formerly duplicated first band of empty spans and retains the legacy overlap fallback before publication. This exceptional compatibility check does not reparse normal bodies.
 
-All paint workers wait at a release barrier. If any worker cannot be created, the controller aborts and joins the workers that already exist while they are still blocked, leaving the serial fallback image untouched.
+Column storage grows locally and never retains relative rows beyond the raster height. Even a tiny trusted raster with a very large encoded paint extent keeps bounded storage; the parser still tracks outside paint. Absolute clipping is applied after prefix resolution. Gather uses the shared serial materializer with a worker-local column source, preserves initialized unpainted pixels, fills paint coverage and resolves RGBA through the established palette. It does not interpret the input again.
+
+Palette definitions within the body, registers above 255, raster resets and unsafe numeric controls select serial fallback. Parse or allocation failure discards private columns before any shared write. All gather workers wait at a release barrier: partial worker creation aborts and joins the already-created workers while the output remains untouched. After release, gather performs no allocation or fallible parsing.
 
 ## Why a PNG phase appears
 
 The threading timelines in this directory invoke `sixel2png`. The command first uses libsixel to decode the SIXEL stream and then serializes the returned raster as a PNG file. Its timeline therefore contains a downstream `png/io` interval in addition to the decoder interval. PNG wall time is retained to make the CLI measurement boundary explicit and to show end-to-end context; it is not decoder work and is not parallelized by the decoder's `--threads` budget.
 
-The checked-in eight-worker timeline uses a 1920 by 1080 raster. Eight scan intervals begin together. All eight paint workers then become ready at a barrier before their intervals begin as a parallel block. PNG output follows and dominates the remaining process wall time; it is not part of the decoder worker budget. Scan is shown in light blue and paint in dark blue.
+The checked-in eight-worker timeline uses a 1920 by 1080 raster. Eight parse intervals begin together. All eight gather workers then become ready at a barrier before their intervals begin as a parallel block. PNG output follows and dominates the remaining process wall time; it is not part of the decoder worker budget. Local parse is shown in light blue and gather in dark blue.
 
 ![Eight-worker Full HD decoder timeline](measurements/decoder-thread8-timeline.png)
 
@@ -122,7 +117,7 @@ For 100 retained photographs, per-image direct-RGBA speed ratios are:
 
 ## Local-buffer and undither path
 
-When decoder-side undithering is prepared, the same validation pass resolves row offsets and caches the start of the existing top halo and its inherited register. Local workers decode that halo and their body into private row chunks, then filter and publish only body rows. The halo is filter input, so its byte and newline semantics remain separate from the prefix sum. Converging spans retain the existing local filtering windows; the disjoint-row fallback applies to direct paint. A local worker whose scheduled end falls inside its halo publishes no body rows, so direct-scan row bounds cannot be used as its publication bounds. Local buffers reduce direct write conflicts and permit more work to remain inside the parallel worker lifetime. This path has different allocation and copying costs from direct paint and must be measured separately.
+When decoder-side undithering is prepared, the validation-only pass resolves row offsets and caches the start of the existing top halo and its inherited register. Local workers decode that halo and their body into private row chunks, then filter and publish only body rows. The halo is filter input, so its byte and newline semantics remain separate from the prefix sum. Converging spans retain the existing local filtering windows independently of ordinary column ownership. A local worker whose scheduled end falls inside its halo publishes no body rows, so direct-scan row bounds cannot be used as its publication bounds. Local buffers reduce direct write conflicts and permit more work to remain inside the parallel worker lifetime. This path has different allocation and copying costs from direct paint and must be measured separately.
 
 Do not infer behavior for decoder undithering from the direct-path chart. A timeline should identify scan, decode, paint, local-copy, and output stages explicitly whenever those paths are compared.
 
@@ -140,7 +135,7 @@ Parallel work must preserve:
 - identical malformed-input and allocation-failure handling; and
 - the public decoder's output ownership contract.
 
-The timeline instrumentation records paired starts and finishes for both scan and paint. `tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t` keeps that diagnostic contract from silently degrading back to zero-length markers. `0012_parallel_paint_barrier.t` verifies that every paint worker reaches the barrier before paint begins. Decoder tests 0025 and 0026 cover partial worker creation and overlapping row ranges, including the clean-fallback guarantee.
+The ordinary timeline records paired starts and finishes for both parse and gather. `tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t` keeps that diagnostic contract from silently degrading back to zero-length markers. `0012_parallel_gather_barrier.t` verifies that every gather worker reaches the barrier before publication begins. Decoder tests 0025 and 0026 cover partial gather creation and disjoint publication from converging byte spans, including the clean-fallback guarantee.
 
 ## Measurement limits
 
@@ -155,5 +150,8 @@ The checked-in timeline and two-size comparison are single diagnostic observatio
 | DTH-01 | Successful parallel requests preserve initial and inherited registers and literal row placement in 8-bit indexed, 16-bit indexed and RGBA buffers. | [tests/processing/decoder/0091_parallel_inherited_register.t](../../tests/processing/decoder/0091_parallel_inherited_register.t) |
 | DTH-02 | Prefix-derived absolute rows clip to a trusted raster and report out-of-raster paint. | [tests/processing/decoder/0092_parallel_prefix_clipping.t](../../tests/processing/decoder/0092_parallel_prefix_clipping.t) |
 | DTH-03 | A large encoded paint extent remains safe when clipped to a small trusted canvas, including validation diagnostics. | [tests/processing/decoder/0093_parallel_large_clipped_scan.t](../../tests/processing/decoder/0093_parallel_large_clipped_scan.t) |
+| DTH-04 | Worker-local column allocation failure discards private paint and leaves shared pixels and coverage untouched. | [tests/processing/decoder/0101_parallel_columns_allocation_failure.t](../../tests/processing/decoder/0101_parallel_columns_allocation_failure.t) |
+| DTH-05 | Partial parse-worker creation joins started workers and returns a clean serial fallback. | [tests/processing/decoder/0102_parallel_parse_create_failure.t](../../tests/processing/decoder/0102_parallel_parse_create_failure.t) |
+| DTH-06 | Embedded ST followed by trailing data preserves legacy absolute offsets and overlap fallback at each tested worker budget. | [tests/processing/decoder/0103_parallel_early_st_compatibility.t](../../tests/processing/decoder/0103_parallel_early_st_compatibility.t) |
 
-The [decoder suite](../../tests/processing/decoder) also covers sparse bands, converging spans, palette redefinitions and partial worker creation; the [CLI suite](../../tests/cli/sixel2png) checks paired timeline spans and the all-ready paint barrier. Timing observations depend on the host and are not correctness assertions.
+The [decoder suite](../../tests/processing/decoder) also covers sparse bands, converging spans, palette redefinitions and partial worker creation; the [CLI suite](../../tests/cli/sixel2png) checks paired timeline spans and the all-ready gather barrier. Timing observations depend on the host and are not correctness assertions.

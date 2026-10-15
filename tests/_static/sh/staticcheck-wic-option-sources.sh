@@ -38,7 +38,7 @@ END { exit threading && registry ? 0 : 1 }
 }
 
 awk '
-/^sixel_test_environment_decoder_paint_thread_create_failure\(void\)/ {
+/^sixel_test_environment_decoder_parallel_failure\(void\)/ {
     found = 1
 }
 END { exit found ? 0 : 1 }
@@ -66,7 +66,7 @@ END { exit stub ? 0 : 1 }
 }
 
 awk '
-/^sixel_test_environment_decoder_paint_thread_create_failure\(void\)/ {
+/^sixel_test_environment_decoder_parallel_failure\(void\)/ {
     found = 1
 }
 END { exit found ? 0 : 1 }

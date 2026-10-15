@@ -1,8 +1,8 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that byte spans which converge on one SIXEL band are rejected before
- * the direct paint pass can modify the serial fallback image.
+ * Verify that a worker-local column allocation fails before any worker
+ * can modify the serial fallback image.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -15,31 +15,21 @@
 
 #include <sixel.h>
 
+#include "src/compat_stub.h"
 #include "src/decoder-image.h"
 #include "src/decoder-parallel.h"
 
-#define PAINT_OVERLAP_WIDTH 128
-#define PAINT_OVERLAP_HEIGHT 18
-#define PAINT_OVERLAP_PIXEL_SENTINEL 0xa5
-#define PAINT_OVERLAP_MASK_SENTINEL 0x5a
+#define COLUMN_FAILURE_WIDTH 8
+#define COLUMN_FAILURE_HEIGHT 12
+#define COLUMN_FAILURE_PIXEL_SENTINEL 0xa5
+#define COLUMN_FAILURE_MASK_SENTINEL 0x5a
 
-static unsigned char g_paint_overlap_payload[] =
-    "#1"
-    "~~~~~~~~~~~~~~~~~~~~~~~~"
-    "~~~~~~~~~~~~~~~~~~~~~~~~"
-    "~~~~~~~~~~~~~~~~~~~~~~~~"
-    "~~~~~~~~~~~~~~~~~~~~~~~~"
-    "-"
-    "@@@@@@@@@@@@"
-    "@@@@@@@@@@@@"
-    "@@@@@@@@@@@@"
-    "-"
-    "AAAAAAAAAAAAAAAAAAAA";
+static unsigned char g_column_failure_payload[] = "#1!8~-#1!8~";
 
 static int
-paint_overlap_bytes_equal(unsigned char const *data,
-                          size_t bytes,
-                          unsigned char expected)
+column_failure_bytes_equal(unsigned char const *data,
+                         size_t bytes,
+                         unsigned char expected)
 {
     size_t i;
 
@@ -55,7 +45,7 @@ paint_overlap_bytes_equal(unsigned char const *data,
 }
 
 int
-test_decoder_0026_decoder_paint_overlap_fallback_clean(int argc, char **argv)
+test_decoder_0101(int argc, char **argv)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -68,11 +58,15 @@ test_decoder_0026_decoder_paint_overlap_fallback_clean(int argc, char **argv)
 
     allocator = NULL;
     image = NULL;
-    pixels = (size_t)PAINT_OVERLAP_WIDTH * (size_t)PAINT_OVERLAP_HEIGHT;
+    pixels = (size_t)COLUMN_FAILURE_WIDTH * (size_t)COLUMN_FAILURE_HEIGHT;
     ok = 0;
 
-    status = sixel_decoder_parallel_override_threads("4");
+    status = sixel_decoder_parallel_override_threads("2");
     if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (sixel_compat_setenv(
+            "_SIXEL_TEST_DECODER_PARALLEL_FAILURE", "allocation:1") != 0) {
         goto end;
     }
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -87,8 +81,8 @@ test_decoder_0026_decoder_paint_overlap_fallback_clean(int argc, char **argv)
     }
     memset(image, 0, sizeof(*image));
     status = image_buffer_init(image,
-                               PAINT_OVERLAP_WIDTH,
-                               PAINT_OVERLAP_HEIGHT,
+                               COLUMN_FAILURE_WIDTH,
+                               COLUMN_FAILURE_HEIGHT,
                                0,
                                1,
                                1,
@@ -97,14 +91,14 @@ test_decoder_0026_decoder_paint_overlap_fallback_clean(int argc, char **argv)
         goto end;
     }
 
-    memset(image->pixels.p, PAINT_OVERLAP_PIXEL_SENTINEL, pixels);
-    memset(image->paint_mask, PAINT_OVERLAP_MASK_SENTINEL, pixels);
+    memset(image->pixels.p, COLUMN_FAILURE_PIXEL_SENTINEL, pixels);
+    memset(image->paint_mask, COLUMN_FAILURE_MASK_SENTINEL, pixels);
     status = sixel_decoder_parallel_request_start(
         0,
         0,
-        g_paint_overlap_payload,
-        (int)(sizeof(g_paint_overlap_payload) - 1U),
-        g_paint_overlap_payload,
+        g_column_failure_payload,
+        (int)(sizeof(g_column_failure_payload) - 1U),
+        g_column_failure_payload,
         image,
         1,
         image->palette,
@@ -113,25 +107,27 @@ test_decoder_0026_decoder_paint_overlap_fallback_clean(int argc, char **argv)
         NULL,
         NULL);
     if (status != SIXEL_FALSE) {
-        fprintf(stderr, "paint overlap returned %04x\n", status);
+        fprintf(stderr, "column allocation failure returned %04x\n", status);
         goto end;
     }
-    if (!paint_overlap_bytes_equal(image->pixels.p,
-                                   pixels,
-                                   PAINT_OVERLAP_PIXEL_SENTINEL)) {
-        fprintf(stderr, "paint overlap dirtied indexed pixels\n");
+    if (!column_failure_bytes_equal(image->pixels.p,
+                                  pixels,
+                                  COLUMN_FAILURE_PIXEL_SENTINEL)) {
+        fprintf(stderr, "column allocation failure dirtied indexed pixels\n");
         goto end;
     }
-    if (!paint_overlap_bytes_equal(image->paint_mask,
-                                   pixels,
-                                   PAINT_OVERLAP_MASK_SENTINEL)) {
-        fprintf(stderr, "paint overlap dirtied paint mask\n");
+    if (!column_failure_bytes_equal(image->paint_mask,
+                                  pixels,
+                                  COLUMN_FAILURE_MASK_SENTINEL)) {
+        fprintf(stderr, "column allocation failure dirtied paint mask\n");
         goto end;
     }
 
     ok = 1;
 
 end:
+    (void)sixel_compat_setenv(
+        "_SIXEL_TEST_DECODER_PARALLEL_FAILURE", "");
     (void)sixel_decoder_parallel_override_threads("1");
     if (image != NULL) {
         if (allocator != NULL && image->paint_mask != NULL) {

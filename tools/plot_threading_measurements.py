@@ -395,8 +395,8 @@ def decoder_measurement_row(identifier: str,
     """Summarize one decoder timeline without treating it as a benchmark."""
     records = load_records(log_path)
     decoder_seconds = phase_wall_seconds(records, "io", "decoder")
-    scan_seconds = phase_wall_seconds(records, "decoder", "scan")
-    paint_seconds = phase_wall_seconds(records, "decoder", "paint")
+    parse_seconds = phase_wall_seconds(records, "decoder", "parse")
+    gather_seconds = phase_wall_seconds(records, "decoder", "gather")
     return {
         "revision": revision,
         "fixture": identifier,
@@ -405,16 +405,16 @@ def decoder_measurement_row(identifier: str,
         "pixels": width * height,
         "sixel_bytes": sixel_path.stat().st_size,
         "sixel_sha256": file_sha256(sixel_path),
-        "scan_wall_seconds": scan_seconds,
-        "paint_wall_seconds": paint_seconds,
+        "parse_wall_seconds": parse_seconds,
+        "gather_wall_seconds": gather_seconds,
         "decoder_wall_seconds": decoder_seconds,
         "png_wall_seconds": phase_wall_seconds(records, "png", "io"),
         "total_wall_seconds": (
             max(float(record["ts"]) for record in records)
             - min(float(record["ts"]) for record in records)
         ),
-        "scan_fraction_of_decoder": scan_seconds / decoder_seconds,
-        "paint_fraction_of_decoder": paint_seconds / decoder_seconds,
+        "parse_fraction_of_decoder": parse_seconds / decoder_seconds,
+        "gather_fraction_of_decoder": gather_seconds / decoder_seconds,
         "command": command_template(command, replacements),
     }
 
@@ -460,29 +460,29 @@ def timeline_event_count(records: Sequence[Dict[str, object]],
 def decoder_parallel_observation(records: Sequence[Dict[str, object]],
                                  threads: int) -> Dict[str, object]:
     """Validate and summarize the path used by one decoder execution."""
-    scan = event_intervals(records, "start", "finish", "decoder", "scan")
-    paint = event_intervals(
-        records, "start", "finish", "decoder", "paint"
+    parse = event_intervals(records, "start", "finish", "decoder", "parse")
+    gather = event_intervals(
+        records, "start", "finish", "decoder", "gather"
     )
     counts = {
-        "scan_start_count": timeline_event_count(
-            records, "decoder", "scan", "start"
+        "parse_start_count": timeline_event_count(
+            records, "decoder", "parse", "start"
         ),
-        "scan_finish_count": timeline_event_count(
-            records, "decoder", "scan", "finish"
+        "parse_finish_count": timeline_event_count(
+            records, "decoder", "parse", "finish"
         ),
-        "paint_ready_count": timeline_event_count(
-            records, "decoder", "paint", "ready"
+        "gather_ready_count": timeline_event_count(
+            records, "decoder", "gather", "ready"
         ),
-        "paint_start_count": timeline_event_count(
-            records, "decoder", "paint", "start"
+        "gather_start_count": timeline_event_count(
+            records, "decoder", "gather", "start"
         ),
-        "paint_finish_count": timeline_event_count(
-            records, "decoder", "paint", "finish"
+        "gather_finish_count": timeline_event_count(
+            records, "decoder", "gather", "finish"
         ),
         "decoder_abort_count": (
-            timeline_event_count(records, "decoder", "scan", "abort")
-            + timeline_event_count(records, "decoder", "paint", "abort")
+            timeline_event_count(records, "decoder", "parse", "abort")
+            + timeline_event_count(records, "decoder", "gather", "abort")
         ),
     }
     if threads == 1:
@@ -492,19 +492,19 @@ def decoder_parallel_observation(records: Sequence[Dict[str, object]],
             **counts,
             "observed_path": "serial",
             "barrier_ordered": "not-applicable",
-            "paint_spans_overlap": "not-applicable",
+            "gather_spans_overlap": "not-applicable",
         }
 
     required = (
-        "scan_start_count",
-        "scan_finish_count",
-        "paint_ready_count",
-        "paint_start_count",
-        "paint_finish_count",
+        "parse_start_count",
+        "parse_finish_count",
+        "gather_ready_count",
+        "gather_start_count",
+        "gather_finish_count",
     )
     if any(int(counts[name]) != threads for name in required):
         raise RuntimeError(
-            f"decoder did not complete {threads} direct scan/paint spans"
+            f"decoder did not complete {threads} direct parse/gather spans"
         )
     if counts["decoder_abort_count"] != 0:
         raise RuntimeError("decoder direct path emitted an abort event")
@@ -512,27 +512,27 @@ def decoder_parallel_observation(records: Sequence[Dict[str, object]],
         float(record["ts"])
         for record in records
         if record.get("worker") == "decoder"
-        and record.get("role") == "paint"
+        and record.get("role") == "gather"
         and record.get("event") == "ready"
     ]
     barrier_ordered = (
-        len(scan) == threads
-        and len(paint) == threads
-        and min(ready) >= max(end for _, end in scan)
-        and min(start for start, _ in paint) >= max(ready)
+        len(parse) == threads
+        and len(gather) == threads
+        and min(ready) >= max(end for _, end in parse)
+        and min(start for start, _ in gather) >= max(ready)
     )
-    paint_overlap = any(
+    gather_overlap = any(
         left[0] < right[1] and right[0] < left[1]
-        for index, left in enumerate(paint)
-        for right in paint[index + 1:]
+        for index, left in enumerate(gather)
+        for right in gather[index + 1:]
     )
-    if not barrier_ordered or not paint_overlap:
-        raise RuntimeError("decoder direct paint barrier was not observed")
+    if not barrier_ordered or not gather_overlap:
+        raise RuntimeError("decoder column gather barrier was not observed")
     return {
         **counts,
         "observed_path": "parallel-direct",
         "barrier_ordered": "yes",
-        "paint_spans_overlap": "yes",
+        "gather_spans_overlap": "yes",
     }
 
 
@@ -850,8 +850,8 @@ def plot_decoder_scaling(path: Path,
     threads = sorted({int(row["threads"]) for row in rows})
     fields = (
         ("decoder_wall_seconds", "decoder", "#4C72B0", "o"),
-        ("scan_wall_seconds", "validation scan", "#8CBFDB", "s"),
-        ("paint_wall_seconds", "direct paint", "#225C8D", "^"),
+        ("parse_wall_seconds", "local parse", "#8CBFDB", "s"),
+        ("gather_wall_seconds", "column gather", "#225C8D", "^"),
     )
     figure, axis = plt.subplots(figsize=(10.2, 5.4))
 
@@ -1467,11 +1467,11 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 "decoder_wall_seconds": phase_wall_seconds(
                     records, "io", "decoder"
                 ),
-                "scan_wall_seconds": optional_phase_wall_seconds(
-                    records, "decoder", "scan"
+                "parse_wall_seconds": optional_phase_wall_seconds(
+                    records, "decoder", "parse"
                 ),
-                "paint_wall_seconds": optional_phase_wall_seconds(
-                    records, "decoder", "paint"
+                "gather_wall_seconds": optional_phase_wall_seconds(
+                    records, "decoder", "gather"
                 ),
                 "png_wall_seconds": phase_wall_seconds(
                     records, "png", "io"

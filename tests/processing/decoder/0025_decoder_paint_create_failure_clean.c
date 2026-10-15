@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that a partial direct paint worker launch fails before any worker
+ * Verify that a partial gather worker launch fails before any worker
  * can modify the serial fallback image.
  */
 
@@ -66,7 +66,7 @@ test_decoder_0025_decoder_paint_create_failure_clean(int argc, char **argv)
         goto end;
     }
     if (sixel_compat_setenv(
-            "_SIXEL_TEST_DECODER_PAINT_THREAD_CREATE_FAILURE", "1") != 0) {
+            "_SIXEL_TEST_DECODER_PARALLEL_FAILURE", "gather:1") != 0) {
         goto end;
     }
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -127,7 +127,7 @@ test_decoder_0025_decoder_paint_create_failure_clean(int argc, char **argv)
 
 end:
     (void)sixel_compat_setenv(
-        "_SIXEL_TEST_DECODER_PAINT_THREAD_CREATE_FAILURE", "");
+        "_SIXEL_TEST_DECODER_PARALLEL_FAILURE", "");
     (void)sixel_decoder_parallel_override_threads("1");
     if (image != NULL) {
         if (allocator != NULL && image->paint_mask != NULL) {

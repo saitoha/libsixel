@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/decoder/pipeline/README.md
-# Verify a partial direct paint launch leaves fallback buffers untouched.
+# Verify a partial gather launch leaves fallback buffers untouched.
 
 set -eux
 

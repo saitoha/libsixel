@@ -217,34 +217,34 @@ def validate_budget(path: Path,
 
 
 def validate_decoder(path: Path) -> None:
-    """Validate scan completion, paint barrier, and parallel paint spans."""
+    """Validate parse completion, gather barrier, and parallel gather spans."""
     records = load_jsonl(path)
-    scan = paired_intervals(records, "decoder", "scan", "start", "finish")
-    paint = paired_intervals(records, "decoder", "paint", "start", "finish")
+    parse = paired_intervals(records, "decoder", "parse", "start", "finish")
+    gather = paired_intervals(records, "decoder", "gather", "start", "finish")
     ready = [
         float(record["ts"])
         for record in records
         if record.get("worker") == "decoder"
-        and record.get("role") == "paint"
+        and record.get("role") == "gather"
         and record.get("event") == "ready"
     ]
-    if len(scan) != 8 or len(paint) != 8:
-        raise ValueError("decoder timeline does not contain eight scan/paint spans")
+    if len(parse) != 8 or len(gather) != 8:
+        raise ValueError("decoder timeline does not contain eight parse/gather spans")
     if len(ready) != 8:
         raise ValueError("decoder timeline does not contain eight ready workers")
-    if min(ready) < max(end for _, end in scan):
-        raise ValueError("decoder paint worker became ready before scan joined")
-    if min(start for start, _ in paint) < max(end for _, end in scan):
-        raise ValueError("decoder paint started before the validation scan joined")
-    if min(start for start, _ in paint) < max(ready):
-        raise ValueError("decoder paint started before every worker was ready")
+    if min(ready) < max(end for _, end in parse):
+        raise ValueError("decoder gather worker became ready before parse joined")
+    if min(start for start, _ in gather) < max(end for _, end in parse):
+        raise ValueError("decoder gather started before the local parse joined")
+    if min(start for start, _ in gather) < max(ready):
+        raise ValueError("decoder gather started before every worker was ready")
     overlaps = any(
         left[0] < right[1] and right[0] < left[1]
-        for index, left in enumerate(paint)
-        for right in paint[index + 1:]
+        for index, left in enumerate(gather)
+        for right in gather[index + 1:]
     )
     if not overlaps:
-        raise ValueError("decoder paint spans did not overlap")
+        raise ValueError("decoder gather spans did not overlap")
 
 
 def phase_wall_seconds(records: Sequence[Dict[str, object]],
@@ -277,8 +277,8 @@ def validate_decoder_sizes(path: Path, root: Path, revision: str) -> None:
             rows, DECODER_SIZES):
         records = load_jsonl(root / log_name)
         decoder_seconds = phase_wall_seconds(records, "io", "decoder")
-        scan_seconds = phase_wall_seconds(records, "decoder", "scan")
-        paint_seconds = phase_wall_seconds(records, "decoder", "paint")
+        parse_seconds = phase_wall_seconds(records, "decoder", "parse")
+        gather_seconds = phase_wall_seconds(records, "decoder", "gather")
         if row["revision"] != revision:
             raise ValueError("decoder size CSV and metadata revisions differ")
         if int(row["width"]) != width or int(row["height"]) != height:
@@ -287,10 +287,10 @@ def validate_decoder_sizes(path: Path, root: Path, revision: str) -> None:
             raise ValueError(f"decoder pixel count changed for {identifier}")
         checks = (
             ("decoder_wall_seconds", decoder_seconds),
-            ("scan_wall_seconds", scan_seconds),
-            ("paint_wall_seconds", paint_seconds),
-            ("scan_fraction_of_decoder", scan_seconds / decoder_seconds),
-            ("paint_fraction_of_decoder", paint_seconds / decoder_seconds),
+            ("parse_wall_seconds", parse_seconds),
+            ("gather_wall_seconds", gather_seconds),
+            ("parse_fraction_of_decoder", parse_seconds / decoder_seconds),
+            ("gather_fraction_of_decoder", gather_seconds / decoder_seconds),
         )
         for field, expected in checks:
             if abs(float(row[field]) - expected) > 1e-12:
@@ -351,30 +351,30 @@ def validate_decoder_scaling(path: Path,
         if decoder <= 0.0 or png <= 0.0 or total <= 0.0:
             raise ValueError("decoder scaling contains non-positive time")
         if threads == 1:
-            if row["scan_wall_seconds"] or row["paint_wall_seconds"]:
+            if row["parse_wall_seconds"] or row["gather_wall_seconds"]:
                 raise ValueError("serial decoder unexpectedly has phases")
             if row["observed_path"] != "serial":
                 raise ValueError("serial decoder path observation is stale")
             expected_counts = (0, 0, 0, 0, 0, 0)
             if (row["barrier_ordered"] != "not-applicable"
-                    or row["paint_spans_overlap"] != "not-applicable"):
+                    or row["gather_spans_overlap"] != "not-applicable"):
                 raise ValueError("serial decoder unexpectedly used a barrier")
         else:
-            if (float(row["scan_wall_seconds"]) <= 0.0
-                    or float(row["paint_wall_seconds"]) <= 0.0):
+            if (float(row["parse_wall_seconds"]) <= 0.0
+                    or float(row["gather_wall_seconds"]) <= 0.0):
                 raise ValueError("parallel decoder phase timing is missing")
             if row["observed_path"] != "parallel-direct":
-                raise ValueError("decoder scaling fell back from direct paint")
+                raise ValueError("decoder scaling fell back from column gather")
             expected_counts = (threads, threads, threads, threads, threads, 0)
             if (row["barrier_ordered"] != "yes"
-                    or row["paint_spans_overlap"] != "yes"):
+                    or row["gather_spans_overlap"] != "yes"):
                 raise ValueError("parallel decoder barrier observation is stale")
         observed_counts = tuple(int(row[name]) for name in (
-            "scan_start_count",
-            "scan_finish_count",
-            "paint_ready_count",
-            "paint_start_count",
-            "paint_finish_count",
+            "parse_start_count",
+            "parse_finish_count",
+            "gather_ready_count",
+            "gather_start_count",
+            "gather_finish_count",
             "decoder_abort_count",
         ))
         if observed_counts != expected_counts:

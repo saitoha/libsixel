@@ -338,7 +338,7 @@ The downloader checks recorded hashes rather than silently substituting changed 
 - [Encoder core](../../../../src/encoder-core-encode.c): `sixel_encode_header`, `sixel_encode_body_ormode_nplanes`, `sixel_encode_body_ormode_band`, offset handling, and pipelined serialization.
 - [Decoder parser](../../../../src/fromsixel.c): `parser_context_is_ormode_request`, band-plane accumulation, zero-plane initialization, final index/RGBA gathering, and paint-mask completion.
 - [Plane arithmetic](../../../../src/decoder-ormode.h): register-bit spreading, six-row word accumulation, and row gathering.
-- [Parallel decoder](../../../../src/decoder-parallel.c): validated disjoint-band OR accumulation and clean serial fallback for wide registers.
+- [Parallel decoder](../../../../src/decoder-parallel.c): ordinary private column parsing and parallel gather; OR requests remain serial.
 - [Output API](../../../../src/output.c) and [high-level encoder](../../../../src/encoder.c): mode configuration and default state.
 
 ## Test coverage
@@ -395,8 +395,8 @@ The native centroid and sub-byte cases compare working coordinates with an absol
 | OR-42 | P1=7 alone does not replace ordinary overwrite semantics with OR. | [tests/processing/decoder/0033_ormode_p1_without_p2.t](../../../../tests/processing/decoder/0033_ormode_p1_without_p2.t) |
 | OR-43 | The public RGBA decoder returns every expected pixel at two workers. | [tests/processing/decoder/0034_ormode_parallel_rgba.t](../../../../tests/processing/decoder/0034_ormode_parallel_rgba.t) |
 | OR-44 | The public indexed decoder returns every expected index at two workers. | [tests/processing/decoder/0035_ormode_parallel_indexed.t](../../../../tests/processing/decoder/0035_ormode_parallel_indexed.t) |
-| OR-45 | RGBA output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0036_ormode_fallback_rgba.t](../../../../tests/processing/decoder/0036_ormode_fallback_rgba.t) |
-| OR-46 | Indexed output remains exact after an injected paint-worker launch failure. | [tests/processing/decoder/0037_ormode_fallback_indexed.t](../../../../tests/processing/decoder/0037_ormode_fallback_indexed.t) |
+| OR-45 | RGBA output remains exact when a gather-worker launch failure is configured. | [tests/processing/decoder/0036_ormode_fallback_rgba.t](../../../../tests/processing/decoder/0036_ormode_fallback_rgba.t) |
+| OR-46 | Indexed output remains exact when a gather-worker launch failure is configured. | [tests/processing/decoder/0037_ormode_fallback_indexed.t](../../../../tests/processing/decoder/0037_ormode_fallback_indexed.t) |
 | OR-47 | The parallel request path declines an OR indexed request without touching the band planes or index raster. | [tests/processing/decoder/0038_ormode_parallel_indexed_request.t](../../../../tests/processing/decoder/0038_ormode_parallel_indexed_request.t) |
 | OR-48 | Reusing a decoder for a normal stream after OR restores overwrite rules. | [tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t](../../../../tests/processing/decoder/0039_ormode_decoder_reuse_resets_mode.t) |
 | OR-49 | An untouched OR pixel resolves palette zero with alpha 255. | [tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t](../../../../tests/processing/decoder/0040_ormode_direct_zero_is_opaque.t) |

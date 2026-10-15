@@ -145,6 +145,9 @@ int test_decoder_0097(int argc, char **argv);
 int test_decoder_0098(int argc, char **argv);
 int test_decoder_0099(int argc, char **argv);
 int test_decoder_0100(int argc, char **argv);
+int test_decoder_0101(int argc, char **argv);
+int test_decoder_0102(int argc, char **argv);
+int test_decoder_0103(int argc, char **argv);
 int test_named_output_0037(int argc, char **argv);
 int test_named_output_0038(int argc, char **argv);
 int test_named_output_0039(int argc, char **argv);
@@ -1300,7 +1303,7 @@ int
 test_decoder_0024_decoder_parallel_skew_environment(int argc, char **argv);
 int test_decoder_0025_decoder_paint_create_failure_clean(int argc,
                                                          char **argv);
-int test_decoder_0026_decoder_paint_overlap_fallback_clean(int argc,
+int test_decoder_0026_parallel_converging_bands(int argc,
                                                            char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
@@ -5751,6 +5754,9 @@ static test_entry_t const test_entries[] = {
       test_decoder_0099 },
     { "decoder/0100_trusted_literal_run_edges",
       test_decoder_0100 },
+    { "decoder/0101_parallel_columns_allocation_failure", test_decoder_0101 },
+    { "decoder/0102_parallel_parse_create_failure", test_decoder_0102 },
+    { "decoder/0103_parallel_early_st_compatibility", test_decoder_0103 },
     { "quant/palette/named_output/0037_adobe_libpng", test_named_output_0037 },
     { "quant/palette/named_output/0038_dci_libpng", test_named_output_0038 },
     { "quant/palette/named_output/0039_adobe_libtiff", test_named_output_0039 },
@@ -5885,8 +5891,8 @@ static test_entry_t const test_entries[] = {
       test_decoder_0024_decoder_parallel_skew_environment },
     { "decoder/0025_decoder_paint_create_failure_clean",
       test_decoder_0025_decoder_paint_create_failure_clean },
-    { "decoder/0026_decoder_paint_overlap_fallback_clean",
-      test_decoder_0026_decoder_paint_overlap_fallback_clean },
+    { "decoder/0026_parallel_converging_bands",
+      test_decoder_0026_parallel_converging_bands },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },

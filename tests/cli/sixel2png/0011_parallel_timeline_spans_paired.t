@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify parallel decoder scan and paint spans have both timeline boundaries.
+# Verify parallel decoder parse and gather spans have both timeline boundaries.
 # Policy: docs/decoder/pipeline/README.md
 
 set -eux
@@ -18,10 +18,10 @@ set -v
 
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 timeline_log="${ARTIFACT_LOCAL_DIR}/0011-parallel-timeline-$$.jsonl"
-scan_start=0
-scan_finish=0
-paint_start=0
-paint_finish=0
+parse_start=0
+parse_finish=0
+gather_start=0
+gather_finish=0
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threads=2 \
     -J "${timeline_log}" \
@@ -32,26 +32,26 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threads=2 \
 }
 
 while IFS= read -r line; do
-    case "${line}" in *\"worker\":\"decoder\",\"role\":\"scan\",\"event\":\"start\"**) false ;; *) true ;; esac || scan_start=$((scan_start + 1))
-    case "${line}" in *\"worker\":\"decoder\",\"role\":\"scan\",\"event\":\"finish\"**) false ;; *) true ;; esac || scan_finish=$((scan_finish + 1))
-    case "${line}" in *\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"start\"**) false ;; *) true ;; esac || paint_start=$((paint_start + 1))
-    case "${line}" in *\"worker\":\"decoder\",\"role\":\"paint\",\"event\":\"finish\"**) false ;; *) true ;; esac || paint_finish=$((paint_finish + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"parse\",\"event\":\"start\"**) false ;; *) true ;; esac || parse_start=$((parse_start + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"parse\",\"event\":\"finish\"**) false ;; *) true ;; esac || parse_finish=$((parse_finish + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"gather\",\"event\":\"start\"**) false ;; *) true ;; esac || gather_start=$((gather_start + 1))
+    case "${line}" in *\"worker\":\"decoder\",\"role\":\"gather\",\"event\":\"finish\"**) false ;; *) true ;; esac || gather_finish=$((gather_finish + 1))
 done < "${timeline_log}"
 
-test "${scan_start}" -gt 0 || {
-    echo "not ok" 1 - "parallel decoder timeline omitted scan starts"
+test "${parse_start}" -gt 0 || {
+    echo "not ok" 1 - "parallel decoder timeline omitted parse starts"
     exit 0
 }
-test "${scan_start}" -eq "${scan_finish}" || {
-    echo "not ok" 1 - "parallel decoder scan spans are unpaired"
+test "${parse_start}" -eq "${parse_finish}" || {
+    echo "not ok" 1 - "parallel decoder parse spans are unpaired"
     exit 0
 }
-test "${paint_start}" -gt 0 || {
-    echo "not ok" 1 - "parallel decoder timeline omitted paint starts"
+test "${gather_start}" -gt 0 || {
+    echo "not ok" 1 - "parallel decoder timeline omitted gather starts"
     exit 0
 }
-test "${paint_start}" -eq "${paint_finish}" || {
-    echo "not ok" 1 - "parallel decoder paint spans are unpaired"
+test "${gather_start}" -eq "${gather_finish}" || {
+    echo "not ok" 1 - "parallel decoder gather spans are unpaired"
     exit 0
 }
 

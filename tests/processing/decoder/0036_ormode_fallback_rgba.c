@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Check all final pixels through the public decoder entry point. */
+/* OR remains serial even when a gather launch failure is configured. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -29,11 +29,11 @@ test_or_dec_0036(int argc, char **argv)
         }
     }
     if (sixel_compat_setenv(
-            "_SIXEL_TEST_DECODER_PAINT_THREAD_CREATE_FAILURE", "1")) {
+            "_SIXEL_TEST_DECODER_PARALLEL_FAILURE", "gather:1")) {
         return EXIT_FAILURE;
     }
     result = test_or_decode(stream, expected, 8, 12, 2, 1);
     (void)sixel_compat_setenv(
-        "_SIXEL_TEST_DECODER_PAINT_THREAD_CREATE_FAILURE", "");
+        "_SIXEL_TEST_DECODER_PARALLEL_FAILURE", "");
     return result;
 }

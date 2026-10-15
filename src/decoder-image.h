@@ -80,6 +80,14 @@ image_buffer_finalize_ormode(image_buffer_t *image);
 SIXEL_INTERNAL_API void
 image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end);
 
+/* Source starts at the first destination band. Worker-local columns can
+ * therefore publish disjoint absolute rows without rebasing a pointer before
+ * its allocation. Palette and destination metadata remain read-only. */
+SIXEL_INTERNAL_API void
+image_buffer_finalize_normal_columns(image_buffer_t *image,
+                                      uint64_t const *source,
+                                      int first, int end);
+
 SIXELSTATUS image_buffer_resize(image_buffer_t *image,
                                 int width,
                                 int height,

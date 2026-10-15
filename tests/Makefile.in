@@ -437,6 +437,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0098_normal_columns_band_ranges.c \
 	processing/decoder/0099_normal_columns_allocation_failure.c \
 	processing/decoder/0100_trusted_literal_run_edges.c \
+	processing/decoder/0101_parallel_columns_allocation_failure.c \
+	processing/decoder/0102_parallel_parse_create_failure.c \
+	processing/decoder/0103_parallel_early_st_compatibility.c \
 	processing/cms/0011_separate_intents.c \
 	processing/cms/0012_engine_independence.c \
 	processing/cms/0013_queued_transform_lifetime.c \
@@ -1621,7 +1624,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0023_decoder_high_color_dequantize_bypass.c \
 	processing/decoder/0024_decoder_parallel_skew_environment.c \
 	processing/decoder/0025_decoder_paint_create_failure_clean.c \
-	processing/decoder/0026_decoder_paint_overlap_fallback_clean.c \
+	processing/decoder/0026_parallel_converging_bands.c \
 	processing/decoder/0027_ormode_kundither_opaque.c \
 	processing/decoder/0028_ormode_repeated_bit_idempotent.c \
 	processing/decoder/0029_ormode_plane_order_independent.c \
@@ -4137,6 +4140,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0098_normal_columns_band_ranges.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0099_normal_columns_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0100_trusted_literal_run_edges.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0101_parallel_columns_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0102_parallel_parse_create_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0103_parallel_early_st_compatibility.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0011_separate_intents.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0012_engine_independence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/cms/test_runner-0013_queued_transform_lifetime.$(OBJEXT) \
@@ -5291,7 +5297,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0023_decoder_high_color_dequantize_bypass.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0024_decoder_parallel_skew_environment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0025_decoder_paint_create_failure_clean.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0026_parallel_converging_bands.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0027_ormode_kundither_opaque.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0028_ormode_repeated_bit_idempotent.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0029_ormode_plane_order_independent.$(OBJEXT) \
@@ -9341,7 +9347,7 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0023_decoder_high_color_dequantize_bypass.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0024_decoder_parallel_skew_environment.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0025_decoder_paint_create_failure_clean.Po \
-	processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0027_ormode_kundither_opaque.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0028_ormode_repeated_bit_idempotent.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0029_ormode_plane_order_independent.Po \
@@ -9424,6 +9430,9 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Po \
 	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
@@ -12724,6 +12733,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_NORMAL_COLUMNS_BAND_RANGES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_NORMAL_COLUMNS_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_TRUSTED_LITERAL_RUN_EDGES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0101_PARALLEL_COLUMNS_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_PARALLEL_PARSE_CREATE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0103_PARALLEL_EARLY_ST_COMPATIBILITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOURCE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HISTORY_REVISIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_PALETTE_KEEP_COST \
@@ -13593,7 +13605,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_DECODER_HIGH_COLOR_DEQUANTIZE_BYPASS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_DECODER_PARALLEL_SKEW_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_DECODER_PAINT_CREATE_FAILURE_CLEAN \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_DECODER_PAINT_OVERLAP_FALLBACK_CLEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_PARALLEL_CONVERGING_BANDS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LOOKUP_PACKING_REGISTRY_DIRECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_LOOKUP_PARALLEL_DENSE_CACHE \
@@ -15832,6 +15844,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0098_normal_columns_band_ranges.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0099_normal_columns_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0100_trusted_literal_run_edges.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0101_parallel_columns_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0102_parallel_parse_create_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0103_parallel_early_st_compatibility.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0011_separate_intents.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0012_engine_independence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/cms/0013_queued_transform_lifetime.c \
@@ -17020,7 +17035,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0023_decoder_high_color_dequantize_bypass.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0024_decoder_parallel_skew_environment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0025_decoder_paint_create_failure_clean.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0026_decoder_paint_overlap_fallback_clean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0026_parallel_converging_bands.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0027_ormode_kundither_opaque.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0028_ormode_repeated_bit_idempotent.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0029_ormode_plane_order_independent.c \
@@ -20463,6 +20478,15 @@ processing/decoder/test_runner-0099_normal_columns_allocation_failure.$(OBJEXT):
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0100_trusted_literal_run_edges.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0101_parallel_columns_allocation_failure.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0102_parallel_parse_create_failure.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0103_parallel_early_st_compatibility.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/cms/$(am__dirstamp):
@@ -24084,7 +24108,7 @@ processing/decoder/test_runner-0024_decoder_parallel_skew_environment.$(OBJEXT):
 processing/decoder/test_runner-0025_decoder_paint_create_failure_clean.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
-processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.$(OBJEXT):  \
+processing/decoder/test_runner-0026_parallel_converging_bands.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/decoder/test_runner-0027_ormode_kundither_opaque.$(OBJEXT):  \
@@ -32989,7 +33013,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0023_decoder_high_color_dequantize_bypass.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0024_decoder_parallel_skew_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0025_decoder_paint_create_failure_clean.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0027_ormode_kundither_opaque.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0028_ormode_repeated_bit_idempotent.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0029_ormode_plane_order_independent.Po@am__quote@ # am--include-marker
@@ -33072,6 +33096,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0098_normal_columns_band_ranges.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0099_normal_columns_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0100_trusted_literal_run_edges.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
@@ -39444,6 +39471,48 @@ processing/decoder/test_runner-0100_trusted_literal_run_edges.obj: processing/de
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0100_trusted_literal_run_edges.c' object='processing/decoder/test_runner-0100_trusted_literal_run_edges.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0100_trusted_literal_run_edges.obj `if test -f 'processing/decoder/0100_trusted_literal_run_edges.c'; then $(CYGPATH_W) 'processing/decoder/0100_trusted_literal_run_edges.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0100_trusted_literal_run_edges.c'; fi`
+
+processing/decoder/test_runner-0101_parallel_columns_allocation_failure.o: processing/decoder/0101_parallel_columns_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0101_parallel_columns_allocation_failure.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Tpo -c -o processing/decoder/test_runner-0101_parallel_columns_allocation_failure.o `test -f 'processing/decoder/0101_parallel_columns_allocation_failure.c' || echo '$(srcdir)/'`processing/decoder/0101_parallel_columns_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0101_parallel_columns_allocation_failure.c' object='processing/decoder/test_runner-0101_parallel_columns_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0101_parallel_columns_allocation_failure.o `test -f 'processing/decoder/0101_parallel_columns_allocation_failure.c' || echo '$(srcdir)/'`processing/decoder/0101_parallel_columns_allocation_failure.c
+
+processing/decoder/test_runner-0101_parallel_columns_allocation_failure.obj: processing/decoder/0101_parallel_columns_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0101_parallel_columns_allocation_failure.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Tpo -c -o processing/decoder/test_runner-0101_parallel_columns_allocation_failure.obj `if test -f 'processing/decoder/0101_parallel_columns_allocation_failure.c'; then $(CYGPATH_W) 'processing/decoder/0101_parallel_columns_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0101_parallel_columns_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0101_parallel_columns_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0101_parallel_columns_allocation_failure.c' object='processing/decoder/test_runner-0101_parallel_columns_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0101_parallel_columns_allocation_failure.obj `if test -f 'processing/decoder/0101_parallel_columns_allocation_failure.c'; then $(CYGPATH_W) 'processing/decoder/0101_parallel_columns_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0101_parallel_columns_allocation_failure.c'; fi`
+
+processing/decoder/test_runner-0102_parallel_parse_create_failure.o: processing/decoder/0102_parallel_parse_create_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0102_parallel_parse_create_failure.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Tpo -c -o processing/decoder/test_runner-0102_parallel_parse_create_failure.o `test -f 'processing/decoder/0102_parallel_parse_create_failure.c' || echo '$(srcdir)/'`processing/decoder/0102_parallel_parse_create_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0102_parallel_parse_create_failure.c' object='processing/decoder/test_runner-0102_parallel_parse_create_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0102_parallel_parse_create_failure.o `test -f 'processing/decoder/0102_parallel_parse_create_failure.c' || echo '$(srcdir)/'`processing/decoder/0102_parallel_parse_create_failure.c
+
+processing/decoder/test_runner-0102_parallel_parse_create_failure.obj: processing/decoder/0102_parallel_parse_create_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0102_parallel_parse_create_failure.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Tpo -c -o processing/decoder/test_runner-0102_parallel_parse_create_failure.obj `if test -f 'processing/decoder/0102_parallel_parse_create_failure.c'; then $(CYGPATH_W) 'processing/decoder/0102_parallel_parse_create_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0102_parallel_parse_create_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Tpo processing/decoder/$(DEPDIR)/test_runner-0102_parallel_parse_create_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0102_parallel_parse_create_failure.c' object='processing/decoder/test_runner-0102_parallel_parse_create_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0102_parallel_parse_create_failure.obj `if test -f 'processing/decoder/0102_parallel_parse_create_failure.c'; then $(CYGPATH_W) 'processing/decoder/0102_parallel_parse_create_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0102_parallel_parse_create_failure.c'; fi`
+
+processing/decoder/test_runner-0103_parallel_early_st_compatibility.o: processing/decoder/0103_parallel_early_st_compatibility.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0103_parallel_early_st_compatibility.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Tpo -c -o processing/decoder/test_runner-0103_parallel_early_st_compatibility.o `test -f 'processing/decoder/0103_parallel_early_st_compatibility.c' || echo '$(srcdir)/'`processing/decoder/0103_parallel_early_st_compatibility.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Tpo processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0103_parallel_early_st_compatibility.c' object='processing/decoder/test_runner-0103_parallel_early_st_compatibility.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0103_parallel_early_st_compatibility.o `test -f 'processing/decoder/0103_parallel_early_st_compatibility.c' || echo '$(srcdir)/'`processing/decoder/0103_parallel_early_st_compatibility.c
+
+processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj: processing/decoder/0103_parallel_early_st_compatibility.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Tpo -c -o processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj `if test -f 'processing/decoder/0103_parallel_early_st_compatibility.c'; then $(CYGPATH_W) 'processing/decoder/0103_parallel_early_st_compatibility.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0103_parallel_early_st_compatibility.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Tpo processing/decoder/$(DEPDIR)/test_runner-0103_parallel_early_st_compatibility.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0103_parallel_early_st_compatibility.c' object='processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0103_parallel_early_st_compatibility.obj `if test -f 'processing/decoder/0103_parallel_early_st_compatibility.c'; then $(CYGPATH_W) 'processing/decoder/0103_parallel_early_st_compatibility.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0103_parallel_early_st_compatibility.c'; fi`
 
 processing/cms/test_runner-0011_separate_intents.o: processing/cms/0011_separate_intents.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/cms/test_runner-0011_separate_intents.o -MD -MP -MF processing/cms/$(DEPDIR)/test_runner-0011_separate_intents.Tpo -c -o processing/cms/test_runner-0011_separate_intents.o `test -f 'processing/cms/0011_separate_intents.c' || echo '$(srcdir)/'`processing/cms/0011_separate_intents.c
@@ -55601,19 +55670,19 @@ processing/decoder/test_runner-0025_decoder_paint_create_failure_clean.obj: proc
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0025_decoder_paint_create_failure_clean.obj `if test -f 'processing/decoder/0025_decoder_paint_create_failure_clean.c'; then $(CYGPATH_W) 'processing/decoder/0025_decoder_paint_create_failure_clean.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0025_decoder_paint_create_failure_clean.c'; fi`
 
-processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.o: processing/decoder/0026_decoder_paint_overlap_fallback_clean.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Tpo -c -o processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.o `test -f 'processing/decoder/0026_decoder_paint_overlap_fallback_clean.c' || echo '$(srcdir)/'`processing/decoder/0026_decoder_paint_overlap_fallback_clean.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Tpo processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0026_decoder_paint_overlap_fallback_clean.c' object='processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.o' libtool=no @AMDEPBACKSLASH@
+processing/decoder/test_runner-0026_parallel_converging_bands.o: processing/decoder/0026_parallel_converging_bands.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0026_parallel_converging_bands.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Tpo -c -o processing/decoder/test_runner-0026_parallel_converging_bands.o `test -f 'processing/decoder/0026_parallel_converging_bands.c' || echo '$(srcdir)/'`processing/decoder/0026_parallel_converging_bands.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Tpo processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0026_parallel_converging_bands.c' object='processing/decoder/test_runner-0026_parallel_converging_bands.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.o `test -f 'processing/decoder/0026_decoder_paint_overlap_fallback_clean.c' || echo '$(srcdir)/'`processing/decoder/0026_decoder_paint_overlap_fallback_clean.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0026_parallel_converging_bands.o `test -f 'processing/decoder/0026_parallel_converging_bands.c' || echo '$(srcdir)/'`processing/decoder/0026_parallel_converging_bands.c
 
-processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.obj: processing/decoder/0026_decoder_paint_overlap_fallback_clean.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Tpo -c -o processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.obj `if test -f 'processing/decoder/0026_decoder_paint_overlap_fallback_clean.c'; then $(CYGPATH_W) 'processing/decoder/0026_decoder_paint_overlap_fallback_clean.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0026_decoder_paint_overlap_fallback_clean.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Tpo processing/decoder/$(DEPDIR)/test_runner-0026_decoder_paint_overlap_fallback_clean.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0026_decoder_paint_overlap_fallback_clean.c' object='processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.obj' libtool=no @AMDEPBACKSLASH@
+processing/decoder/test_runner-0026_parallel_converging_bands.obj: processing/decoder/0026_parallel_converging_bands.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0026_parallel_converging_bands.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Tpo -c -o processing/decoder/test_runner-0026_parallel_converging_bands.obj `if test -f 'processing/decoder/0026_parallel_converging_bands.c'; then $(CYGPATH_W) 'processing/decoder/0026_parallel_converging_bands.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0026_parallel_converging_bands.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Tpo processing/decoder/$(DEPDIR)/test_runner-0026_parallel_converging_bands.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0026_parallel_converging_bands.c' object='processing/decoder/test_runner-0026_parallel_converging_bands.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0026_decoder_paint_overlap_fallback_clean.obj `if test -f 'processing/decoder/0026_decoder_paint_overlap_fallback_clean.c'; then $(CYGPATH_W) 'processing/decoder/0026_decoder_paint_overlap_fallback_clean.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0026_decoder_paint_overlap_fallback_clean.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0026_parallel_converging_bands.obj `if test -f 'processing/decoder/0026_parallel_converging_bands.c'; then $(CYGPATH_W) 'processing/decoder/0026_parallel_converging_bands.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0026_parallel_converging_bands.c'; fi`
 
 processing/decoder/test_runner-0027_ormode_kundither_opaque.o: processing/decoder/0027_ormode_kundither_opaque.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0027_ormode_kundither_opaque.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0027_ormode_kundither_opaque.Tpo -c -o processing/decoder/test_runner-0027_ormode_kundither_opaque.o `test -f 'processing/decoder/0027_ormode_kundither_opaque.c' || echo '$(srcdir)/'`processing/decoder/0027_ormode_kundither_opaque.c

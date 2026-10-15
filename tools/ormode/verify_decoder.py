@@ -23,7 +23,11 @@ import pathlib
 import subprocess
 import sys
 
-from measure import ROOT
+# Verification only needs retained files and the digest helper. Keep it usable
+# without loading the plotting and image packages required by measurements.
+ROOT = pathlib.Path(
+    os.environ.get("OR_MODE_STUDY_DIR", pathlib.Path(__file__).parent)
+).resolve()
 
 
 def digest(path):

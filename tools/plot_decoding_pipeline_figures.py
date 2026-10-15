@@ -512,7 +512,7 @@ def parallel_figure() -> str:
     width = 1540
     height = 920
     body = [rect(0, 0, width, height, PANEL)]
-    body.append(text(45, 62, "Parallel paint is earned by a validation pass",
+    body.append(text(45, 62, "Parse locally, then gather disjoint bands",
                      38, 820, INK))
     body.append(text(45, 96,
                      "Arbitrary byte spans are useful only after their row ownership is known",
@@ -526,13 +526,13 @@ def parallel_figure() -> str:
                            ("split remaining input", "advance to band boundary"),
                            BLUE, PAPER, 25))
     body.append(line(710, 215, 790, 215, BLUE, 5.0, "arrow-blue"))
-    body.append(stage_card(795, 150, 300, 130, "Parallel scan",
-                           ("validate controls", "derive painted rows"),
+    body.append(stage_card(795, 150, 300, 130, "Parallel parse",
+                           ("one parse into local columns", "count bands and paint extents"),
                            MAGENTA, MAGENTA_LIGHT, 25))
     body.append(line(1095, 215, 1175, 215, MAGENTA, 5.0,
                      "arrow-magenta"))
-    body.append(stage_card(1180, 150, 295, 130, "Ownership check",
-                           ("ordered?", "row ranges disjoint?"),
+    body.append(stage_card(1180, 150, 295, 130, "Prefix sum",
+                           ("assign absolute bands", "validate raster bounds"),
                            MAGENTA, PAPER, 25))
 
     body.append(path("M 1328 280 V 385 H 1080",
@@ -542,8 +542,8 @@ def parallel_figure() -> str:
                            ("create every worker", "release as one group"),
                            TEAL, TEAL_LIGHT, 25))
     body.append(line(760, 450, 680, 450, TEAL, 5.0, "arrow-blue"))
-    body.append(stage_card(360, 385, 320, 130, "Parallel paint",
-                           ("one row range per worker", "no shared-row locks"),
+    body.append(stage_card(360, 385, 320, 130, "Parallel gather",
+                           ("local columns to pixels", "disjoint destination bands"),
                            TEAL, TEAL_LIGHT, 25))
 
     body.append(path("M 1328 280 V 640 H 1070",
@@ -551,24 +551,24 @@ def parallel_figure() -> str:
     body.append(text(1220, 620, "no / setup failure",
                      17, 760, GOLD, "middle"))
     body.append(stage_card(720, 640, 350, 140, "Clean serial fallback",
-                           ("join blocked workers", "discard partial setup",
+                           ("join blocked workers", "discard local columns",
                             "paint once serially"), GOLD, GOLD_LIGHT, 25))
 
-    body.append(path("M 360 450 H 190 V 825 H 720",
+    body.append(path("M 360 450 H 34 V 825 H 720",
                      TEAL, 4.0, "arrow-blue"))
     body.append(line(895, 780, 895, 825, GOLD, 4.0, "arrow-gold"))
     body.append(pill(720, 825, 350, "one decoded image", BLUE, BLUE_LIGHT))
     body.append(rect(65, 640, 520, 140, PAPER, GRID, 1.5, 16.0))
     body.append(text(90, 682, "Performance rule", 21, 760, INK))
     body.append(text_lines(90, 720,
-                           ("Scan and scheduling are overhead.",
+                           ("Parsing retains local band columns.",
                             "Small inputs can be faster on the serial path."),
                            17, 27, 470, MUTED))
     return svg_document(
         width,
         height,
         "Parallel decoder validation and fallback",
-        "After a serial anchor, byte spans are scanned in parallel. Only ordered disjoint row ranges cross an all-ready barrier into parallel paint; overlap or setup failure returns to clean serial paint.",
+        "After a serial anchor, disjoint bands are parsed into worker-local columns. Prefix sums and raster validation precede an all-ready barrier and parallel gather; setup or parse failure returns to clean serial paint.",
         "\n".join(body),
     )
 
@@ -594,7 +594,7 @@ def manifest() -> dict[str, object]:
             {"path": "decoder-output-policy.svg",
              "role": "stateful decoder and CLI output branches"},
             {"path": "decoder-parallel.svg",
-             "role": "parallel validation, barrier, and fallback"},
+             "role": "local columns, prefix sum, barrier, and fallback"},
         ],
         "color_roles": {
             "protocol_and_control": BLUE,

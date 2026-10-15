@@ -248,7 +248,9 @@ image_buffer_release_columns(image_buffer_t *image,
  * including the distinct byte and wide-index representations. RGBA lookup
  * words are assembled with memcpy so their byte order is host independent. */
 SIXEL_INTERNAL_API void
-image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end)
+image_buffer_finalize_normal_columns(image_buffer_t *image,
+                                      uint64_t const *source,
+                                      int first, int end)
 {
     uint64_t const *columns;
     uint32_t lut[256];
@@ -267,7 +269,7 @@ image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end)
     int color;
     int x;
 
-    if (image->normal_columns == NULL) {
+    if (source == NULL) {
         return;
     }
     width = (size_t)image->width;
@@ -282,7 +284,7 @@ image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end)
         }
     }
     for (band = first; band < end; ++band) {
-        columns = image->normal_columns + (size_t)band * width;
+        columns = source + (size_t)(band - first) * width;
         rows = image->height - band * 6;
         if (rows > 6) {
             rows = 6;
@@ -324,6 +326,15 @@ image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end)
                 }
             }
         }
+    }
+}
+
+SIXEL_INTERNAL_API void
+image_buffer_finalize_normal_bands(image_buffer_t *image, int first, int end)
+{
+    if (image->normal_columns != NULL) {
+        image_buffer_finalize_normal_columns(image, image->normal_columns +
+            (size_t)first * (size_t)image->width, first, end);
     }
 }
 
@@ -1493,26 +1504,30 @@ sixel_decode_raw_impl(
                     }
 #endif  /* SIXEL_ENABLE_THREADS */
 
-                    /* Stop trusted runs before either raster edge. A partial
-                     * final band and out-of-bounds bytes stay on the checked
-                     * path, which owns clipping and result-flag accounting. */
-                    run_width = image->width;
-                    if (trust_raster_size && context->attributed_ph > 0 &&
-                            run_width > context->attributed_ph) {
-                        run_width = context->attributed_ph;
-                    }
                     /* Keep OR runs outside normal-column setup checks. */
                     if (context->ormode) {
-                        if ((!trust_raster_size || context->attributed_pv <= 0 ||
-                                context->pos_y <= context->attributed_pv - 6) &&
+                        if ((!trust_raster_size ||
+                                context->attributed_pv <= 0 ||
+                                context->pos_y <=
+                                    context->attributed_pv - 6) &&
                                 context->repeat_count == 1 &&
                                 context->pos_x >= 0 &&
-                                context->pos_x < run_width &&
+                                context->pos_x < image->width &&
                                 context->pos_y >= 0 &&
                                 context->pos_y <= image->height - 6) {
-                            p = parser_context_store_ormode_run(
-                                context, image, p, p0 + len, run_width);
-                            continue;
+                            /* Only literal runs need a trusted width.
+                             * Repeated or scalar paint avoids this setup. */
+                            run_width = image->width;
+                            if (trust_raster_size &&
+                                    context->attributed_ph > 0 &&
+                                    run_width > context->attributed_ph) {
+                                run_width = context->attributed_ph;
+                            }
+                            if (context->pos_x < run_width) {
+                                p = parser_context_store_ormode_run(
+                                    context, image, p, p0 + len, run_width);
+                                continue;
+                            }
                         }
                     } else {
                         /* Sequence packets keep an existing canvas; their
@@ -1531,15 +1546,26 @@ sixel_decode_raw_impl(
                         if (image->normal_columns != NULL &&
                                 (!trust_raster_size ||
                                  context->attributed_pv <= 0 ||
-                                 context->pos_y <= context->attributed_pv - 6) &&
+                                 context->pos_y <=
+                                     context->attributed_pv - 6) &&
                                 context->repeat_count == 1 &&
                                 context->pos_x >= 0 &&
-                                context->pos_x < run_width &&
+                                context->pos_x < image->width &&
                                 context->pos_y >= 0 &&
                                 context->pos_y <= image->height - 6) {
-                            p = parser_context_store_normal_run(
-                                context, image, p, p0 + len, run_width);
-                            continue;
+                            /* Only literal runs need a trusted width.
+                             * Repeated or scalar paint avoids this setup. */
+                            run_width = image->width;
+                            if (trust_raster_size &&
+                                    context->attributed_ph > 0 &&
+                                    run_width > context->attributed_ph) {
+                                run_width = context->attributed_ph;
+                            }
+                            if (context->pos_x < run_width) {
+                                p = parser_context_store_normal_run(
+                                    context, image, p, p0 + len, run_width);
+                                continue;
+                            }
                         }
                     }
 

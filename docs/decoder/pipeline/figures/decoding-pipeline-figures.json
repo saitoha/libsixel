@@ -26,7 +26,7 @@
     },
     {
       "path": "decoder-parallel.svg",
-      "role": "parallel validation, barrier, and fallback"
+      "role": "local columns, prefix sum, barrier, and fallback"
     }
   ],
   "color_roles": {

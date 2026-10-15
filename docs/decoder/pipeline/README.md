@@ -67,10 +67,10 @@ The parser uses the ordinary pixel painter for these cases:
 | --- | --- |
 | A register of 256 or greater is selected | Materialize accumulated columns before subsequent paint, then keep the ordinary painter. A byte lane cannot represent a wide register, even when a later selection returns to the byte range. |
 | RGBA receives a palette definition after data characters | Materialize with the palette in effect before the definition and then keep paint-time RGBA stores. Indexed output can retain columns because its contract returns indexes and the final palette. |
-| A late raster declaration enables a parallel attempt after column accumulation | Materialize before handing the destination to the existing parallel painter. A declined attempt continues with the ordinary painter so earlier published pixels remain authoritative. |
+| A late raster declaration enables a parallel attempt after column accumulation | Materialize before handing the destination to the parallel gather. A declined attempt continues with the ordinary painter so earlier published pixels remain authoritative. |
 | Explicit sequence composition | Keep the ordinary painter from the start. Its untouched samples belong to the retained canvas from previous packets rather than a fresh single-image decode. |
 
-The first parallel attempt normally precedes serial paint. Successful parallel decoding therefore allocates no normal column storage; a clean decline can use band columns. OR mode retains its separate plane representation and final-palette semantics. Entering OR mode discards ordinary columns because the OR plane canvas replaces the complete returned image. Normal indexed columns are materialized before any undither or other reconstruction consumer reads the raster.
+The first parallel attempt normally precedes serial paint. Successful parallel decoding uses worker-local column storage instead of serial canvas columns; a clean decline can use band columns. OR mode retains its separate plane representation and final-palette semantics. Entering OR mode discards ordinary columns because the OR plane canvas replaces the complete returned image. Normal indexed columns are materialized before any undither or other reconstruction consumer reads the raster.
 
 Dimension, repeat and cursor overflow checks still guard the general paint path. The contiguous loop runs only within an allocated complete band; the general path owns partial bands, trusted-raster clipping and growth. A column allocation checks the rounded band-count product independently of the output allocation, and allocation failures release all owned buffers without publishing partial output.
 
@@ -140,19 +140,19 @@ The final writer accepts indexed, RGB, or RGBA input. A libpng-enabled build use
 
 ## Parallel decoder path
 
-An arbitrary byte offset cannot be mapped to an output row without parsing the controls before it. The parallel decoder therefore starts with a serial anchor, divides only the remaining bytes, validates and reconstructs local state for each span, derives row ownership, and paints concurrently only after proving those row ranges are ordered and disjoint.
+An arbitrary byte offset cannot be mapped to an output row without parsing the controls before it. The parallel decoder therefore starts with a serial anchor, divides only the remaining bytes, parses each owned band once into worker-local column words, derives absolute rows from band-count prefix sums, and gathers pixels concurrently after validating raster extents.
 
-![Parallel scan proves row ownership before an all-ready barrier permits paint, otherwise decoding falls back cleanly to serial paint](figures/decoder-parallel.svg)
+![Parallel local parsing and prefix sums precede an all-ready barrier and disjoint column gather](figures/decoder-parallel.svg)
 
-*Figure 6. Safety structure of the normal parallel direct path. Validation scan is real work, and serial fallback is a normal correctness path rather than an error result.*
+*Figure 6. Safety structure of the normal parallel direct path. Local parsing retains the paint result; gather does not interpret the stream again. Serial fallback remains a normal correctness path.*
 
-All paint workers wait behind one release barrier. If a worker cannot be created, workers already created are joined while still blocked so no partial paint reaches the shared image. Overlapping ownership, repeat overflow, or another condition that prevents safe independent paint also selects a clean serial fallback.
+All gather workers wait behind one release barrier. If a worker cannot be created, workers already created are joined while still blocked so no partial paint reaches the shared image. Converging byte boundaries leave empty spans rather than duplicate bands. Palette changes, wide registers, repeat overflow or allocation failure select a clean serial fallback before shared publication.
 
-Parallelism is therefore expected to preserve the same observable image as serial decoding. It is a performance policy, not a quality policy. The complete worker-budget semantics, row-range proof, fallback conditions, and reproducible measurements are in [Decoder Threading](../../threading/decoder.md).
+For well-formed supported streams, parallelism preserves the same observable image as serial decoding. Malformed trailing-data compatibility is checked at the same worker budget because legacy parallel parsing can already differ from serial parsing. It is a performance policy, not a quality policy. The complete worker-budget semantics, row-range proof, fallback conditions, and reproducible measurements are in [Decoder Threading](../../threading/decoder.md).
 
-![Measured eight-worker Full HD decoder timeline with parallel scan, parallel paint, and downstream PNG output](../../threading/measurements/decoder-thread8-timeline.png)
+![Measured eight-worker Full HD decoder timeline with parallel parse, column gather, and downstream PNG output](../../threading/measurements/decoder-thread8-timeline.png)
 
-*Figure 7. Checked-in `sixel2png` measurement from the threading study. Decoder scan and paint are followed by PNG serialization; the PNG interval is end-to-end CLI context, not decoder worker time. Consult the threading document for host, sample count, worker budget, and measurement method.*
+*Figure 7. Checked-in `sixel2png` measurement from the threading study. Decoder parse and gather are followed by PNG serialization; the PNG interval is end-to-end CLI context, not decoder worker time. Consult the threading document for host, sample count, worker budget, and measurement method.*
 
 ## Performance and memory model
 
@@ -160,7 +160,7 @@ Let `B` be the input byte count and `P = width × height` the returned pixel cou
 
 The indexed path uses approximately one byte per pixel plus palette and paint-state storage. Direct RGBA uses four output bytes per pixel. Ordinary serial band columns additionally use eight bytes per column per six-row band, or approximately 4/3 bytes per pixel before rounding; that storage is released at materialization. Packed conversion may require both an intermediate RGBA image and the requested destination buffer. Dequantization and resizing introduce their own source, destination, mask, or work buffers, so peak memory must be evaluated by execution path rather than by final file size.
 
-Parallel decoding adds a validation scan, span state, row-range analysis, worker setup, and synchronization before paint. Those fixed costs can make small inputs slower than the serial path. On sufficiently large inputs, disjoint paint ranges can amortize the scan and scheduling cost. The checked-in threading measurements deliberately separate decoder intervals from PNG serialization so a slow writer is not misreported as a decoder scaling failure.
+Parallel decoding adds worker-local columns, prefix resolution, worker setup and synchronization before gather. Those fixed costs can make small inputs slower than the serial path. On sufficiently large inputs, disjoint band parsing and gather can amortize scheduling costs. The checked-in threading measurements deliberately separate decoder intervals from PNG serialization so a slow writer is not misreported as a decoder scaling failure.
 
 `TRUST_RASTER_SIZE` permits the literal-run fast path when the full six-row band fits the declared height (or no positive height is declared). Runs stop at the smaller of the allocated width and a positive declared width; partial bands and bytes beyond that edge retain checked clipping and result-flag accounting.
 
@@ -190,7 +190,7 @@ PNG output does not require an external libpng because the repository includes a
 | Parser and painter | [`src/fromsixel.c`](../../../src/fromsixel.c) | DCS/body states, numeric controls, cursor movement, palette registers, canvas growth, masks, raster-policy flags, raw indexes, and direct RGBA |
 | Packed conversion | [`src/sixel_decode_pixels.c`](../../../src/sixel_decode_pixels.c) | Preferred layout validation, alpha/background handling, channel packing, stride, and result publication |
 | Stateful policy | [`src/decoder.c`](../../../src/decoder.c) | Input acquisition, decoder options, reconstruction, palette-redefinition bypass, resize, destination selection, and writer invocation |
-| Parallel execution | [`src/decoder-parallel.c`](../../../src/decoder-parallel.c) | Span scan, local state, row ownership, barrier, direct paint, fused reconstruction paths, and clean fallback |
+| Parallel execution | [`src/decoder-parallel.c`](../../../src/decoder-parallel.c) | Local column parsing, prefix resolution, barrier, parallel gather, halo reconstruction, and clean fallback |
 | PNG boundary | [`src/writer.c`](../../../src/writer.c) | Indexed, RGB, and RGBA PNG serialization through libpng or builtin code |
 | CLI frontend | [`converters/sixel2png.c`](../../../converters/sixel2png.c) | Process arguments, environment and diagnostic policy, stateful decoder setup, exit status, and user-facing help |
 
@@ -254,10 +254,10 @@ Each row is one independently reportable observation. Every owning test links ba
 | DP-18 | Reconstructed decoder output reaches the PNG writer as direct RGB8 data. | [tests/writer/png/0002_rgb8_ihdr.t](../../../tests/writer/png/0002_rgb8_ihdr.t) |
 | DP-19 | Direct decoder output reaches the PNG writer as RGBA8 data. | [tests/writer/png/0003_rgba8_ihdr.t](../../../tests/writer/png/0003_rgba8_ihdr.t) |
 | DP-20 | Parallel setup failure leaves the image clean for serial fallback. | [tests/processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.t](../../../tests/processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.t) |
-| DP-21 | Partial paint-worker creation failure joins blocked workers and preserves clean fallback state. | [tests/processing/decoder/0025_decoder_paint_create_failure_clean.t](../../../tests/processing/decoder/0025_decoder_paint_create_failure_clean.t) |
-| DP-22 | Overlapping paint-row ownership selects a clean serial fallback. | [tests/processing/decoder/0026_decoder_paint_overlap_fallback_clean.t](../../../tests/processing/decoder/0026_decoder_paint_overlap_fallback_clean.t) |
-| DP-23 | Every direct paint worker reaches the release barrier before paint begins. | [tests/cli/sixel2png/0012_parallel_paint_barrier.t](../../../tests/cli/sixel2png/0012_parallel_paint_barrier.t) |
-| DP-24 | Parallel decoder scan and paint timeline spans have paired start and finish events. | [tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t](../../../tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t) |
+| DP-21 | Partial gather-worker creation failure joins blocked workers and preserves clean fallback state. | [tests/processing/decoder/0025_decoder_paint_create_failure_clean.t](../../../tests/processing/decoder/0025_decoder_paint_create_failure_clean.t) |
+| DP-22 | Converging byte-span boundaries produce disjoint band publication with exact sparse pixels. | [tests/processing/decoder/0026_parallel_converging_bands.t](../../../tests/processing/decoder/0026_parallel_converging_bands.t) |
+| DP-23 | Every gather worker reaches the release barrier before publication begins. | [tests/cli/sixel2png/0012_parallel_gather_barrier.t](../../../tests/cli/sixel2png/0012_parallel_gather_barrier.t) |
+| DP-24 | Parallel decoder parse and gather timeline spans have paired start and finish events. | [tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t](../../../tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t) |
 | DP-25 | A repeat that crosses a parallel span boundary falls back without retaining partial direct paint. | [tests/processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.t](../../../tests/processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.t) |
 | DP-26 | Default palette entries are initialized identically for direct, packed full/body, and decoder-object output. | [tests/processing/decoder/0042_default_palette_direct.t](../../../tests/processing/decoder/0042_default_palette_direct.t) |
 | DP-27 | RGB/HLS definitions are mapped from source values while selection reuses the stored color. | [tests/processing/decoder/0043_palette_map_definitions.t](../../../tests/processing/decoder/0043_palette_map_definitions.t) |

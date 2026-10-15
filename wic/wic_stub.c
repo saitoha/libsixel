@@ -40,7 +40,7 @@
 
 /* Keep the standalone codec's decoder-only failure hook self-contained. */
 char const *
-sixel_test_environment_decoder_paint_thread_create_failure(void)
+sixel_test_environment_decoder_parallel_failure(void)
 {
     return sixel_compat_getenv(
         "_SIXEL_TEST_DECODER_PAINT_THREAD_CREATE_FAILURE");

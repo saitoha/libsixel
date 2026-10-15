@@ -2,8 +2,8 @@
  * SPDX-License-Identifier: MIT
  *
  * A tiny trusted canvas can have a large encoded paint extent. Verify that
- * parallel validation and publication handle it without signed overflow.
- * Sanitizer builds also check the diagnostic visit counter during SCAN.
+ * parallel extent accounting and publication avoid signed overflow without
+ * allocating storage for the clipped trailing bands.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -45,7 +45,7 @@ test_decoder_0093(int argc, char **argv)
     if (image == NULL || payload == NULL) {
         goto end;
     }
-    /* Two workers each visit 6000 bands of 65535 fully set columns. The
+    /* Two workers each parse 6000 bands of 65535 fully set columns. The
      * retained canvas is only one row, so allocation stays small. */
     for (band = 0; band < 12000; ++band) {
         memcpy(payload + band * 8, "!65535~-", 8u);
