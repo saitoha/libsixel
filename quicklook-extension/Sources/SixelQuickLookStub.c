@@ -18,7 +18,7 @@ char const *
 sixel_test_environment_decoder_parallel_failure(void)
 {
     return sixel_compat_getenv(
-        "_SIXEL_TEST_DECODER_PAINT_THREAD_CREATE_FAILURE");
+        "_SIXEL_TEST_DECODER_PARALLEL_FAILURE");
 }
 
 /* emacs Local Variables:      */
