@@ -19,6 +19,10 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 - [SIXEL patents and royalties](sixel-format/patents-and-royalties.md) summarizes the public evidence that implementing SIXEL requires no license or royalty: disclosure dates, patent terms, the path of DEC's rights, and four decades of open implementations.
 - [SIXEL codec comparison](sixel-format/comparison/README.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, and repeated generations with JPEG, GIF, PNG, and WebP.
 
+### SIXEL codec tutorial
+
+- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) builds a standalone encoder and decoder five times: a complete run-length codec of about thirty lines per direction, kmiya's node scheduling, six pixels in one 64-bit word, SIMD, and threads, with byte-identical output checks and measurements at every step.
+
 ## Using libsixel
 
 Supported platforms and command-line behavior that needs no background in color or encoding. Options that control encoding, such as quantization, dithering, lookup, and color spaces, are documented with their pipeline stage under Implementation, after the concepts they rely on.

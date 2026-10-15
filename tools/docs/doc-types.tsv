@@ -144,6 +144,12 @@ docs/threading/decoder.md	explanation	both	parallel decode rationale + path refe
 docs/threading/encoder.md	explanation	both	encoder scheduling model + budget reference and measured scaling
 docs/threading/measurement.md	how-to	contributor	measurement reproduction + artifact reference and normative band-seam protocol
 docs/threading/overview.md	explanation	both	threading mental model + budget terminology and implementation ownership
+docs/tutorial/sixel-codec/README.md	tutorial	both	codec-implementation learning path + measured results and links to libsixel internals
+docs/tutorial/sixel-codec/step1-run-length.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/step2-nodes.md	tutorial	both	codec-implementation lesson + measurements and libsixel encoder lineage
+docs/tutorial/sixel-codec/step3-column-words.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
+docs/tutorial/sixel-codec/step4-simd.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/step5-threads.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
 docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger
 docs/encoder/palette-application/clamp-policy.md	reference	both	feedback bounds and precision contracts
 docs/encoder/output/gamut-mapping.md	reference	both	output policy and numeric contract
