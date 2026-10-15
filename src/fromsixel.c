@@ -2039,11 +2039,16 @@ sequence_raster_parameters:
             case '7':
             case '8':
             case '9':
-                status = safe_addition_for_params(context, p);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                p++;
+                /* Consume the whole number here instead of one digit per
+                 * pass through the state switch; each digit is still
+                 * checked for overflow exactly as before. */
+                do {
+                    status = safe_addition_for_params(context, p);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    p++;
+                } while (p < p0 + len && *p >= '0' && *p <= '9');
                 break;
             default:
                 context->repeat_count = context->param;
@@ -2083,11 +2088,16 @@ sequence_raster_parameters:
             case '7':
             case '8':
             case '9':
-                status = safe_addition_for_params(context, p);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                p++;
+                /* Consume the whole number here instead of one digit per
+                 * pass through the state switch; each digit is still
+                 * checked for overflow exactly as before. */
+                do {
+                    status = safe_addition_for_params(context, p);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                    p++;
+                } while (p < p0 + len && *p >= '0' && *p <= '9');
                 break;
             case ';':
                 if (context->nparams < DECSIXEL_PARAMS_MAX) {
