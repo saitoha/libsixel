@@ -270,10 +270,22 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
     int shift;
     int color;
     int x;
+    int x0;
+#if SIXEL_DECODER_NEON
+    uint8x16_t indices;
+    uint8x16_t painted;
+    uint32_t block[16];
+    unsigned char lanes[16];
+    int i;
+    int simd;
+#endif
 
     if (source == NULL) {
         return;
     }
+#if SIXEL_DECODER_NEON
+    simd = sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON;
+#endif
     width = (size_t)image->width;
     if (image->depth == 4) {
         for (x = 0; x < 256; ++x) {
@@ -294,9 +306,39 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
         for (r = 0; r < rows; ++r) {
             row = ((size_t)band * 6u + (size_t)r) * width;
             shift = r * 8;
+            x0 = 0;
+#if SIXEL_DECODER_NEON
+            if (simd && image->depth != 2) {
+                bytes = image->depth == 1 ?
+                    image->pixels.in_bytes + row :
+                    image->pixels.in_bytes + row * 4u;
+                coverage = image->paint_mask == NULL ? NULL :
+                    image->paint_mask + row;
+                for (; x0 + 16 <= image->width; x0 += 16) {
+                    indices = sixel_simd_columns_row16(columns + x0, r,
+                                                       &painted);
+                    if (image->depth == 1) {
+                        vst1q_u8(bytes + x0,
+                                 vbslq_u8(painted, indices,
+                                          vld1q_u8(bytes + x0)));
+                    } else {
+                        vst1q_u8(lanes, indices);
+                        for (i = 0; i < 16; ++i) {
+                            block[i] = lut[lanes[i]];
+                        }
+                        sixel_simd_blend_rgba16(bytes + (size_t)x0 * 4u,
+                                                block, painted);
+                    }
+                    if (coverage != NULL) {
+                        vst1q_u8(coverage + x0,
+                                 vorrq_u8(vld1q_u8(coverage + x0), painted));
+                    }
+                }
+            }
+#endif
             if (image->depth == 1) {
                 bytes = image->pixels.in_bytes + row;
-                for (x = 0; x < image->width; ++x) {
+                for (x = x0; x < image->width; ++x) {
                     mask = 0u - (uint32_t)((columns[x] >> (48 + r)) & 1u);
                     value = (unsigned char)(columns[x] >> shift);
                     bytes[x] = (unsigned char)((bytes[x] & ~mask) |
@@ -304,7 +346,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
                 }
             } else if (image->depth == 2) {
                 shorts = image->pixels.in_shorts + row;
-                for (x = 0; x < image->width; ++x) {
+                for (x = x0; x < image->width; ++x) {
                     mask = 0u - (uint32_t)((columns[x] >> (48 + r)) & 1u);
                     value = (unsigned char)(columns[x] >> shift);
                     shorts[x] = (unsigned short)((shorts[x] & ~mask) |
@@ -312,7 +354,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
                 }
             } else {
                 bytes = image->pixels.in_bytes + row * 4u;
-                for (x = 0; x < image->width; ++x) {
+                for (x = x0; x < image->width; ++x) {
                     mask = 0u - (uint32_t)((columns[x] >> (48 + r)) & 1u);
                     memcpy(&value, bytes + (size_t)x * 4u, sizeof(value));
                     value = (value & ~mask) |
@@ -322,7 +364,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
             }
             if (image->paint_mask != NULL) {
                 coverage = image->paint_mask + row;
-                for (x = 0; x < image->width; ++x) {
+                for (x = x0; x < image->width; ++x) {
                     coverage[x] |= (unsigned char)(0u -
                         (unsigned int)((columns[x] >> (48 + r)) & 1u));
                 }

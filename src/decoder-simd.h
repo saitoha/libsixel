@@ -146,6 +146,82 @@ sixel_simd_gather16(uint64_t const *words, int row)
     return vpaddq_u8(v[0], v[1]);
 }
 
+/* Byte offsets of eight consecutive words inside one 64-byte table; the
+ * other half of each pair of lookups uses 0x80, which stays out of range
+ * (>= 64, so vqtbl4q yields zero) after a lane offset of at most 6 is added.
+ * 0xff would wrap to a valid offset. */
+static uint8_t const sixel_simd_word_offsets[2][16] = {
+    { 0, 8, 16, 24, 32, 40, 48, 56,
+      0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 },
+    { 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
+      0, 8, 16, 24, 32, 40, 48, 56 }
+};
+
+/* Pick byte `lane` of sixteen consecutive 64-bit words. */
+static inline uint8x16_t
+sixel_simd_word_bytes16(uint8x16x4_t lo, uint8x16x4_t hi, int lane)
+{
+    uint8x16_t shift;
+
+    shift = vdupq_n_u8((uint8_t)lane);
+    return vorrq_u8(
+        vqtbl4q_u8(lo, vaddq_u8(vld1q_u8(sixel_simd_word_offsets[0]), shift)),
+        vqtbl4q_u8(hi, vaddq_u8(vld1q_u8(sixel_simd_word_offsets[1]), shift)));
+}
+
+/*
+ * Ordinary mode: return the row-r palette indices of sixteen column words
+ * and a byte mask of the columns whose row r was painted (coverage byte
+ * six, bit r). Lanes looked up out of range stay zero and in-range
+ * offsets never exceed 63, so the two lookups never overlap.
+ */
+static inline uint8x16_t
+sixel_simd_columns_row16(uint64_t const *words, int row, uint8x16_t *painted)
+{
+    uint8x16x4_t lo;
+    uint8x16x4_t hi;
+    uint8_t const *bytes;
+
+    bytes = (uint8_t const *)words;
+    lo = vld1q_u8_x4(bytes);
+    hi = vld1q_u8_x4(bytes + 64);
+    *painted = vtstq_u8(sixel_simd_word_bytes16(lo, hi, 6),
+                        vdupq_n_u8((uint8_t)(1u << row)));
+    return sixel_simd_word_bytes16(lo, hi, row);
+}
+
+/* Blend sixteen RGBA pixels: painted columns take the looked-up colors,
+ * the others keep the initialized destination. */
+static inline void
+sixel_simd_blend_rgba16(unsigned char *dst, uint32_t const *colors,
+                        uint8x16_t painted)
+{
+    uint8x16_t half[2];
+    uint8x16_t quad[4];
+    int k;
+
+    if (vminvq_u8(painted) == 255) {
+        vst1q_u8_x4(dst, vld1q_u8_x4((uint8_t const *)colors));
+        return;
+    }
+    half[0] = vzip1q_u8(painted, painted);
+    half[1] = vzip2q_u8(painted, painted);
+    quad[0] = vreinterpretq_u8_u16(vzip1q_u16(vreinterpretq_u16_u8(half[0]),
+                                              vreinterpretq_u16_u8(half[0])));
+    quad[1] = vreinterpretq_u8_u16(vzip2q_u16(vreinterpretq_u16_u8(half[0]),
+                                              vreinterpretq_u16_u8(half[0])));
+    quad[2] = vreinterpretq_u8_u16(vzip1q_u16(vreinterpretq_u16_u8(half[1]),
+                                              vreinterpretq_u16_u8(half[1])));
+    quad[3] = vreinterpretq_u8_u16(vzip2q_u16(vreinterpretq_u16_u8(half[1]),
+                                              vreinterpretq_u16_u8(half[1])));
+    for (k = 0; k < 4; ++k) {
+        vst1q_u8(dst + k * 16,
+                 vbslq_u8(quad[k],
+                          vld1q_u8((uint8_t const *)(colors + k * 4)),
+                          vld1q_u8(dst + k * 16)));
+    }
+}
+
 #endif /* SIXEL_DECODER_NEON */
 
 #endif /* SIXEL_DECODER_SIMD_H */
