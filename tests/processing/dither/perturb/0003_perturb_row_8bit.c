@@ -24,6 +24,15 @@ perturb_row_8bit_map(sixel_lookup_policy_interface_t const *self,
     return 0;
 }
 
+static int
+perturb_row_8bit_map_hint(sixel_lookup_policy_interface_t const *self,
+                          unsigned char const *pixel,
+                          int hint)
+{
+    (void)hint;
+    return perturb_row_8bit_map(self, pixel);
+}
+
 int
 test_perturb_0003_row_8bit(int argc, char **argv)
 {
@@ -55,6 +64,7 @@ test_perturb_0003_row_8bit(int argc, char **argv)
     memset(&request, 0, sizeof(request));
     memset(&vtbl, 0, sizeof(vtbl));
     vtbl.map_pixel = perturb_row_8bit_map;
+    vtbl.map_pixel_hint = perturb_row_8bit_map_hint;
     lookup.vtbl = &vtbl;
     if (SIXEL_FAILED(sixel_allocator_new(&allocator,
                                         NULL, NULL, NULL, NULL))

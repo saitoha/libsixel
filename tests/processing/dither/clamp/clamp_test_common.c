@@ -123,8 +123,17 @@ clamp_lookup_pixel(sixel_lookup_policy_interface_t const *base,
     return 0;
 }
 
+static int
+clamp_lookup_pixel_hint(sixel_lookup_policy_interface_t const *self,
+                        unsigned char const *pixel,
+                        int hint)
+{
+    (void)hint;
+    return clamp_lookup_pixel(self, pixel);
+}
+
 static sixel_lookup_policy_vtbl_t const clamp_lookup_vtbl = {
-    NULL, NULL, NULL, clamp_lookup_pixel
+    NULL, NULL, NULL, clamp_lookup_pixel, clamp_lookup_pixel_hint
 };
 
 int

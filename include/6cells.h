@@ -828,6 +828,17 @@ struct sixel_palette_interface {
  *   override lets direct component users retain registry-backed environment
  *   defaults without teaching backends about environment variable names.
  * - Implementations may choose to ignore reuse hints.
+ *
+ * Mapping:
+ * - map_pixel_hint(pixel, hint) returns exactly what map_pixel(pixel)
+ *   returns.  hint is a caller-owned guess, typically the index mapped for
+ *   the previous pixel of the same scan; a negative hint means none.  It may
+ *   only change the work done, never the result, so an implementation
+ *   without a use for it forwards to map_pixel().
+ * - Both methods are const.  A prepared policy may memoize results only in
+ *   caches that are safe for concurrent callers and cannot change a result;
+ *   it keeps no scan history.  Continuity across pixels belongs to the
+ *   caller, which passes it back as hint.
  */
 typedef struct sixel_lookup_policy_interface sixel_lookup_policy_interface_t;
 
@@ -903,6 +914,9 @@ typedef int sixel_lookup_policy_result_t;
  *     SIXELSTATUS prepare(in lookup_policy_prepare_request const *request);
  *     [const] lookup_policy_result map_pixel(
  *         in unsigned char const *pixel);
+ *     [const] lookup_policy_result map_pixel_hint(
+ *         in unsigned char const *pixel,
+ *         in int hint);
  * };
  */
 
@@ -915,6 +929,10 @@ typedef struct sixel_lookup_policy_vtbl {
     sixel_lookup_policy_result_t (*map_pixel)(
         sixel_lookup_policy_interface_t const *self,
         unsigned char const *pixel);
+    sixel_lookup_policy_result_t (*map_pixel_hint)(
+        sixel_lookup_policy_interface_t const *self,
+        unsigned char const *pixel,
+        int hint);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy_interface {

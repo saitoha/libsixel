@@ -1965,6 +1965,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0012_LOOKUP_PACKING_REGISTRY_DIRECT \
     -DBUILD_TEST_0013_LOOKUP_PARALLEL_DENSE_CACHE \
+    -DBUILD_TEST_0014_LOOKUP_HINT_CONTRACT \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -5405,6 +5406,7 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0001_lookup_policy.c \
     processing/lookup/0012_lookup_packing_registry_direct.c \
     processing/lookup/0013_lookup_parallel_dense_cache.c \
+    processing/lookup/0014_lookup_hint_contract.c \
     processing/dither/0001_dither_policy.c \
     processing/dither/perturb/0018_perturb_keep_lookup.c \
     processing/dither/perturb/0017_perturb_keep_early.c \

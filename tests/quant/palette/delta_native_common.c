@@ -524,8 +524,17 @@ dn_observe(sixel_lookup_policy_interface_t const *base,
     return observer->candidate;
 }
 
+static int
+dn_observe_hint(sixel_lookup_policy_interface_t const *self,
+                unsigned char const *pixel,
+                int hint)
+{
+    (void)hint;
+    return dn_observe(self, pixel);
+}
+
 static sixel_lookup_policy_vtbl_t const dn_observer_vtbl = {
-    NULL, NULL, NULL, dn_observe
+    NULL, NULL, NULL, dn_observe, dn_observe_hint
 };
 
 int

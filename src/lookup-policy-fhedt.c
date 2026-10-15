@@ -1023,12 +1023,35 @@ sixel_lookup_policy_fhedt_map_pixel_float32(
         pixel);
 }
 
+/* This policy has no use for a scan hint; the result is map_pixel()'s. */
+static int
+sixel_lookup_policy_fhedt_map_pixel_hint_8bit(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel,
+    int hint)
+{
+    (void)hint;
+    return sixel_lookup_policy_fhedt_map_pixel_8bit(policy, pixel);
+}
+
+/* This policy has no use for a scan hint; the result is map_pixel()'s. */
+static int
+sixel_lookup_policy_fhedt_map_pixel_hint_float32(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel,
+    int hint)
+{
+    (void)hint;
+    return sixel_lookup_policy_fhedt_map_pixel_float32(policy, pixel);
+}
+
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_fhedt_8bit_vtbl = {
     sixel_lookup_policy_fhedt_ref,
     sixel_lookup_policy_fhedt_unref,
     sixel_lookup_policy_fhedt_prepare_8bit,
     sixel_lookup_policy_fhedt_map_pixel_8bit,
+    sixel_lookup_policy_fhedt_map_pixel_hint_8bit,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -1037,6 +1060,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_fhedt_unref,
     sixel_lookup_policy_fhedt_prepare_float32,
     sixel_lookup_policy_fhedt_map_pixel_float32,
+    sixel_lookup_policy_fhedt_map_pixel_hint_float32,
 };
 
 SIXELSTATUS

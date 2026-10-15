@@ -104,8 +104,17 @@ positional_observe(sixel_lookup_policy_interface_t const *base,
     return 1;
 }
 
+static int
+positional_observe_hint(sixel_lookup_policy_interface_t const *self,
+                        unsigned char const *pixel,
+                        int hint)
+{
+    (void)hint;
+    return positional_observe(self, pixel);
+}
+
 static sixel_lookup_policy_vtbl_t const positional_observer_vtbl = {
-    NULL, NULL, NULL, positional_observe
+    NULL, NULL, NULL, positional_observe, positional_observe_hint
 };
 
 static void

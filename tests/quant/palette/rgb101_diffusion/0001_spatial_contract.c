@@ -179,10 +179,19 @@ spatial_lookup_pixel(sixel_lookup_policy_interface_t const *base,
 }
 
 static int
+spatial_lookup_pixel_hint(sixel_lookup_policy_interface_t const *self,
+                          unsigned char const *pixel,
+                          int hint)
+{
+    (void)hint;
+    return spatial_lookup_pixel(self, pixel);
+}
+
+static int
 spatial_residual(spatial_method_t const *method, int p3, int space)
 {
     static sixel_lookup_policy_vtbl_t const vtbl = {
-        NULL, NULL, NULL, spatial_lookup_pixel
+        NULL, NULL, NULL, spatial_lookup_pixel, spatial_lookup_pixel_hint
     };
     static int const colors[] = {
         SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,

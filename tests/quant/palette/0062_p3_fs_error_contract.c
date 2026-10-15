@@ -28,6 +28,15 @@ p3_fs_map(sixel_lookup_policy_interface_t const *self,
     return p3_fs_real_lookup->vtbl->map_pixel(p3_fs_real_lookup, pixel);
 }
 
+static int
+p3_fs_map_hint(sixel_lookup_policy_interface_t const *self,
+               unsigned char const *pixel,
+               int hint)
+{
+    (void)hint;
+    return p3_fs_map(self, pixel);
+}
+
 int
 test_palette_0062_p3_fs_error(int argc, char **argv)
 {
@@ -121,6 +130,7 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
         goto end;
     }
     capture_vtbl.map_pixel = p3_fs_map;
+    capture_vtbl.map_pixel_hint = p3_fs_map_hint;
     capture.vtbl = &capture_vtbl;
     dither->use_rgb101_palette = !hard;
     /* Open feedback protects the historical extended-error contract.

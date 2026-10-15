@@ -308,12 +308,35 @@ sixel_lookup_policy_none_map_pixel_float32(
         object->reqcolor);
 }
 
+/* This policy has no use for a scan hint; the result is map_pixel()'s. */
+static int
+sixel_lookup_policy_none_map_pixel_hint_8bit(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel,
+    int hint)
+{
+    (void)hint;
+    return sixel_lookup_policy_none_map_pixel_8bit(policy, pixel);
+}
+
+/* This policy has no use for a scan hint; the result is map_pixel()'s. */
+static int
+sixel_lookup_policy_none_map_pixel_hint_float32(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel,
+    int hint)
+{
+    (void)hint;
+    return sixel_lookup_policy_none_map_pixel_float32(policy, pixel);
+}
+
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_none_8bit_vtbl = {
     sixel_lookup_policy_none_ref,
     sixel_lookup_policy_none_unref,
     sixel_lookup_policy_none_prepare,
     sixel_lookup_policy_none_map_pixel_8bit,
+    sixel_lookup_policy_none_map_pixel_hint_8bit,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -322,6 +345,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_none_unref,
     sixel_lookup_policy_none_prepare,
     sixel_lookup_policy_none_map_pixel_float32,
+    sixel_lookup_policy_none_map_pixel_hint_float32,
 };
 
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
