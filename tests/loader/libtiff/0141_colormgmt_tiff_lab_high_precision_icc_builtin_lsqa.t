@@ -38,7 +38,7 @@ test -f "${reference_six}" || {
 }
 
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -r nearest -w 176 -h 176 -Llibtiff:cms_engine=builtin! "${input_tiff}" \
+    "${IMG2SIXEL_PATH}" -~ certlut -r nearest -w 176 -h 176 -Llibtiff:cms_engine=builtin! "${input_tiff}" \
     2>&1 >"${output_six}") || {
     echo "not ok" 1 - "libtiff builtin cms decode failed: lab_high_precision_icc.tiff"
     exit 0

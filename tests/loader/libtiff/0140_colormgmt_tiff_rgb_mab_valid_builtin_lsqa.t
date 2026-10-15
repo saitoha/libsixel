@@ -37,7 +37,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 176 -h 176 -Llibtiff:cms_engine=builtin! "${input_tiff}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -~ certlut -r nearest -w 176 -h 176 -Llibtiff:cms_engine=builtin! "${input_tiff}" >"${output_six}" || {
     echo "not ok" 1 - "libtiff builtin cms decode failed: rgb_mab_valid.tiff"
     exit 0
 }

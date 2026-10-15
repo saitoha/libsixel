@@ -37,7 +37,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -~ certlut -r nearest -w 192 -h 192 -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_six}" || {
     echo "not ok" 1 - "libtiff decode failed with cms=0: grayscale/img_tiff_grayscale_icc1_wp0_pc0_trc0"
     exit 0
 }

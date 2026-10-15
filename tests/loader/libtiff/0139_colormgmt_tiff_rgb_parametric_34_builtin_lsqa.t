@@ -39,7 +39,7 @@ test -f "${reference_png}" || {
 }
 
 trace=$(SIXEL_TRACE_TOPIC=loader,loader_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibtiff:cms_engine=builtin! "${input_tiff}" \
+    "${IMG2SIXEL_PATH}" -~ certlut -r nearest -w 192 -h 192 -Llibtiff:cms_engine=builtin! "${input_tiff}" \
     2>&1 >"${output_six}") || {
     echo "not ok" 1 - "libtiff builtin cms decode failed: rgb_parametric_34"
     exit 0
