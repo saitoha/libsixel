@@ -80,7 +80,10 @@ def main():
             "after_library_sha256": digest(library),
             "after_decode_calls": calls,
             "comparisons": comparisons,
-            "decoder_source_sha256": {name: digest(source / name) for name in sources},
+            "decoder_source_sha256": {
+                name: digest(source / name) for name in sources
+                if (source / name).is_file()
+            },
         }
     )
     result.pop("after_manifest_sha256", None)
