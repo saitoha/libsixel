@@ -115,6 +115,7 @@
 #include "palette-kmedoids.h"
 #include "palette-plan.h"
 #include "sample-stream.h"
+#include "status.h"
 #include "palette-common-cover.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -585,7 +586,8 @@ typedef enum sixel_palette_job_failure_stage {
     SIXEL_PALETTE_JOB_FAILURE_SAMPLE,
     SIXEL_PALETTE_JOB_FAILURE_THREAD_CREATE,
     SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT,
-    SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD
+    SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD,
+    SIXEL_PALETTE_JOB_FAILURE_LOOKUP
 } sixel_palette_job_failure_stage_t;
 
 typedef struct sixel_palette_async_job {
@@ -599,6 +601,7 @@ typedef struct sixel_palette_async_job {
     sixel_palette_frame_state_t *palette_state;
     sixel_dither_t *dither;
     SIXELSTATUS status;
+    sixel_status_message_t message;
     int target_pixelformat;
     int threads;
     int frame_no;
@@ -625,6 +628,8 @@ sixel_palette_job_failure_stage_name(
         return "worker-convert";
     case SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD:
         return "worker-build";
+    case SIXEL_PALETTE_JOB_FAILURE_LOOKUP:
+        return "lookup";
     case SIXEL_PALETTE_JOB_FAILURE_NONE:
     default:
         return "none";
@@ -1759,7 +1764,8 @@ static SIXELSTATUS sixel_encoder_apply_palette_filter(
     sixel_sample_stream_t *samples,
     sixel_palette_frame_state_t *palette_state,
     int allow_cache,
-    sixel_dither_t **dither_out);
+    sixel_dither_t **dither_out,
+    sixel_palette_job_failure_stage_t *failure_stage);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
 static SIXELSTATUS sixel_encoder_palette_job_launch(
     sixel_palette_async_job_t *job,
@@ -5306,6 +5312,9 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
             context->dither = context->async_dither;
         } else {
             context->async_dither = NULL;
+            /* Cleanup also joins jobs after a pre-plan failure. Restore only
+             * here, where the worker failure is the result being collected. */
+            sixel_status_restore_message(&context->palette_job.message);
             fallback_stage = context->palette_job.failure_stage;
             fallback_cause = status;
         }
@@ -5328,6 +5337,14 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
             fallback_stage = context->palette_job.failure_stage;
             fallback_cause = status;
         }
+    }
+
+    /* A completed palette cannot repair lookup configuration/allocation
+     * failures. Preserve the worker diagnostic before disposing its state. */
+    if (fallback_stage == SIXEL_PALETTE_JOB_FAILURE_LOOKUP) {
+        sixel_encoder_trace_palette_fallback(fallback_stage, "propagate",
+                                             fallback_cause, fallback_cause);
+        return fallback_cause;
     }
 
     if (context->dither == NULL) {
@@ -5389,7 +5406,8 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
                 &context->samples,
                 &context->palette,
                 1,
-                &context->dither);
+                &context->dither,
+                NULL);
         }
         if (fallback_stage != SIXEL_PALETTE_JOB_FAILURE_NONE) {
             sixel_encoder_trace_palette_fallback(
@@ -5990,7 +6008,11 @@ sixel_encoder_palette_job_thread(void *priv)
     /* Child conversions have an independent pool and never wait on this
      * parent thread. The main pre-plan owns the complementary budget. */
     sixel_thread_budget_enter(&budget, job->threads);
+    sixel_helper_set_additional_message(NULL);
     status = sixel_encoder_palette_job_build(job, &local);
+    if (SIXEL_FAILED(status)) {
+        sixel_status_take_message(&job->message);
+    }
     sixel_thread_budget_leave(&budget);
 
     sixel_mutex_lock(&job->mutex);
@@ -6031,6 +6053,9 @@ sixel_encoder_palette_job_failure_stage_requested(void)
     }
     if (strcmp(requested, "worker") == 0) {
         return SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD;
+    }
+    if (strcmp(requested, "lookup") == 0) {
+        return SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
     }
     return SIXEL_PALETTE_JOB_FAILURE_NONE;
 }
@@ -6104,9 +6129,9 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
                                                 &job->samples,
                                                 job->palette_state,
                                                 0,
-                                                &local);
+                                                &local,
+                                                &job->failure_stage);
     if (SIXEL_FAILED(status)) {
-        job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD;
         if (local != NULL) {
             sixel_dither_unref(local);
         }
@@ -6131,10 +6156,10 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
     }
 
     sixel_sample_stream_init(&job->samples);
+    memset(&job->message, 0, sizeof(job->message));
     /*
-     * Snapshot the test fault before starting any worker.  Environment
-     * lookup is process-global and should not make a worker result depend on
-     * thread timing.
+     * Snapshot worker-stage test faults before starting a worker. Lookup
+     * preparation has its own hook shared with synchronous palette paths.
      */
     job->requested_failure_stage =
         sixel_encoder_palette_job_failure_stage_requested();
@@ -6181,6 +6206,7 @@ sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job)
         return;
     }
     sixel_sample_stream_dispose(&job->samples);
+    sixel_status_dispose_message(&job->message);
     job->encoder = NULL;
     job->logger = NULL;
     job->palette_state = NULL;
@@ -8850,7 +8876,8 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
                                    sixel_sample_stream_t *samples,
                                    sixel_palette_frame_state_t *palette_state,
                                    int allow_cache,
-                                   sixel_dither_t **dither_out)
+                                   sixel_dither_t **dither_out,
+    sixel_palette_job_failure_stage_t *failure_stage)
 {
     SIXELSTATUS status;
     sixel_palette_builder_context_t builder_context;
@@ -8901,6 +8928,9 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
      * overlap the full-frame working-colorspace conversion. */
     if (SIXEL_SUCCEEDED(status) && *dither_out != NULL &&
             (*dither_out)->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+        if (failure_stage != NULL) {
+            *failure_stage = SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
+        }
         status = sixel_encoder_apply_lut_filter(encoder, *dither_out);
         if (SIXEL_FAILED(status)) {
             sixel_encoder_release_dither_output(dither_out);
@@ -8938,6 +8968,15 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     memset(&eytzinger_config, 0, sizeof(eytzinger_config));
 
     if (encoder == NULL || dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /* Shared by synchronous, fixed/map and worker palettes, after palette
+     * construction succeeds. Do not depend on a backend validation rule. */
+    if (sixel_encoder_palette_job_failure_stage_requested() ==
+            SIXEL_PALETTE_JOB_FAILURE_LOOKUP) {
+        sixel_helper_set_additional_message(
+            "Injected palette lookup preparation failure.");
         return SIXEL_BAD_ARGUMENT;
     }
 

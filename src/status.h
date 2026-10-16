@@ -26,10 +26,30 @@
 #define LIBSIXEL_STATUS_H
 
 #include <stddef.h>
+#include <sixel.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Move raw diagnostics across joined workers without allocating on failure.
+ * A zero-initialized message owns any heap buffer until restored/disposed. */
+#define SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY 4096
+
+typedef struct sixel_status_message {
+    char storage[SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY];
+    char *buffer;
+    size_t capacity;
+} sixel_status_message_t;
+
+SIXEL_INTERNAL_API void
+sixel_status_take_message(sixel_status_message_t *message);
+
+SIXEL_INTERNAL_API void
+sixel_status_restore_message(sixel_status_message_t *message);
+
+SIXEL_INTERNAL_API void
+sixel_status_dispose_message(sixel_status_message_t *message);
 
 void
 sixel_debugf(char const *fmt, ...);

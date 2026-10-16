@@ -145,10 +145,6 @@ sixel_debugf(char const *fmt, ...)
 #endif
 }
 
-enum {
-    SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY = 4096
-};
-
 #if defined(__PCC__) || defined(__TINYC__)
 # define SIXEL_STATUS_NO_TLS_COMPILER 1
 #else
@@ -356,6 +352,62 @@ sixel_status_get_message_store(void)
     }
 
     return store;
+}
+
+/* Retain markup, not rendered terminal escapes. Heap storage is transferred
+ * rather than copied so an allocation error cannot erase its diagnostic. */
+void
+sixel_status_take_message(sixel_status_message_t *message)
+{
+    sixel_status_message_store_t *store;
+
+    store = sixel_status_get_message_store();
+    message->capacity = store->markup_capacity;
+    if (store->markup_buffer == store->markup_storage) {
+        memcpy(message->storage, store->markup_storage,
+               strlen(store->markup_storage) + 1u);
+        message->buffer = message->storage;
+    } else {
+        message->buffer = store->markup_buffer;
+    }
+    store->markup_buffer = store->markup_storage;
+    store->markup_capacity = sizeof(store->markup_storage);
+    sixel_helper_set_additional_message(NULL);
+}
+
+void
+sixel_status_restore_message(sixel_status_message_t *message)
+{
+    sixel_status_message_store_t *store;
+
+    if (message->buffer == NULL) {
+        return;
+    }
+    store = sixel_status_get_message_store();
+    if (store->markup_buffer != store->markup_storage) {
+        free(store->markup_buffer);
+    }
+    store->markup_capacity = message->capacity;
+    if (message->buffer == message->storage) {
+        memcpy(store->markup_storage, message->storage,
+               strlen(message->storage) + 1u);
+        store->markup_buffer = store->markup_storage;
+    } else {
+        store->markup_buffer = message->buffer;
+    }
+    store->render_buffer[0] = '\0';
+    message->buffer = NULL;
+    message->capacity = 0u;
+}
+
+void
+sixel_status_dispose_message(sixel_status_message_t *message)
+{
+    if (message->buffer != message->storage) {
+        free(message->buffer);
+    }
+    message->buffer = NULL;
+    message->capacity = 0u;
 }
 
 static int

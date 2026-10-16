@@ -123,17 +123,17 @@ Sampling remains implicit and automatic even when `-Q` selects an explicit
 quantizer. The latter retry is an availability fallback, but it is also an
 execution-time sampling-policy change and must be reported as such.
 
-The fallback contract distinguishes worker initialization, sample creation,
-thread creation, worker colorspace conversion, and worker palette construction
-failures. The `palette_contract` trace records the failed stage, the selected
-fallback action, the original status, and the fallback result. A failed
-builder's partial dither is never published. A full-frame retry also
-re-resolves the authoritative sampling state to `full-frame` from the
-`preprocessed-frame`, records `fallback` as the resolution reason, and marks
-that policy executed only after synchronous palette construction succeeds.
-A thread-creation failure that successfully reuses its completed sample keeps
-`adaptive-grid` as the executed policy because its sample population did not
-change.
+The failure contract distinguishes worker initialization, sample creation, thread creation, worker colorspace conversion, palette construction, and lookup preparation. The `palette_contract` trace (`LSXPFB1`) records the stage, action, original status, and result. A failed builder's partial dither is never published.
+
+| Failed stage | Automatic sampling action |
+| --- | --- |
+| `init`, `sample`, `worker-convert`, `worker-build` | Retry palette construction synchronously from the preprocessed full frame (`full-frame-sync`). |
+| `thread-create` | Build synchronously from the completed sample (`same-sample-sync`); classify any subsequent failure by its actual stage. |
+| `lookup` | Return the original status and additional diagnostic (`propagate`); never reconstruct the palette. |
+
+Lookup preparation consumes an already finalized palette. Changing the sample population cannot repair a lookup configuration error or make a failed lookup allocation part of palette construction. This rule applies regardless of sampling origin or worker admission. Worker diagnostics move as raw markup into the collecting thread before its error is returned; transferring an existing diagnostic requires no allocation. A join performed only for cleanup does not overwrite a preprocessing error. FHEDT preparation remains inside the palette worker's budget and can overlap full-frame working-colorspace conversion.
+
+A full-frame retry re-resolves sampling to `full-frame` from `preprocessed-frame`, records `fallback` as its reason, and marks it executed only after synchronous palette construction succeeds. A thread-creation failure that successfully reuses its completed sample keeps `adaptive-grid` as the executed policy because its population did not change. The internal `_SIXEL_TEST_PALETTE_JOB_FAILURE=lookup` hook fails lookup preparation after palette construction in synchronous, worker, builtin, and mapfile paths, independently of backend validation rules.
 
 An explicit sampling policy does not silently inherit the automatic policy's
 full-frame retry. Cross-policy fallback is permitted only when the resolver
@@ -893,3 +893,4 @@ The following tests compare emitted `#n;2;r;g;b` palette definitions across 1, 2
 | PS-34 | Explicit adaptive thread-creation failure reuses the completed sample. | [tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t](../../../../tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t) |
 | PS-35 | Automatic sampling resolves an input that is not eligible for adaptive sampling, such as a PAL8 frame given to `sixel_encoder_encode_frame()`, to the full frame, so re-encoding decoded indices reproduces the first generation's pixels at 1, 2 and 8 threads. | [tests/quant/palette/0081_sampling_auto_pal8_retention.t](../../../../tests/quant/palette/0081_sampling_auto_pal8_retention.t) |
 | PS-36 | RGB888, PAL8 expansion and float32 samples (including solid repetition and transparency) agree at 1, 2, 4 and 8 threads with clipping, high/full quality, sparse and stride-one target overrides; encoded bytes agree between serial and parallel extraction at each fixed encoder budget. | [tests/processing/filter/0046_filter_sample_parallel_exact.t](../../../../tests/processing/filter/0046_filter_sample_parallel_exact.t) |
+| PS-37 | Lookup preparation errors preserve status and diagnostics with generated, builtin, and mapfile palettes at 1, 2, 4, and 8 threads in byte and float32 precision; worker errors are traced as `lookup/propagate` without a full-frame retry. | [tests/quant/palette/0082_palette_lookup_failure.t](../../../../tests/quant/palette/0082_palette_lookup_failure.t) |
