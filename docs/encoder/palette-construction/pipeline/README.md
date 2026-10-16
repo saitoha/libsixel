@@ -87,77 +87,35 @@ sample point:
 An explicit weight prevents a later binning implementation from accidentally
 discarding the protection provided to a small solid-colored feature.
 
-The legacy implementation coupled sampling to palette-worker scheduling. A
-worker path used an adaptive grid from the loaded frame, while a synchronous
-path passed the full preprocessed frame directly to palette construction.
-Thread count, clipping, resizing, and colorspace work therefore changed both
-the sample population and its source stage. The `sample_target` setting only
-affected the adaptive path. Tests preserve these boundaries during migration
-because changing them silently would change palette quality, output size, and
-performance.
+`-4`/`--sampling-policy=auto|full-frame|adaptive-grid` selects which source pixels feed palette construction. `SIXEL_SAMPLING_POLICY` supplies the environment default; an explicit command-line value takes precedence. `auto` resolves to `adaptive-grid` with reason `sampling-default`, independently of thread count, clip, resize, colorspace work, and palette-worker availability. Explicit policies retain reason `explicit`.
 
-The migration names the two successful paths and temporarily preserves their
-selection thresholds:
-
-`-4`/`--sampling-policy=auto|full-frame|adaptive-grid` exposes this choice as an independent top-level encoder policy. `SIXEL_SAMPLING_POLICY` supplies the same policy through the environment, and an explicit command-line value takes precedence. `auto` retains the resource-aware selection described below.
-`full-frame` consumes the frame after clipping, resizing, and colorspace
-preprocessing. `adaptive-grid` consumes the loader output and constructs its
-owned sample before preprocessing begins. The latter may run on a palette
-worker when capacity is available or synchronously otherwise; scheduling does
-not change its source pixels. The legacy `-Q ...:sample_target=COUNT` setting
-continues to control the adaptive grid's target population, not which sampling
-policy is selected. For an indexed loader frame, adaptive sampling clones the
-frame and expands its palette indices to RGB888 before taking the grid. This
-keeps the loader frame available to the main pipeline, at the cost of a
-temporary full-frame RGB expansion in the current implementation.
-
-| Effective sampling | Input source | Current selection |
+| Effective sampling | Input source | Selection |
 | --- | --- | --- |
-| `adaptive-grid` | loaded frame | Auto resolution has capacity for the palette worker. |
-| `full-frame` | preprocessed frame | Auto resolution does not select asynchronous sampling. |
+| `adaptive-grid` | configured crop in loaded-frame coordinates, before resize and colorspace preprocessing | `auto` or explicit `adaptive-grid` |
+| `full-frame` | output frame after clip, resize, and colorspace preprocessing | explicit `full-frame`, or the recorded automatic failure fallback below |
 
-Both paths now execute through the sample filter vtable and produce the same
-typed sample-stream artifact. The adaptive path owns its compact sample frame;
-the full-frame path borrows the preprocessed frame. Palette construction
-consumes that artifact rather than accepting an ordinary frame edge. This
-structural change preserves the pixels and source stage selected by the legacy
-scheduler coupling.
+Adaptive sampling owns its sample and runs before preprocessing can mutate the loaded frame. It runs synchronously when no palette worker is admitted. Full-frame sampling borrows the preprocessed frame. Both execute through the sample filter vtable and produce the same typed sample-stream artifact.
 
-The temporary automatic resolver subtracts one unit for each active clip,
-resize, and colorspace operation from the resolved thread count. It selects
-`adaptive-grid` only when palette work is eligible and more than one unit
-remains. A normal resize also introduces the colorspace work needed to resize
-in linear RGB, so it currently consumes two units. The resulting boundary
-cases are:
+`-Q ...:sample_target=COUNT` controls the effective adaptive-grid target, without changing the selected policy. Without an override, the target is at least 4096 and at least 64 times the requested color count; high quality doubles it and full quality quadruples it. The grid stride is one when the cropped pixel count is at most that target. This does **not** guarantee equivalence to full-frame sampling: solid-region augmentation can append repeated colors even at stride one, and resize changes the full-frame source population. Therefore small images keep `adaptive-grid` and its recorded reason. Indexed loader frames are cloned and expanded to RGB888 before adaptive extraction, keeping the original frame available to preprocessing.
 
-| Active work | Heavy-operation count | First thread count using `adaptive-grid` |
-| --- | ---: | ---: |
-| none | 0 | 2 |
-| clip or colorspace conversion | 1 | 3 |
-| resize | 2 | 4 |
-| clip and resize | 3 | 5 |
+Resize can introduce colors absent from the loaded-frame sample, so `full-frame` remains useful when the output distribution should determine the palette. Clip is applied to the adaptive extraction coordinates, so pixels outside the crop do not enter the grid or solid-region search. Neither operation changes automatic policy selection.
 
 Resolution and scheduling are ordered explicitly:
 
 ```text
 frame work analysis
-    -> resolve sampling from resource profile
+    -> resolve sampling independently of worker capacity
     -> allocate workers for the effective sampling policy
 ```
 
-The scheduler may reserve a palette worker only for a resolved
-`adaptive-grid` policy. A full-frame or bypassed path reserves none. This keeps
-the legacy automatic thresholds for palette-producing images while removing
-the scheduler decision as the source of sampling semantics.
+The scheduler reserves a palette worker only for an eligible `adaptive-grid` job when the total thread budget minus active clip, resize, and colorspace work exceeds one. It keeps at least one main thread and reserves none for full-frame or bypassed paths. A resize normally also needs linear-RGB colorspace work. These capacity checks affect overlap only: one thread always samples synchronously, and two threads do so when preprocessing consumes the spare capacity.
 
 `LSXSPL1` records the requested and effective sampling names, input source,
 lifecycle phase, resolution reason, thread count, heavy-operation count, and
 both thread-budget admission and final palette-job readiness. Fixed, preserved,
 and high-color palette paths mark sampling as bypassed.
 
-There is a second legacy coupling on the failure path. The palette worker was
-introduced as an opportunistic overlap optimization, so inability to use it
-must not by itself stop encoding. A thread-creation failure after sampling can
+The palette worker is an opportunistic overlap optimization, so inability to use it must not by itself stop encoding. A thread-creation failure after sampling can
 preserve semantics by building synchronously from the same sample. If no
 sample exists, or if the sampled palette builder itself fails, the current
 implicit automatic sampling policy retries with the preprocessed full frame.
@@ -184,6 +142,8 @@ An explicit request either uses the same sample or returns the failure unless
 a separately specified fallback chain says otherwise. When it returns a
 palette-worker failure, it preserves that failure status rather than replacing
 it with the resolver's cross-policy rejection status.
+
+Synchronous sample or palette-construction errors propagate when no worker is admitted. Worker-stage failures can instead enter the automatic full-frame retry described above. Thus failure outcomes and fallback palettes can still depend on worker admission; successful automatic resolution does not.
 
 ## Binning policy
 
@@ -842,20 +802,14 @@ default changes can be reviewed independently.
      legacy full-frame retry only for the current implicit automatic policy,
      trace every fallback decision, and cover each failure stage through the
      real encode DAG.
-3a. Characterize the existing successful-path split without rerouting it. Represent
-    `full-frame` and `adaptive-grid` as internal effective policies, record
-    whether their input is the loaded or preprocessed frame, and test the
-    current thread-budget and heavy-operation cases.
+3a. Represent `full-frame` and `adaptive-grid` as independent effective policies, record whether their input is the loaded or preprocessed frame, and test synchronous and asynchronous execution.
 3b. Introduce a typed sample-stream artifact that can describe either a
     borrowed full-frame view or an owned compact sample. Retain the frame
     payload adapter and record minimal sample metadata.
 3c. Route both effective policies through the sample filter vtable and make
     palette builders consume the sample-stream contract. Keep the existing
     source stage and pixels for each path.
-3d. Move policy resolution ahead of scheduling. The scheduler consumes the
-    resolved sampling choice instead of choosing sampling as a side effect;
-    the temporary `auto` resolver reproduces the legacy split until measured
-    defaults are selected.
+3d. Resolve policy before scheduling. The scheduler consumes the effective policy; `auto` selects adaptive-grid independently of the execution budget.
 4. Define orthogonal binning semantics and the weighted-point-set artifact
    contract before moving an implementation.
 5. Extract current K-means hard and soft histogram construction into an
@@ -864,8 +818,7 @@ default changes can be reviewed independently.
 6. Declare quantizer capabilities and introduce stage-specific pure resolvers.
    Resolve sampling before sampling and binning from actual sample metadata,
    without silent execution-time fallback.
-7a. Add the top-level sampling policy option while preserving automatic
-    selection. Keep sampling independent of thread count after resolution.
+7a. Expose the top-level sampling policy and resolve `auto` to `adaptive-grid` independently of thread count.
 7b. Add the top-level binning policy option and remove the quantizer-local
     policy spelling so the independent stage has one option owner.
 8a. Implement exact aggregation in the shared binning filter and connect the
@@ -887,3 +840,48 @@ Each wave must leave the normal and amalgamated builds consistent. Tests must
 cover direct policy parsing, effective-plan resolution, unsupported
 combinations, output quality, allocation bounds, and the filter boundary
 itself.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Sampling contracts
+
+The following tests compare emitted `#n;2;r;g;b` palette definitions across 1, 2, 3, and 8 threads. They do not require identical dithered pixels, because diffusion band partitioning can depend on the worker budget.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| PS-01 | auto default plain palette invariance. | [tests/quant/palette/sampling_threads/0001_auto_default_plain.t](../../../../tests/quant/palette/sampling_threads/0001_auto_default_plain.t) |
+| PS-02 | auto default clip palette invariance. | [tests/quant/palette/sampling_threads/0002_auto_default_clip.t](../../../../tests/quant/palette/sampling_threads/0002_auto_default_clip.t) |
+| PS-03 | auto default down4 palette invariance. | [tests/quant/palette/sampling_threads/0003_auto_default_down4.t](../../../../tests/quant/palette/sampling_threads/0003_auto_default_down4.t) |
+| PS-04 | auto default up2 palette invariance. | [tests/quant/palette/sampling_threads/0004_auto_default_up2.t](../../../../tests/quant/palette/sampling_threads/0004_auto_default_up2.t) |
+| PS-05 | auto quality plain palette invariance. | [tests/quant/palette/sampling_threads/0005_auto_quality_plain.t](../../../../tests/quant/palette/sampling_threads/0005_auto_quality_plain.t) |
+| PS-06 | auto quality clip palette invariance. | [tests/quant/palette/sampling_threads/0006_auto_quality_clip.t](../../../../tests/quant/palette/sampling_threads/0006_auto_quality_clip.t) |
+| PS-07 | auto quality down4 palette invariance. | [tests/quant/palette/sampling_threads/0007_auto_quality_down4.t](../../../../tests/quant/palette/sampling_threads/0007_auto_quality_down4.t) |
+| PS-08 | auto quality up2 palette invariance. | [tests/quant/palette/sampling_threads/0008_auto_quality_up2.t](../../../../tests/quant/palette/sampling_threads/0008_auto_quality_up2.t) |
+| PS-09 | full frame default plain palette invariance. | [tests/quant/palette/sampling_threads/0009_full_frame_default_plain.t](../../../../tests/quant/palette/sampling_threads/0009_full_frame_default_plain.t) |
+| PS-10 | full frame default clip palette invariance. | [tests/quant/palette/sampling_threads/0010_full_frame_default_clip.t](../../../../tests/quant/palette/sampling_threads/0010_full_frame_default_clip.t) |
+| PS-11 | full frame default down4 palette invariance. | [tests/quant/palette/sampling_threads/0011_full_frame_default_down4.t](../../../../tests/quant/palette/sampling_threads/0011_full_frame_default_down4.t) |
+| PS-12 | full frame default up2 palette invariance. | [tests/quant/palette/sampling_threads/0012_full_frame_default_up2.t](../../../../tests/quant/palette/sampling_threads/0012_full_frame_default_up2.t) |
+| PS-13 | full frame quality plain palette invariance. | [tests/quant/palette/sampling_threads/0013_full_frame_quality_plain.t](../../../../tests/quant/palette/sampling_threads/0013_full_frame_quality_plain.t) |
+| PS-14 | full frame quality clip palette invariance. | [tests/quant/palette/sampling_threads/0014_full_frame_quality_clip.t](../../../../tests/quant/palette/sampling_threads/0014_full_frame_quality_clip.t) |
+| PS-15 | full frame quality down4 palette invariance. | [tests/quant/palette/sampling_threads/0015_full_frame_quality_down4.t](../../../../tests/quant/palette/sampling_threads/0015_full_frame_quality_down4.t) |
+| PS-16 | full frame quality up2 palette invariance. | [tests/quant/palette/sampling_threads/0016_full_frame_quality_up2.t](../../../../tests/quant/palette/sampling_threads/0016_full_frame_quality_up2.t) |
+| PS-17 | adaptive grid default plain palette invariance. | [tests/quant/palette/sampling_threads/0017_adaptive_grid_default_plain.t](../../../../tests/quant/palette/sampling_threads/0017_adaptive_grid_default_plain.t) |
+| PS-18 | adaptive grid default clip palette invariance. | [tests/quant/palette/sampling_threads/0018_adaptive_grid_default_clip.t](../../../../tests/quant/palette/sampling_threads/0018_adaptive_grid_default_clip.t) |
+| PS-19 | adaptive grid default down4 palette invariance. | [tests/quant/palette/sampling_threads/0019_adaptive_grid_default_down4.t](../../../../tests/quant/palette/sampling_threads/0019_adaptive_grid_default_down4.t) |
+| PS-20 | adaptive grid default up2 palette invariance. | [tests/quant/palette/sampling_threads/0020_adaptive_grid_default_up2.t](../../../../tests/quant/palette/sampling_threads/0020_adaptive_grid_default_up2.t) |
+| PS-21 | adaptive grid quality plain palette invariance. | [tests/quant/palette/sampling_threads/0021_adaptive_grid_quality_plain.t](../../../../tests/quant/palette/sampling_threads/0021_adaptive_grid_quality_plain.t) |
+| PS-22 | adaptive grid quality clip palette invariance. | [tests/quant/palette/sampling_threads/0022_adaptive_grid_quality_clip.t](../../../../tests/quant/palette/sampling_threads/0022_adaptive_grid_quality_clip.t) |
+| PS-23 | adaptive grid quality down4 palette invariance. | [tests/quant/palette/sampling_threads/0023_adaptive_grid_quality_down4.t](../../../../tests/quant/palette/sampling_threads/0023_adaptive_grid_quality_down4.t) |
+| PS-24 | adaptive grid quality up2 palette invariance. | [tests/quant/palette/sampling_threads/0024_adaptive_grid_quality_up2.t](../../../../tests/quant/palette/sampling_threads/0024_adaptive_grid_quality_up2.t) |
+| PS-25 | Stride-one adaptive samples retain solid-region weights even when the default or overridden target covers every source pixel. | [tests/quant/palette/0080_sampling_small_solid.t](../../../../tests/quant/palette/0080_sampling_small_solid.t) |
+| PS-26 | Default resolution and explicit-policy validation. | [tests/quant/palette/0034_palette_stage_resolvers.t](../../../../tests/quant/palette/0034_palette_stage_resolvers.t) |
+| PS-27 | The automatic lifecycle wrapper selects adaptive-grid and sampling-default. | [tests/quant/palette/0026_sampling_auto_resolution.t](../../../../tests/quant/palette/0026_sampling_auto_resolution.t) |
+| PS-28 | Worker reservation stays within 1, 2, 3 and 8 thread budgets for each preprocessing workload. | [tests/quant/palette/0028_sampling_scheduler_contract.t](../../../../tests/quant/palette/0028_sampling_scheduler_contract.t) |
+| PS-29 | CLI sampling overrides the environment policy. | [tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t](../../../../tests/cli/options/matching/0246_option_matching_sampling_policy_env_cli_precedence.t) |
+| PS-30 | Short and environment adaptive-grid options produce identical output. | [tests/cli/options/regression/0162_sampling_policy_image_regression.t](../../../../tests/cli/options/regression/0162_sampling_policy_image_regression.t) |
+| PS-31 | Automatic full-frame fallback retains request origin and records its source and reason. | [tests/quant/palette/0029_sampling_fallback_resolution.t](../../../../tests/quant/palette/0029_sampling_fallback_resolution.t) |
+| PS-32 | Worker creation failure reuses the completed adaptive sample. | [tests/quant/palette/0011_palette_worker_thread_fallback.t](../../../../tests/quant/palette/0011_palette_worker_thread_fallback.t) |
+| PS-33 | Explicit adaptive failure retains the original status instead of retrying full-frame. | [tests/quant/palette/0038_palette_sampling_explicit_failure_preserves_status.t](../../../../tests/quant/palette/0038_palette_sampling_explicit_failure_preserves_status.t) |
+| PS-34 | Explicit adaptive thread-creation failure reuses the completed sample. | [tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t](../../../../tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t) |

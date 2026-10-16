@@ -380,12 +380,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "sampling-policy",
         "-4 POLICY, --sampling-policy=POLICY\n"
         "    choose which pixels feed palette construction:\n"
-        "      auto          -> preserve the resource-aware default.\n"
+        "      auto          -> use adaptive-grid at every thread count.\n"
         "      full-frame    -> use the preprocessed output frame.\n"
         "      adaptive-grid -> sample the loaded frame before preprocessing.\n"
         "    Thread availability may overlap adaptive sampling with other "
         "work,\n"
-        "    but does not change an explicitly selected policy.\n"
+        "    but does not select the sampling policy.\n"
     },
     {
         '5',

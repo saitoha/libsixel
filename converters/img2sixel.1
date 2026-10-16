@@ -365,7 +365,8 @@ choose which pixels feed palette construction.
 frame. \fBadaptive\-grid\fP samples the configured crop range directly from
 loaded-frame coordinates before resize and colorspace preprocessing. Thread
 availability may overlap adaptive sampling with other work, but does not
-change an explicitly selected policy.
+select the sampling policy. \fBauto\fP resolves to
+\fBadaptive\-grid\fP at every thread count, including one thread.
 The \fBSIXEL_SAMPLING_POLICY\fP environment provides the default.
 .TP 5
 .B \-5 \fIPOLICY\fP, \-\-binning\-policy=\fIPOLICY\fP

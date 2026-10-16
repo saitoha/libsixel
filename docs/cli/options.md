@@ -51,7 +51,7 @@ Defaults are chosen so that most users never need an advanced option. The [encod
 | `-q`, `--quality` | advanced | Select the speed and quality profile of palette construction. | [Palette quantization](../encoder/palette-construction/quantization/README.md) |
 | `-f`, `--find-largest` | advanced | Median-cut box selection rule. | [Palette quantization](../encoder/palette-construction/quantization/README.md) |
 | `-s`, `--select-color` | advanced | Median-cut representative color rule. | [Palette quantization](../encoder/palette-construction/quantization/README.md) |
-| `-4`, `--sampling-policy` | advanced | Choose which pixels feed palette construction. | [Palette construction pipeline](../encoder/palette-construction/pipeline/README.md) |
+| `-4`, `--sampling-policy` | advanced | Choose which pixels feed palette construction; `auto` uses `adaptive-grid` independently of thread count. | [Palette construction pipeline](../encoder/palette-construction/pipeline/README.md) |
 | `-5`, `--binning-policy` | advanced | Choose how sampled colors are weighted for the solver. | [Palette construction pipeline](../encoder/palette-construction/pipeline/README.md) |
 | `-X`, `--clustering-colorspace` | advanced | Color space in which the palette is clustered. | [Clustering color space](../encoder/palette-construction/clustering-colorspace/README.md) |
 | `-F`, `--merge-policy` | advanced | Final palette merging after the solver. | [Merge policy](../encoder/palette-construction/merge-policy/README.md) |
