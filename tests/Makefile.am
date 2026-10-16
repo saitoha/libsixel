@@ -313,6 +313,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0017_PALETTE_CONTINUOUS \
     -DBUILD_TEST_0018_POLICY_CACHE_RESET \
     -DBUILD_TEST_0007_BUDGET_SCOPE \
+    -DBUILD_TEST_0017_PIPELINE_AUTO_WORKER_COUNTS \
+    -DBUILD_TEST_0018_PIPELINE_FULL_FRAME_WORKER_COUNTS \
+    -DBUILD_PIPELINE_WORKER_COUNTS_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
     -DBUILD_TEST_0002_HELPER_BITS \
@@ -4775,6 +4778,9 @@ test_runner_SOURCES = test_runner.c \
     processing/colorspace/0013_black_log1p_model.c \
     processing/colorspace/parallel/0007_budget_scope.c \
     processing/colorspace/parallel/parallel_float_common.c \
+    planner/pipeline/0017_pipeline_auto_worker_counts.c \
+    planner/pipeline/0018_pipeline_full_frame_worker_counts.c \
+    planner/pipeline/pipeline_worker_counts_common.c \
     processing/colorspace/parallel/0001_frame_bits.c \
     processing/colorspace/parallel/0002_helper_bits.c \
     processing/colorspace/parallel/0003_frame_atomic.c \

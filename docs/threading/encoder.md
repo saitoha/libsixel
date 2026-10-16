@@ -41,6 +41,8 @@ Timeline `controller/colorspace` start/finish records enclose the scratch transa
 
 ## Dither/encode budget policy
 
+Verbose `workers: total/main/palette` describes the earlier palette/preprocessing overlap. The subsequent `pipeline` summary uses the full `total` budget after palette collection, including the initial dither/encode split and its band height. Queue depth is three times the initial encode count, capped by the number of six-row bands. These diagnostic values do not configure the runtime pipeline; the encoder resolves the same policy separately.
+
 For a CPU palette-application path with `N > 1`, the planner starts with
 
 ```text
@@ -347,12 +349,14 @@ Record all such settings when comparing results.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| FC-01 | Frame conversions at one and four threads preserve identical bits for all pairs among gamma, linear, CIELAB, OKLab and DIN99d, including extended coordinates. | [tests/processing/colorspace/parallel/0001_frame_bits.t](../../tests/processing/colorspace/parallel/0001_frame_bits.t) |
-| FC-02 | The public float helper has the same serial/parallel bit consistency. | [tests/processing/colorspace/parallel/0002_helper_bits.t](../../tests/processing/colorspace/parallel/0002_helper_bits.t) |
-| FC-03 | A nonfinite final chunk leaves frame pixels and format tags intact and returns the serial diagnostic. | [tests/processing/colorspace/parallel/0003_frame_atomic.t](../../tests/processing/colorspace/parallel/0003_frame_atomic.t) |
-| FC-04 | A nonfinite final chunk leaves public-helper pixels intact and returns the serial diagnostic. | [tests/processing/colorspace/parallel/0004_helper_atomic.t](../../tests/processing/colorspace/parallel/0004_helper_atomic.t) |
-| FC-05 | API encoding with CIELAB working space executes a colorspace controller and at least two worker thread identities inside the filter interval. | [tests/processing/colorspace/parallel/0005_working_pipeline.t](../../tests/processing/colorspace/parallel/0005_working_pipeline.t) |
-| FC-06 | API encoding with CIELAB clustering executes the asynchronous sample conversion with the same parallel event contract. | [tests/processing/colorspace/parallel/0006_clustering_pipeline.t](../../tests/processing/colorspace/parallel/0006_clustering_pipeline.t) |
-| FC-07 | Caller-local scopes compose by minimum, restore on exit and do not change another thread's budget. | [tests/processing/colorspace/parallel/0007_budget_scope.t](../../tests/processing/colorspace/parallel/0007_budget_scope.t) |
+| TE-01 | Frame conversions at one and four threads preserve identical bits for all pairs among gamma, linear, CIELAB, OKLab and DIN99d, including extended coordinates. | [tests/processing/colorspace/parallel/0001_frame_bits.t](../../tests/processing/colorspace/parallel/0001_frame_bits.t) |
+| TE-02 | The public float helper has the same serial/parallel bit consistency. | [tests/processing/colorspace/parallel/0002_helper_bits.t](../../tests/processing/colorspace/parallel/0002_helper_bits.t) |
+| TE-03 | A nonfinite final chunk leaves frame pixels and format tags intact and returns the serial diagnostic. | [tests/processing/colorspace/parallel/0003_frame_atomic.t](../../tests/processing/colorspace/parallel/0003_frame_atomic.t) |
+| TE-04 | A nonfinite final chunk leaves public-helper pixels intact and returns the serial diagnostic. | [tests/processing/colorspace/parallel/0004_helper_atomic.t](../../tests/processing/colorspace/parallel/0004_helper_atomic.t) |
+| TE-05 | API encoding with CIELAB working space executes a colorspace controller and at least two worker thread identities inside the filter interval. | [tests/processing/colorspace/parallel/0005_working_pipeline.t](../../tests/processing/colorspace/parallel/0005_working_pipeline.t) |
+| TE-06 | API encoding with CIELAB clustering executes the asynchronous sample conversion with the same parallel event contract. | [tests/processing/colorspace/parallel/0006_clustering_pipeline.t](../../tests/processing/colorspace/parallel/0006_clustering_pipeline.t) |
+| TE-07 | Caller-local scopes compose by minimum, restore on exit and do not change another thread's budget. | [tests/processing/colorspace/parallel/0007_budget_scope.t](../../tests/processing/colorspace/parallel/0007_budget_scope.t) |
+| TE-08 | At eight threads with automatic sampling, the verbose post-palette geometry matches the fixed raster and initial dither/encode counts agree with distinct worker identities in the same run. Encode identities are counted before all dither workers finish, excluding subsequent pool growth. | [tests/planner/pipeline/0017_pipeline_auto_worker_counts.t](../../tests/planner/pipeline/0017_pipeline_auto_worker_counts.t) |
+| TE-09 | At eight threads with full-frame sampling, the verbose post-palette geometry matches the fixed raster and initial dither/encode counts agree with distinct worker identities in the same run. Encode identities are counted before all dither workers finish, excluding subsequent pool growth. | [tests/planner/pipeline/0018_pipeline_full_frame_worker_counts.t](../../tests/planner/pipeline/0018_pipeline_full_frame_worker_counts.t) |
 
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/processing/colorspace/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.

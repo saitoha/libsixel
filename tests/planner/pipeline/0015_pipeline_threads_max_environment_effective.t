@@ -15,12 +15,12 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 echo "1..1"
 set -v
 
-# Full-frame sampling assigns all six slots to this pipeline plan.
+# Automatic sampling releases its palette slots before this pipeline.
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 threads_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_THREADS=6" \
-    --env "SIXEL_DITHER_PARALLEL_THREADS_MAX=1" -4 full-frame -v -d fs \
+    --env "SIXEL_DITHER_PARALLEL_THREADS_MAX=1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threads max environment conversion failed"
     exit 0
@@ -33,7 +33,7 @@ case "${threads_trace}" in *threads:\ dither=1\ encode=5**) true ;; *) false ;; 
 
 negative_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_THREADS=6" \
-    --env "SIXEL_DITHER_PARALLEL_THREADS_MAX=-1" -4 full-frame -v -d fs \
+    --env "SIXEL_DITHER_PARALLEL_THREADS_MAX=-1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "negative threads max conversion failed"
     exit 0

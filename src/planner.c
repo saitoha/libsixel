@@ -997,7 +997,11 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
 
     height = sixel_frame_get_height(frame);
     width = sixel_frame_get_width(frame);
-    threads = planner->main_threads;
+    /*
+     * Palette construction has joined before this pipeline starts. Its
+     * temporary main/palette split must not reduce the final worker budget.
+     */
+    threads = planner->total_threads;
     if (width <= 0 || height <= 0 || threads <= 1) {
         return;
     }
@@ -1102,7 +1106,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         }
     }
 
-    queue_depth = threads * 3;
+    /* Match the initial encode queue, before retired dither slots join it. */
+    queue_depth = encode_threads * 3;
     if (queue_depth > nbands) {
         queue_depth = nbands;
     }

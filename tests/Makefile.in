@@ -1032,6 +1032,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/colorspace/0013_black_log1p_model.c \
 	processing/colorspace/parallel/0007_budget_scope.c \
 	processing/colorspace/parallel/parallel_float_common.c \
+	planner/pipeline/0017_pipeline_auto_worker_counts.c \
+	planner/pipeline/0018_pipeline_full_frame_worker_counts.c \
+	planner/pipeline/pipeline_worker_counts_common.c \
 	processing/colorspace/parallel/0001_frame_bits.c \
 	processing/colorspace/parallel/0002_helper_bits.c \
 	processing/colorspace/parallel/0003_frame_atomic.c \
@@ -4727,6 +4730,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0013_black_log1p_model.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0007_budget_scope.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-parallel_float_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-pipeline_worker_counts_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0001_frame_bits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0002_helper_bits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0003_frame_atomic.$(OBJEXT) \
@@ -9140,6 +9146,9 @@ am__depfiles_remade =  \
 	loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po \
 	loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po \
@@ -12015,6 +12024,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PALETTE_CONTINUOUS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_POLICY_CACHE_RESET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_BUDGET_SCOPE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PIPELINE_AUTO_WORKER_COUNTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PIPELINE_FULL_FRAME_WORKER_COUNTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PIPELINE_WORKER_COUNTS_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARALLEL_FLOAT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_BITS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HELPER_BITS \
@@ -16508,6 +16520,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0013_black_log1p_model.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0007_budget_scope.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/parallel_float_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0017_pipeline_auto_worker_counts.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0018_pipeline_full_frame_worker_counts.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/pipeline_worker_counts_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0001_frame_bits.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0002_helper_bits.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0003_frame_atomic.c \
@@ -22290,6 +22305,21 @@ processing/colorspace/parallel/test_runner-0007_budget_scope.$(OBJEXT):  \
 processing/colorspace/parallel/test_runner-parallel_float_common.$(OBJEXT):  \
 	processing/colorspace/parallel/$(am__dirstamp) \
 	processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/$(am__dirstamp):
+	@$(MKDIR_P) planner/pipeline
+	@: >>planner/pipeline/$(am__dirstamp)
+planner/pipeline/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) planner/pipeline/$(DEPDIR)
+	@: >>planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-pipeline_worker_counts_common.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/parallel/test_runner-0001_frame_bits.$(OBJEXT):  \
 	processing/colorspace/parallel/$(am__dirstamp) \
 	processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
@@ -31248,6 +31278,7 @@ mostlyclean-compile:
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/unit/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
+	-rm -f planner/pipeline/*.$(OBJEXT)
 	-rm -f platform/path/*.$(OBJEXT)
 	-rm -f processing/assessment/*.$(OBJEXT)
 	-rm -f processing/chunk/*.$(OBJEXT)
@@ -32916,6 +32947,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po@am__quote@ # am--include-marker
@@ -47612,6 +47646,48 @@ processing/colorspace/parallel/test_runner-parallel_float_common.obj: processing
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/parallel_float_common.c' object='processing/colorspace/parallel/test_runner-parallel_float_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-parallel_float_common.obj `if test -f 'processing/colorspace/parallel/parallel_float_common.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/parallel_float_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/parallel_float_common.c'; fi`
+
+planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.o: planner/pipeline/0017_pipeline_auto_worker_counts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Tpo -c -o planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.o `test -f 'planner/pipeline/0017_pipeline_auto_worker_counts.c' || echo '$(srcdir)/'`planner/pipeline/0017_pipeline_auto_worker_counts.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Tpo planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0017_pipeline_auto_worker_counts.c' object='planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.o `test -f 'planner/pipeline/0017_pipeline_auto_worker_counts.c' || echo '$(srcdir)/'`planner/pipeline/0017_pipeline_auto_worker_counts.c
+
+planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.obj: planner/pipeline/0017_pipeline_auto_worker_counts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Tpo -c -o planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.obj `if test -f 'planner/pipeline/0017_pipeline_auto_worker_counts.c'; then $(CYGPATH_W) 'planner/pipeline/0017_pipeline_auto_worker_counts.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0017_pipeline_auto_worker_counts.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Tpo planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0017_pipeline_auto_worker_counts.c' object='planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.obj `if test -f 'planner/pipeline/0017_pipeline_auto_worker_counts.c'; then $(CYGPATH_W) 'planner/pipeline/0017_pipeline_auto_worker_counts.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0017_pipeline_auto_worker_counts.c'; fi`
+
+planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.o: planner/pipeline/0018_pipeline_full_frame_worker_counts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Tpo -c -o planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.o `test -f 'planner/pipeline/0018_pipeline_full_frame_worker_counts.c' || echo '$(srcdir)/'`planner/pipeline/0018_pipeline_full_frame_worker_counts.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Tpo planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0018_pipeline_full_frame_worker_counts.c' object='planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.o `test -f 'planner/pipeline/0018_pipeline_full_frame_worker_counts.c' || echo '$(srcdir)/'`planner/pipeline/0018_pipeline_full_frame_worker_counts.c
+
+planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.obj: planner/pipeline/0018_pipeline_full_frame_worker_counts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Tpo -c -o planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.obj `if test -f 'planner/pipeline/0018_pipeline_full_frame_worker_counts.c'; then $(CYGPATH_W) 'planner/pipeline/0018_pipeline_full_frame_worker_counts.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0018_pipeline_full_frame_worker_counts.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Tpo planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0018_pipeline_full_frame_worker_counts.c' object='planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.obj `if test -f 'planner/pipeline/0018_pipeline_full_frame_worker_counts.c'; then $(CYGPATH_W) 'planner/pipeline/0018_pipeline_full_frame_worker_counts.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0018_pipeline_full_frame_worker_counts.c'; fi`
+
+planner/pipeline/test_runner-pipeline_worker_counts_common.o: planner/pipeline/pipeline_worker_counts_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-pipeline_worker_counts_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Tpo -c -o planner/pipeline/test_runner-pipeline_worker_counts_common.o `test -f 'planner/pipeline/pipeline_worker_counts_common.c' || echo '$(srcdir)/'`planner/pipeline/pipeline_worker_counts_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/pipeline_worker_counts_common.c' object='planner/pipeline/test_runner-pipeline_worker_counts_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-pipeline_worker_counts_common.o `test -f 'planner/pipeline/pipeline_worker_counts_common.c' || echo '$(srcdir)/'`planner/pipeline/pipeline_worker_counts_common.c
+
+planner/pipeline/test_runner-pipeline_worker_counts_common.obj: planner/pipeline/pipeline_worker_counts_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-pipeline_worker_counts_common.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Tpo -c -o planner/pipeline/test_runner-pipeline_worker_counts_common.obj `if test -f 'planner/pipeline/pipeline_worker_counts_common.c'; then $(CYGPATH_W) 'planner/pipeline/pipeline_worker_counts_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/pipeline_worker_counts_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/pipeline_worker_counts_common.c' object='planner/pipeline/test_runner-pipeline_worker_counts_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-pipeline_worker_counts_common.obj `if test -f 'planner/pipeline/pipeline_worker_counts_common.c'; then $(CYGPATH_W) 'planner/pipeline/pipeline_worker_counts_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/pipeline_worker_counts_common.c'; fi`
 
 processing/colorspace/parallel/test_runner-0001_frame_bits.o: processing/colorspace/parallel/0001_frame_bits.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0001_frame_bits.o -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0001_frame_bits.Tpo -c -o processing/colorspace/parallel/test_runner-0001_frame_bits.o `test -f 'processing/colorspace/parallel/0001_frame_bits.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0001_frame_bits.c
@@ -86756,6 +86832,8 @@ distclean-generic:
 	-$(am__rm_f) loader/unit/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(am__dirstamp)
+	-$(am__rm_f) planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) planner/pipeline/$(am__dirstamp)
 	-$(am__rm_f) platform/path/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) platform/path/$(am__dirstamp)
 	-$(am__rm_f) processing/assessment/$(DEPDIR)/$(am__dirstamp)

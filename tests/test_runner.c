@@ -212,6 +212,8 @@ int test_icc_0016(int argc, char **argv);
 int test_icc_0017(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
+int test_pipeline_worker_counts_17(int argc, char **argv);
+int test_pipeline_worker_counts_18(int argc, char **argv);
 int test_parallel_float_0007(int argc, char **argv);
 int test_parallel_float_0001(int argc, char **argv);
 int test_parallel_float_0002(int argc, char **argv);
@@ -5671,6 +5673,10 @@ static test_entry_t const test_entries[] = {
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
     { "colorspace/0013_black_log1p_model", test_color_0013 },
     { "colorspace/parallel/0007_budget_scope", test_parallel_float_0007 },
+    { "planner/pipeline/0017_pipeline_auto_worker_counts",
+        test_pipeline_worker_counts_17 },
+    { "planner/pipeline/0018_pipeline_full_frame_worker_counts",
+        test_pipeline_worker_counts_18 },
     { "colorspace/parallel/0001_frame_bits",
         test_parallel_float_0001 },
     { "colorspace/parallel/0002_helper_bits",
