@@ -124,36 +124,60 @@ diffuse_varerr_term(int32_t error, int weight, int denom)
     return (int32_t)delta;
 }
 
+/*
+ * Byte residuals are (sample - target) << VARERR_SCALE_SHIFT and select the
+ * coefficient row by |sample - target|, so the six taps of a residual depend
+ * only on that row index and the sign.  diffuse_varerr_term() rounds half
+ * away from zero, symmetric in the sign, so a table of the taps for every
+ * positive residual reproduces each per-pixel quotient exactly.
+ */
+typedef int32_t sixel_lso2_terms_8bit_t[256][6];
+
+static void
+lso2_prepare_terms_8bit(sixel_lso2_terms_8bit_t terms)
+{
+    const int (*table)[7];
+    const int *entry;
+    int denom;
+    int index;
+    int tap;
+
+    table = lso2_table_varcoeff_8bit();
+    for (index = 0; index < 256; ++index) {
+        entry = table[index];
+        denom = sixel_varcoeff_safe_denom_8bit(entry[6]);
+        for (tap = 0; tap < 6; ++tap) {
+            terms[index][tap] = diffuse_varerr_term(
+                index << VARERR_SCALE_SHIFT, entry[tap], denom);
+        }
+    }
+}
+
+/*
+ * Add a 12-bit fixed-point delta to a byte sample, round to nearest and
+ * saturate to 0..255.  Clamping the fixed-point sum to [0, 255 << 12] before
+ * rounding, as this helper once did, gives the same byte: a sum below zero
+ * rounds to zero or below and a sum above the range rounds to 255 or above.
+ * Residuals stay within +-(255 << 12) and the generated weights within the
+ * denominator, so the sum fits an int32_t.
+ */
 static void
 diffuse_varerr_apply_direct(unsigned char *target,
                             int depth,
                             size_t offset,
                             int32_t delta)
 {
-    int64_t value;
-    int result;
+    int32_t value;
 
-    value = (int64_t)target[offset * depth] << VARERR_SCALE_SHIFT;
-    value += delta;
+    value = ((int32_t)target[offset * depth] << VARERR_SCALE_SHIFT) + delta;
     if (value < 0) {
         value = 0;
-    } else {
-        int64_t max_value;
-
-        max_value = VARERR_MAX_VALUE;
-        if (value > max_value) {
-            value = max_value;
-        }
     }
-
-    result = (int)((value + VARERR_ROUND) >> VARERR_SCALE_SHIFT);
-    if (result < 0) {
-        result = 0;
+    value = (value + VARERR_ROUND) >> VARERR_SCALE_SHIFT;
+    if (value > 255) {
+        value = 255;
     }
-    if (result > 255) {
-        result = 255;
-    }
-    target[offset * depth] = (unsigned char)result;
+    target[offset * depth] = (unsigned char)value;
 }
 
 static void
@@ -165,11 +189,13 @@ diffuse_lso2(unsigned char *data,
              int depth,
              int32_t error,
              int index,
-             int direction)
+             int direction,
+             sixel_lso2_terms_8bit_t const terms)
 {
     const int (*table)[7];
     const int *entry;
     int denom;
+    int sign;
     int32_t term_r;
     int32_t term_r2;
     int32_t term_dl;
@@ -188,16 +214,27 @@ diffuse_lso2(unsigned char *data,
         index = 255;
     }
 
-    table = lso2_table_varcoeff_8bit();
-    entry = table[index];
-    denom = sixel_varcoeff_safe_denom_8bit(entry[6]);
-
-    term_r = diffuse_varerr_term(error, entry[0], denom);
-    term_r2 = diffuse_varerr_term(error, entry[1], denom);
-    term_dl = diffuse_varerr_term(error, entry[2], denom);
-    term_d = diffuse_varerr_term(error, entry[3], denom);
-    term_dr = diffuse_varerr_term(error, entry[4], denom);
-    term_d2 = diffuse_varerr_term(error, entry[5], denom);
+    if (error == (index << VARERR_SCALE_SHIFT)
+            || error == -(index << VARERR_SCALE_SHIFT)) {
+        sign = error > 0 ? 1 : -1;
+        term_r = sign * terms[index][0];
+        term_r2 = sign * terms[index][1];
+        term_dl = sign * terms[index][2];
+        term_d = sign * terms[index][3];
+        term_dr = sign * terms[index][4];
+        term_d2 = sign * terms[index][5];
+    } else {
+        /* A residual off the byte grid takes the general quotient. */
+        table = lso2_table_varcoeff_8bit();
+        entry = table[index];
+        denom = sixel_varcoeff_safe_denom_8bit(entry[6]);
+        term_r = diffuse_varerr_term(error, entry[0], denom);
+        term_r2 = diffuse_varerr_term(error, entry[1], denom);
+        term_dl = diffuse_varerr_term(error, entry[2], denom);
+        term_d = diffuse_varerr_term(error, entry[3], denom);
+        term_dr = diffuse_varerr_term(error, entry[4], denom);
+        term_d2 = diffuse_varerr_term(error, entry[5], denom);
+    }
 
     if (direction >= 0) {
         if (x + 1 < width) {
@@ -272,7 +309,8 @@ diffuse_lso2_6delta_error(unsigned char *data,
                           int32_t const *sample_scaled,
                           unsigned char const *source_pixel,
                           unsigned char const *retained_pixel,
-                          int direction)
+                          int direction,
+                          sixel_lso2_terms_8bit_t const terms)
 {
     int32_t target_scaled;
     int32_t error_scaled;
@@ -301,7 +339,8 @@ diffuse_lso2_6delta_error(unsigned char *data,
                      depth,
                      error_scaled,
                      diff,
-                     direction);
+                     direction,
+                     terms);
     }
 }
 
@@ -310,6 +349,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                              sixel_dither_policy_lso2_context_t *context
                              )
 {
+    sixel_lso2_terms_8bit_t terms;
     int lookup_hint;
     SIXELSTATUS status;
     unsigned char *data;
@@ -393,6 +433,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
 
+    lso2_prepare_terms_8bit(terms);
     lookup_hint = -1;
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -460,7 +501,8 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                                              sample_scaled,
                                              source_pixel,
                                              accumulation_pixel,
-                                             direction);
+                                             direction,
+                                             terms);
                 }
                 continue;
             }
@@ -504,7 +546,8 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                                                  sample_scaled,
                                                  source_pixel,
                                                  accumulation_pixel,
-                                                 direction);
+                                                 direction,
+                                                 terms);
                     }
                     continue;
                 }
@@ -536,7 +579,8 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                              depth,
                              error_scaled,
                              table_index,
-                             direction);
+                             direction,
+                             terms);
             }
         }
 
