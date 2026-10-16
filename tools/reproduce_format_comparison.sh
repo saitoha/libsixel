@@ -9,10 +9,16 @@ PYTHON=${PYTHON-python3}
 CC=${CC-cc}
 # Record an immutable commit even when a branch name is supplied.
 REVISION=$(git -C "${TOP_SRCDIR}" rev-parse --verify "${REVISION-HEAD}^{commit}")
-# Directory of source photographs (*.jpg), for example the photo/original
-# directory of the libsixel-dataset repository.
+# Directory of source photographs (*.png or *.jpg), for example the
+# photo/crop-640x480 directory of the libsixel-dataset repository.
 PHOTOS=${PHOTOS:?set PHOTOS to a directory of source photographs}
 PHOTOS=$(CDPATH='' cd -- "${PHOTOS}" && pwd -P)
+# Optional directory of the uncropped originals (*.jpg) with the same names,
+# for example photo/original; it enables the latency-against-size sweep.
+SIZE_PHOTOS=${SIZE_PHOTOS-}
+if [ -n "${SIZE_PHOTOS}" ]; then
+    SIZE_PHOTOS=$(CDPATH='' cd -- "${SIZE_PHOTOS}" && pwd -P)
+fi
 study_dir=${STUDY_DIR-$(mktemp -d "${TMPDIR-/tmp}/sixel-format.XXXXXX")}
 output_dir=${1-${TOP_SRCDIR}/docs/sixel-format/comparison/figures}
 mkdir -p "${study_dir}/source" "${output_dir}"
@@ -54,6 +60,7 @@ esac
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/measure.py" \
     --source "${study_dir}/source" --library "${library}" \
     --adapter "${study_dir}/codecs.so" --revision "${REVISION}" \
-    --photos "${PHOTOS}" --output "${output_dir}"
+    --photos "${PHOTOS}" ${SIZE_PHOTOS:+"--size-photos=${SIZE_PHOTOS}"} \
+    --output "${output_dir}"
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/check.py" "${output_dir}"
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/plot.py" "${output_dir}"

@@ -17,20 +17,28 @@ images = set(meta['inputs'])
 assert images == set(meta['photo_sources']) | {'diagram'}
 generation_images = set(meta['generation_images'])
 assert 'diagram' in generation_images and generation_images <= images
-assert len(rows) == len(images) * len(settings) * 4 + len(generation_images) * len(generation_codecs) * n
+sweep = meta['size_sweep']
+sweep_sizes = [tuple(c) for c in sweep['sizes']]
+assert set(sweep['images']) <= images
+assert len(rows) == (len(images) * len(settings) * 4 + len(generation_images) * len(generation_codecs) * n
+                     + len(sweep['images']) * len(sweep_sizes) * len(settings) * len(sweep['threads']))
 assert {r['image'] for r in rows if r['experiment'] == 'generation'} == generation_images
 keys = set()
 for row in rows:
-    key = (row['image'], row['experiment'], row['codec'], row['threads'], row.get('mode'), row.get('generation'))
+    key = (row['image'], row['experiment'], row['codec'], row['threads'], row.get('mode'), row.get('generation'), tuple(row.get('size', ())))
     assert key not in keys, key
     keys.add(key)
     for field in ['encode_ms', 'decode_ms']:
         assert len(row[field]) == meta['runs']
         assert all(math.isfinite(x) and x > 0 for x in row[field])
-    assert 0 <= row['ms_ssim'] <= 1.000001
-    assert math.isfinite(row['delta_e']) and row['delta_e'] >= 0
     assert row['bytes'] > 0
     assert row['transport_bytes'] == (row['bytes'] if row['codec'].startswith('SIXEL') else 4 * ((row['bytes'] + 2) // 3))
+    if row['experiment'] == 'size':
+        # The sweep times codecs only; quality is the corpus's job.
+        assert tuple(row['size']) in sweep_sizes and 'ms_ssim' not in row, key
+        continue
+    assert 0 <= row['ms_ssim'] <= 1.000001
+    assert math.isfinite(row['delta_e']) and row['delta_e'] >= 0
     if row['codec'] in ['PNG', 'QOI', 'WebP lossless']:
         assert row['exact_input'], key
         assert row['ms_ssim'] == 1, key
@@ -47,4 +55,11 @@ for name in images:
         group = [r for r in rows if r['image'] == name and r['codec'] == codec and r['experiment'] == 'scaling']
         assert sorted(r['threads'] for r in group) == [1, 2, 4, 8], (name, codec)
         assert len({r['decoder_stream_sha256'] for r in group}) == 1, (name, codec)
+for name in sweep['images']:
+    for size in sweep_sizes:
+        for codec in settings:
+            group = [r for r in rows if r['experiment'] == 'size' and r['image'] == name
+                     and tuple(r['size']) == size and r['codec'] == codec]
+            assert sorted(r['threads'] for r in group) == sweep['threads'], (name, size, codec)
+            assert len({r['decoder_stream_sha256'] for r in group}) == 1, (name, size, codec)
 print(f'validated {len(rows)} records for {len(images)} images, lossless pixels and retained-index generations')

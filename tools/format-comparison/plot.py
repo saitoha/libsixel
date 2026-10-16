@@ -59,7 +59,8 @@ def log_axes(axes):
     for ax in axes:
         ax.grid(axis='x', alpha=.15)
         for axis in [ax.xaxis, ax.yaxis]:
-            if axis.get_scale() == 'log':
+            # The size sweep labels its x positions with the crop sizes.
+            if axis.get_scale() == 'log' and not getattr(axis, 'crop_ticks', False):
                 lo, hi = sorted(ax.get_xlim() if axis is ax.xaxis else ax.get_ylim())
                 # Crowded 1-2-5 labels overlap on wide ranges.
                 subs = (1, 2, 5) if np.log10(hi / lo) <= 2.5 else (1,)
@@ -180,6 +181,27 @@ def generations(axes, rows, count):
         ax.set_yscale('log')
 
 
+def sizes(axes, rows):
+    """Plot latency against pixel count for 1:1 center crops of the originals."""
+    crops = sorted({tuple(r['size']) for r in rows}, key=lambda c: c[0] * c[1])
+    x = [w * h for w, h in crops]
+    panels = [('encode_ms', 1), ('encode_ms', 8), ('decode_ms', 1), ('decode_ms', 8)]
+    for codec in REP:
+        for ax, (metric, threads) in zip(axes, panels):
+            values = [per_image(rows, codec, metric, threads=threads, size=list(c)) for c in crops]
+            for px, v in zip(x, values):
+                ax.scatter([px] * len(v), v, color=color(codec), s=4, alpha=.15, linewidth=0)
+            ax.plot(x, [np.mean(v) for v in values], marker=MARKERS[codec.split()[0]], markersize=4,
+                    label=codec, color=color(codec), linestyle=style(codec))
+    labels = ['Encode, budget 1', 'Encode, budget 8', 'Decode, budget 1', 'Decode, budget 8']
+    for ax, label in zip(axes, labels):
+        ax.set(xscale='log', yscale='log', ylabel=f'{label} (ms, log axis)',
+               xlabel='Pixels per image (log axis)')
+        ax.set_xticks(x, [f'{w}×{h}' for w, h in crops])
+        ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.xaxis.crop_ticks = True
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', type=Path)
@@ -198,12 +220,19 @@ def main():
         corpus = image == 'photo'
         scale_rows = [r for r in rows if r['experiment'] == 'scaling']
         gen_rows = [r for r in rows if r['experiment'] == 'generation']
+        size_rows = [r for r in rows if r['experiment'] == 'size']
         codecs = sorted({r['codec'] for r in scale_rows}, key=order)
-        heading = (f'Photographs · {len(photos)} images fitted inside {meta["fit"][0]} × {meta["fit"][1]}' if corpus
-                   else 'Diagram · 768 × 512')
+        photo_sizes = {tuple(meta['input_sizes'][k]) for k in photos}
+        if len(photo_sizes) == 1:
+            w, h = next(iter(photo_sizes))
+            heading = f'Photographs · {len(photos)} images, {w} × {h}'
+        else:
+            heading = f'Photographs · {len(photos)} images fitted inside {meta["fit"][0]} × {meta["fit"][1]}'
+        if not corpus:
+            heading = 'Diagram · 768 × 512'
         for mobile in [False, True]:
             suffix = 'mobile' if mobile else 'wide'
-            for chart in ['profile', 'scaling', 'generations']:
+            for chart in ['profile', 'scaling', 'generations'] + (['sizes'] if size_rows else []):
                 fig, axes = plt.subplots(4 if mobile else 2, 1 if mobile else 2,
                     figsize=(6.2, 17) if mobile else (12, 9), layout='constrained')
                 axes = axes.flatten()
@@ -218,6 +247,13 @@ def main():
                     note = 'SIXEL, AVIF (aom/dav1d) and HEIC (x265/libde265): N workers. WebP: parallel switch at N > 1. Pillow JPEG/GIF/PNG and QOI remain serial.'
                     if corpus:
                         note += ' Bands show the per-photo interquartile range.'
+                elif chart == 'sizes':
+                    sizes(axes, size_rows)
+                    fig.legend(*axes[0].get_legend_handles_labels(), loc='outside lower center', ncol=2 if mobile else 4, fontsize=8)
+                    title = 'Latency against image size'
+                    sweep = meta['size_sweep']
+                    note = (f'1:1 center crops of {len(sweep["images"])} originals (every {len(photos) // len(sweep["images"])}th by name); '
+                            f'{runs} samples after 2 warm-ups; decoders read the one-thread stream. Lines are means of per-photo medians; dots are photos.')
                 else:
                     generations(axes, gen_rows, meta['generations'])
                     fig.legend(*axes[0].get_legend_handles_labels(), loc='outside lower center', ncol=2 if mobile else 4, fontsize=8)

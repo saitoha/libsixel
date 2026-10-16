@@ -151,34 +151,61 @@ class Codecs:
         return image.copy() if indexed else image.convert('RGB')
 
 
-def photo_fixtures(directory, fit):
-    """Load each source photo upright in sRGB and fit it inside `fit` (width,
-    height) with Lanczos, preserving the aspect ratio and never enlarging.
+def untagged_srgb(image):
+    """Return (RGB image without metadata, converted profile name or None).
 
     Every codec treats RGB samples as sRGB, and LSQA would apply an embedded
     profile only to the reference. Convert a tagged photo to sRGB with its
     profile and drop the profile so that both sides share one interpretation.
     """
+    icc = image.info.get('icc_profile')
+    name = None
+    if icc:
+        source = ImageCms.ImageCmsProfile(io.BytesIO(icc))
+        name = ImageCms.getProfileDescription(source).strip()
+        image = ImageCms.profileToProfile(
+            image, source, ImageCms.createProfile('sRGB'), outputMode='RGB',
+            renderingIntent=ImageCms.Intent.RELATIVE_COLORIMETRIC)
+    image = image.convert('RGB')
+    image.info = {}
+    return image, name
+
+
+def photo_fixtures(directory, fit):
+    """Load each source photo (PNG or JPEG) upright in sRGB and fit it inside
+    `fit` (width, height) with Lanczos, preserving the aspect ratio and never
+    enlarging; a 1:1 crop smaller than `fit` is therefore left untouched.
+    """
     images, sources, profiles = {}, {}, {}
-    srgb = ImageCms.createProfile('sRGB')
-    for path in sorted(directory.glob('*.jpg')):
-        image = ImageOps.exif_transpose(Image.open(path))
-        icc = image.info.get('icc_profile')
-        profiles[path.stem] = None
-        if icc:
-            source = ImageCms.ImageCmsProfile(io.BytesIO(icc))
-            profiles[path.stem] = ImageCms.getProfileDescription(source).strip()
-            image = ImageCms.profileToProfile(
-                image, source, srgb, outputMode='RGB',
-                renderingIntent=ImageCms.Intent.RELATIVE_COLORIMETRIC)
-        image = image.convert('RGB')
-        image.info = {}
+    paths = [p for p in directory.iterdir() if p.suffix.lower() in ('.png', '.jpg', '.jpeg')]
+    for path in sorted(paths):
+        image, profiles[path.stem] = untagged_srgb(ImageOps.exif_transpose(Image.open(path)))
         scale = min(1.0, fit[0] / image.width, fit[1] / image.height)
         size = (max(1, round(image.width * scale)), max(1, round(image.height * scale)))
         images[path.stem] = image.resize(size, Image.Resampling.LANCZOS)
         images[path.stem].info = {}
         sources[path.stem] = sha(path.read_bytes())
     return images, sources, profiles
+
+
+def crop_fixtures(directory, names, sizes):
+    """Center-crop each original at 1:1 to every size, without resampling.
+
+    The offset follows libsixel-dataset's crop-640x480 procedure,
+    ((W - w) // 2, (H - h) // 2) on the decoded pixels with no orientation
+    change, so only the pixel count varies along the size axis.
+    """
+    images, sources = {}, {}
+    for name in names:
+        path = directory / f'{name}.jpg'
+        image, _ = untagged_srgb(Image.open(path))
+        sources[name] = sha(path.read_bytes())
+        for w, h in sizes:
+            x, y = (image.width - w) // 2, (image.height - h) // 2
+            if x < 0 or y < 0:
+                raise RuntimeError(f'{name} is smaller than {w}x{h}')
+            images[name, (w, h)] = image.crop((x, y, x + w, y + h))
+    return images, sources
 
 
 def diagram_fixture():
@@ -251,6 +278,12 @@ def main():
                    help='run the generation experiment on every Nth photograph')
     p.add_argument('--fit', default='1920x1080',
                    help='fit photographs inside WIDTHxHEIGHT (default: Full HD)')
+    p.add_argument('--size-photos', type=Path,
+                   help='directory of originals (*.jpg) for the size sweep')
+    p.add_argument('--size-crops', default='160x120,320x240,640x480,1280x960',
+                   help='comma-separated 1:1 center-crop sizes of the sweep')
+    p.add_argument('--size-stride', type=int, default=10,
+                   help='run the size sweep on every Nth photograph')
     args = p.parse_args()
     for key in list(os.environ):
         if key.startswith(('SIXEL_', 'LSQA_')):
@@ -264,6 +297,9 @@ def main():
         fit = tuple(int(v) for v in args.fit.lower().split('x'))
         photos, photo_sources, photo_profiles = photo_fixtures(args.photos, fit)
         diagram = diagram_fixture()
+        size_crops = [tuple(int(v) for v in c.lower().split('x')) for c in args.size_crops.split(',')]
+        size_images = sorted(photos)[::args.size_stride] if args.size_photos else []
+        sweep, sweep_sources = crop_fixtures(args.size_photos, size_images, size_crops) if args.size_photos else ({}, {})
         diagram.save(out / 'diagram.png')
         images = dict(photos, diagram=diagram)
         # Every Nth photograph in name order keeps the subset spread over the
@@ -304,7 +340,12 @@ def main():
             'photo_sources': photo_sources,
             'photo_profiles_converted_to_srgb': photo_profiles,
             'inputs': {k: sha(references[k].read_bytes()) for k in images},
-            'input_sizes': {k: list(v.size) for k, v in images.items()}}, 'rows': rows}
+            'input_sizes': {k: list(v.size) for k, v in images.items()},
+            'size_sweep': {'photo_directory': str(args.size_photos) if args.size_photos else None,
+                'images': size_images, 'sizes': [list(c) for c in size_crops],
+                'threads': [1, 8], 'photo_sources': sweep_sources,
+                'inputs': {f'{k[0]}@{k[1][0]}x{k[1][1]}': sha(v.tobytes()) for k, v in sweep.items()}}},
+            'rows': rows}
         def save():
             (out / 'results.json').write_text(json.dumps(payload, indent=2) + '\n')
         for name, image in images.items():
@@ -343,6 +384,22 @@ def main():
                         current = decoded if mode == 'indexed' else decoded.convert('RGB')
                         save()
             print(name, 'generations complete', flush=True)
+        # Speed against pixel count: no LSQA, so the sweep stays cheap; each
+        # crop decodes the same one-thread stream at every budget.
+        for index, ((name, crop), image) in enumerate(sweep.items()):
+            for codec in settings if index % 2 == 0 else settings[::-1]:
+                fixed = codecs.encode(image, codec, 1)
+                expected = codecs.decode(fixed, codec, 1).tobytes()
+                for threads in [1, 8]:
+                    encoded, enc = sampled(lambda: codecs.encode(image, codec, threads), args.runs)
+                    decoded, dec = sampled(lambda: codecs.decode(fixed, codec, threads), args.runs)
+                    assert decoded.tobytes() == expected
+                    rows.append(dict(image=name, experiment='size', size=list(crop),
+                        codec=codec, threads=threads, encode_ms=enc, decode_ms=dec,
+                        bytes=len(encoded), transport_bytes=len(encoded) if codec.startswith('SIXEL') else 4 * ((len(encoded) + 2) // 3),
+                        stream_sha256=sha(encoded), decoder_stream_sha256=sha(fixed)))
+            save()
+            print(name, crop, 'size sweep complete', flush=True)
 
 
 if __name__ == '__main__':
