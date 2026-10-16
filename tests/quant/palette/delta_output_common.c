@@ -606,7 +606,9 @@ end:
 int
 test_delta_output_failure(void)
 {
-    static double const invalid[3][3] = {
+    /* VMS exposes NAN and INFINITY through runtime values, so these
+     * specimens must not require constant-expression initialization. */
+    double const invalid[3][3] = {
         {NAN, 0, 0}, {0, INFINITY, 0}, {1e300, 0, 0}
     };
     double const sentinel[3] = {7, 8, 9};

@@ -321,9 +321,9 @@ tiff_float_failure_test(int argc, char **argv, int mode)
     }
     behavior = status == SIXEL_TIFF_ERROR && state.calls == 0 &&
                uf_rgba == 0 && uf_live == baseline;
-    printf("UFFAULT|qualified=%d|reads=%d|rows=%d|matched=%d|last=%d\n",
+    printf("# UFFAULT|qualified=%d|reads=%d|rows=%d|matched=%d|last=%d\n",
         qualified, uf_reads, uf_rows, uf_matched, uf_seen);
-    printf("UFRESULT|behavior=%d|status=%x|callbacks=%d|rgba=%d|"
+    printf("# UFRESULT|behavior=%d|status=%x|callbacks=%d|rgba=%d|"
         "live=%zu|baseline=%zu\n", behavior, status, state.calls, uf_rgba,
         uf_live, baseline);
     uf_reset(0u, 0);
@@ -333,14 +333,14 @@ tiff_float_failure_test(int argc, char **argv, int mode)
         uf_rows == rows && uf_matched == 24 && uf_live == baseline &&
         uf_rgba == 0 && state.count == normal.count &&
         memcmp(state.words, normal.words, normal.count * 4u) == 0;
-    printf("UFRECOVER|normal=%d|recovered=%d\n", valid, recovered);
+    printf("# UFRECOVER|normal=%d|recovered=%d\n", valid, recovered);
     ok = valid && qualifier_ok && behavior && recovered;
 cleanup:
     if (component != NULL) { component->vtbl->unref(component); }
     if (normal_chunk != NULL) { normal_chunk->vtbl->unref(normal_chunk); }
     if (bad_chunk != NULL) { bad_chunk->vtbl->unref(bad_chunk); }
     sixel_allocator_unref(allocator);
-    printf("UFEND|live=%zu\n", uf_live);
+    printf("# UFEND|live=%zu\n", uf_live);
     return ok && uf_live == 0u ? 0 : 1;
 #else
     (void)argc;

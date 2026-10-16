@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/threading/encoder.md
-# Compare the verbose auto pipeline split with actual worker identities.
+# Compare the verbose auto pipeline split with completed jobs and worker identity bounds.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

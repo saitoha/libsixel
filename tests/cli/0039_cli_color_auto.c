@@ -872,11 +872,13 @@ test_cli_0039_color_auto(int argc, char **argv)
 #if HAVE_CLI_COLOR_PTY && HAVE_CLI_COLOR_TTY
     color_auto_peer_t peer;
     color_auto_peer_t baseline;
-    char combined[65536];
+    /* Include both complete buffers and the synthetic SIXEL introducer. */
+    char combined[sizeof(peer.trace) + sizeof(peer.image) + 3];
     char *wire_arguments[3];
     int valid;
     int expected_exit;
     int p3;
+    int combined_size;
     char *next_trace;
     char const *drcs_prefix;
     size_t case_index;
@@ -996,11 +998,15 @@ test_cli_0039_color_auto(int argc, char **argv)
             if (strncmp(peer.image, drcs_prefix, strlen(drcs_prefix)) != 0) {
                 return color_auto_error("unexpected DRCS envelope");
             }
-            snprintf(combined, sizeof(combined), "%s\033Pq%s", peer.trace,
+            combined_size = snprintf(combined, sizeof(combined),
+                "%s\033Pq%.*s", peer.trace, (int)sizeof(peer.image) - 1,
                 peer.image + strlen(drcs_prefix));
         } else {
-            snprintf(combined, sizeof(combined), "%s%s", peer.trace,
-                peer.image);
+            combined_size = snprintf(combined, sizeof(combined), "%s%s",
+                peer.trace, peer.image);
+        }
+        if (combined_size < 0 || (size_t)combined_size >= sizeof(combined)) {
+            return color_auto_error("RGB oracle input exceeds buffer");
         }
         wire_arguments[0] = "cli/0036_cli_color_wire";
         wire_arguments[1] = "libpng-p3-16";

@@ -2,6 +2,7 @@
 # Policy: docs/cli/runtime-policy.md
 # Frame conversion uses the common buffer driver owning this threshold.
 # Early snap also exercises a non-native palette-output caller.
+# Request two workers so one-CPU hosts still consult the fan-out threshold.
 # Verify the colorspace threshold environment reaches its consumer.
 
 set -eux
@@ -20,7 +21,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=2 \
     --env SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS=257 \
     -_nearest:Iall -W oklab -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png" 2>&1) || {

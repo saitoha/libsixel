@@ -5414,6 +5414,11 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         return status;
     }
 
+    /* Sampling may retain a byte or indexed source while preprocessing
+     * promotes the working frame. Lookup consumes that final frame, not
+     * the sample storage used to construct the palette. */
+    sixel_dither_set_pixelformat(context->dither,
+        sixel_frame_get_pixelformat(context->frame));
     status = sixel_encoder_apply_lut_filter(context->encoder,
                                             context->dither);
     if (SIXEL_FAILED(status)) {

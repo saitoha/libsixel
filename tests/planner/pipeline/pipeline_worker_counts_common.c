@@ -8,7 +8,7 @@
 
 #include "src/compat_stub.h"
 
-/* Track identities, not job counts or timing-dependent throughput. */
+/* Track distinct identities; a queued worker may execute several jobs. */
 static int
 pipeline_remember(unsigned long long *ids, int *count,
                   unsigned long long thread)
@@ -37,6 +37,7 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     unsigned long long dithers[8];
     unsigned long long encoders[8];
     unsigned long long finished[8];
+    unsigned long long started[8];
     unsigned int session;
     unsigned int pipeline_session;
     int planned_dither;
@@ -44,6 +45,8 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     int dither_count;
     int encode_count;
     int finish_count;
+    int start_count;
+    int job;
     int configured;
     int grew;
     int ok;
@@ -64,6 +67,7 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
         return EXIT_FAILURE;
     }
     dither_count = encode_count = finish_count = configured = grew = 0;
+    start_count = 0;
     pipeline_session = 0;
     ok = 1;
     while (fgets(line, sizeof(line), file) != NULL) {
@@ -89,10 +93,19 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
         }
         if (strstr(line, "\"worker\":\"dither\"") != NULL &&
                 strstr(line, "\"role\":\"worker\"") != NULL) {
+            field = strstr(line, "\"job\":");
+            if (field == NULL || sscanf(field, "\"job\":%d", &job) != 1 ||
+                    job < 0 || job >= planned_dither) {
+                ok = 0;
+                break;
+            }
             if (strstr(line, "\"event\":\"start\"") != NULL) {
                 ok &= pipeline_remember(dithers, &dither_count, thread);
+                ok &= pipeline_remember(started, &start_count,
+                    (unsigned long long)job);
             } else if (strstr(line, "\"event\":\"finish\"") != NULL) {
-                ok &= pipeline_remember(finished, &finish_count, thread);
+                ok &= pipeline_remember(finished, &finish_count,
+                    (unsigned long long)job);
             }
         }
         if (strstr(line, "\"worker\":\"encode\"") == NULL) {
@@ -100,7 +113,7 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
         }
         /*
          * Only the overlap phase has the advertised initial encode budget.
-         * Growth happens after every dither worker finishes; its notification
+         * Growth happens after every dither job finishes; its notification
          * follows thread creation, so it cannot delimit initial workers.
          */
         if (finish_count < planned_dither &&
@@ -116,8 +129,12 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     ok &= !ferror(file);
     fclose(file);
     ok &= configured == 1 && grew == 1;
-    ok &= dither_count == planned_dither && finish_count == planned_dither;
-    ok &= encode_count == planned_encode;
+    /* A runnable pool slot is not guaranteed a job before the queue drains.
+     * Require all six jobs and enforce the split as an identity upper bound;
+     * scheduler fairness is not part of the thread-pool contract. */
+    ok &= start_count == planned_dither && finish_count == planned_dither;
+    ok &= dither_count > 0 && dither_count <= planned_dither;
+    ok &= encode_count <= planned_encode;
     if (!ok) {
         fprintf(stderr, "Pipeline workers: planned=%d/%d observed=%d/%d "
                 "finished=%d configure=%d grow=%d\n", planned_dither,
