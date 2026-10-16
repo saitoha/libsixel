@@ -171,14 +171,18 @@ def untagged_srgb(image):
     return image, name
 
 
-def photo_fixtures(directory, fit):
+def corpus_paths(directory):
+    """Return the corpus image paths (PNG or JPEG) in name order."""
+    return sorted(p for p in directory.iterdir() if p.suffix.lower() in ('.png', '.jpg', '.jpeg'))
+
+
+def photo_fixtures(directory, fit, stride=1):
     """Load each source photo (PNG or JPEG) upright in sRGB and fit it inside
     `fit` (width, height) with Lanczos, preserving the aspect ratio and never
     enlarging; a 1:1 crop smaller than `fit` is therefore left untouched.
     """
     images, sources, profiles = {}, {}, {}
-    paths = [p for p in directory.iterdir() if p.suffix.lower() in ('.png', '.jpg', '.jpeg')]
-    for path in sorted(paths):
+    for path in corpus_paths(directory)[::stride]:
         image, profiles[path.stem] = untagged_srgb(ImageOps.exif_transpose(Image.open(path)))
         scale = min(1.0, fit[0] / image.width, fit[1] / image.height)
         size = (max(1, round(image.width * scale)), max(1, round(image.height * scale)))
@@ -262,6 +266,10 @@ def main():
     p.add_argument('--generations', type=int, default=8)
     p.add_argument('--photos', type=Path, required=True,
                    help='directory of source photographs (*.jpg)')
+    p.add_argument('--corpus-stride', type=int, default=1,
+                   help='measure every Nth image of each corpus by name; '
+                        'the generation and size subsets keep their '
+                        'full-corpus positions')
     p.add_argument('--generation-stride', type=int, default=5,
                    help='run the generation experiment on every Nth photograph')
     p.add_argument('--fit', default='1920x1080',
@@ -285,16 +293,19 @@ def main():
     with tempfile.TemporaryDirectory(prefix='format-quality-') as tmp:
         work = Path(tmp)
         fit = tuple(int(v) for v in args.fit.lower().split('x'))
-        photos, photo_sources, photo_profiles = photo_fixtures(args.photos, fit)
-        charts, chart_sources, chart_profiles = photo_fixtures(args.charts, fit) if args.charts else ({}, {}, {})
+        photos, photo_sources, photo_profiles = photo_fixtures(args.photos, fit, args.corpus_stride)
+        charts, chart_sources, chart_profiles = photo_fixtures(args.charts, fit, args.corpus_stride) if args.charts else ({}, {}, {})
+        photo_names = [p.stem for p in corpus_paths(args.photos)]
+        chart_names = [p.stem for p in corpus_paths(args.charts)] if args.charts else []
         assert not set(photos) & set(charts), 'photograph and chart names must differ'
         size_crops = [tuple(int(v) for v in c.lower().split('x')) for c in args.size_crops.split(',')]
-        size_images = sorted(photos)[::args.size_stride] if args.size_photos else []
+        size_images = photo_names[::args.size_stride] if args.size_photos else []
         sweep, sweep_sources = crop_fixtures(args.size_photos, size_images, size_crops) if args.size_photos else ({}, {})
         images = dict(photos, **charts)
         # Every Nth image of each corpus in name order keeps the subset spread
         # over the corpus.
-        generation_images = sorted(photos)[::args.generation_stride] + sorted(charts)[::args.generation_stride]
+        generation_images = [n for n in photo_names[::args.generation_stride] if n in photos] + \
+            [n for n in chart_names[::args.generation_stride] if n in charts]
         references = {}
         for name, image in images.items():
             references[name] = work / f'{name}.png'
@@ -325,6 +336,8 @@ def main():
             'adapter_sha256': sha(args.adapter.read_bytes()), 'library_sha256': sha(args.library.read_bytes()),
             'runs': args.runs, 'warmups': 2, 'generations': args.generations,
             'settings': settings, 'fit': list(fit),
+            'corpus_stride': args.corpus_stride,
+            'corpus_sizes': {'photo': len(photo_names), 'chart': len(chart_names)},
             'generation_images': generation_images,
             'photo_directory': str(args.photos),
             'photo_sources': photo_sources,

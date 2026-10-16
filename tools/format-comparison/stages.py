@@ -54,43 +54,66 @@ def first(events, worker, role, event):
     return None
 
 
-def sixel_stages(events):
-    """Split one single-worker encode into stages from its timeline.
+def sixel_marks(events):
+    """Collect the milestones of one encode from its timeline.
 
-    With one worker the encoder runs serially: optional working-space color
-    conversion, palette construction (its initialization or histogram until
-    the first refinement step, then the search itself), lookup preparation
-    up to the dither-prepare mark, palette application with error diffusion,
-    and finally the six-row band jobs announced by the pipeline controller.
-    The order is asserted so that a changed event layout fails loudly.
+    The encoding thread is the one that logs encode_begin. Working-space
+    conversion (-W) is the colorspace-start/finish envelope on that thread;
+    the clustering conversion (-X) of an asynchronous palette job runs on
+    the job's thread and belongs to sampling, as do sample extraction and
+    palette initialization up to the first refinement step.
     """
-    begin = first(events, 'main', 'encoder', 'encode_begin')
-    done = first(events, 'main', 'encoder', 'encode_done')
-    cs_start = first(events, 'worker', 'filter', 'colorspace-start')
-    cs_finish = first(events, 'worker', 'filter', 'colorspace-finish')
-    pal_start = first(events, 'palette/build', 'palette', 'start')
-    pal_finish = first(events, 'palette/build', 'palette', 'finish')
-    search = first(events, 'palette/build', 'palette/iterate', 'start')
-    if search is None:
-        search = first(events, 'palette/build', 'palette/init', 'finish')
-    dither = first(events, 'worker', 'filter', 'dither-prepare')
-    bands = first(events, 'pipeline', 'controller', 'configure')
-    end = max(e['ts'] for e in events if e['worker'] == 'encode' and e['role'] == 'worker'
-              and e['event'] == 'finish')
-    marks = [begin, pal_start, search, pal_finish, dither, bands, end, done]
-    assert all(m is not None for m in marks) and marks == sorted(marks), marks
-    if cs_start is not None:
-        assert begin <= cs_start <= cs_finish <= pal_start, (cs_start, cs_finish, pal_start)
+    begin = next(e for e in events if e['worker'] == 'main' and e['event'] == 'encode_begin')
+    main = begin['thread']
+    marks = {'begin': begin['ts'],
+             'done': first(events, 'main', 'encoder', 'encode_done'),
+             'sample': (first(events, 'worker', 'filter', 'sample-start'),
+                        first(events, 'worker', 'filter', 'sample-finish')),
+             'pal_start': first(events, 'palette/build', 'palette', 'start'),
+             'pal_finish': first(events, 'palette/build', 'palette', 'finish'),
+             'dither': first(events, 'worker', 'filter', 'dither-prepare'),
+             'bands': first(events, 'pipeline', 'controller', 'configure'),
+             'end': max(e['ts'] for e in events if e['worker'] == 'encode'
+                        and e['role'] == 'worker' and e['event'] == 'finish')}
+    marks['search'] = first(events, 'palette/build', 'palette/iterate', 'start')
+    if marks['search'] is None:
+        marks['search'] = first(events, 'palette/build', 'palette/init', 'finish')
+    working, clustering = [], []
+    opened = {}
+    for e in events:
+        if e['worker'] != 'worker' or e['role'] != 'filter':
+            continue
+        if e['event'] == 'colorspace-start':
+            opened[e['thread']] = e['ts']
+        elif e['event'] == 'colorspace-finish' and e['thread'] in opened:
+            pair = (opened.pop(e['thread']), e['ts'])
+            (working if e['thread'] == main else clustering).append(pair)
+    marks['working'] = working
+    marks['clustering'] = clustering
+    order = [marks['begin'], marks['sample'][0], marks['sample'][1], marks['pal_start'],
+             marks['search'], marks['pal_finish'], marks['dither'], marks['end'], marks['done']]
+    assert None not in order and order == sorted(order), order
+    return marks
+
+
+def sixel_stages(events):
+    """Split one single-worker encode into stages from its timeline."""
+    m = sixel_marks(events)
+    assert m['bands'] is not None and m['dither'] <= m['bands'] <= m['end']
+    conversion_end = max([m['pal_finish']] + [hi for _, hi in m['working']])
     stages = {
-        'color conversion': (cs_finish - cs_start) if cs_start is not None else 0.0,
-        'sampling': search - pal_start,
-        'palette search': pal_finish - search,
-        'lookup setup': dither - pal_finish,
-        'lookup + dither': bands - dither,
-        'SIXEL encode': end - bands,
+        'color conversion': sum(hi - lo for lo, hi in m['working']),
+        'sampling': (m['sample'][1] - m['sample'][0])
+                    + sum(hi - lo for lo, hi in m['clustering'])
+                    + (m['search'] - m['pal_start']),
+        'palette search': m['pal_finish'] - m['search'],
+        'lookup setup': m['dither'] - conversion_end,
+        'lookup + dither': m['bands'] - m['dither'],
+        'SIXEL encode': m['end'] - m['bands'],
     }
-    stages['other'] = (done - begin) - sum(stages.values())
-    return {k: v * 1e3 for k, v in stages.items()}, (done - begin) * 1e3
+    stages['other'] = (m['done'] - m['begin']) - sum(stages.values())
+    assert stages['lookup setup'] >= 0 and stages['other'] >= -1e-9, stages
+    return {k: v * 1e3 for k, v in stages.items()}, (m['done'] - m['begin']) * 1e3
 
 
 # Wall-clock segments of a SIXEL encode at any worker budget, in stacking
@@ -110,42 +133,36 @@ def sixel_segments(events, threads):
     With one worker the lookup and band phases are separated at the pipeline
     controller; with more workers they overlap and are reported together.
     """
-    begin = first(events, 'main', 'encoder', 'encode_begin')
-    done = first(events, 'main', 'encoder', 'encode_done')
-    cs = (first(events, 'worker', 'filter', 'colorspace-start'),
-          first(events, 'worker', 'filter', 'colorspace-finish'))
-    pal_start = first(events, 'palette/build', 'palette', 'start')
-    pal_finish = first(events, 'palette/build', 'palette', 'finish')
-    search = first(events, 'palette/build', 'palette/iterate', 'start')
-    if search is None:
-        search = first(events, 'palette/build', 'palette/init', 'finish')
-    dither = first(events, 'worker', 'filter', 'dither-prepare')
-    end = max(e['ts'] for e in events if e['worker'] == 'encode' and e['role'] == 'worker'
-              and e['event'] == 'finish')
-    bands = first(events, 'pipeline', 'controller', 'configure') if threads == 1 else None
-    assert None not in (begin, done, pal_start, pal_finish, search, dither, end)
-    assert begin <= pal_start <= search <= pal_finish <= dither <= end <= done
-    activities = [('sampling', pal_start, search), ('palette search', search, pal_finish),
-                  ('lookup setup', max(pal_finish, cs[1] or pal_finish), dither)]
-    if bands is not None:
-        assert dither <= bands <= end
-        activities += [('lookup + dither', dither, bands), ('SIXEL encode', bands, end)]
+    m = sixel_marks(events)
+    conversion_end = max([m['pal_finish']] + [hi for _, hi in m['working']])
+    activities = [('sampling', m['sample'][0], m['sample'][1])]
+    activities += [('sampling', lo, hi) for lo, hi in m['clustering']]
+    activities += [('sampling', m['pal_start'], m['search']),
+                   ('palette search', m['search'], m['pal_finish']),
+                   ('lookup setup', conversion_end, m['dither'])]
+    if threads == 1:
+        assert m['dither'] <= m['bands'] <= m['end']
+        activities += [('lookup + dither', m['dither'], m['bands']),
+                       ('SIXEL encode', m['bands'], m['end'])]
     else:
-        activities.append(('lookup + dither + encode', dither, end))
-    marks = sorted({begin, done, pal_start, search, pal_finish, dither, end}
-                   | ({bands} if bands is not None else set())
-                   | ({cs[0], cs[1]} if cs[0] is not None else set()))
+        activities.append(('lookup + dither + encode', m['dither'], m['end']))
+    points = {m['begin'], m['done']}
+    for _, lo, hi in activities:
+        points |= {lo, hi}
+    for lo, hi in m['working']:
+        points |= {lo, hi}
+    marks = sorted(points)
     segments = dict.fromkeys(SEGMENTS, 0.0)
     for a, b in zip(marks, marks[1:]):
         middle = (a + b) / 2
-        converting = cs[0] is not None and cs[0] <= middle < cs[1]
+        converting = any(lo <= middle < hi for lo, hi in m['working'])
         label = next((name for name, lo, hi in activities if lo <= middle < hi), None)
         if label in ('sampling', 'palette search') and converting:
             label += ' | conversion'
         elif label is None:
             label = 'color conversion' if converting else 'other'
         segments[label] += (b - a) * 1e3
-    return segments, (done - begin) * 1e3
+    return segments, (m['done'] - m['begin']) * 1e3
 
 
 def pillow_reference(image, codec):

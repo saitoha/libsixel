@@ -19,6 +19,8 @@ CHARTS=${CHARTS-}
 if [ -n "${CHARTS}" ]; then
     CHARTS=$(CDPATH='' cd -- "${CHARTS}" && pwd -P)
 fi
+# CORPUS_STRIDE=N measures every Nth corpus image by name, for quicker
+# development runs; published results use the default of 1.
 # Optional directory of the uncropped originals (*.jpg) with the same names,
 # for example photo/original; it enables the latency-against-size sweep.
 SIZE_PHOTOS=${SIZE_PHOTOS-}
@@ -67,6 +69,7 @@ esac
     --source "${study_dir}/source" --library "${library}" \
     --adapter "${study_dir}/codecs.so" --revision "${REVISION}" \
     --photos "${PHOTOS}" ${CHARTS:+"--charts=${CHARTS}"} \
+    --corpus-stride "${CORPUS_STRIDE-1}" \
     ${SIZE_PHOTOS:+"--size-photos=${SIZE_PHOTOS}"} \
     --output "${output_dir}"
 # The stage breakdown needs the originals and a stage-timed Pillow; see

@@ -408,10 +408,14 @@ def main():
         gen_rows = [r for r in rows if r['experiment'] == 'generation']
         size_rows = [r for r in rows if r['experiment'] == 'size']
         codecs = sorted({r['codec'] for r in scale_rows}, key=order)
+        full_size = meta.get('corpus_sizes', {}).get(image, len(names))
+        stride = meta.get('corpus_stride', 1)
         input_sizes = {tuple(meta['input_sizes'][k]) for k in names}
         if len(input_sizes) == 1:
             w, h = next(iter(input_sizes))
             heading = f'{label} · {len(names)} images, {w} × {h}'
+            if stride > 1:
+                heading += f' (every {stride}th of {full_size})'
         else:
             heading = f'{label} · {len(names)} images fitted inside {meta["fit"][0]} × {meta["fit"][1]}'
         for mobile in [False, True]:
@@ -436,7 +440,7 @@ def main():
                     fig.legend(*axes[0].get_legend_handles_labels(), loc='outside lower center', ncol=2 if mobile else 4, fontsize=8)
                     title = 'Latency against image size'
                     sweep = meta['size_sweep']
-                    note = (f'1:1 center crops of {len(sweep["images"])} originals (every {len(photos) // len(sweep["images"])}th by name); '
+                    note = (f'1:1 center crops of {len(sweep["images"])} originals (every {full_size // len(sweep["images"])}th by name); '
                             f'{runs} samples after 2 warm-ups; decoders read the one-thread stream. Lines are means of per-photo medians; dots are photos.')
                 else:
                     generations(axes, gen_rows, meta['generations'])
@@ -445,7 +449,7 @@ def main():
                     note = f'One thread; {runs} samples per generation. SIXEL/GIF retain indices and palette; other formats use RGB.'
                     if corpus:
                         count = len(set(meta['generation_images']) & names)
-                        note += f' Lines are means over {count} images, every {len(names) // count}th by name.'
+                        note += f' Lines are means over {count} images, every {full_size // count}th by name.'
                 log_axes(axes)
                 wrapped = textwrap.fill(note, width=64 if mobile else 110)
                 fig.suptitle(f'{heading}\n{title}\n{wrapped}', fontsize=10)
