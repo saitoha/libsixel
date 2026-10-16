@@ -587,6 +587,7 @@ typedef enum sixel_palette_job_failure_stage {
     SIXEL_PALETTE_JOB_FAILURE_THREAD_CREATE,
     SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT,
     SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD,
+    SIXEL_PALETTE_JOB_FAILURE_WORKER_POST_BUILD,
     SIXEL_PALETTE_JOB_FAILURE_LOOKUP
 } sixel_palette_job_failure_stage_t;
 
@@ -628,6 +629,8 @@ sixel_palette_job_failure_stage_name(
         return "worker-convert";
     case SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD:
         return "worker-build";
+    case SIXEL_PALETTE_JOB_FAILURE_WORKER_POST_BUILD:
+        return "worker-post-build";
     case SIXEL_PALETTE_JOB_FAILURE_LOOKUP:
         return "lookup";
     case SIXEL_PALETTE_JOB_FAILURE_NONE:
@@ -5373,10 +5376,17 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
                 return status;
             }
             /*
-             * A failed palette attempt may have resolved binning from the
-             * first sample set.  The fallback owns a different sample set,
-             * so retain only the request and resolve its metadata again.
+             * A builder can fail after committing quantizer/binning state
+             * (for example while finalizing palette output). The new sample
+             * population starts a fresh attempt: retain requests/origins,
+             * discard executed phases and samples from the failed attempt.
              */
+            sixel_sample_stream_dispose(&context->samples);
+            sixel_palette_policy_resolution_init(
+                &context->palette.quantizer,
+                context->palette.quantizer.requested,
+                context->palette.quantizer.origin);
+            context->palette.quantizer_retry_count = 0u;
             sixel_palette_binning_state_init(
                 &context->palette.binning,
                 (sixel_palette_binning_policy_t)
@@ -6054,6 +6064,9 @@ sixel_encoder_palette_job_failure_stage_requested(void)
     if (strcmp(requested, "worker") == 0) {
         return SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD;
     }
+    if (strcmp(requested, "worker-post-build") == 0) {
+        return SIXEL_PALETTE_JOB_FAILURE_WORKER_POST_BUILD;
+    }
     if (strcmp(requested, "lookup") == 0) {
         return SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
     }
@@ -6131,6 +6144,13 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
                                                 0,
                                                 &local,
                                                 &job->failure_stage);
+    /* Exercise late construction failures after policy state is committed.
+     * This is distinct from lookup failures, which must never resample. */
+    if (SIXEL_SUCCEEDED(status) && job->requested_failure_stage ==
+            SIXEL_PALETTE_JOB_FAILURE_WORKER_POST_BUILD) {
+        job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_POST_BUILD;
+        status = SIXEL_RUNTIME_ERROR;
+    }
     if (SIXEL_FAILED(status)) {
         if (local != NULL) {
             sixel_dither_unref(local);

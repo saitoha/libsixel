@@ -129,11 +129,12 @@ The failure contract distinguishes worker initialization, sample creation, threa
 | --- | --- |
 | `init`, `sample`, `worker-convert`, `worker-build` | Retry palette construction synchronously from the preprocessed full frame (`full-frame-sync`). |
 | `thread-create` | Build synchronously from the completed sample (`same-sample-sync`); classify any subsequent failure by its actual stage. |
+| `worker-post-build` | Exercise a late construction failure after policy state has committed; discard that attempt and retry the full frame (`full-frame-sync`). |
 | `lookup` | Return the original status and additional diagnostic (`propagate`); never reconstruct the palette. |
 
 Lookup preparation consumes an already finalized palette. Changing the sample population cannot repair a lookup configuration error or make a failed lookup allocation part of palette construction. This rule applies regardless of sampling origin or worker admission. Worker diagnostics move as raw markup into the collecting thread before its error is returned; transferring an existing diagnostic requires no allocation. A join performed only for cleanup does not overwrite a preprocessing error. FHEDT preparation remains inside the palette worker's budget and can overlap full-frame working-colorspace conversion.
 
-A full-frame retry re-resolves sampling to `full-frame` from `preprocessed-frame`, records `fallback` as its reason, and marks it executed only after synchronous palette construction succeeds. A thread-creation failure that successfully reuses its completed sample keeps `adaptive-grid` as the executed policy because its population did not change. The internal `_SIXEL_TEST_PALETTE_JOB_FAILURE=lookup` hook fails lookup preparation after palette construction in synchronous, worker, builtin, and mapfile paths, independently of backend validation rules.
+A full-frame retry re-resolves sampling to `full-frame` from `preprocessed-frame`, records `fallback` as its reason, and marks it executed only after synchronous palette construction succeeds. It discards the failed attempt's samples, quantizer and binning execution state, and quantizer retry count while retaining requests and origins. This is necessary even when construction committed its policy state before a later palette-output failure. A thread-creation failure that successfully reuses its completed sample keeps `adaptive-grid` as the executed policy because its population did not change. The internal `_SIXEL_TEST_PALETTE_JOB_FAILURE=lookup` hook fails lookup preparation after palette construction in synchronous, worker, builtin, and mapfile paths; `worker-post-build` exercises the late construction retry independently of backend validation rules.
 
 An explicit sampling policy does not silently inherit the automatic policy's
 full-frame retry. Cross-policy fallback is permitted only when the resolver
@@ -311,14 +312,7 @@ Candidate selection may use palette size, frame dimensions, colorspace,
 quality profile, sample count, and memory budget. It must be deterministic for
 the same inputs and settings.
 
-Each quantizer must declare whether it accepts raw samples, weighted points,
-fractional weights, observed-color representatives, and additional moments.
-An unsupported explicit combination is an error. Only an `auto` input may be
-replaced during planning. Each effective choice is fixed before its owning
-stage executes and is never reopened within that frame. A solver fallback is
-an explicit attempt transition: it must be compatible with the requested
-artifact, record the effective solver, and leave the frame state unchanged if
-the fallback is rejected.
+Each quantizer must declare whether it accepts raw samples, weighted points, fractional weights, observed-color representatives, and additional moments. An unsupported explicit combination is an error. Only an `auto` input may be replaced during planning. Each effective choice is fixed before its owning stage executes and is never reopened within that attempt. A solver or automatic sampling fallback is an explicit attempt transition: it must be compatible with the requested artifact, record the effective solver, and leave the frame state unchanged if the fallback is rejected.
 
 Soft binning can contribute one sample to as many as eight cells for a
 trilinear three-dimensional kernel. Sparse capacity estimates must be bounded
@@ -894,3 +888,4 @@ The following tests compare emitted `#n;2;r;g;b` palette definitions across 1, 2
 | PS-35 | Automatic sampling resolves an input that is not eligible for adaptive sampling, such as a PAL8 frame given to `sixel_encoder_encode_frame()`, to the full frame, so re-encoding decoded indices reproduces the first generation's pixels at 1, 2 and 8 threads. | [tests/quant/palette/0081_sampling_auto_pal8_retention.t](../../../../tests/quant/palette/0081_sampling_auto_pal8_retention.t) |
 | PS-36 | RGB888, PAL8 expansion and float32 samples (including solid repetition and transparency) agree at 1, 2, 4 and 8 threads with clipping, high/full quality, sparse and stride-one target overrides; encoded bytes agree between serial and parallel extraction at each fixed encoder budget. | [tests/processing/filter/0046_filter_sample_parallel_exact.t](../../../../tests/processing/filter/0046_filter_sample_parallel_exact.t) |
 | PS-37 | Lookup preparation errors preserve status and diagnostics with generated, builtin, and mapfile palettes at 1, 2, 4, and 8 threads in byte and float32 precision; worker errors are traced as `lookup/propagate` without a full-frame retry. | [tests/quant/palette/0082_palette_lookup_failure.t](../../../../tests/quant/palette/0082_palette_lookup_failure.t) |
+| PS-38 | A late automatic palette construction failure discards executed attempt state, succeeds on the full-frame retry, and matches an explicit full-frame reference byte for byte. | [tests/quant/palette/0083_palette_post_build_fallback.t](../../../../tests/quant/palette/0083_palette_post_build_fallback.t) |
