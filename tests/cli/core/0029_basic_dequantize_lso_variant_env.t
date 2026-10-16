@@ -14,10 +14,10 @@ set -v
 
 from_env=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     --env SIXEL_DEQUANTIZE_LSO_VARIANT=light -dlso_undither \
-    <"${TOP_SRCDIR}/images/map8.six" | cksum)
+    <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 from_cli=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     -dlso_undither:Vlight \
-    <"${TOP_SRCDIR}/images/map8.six" | cksum)
+    <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 test "${from_env}" = "${from_cli}" || {
     echo "not ok" 1 - "LSO variant environment value changed output"
     exit 0

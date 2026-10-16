@@ -14,10 +14,10 @@ set -v
 
 seed_123_a=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=123:restarts=2 \
-    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" | cksum)
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" | "${CKSUM:-cksum}")
 seed_123_b=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=123:restarts=2 \
-    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" | cksum)
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" | "${CKSUM:-cksum}")
 msg=''
 diag_line=''
 status=0

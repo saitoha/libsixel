@@ -484,6 +484,14 @@ run_case_tap "staticcheck-test-runner-amalgamation-defines-sync" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-runner-link" \
+    "$src_root/tests/_static/sh/staticcheck-test-runner-link.sh" \
+    "$src_root" "$python_bin" || fail_and_exit $?
+
+run_case_tap "staticcheck-command-dependencies" \
+    "$src_root/tests/_static/sh/staticcheck-command-dependencies.sh" \
+    "$src_root" "$python_bin" || fail_and_exit $?
+
 run_case_tap "staticcheck-gperf-generated-undefs" \
     "$src_root/tests/_static/sh/staticcheck-gperf-generated-undefs.sh" \
     "$src_root" || fail_and_exit $?

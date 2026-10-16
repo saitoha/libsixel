@@ -24,14 +24,14 @@ override_cksum=''
 
 set +x
 ref_cms1_cksum=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibtiff:cms_engine=auto! "${input_tiff}" | cksum) || {
+    -Llibtiff:cms_engine=auto! "${input_tiff}" | "${CKSUM:-cksum}") || {
     set -x
     echo "not ok" 1 - "libtiff cms=1 reference decode failed"
     exit 0
 }
 
 ref_cms0_cksum=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibtiff:cms_engine=none! "${input_tiff}" | cksum) || {
+    -Llibtiff:cms_engine=none! "${input_tiff}" | "${CKSUM:-cksum}") || {
     set -x
     echo "not ok" 1 - "libtiff cms=0 reference decode failed"
     exit 0
@@ -40,7 +40,7 @@ ref_cms0_cksum=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 override_cksum=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBTIFF_CMS_ENGINE=auto" \
-    -Llibtiff! "${input_tiff}" | cksum) || {
+    -Llibtiff! "${input_tiff}" | "${CKSUM:-cksum}") || {
     set -x
     echo "not ok" 1 - "SIXEL_LOADER_LIBTIFF_CMS_ENGINE override decode failed"
     exit 0

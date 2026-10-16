@@ -11511,7 +11511,8 @@ PHP_LOG_COMPILE = $(PHP_LOG_COMPILER) $(AM_PHP_LOG_FLAGS) \
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/dependency-bootstrap.am \
-	$(top_srcdir)/build-aux/test-driver
+	$(top_srcdir)/build-aux/test-driver \
+	$(top_srcdir)/build-aux/test-runner-link.am
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
 ACLOCAL = @ACLOCAL@
@@ -11533,6 +11534,7 @@ BASH = @BASH@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CKSUM = @CKSUM@
 CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
 CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
 CLOCK_GETTIME_LIBS = @CLOCK_GETTIME_LIBS@
@@ -11794,9 +11796,10 @@ SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null 
 # Keep executable suffix in sync with the configured target so TAP
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
-	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
-	TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
-	TOP_BUILDDIR; SIXEL_BIN_EXT='@EXEEXT@'; export SIXEL_BIN_EXT; \
+	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; \
+	TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR; \
+	TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR; \
+	SIXEL_BIN_EXT='@EXEEXT@'; export SIXEL_BIN_EXT; \
 	SIXEL_TSAN_BUILD='@SIXEL_TSAN_BUILD@'; export \
 	SIXEL_TSAN_BUILD; SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
 	export SIXEL_MSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; \
@@ -19366,11 +19369,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @OPENVMS_GNV_FALSE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
 @OPENVMS_GNV_FALSE@	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
 
-# Automake emits the link rule unconditionally, so a _LINK defined only
-# in one branch leaves the variable empty everywhere else and make then
-# tries to run the first object file as a command.  Spell out the
-# default for the other branch.
+# Both branches feed the shared target below. Keep the native OpenVMS
+# command while ordinary Libtool builds read their object list in the shell.
 @OPENVMS_GNV_TRUE@test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+@OPENVMS_GNV_TRUE@SIXEL_TEST_RUNNER_OBJECT_LIST = $(strip)
+@OPENVMS_GNV_TRUE@SIXEL_TEST_RUNNER_LINK_COMMAND = $(test_runner_LINK) $(test_runner_OBJECTS) \
+@OPENVMS_GNV_TRUE@    $(test_runner_LDADD) $(LIBS)
+
 LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
@@ -19461,6 +19466,11 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-timeline-logging-boundary.sh \
 	_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
+	_static/sh/staticcheck-test-runner-link.sh \
+	_static/python/test_runner_link.py \
+	_static/sh/staticcheck-command-dependencies.sh \
+	_static/python/command_dependencies.py \
+	_static/python/command-dependencies-requirements.txt \
 	_static/sh/staticcheck-gperf-generated-undefs.sh \
 	_static/sh/staticcheck-makefile-recipes.sh \
 	_static/sh/staticcheck-makefile-generated-pairs.sh \
@@ -19528,7 +19538,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = check-tests.list
+CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp
 DISTCLEANFILES = check-tests.mk
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 all: $(BUILT_SOURCES)
@@ -19536,7 +19546,7 @@ all: $(BUILT_SOURCES)
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .log .o .obj .php .php$(EXEEXT) .pl .pl$(EXEEXT) .py .py$(EXEEXT) .rb .rb$(EXEEXT) .t .t$(EXEEXT) .trs
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/build-aux/test-runner-link.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -19556,7 +19566,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles);; \
 	esac;
-$(top_srcdir)/build-aux/dependency-bootstrap.am $(am__empty):
+$(top_srcdir)/build-aux/test-runner-link.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -31264,10 +31274,6 @@ $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp):
 $(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT):  \
 	$(top_builddir)/amalgamation/$(am__dirstamp) \
 	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
-
-test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) $(EXTRA_test_runner_DEPENDENCIES) 
-	@rm -f test_runner$(EXEEXT)
-	$(AM_V_GEN)$(test_runner_LINK) $(test_runner_OBJECTS) $(test_runner_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -87192,6 +87198,39 @@ uninstall-am:
 # current runner.
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 1
 SIXEL_INSTALLCHECK ?= 0
+# The static suite and nested helpers need the same configured utility.
+export CKSUM
+
+# Keep object names out of the shell's -c argument. Even relative paths can
+# exceed Linux's per-string limit long before the total argv limit is reached.
+# Separate recipe lines bound each shell invocation while retaining GNU make
+# 3.81 support; its implementation has no $(file ...) function.
+define sixel_write_test_runner_objects
+$(if $(strip $(1)),@printf '%s\n' $(wordlist 1,128,$(1)) >>$@.tmp
+$(call sixel_write_test_runner_objects,$(wordlist 129,$(words $(1)),$(1))))
+endef
+
+# The configured Makefile owns the object inventory. Reuse the list across
+# object rebuilds and publish it only after every batch was written.
+test_runner.objects: Makefile
+	@: >$@.tmp
+	$(call sixel_write_test_runner_objects,$(test_runner_OBJECTS))
+	@mv -f $@.tmp $@
+
+# Expand the file inside the already-running shell, preserving object order
+# before libraries. Libtool receives ordinary individual .o/.obj arguments:
+# its -objectlist option requires .lo descriptors, and compiler @file support
+# is not universal. Disable globbing when splitting make's whitespace list.
+SIXEL_TEST_RUNNER_OBJECT_LIST ?= test_runner.objects
+SIXEL_TEST_RUNNER_LINK_COMMAND ?= set -f; objects=$$(cat test_runner.objects) && \
+    $(test_runner_LINK) $$objects $(test_runner_LDADD) $(LIBS)
+
+# OpenVMS supplies its native command and an empty list prerequisite. Keep
+# one unconditional target so Automake does not emit a second link recipe.
+test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) \
+        $(EXTRA_test_runner_DEPENDENCIES) $(SIXEL_TEST_RUNNER_OBJECT_LIST)
+	@rm -f $@
+	$(AM_V_GEN)$(SIXEL_TEST_RUNNER_LINK_COMMAND)
 
 .PHONY: \
 	staticcheck \

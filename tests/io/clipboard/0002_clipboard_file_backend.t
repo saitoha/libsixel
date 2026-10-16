@@ -52,7 +52,7 @@ test -s "${fake_png_slot}" || {
     exit 0
 }
 
-png_signature_cksum=$(dd if="${fake_png_slot}" bs=1 count=8 2>/dev/null | cksum)
+png_signature_cksum=$(dd if="${fake_png_slot}" bs=1 count=8 2>/dev/null | "${CKSUM:-cksum}")
 test "${png_signature_cksum}" = "4074750897 8" || {
     echo "not ok" 1 - "fake clipboard PNG slot has invalid signature"
     exit 0
@@ -69,7 +69,7 @@ test -s "${fake_text_slot}" || {
 }
 
 IFS=P read -r text_prefix _ < "${fake_text_slot}" || true
-text_prefix_cksum=$(printf "%sP" "${text_prefix}" | cksum)
+text_prefix_cksum=$(printf "%sP" "${text_prefix}" | "${CKSUM:-cksum}")
 test "${text_prefix_cksum}" = "3058461199 2" || {
     echo "not ok" 1 - "fake clipboard text slot is not SIXEL text"
     exit 0

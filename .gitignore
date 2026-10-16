@@ -70,6 +70,8 @@ converters/img2sixel
 converters/sixel2png
 assessment/lsqa
 tests/test_runner
+tests/test_runner.objects
+tests/test_runner.objects.tmp
 tools/lso-timeout
 tools/lso-timer
 tools/progressive-study

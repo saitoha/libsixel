@@ -39,7 +39,7 @@ AMALGAMATION_DEPS = $(AMALGAMATION_GEN) $(AMALGAMATION_SRC_DEPS) \
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(builddir)/sixel.c: $(AMALGAMATION_DEPS)
-	$(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
+	$(AM_V_GEN)CKSUM="$(CKSUM)" $(SHELL) $(AMALGAMATION_GEN) "$@" \
 	                "$(top_srcdir)" "$(top_builddir)"
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.

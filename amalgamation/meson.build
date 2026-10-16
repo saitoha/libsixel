@@ -276,6 +276,9 @@ amalgamation_headers = files(
   '../converters/malloc_stub.h',
 )
 
+amalgamation_cksum = find_program('cksum', 'cksum.exe', required: true)
+amalgamation_env = environment()
+amalgamation_env.set('CKSUM', amalgamation_cksum.full_path())
 amalgamation_out = custom_target('sixel-amalgamation.' + amalgamation_suffix,
   output: 'sixel.' + amalgamation_suffix,
   command: [amalgamation_gen, '@OUTPUT@', meson.project_source_root(),
@@ -284,6 +287,7 @@ amalgamation_out = custom_target('sixel-amalgamation.' + amalgamation_suffix,
     amalgamation_discovered_depends + [config_h] +
     files('../tools/gen-amalgamation.sh'),
   depends: amalgamation_header_depends,
+  env: amalgamation_env,
   build_by_default: true)
 
 summary({'Amalgamation build': 'single translation unit generated'},

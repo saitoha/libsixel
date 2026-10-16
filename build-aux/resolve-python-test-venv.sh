@@ -51,7 +51,7 @@ try_install_wheel_candidate() {
         return 1
     fi
 
-    candidate_signature=$(cksum "$candidate" | sed 's/ .*//')
+    candidate_signature=$("${CKSUM:-cksum}" "$candidate" | sed 's/ .*//')
     candidate_combined_signature="$candidate_signature"
     if [ -n "$src_signature" ]; then
         candidate_combined_signature="${candidate_signature}:${src_signature}"
@@ -93,28 +93,28 @@ compute_source_signature() {
             "$src_dir/wheel_builder.py" \
             "$src_dir/libsixel/_wheel_ext.c"; do
             if [ -f "$path" ]; then
-                cksum "$path" >> "$sig_file"
+                "${CKSUM:-cksum}" "$path" >> "$sig_file"
             fi
         done
         if [ -d "$src_dir/libsixel" ]; then
             find "$src_dir/libsixel" -maxdepth 1 -type f -name '*.py' \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
-                    cksum "$path"
+                    "${CKSUM:-cksum}" "$path"
                 done >> "$sig_file"
         fi
         if [ -d "$src_dir/libsixel/_libs" ]; then
             find "$src_dir/libsixel/_libs" -maxdepth 1 -type f -name '*.py' \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
-                    cksum "$path"
+                    "${CKSUM:-cksum}" "$path"
                 done >> "$sig_file"
         fi
     fi
 
     src_lib=$(sixel_resolve_libsixel_shared_lib "$lib_dir")
     if [ -n "$src_lib" ]; then
-        cksum "$src_lib" >> "$sig_file"
+        "${CKSUM:-cksum}" "$src_lib" >> "$sig_file"
     fi
 
     if [ ! -s "$sig_file" ]; then
@@ -123,7 +123,7 @@ compute_source_signature() {
         return 0
     fi
 
-    cksum "$sig_file" | awk '{print $1}'
+    "${CKSUM:-cksum}" "$sig_file" | awk '{print $1}'
     rm -f "$sig_file"
 }
 

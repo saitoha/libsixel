@@ -245,21 +245,21 @@ compute_source_signature() {
             "$src_dir/README" \
             "$src_dir/README.md"; do
             if [ -f "$path" ]; then
-                cksum "$path" >> "$sig_file"
+                "${CKSUM:-cksum}" "$path" >> "$sig_file"
             fi
         done
         if [ -d "$src_dir/src" ]; then
             find "$src_dir/src" -type f -name '*.php' \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
-                    cksum "$path"
+                    "${CKSUM:-cksum}" "$path"
                 done >> "$sig_file"
         fi
     fi
 
     src_lib=$(sixel_resolve_libsixel_shared_lib "$lib_dir")
     if [ -n "$src_lib" ]; then
-        cksum "$src_lib" >> "$sig_file"
+        "${CKSUM:-cksum}" "$src_lib" >> "$sig_file"
     fi
 
     if [ ! -s "$sig_file" ]; then
@@ -268,7 +268,7 @@ compute_source_signature() {
         return 0
     fi
 
-    cksum "$sig_file" | awk '{print $1}'
+    "${CKSUM:-cksum}" "$sig_file" | awk '{print $1}'
     rm -f "$sig_file"
 }
 
@@ -396,7 +396,7 @@ if [ -z "$archive_path" ] || [ ! -f "$archive_path" ]; then
     exit 0
 fi
 
-archive_signature=$(cksum "$archive_path" | sed 's/ .*//')
+archive_signature=$("${CKSUM:-cksum}" "$archive_path" | sed 's/ .*//')
 source_signature=$(compute_source_signature "$source_dir" "$libsixel_lib_dir")
 combined_signature="$archive_signature"
 if [ -n "$source_signature" ]; then

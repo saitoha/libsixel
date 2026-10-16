@@ -24,9 +24,9 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -dl:Vf \
 }
 
 vfs_reference=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -dk_ \
-    <"${TOP_SRCDIR}/images/map8.six" | cksum)
+    <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 vfs_alias=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -dl:Vf \
-    <"${TOP_SRCDIR}/images/map8.six" | cksum)
+    <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 test "${vfs_reference}" = "${vfs_alias}" || {
     echo "not ok" 1 - "compact Vfs alias changed k_undither output"
     exit 0

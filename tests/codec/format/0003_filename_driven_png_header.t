@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o "${filename_png}" "${snake_jpg}" || {
 }
 
 expected_header_cksum="3308842558 4"
-actual_header_cksum=$(dd bs=1 count=4 if="${filename_png}" 2>/dev/null | cksum)
+actual_header_cksum=$(dd bs=1 count=4 if="${filename_png}" 2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
     echo "not ok" 1 - "filename-driven PNG header incorrect"

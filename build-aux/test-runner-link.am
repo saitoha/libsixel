@@ -1,0 +1,30 @@
+# Keep object names out of the shell's -c argument. Even relative paths can
+# exceed Linux's per-string limit long before the total argv limit is reached.
+# Separate recipe lines bound each shell invocation while retaining GNU make
+# 3.81 support; its implementation has no $(file ...) function.
+define sixel_write_test_runner_objects
+$(if $(strip $(1)),@printf '%s\n' $(wordlist 1,128,$(1)) >>$@.tmp
+$(call sixel_write_test_runner_objects,$(wordlist 129,$(words $(1)),$(1))))
+endef
+
+# The configured Makefile owns the object inventory. Reuse the list across
+# object rebuilds and publish it only after every batch was written.
+test_runner.objects: Makefile
+	@: >$@.tmp
+	$(call sixel_write_test_runner_objects,$(test_runner_OBJECTS))
+	@mv -f $@.tmp $@
+
+# Expand the file inside the already-running shell, preserving object order
+# before libraries. Libtool receives ordinary individual .o/.obj arguments:
+# its -objectlist option requires .lo descriptors, and compiler @file support
+# is not universal. Disable globbing when splitting make's whitespace list.
+SIXEL_TEST_RUNNER_OBJECT_LIST ?= test_runner.objects
+SIXEL_TEST_RUNNER_LINK_COMMAND ?= set -f; objects=$$(cat test_runner.objects) && \
+    $(test_runner_LINK) $$objects $(test_runner_LDADD) $(LIBS)
+
+# OpenVMS supplies its native command and an empty list prerequisite. Keep
+# one unconditional target so Automake does not emit a second link recipe.
+test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) \
+        $(EXTRA_test_runner_DEPENDENCIES) $(SIXEL_TEST_RUNNER_OBJECT_LIST)
+	@rm -f $@
+	$(AM_V_GEN)$(SIXEL_TEST_RUNNER_LINK_COMMAND)

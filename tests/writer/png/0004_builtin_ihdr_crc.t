@@ -28,7 +28,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
 
 expected_ihdr_crc_cksum="737776243 4"
 actual_ihdr_crc_cksum=$(dd bs=1 skip=29 count=4 if="${png_path}" \
-        2>/dev/null | cksum)
+        2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_ihdr_crc_cksum}" = "${expected_ihdr_crc_cksum}" || {
     echo "not ok" 1 - "builtin IHDR CRC does not match PNG CRC-32"

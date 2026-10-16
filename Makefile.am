@@ -43,6 +43,9 @@ DIST_SUBDIRS = \
         amalgamation \
         tests
 
+# Recursive build and binding helpers share the configured checksum utility.
+export CKSUM
+
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = tools/generate_output_icc_fixtures.py \
     tests/data/color-numeric/relative-paired-lut.icc \
@@ -50,6 +53,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
     tests/data/color-numeric/icc-output.h \
     LICENSE build.md build-aux/depcomp \
     build-aux/dependency-bootstrap.am \
+    build-aux/test-runner-link.am \
     tools/generate_cms_quality_references.py \
     tools/generate_color_fixtures.py \
     tools/generate_palette_space_fixtures.py \

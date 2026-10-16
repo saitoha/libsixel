@@ -35,7 +35,7 @@ test "${rc}" -ne 0 || {
 }
 
 # GNV exposes an OpenVMS text-record terminator as a trailing newline.
-checksum=$(tr -d '\n' <"${out_file}" | cksum) || {
+checksum=$(tr -d '\n' <"${out_file}" | "${CKSUM:-cksum}") || {
     echo "not ok" 1 - "forced GPU rejection DCS checksum failed"
     exit 0
 }

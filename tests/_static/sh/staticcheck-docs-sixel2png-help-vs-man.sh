@@ -101,8 +101,8 @@ test "$man_count" -ge 15 || {
     exit 1
 }
 
-help_sum=$(cksum < "$help_norm")
-man_sum=$(cksum < "$man_norm")
+help_sum=$("${CKSUM:-cksum}" < "$help_norm")
+man_sum=$("${CKSUM:-cksum}" < "$man_norm")
 
 test "$help_sum" = "$man_sum" || {
     echo "not ok 1 - sixel2png -H diverges from its manual"

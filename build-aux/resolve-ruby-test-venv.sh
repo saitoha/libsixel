@@ -53,21 +53,21 @@ compute_source_signature() {
             "$src_dir/gem_builder.rb" \
             "$src_dir/libsixel-ruby.gemspec"; do
             if [ -f "$path" ]; then
-                cksum "$path" >> "$sig_file"
+                "${CKSUM:-cksum}" "$path" >> "$sig_file"
             fi
         done
         if [ -d "$src_dir/lib" ]; then
             find "$src_dir/lib" -type f -name '*.rb' \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
-                    cksum "$path"
+                    "${CKSUM:-cksum}" "$path"
                 done >> "$sig_file"
         fi
     fi
 
     src_lib=$(sixel_resolve_libsixel_shared_lib "$lib_dir")
     if [ -n "$src_lib" ]; then
-        cksum "$src_lib" >> "$sig_file"
+        "${CKSUM:-cksum}" "$src_lib" >> "$sig_file"
     fi
 
     if [ ! -s "$sig_file" ]; then
@@ -76,7 +76,7 @@ compute_source_signature() {
         return 0
     fi
 
-    cksum "$sig_file" | awk '{print $1}'
+    "${CKSUM:-cksum}" "$sig_file" | awk '{print $1}'
     rm -f "$sig_file"
 }
 
@@ -99,7 +99,7 @@ if [ -z "$gem_path" ]; then
 fi
 
 gem_marker="$shared_ruby_gem_home/.libsixel-ruby-gem-path"
-gem_signature=$(cksum "$gem_path" | sed 's/ .*//')
+gem_signature=$("${CKSUM:-cksum}" "$gem_path" | sed 's/ .*//')
 source_signature=$(compute_source_signature "$source_dir" "$libsixel_lib_dir")
 combined_signature="$gem_signature"
 if [ -n "$source_signature" ]; then

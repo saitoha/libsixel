@@ -56,6 +56,9 @@ ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 SIXEL_INSTALLCHECK ?= 0
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
+AM_TESTS_ENVIRONMENT += CKSUM='$(CKSUM)'; export CKSUM;
+# The static suite and nested helpers need the same configured utility.
+export CKSUM
 AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
 AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
 # Keep executable suffix in sync with the configured target so TAP
@@ -7640,17 +7643,19 @@ test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
         $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
 endif
-# Automake emits the link rule unconditionally, so a _LINK defined only
-# in one branch leaves the variable empty everywhere else and make then
-# tries to run the first object file as a command.  Spell out the
-# default for the other branch.
+# Both branches feed the shared target below. Keep the native OpenVMS
+# command while ordinary Libtool builds read their object list in the shell.
 if OPENVMS_GNV
 test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+SIXEL_TEST_RUNNER_OBJECT_LIST = $(strip)
+SIXEL_TEST_RUNNER_LINK_COMMAND = $(test_runner_LINK) $(test_runner_OBJECTS) \
+    $(test_runner_LDADD) $(LIBS)
 else
 test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
 	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
 endif
+include $(top_srcdir)/build-aux/test-runner-link.am
 
 LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
@@ -9530,6 +9535,11 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
 		_static/sh/staticcheck-timeline-logging-boundary.sh \
 		_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
+    _static/sh/staticcheck-test-runner-link.sh \
+    _static/python/test_runner_link.py \
+    _static/sh/staticcheck-command-dependencies.sh \
+    _static/python/command_dependencies.py \
+    _static/python/command-dependencies-requirements.txt \
 	_static/sh/staticcheck-gperf-generated-undefs.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-makefile-generated-pairs.sh \
@@ -9602,7 +9612,7 @@ dist-hook:
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = check-tests.list
+CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp
 DISTCLEANFILES = check-tests.mk
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.

@@ -329,7 +329,10 @@ append_license_block() {
         return
     fi
 
-    hash=$(printf "%s" "${block}" | cksum | awk '{print $1}')
+    # Keep the checksum utility last so a missing or failing command cannot
+    # be hidden by a successful downstream parser. Configure supplies CKSUM.
+    hash=$(printf "%s" "${block}" | "${CKSUM:-cksum}")
+    hash=${hash%% *}
     if grep -q "^${hash}$" "${license_hash_temp}" 2>/dev/null; then
         return
     fi

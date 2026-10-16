@@ -60,8 +60,8 @@ test "$zsh_count" -ge 50 || {
     exit 1
 }
 
-bash_sum=$(cksum < "$bash_norm")
-zsh_sum=$(cksum < "$zsh_norm")
+bash_sum=$("${CKSUM:-cksum}" < "$bash_norm")
+zsh_sum=$("${CKSUM:-cksum}" < "$zsh_norm")
 
 test "$bash_sum" = "$zsh_sum" || {
     echo "not ok 1 - Bash completion diverges from Zsh completion"

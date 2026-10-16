@@ -51,8 +51,10 @@ sixel_cover_native_distance(double const *a, double const *b)
     return r * r + g * g + blue * blue;
 }
 
+/* C99 cannot add const through a pointer to an array. The caller owns a
+ * mutable palette, but this search only reads its entries. */
 static double
-sixel_cover_native_nearest(double const *rgb, double const entries[][3],
+sixel_cover_native_nearest(double const *rgb, double entries[][3],
                            unsigned int count)
 {
     double best;

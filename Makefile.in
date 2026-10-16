@@ -305,6 +305,7 @@ BASH = @BASH@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CKSUM = @CKSUM@
 CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
 CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
 CLOCK_GETTIME_LIBS = @CLOCK_GETTIME_LIBS@
@@ -564,6 +565,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
     tests/data/color-numeric/icc-output.h \
     LICENSE build.md build-aux/depcomp \
     build-aux/dependency-bootstrap.am \
+    build-aux/test-runner-link.am \
     tools/generate_cms_quality_references.py \
     tools/generate_color_fixtures.py \
     tools/generate_palette_space_fixtures.py \
@@ -2148,6 +2150,9 @@ uninstall-am: uninstall-local uninstall-pkgconfigDATA
 
 .PRECIOUS: Makefile
 
+
+# Recursive build and binding helpers share the configured checksum utility.
+export CKSUM
 
 # Automake/libtool may require a top-level ltmain.sh in DIST_COMMON even when
 # AC_CONFIG_AUX_DIR points at build-aux/.  Generate it from the canonical copy

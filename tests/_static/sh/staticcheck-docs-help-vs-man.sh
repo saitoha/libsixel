@@ -119,8 +119,8 @@ test "$man_count" -ge 50 || {
     exit 1
 }
 
-sum_help=$(cksum < "$help_norm")
-sum_man=$(cksum < "$man_norm")
+sum_help=$("${CKSUM:-cksum}" < "$help_norm")
+sum_man=$("${CKSUM:-cksum}" < "$man_norm")
 
 if test "$sum_help" != "$sum_man"; then
     echo "not ok 1 - --help diverges from manpage"

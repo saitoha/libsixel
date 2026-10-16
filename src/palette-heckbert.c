@@ -3318,7 +3318,9 @@ sixel_heckbert_native_histogram(unsigned char const *data,
      * for a repeated-color 4K image. Only distinct triples need tuples.
      * Positive per-axis scaling preserves order and equality, including
      * signed zero, so sorting finite source values gives the same bins. */
-    if ((size_t)count > (size_t)-1 / sizeof(*sorted)) {
+    /* count is nonzero here. Divide by it so this guard also compiles
+     * when size_t can represent every unsigned int allocation count. */
+    if (sizeof(*sorted) > (size_t)-1 / count) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     sorted = sixel_allocator_malloc(allocator, count * sizeof(*sorted));

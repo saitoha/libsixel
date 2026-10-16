@@ -12,10 +12,10 @@ echo "1..1"
 set -v
 
 vlight_short=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -dl:Vl \
-    <"${TOP_SRCDIR}/images/map8.six" | cksum)
+    <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 vlight_full=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -dlso_undither:Vlight \
-    <"${TOP_SRCDIR}/images/map8.six" | cksum)
+    <"${TOP_SRCDIR}/images/map8.six" | "${CKSUM:-cksum}")
 test "${vlight_short}" = "${vlight_full}" || {
     echo "not ok" 1 - "compact Vlight alias changed output"
     exit 0

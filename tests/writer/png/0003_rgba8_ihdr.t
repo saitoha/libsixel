@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
 
 expected_ihdr_format_cksum="493756175 2"
 actual_ihdr_format_cksum=$(dd bs=1 skip=24 count=2 if="${png_path}" \
-        2>/dev/null | cksum)
+        2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_ihdr_format_cksum}" = "${expected_ihdr_format_cksum}" || {
     echo "not ok" 1 - "direct output is not 8-bit RGBA PNG"

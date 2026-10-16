@@ -69,8 +69,8 @@ test "$completion_count" -ge 50 || {
     exit 1
 }
 
-man_sum=$(cksum < "$man_norm")
-completion_sum=$(cksum < "$completion_norm")
+man_sum=$("${CKSUM:-cksum}" < "$man_norm")
+completion_sum=$("${CKSUM:-cksum}" < "$completion_norm")
 
 if test "$man_sum" != "$completion_sum"; then
     echo "not ok 1 - manpage diverges from bash completion"

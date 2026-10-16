@@ -171,7 +171,7 @@ main_unmapped_return_count=$(awk '
 ' "$src_root/tests/test_runner.c")
 test "$main_unmapped_return_count" -eq 0 ||
     fail "test_runner main retains an unmapped OpenVMS process return"
-require_fixed "tr -d '\\n' <\"\${out_file}\" | cksum" \
+require_fixed "tr -d '\\n' <\"\${out_file}\" | \"\${CKSUM:-cksum}\"" \
     tests/planner/pipeline/0013_pipeline_gpu_force_reject_closes_dcs.t
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' \
     tests/security/issue/0012_issue220_dcs_signed_integer_overflow.t
@@ -200,7 +200,7 @@ while IFS="$tab" read -r fixture_path fixture_cksum fixture_size; do
         fail "OpenVMS record fixture is missing: $fixture_path"
         continue
     }
-    fixture_actual=$(cksum "$src_root/$fixture_path")
+    fixture_actual=$("${CKSUM:-cksum}" "$src_root/$fixture_path")
     read -r fixture_actual_cksum fixture_actual_size fixture_actual_path <<EOF
 $fixture_actual
 EOF

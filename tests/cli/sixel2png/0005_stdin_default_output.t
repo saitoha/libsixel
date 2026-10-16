@@ -24,7 +24,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i - <"${TOP_SRCDIR}/images/map8.six" >"${
 # Keep this CLI test focused on the default stdout destination. Writer chunk
 # integrity is checked independently under tests/writer/png.
 expected_header_cksum="3308842558 4"
-actual_header_cksum=$(dd bs=1 count=4 if="${stdout_path}" 2>/dev/null | cksum)
+actual_header_cksum=$(dd bs=1 count=4 if="${stdout_path}" 2>/dev/null | "${CKSUM:-cksum}")
 
 test "${actual_header_cksum}" = "${expected_header_cksum}" || {
     echo "not ok" 1 - "stdout png signature is invalid"

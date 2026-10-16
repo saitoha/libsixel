@@ -136,6 +136,7 @@ Before the manifest-based collector, the project's `check-TESTS` recipe expanded
 | Boundary | Problematic full-list operation | Current mitigation and owner |
 | --- | --- | --- |
 | Recursive test launch | Passing every `.log` target on the recursive make command line. | `sixel-check-test-logs` is a single command argument; the full list remains make prerequisites on ordinary platforms. |
+| Test-runner link | Expanding thousands of object paths into the shell's single `-c` argument. | `build-aux/test-runner-link.am` writes `test_runner.objects` in batches and reads it inside the running shell before invoking Libtool with separate object arguments. OpenVMS retains its native linker rule. |
 | Dependency bootstrap | Starting a directory-creation command and a shell for each missing dependency file during `config.status`. | All dependency-tracking directories include `build-aux/dependency-bootstrap.am`; its `am--depfiles` rule initializes Automake's exact inventory in small shell batches, creating directories only when missing and preserving existing dependency contents and timestamps. Automake's individual rules remain available for files removed after configuration. |
 | Suite aggregation | Expanding every result path into a generated shell recipe or utility argument list. | `find` plus a sorted `.trs` manifest, then shell `read` loops and small per-file operations in `check-TESTS`. |
 | Cleanup | One oversized `rm` command, or thousands of processes removing individual test outputs. | `mostlyclean-generic` uses `find -exec ... +` for logs; `clean-local` removes existing test copies in small batches; `distclean` and `maintainer-clean` batch Automake's exact dependency-file inventory. Suite setup separately discovers logs and processes paths incrementally. |
@@ -159,6 +160,8 @@ sh build-aux/read-check-test-list.sh tests tests include newline |
 ```
 
 `path_bytes` is the flattened path-list size with one separator per entry. It is not a measurement of a particular failing command, whose flags, suffixes, environment, and platform representation can differ. Keep this measurement separate from the number of assertions reported by a completed suite.
+
+The object list is regenerated when the configured Makefile changes, rather than on every relink. Its generation uses bounded shell recipes compatible with GNU make 3.81. Reading the list inside the shell avoids the per-string limit; the total argument/environment limit still applies to the individual arguments passed to Libtool and the compiler. [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) exercises the production rules with an oversized synthetic list, verifies argument order, dry-run behavior, incremental reuse, regeneration and read-failure propagation without compiling C.
 
 ## OpenVMS execution
 
@@ -185,3 +188,20 @@ These choices complement the command-length fixes: combining C helpers reduces l
 | Many skipped tests | Optional dependencies and runtime prerequisites in that exact build, not the overall health of another configuration. |
 
 Historical changes are inspectable in commits [`e1ca48f3b`](https://github.com/saitoha/libsixel/commit/e1ca48f3b) for the short launch target and manifest aggregation, [`ce7a8a488`](https://github.com/saitoha/libsixel/commit/ce7a8a488) for distribution and cleanup limits, and [`3bf727177`](https://github.com/saitoha/libsixel/commit/3bf727177) for the file-based Meson wrapper. Current source rules remain authoritative after later changes.
+
+## External command discovery
+
+Configure inventories literal external tools used by maintained Make recipes (`Makefile`, `.am` and `.mk`), Meson descriptions, shell scripts (including launchers without an extension) and shell TAP tests. Optional platform and maintenance tools are probed without making their absence fatal to an ordinary build. Their feature owners retain responsibility for requiredness, fallbacks and skips. The checksum utility is required: `AC_PATH_PROGS` accepts `cksum` or `cksum.exe`, and the selected `CKSUM` is exported to recursive Autotools builds and tests. Meson supplies its discovered checksum path to the amalgamation generator and test environments. Standalone shell helpers accept a `CKSUM` override and otherwise use the conventional command name.
+
+The command-dependency audit compares literal command-name nodes and `${TOOL:-command}` defaults against Autoconf discovery declarations, including Meson's literal `find_program`, `run_command` and custom-target executables. It excludes shell builtins, local or sourced repository shell functions, commands built by project Make targets, inert heredoc payloads and the upstream-generated Libtool implementation. It does not execute the inspected sources or compile C. Install its parser into the Python environment selected for staticcheck with `python -m pip install -r tests/_static/python/command-dependencies-requirements.txt`. An unavailable parser is an explicit skip, not evidence that dependency discovery passed.
+
+This is a declaration audit, not a complete shell interpreter or proof of optional-tool control flow. Program names computed dynamically, generated shell code, indirect Make macro expansion and whether every consumer honors the discovered path require separate review. A listed probe also does not establish that the tool exists on a particular machine. The audit reports the first use of each named tool lacking a probe; parser controls cover substitutions, pipelines, functions, comments, heredocs and Make recipe boundaries.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning check |
+| --- | --- | --- |
+| TH-01 | Object-list generation and link recipes stay bounded, preserve argument order, support dry runs and incremental reuse, and propagate a list-read failure. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
+| TH-02 | Statically named external commands have corresponding configure discovery declarations. | [tests/_static/sh/staticcheck-command-dependencies.sh](../../tests/_static/sh/staticcheck-command-dependencies.sh) |

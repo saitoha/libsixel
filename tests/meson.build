@@ -1,5 +1,6 @@
 sh = find_program('sh')
 cp_cmd = find_program('cp', required: true)
+cksum_prog = find_program('cksum', 'cksum.exe', required: true)
 actionlint_prog = find_program('actionlint', required: false)
 shellcheck_prog = find_program('shellcheck', required: false)
 codespell_prog = find_program('codespell', required: false)
@@ -69,6 +70,7 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 endif
 
 base_env_settings = [
+  ['CKSUM', cksum_prog.full_path()],
   ['ARTIFACT_ROOT', artifact_root],
   ['TOP_SRCDIR', meson.project_source_root()],
   ['TOP_BUILDDIR', meson.project_build_root()],

@@ -48,8 +48,8 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "${bg_sixel}" -o "${bg_png}" || {
     exit 0
 }
 
-default_cksum="$(cksum "${default_png}")"
-bg_cksum="$(cksum "${bg_png}")"
+default_cksum="$("${CKSUM:-cksum}" "${default_png}")"
+bg_cksum="$("${CKSUM:-cksum}" "${bg_png}")"
 test "${default_cksum}" != "${bg_cksum}" || {
     echo "not ok" 1 - "default/background decoded PNG unexpectedly matched"
     exit 0

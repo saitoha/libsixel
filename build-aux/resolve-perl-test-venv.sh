@@ -89,9 +89,9 @@ source_signature=$(
         -path './lib/*' \
         | LC_ALL=C sort \
         | while IFS= read -r path; do
-            cksum "$path"
+            "${CKSUM:-cksum}" "$path"
         done \
-        | cksum | awk '{print $1}'
+        | "${CKSUM:-cksum}" | awk '{print $1}'
 )
 source_marker="$perl_local_lib_root/.libsixel-perl-source-signature"
 
@@ -228,7 +228,7 @@ libsixel_shared_lib=$(sixel_resolve_libsixel_shared_lib "$libsixel_lib_dir")
 if [ -z "$libsixel_shared_lib" ]; then
     exit 0
 fi
-lib_signature=$(cksum "$libsixel_shared_lib" | sed 's/ .*//')
+lib_signature=$("${CKSUM:-cksum}" "$libsixel_shared_lib" | sed 's/ .*//')
 combined_signature="${source_signature}:${lib_signature}"
 
 if [ -f "$source_marker" ]; then

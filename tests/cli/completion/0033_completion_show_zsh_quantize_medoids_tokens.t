@@ -48,8 +48,8 @@ esac
 msg=${msg%__LIBSIXEL_ZSH_COMPLETION_END__}
 # Normalize line endings so Windows text-mode stdout does not cause a
 # false mismatch against repository files stored with LF endings.
-actual_cksum=$(printf '%s' "${msg}" | tr -d '\r' | cksum)
-expected_cksum=$(tr -d '\r' < "${completion_file}" | cksum)
+actual_cksum=$(printf '%s' "${msg}" | tr -d '\r' | "${CKSUM:-cksum}")
+expected_cksum=$(tr -d '\r' < "${completion_file}" | "${CKSUM:-cksum}")
 
 test "${actual_cksum}" = "${expected_cksum}" || {
     echo "not ok" 1 - "zsh completion output diverges from source script"
