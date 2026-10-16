@@ -1,22 +1,29 @@
-# Step 1: A Complete Codec with Run-Length Coding
+# Step 1: A First Encoder and Decoder
 
-SIXEL looks obscure, but a working encoder and decoder are each about thirty lines of C. This step writes both, with no optimization beyond the repeat introducer that the format itself provides. The full source is [`code/step1.c`](code/step1.c).
+In [Lesson 0](step0-by-hand.md) you drew a heart by adding up pin values with a pencil. Now you teach a program to do the same for any picture, and to read SIXEL back into pixels. Both directions fit in about thirty lines of C. They are not fast yet, but they are complete, and every later step only makes them faster. The full source is [`code/step1.c`](code/step1.c).
 
-## The idea in one picture
+**You will learn:**
 
-A SIXEL image is cut into horizontal *bands* six pixels high. One data character describes one column of one band for one color: bit *r* is set when the pixel in row *r* of the band has that color, and adding 63 (`?`) makes the six-bit value a printable character from `?` to `~`.
+- how to turn "for every band, for every color, for every column" into loops,
+- how the repeat character `!` makes streams shorter,
+- how a decoder keeps track of where it is,
+- why this first plan gets slow with many colors.
 
-```text
-band rows       column x         bits      character
-row 0           color 2          0
-row 1           color 5          1  <- color 5 in rows 1, 2 and 4
-row 2           color 5          1
-row 3           color 2          0         0b010110 = 22
-row 4           color 5          1         22 + 63 = 85 = 'U'
-row 5           color 2          0
-```
+## The encoder's plan
 
-To draw a band, select a color with `#n`, write one character per column, return to the left edge with `$`, select the next color, and so on. `-` moves to the next band. `!n` repeats the following character *n* times.
+Do exactly what you did by hand. Take the first band (six rows). Take the first color. Walk across the band and, for every column, add up the values of the rows that have this color. Write one character per column. Then go back with `$`, take the next color and walk again. When all colors are done, write `-` and continue with the next band.
+
+![An eight by six band of sky, sun and grass. The encoder scans all pixels three times, once per color, and writes one line of characters per color](figures/step1-passes.svg)
+
+In the picture above, the band has three colors, so the encoder walks over the same 48 pixels three times. The sun only fills two columns on the right, so its line is six empty columns followed by `BB`.
+
+## Saying "eight times" in three bytes
+
+Pictures often have long runs of the same character, such as a sky that is blue for a hundred columns. SIXEL lets you write `!` followed by a count instead:
+
+![Eight tildes become !8~. Runs of one to three stay as letters; four or more use the repeat form](figures/step1-repeat.svg)
+
+`!8~` is three bytes instead of eight. For a run of three the repeat form is no shorter, so the encoder uses it only for runs of four or more. The encoder collects a run until the character changes and then writes it out with `flush()`.
 
 ## Encoder
 
@@ -27,7 +34,7 @@ static void flush(buffer_t *out, int ch, int count)
     else while (count-- > 0) buf_putc(out, ch);
 }
 
-int tutorial_encode(image_t const *img, buffer_t *out)
+int encode_sixel(image_t const *img, buffer_t *out)
 {
     int w = img->width, h = img->height;
 
@@ -55,20 +62,36 @@ int tutorial_encode(image_t const *img, buffer_t *out)
 }
 ```
 
-The structure follows the description above line by line:
+Read it from the outside in:
 
-- `ESC P q` opens the device control string. With no parameters, the pixel aspect ratio and background mode take their defaults, and the raster attributes `"1;1;W;H` declare square pixels and the image size.
-- `#c;2;r;g;b` defines register *c* in RGB percentages. `PCT()` rounds an 8-bit channel to 0–100.
-- For every band and every color, the inner loop computes the six-bit mask of each column and accumulates runs of equal characters. `flush()` writes a run as `!n` and the character when that is shorter than repeating the character.
-- A run of `?` (no pixel of this color) at the end of a color's line is dropped: the next `$` returns to the left edge anyway.
-- `ESC \` (string terminator, ST) ends the image.
+| Code | What it does | In Lesson 0 |
+| --- | --- | --- |
+| `"\033Pq\"1;1;%d;%d"` | Start the picture and give its size | `ESC P q "1;1;7;12` |
+| first `for (c ...)` | Define every register; `PCT()` turns 0–255 into 0–100 | `#1;2;90;10;20` |
+| `for (y ...; y += 6)` | One band at a time, `-` between bands | moving down a band |
+| `for (c ...)` | One color at a time, `$` before all but the first | one trip of the stamp |
+| `for (x ...)` | One column at a time | one character |
+| `for (r ...)` | Add `1 << r` for every row `r` that has color `c` | adding up the pin values |
+| `bits != last` | The character changed, so write out the previous run | `!4E` |
 
-Every column character is written once per color, including columns where the color is absent. The output is correct but grows with the number of colors, and so does the time, as the measurements below show.
+Two details are worth a closer look. `y + r < h` stops at the bottom of the picture, whose last band may have fewer than six rows. And a run of empty columns (`?`) at the end of a line is not written at all, because the following `$` goes back to the left edge anyway.
+
+> **Try it.** Encode the heart from Lesson 0 and compare the output with what you worked out by hand:
+>
+> ```sh
+> ./step1 encode heart.pgm | cat -v
+> ```
+
+## The decoder: a robot with four notes
+
+The decoder reads the stream one byte at a time. Think of it as a robot that carries four notes: the column `x` where the stamp stands, the top row `y` of the current band, the selected `color`, and a `repeat` count. Most bytes only change a note. Only the sixel characters `?` to `~` paint.
+
+![A table tracing x, y, color and repeat while decoding the tree stream from Lesson 0, byte by byte](figures/step1-decoder-state.svg)
 
 ## Decoder
 
 ```c
-int tutorial_decode(unsigned char const *p, size_t size, image_t *img)
+int decode_sixel(unsigned char const *p, size_t size, image_t *img)
 {
     unsigned char const *end = p + size;
     int a[5], x = 0, y = 0, color = 0, repeat = 1;
@@ -102,9 +125,33 @@ int tutorial_decode(unsigned char const *p, size_t size, image_t *img)
 }
 ```
 
-The decoder is a loop over bytes with one branch per control function. It keeps four pieces of state: the cursor `x`, the band's top row `y`, the selected `color` and a pending `repeat` count. The data-character branch writes every set bit of every repeated column, and the bounds test keeps paint outside the declared raster from touching memory. `parse_params()` in the harness reads `;`-separated decimal numbers.
+There is one branch per kind of byte. `parse_params()`, from [`common.c`](code/common.c), reads numbers separated by `;`, such as the `1;2;90;10;20` after `#`. The painting branch undoes the encoder's sum: `(ch - '?') >> r & 1` is 1 when pin `r` is pushed. The test `x < img->width && y + r < img->height` keeps a stream that paints outside the picture from writing outside the array.
 
-This decoder is intentionally incomplete. It needs raster attributes to size the image and clips paint outside them, it ignores HLS color definitions, and it makes up to six scattered stores per data character. A stream from another encoder may rely on all three; step 2 completes the syntax.
+> **Try it.** Decode the tree from Lesson 0 and open `tree.ppm` in an image viewer:
+>
+> ```sh
+> printf '\033Pq"1;1;7;12#1;2;0;60;0#2;2;50;30;10#1_s}~}s_-#1!7@$#2??O]O\033\\' |
+>     ./step1 decode > tree.ppm
+> ```
+
+This decoder takes shortcuts. It needs the size (`"`) before any painting, ignores colors given in HLS (`#n;1;h;l;s`), and paints at most one pixel per step. Streams from other programs may need all three; step 2 fixes them.
+
+## Your turn
+
+Now write your own. Open [`code/mysixel.c`](code/mysixel.c), which has both functions empty and the steps written as comments, and build it with `make mysixel`.
+
+1. **Encoder first.** Fill in the palette and the band loop. You can check the encoder alone, because any finished decoder can read its output:
+
+    ```sh
+    ./mysixel encode heart.pgm | cat -v                     # compare with Lesson 0
+    ./mysixel encode heart.pgm | ./step2 decode > heart.ppm  # does it look right?
+    ```
+
+2. **Then the decoder.** Start with `#`, the sixel characters, `$` and `-`, then add `"` and `!`. Test it with streams you wrote by hand in Lesson 0, then with `./step2 encode heart.pgm | ./mysixel decode > heart.ppm`.
+
+3. **Then the self test.** `./mysixel selftest` encodes and decodes 50 test pictures of awkward sizes, such as 1×7 and 65×13, and tells you the first pixel that came back wrong. When it prints `50 of 50 round trips passed`, you have written a complete SIXEL codec.
+
+If you get stuck, these are the usual mistakes: forgetting that the last band can be shorter than six rows, writing `$` before the first color of a band, or forgetting to reset `repeat` to 1 after painting.
 
 ## What it costs
 
@@ -117,4 +164,6 @@ This decoder is intentionally incomplete. It needs raster attributes to size the
 | Random noise, 2400×1800 | 592.9 ms | 373.7 ms | 20,629,898 bytes |
 <!-- measurements:end -->
 
-For each band, the encoder visits every pixel once per palette color: the work is proportional to colors × pixels. With two colors this is cheap, which is why step 1 is fast on the two-color pattern, but the 216-color photograph of the same size takes about 90 times as long. The stream also carries a `$` and a `#n` for every color of every band, and blank runs for colors that appear only at the right of a band. [Step 2](step2-nodes.md) removes both costs.
+Look at the two 2400×1800 pictures with the same number of pixels. The two-color pattern takes 3.5 ms to encode, the 216-color photograph 320 ms, about 90 times as long. That is the plan's weak point: the encoder walks over every band once **per color**, so its work grows with colors × pixels. The stream suffers too: every band contains a `$` and a `#n` for every color, even colors that do not appear in that band, and empty runs for colors that appear only on the right.
+
+[Step 2](step2-nodes.md) reads every pixel only once, whatever the number of colors.

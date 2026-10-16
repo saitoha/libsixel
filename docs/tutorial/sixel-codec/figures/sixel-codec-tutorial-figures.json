@@ -1,0 +1,161 @@
+{
+  "assets": [
+    "big-picture.svg",
+    "journey.svg",
+    "speed.svg",
+    "pnm-layout.svg",
+    "six-pin-stamp.svg",
+    "heart-columns.svg",
+    "character-table.svg",
+    "tree-cursor.svg",
+    "stream-anatomy.svg",
+    "step1-passes.svg",
+    "step1-repeat.svg",
+    "step1-decoder-state.svg",
+    "step2-classify.svg",
+    "step2-nodes.svg",
+    "step2-packing.svg",
+    "step2-repeat-fill.svg",
+    "step3-memory.svg",
+    "step3-column-word.svg",
+    "step3-swar.svg",
+    "step3-first-colors.svg",
+    "step3-occupancy.svg",
+    "step3-masked-store.svg",
+    "step4-lanes.svg",
+    "step4-block.svg",
+    "step4-transpose.svg",
+    "step5-encoder.svg",
+    "step5-decoder.svg",
+    "step5-amdahl.svg"
+  ],
+  "fixtures": {
+    "heart": {
+      "body": "#1EN^}^NE",
+      "rows": [
+        ".RR.RR.",
+        "RRRRRRR",
+        "RRRRRRR",
+        ".RRRRR.",
+        "..RRR..",
+        "...R..."
+      ]
+    },
+    "scene": {
+      "registers": {
+        "G": 2,
+        "S": 0,
+        "Y": 1
+      },
+      "rows": [
+        "SSSSSSYY",
+        "SSSSSSYY",
+        "SSSSSSSS",
+        "SSSSSSSS",
+        "GGSSSGGG",
+        "GGGGGGGG"
+      ],
+      "step1_lines": [
+        "#0NN^^^NKK",
+        "$#1!6?BB",
+        "$#2oo___ooo"
+      ]
+    },
+    "shapes": {
+      "lines": [
+        [
+          0
+        ],
+        [
+          1,
+          2,
+          3,
+          2
+        ],
+        [
+          4
+        ]
+      ],
+      "node_gap": 9,
+      "nodes": [
+        [
+          0,
+          0,
+          24
+        ],
+        [
+          1,
+          0,
+          4
+        ],
+        [
+          4,
+          3,
+          11
+        ],
+        [
+          2,
+          7,
+          9
+        ],
+        [
+          3,
+          13,
+          16
+        ],
+        [
+          2,
+          20,
+          22
+        ]
+      ],
+      "registers": {
+        ".": 0,
+        "B": 4,
+        "G": 3,
+        "R": 1,
+        "Y": 2
+      },
+      "rows": [
+        ".RR....YY...........YY..",
+        "RRRR...YY....GGG....YY..",
+        "RRRR.........GGG........",
+        ".RRBBBBBBBB..GGG........",
+        "...BBBBBBBB..GGG........",
+        "........................"
+      ],
+      "step2_body": "#0xoo`fffccff~~```!4~{{~~$#1ENNE#2???BB#3!4?]]]#2!4?BB$#4???!8W"
+    },
+    "tree": {
+      "body": "#1_s}~}s_-#1!7@$#2??O]O",
+      "registers": {
+        "G": 1,
+        "T": 2
+      },
+      "rows": [
+        "...G...",
+        "..GGG..",
+        ".GGGGG.",
+        "..GGG..",
+        ".GGGGG.",
+        "GGGGGGG",
+        "GGGGGGG",
+        "...T...",
+        "...T...",
+        "...T...",
+        "..TTT..",
+        "......."
+      ]
+    }
+  },
+  "generator": "tools/plot_sixel_codec_tutorial_figures.py",
+  "kind": "deterministic explanatory schematic with literal bodies",
+  "measured_assets": {
+    "speed.svg": "docs/tutorial/sixel-codec/README.md table, 2400x1800 photograph"
+  },
+  "measurement": false,
+  "schema": 1,
+  "sources": {
+    "tutorial_code": "docs/tutorial/sixel-codec/code"
+  }
+}

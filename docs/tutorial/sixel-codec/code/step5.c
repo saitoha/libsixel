@@ -82,7 +82,7 @@ encode_worker(void *arg)
 }
 
 int
-tutorial_encode(image_t const *img, buffer_t *out)
+encode_sixel(image_t const *img, buffer_t *out)
 {
     encode_job_t jobs[MAX_THREADS] = { { 0 } };
     pthread_t threads[MAX_THREADS];
@@ -313,7 +313,7 @@ decode_worker(void *arg)
 }
 
 int
-tutorial_decode(unsigned char const *data, size_t size, image_t *img)
+decode_sixel(unsigned char const *data, size_t size, image_t *img)
 {
     unsigned char const *p = data;
     unsigned char const *end = data + size;

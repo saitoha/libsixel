@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="470" viewBox="0 0 720 470" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">Painting !8~ quickly</title>
+<desc id="figure-description">A repeated full column fills an eight by six block. Pixel by pixel needs 48 stores; row by row needs six memset calls.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="470.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Painting &quot;!8~&quot; quickly</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Same pixels, far fewer steps.</text>
+<text x="32.0" y="125.0" fill="#556176" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">pixel by pixel: 48 stores</text>
+<rect x="32.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="45.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">1</text>
+<rect x="62.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="75.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">2</text>
+<rect x="92.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="105.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">3</text>
+<rect x="122.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="135.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">4</text>
+<rect x="152.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="165.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">5</text>
+<rect x="182.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="195.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">6</text>
+<rect x="212.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="225.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">7</text>
+<rect x="242.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="255.0" y="164.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">8</text>
+<rect x="32.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="45.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">9</text>
+<rect x="62.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="75.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">10</text>
+<rect x="92.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="105.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">11</text>
+<rect x="122.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="135.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">12</text>
+<rect x="152.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="165.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">13</text>
+<rect x="182.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="195.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">14</text>
+<rect x="212.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="225.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">15</text>
+<rect x="242.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="255.0" y="194.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">16</text>
+<rect x="32.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="45.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">17</text>
+<rect x="62.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="75.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">18</text>
+<rect x="92.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="105.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">19</text>
+<rect x="122.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="135.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">20</text>
+<rect x="152.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="165.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">21</text>
+<rect x="182.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="195.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">22</text>
+<rect x="212.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="225.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">23</text>
+<rect x="242.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="255.0" y="224.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">24</text>
+<rect x="32.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="45.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">25</text>
+<rect x="62.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="75.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">26</text>
+<rect x="92.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="105.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">27</text>
+<rect x="122.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="135.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">28</text>
+<rect x="152.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="165.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">29</text>
+<rect x="182.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="195.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">30</text>
+<rect x="212.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="225.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">31</text>
+<rect x="242.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="255.0" y="254.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">32</text>
+<rect x="32.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="45.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">33</text>
+<rect x="62.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="75.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">34</text>
+<rect x="92.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="105.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">35</text>
+<rect x="122.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="135.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">36</text>
+<rect x="152.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="165.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">37</text>
+<rect x="182.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="195.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">38</text>
+<rect x="212.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="225.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">39</text>
+<rect x="242.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="255.0" y="284.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">40</text>
+<rect x="32.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="45.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">41</text>
+<rect x="62.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="75.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">42</text>
+<rect x="92.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="105.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">43</text>
+<rect x="122.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="135.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">44</text>
+<rect x="152.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="165.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">45</text>
+<rect x="182.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="195.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">46</text>
+<rect x="212.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="225.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">47</text>
+<rect x="242.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<text x="255.0" y="314.0" fill="#FFFFFF" font-size="10" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">48</text>
+<text x="372.0" y="125.0" fill="#2563EB" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">row by row: 6 memset()</text>
+<rect x="372.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="402.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="432.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="462.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="492.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="522.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="552.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="582.0" y="145.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<line x1="368.0" y1="158.0" x2="616.0" y2="158.0" stroke="#D97706" stroke-width="3.0" stroke-linecap="round" marker-end="url(#arrow-gold)"/>
+<rect x="372.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="402.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="432.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="462.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="492.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="522.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="552.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="582.0" y="175.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<line x1="368.0" y1="188.0" x2="616.0" y2="188.0" stroke="#D97706" stroke-width="3.0" stroke-linecap="round" marker-end="url(#arrow-gold)"/>
+<rect x="372.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="402.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="432.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="462.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="492.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="522.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="552.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="582.0" y="205.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<line x1="368.0" y1="218.0" x2="616.0" y2="218.0" stroke="#D97706" stroke-width="3.0" stroke-linecap="round" marker-end="url(#arrow-gold)"/>
+<rect x="372.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="402.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="432.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="462.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="492.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="522.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="552.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="582.0" y="235.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<line x1="368.0" y1="248.0" x2="616.0" y2="248.0" stroke="#D97706" stroke-width="3.0" stroke-linecap="round" marker-end="url(#arrow-gold)"/>
+<rect x="372.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="402.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="432.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="462.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="492.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="522.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="552.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="582.0" y="265.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<line x1="368.0" y1="278.0" x2="616.0" y2="278.0" stroke="#D97706" stroke-width="3.0" stroke-linecap="round" marker-end="url(#arrow-gold)"/>
+<rect x="372.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="402.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="432.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="462.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="492.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="522.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="552.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<rect x="582.0" y="295.0" width="27.0" height="27.0" rx="3.0" fill="#16A34A" stroke="none"/>
+<line x1="368.0" y1="308.0" x2="616.0" y2="308.0" stroke="#D97706" stroke-width="3.0" stroke-linecap="round" marker-end="url(#arrow-gold)"/>
+<text x="32.0" y="360.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Image rows lie one after another in memory, so one row of</text><text x="32.0" y="383.8" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">eight pixels is eight neighbouring bytes: one memset() call.</text><text x="32.0" y="407.6" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">A single character (no !) still uses plain stores.</text>
+</svg>

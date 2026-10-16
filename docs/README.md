@@ -21,7 +21,7 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 
 ### SIXEL codec tutorial
 
-- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) builds a standalone encoder and decoder five times: a complete run-length codec of about thirty lines per direction, kmiya's node scheduling, six pixels in one 64-bit word, SIMD, and threads, with byte-identical output checks and measurements at every step.
+- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated, beginner-friendly course in which you write a PNM-to-SIXEL encoder and a SIXEL-to-PNM decoder as command-line programs: drawing SIXEL by hand, a complete codec of about thirty lines per direction, kmiya's node scheduling, six pixels in one 64-bit word, SIMD, and threads, with exercises, byte-identical output checks and measurements at every step.
 
 ## Using libsixel
 

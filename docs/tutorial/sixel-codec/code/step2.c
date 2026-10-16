@@ -76,7 +76,7 @@ put_band(buffer_t *out, node_t *list)
 }
 
 int
-tutorial_encode(image_t const *img, buffer_t *out)
+encode_sixel(image_t const *img, buffer_t *out)
 {
     int w = img->width;
     int h = img->height;
@@ -247,7 +247,7 @@ used_rows(canvas_t *cv, int y, int band_rows)
 }
 
 int
-tutorial_decode(unsigned char const *p, size_t size, image_t *img)
+decode_sixel(unsigned char const *p, size_t size, image_t *img)
 {
     unsigned char const *end = p + size;
     canvas_t cv = { NULL, 0, 0, 0, 0 };

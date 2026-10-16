@@ -25,12 +25,12 @@ fail() {
     failures=$((failures + 1))
 }
 
-# same REF OUT DESCRIPTION COMMAND...: run COMMAND, which writes OUT, and
-# require OUT to equal REF byte for byte.
+# same REF OUT DESCRIPTION COMMAND...: run COMMAND with its standard
+# output in OUT, and require OUT to equal REF byte for byte.
 same() {
     ref=$1 out=$2 what=$3
     shift 3
-    if "$@" && cmp -s "$ref" "$out"; then
+    if "$@" >"$out" && cmp -s "$ref" "$out"; then
         return 0
     fi
     fail "$what"
@@ -50,37 +50,60 @@ for spec in "noise 257 49" "two 300 7" "sparse 1000 31" "gradient 64 64" \
             "flat 5 5"; do
     # shellcheck disable=SC2086 # split the spec into arguments
     set -- $spec
-    "$bin/step1" synth "$1" "$2" "$3" "$work/$1.ppm" || fail "synth $1"
+    "$bin/step1" synth "$1" "$2" "$3" >"$work/$1.ppm" || fail "synth $1"
 done
 
 for img in "$work"/*.ppm; do
     name=$(basename "$img" .ppm)
-    "$bin/step1" encode "$img" "$work/$name.1.six" || fail "step1 encode $name"
-    "$bin/step2" encode "$img" "$work/$name.2.six" || fail "step2 encode $name"
+    "$bin/step1" encode "$img" >"$work/$name.1.six" || fail "step1 encode $name"
+    "$bin/step2" encode "$img" >"$work/$name.2.six" || fail "step2 encode $name"
     for s in 3 4; do
         same "$work/$name.2.six" "$work/$name.$s.six" \
             "step$s encoding of $name differs from step2" \
-            "$bin/step$s" encode "$img" "$work/$name.$s.six"
+            "$bin/step$s" encode "$img"
     done
     for t in 1 2 5 16; do
         same "$work/$name.2.six" "$work/$name.5.six" \
             "step5 encoding of $name with $t threads differs from step2" \
-            env TUTORIAL_THREADS="$t" "$bin/step5" encode "$img" "$work/$name.5.six"
+            env TUTORIAL_THREADS="$t" "$bin/step5" encode "$img"
     done
     # Every decoder reads both stream styles to the same image.
     for six in "$work/$name.1.six" "$work/$name.2.six"; do
-        "$bin/step1" decode "$six" "$work/ref.ppm" || fail "step1 decode $six"
+        "$bin/step1" decode "$six" >"$work/ref.ppm" || fail "step1 decode $six"
         for s in 2 3 4; do
             same "$work/ref.ppm" "$work/out.ppm" \
                 "step$s decoding of $(basename "$six") differs" \
-                "$bin/step$s" decode "$six" "$work/out.ppm"
+                "$bin/step$s" decode "$six"
         done
         for t in 1 3 16; do
             same "$work/ref.ppm" "$work/out.ppm" \
                 "step5 decoding of $(basename "$six") with $t threads" \
-                env TUTORIAL_THREADS="$t" "$bin/step5" decode "$six" "$work/out.ppm"
+                env TUTORIAL_THREADS="$t" "$bin/step5" decode "$six"
         done
     done
+done
+
+# Gray input: a gray level is a palette index, so a text P2 file and the
+# same picture as binary P5 encode identically, and the P2 heart of the
+# tutorial's lesson 0 produces the lesson's body.
+printf 'P2\n7 6\n1\n0 1 1 0 1 1 0\n1 1 1 1 1 1 1\n1 1 1 1 1 1 1\n0 1 1 1 1 1 0\n0 0 1 1 1 0 0\n0 0 0 1 0 0 0\n' >"$work/heart.pgm"
+{
+    printf 'P5 7 6 1\n'
+    printf '\000\001\001\000\001\001\000\001\001\001\001\001\001\001'
+    printf '\001\001\001\001\001\001\001\000\001\001\001\001\001\000'
+    printf '\000\000\001\001\001\000\000\000\000\000\001\000\000\000'
+} >"$work/heart5.pgm"
+for s in 1 2 3 4 5; do
+    "$bin/step$s" encode "$work/heart.pgm" >"$work/heart.$s.six" ||
+        fail "step$s encode heart.pgm"
+    same "$work/heart.$s.six" "$work/heart5.$s.six" \
+        "step$s encodes P2 and P5 differently" \
+        "$bin/step$s" encode "$work/heart5.pgm"
+    grep -q '#1EN^}^NE' "$work/heart.$s.six" ||
+        fail "step$s heart body differs from lesson 0"
+    same "$work/heart.$s.six" "$work/heart.stdin.six" \
+        "step$s encodes standard input differently" \
+        "$bin/step$s" encode <"$work/heart.pgm"
 done
 
 # Streams written by other encoders, and unusual ones: no raster
@@ -98,17 +121,17 @@ cp "$images/map8.six" "$images/map64.six" "$work/"
 for six in "$work"/map8.six "$work"/map64.six "$work"/noraster.six \
            "$work"/beyond.six "$work"/redefine.six "$work"/emptybands.six \
            "$work"/unterminated.six; do
-    "$bin/step2" decode "$six" "$work/ref.ppm" ||
+    "$bin/step2" decode "$six" >"$work/ref.ppm" ||
         fail "step2 decode $(basename "$six")"
     for s in 3 4; do
         same "$work/ref.ppm" "$work/out.ppm" \
             "step$s decoding of $(basename "$six") differs from step2" \
-            "$bin/step$s" decode "$six" "$work/out.ppm"
+            "$bin/step$s" decode "$six"
     done
     for t in 1 2 4; do
         same "$work/ref.ppm" "$work/out.ppm" \
             "step5 decoding of $(basename "$six") with $t threads" \
-            env TUTORIAL_THREADS="$t" "$bin/step5" decode "$six" "$work/out.ppm"
+            env TUTORIAL_THREADS="$t" "$bin/step5" decode "$six"
     done
 done
 

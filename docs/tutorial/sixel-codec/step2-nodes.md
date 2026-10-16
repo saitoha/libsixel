@@ -1,14 +1,21 @@
-# Step 2: kmiya's Nodes
+# Step 2: Read Each Pixel Once
 
-[Step 1](step1-run-length.md) scans each band once per palette color and writes a line for every color. kmiya's `sixel` encoder, the [origin of libsixel](../../project-history.md#kmiyas-sixel), avoids both costs. It reads each band once, records each color's columns in a per-color row, cuts those rows into *nodes*, and packs nodes of different colors side by side onto as few graphics lines as possible. This step implements that design and completes the decoder. The source is [`code/step2.c`](code/step2.c).
+The step 1 encoder walks over each band once per color. With 216 colors, it reads every pixel 216 times, and 215 of those visits find nothing. This step fixes that with the design of kmiya's `sixel` encoder, the [origin of libsixel](../../project-history.md#kmiyas-sixel): read the band once, sort the pixels by color, and then pack the colors cleverly onto as few graphics lines as possible. It also completes the decoder. The source is [`code/step2.c`](code/step2.c).
 
-The [SIXEL format overview](../../sixel-format/README.md#nodes-and-greedy-non-overlapping-sweeps) illustrates the same node scheduling as libsixel performs it; this page builds it from scratch.
+**You will learn:**
 
-## Encoder
+- how to sort pixels into one row per color in a single pass,
+- what a *node* is and why long gaps split it,
+- how to pack nodes onto shared lines, like books on shelves,
+- how the decoder handles HLS colors, missing sizes and long repeats.
 
-The encoder handles one band in four phases.
+## Sorting pixels into drawers
 
-### 1. Classify: one pass over the pixels
+Picture a chest of drawers with one drawer per color. Each drawer has one slot per column. Walk over the six rows of the band once. For every pixel, open the drawer of its color and add the pixel's row value to the slot of its column:
+
+![An eight by six band is read once. Each pixel ORs its row weight into map[color][x], giving one row of column values per color](figures/step2-classify.svg)
+
+When the band is done, every slot holds exactly the number you computed by hand in Lesson 0: the sum of the row values of that color in that column. Add 63 and it is the sixel character. Each pixel was looked at once, no matter how many colors there are. In C the chest is one array `map` with `w` bytes per color, and "add the row value" is `|=`:
 
 ```c
 for (r = 0; r < 6 && y + r < h; r++) {
@@ -20,15 +27,19 @@ for (r = 0; r < 6 && y + r < h; r++) {
 }
 ```
 
-`map` has one row of `w` bytes per palette color. After the six source rows have been read, `map[c * w + x]` holds exactly the six-bit value of the sixel character for color `c` at column `x`. Each pixel is read once, whatever the number of colors.
+`used[c]` remembers which colors appeared in this band, so the next phases can skip the empty drawers.
 
-### 2. Compose: cut rows into nodes
+## Cutting a drawer into nodes
 
-A node is a span `[sx, mx)` of one color's row. It starts at an occupied column and ends after the last occupied column. Gaps of up to nine empty columns stay inside the node, where they cost a short `!n?` run; a longer gap ends the node, because skipping it with a separate node is cheaper.
+Most colors of a photograph appear in a few places of a band, not everywhere. A **node** is one stretch of one color: it starts at a column where the color appears and ends after the last one. Short gaps stay inside the node and cost a few `?` characters. A long gap ends the node, because the empty columns can be used by other colors instead:
+
+![The yellow color appears in columns 7 to 8 and 20 to 21. The gap of eleven empty columns is longer than nine, so it becomes two nodes](figures/step2-nodes.svg)
+
+The rule is: a gap of up to nine empty columns stays inside the node. A node is written as two numbers, its first column `sx` and the column `mx` just after its end, so the node `[7, 9)` covers columns 7 and 8.
 
 ```c
 for (sx = 0; sx < w; sx = mx) {
-    for (; sx < w && row[sx] == 0; sx++) {
+    for (; sx < w && row[sx] == 0; sx++) {      /* skip empty columns */
     }
     if (sx == w) {
         break;
@@ -36,18 +47,22 @@ for (sx = 0; sx < w; sx = mx) {
     mx = sx + 1;
     for (x = mx; x < w && x - mx <= NODE_GAP; x++) {
         if (row[x] != 0) {
-            mx = x + 1;
+            mx = x + 1;                         /* the node grows */
         }
     }
     /* ... record node (c, sx, mx) ... */
 }
 ```
 
-### 3. Order: by start column, longest first
+## Packing nodes onto lines
 
-Nodes go into one bucket per start column. Within a bucket the longest node comes first, and equal nodes keep color order. Concatenating the buckets from left to right gives the node list sorted by `sx`, then by decreasing `mx`.
+Step 1 gave every color its own graphics line. But two nodes that do not overlap can share a line: paint the first one, skip ahead, paint the second. Packing them is like putting books on shelves. Sort the books by where they start. Then fill the first shelf from left to right, taking every book that starts after the previous one ends. Books that do not fit wait for the next shelf:
 
-### 4. Emit: pack lines greedily
+![Six nodes sorted by start column are packed greedily onto three lines: white; red, yellow, green, yellow; blue](figures/step2-packing.svg)
+
+The white background covers the whole band and fills line 1 alone. The red node and the blue node both use column 3, so blue has to wait for line 3. Yellow, green and the second yellow fit on line 2 after red. Three lines instead of five.
+
+The code keeps the sorted nodes in a linked list. Each pass over the list writes one line and removes the nodes it used:
 
 ```c
 while (list != NULL) {
@@ -74,18 +89,35 @@ while (list != NULL) {
 }
 ```
 
-Each pass over the list writes one graphics line. It takes the first node, then every later node that starts at or after the cursor, and leaves overlapping nodes for the next line after `$`. A color with several nodes on one line is selected once, and nodes of different colors share a line whenever they do not overlap. Emitting a node also clears its part of the map, so the map is all zeros again when the band is done without a separate clearing pass.
+Three details make it work well:
 
-`color` starts at `-1` for every band, so every band selects its first color explicitly even when the previous band ended with the same one. That costs a few bytes per band and makes the bytes of a band independent of the band before it, which [step 5](step5-threads.md) relies on to encode bands in parallel.
+- **The order.** Nodes are sorted by start column, and among nodes with the same start the longest comes first. Equal nodes keep color order. The code builds this order with one bucket per start column.
+- **The `#`.** A color is selected only when it differs from the previous node's. Two nodes of the same color next to each other on a line share one `#`.
+- **Cleaning up.** Writing a node also clears its slots in `map`, so the chest is empty again when the band is done, without a separate clearing pass.
 
-## Decoder
+`color` starts at `-1` in every band, so every band selects its first color explicitly, even if the previous band ended with the same one. That costs a few bytes, but it makes every band readable on its own, which [step 5](step5-threads.md) needs to encode bands in parallel.
 
-The step 2 decoder accepts everything the step 1 decoder rejects:
+> **Try it.** Compare the stream sizes of step 1 and step 2 on a photograph and on a picture with scattered colors:
+>
+> ```sh
+> ./step1 synth sparse 1000 31 > sparse.ppm
+> for s in 1 2; do ./step$s encode sparse.ppm | wc -c; done
+> for s in 1 2; do ./step$s encode ../../../../images/snake.ppm | wc -c; done
+> ```
+>
+> Step 2 wins clearly on the photograph, but on `sparse.ppm` its stream is *larger*. Look at the first band of both streams with `cat -v` and find out why. (Hint: count the `#` and `?` characters.)
+>
+> Then change `NODE_GAP` in `step2.c` to 0 and to 50, rebuild, and measure again. Which value gives the smallest stream? `make check` now reports that step 3 differs from step 2. Why? (Put the value back afterwards.)
 
-- **HLS colors.** `#n;1;h;l;s` defines a register in hue, lightness and saturation. SIXEL places blue at 0°, red at 120° and green at 240°, so the usual formula is applied after rotating the hue; see `set_hls()` in [`code/common.c`](code/common.c).
-- **No raster attributes, or paint beyond them.** The canvas grows on demand, at least doubling each time so that the cost stays linear. The final image covers both the declared raster and every painted pixel, which is how libsixel treats [raster declarations versus observed paint](../../decoder/pipeline/README.md#raster-declaration-versus-observed-paint).
-- **Repeats.** A repeated character fills the same columns of up to six rows, so the decoder writes each set row with one `memset()` instead of testing six bits for every repeated column. A single character, the common case in photographs, takes plain stores, because a library call per row would cost more than it saves.
-- **Bookkeeping per band.** The canvas size is checked before painting with two comparisons, and the lowest painted row is computed once per band from the OR of the band's characters, not once per character.
+## A decoder for every stream
+
+The step 1 decoder needs help from the stream. The step 2 decoder does not:
+
+- **HLS colors.** `#n;1;h;l;s` defines a color by hue (an angle, 0 to 360), lightness and saturation. SIXEL puts blue at 0°, red at 120° and green at 240°, so `set_hls()` in [`code/common.c`](code/common.c) turns the hue before using the usual formula.
+- **No size, or paint beyond it.** The canvas grows when a stream paints outside it. It at least doubles each time, so that growing stays cheap even for a stream with no size at all. The final picture covers both the declared size and every painted pixel, the same rule libsixel uses for [raster declarations versus observed paint](../../decoder/pipeline/README.md#raster-declaration-versus-observed-paint).
+- **Fast repeats.** In memory, a row of the picture is a run of neighboring bytes. So `!8~`, which fills eight columns of six rows, is six runs of eight bytes, and each run takes one `memset()` call instead of eight separate stores:
+
+![A repeated full column fills an eight by six block. Pixel by pixel needs 48 stores; row by row needs six memset calls](figures/step2-repeat-fill.svg)
 
 ```c
 if (ch >= '?' && ch <= '~') {
@@ -109,7 +141,17 @@ if (ch >= '?' && ch <= '~') {
 }
 ```
 
-## Results
+A single character, the common case in photographs, still uses a plain store, because calling `memset()` for one byte costs more than it saves. `band_rows` collects the rows painted in the band, so the decoder knows the picture's height without checking every character.
+
+> **Try it.** Decode a stream that has no size and paints beyond its own edge. The step 1 decoder fails; step 2 grows the canvas:
+>
+> ```sh
+> printf '\033Pq#1;2;100;0;0#1~~~$#2;2;0;100;0!5N-#1!3@\033\\' > noraster.six
+> ./step1 decode noraster.six > a.ppm; echo $?
+> ./step2 decode noraster.six > b.ppm; echo $?
+> ```
+
+## How fast is it?
 
 <!-- measurements:begin -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
@@ -120,11 +162,11 @@ if (ch >= '?' && ch <= '~') {
 | Random noise, 2400×1800 | 339.1 ms | 1.7× | 71.3 ms | 5.2× | 19,399,499 bytes |
 <!-- measurements:end -->
 
-Classification now costs the same for 2 or 216 colors, and the photograph encodes about 20 times faster than in step 1, with a stream 8% smaller. The two-color pattern does not benefit, because step 1 already made only two passes there. The decoder is faster on every input.
+The speed-up compares each step with the step before it. The photograph now encodes 20 times faster, and its stream is 8% smaller, because colors share lines. The two-color pattern does not benefit: step 1 already made only two passes there, and the extra bookkeeping costs a little. The decoder is faster on every input.
 
-Two costs remain, and both scale with something other than the pixels:
+Two costs remain, and both depend on something other than the number of pixels:
 
-- **Composition** scans the full row of every color that occurs in the band, so it is proportional to width × colors present. For a dithered photograph most of those bytes are zero.
-- **Decoding** writes up to six image rows for every data character. The rows are `width` bytes apart, so consecutive characters touch six cache lines instead of one.
+- **Cutting nodes** scans every slot of every drawer that was used in the band, so it costs width × colors present. In a dithered photograph most of those slots are empty.
+- **Decoding** writes up to six rows of the picture for every character. Those rows are a whole picture width apart in memory, so the computer has to jump around in memory for every column.
 
-[Step 3](step3-column-words.md) addresses both by changing how data is laid out in memory.
+[Step 3](step3-column-words.md) attacks both by changing how the data is laid out in memory. The [SIXEL format overview](../../sixel-format/README.md#nodes-and-greedy-non-overlapping-sweeps) shows the same node packing as libsixel performs it.

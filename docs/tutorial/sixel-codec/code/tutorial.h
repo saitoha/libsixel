@@ -4,7 +4,9 @@
  *
  * Every step implements the same two functions on the same indexed image,
  * so any encoder can be checked against any decoder. Pixels are palette
- * indexes; the harness in common.c converts PPM files to and from them.
+ * indexes, one byte each, row by row: exactly the pixel data of a P5 PGM
+ * file. common.c supplies the command-line program around the two
+ * functions and converts PNM files to and from indexed images.
  */
 #ifndef SIXEL_TUTORIAL_H
 #define SIXEL_TUTORIAL_H
@@ -28,9 +30,11 @@ typedef struct buffer {
     size_t capacity;
 } buffer_t;
 
-/* Implemented once per step. Both return 0 on success. */
-int tutorial_encode(image_t const *img, buffer_t *out);
-int tutorial_decode(unsigned char const *data, size_t size, image_t *img);
+/* Written once per step; this is your part. Both return 0 on success.
+ * encode_sixel() appends a complete SIXEL stream to out. decode_sixel()
+ * fills img, allocating its pixels with image_alloc(). */
+int encode_sixel(image_t const *img, buffer_t *out);
+int decode_sixel(unsigned char const *data, size_t size, image_t *img);
 
 /* Image helpers. image_alloc() fills the pixels with register 0. */
 int image_alloc(image_t *img, int width, int height);

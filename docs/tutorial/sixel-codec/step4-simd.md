@@ -1,22 +1,33 @@
-# Step 4: SIMD
+# Step 4: Sixteen at Once with SIMD
 
-[Step 3](step3-column-words.md) processes eight bytes at a time inside a 64-bit integer. SIMD registers hold sixteen bytes and compare, mask and shuffle all of them in one instruction. This step uses them in the two places where SIXEL's layout is most regular: classifying the pixels of a block of columns, and turning column words back into rows. The source is [`code/step4.c`](code/step4.c); its output is byte-identical to steps 2 and 3.
+[Step 3](step3-column-words.md) packed eight bytes into one 64-bit number and handled them together with clever arithmetic. Modern processors have a more direct tool: **vector registers** that hold sixteen bytes and instructions that compare, combine or shuffle all sixteen in one go. This is called **SIMD**, *single instruction, multiple data*. This step uses it in the two places where SIXEL's layout is most regular. The source is [`code/step4.c`](code/step4.c); its output is byte for byte the same as steps 2 and 3.
 
-The code uses only the baseline vector instruction sets of the two common 64-bit targets: SSE2 on x86-64 and Advanced SIMD (NEON) on AArch64. Both are always present on those targets, so no runtime detection is needed. Elsewhere, or when built with `-DTUTORIAL_NO_SIMD`, the step 3 code runs unchanged, and it also handles the columns left over at the right edge of each band.
+**You will learn:**
 
-## A few vector operations
+- what lanes and vector compares are,
+- how six compares give one color's characters for sixteen columns,
+- how to turn columns back into rows with a few shuffles,
+- why SIMD helps some pictures and not others.
 
-The encoder needs only eight operations, wrapped in macros so the algorithm reads the same on both targets:
+The code uses only the vector instructions that every 64-bit PC and every 64-bit ARM processor has: SSE2 on x86-64 and Advanced SIMD (NEON) on AArch64. Elsewhere, or when built with `-DTUTORIAL_NO_SIMD`, the step 3 code runs unchanged. The step 3 code also handles the few columns left over at the right edge of each band.
+
+## One instruction, sixteen answers
+
+Each of the sixteen bytes of a vector register is called a **lane**. A vector compare looks at all sixteen pairs of lanes at once and writes `0xff` in the lanes that are equal and `0x00` in the others:
+
+![Sixteen pixels are compared with color 2 in one instruction. Equal lanes become ff, and movemask packs them into a sixteen-bit number](figures/step4-lanes.svg)
+
+The encoder needs only a few such operations. To keep the algorithm readable on both kinds of processor, the code gives them short names:
 
 | Operation | SSE2 | NEON | Meaning |
 | --- | --- | --- | --- |
 | `v_load`, `v_store` | `_mm_loadu_si128`, `_mm_storeu_si128` | `vld1q_u8`, `vst1q_u8` | Move 16 bytes |
-| `v_set1(c)` | `_mm_set1_epi8` | `vdupq_n_u8` | Copy one byte to all 16 lanes |
+| `v_set1(c)` | `_mm_set1_epi8` | `vdupq_n_u8` | Copy one byte into all 16 lanes |
 | `v_eq(a, b)` | `_mm_cmpeq_epi8` | `vceqq_u8` | `0xff` where lanes are equal, else `0x00` |
 | `v_and`, `v_or`, `v_zero` | `_mm_and_si128`, `_mm_or_si128`, `_mm_setzero_si128` | `vandq_u8`, `vorrq_u8`, `vdupq_n_u8(0)` | Bitwise logic |
-| `v_movemask(v)` | `_mm_movemask_epi8` | (see below) | One bit per lane, as a 16-bit integer |
+| `v_movemask(v)` | `_mm_movemask_epi8` | (see below) | One bit per lane, as a 16-bit number |
 
-NEON has no movemask instruction. For compare results, whose lanes are either `0x00` or `0xff`, the tutorial keeps a different power of two in each lane of each half and adds up the halves:
+NEON has no movemask instruction. For compare results, whose lanes are either `0x00` or `0xff`, the tutorial keeps one bit of a different value in each lane and adds up each half:
 
 ```c
 static inline unsigned int
@@ -32,17 +43,11 @@ v_movemask(uint8x16_t v)
 }
 ```
 
-## Encoder: one color against sixteen columns
+## Encoder: sixteen columns, one color
 
-For a block of sixteen columns, load the six rows of the band into six vectors. Comparing each row with a vector filled with color *c* marks the lanes where that row has the color; weighting the marks by the row bit and combining them gives the sixel characters of color *c* for all sixteen columns at once:
+Load the six rows of a block of sixteen columns into six vectors. Compare each row with color *c*, keep the row's value (1, 2, 4, …, 32) in the matching lanes, and OR the six results together. Every lane now holds the sixel value of color *c* in its column, exactly what you added up by hand in Lesson 0, for sixteen columns at once:
 
-```text
-row 0:  5 5 2 2 2 2 7 7 7 7 7 7 2 2 2 2      == 2 ->  . . 1 1 1 1 . . . . . . 1 1 1 1   x  1
-row 1:  5 5 2 2 2 2 7 7 7 7 7 7 2 2 2 2      == 2 ->  . . 1 1 1 1 . . . . . . 1 1 1 1   x  2
-  ...                                                                                     ...
-row 5:  5 5 5 5 2 2 2 2 7 7 7 7 7 7 2 2      == 2 ->  . . . . 1 1 1 1 . . . . . . 1 1   x 32
-                                                     OR of the weighted rows = sixel bits of color 2
-```
+![A sixteen by six block of colors 5, 2 and 7. Six vector compares with color 2, weighted by row and ORed, give the sixteen column values](figures/step4-block.svg)
 
 ```c
 for (x = 0; x < end; x += 16) {
@@ -54,7 +59,7 @@ for (x = 0; x < end; x += 16) {
         for (lane = 0; lane < 16; lane++) {
             c = src[r][x + lane];
             if (e->seen[c] == e->stamp) {
-                continue;
+                continue;               /* this color is done already */
             }
             e->seen[c] = e->stamp;
             color = v_set1(c);
@@ -72,20 +77,17 @@ for (x = 0; x < end; x += 16) {
 }
 ```
 
-The scalar loop over the block's 96 pixels only finds the distinct colors; `seen[c] == stamp` marks colors already handled in this block, and incrementing `stamp` forgets them all for the next block without clearing anything. Each distinct color then costs up to six compares, one 16-byte store into the map and one movemask for the occupancy bitmap. Lanes without the color store zero, which is what the map already holds there, so the store needs no mask.
+The loop over the block's 96 pixels only looks for colors it has not handled yet. `seen[c] == stamp` marks colors already done in this block, and increasing `stamp` for the next block forgets them all without clearing anything. Every new color then costs up to six compares, one 16-byte store into the drawer of step 2, and one movemask for the lights of step 3. Lanes without the color store zero, which the drawer already holds there, so the store needs no mask.
 
-The cost is now proportional to the number of distinct colors per 16×6 block rather than per column. That number is small when neighboring pixels repeat colors, as in the enlarged photograph and the two-color pattern, and large in random noise, where a block can hold almost 96 colors. The measurements show both effects.
+The work now grows with the number of different colors in a 16×6 block, not in a column. That number is small when neighboring pixels share colors, as in the enlarged photograph and the two-color pattern, and large in random noise, where one block can hold almost 96 colors.
 
-## Decoder: transposing bytes
+## Decoder: turning columns back into rows
 
-Step 3's decoder ends by copying byte *r* of every column word to row *r* of the image. Eight column words are an 8×8 matrix of bytes, and this copy is its transpose. SIMD computes a transpose with three rounds of interleaving: bytes of pairs of columns, then 16-bit pairs, then 32-bit quads. Each round doubles the length of the runs of same-row bytes until each row is eight contiguous bytes:
+Step 3's decoder ends by copying byte *r* of every column word into row *r* of the picture, one byte at a time. Look at eight column words as a square of 8×8 bytes: the copy turns its columns into rows. This is called a **transpose**. SIMD does it with three rounds of *zipping*, taking pieces from two vectors in turn like the teeth of a zipper:
 
-```text
-input    c0 = [r0 r1 r2 r3 r4 r5 0 0]  c1 = [...]  ...  c7 = [...]
-round 1  c0.r0 c1.r0 c0.r1 c1.r1 ...                      (unpack bytes)
-round 2  c0.r0 c1.r0 c2.r0 c3.r0  c0.r1 c1.r1 ...          (unpack 16-bit pairs)
-round 3  c0.r0 ... c7.r0  c0.r1 ... c7.r1                 (unpack 32-bit quads)
-```
+![Eight column words of eight bytes are transposed in three rounds of interleaving, bytes then pairs then quads, until each row is eight contiguous bytes](figures/step4-transpose.svg)
+
+Round 1 zips single bytes of two columns, so the bytes of each row come in pairs. Round 2 zips those pairs, giving groups of four. Round 3 zips the groups, and now each row's eight bytes sit side by side, ready to be stored with one instruction:
 
 ```c
 __m128i a0 = _mm_unpacklo_epi8(_mm_loadl_epi64((void const *)&col[0]),
@@ -99,9 +101,22 @@ out[1] = _mm_unpackhi_epi32(b0, b2);    /* rows 2 and 3 */
 out[2] = _mm_unpacklo_epi32(b1, b3);    /* rows 4 and 5 */
 ```
 
-The NEON version is the same network with `vzip1q` and `vzip2q`. Each column word is read once instead of once per row, and each row receives one 8-byte store instead of eight byte stores.
+The NEON version is the same zipper with `vzip1q` and `vzip2q`. Each column word is read once instead of once per row, and each row receives one 8-byte store instead of eight single-byte stores.
 
-## Results
+> **Try it.** Build step 4 without SIMD and compare the speed on the photograph and on noise:
+>
+> ```sh
+> cc -O2 -DTUTORIAL_NO_SIMD -o step4-scalar common.c step4.c -lpthread
+> ./step4 bench ../../../../images/snake.ppm 4 10
+> ./step4-scalar bench ../../../../images/snake.ppm 4 10
+> ./step1 synth noise 2400 1800 > noise.ppm
+> ./step4 bench noise.ppm 1 10
+> ./step4-scalar bench noise.ppm 1 10
+> ```
+>
+> Which picture gains, and which one loses? Can you explain why from the number of colors per block?
+
+## How fast is it?
 
 <!-- measurements:begin -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
@@ -112,8 +127,8 @@ The NEON version is the same network with `vzip1q` and `vzip2q`. Each column wor
 | Random noise, 2400×1800 | 161.8 ms | 0.9× | 55.2 ms | 1.0× | 19,399,499 bytes |
 <!-- measurements:end -->
 
-The encoder gains on both photographs and most on the two-color pattern, where each block holds only two colors; on noise it loses a little, because distinct colors per block approach the number of pixels. The transpose makes materialization about 3.4 times faster, 0.38 ms instead of 1.3 ms for 2400×1800 pixels, but materialization was only a sixth of step 3's decoding time, so the decoder as a whole gains 10–20%.
+The encoder gains on both photographs and most on the two-color pattern, where each block holds only two colors. On noise it loses a little, because the number of colors per block approaches the number of pixels. The transpose makes turning columns into rows about 3.4 times faster, 0.38 ms instead of 1.3 ms for 2400×1800 pixels, but that was only a sixth of step 3's decoding time, so the decoder as a whole gains 10–20%.
 
-Neither direction is limited by these loops any more. For the enlarged photograph, materialization now takes less than 0.4 ms of the 7.6 ms decode, and emitting the stream takes about 60% of the encode. Emitting and parsing, one byte at a time with a branch per byte, are essentially the same work in steps 2 to 4. The remaining way to go faster is to do it on several cores, which is [step 5](step5-threads.md).
+These loops are no longer what limits the speed. For the enlarged photograph, turning columns into rows now takes less than 0.4 ms of the 7 ms decode, and writing out the stream takes about 60% of the encode. Writing and reading the stream, one byte at a time with a decision per byte, is essentially the same work in steps 2 to 4. The way to go faster now is to use several processor cores at once: [step 5](step5-threads.md).
 
 libsixel uses SIMD in [color-space conversion](../../encoder/colorspace-handling/README.md) and [resampling](../../encoder/preprocessing/resampling/README.md); its SIXEL band encoder and decoder use the 64-bit word techniques of step 3.

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="470" viewBox="0 0 720 470" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">Why 14 cores do not give 14 times</title>
+<desc id="figure-description">Bars with a fixed serial part and a parallel part divided by 1, 2, 4 and 14 threads: speed-ups 1.0, 1.8, 3.1 and 6.1.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="470.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Why 14 cores do not give 14×</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The part that cannot be shared stays the same length.</text>
+<text x="32.0" y="154.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">1 thread</text>
+<rect x="150.0" y="130.0" width="48.0" height="34.0" rx="4.0" fill="#D97706" stroke="none"/>
+<rect x="200.0" y="130.0" width="432.0" height="34.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="644.0" y="154.0" fill="#556176" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">1.0× faster</text>
+<text x="32.0" y="216.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">2 threads</text>
+<rect x="150.0" y="192.0" width="48.0" height="34.0" rx="4.0" fill="#D97706" stroke="none"/>
+<rect x="200.0" y="192.0" width="216.0" height="34.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="428.0" y="216.0" fill="#556176" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">1.8× faster</text>
+<text x="32.0" y="278.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">4 threads</text>
+<rect x="150.0" y="254.0" width="48.0" height="34.0" rx="4.0" fill="#D97706" stroke="none"/>
+<rect x="200.0" y="254.0" width="108.0" height="34.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="320.0" y="278.0" fill="#556176" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">3.1× faster</text>
+<text x="32.0" y="340.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">14 threads</text>
+<rect x="150.0" y="316.0" width="48.0" height="34.0" rx="4.0" fill="#D97706" stroke="none"/>
+<rect x="200.0" y="316.0" width="30.9" height="34.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="242.9" y="340.0" fill="#556176" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">6.1× faster</text>
+<rect x="150.0" y="395.0" width="24.0" height="18.0" rx="3.0" fill="#D97706" stroke="none"/>
+<text x="182.0" y="410.0" fill="#172033" font-size="15" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">serial (prescan, header)</text>
+<rect x="420.0" y="395.0" width="24.0" height="18.0" rx="3.0" fill="#2563EB" stroke="none"/>
+<text x="452.0" y="410.0" fill="#172033" font-size="15" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">shared by threads</text>
+<text x="32.0" y="450.0" fill="#556176" font-size="16" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">With 10% serial work, the speed-up can never pass 10×.</text>
+</svg>

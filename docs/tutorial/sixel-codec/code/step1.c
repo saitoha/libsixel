@@ -8,7 +8,7 @@ static void flush(buffer_t *out, int ch, int count)
     else while (count-- > 0) buf_putc(out, ch);
 }
 
-int tutorial_encode(image_t const *img, buffer_t *out)
+int encode_sixel(image_t const *img, buffer_t *out)
 {
     int w = img->width, h = img->height;
 
@@ -35,7 +35,7 @@ int tutorial_encode(image_t const *img, buffer_t *out)
     return 0;
 }
 
-int tutorial_decode(unsigned char const *p, size_t size, image_t *img)
+int decode_sixel(unsigned char const *p, size_t size, image_t *img)
 {
     unsigned char const *end = p + size;
     int a[5], x = 0, y = 0, color = 0, repeat = 1;

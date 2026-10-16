@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">Where the pixels live in memory</title>
+<desc id="figure-description">An eight by six band with letters. Column 2 holds c, k, s, A, I, Q, which are eight boxes apart when the rows are laid end to end in memory.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="560.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Where the pixels live in memory</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Memory is one long street of numbered boxes.</text>
+<rect x="32.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="47.5" y="140.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">a</text>
+<rect x="66.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="81.5" y="140.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">b</text>
+<rect x="100.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/><text x="115.5" y="140.9" fill="#D97706" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">c</text>
+<rect x="134.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="149.5" y="140.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">d</text>
+<rect x="168.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="183.5" y="140.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">e</text>
+<rect x="202.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="217.5" y="140.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">f</text>
+<rect x="236.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="251.5" y="140.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">g</text>
+<rect x="270.0" y="120.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="285.5" y="140.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">h</text>
+<rect x="32.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="47.5" y="174.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">i</text>
+<rect x="66.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="81.5" y="174.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">j</text>
+<rect x="100.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/><text x="115.5" y="174.9" fill="#D97706" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">k</text>
+<rect x="134.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="149.5" y="174.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">l</text>
+<rect x="168.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="183.5" y="174.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">m</text>
+<rect x="202.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="217.5" y="174.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">n</text>
+<rect x="236.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="251.5" y="174.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">o</text>
+<rect x="270.0" y="154.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="285.5" y="174.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">p</text>
+<rect x="32.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="47.5" y="208.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">q</text>
+<rect x="66.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="81.5" y="208.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">r</text>
+<rect x="100.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/><text x="115.5" y="208.9" fill="#D97706" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">s</text>
+<rect x="134.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="149.5" y="208.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">t</text>
+<rect x="168.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="183.5" y="208.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">u</text>
+<rect x="202.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="217.5" y="208.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">v</text>
+<rect x="236.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="251.5" y="208.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">w</text>
+<rect x="270.0" y="188.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="285.5" y="208.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">x</text>
+<rect x="32.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="47.5" y="242.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">y</text>
+<rect x="66.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="81.5" y="242.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">z</text>
+<rect x="100.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/><text x="115.5" y="242.9" fill="#D97706" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">A</text>
+<rect x="134.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="149.5" y="242.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">B</text>
+<rect x="168.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="183.5" y="242.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">C</text>
+<rect x="202.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="217.5" y="242.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">D</text>
+<rect x="236.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="251.5" y="242.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">E</text>
+<rect x="270.0" y="222.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="285.5" y="242.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">F</text>
+<rect x="32.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="47.5" y="276.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">G</text>
+<rect x="66.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="81.5" y="276.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">H</text>
+<rect x="100.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/><text x="115.5" y="276.9" fill="#D97706" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">I</text>
+<rect x="134.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="149.5" y="276.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">J</text>
+<rect x="168.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="183.5" y="276.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">K</text>
+<rect x="202.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="217.5" y="276.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">L</text>
+<rect x="236.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="251.5" y="276.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">M</text>
+<rect x="270.0" y="256.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="285.5" y="276.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">N</text>
+<rect x="32.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="47.5" y="310.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">O</text>
+<rect x="66.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="81.5" y="310.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">P</text>
+<rect x="100.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/><text x="115.5" y="310.9" fill="#D97706" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Q</text>
+<rect x="134.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="149.5" y="310.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">R</text>
+<rect x="168.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="183.5" y="310.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">S</text>
+<rect x="202.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="217.5" y="310.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">T</text>
+<rect x="236.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="251.5" y="310.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">U</text>
+<rect x="270.0" y="290.0" width="31.0" height="31.0" rx="3.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/><text x="285.5" y="310.9" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">V</text>
+<text x="32.0" y="348.0" fill="#556176" font-size="15" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">the band on screen</text>
+<text x="340.0" y="140.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">A sixel character needs column 2:</text>
+<text x="340.0" y="170.0" fill="#D97706" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">c  k  s  A  I  Q</text>
+<text x="340.0" y="200.0" fill="#556176" font-size="17" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">They are 8 boxes apart in memory.</text>
+<text x="32.0" y="384.0" fill="#556176" font-size="16" font-weight="700" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">the same band in memory, row after row:</text>
+<rect x="32.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="45.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="58.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#D97706" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="71.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="84.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="97.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="110.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="123.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="136.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="149.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="162.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#D97706" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="175.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="188.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="201.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="214.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="227.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="240.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="253.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="266.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#D97706" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="279.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="292.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="305.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="318.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="331.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="344.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="357.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="370.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#D97706" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="383.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="396.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="409.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="422.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="435.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="448.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="461.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="474.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#D97706" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="487.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="500.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="513.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="526.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="539.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="552.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="565.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="578.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#D97706" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="591.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="604.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="617.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="630.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<rect x="643.0" y="400.0" width="12.0" height="30.0" rx="2.0" fill="#DBEAFE" stroke="#CBD5E1" stroke-width="0.6"/>
+<text x="84.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 0</text>
+<text x="188.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 1</text>
+<text x="292.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 2</text>
+<text x="396.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 3</text>
+<text x="500.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 4</text>
+<text x="604.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 5</text>
+<text x="32.0" y="490.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">In a real image the gap is the image width: 2400 boxes. The six</text><text x="32.0" y="513.8" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">pixels of one column land in six different parts of memory.</text>
+</svg>

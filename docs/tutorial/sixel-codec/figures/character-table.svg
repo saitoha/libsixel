@@ -1,0 +1,584 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">All 64 sixel characters</title>
+<desc id="figure-description">A table of the values 0 to 63 and their characters, from question mark to tilde.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="560.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">All 64 sixel characters</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Pattern value on top, character below. Row 0 is bit 1.</text>
+<rect x="50.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">0</text>
+<text x="116.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">?</text>
+<rect x="58.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="78.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="83.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="128.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">1</text>
+<text x="194.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">@</text>
+<rect x="136.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="156.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="161.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="206.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">2</text>
+<text x="272.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">A</text>
+<rect x="214.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="234.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="239.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="284.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">3</text>
+<text x="350.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">B</text>
+<rect x="292.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="312.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="317.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="362.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">4</text>
+<text x="428.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">C</text>
+<rect x="370.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="390.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="395.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="440.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">5</text>
+<text x="506.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">D</text>
+<rect x="448.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="468.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="473.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="518.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">6</text>
+<text x="584.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">E</text>
+<rect x="526.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="546.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="551.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="596.0" y="120.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="138.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">7</text>
+<text x="662.0" y="156.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">F</text>
+<rect x="604.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="624.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="629.0" y="146.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="50.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">8</text>
+<text x="116.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">G</text>
+<rect x="58.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="78.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="83.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="128.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">9</text>
+<text x="194.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">H</text>
+<rect x="136.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="156.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="161.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="206.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">10</text>
+<text x="272.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">I</text>
+<rect x="214.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="234.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="239.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="284.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">11</text>
+<text x="350.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">J</text>
+<rect x="292.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="312.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="317.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="362.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">12</text>
+<text x="428.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">K</text>
+<rect x="370.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="390.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="395.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="440.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">13</text>
+<text x="506.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">L</text>
+<rect x="448.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="468.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="473.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="518.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">14</text>
+<text x="584.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">M</text>
+<rect x="526.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="546.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="551.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="596.0" y="170.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="188.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">15</text>
+<text x="662.0" y="206.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">N</text>
+<rect x="604.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="624.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="629.0" y="196.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="50.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">16</text>
+<text x="116.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">O</text>
+<rect x="58.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="78.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="83.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="128.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">17</text>
+<text x="194.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">P</text>
+<rect x="136.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="156.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="161.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="206.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">18</text>
+<text x="272.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">Q</text>
+<rect x="214.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="234.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="239.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="284.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">19</text>
+<text x="350.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">R</text>
+<rect x="292.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="312.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="317.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="362.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">20</text>
+<text x="428.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">S</text>
+<rect x="370.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="390.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="395.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="440.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">21</text>
+<text x="506.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">T</text>
+<rect x="448.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="468.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="473.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="518.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">22</text>
+<text x="584.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">U</text>
+<rect x="526.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="546.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="551.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="596.0" y="220.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="238.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">23</text>
+<text x="662.0" y="256.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">V</text>
+<rect x="604.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="624.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="629.0" y="246.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="50.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">24</text>
+<text x="116.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">W</text>
+<rect x="58.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="78.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="83.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="128.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">25</text>
+<text x="194.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">X</text>
+<rect x="136.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="156.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="161.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="206.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">26</text>
+<text x="272.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">Y</text>
+<rect x="214.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="234.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="239.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="284.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">27</text>
+<text x="350.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">Z</text>
+<rect x="292.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="312.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="317.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="362.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">28</text>
+<text x="428.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">[</text>
+<rect x="370.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="390.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="395.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="440.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">29</text>
+<text x="506.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">\</text>
+<rect x="448.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="468.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="473.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="518.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">30</text>
+<text x="584.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">]</text>
+<rect x="526.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="546.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="551.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="596.0" y="270.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="288.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">31</text>
+<text x="662.0" y="306.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">^</text>
+<rect x="604.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="624.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="629.0" y="296.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="50.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">32</text>
+<text x="116.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">_</text>
+<rect x="58.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="78.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="83.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="128.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">33</text>
+<text x="194.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">`</text>
+<rect x="136.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="156.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="161.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="206.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">34</text>
+<text x="272.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">a</text>
+<rect x="214.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="234.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="239.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="284.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">35</text>
+<text x="350.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">b</text>
+<rect x="292.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="312.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="317.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="362.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">36</text>
+<text x="428.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">c</text>
+<rect x="370.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="390.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="395.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="440.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">37</text>
+<text x="506.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">d</text>
+<rect x="448.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="468.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="473.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="518.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">38</text>
+<text x="584.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">e</text>
+<rect x="526.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="546.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="551.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="596.0" y="320.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="338.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">39</text>
+<text x="662.0" y="356.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">f</text>
+<rect x="604.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="624.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="629.0" y="346.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="50.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">40</text>
+<text x="116.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">g</text>
+<rect x="58.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="78.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="83.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="128.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">41</text>
+<text x="194.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">h</text>
+<rect x="136.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="156.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="161.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="206.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">42</text>
+<text x="272.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">i</text>
+<rect x="214.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="234.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="239.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="284.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">43</text>
+<text x="350.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">j</text>
+<rect x="292.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="312.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="317.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="362.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">44</text>
+<text x="428.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">k</text>
+<rect x="370.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="390.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="395.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="440.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">45</text>
+<text x="506.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">l</text>
+<rect x="448.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="468.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="473.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="518.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">46</text>
+<text x="584.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">m</text>
+<rect x="526.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="546.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="551.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="596.0" y="370.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="388.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">47</text>
+<text x="662.0" y="406.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">n</text>
+<rect x="604.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="624.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="629.0" y="396.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="50.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">48</text>
+<text x="116.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">o</text>
+<rect x="58.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="78.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="83.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="128.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">49</text>
+<text x="194.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">p</text>
+<rect x="136.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="156.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="161.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="206.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">50</text>
+<text x="272.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">q</text>
+<rect x="214.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="234.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="239.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="284.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">51</text>
+<text x="350.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">r</text>
+<rect x="292.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="312.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="317.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="362.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">52</text>
+<text x="428.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">s</text>
+<rect x="370.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="390.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="395.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="440.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">53</text>
+<text x="506.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">t</text>
+<rect x="448.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="468.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="473.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="518.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">54</text>
+<text x="584.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">u</text>
+<rect x="526.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="546.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="551.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="596.0" y="420.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="438.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">55</text>
+<text x="662.0" y="456.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">v</text>
+<rect x="604.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="624.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="629.0" y="446.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="50.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="58.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">56</text>
+<text x="116.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">w</text>
+<rect x="58.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="63.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="68.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="73.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="78.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="83.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="128.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="136.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">57</text>
+<text x="194.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">x</text>
+<rect x="136.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="141.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="146.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="151.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="156.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="161.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="206.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="214.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">58</text>
+<text x="272.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">y</text>
+<rect x="214.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="219.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="224.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="229.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="234.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="239.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="284.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="292.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">59</text>
+<text x="350.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">z</text>
+<rect x="292.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="297.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="302.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="307.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="312.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="317.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="362.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="370.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">60</text>
+<text x="428.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">{</text>
+<rect x="370.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="375.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="380.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="385.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="390.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="395.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="440.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="448.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">61</text>
+<text x="506.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">|</text>
+<rect x="448.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="453.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="458.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="463.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="468.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="473.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="518.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="526.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">62</text>
+<text x="584.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">}</text>
+<rect x="526.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#CBD5E1" stroke="none"/>
+<rect x="531.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="536.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="541.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="546.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="551.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="596.0" y="470.0" width="76.0" height="46.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="604.0" y="488.0" fill="#556176" font-size="13" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">63</text>
+<text x="662.0" y="506.0" fill="#2563EB" font-size="24" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="end" xml-space="preserve">~</text>
+<rect x="604.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="609.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="614.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="619.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="624.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<rect x="629.0" y="496.0" width="4.0" height="12.0" rx="1.0" fill="#DC2626" stroke="none"/>
+<text x="32.0" y="540.0" fill="#556176" font-size="17" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">&#x27;?&#x27; is an empty column. &#x27;~&#x27; paints all six rows.</text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="580" viewBox="0 0 720 580" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">A complete stream, piece by piece</title>
+<desc id="figure-description">ESC P q starts the picture, &quot;1;1;7;12 gives its size, #1;2;0;60;0 and #2;2;50;30;10 define colors, the body paints, and ESC backslash ends it.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="580.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">A complete stream, piece by piece</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Everything the terminal needs, in order.</text>
+<rect x="32.0" y="120.0" width="656.0" height="52.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.4"/>
+<rect x="32.0" y="120.0" width="8.0" height="52.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="58.0" y="152.0" fill="#2563EB" font-size="16" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">start</text>
+<text x="130.0" y="143.0" fill="#172033" font-size="18" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">ESC P q</text>
+<text x="130.0" y="164.0" fill="#556176" font-size="15" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">&quot;Here comes a SIXEL picture.&quot;</text>
+<rect x="32.0" y="182.0" width="656.0" height="52.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.4"/>
+<rect x="32.0" y="182.0" width="8.0" height="52.0" rx="4.0" fill="#0F766E" stroke="none"/>
+<text x="58.0" y="214.0" fill="#0F766E" font-size="16" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">size</text>
+<text x="130.0" y="205.0" fill="#172033" font-size="18" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">&quot;1;1;7;12</text>
+<text x="130.0" y="226.0" fill="#556176" font-size="15" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">square pixels, 7 wide, 12 tall</text>
+<rect x="32.0" y="244.0" width="656.0" height="52.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.4"/>
+<rect x="32.0" y="244.0" width="8.0" height="52.0" rx="4.0" fill="#BE185D" stroke="none"/>
+<text x="58.0" y="276.0" fill="#BE185D" font-size="16" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">color</text>
+<text x="130.0" y="267.0" fill="#172033" font-size="18" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">#1;2;0;60;0</text>
+<text x="130.0" y="288.0" fill="#556176" font-size="15" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">register 1 = R 0%, G 60%, B 0%</text>
+<rect x="32.0" y="306.0" width="656.0" height="52.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.4"/>
+<rect x="32.0" y="306.0" width="8.0" height="52.0" rx="4.0" fill="#BE185D" stroke="none"/>
+<text x="58.0" y="338.0" fill="#BE185D" font-size="16" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">color</text>
+<text x="130.0" y="329.0" fill="#172033" font-size="18" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">#2;2;50;30;10</text>
+<text x="130.0" y="350.0" fill="#556176" font-size="15" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">register 2 = brown</text>
+<rect x="32.0" y="368.0" width="656.0" height="52.0" rx="10.0" fill="#FFFFFF" stroke="#D97706" stroke-width="1.4"/>
+<rect x="32.0" y="368.0" width="8.0" height="52.0" rx="4.0" fill="#D97706" stroke="none"/>
+<text x="58.0" y="400.0" fill="#D97706" font-size="16" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">body</text>
+<text x="130.0" y="391.0" fill="#172033" font-size="18" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">#1_s}~}s_-#1!7@$#2??O]O</text>
+<text x="130.0" y="412.0" fill="#556176" font-size="15" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">the pixels, band by band</text>
+<rect x="32.0" y="430.0" width="656.0" height="52.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.4"/>
+<rect x="32.0" y="430.0" width="8.0" height="52.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="58.0" y="462.0" fill="#2563EB" font-size="16" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">end</text>
+<text x="130.0" y="453.0" fill="#172033" font-size="18" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">ESC \</text>
+<text x="130.0" y="474.0" fill="#556176" font-size="15" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">&quot;The picture is finished.&quot;</text>
+<text x="32.0" y="510.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">ESC is the escape character, byte 27 (\033 in printf).</text><text x="32.0" y="533.8" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">#n;2;r;g;b defines a color in percent; #n alone selects it.</text>
+</svg>

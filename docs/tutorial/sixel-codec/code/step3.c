@@ -328,7 +328,7 @@ encode_band(encoder_t *e, image_t const *img, int y, buffer_t *out)
 }
 
 int
-tutorial_encode(image_t const *img, buffer_t *out)
+encode_sixel(image_t const *img, buffer_t *out)
 {
     encoder_t e;
     int y;
@@ -428,7 +428,7 @@ materialize(decoder_t const *d, image_t *img, int first_band, int end_band)
 }
 
 int
-tutorial_decode(unsigned char const *p, size_t size, image_t *img)
+decode_sixel(unsigned char const *p, size_t size, image_t *img)
 {
     unsigned char const *end = p + size;
     decoder_t d = { NULL, 0, 0, 0, 0 };

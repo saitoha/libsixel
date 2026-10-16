@@ -1,20 +1,25 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Test harness for the SIXEL codec tutorial. It is deliberately ordinary
- * code: PPM input and output, a fixed-palette quantizer, timing, and a
- * self test. Each stepN.c supplies tutorial_encode() and tutorial_decode().
+ * The command-line program around every step of the SIXEL codec tutorial.
+ * It is deliberately ordinary code: PNM input and output, a fixed-palette
+ * quantizer, timing, and a self test. Each stepN.c supplies only
+ * encode_sixel() and decode_sixel().
  *
- *   stepN encode IN.ppm OUT.six      quantize and encode
- *   stepN decode IN.six OUT.ppm      decode to RGB
- *   stepN synth KIND W H OUT.ppm     write a synthetic test image
+ *   stepN encode [IN.pnm]            PNM to SIXEL on standard output
+ *   stepN decode [IN.six]            SIXEL to PPM on standard output
+ *   stepN synth KIND W H             a synthetic test image as PPM
  *   stepN selftest                   round-trip synthetic images
- *   stepN bench IN.ppm [SCALE] [N]   time encoding and decoding
+ *   stepN bench IN.pnm [SCALE] [N]   time encoding and decoding
+ *
+ * encode and decode read standard input without a file name, so they
+ * work in pipelines: ./step1 encode in.ppm | ./step1 decode > out.ppm
  */
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "tutorial.h"
 
@@ -200,12 +205,14 @@ put_header_and_palette(image_t const *img, buffer_t *out)
 }
 
 /* ------------------------------------------------------------------ */
-/* PPM input and output, and conversion to an indexed image.           */
+/* PNM input and output, and conversion to an indexed image.           */
 
+/* Read a whole file, or standard input when path is NULL or "-". */
 static int
 read_file(char const *path, buffer_t *b)
 {
-    FILE *fp = fopen(path, "rb");
+    int from_stdin = path == NULL || strcmp(path, "-") == 0;
+    FILE *fp = from_stdin ? stdin : fopen(path, "rb");
     size_t n;
 
     if (fp == NULL) {
@@ -220,27 +227,31 @@ read_file(char const *path, buffer_t *b)
         }
         b->size += n;
     }
-    fclose(fp);
+    if (!from_stdin) {
+        fclose(fp);
+    }
+    return 0;
+}
+
+/* Write to standard output. Binary PNM data would garble a terminal, so
+ * it is refused there; SIXEL is meant to be shown there. */
+static int
+write_stdout(unsigned char const *data, size_t size, int binary)
+{
+    if (binary && isatty(STDOUT_FILENO)) {
+        fprintf(stderr, "not writing a binary image to a terminal; "
+                "redirect the output, e.g. > out.ppm\n");
+        return -1;
+    }
+    if (fwrite(data, 1, size, stdout) != size || fflush(stdout) != 0) {
+        perror("stdout");
+        return -1;
+    }
     return 0;
 }
 
 static int
-write_file(char const *path, unsigned char const *data, size_t size)
-{
-    FILE *fp = fopen(path, "wb");
-
-    if (fp == NULL || fwrite(data, 1, size, fp) != size) {
-        perror(path);
-        if (fp != NULL) {
-            fclose(fp);
-        }
-        return -1;
-    }
-    return fclose(fp);
-}
-
-static int
-ppm_token(unsigned char const **p, unsigned char const *end)
+pnm_token(unsigned char const **p, unsigned char const *end)
 {
     int value = 0;
 
@@ -261,76 +272,77 @@ ppm_token(unsigned char const **p, unsigned char const *end)
         return -1;
     }
     while (*p < end && **p >= '0' && **p <= '9') {
-        value = value * 10 + (*(*p)++ - '0');
+        if (value < 1000000) {
+            value = value * 10 + (**p - '0');
+        }
+        (*p)++;
     }
     return value;
 }
 
-/* Returns an RGB buffer of width * height * 3 bytes (P3 or P6, maxval 255). */
+/* Parse a P2, P3, P5 or P6 file with a maxval of at most 255. The samples
+ * are returned as one byte each, in file order: width * height * channels
+ * bytes, where channels is 1 for gray and 3 for color. For P5 and P6 that
+ * is the file's pixel data itself, copied without any conversion. */
 static unsigned char *
-read_ppm(char const *path, int *width, int *height)
+parse_pnm(buffer_t const *file, char const *name, int *width, int *height,
+          int *channels, int *maxval)
 {
-    buffer_t file = { 0 };
-    unsigned char const *p;
-    unsigned char const *end;
-    unsigned char *rgb = NULL;
+    unsigned char const *p = file->data;
+    unsigned char const *end = p + file->size;
+    unsigned char *samples;
     size_t i;
     size_t n;
-    int binary;
-    int maxval;
+    int kind;
+    int v;
 
-    if (read_file(path, &file) != 0) {
+    if (file->size < 2 || p[0] != 'P' || p[1] < '2' || p[1] > '6' ||
+            p[1] == '4') {
+        fprintf(stderr, "%s: not a P2, P3, P5 or P6 PNM file\n", name);
         return NULL;
     }
-    p = file.data;
-    end = p + file.size;
-    if (file.size < 2 || p[0] != 'P' || (p[1] != '3' && p[1] != '6')) {
-        fprintf(stderr, "%s: not a P3/P6 PPM file\n", path);
-        goto end;
-    }
-    binary = p[1] == '6';
+    kind = p[1] - '0';
+    *channels = kind == 3 || kind == 6 ? 3 : 1;
     p += 2;
-    *width = ppm_token(&p, end);
-    *height = ppm_token(&p, end);
-    maxval = ppm_token(&p, end);
+    *width = pnm_token(&p, end);
+    *height = pnm_token(&p, end);
+    *maxval = pnm_token(&p, end);
     if (*width <= 0 || *height <= 0 || *width > TUTORIAL_MAX_SIDE ||
-            *height > TUTORIAL_MAX_SIDE || maxval != 255) {
-        fprintf(stderr, "%s: unsupported PPM geometry or maxval\n", path);
-        goto end;
+            *height > TUTORIAL_MAX_SIDE || *maxval <= 0 || *maxval > 255) {
+        fprintf(stderr, "%s: unsupported size or maxval (at most 255)\n",
+                name);
+        return NULL;
     }
-    n = (size_t)*width * (size_t)*height * 3;
-    rgb = malloc(n);
-    if (rgb == NULL) {
-        goto end;
+    n = (size_t)*width * (size_t)*height * (size_t)*channels;
+    samples = malloc(n);
+    if (samples == NULL) {
+        return NULL;
     }
-    if (binary) {
-        p++;
+    if (kind >= 5) {
+        p++;                        /* the single whitespace byte */
         if ((size_t)(end - p) < n) {
-            fprintf(stderr, "%s: truncated\n", path);
-            free(rgb);
-            rgb = NULL;
-            goto end;
+            goto truncated;
         }
-        memcpy(rgb, p, n);
+        memcpy(samples, p, n);
     } else {
         for (i = 0; i < n; i++) {
-            int v = ppm_token(&p, end);
+            v = pnm_token(&p, end);
             if (v < 0) {
-                fprintf(stderr, "%s: truncated\n", path);
-                free(rgb);
-                rgb = NULL;
-                goto end;
+                goto truncated;
             }
-            rgb[i] = (unsigned char)v;
+            samples[i] = (unsigned char)(v > *maxval ? *maxval : v);
         }
     }
-end:
-    buf_free(&file);
-    return rgb;
+    return samples;
+truncated:
+    fprintf(stderr, "%s: truncated\n", name);
+    free(samples);
+    return NULL;
 }
 
+/* Write P6: the palette color of every pixel, row by row. */
 static int
-write_ppm(char const *path, image_t const *img)
+write_ppm(image_t const *img)
 {
     buffer_t b = { 0 };
     size_t i;
@@ -343,16 +355,36 @@ write_ppm(char const *path, image_t const *img)
         memcpy(b.data + b.size, img->palette + img->pixels[i] * 3, 3);
         b.size += 3;
     }
-    rc = write_file(path, b.data, b.size);
+    rc = write_stdout(b.data, b.size, 1);
     buf_free(&b);
     return rc;
+}
+
+/* A gray image is already indexed: each gray level 0..maxval is the
+ * palette index of a register holding that gray, so the samples are the
+ * pixels unchanged. */
+static void
+index_gray(unsigned char *samples, int width, int height, int maxval,
+           image_t *img)
+{
+    int c;
+
+    free(img->pixels);
+    img->pixels = samples;
+    img->width = width;
+    img->height = height;
+    img->ncolors = maxval + 1;
+    for (c = 0; c <= maxval; c++) {
+        memset(img->palette + c * 3, (c * 255 + maxval / 2) / maxval, 3);
+    }
 }
 
 /* Use the exact colors when there are at most 256 of them. Otherwise map
  * to a 6x6x6 color cube with 4x4 ordered dithering. Palette construction
  * is a separate subject; this keeps the tutorial focused on SIXEL itself. */
 static void
-index_rgb(unsigned char const *rgb, int width, int height, image_t *img)
+index_rgb(unsigned char *rgb, int width, int height, int maxval,
+          image_t *img)
 {
     static int const bayer[16] = {
         0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5
@@ -364,6 +396,11 @@ index_rgb(unsigned char const *rgb, int width, int height, image_t *img)
     int x;
     int y;
 
+    if (maxval != 255) {
+        for (i = 0; i < n * 3; i++) {
+            rgb[i] = (unsigned char)((rgb[i] * 255 + maxval / 2) / maxval);
+        }
+    }
     image_alloc(img, width, height);
     img->ncolors = 0;
     for (i = 0; i < n; i++) {
@@ -382,6 +419,7 @@ index_rgb(unsigned char const *rgb, int width, int height, image_t *img)
         img->pixels[i] = (unsigned char)c;
     }
     if (i == n) {
+        free(rgb);
         return;
     }
     img->ncolors = 216;
@@ -407,42 +445,63 @@ index_rgb(unsigned char const *rgb, int width, int height, image_t *img)
                                              level[2]);
         }
     }
+    free(rgb);
 }
 
+/* Read a PNM file (or standard input) into an indexed image, optionally
+ * enlarged `scale` times with nearest-neighbor sampling for benchmarks. */
 static int
 load_indexed(char const *path, int scale, image_t *img)
 {
-    unsigned char *rgb;
+    buffer_t file = { 0 };
+    unsigned char *samples;
     unsigned char *big;
+    size_t bytes;
     int width;
     int height;
+    int channels;
+    int maxval;
     int x;
     int y;
 
-    rgb = read_ppm(path, &width, &height);
-    if (rgb == NULL) {
+    if (read_file(path, &file) != 0) {
+        return -1;
+    }
+    samples = parse_pnm(&file, path ? path : "stdin", &width, &height,
+                        &channels, &maxval);
+    buf_free(&file);
+    if (samples == NULL) {
         return -1;
     }
     if (scale > 1) {
-        /* nearest-neighbor enlargement for benchmarks */
-        big = malloc((size_t)width * scale * (size_t)height * scale * 3);
+        if ((size_t)width * scale > TUTORIAL_MAX_SIDE ||
+                (size_t)height * scale > TUTORIAL_MAX_SIDE) {
+            free(samples);
+            return -1;
+        }
+        bytes = (size_t)channels;
+        big = malloc((size_t)width * scale * (size_t)height * scale * bytes);
         if (big == NULL) {
-            free(rgb);
+            free(samples);
             return -1;
         }
         for (y = 0; y < height * scale; y++) {
             for (x = 0; x < width * scale; x++) {
-                memcpy(big + ((size_t)y * width * scale + x) * 3,
-                       rgb + ((size_t)(y / scale) * width + x / scale) * 3, 3);
+                memcpy(big + ((size_t)y * width * scale + x) * bytes,
+                       samples + ((size_t)(y / scale) * width + x / scale) *
+                       bytes, bytes);
             }
         }
-        free(rgb);
-        rgb = big;
+        free(samples);
+        samples = big;
         width *= scale;
         height *= scale;
     }
-    index_rgb(rgb, width, height, img);
-    free(rgb);
+    if (channels == 1) {
+        index_gray(samples, width, height, maxval, img);
+    } else {
+        index_rgb(samples, width, height, maxval, img);
+    }
     return 0;
 }
 
@@ -502,26 +561,44 @@ synth(char const *kind, int width, int height, image_t *img)
     return 0;
 }
 
+/* Encode src, decode the result and compare. Unless quiet, explain the
+ * first problem found, down to the first pixel that differs. */
 static int
-roundtrip(image_t const *src, char const *label)
+roundtrip(image_t const *src, char const *label, int quiet)
 {
     buffer_t six = { 0 };
     image_t dst = { 0 };
+    size_t i;
+    size_t n = (size_t)src->width * (size_t)src->height;
     int rc = 1;
 
-    if (tutorial_encode(src, &six) != 0) {
-        fprintf(stderr, "%s: encode failed\n", label);
+    if (encode_sixel(src, &six) != 0) {
+        if (!quiet) {
+            fprintf(stderr, "%s: encode failed\n", label);
+        }
         goto end;
     }
-    if (tutorial_decode(six.data, six.size, &dst) != 0) {
-        fprintf(stderr, "%s: decode failed\n", label);
+    if (decode_sixel(six.data, six.size, &dst) != 0) {
+        if (!quiet) {
+            fprintf(stderr, "%s: decode failed\n", label);
+        }
         goto end;
     }
-    if (dst.width != src->width || dst.height != src->height ||
-            memcmp(dst.pixels, src->pixels,
-                   (size_t)src->width * src->height) != 0) {
-        fprintf(stderr, "%s: mismatch (%dx%d -> %dx%d)\n", label,
-                src->width, src->height, dst.width, dst.height);
+    if (dst.width != src->width || dst.height != src->height) {
+        if (!quiet) {
+            fprintf(stderr, "%s: decoded size is %dx%d\n", label,
+                    dst.width, dst.height);
+        }
+        goto end;
+    }
+    for (i = 0; i < n && dst.pixels[i] == src->pixels[i]; i++) {
+    }
+    if (i < n) {
+        if (!quiet) {
+            fprintf(stderr, "%s: pixel (%d, %d) is register %d, "
+                    "expected %d\n", label, (int)(i % src->width),
+                    (int)(i / src->width), dst.pixels[i], src->pixels[i]);
+        }
         goto end;
     }
     rc = 0;
@@ -554,7 +631,7 @@ selftest(void)
             if (synth(kinds[k], sizes[s][0], sizes[s][1], &img) != 0) {
                 return 1;
             }
-            failures += roundtrip(&img, label);
+            failures += roundtrip(&img, label, failures >= 3);
             tests++;
         }
     }
@@ -590,13 +667,13 @@ bench(char const *path, int scale, int iterations)
     for (i = 0; i < iterations; i++) {
         six.size = 0;
         t0 = now();
-        tutorial_encode(&img, &six);
+        encode_sixel(&img, &six);
         t0 = now() - t0;
         enc = t0 < enc ? t0 : enc;
     }
     for (i = 0; i < iterations; i++) {
         t0 = now();
-        tutorial_decode(six.data, six.size, &dst);
+        decode_sixel(six.data, six.size, &dst);
         t0 = now() - t0;
         dec = t0 < dec ? t0 : dec;
     }
@@ -610,37 +687,53 @@ bench(char const *path, int scale, int iterations)
     return 0;
 }
 
+static int
+usage(char const *argv0)
+{
+    fprintf(stderr,
+            "usage: %s encode [IN.pnm]      PNM to SIXEL on stdout\n"
+            "       %s decode [IN.six]      SIXEL to PPM on stdout\n"
+            "       %s synth KIND W H       test image as PPM on stdout\n"
+            "       %s selftest             round-trip test images\n"
+            "       %s bench IN.pnm [SCALE] [N]\n"
+            "Without a file name, or with -, encode and decode read stdin.\n"
+            "KIND is noise, flat, two, sparse or gradient.\n",
+            argv0, argv0, argv0, argv0, argv0);
+    return 2;
+}
+
 int
 main(int argc, char **argv)
 {
     image_t img = { 0 };
     buffer_t buf = { 0 };
     buffer_t six = { 0 };
+    char const *cmd = argc > 1 ? argv[1] : "";
     int rc = 1;
 
-    if (argc == 4 && strcmp(argv[1], "encode") == 0) {
-        if (load_indexed(argv[2], 1, &img) == 0 &&
-                tutorial_encode(&img, &six) == 0) {
-            rc = write_file(argv[3], six.data, six.size) != 0;
+    if (strcmp(cmd, "encode") == 0 && argc <= 3) {
+        if (load_indexed(argc == 3 ? argv[2] : NULL, 1, &img) == 0 &&
+                encode_sixel(&img, &six) == 0) {
+            rc = write_stdout(six.data, six.size, 0) != 0;
         }
-    } else if (argc == 4 && strcmp(argv[1], "decode") == 0) {
-        if (read_file(argv[2], &buf) == 0 &&
-                tutorial_decode(buf.data, buf.size, &img) == 0) {
-            rc = write_ppm(argv[3], &img) != 0;
+    } else if (strcmp(cmd, "decode") == 0 && argc <= 3) {
+        if (read_file(argc == 3 ? argv[2] : NULL, &buf) == 0 &&
+                decode_sixel(buf.data, buf.size, &img) == 0) {
+            rc = write_ppm(&img) != 0;
+        } else if (buf.data != NULL) {
+            fprintf(stderr, "decode failed\n");
         }
-    } else if (argc == 6 && strcmp(argv[1], "synth") == 0) {
+    } else if (strcmp(cmd, "synth") == 0 && argc == 5) {
         if (synth(argv[2], atoi(argv[3]), atoi(argv[4]), &img) == 0) {
-            rc = write_ppm(argv[5], &img) != 0;
+            rc = write_ppm(&img) != 0;
         }
-    } else if (argc == 2 && strcmp(argv[1], "selftest") == 0) {
+    } else if (strcmp(cmd, "selftest") == 0 && argc == 2) {
         rc = selftest();
-    } else if (argc >= 3 && strcmp(argv[1], "bench") == 0) {
+    } else if (strcmp(cmd, "bench") == 0 && argc >= 3) {
         rc = bench(argv[2], argc > 3 ? atoi(argv[3]) : 1,
                    argc > 4 ? atoi(argv[4]) : 5);
     } else {
-        fprintf(stderr, "usage: %s encode IN.ppm OUT.six | decode IN.six "
-                "OUT.ppm | synth KIND W H OUT.ppm | selftest | "
-                "bench IN.ppm [SCALE] [N]\n", argv[0]);
+        rc = usage(argv[0]);
     }
     image_free(&img);
     buf_free(&buf);

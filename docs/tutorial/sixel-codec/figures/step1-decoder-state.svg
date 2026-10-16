@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="660" viewBox="0 0 720 660" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">The decoder is a robot with four notes</title>
+<desc id="figure-description">A table tracing x, y, color and repeat while decoding #1_s}~}s_-#1!7@$#2??O]O.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="660.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The decoder is a robot with four notes</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Each byte changes a note or paints pixels.</text>
+<text x="32.0" y="130.0" fill="#556176" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">read</text>
+<text x="190.0" y="130.0" fill="#556176" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">x</text>
+<text x="250.0" y="130.0" fill="#556176" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">y</text>
+<text x="310.0" y="130.0" fill="#556176" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">color</text>
+<text x="400.0" y="130.0" fill="#556176" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">repeat</text>
+<text x="480.0" y="130.0" fill="#556176" font-size="17" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">does</text>
+<rect x="24.0" y="142.0" width="672.0" height="40.0" rx="6.0" fill="#DBEAFE" stroke="none"/>
+<text x="32.0" y="170.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">#1</text>
+<text x="190.0" y="170.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="250.0" y="170.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="310.0" y="170.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="400.0" y="170.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="170.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">select green</text>
+<rect x="24.0" y="186.0" width="672.0" height="40.0" rx="6.0" fill="#FFFFFF" stroke="none"/>
+<text x="32.0" y="214.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">_</text>
+<text x="190.0" y="214.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="250.0" y="214.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="310.0" y="214.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="400.0" y="214.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="214.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">paint 1 column</text>
+<rect x="24.0" y="230.0" width="672.0" height="40.0" rx="6.0" fill="#DBEAFE" stroke="none"/>
+<text x="32.0" y="258.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">s}~}s_</text>
+<text x="190.0" y="258.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">7</text>
+<text x="250.0" y="258.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="310.0" y="258.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="400.0" y="258.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="258.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">paint 6 more</text>
+<rect x="24.0" y="274.0" width="672.0" height="40.0" rx="6.0" fill="#FFFFFF" stroke="none"/>
+<text x="32.0" y="302.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">-</text>
+<text x="190.0" y="302.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="250.0" y="302.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">6</text>
+<text x="310.0" y="302.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="400.0" y="302.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="302.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">next band</text>
+<rect x="24.0" y="318.0" width="672.0" height="40.0" rx="6.0" fill="#DBEAFE" stroke="none"/>
+<text x="32.0" y="346.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!7</text>
+<text x="190.0" y="346.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="250.0" y="346.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">6</text>
+<text x="310.0" y="346.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="400.0" y="346.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">7</text>
+<text x="480.0" y="346.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">remember 7</text>
+<rect x="24.0" y="362.0" width="672.0" height="40.0" rx="6.0" fill="#FFFFFF" stroke="none"/>
+<text x="32.0" y="390.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">@</text>
+<text x="190.0" y="390.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">7</text>
+<text x="250.0" y="390.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">6</text>
+<text x="310.0" y="390.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="400.0" y="390.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="390.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">paint 7 columns</text>
+<rect x="24.0" y="406.0" width="672.0" height="40.0" rx="6.0" fill="#DBEAFE" stroke="none"/>
+<text x="32.0" y="434.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">$</text>
+<text x="190.0" y="434.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="250.0" y="434.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">6</text>
+<text x="310.0" y="434.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="400.0" y="434.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="434.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">back to left</text>
+<rect x="24.0" y="450.0" width="672.0" height="40.0" rx="6.0" fill="#FFFFFF" stroke="none"/>
+<text x="32.0" y="478.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">#2</text>
+<text x="190.0" y="478.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">0</text>
+<text x="250.0" y="478.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">6</text>
+<text x="310.0" y="478.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">2</text>
+<text x="400.0" y="478.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="478.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">select brown</text>
+<rect x="24.0" y="494.0" width="672.0" height="40.0" rx="6.0" fill="#DBEAFE" stroke="none"/>
+<text x="32.0" y="522.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">??</text>
+<text x="190.0" y="522.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">2</text>
+<text x="250.0" y="522.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">6</text>
+<text x="310.0" y="522.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">2</text>
+<text x="400.0" y="522.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="522.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">skip 2 columns</text>
+<rect x="24.0" y="538.0" width="672.0" height="40.0" rx="6.0" fill="#FFFFFF" stroke="none"/>
+<text x="32.0" y="566.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">O]O</text>
+<text x="190.0" y="566.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">5</text>
+<text x="250.0" y="566.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">6</text>
+<text x="310.0" y="566.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">2</text>
+<text x="400.0" y="566.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="480.0" y="566.0" fill="#172033" font-size="16" font-weight="550" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">paint the trunk</text>
+<text x="32.0" y="630.0" fill="#556176" font-size="16" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">x and y are the cursor; the values are after the byte is read.</text>
+</svg>

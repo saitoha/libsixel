@@ -502,7 +502,7 @@ encode_band(encoder_t *e, image_t const *img, int y, buffer_t *out)
 
 #ifndef TUTORIAL_STEP5
 int
-tutorial_encode(image_t const *img, buffer_t *out)
+encode_sixel(image_t const *img, buffer_t *out)
 {
     encoder_t e;
     int y;
@@ -724,7 +724,7 @@ fail:
 
 #ifndef TUTORIAL_STEP5
 int
-tutorial_decode(unsigned char const *p, size_t size, image_t *img)
+decode_sixel(unsigned char const *p, size_t size, image_t *img)
 {
     return decode_serial(p, size, img);
 }

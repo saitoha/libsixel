@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="430" viewBox="0 0 720 430" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">Saying eight times instead of eight letters</title>
+<desc id="figure-description">Eight tildes become !8~. Runs of one to three stay as letters; four or more use the repeat form.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="430.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Saying &quot;eight times&quot; instead of eight letters</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">!n followed by a character repeats it n times.</text>
+<text x="32.0" y="140.0" fill="#172033" font-size="30" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~~~~~~~~</text>
+<line x1="220.0" y1="130.0" x2="300.0" y2="130.0" stroke="#2563EB" stroke-width="3.0" stroke-linecap="round" marker-end="url(#arrow-blue)"/>
+<text x="320.0" y="140.0" fill="#2563EB" font-size="30" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!8~</text>
+<text x="440.0" y="140.0" fill="#556176" font-size="19" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">8 bytes → 3 bytes</text>
+<text x="32.0" y="200.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">run</text>
+<text x="110.0" y="200.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">letters</text>
+<text x="300.0" y="200.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">with !</text>
+<text x="470.0" y="200.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">we write</text>
+<text x="32.0" y="230.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">1</text>
+<text x="110.0" y="230.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~</text>
+<text x="300.0" y="230.0" fill="#556176" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!1~</text>
+<text x="470.0" y="230.0" fill="#172033" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~</text>
+<text x="32.0" y="264.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">2</text>
+<text x="110.0" y="264.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~~</text>
+<text x="300.0" y="264.0" fill="#556176" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!2~</text>
+<text x="470.0" y="264.0" fill="#172033" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~~</text>
+<text x="32.0" y="298.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">3</text>
+<text x="110.0" y="298.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~~~</text>
+<text x="300.0" y="298.0" fill="#556176" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!3~</text>
+<text x="470.0" y="298.0" fill="#172033" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~~~</text>
+<text x="32.0" y="332.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">4</text>
+<text x="110.0" y="332.0" fill="#556176" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~~~~</text>
+<text x="300.0" y="332.0" fill="#2563EB" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!4~</text>
+<text x="470.0" y="332.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!4~</text>
+<text x="32.0" y="366.0" fill="#172033" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">5</text>
+<text x="110.0" y="366.0" fill="#556176" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">~~~~~</text>
+<text x="300.0" y="366.0" fill="#2563EB" font-size="20" font-weight="700" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!5~</text>
+<text x="470.0" y="366.0" fill="#2563EB" font-size="20" font-weight="750" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="start" xml-space="preserve">!5~</text>
+<text x="32.0" y="410.0" fill="#172033" font-size="17" font-weight="600" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">A run of 4 or more is shorter with !, so flush() uses it only then.</text>
+</svg>

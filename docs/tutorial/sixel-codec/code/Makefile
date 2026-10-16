@@ -1,6 +1,7 @@
 # Build the SIXEL codec tutorial programs with any POSIX make:
 #
 #   make            build step1 ... step5
+#   make mysixel    build your own codec from mysixel.c
 #   make check      run every self test and cross-step comparison
 #   make bench      time every step on the inputs of the published table
 #
@@ -27,12 +28,16 @@ $(O)/step4: step4.c
 $(O)/step5: step5.c step4.c
 	$(CC) $(CFLAGS) -o $@ common.c step5.c $(LDLIBS)
 
+# Not in `all`: it is yours to finish, so it fails its self test at first.
+mysixel: mysixel.c common.c tutorial.h
+	$(CC) $(CFLAGS) -o $(O)/mysixel common.c mysixel.c $(LDLIBS)
+
 check: all
 	./check.sh $(O)
 
 bench: all
-	$(O)/step1 synth two 2400 1800 $(O)/two.ppm
-	$(O)/step1 synth noise 2400 1800 $(O)/noise.ppm
+	$(O)/step1 synth two 2400 1800 > $(O)/two.ppm
+	$(O)/step1 synth noise 2400 1800 > $(O)/noise.ppm
 	@for s in $(STEPS); do \
 	    echo "$$s photo-600 $$($$s bench ../../../../images/snake.ppm 1 10)"; \
 	    echo "$$s photo-2400 $$($$s bench ../../../../images/snake.ppm 4 10)"; \
@@ -41,6 +46,6 @@ bench: all
 	done
 
 clean:
-	rm -f $(STEPS) $(O)/two.ppm $(O)/noise.ppm
+	rm -f $(STEPS) $(O)/mysixel $(O)/two.ppm $(O)/noise.ppm
 
 .PHONY: all check bench clean

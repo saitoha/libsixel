@@ -251,14 +251,45 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/sixel-format/figures/node-scheduling-wide.svg \
 	docs/sixel-format/figures/sixel-format-figures.json \
 	docs/tutorial/sixel-codec/README.md \
+	docs/tutorial/sixel-codec/step0-by-hand.md \
 	docs/tutorial/sixel-codec/step1-run-length.md \
 	docs/tutorial/sixel-codec/step2-nodes.md \
 	docs/tutorial/sixel-codec/step3-column-words.md \
 	docs/tutorial/sixel-codec/step4-simd.md \
 	docs/tutorial/sixel-codec/step5-threads.md \
+	docs/tutorial/sixel-codec/figures/big-picture.svg \
+	docs/tutorial/sixel-codec/figures/character-table.svg \
+	docs/tutorial/sixel-codec/figures/heart-columns.svg \
+	docs/tutorial/sixel-codec/figures/journey.svg \
+	docs/tutorial/sixel-codec/figures/pnm-layout.svg \
+	docs/tutorial/sixel-codec/figures/six-pin-stamp.svg \
+	docs/tutorial/sixel-codec/figures/sixel-codec-tutorial-figures.json \
+	docs/tutorial/sixel-codec/figures/speed.svg \
+	docs/tutorial/sixel-codec/figures/step1-decoder-state.svg \
+	docs/tutorial/sixel-codec/figures/step1-passes.svg \
+	docs/tutorial/sixel-codec/figures/step1-repeat.svg \
+	docs/tutorial/sixel-codec/figures/step2-classify.svg \
+	docs/tutorial/sixel-codec/figures/step2-nodes.svg \
+	docs/tutorial/sixel-codec/figures/step2-packing.svg \
+	docs/tutorial/sixel-codec/figures/step2-repeat-fill.svg \
+	docs/tutorial/sixel-codec/figures/step3-column-word.svg \
+	docs/tutorial/sixel-codec/figures/step3-first-colors.svg \
+	docs/tutorial/sixel-codec/figures/step3-masked-store.svg \
+	docs/tutorial/sixel-codec/figures/step3-memory.svg \
+	docs/tutorial/sixel-codec/figures/step3-occupancy.svg \
+	docs/tutorial/sixel-codec/figures/step3-swar.svg \
+	docs/tutorial/sixel-codec/figures/step4-block.svg \
+	docs/tutorial/sixel-codec/figures/step4-lanes.svg \
+	docs/tutorial/sixel-codec/figures/step4-transpose.svg \
+	docs/tutorial/sixel-codec/figures/step5-amdahl.svg \
+	docs/tutorial/sixel-codec/figures/step5-decoder.svg \
+	docs/tutorial/sixel-codec/figures/step5-encoder.svg \
+	docs/tutorial/sixel-codec/figures/stream-anatomy.svg \
+	docs/tutorial/sixel-codec/figures/tree-cursor.svg \
 	docs/tutorial/sixel-codec/code/Makefile \
 	docs/tutorial/sixel-codec/code/check.sh \
 	docs/tutorial/sixel-codec/code/common.c \
+	docs/tutorial/sixel-codec/code/mysixel.c \
 	docs/tutorial/sixel-codec/code/step1.c \
 	docs/tutorial/sixel-codec/code/step2.c \
 	docs/tutorial/sixel-codec/code/step3.c \
@@ -892,6 +923,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_sixel_format_figures.py \
+	tools/plot_sixel_codec_tutorial_figures.py \
 	tools/plot_codec_timeline_figures.py \
 	tools/plot_terminal_graphics_timeline.py \
 	tools/plot_builtin_loader_format_figures.py \
@@ -980,6 +1012,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	tools/reproduce_encoder_execution_map_figures.sh \
 	tools/reproduce_encoding_pipeline_figures.sh \
 	tools/reproduce_sixel_format_figures.sh \
+	tools/reproduce_sixel_codec_tutorial_figures.sh \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_merge_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \
