@@ -14,9 +14,11 @@ n = meta['generations']
 settings = meta['settings']
 generation_codecs = ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
 images = set(meta['inputs'])
-assert images == set(meta['photo_sources']) | {'diagram'}
+workloads = [set(meta['photo_sources']), set(meta.get('chart_sources') or {})]
+assert images == workloads[0] | workloads[1] and not workloads[0] & workloads[1]
 generation_images = set(meta['generation_images'])
-assert 'diagram' in generation_images and generation_images <= images
+assert generation_images <= images
+assert all(generation_images & w for w in workloads if w)
 sweep = meta['size_sweep']
 sweep_sizes = [tuple(c) for c in sweep['sizes']]
 assert set(sweep['images']) <= images
@@ -47,9 +49,8 @@ for row in rows:
         assert row['mode'] == ('indexed' if palette else 'RGB')
         if palette:
             assert row['exact_generation_one'], key
-# Only the diagram is stored; photographs are identified by source and input
-# digests and must be read from the photo directory to be regenerated.
-assert hashlib.sha256((root / 'diagram.png').read_bytes()).hexdigest() == meta['inputs']['diagram']
+# Inputs are not stored; they are identified by source and input digests
+# and must be read from the dataset directories to be regenerated.
 for name in images:
     for codec in settings:
         group = [r for r in rows if r['image'] == name and r['codec'] == codec and r['experiment'] == 'scaling']

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Render saved format measurements without rerunning any timed work.
 
-The photographic workload is a corpus: each photograph contributes the median
-of its timed samples, and the charts show the distribution of those
-per-photograph values (box plots) or their mean. The diagram workload is one
-image and keeps the per-sample median and interquartile range.
+Each workload (photographs, rendered charts) is a corpus: each image
+contributes the median of its timed samples, and the figures show the
+distribution of those per-image values (box plots) or their mean.
 """
 import argparse
 import io
@@ -81,7 +80,7 @@ def profile(axes, rows, codecs, corpus):
                              medianprops={'color': '#202020'})
             for patch, codec in zip(box['boxes'], codecs):
                 patch.set(facecolor=color(codec), alpha=.35, edgecolor=color(codec))
-            suffix = 'per-photo medians, quartile boxes, log axis'
+            suffix = 'per-image medians, quartile boxes, log axis'
         else:
             samples = [next(r[metric] for r in rows if r['codec'] == c and r['threads'] == 1) for c in codecs]
             med = [statistics.median(s) for s in samples]
@@ -107,7 +106,7 @@ def profile(axes, rows, codecs, corpus):
                     xytext=(4, 7 if index % 2 else -11), textcoords='offset points', fontsize=9)
     ylabel = 'MS-SSIM versus source; numbers match top panels'
     if corpus:
-        ylabel = 'MS-SSIM; large marks are means, small marks photos'
+        ylabel = 'MS-SSIM; large marks are means, small marks images'
     ax.set(xscale='log', xlabel='7-bit transport payload (KiB, log axis)', ylabel=ylabel)
     ax.margins(x=.2, y=.1)
     if corpus:
@@ -130,7 +129,7 @@ def profile(axes, rows, codecs, corpus):
     ax.barh(y, native, color=[color(c) for c in REP], label='Native bytes')
     ax.set_yticks(y, REP)
     ax.invert_yaxis()
-    ax.set_xlabel(('Mean KiB per photo' if corpus else 'KiB') + '; SIXEL already includes DCS / ST')
+    ax.set_xlabel(('Mean KiB per image' if corpus else 'KiB') + '; SIXEL already includes DCS / ST')
     ax.set_xlim(0, max(transport) * 1.55)  # leave room for the legend
     ax.legend(fontsize=8, loc='lower right')
 
@@ -157,7 +156,7 @@ def scaling(axes, rows, corpus):
     labels = ['Encode (ms, log axis)', 'Decode fixed one-thread stream (ms, log axis)',
               'MS-SSIM of each encoder output', 'Each encoder output (KiB)']
     if corpus:
-        labels = ['Encode: mean of per-photo medians (ms, log)', 'Decode: mean of per-photo medians (ms, log)',
+        labels = ['Encode: mean of per-image medians (ms, log)', 'Decode: mean of per-image medians (ms, log)',
                   'Mean MS-SSIM of each encoder output', 'Mean encoder output (KiB)']
     for ax, label in zip(axes, labels):
         ax.set_xticks([1, 2, 4, 8])
@@ -394,27 +393,27 @@ def main():
     p = json.loads((args.directory / 'results.json').read_text())
     meta = p['metadata']
     photos = set(meta['photo_sources'])
-    groups = {'photo': [r for r in p['rows'] if r['image'] in photos],
-              'diagram': [r for r in p['rows'] if r['image'] == 'diagram']}
+    corpora = {'photo': ('Photographs', photos), 'chart': ('Charts', set(meta.get('chart_sources') or {}))}
+    corpora = {k: v for k, v in corpora.items() if v[1]}
+    groups = {k: [r for r in p['rows'] if r['image'] in names] for k, (_, names) in corpora.items()}
     runs = meta['runs']
     if (args.directory / 'stages.json').exists():
         render_stages(args.directory, args.preview_directory, args.check)
         if json.loads((args.directory / 'stages.json').read_text()).get('thread_rows'):
             render_threads(args.directory, args.preview_directory, args.check)
     for image, rows in groups.items():
-        corpus = image == 'photo'
+        corpus = True
+        label, names = corpora[image]
         scale_rows = [r for r in rows if r['experiment'] == 'scaling']
         gen_rows = [r for r in rows if r['experiment'] == 'generation']
         size_rows = [r for r in rows if r['experiment'] == 'size']
         codecs = sorted({r['codec'] for r in scale_rows}, key=order)
-        photo_sizes = {tuple(meta['input_sizes'][k]) for k in photos}
-        if len(photo_sizes) == 1:
-            w, h = next(iter(photo_sizes))
-            heading = f'Photographs · {len(photos)} images, {w} × {h}'
+        input_sizes = {tuple(meta['input_sizes'][k]) for k in names}
+        if len(input_sizes) == 1:
+            w, h = next(iter(input_sizes))
+            heading = f'{label} · {len(names)} images, {w} × {h}'
         else:
-            heading = f'Photographs · {len(photos)} images fitted inside {meta["fit"][0]} × {meta["fit"][1]}'
-        if not corpus:
-            heading = 'Diagram · 768 × 512'
+            heading = f'{label} · {len(names)} images fitted inside {meta["fit"][0]} × {meta["fit"][1]}'
         for mobile in [False, True]:
             suffix = 'mobile' if mobile else 'wide'
             for chart in ['profile', 'scaling', 'generations'] + (['sizes'] if size_rows else []):
@@ -431,7 +430,7 @@ def main():
                     title = 'A thread budget does not guarantee linear scaling'
                     note = 'SIXEL, AVIF (aom/dav1d) and HEIC (x265/libde265): N workers. WebP: parallel switch at N > 1. Pillow JPEG/GIF/PNG and QOI remain serial.'
                     if corpus:
-                        note += ' Bands show the per-photo interquartile range.'
+                        note += ' Bands show the per-image interquartile range.'
                 elif chart == 'sizes':
                     sizes(axes, size_rows)
                     fig.legend(*axes[0].get_legend_handles_labels(), loc='outside lower center', ncol=2 if mobile else 4, fontsize=8)
@@ -445,8 +444,8 @@ def main():
                     title = 'Repeated round trips with native decoded representations'
                     note = f'One thread; {runs} samples per generation. SIXEL/GIF retain indices and palette; other formats use RGB.'
                     if corpus:
-                        count = len(meta['generation_images']) - 1
-                        note += f' Lines are means over {count} photographs, every {len(photos) // count}th by name.'
+                        count = len(set(meta['generation_images']) & names)
+                        note += f' Lines are means over {count} images, every {len(names) // count}th by name.'
                 log_axes(axes)
                 wrapped = textwrap.fill(note, width=64 if mobile else 110)
                 fig.suptitle(f'{heading}\n{title}\n{wrapped}', fontsize=10)

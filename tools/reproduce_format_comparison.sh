@@ -13,6 +13,12 @@ REVISION=$(git -C "${TOP_SRCDIR}" rev-parse --verify "${REVISION-HEAD}^{commit}"
 # photo/crop-640x480 directory of the libsixel-dataset repository.
 PHOTOS=${PHOTOS:?set PHOTOS to a directory of source photographs}
 PHOTOS=$(CDPATH='' cd -- "${PHOTOS}" && pwd -P)
+# Optional second corpus of rendered charts (*.png), for example the
+# chart/crop-640x480 directory of the libsixel-dataset repository.
+CHARTS=${CHARTS-}
+if [ -n "${CHARTS}" ]; then
+    CHARTS=$(CDPATH='' cd -- "${CHARTS}" && pwd -P)
+fi
 # Optional directory of the uncropped originals (*.jpg) with the same names,
 # for example photo/original; it enables the latency-against-size sweep.
 SIZE_PHOTOS=${SIZE_PHOTOS-}
@@ -60,7 +66,8 @@ esac
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/measure.py" \
     --source "${study_dir}/source" --library "${library}" \
     --adapter "${study_dir}/codecs.so" --revision "${REVISION}" \
-    --photos "${PHOTOS}" ${SIZE_PHOTOS:+"--size-photos=${SIZE_PHOTOS}"} \
+    --photos "${PHOTOS}" ${CHARTS:+"--charts=${CHARTS}"} \
+    ${SIZE_PHOTOS:+"--size-photos=${SIZE_PHOTOS}"} \
     --output "${output_dir}"
 # The stage breakdown needs the originals and a stage-timed Pillow; see
 # tools/format-comparison/build_stage_pillow.sh.

@@ -20,7 +20,7 @@ import subprocess
 import time
 
 import numpy as np
-from PIL import AvifImagePlugin, Image, ImageCms, ImageDraw, ImageOps, features
+from PIL import AvifImagePlugin, Image, ImageCms, ImageOps, features
 import pillow_heif
 import qoi
 
@@ -208,18 +208,6 @@ def crop_fixtures(directory, names, sizes):
     return images, sources
 
 
-def diagram_fixture():
-    """Return the deterministic flat-color diagram with text."""
-    image = Image.new('RGB', (768, 512), 'white')
-    draw = ImageDraw.Draw(image)
-    colors = ['#0072b2', '#e69f00', '#009e73', '#cc79a7', '#202020']
-    for n in range(30):
-        xx, yy = 20 + (n % 6) * 124, 20 + (n // 6) * 96
-        draw.rectangle((xx, yy, xx + 105, yy + 65), fill=colors[n % 5])
-        draw.text((xx + 5, yy + 72), f'Node {n:02d} / RGB', fill='black')
-    return image
-
-
 def sampled(fn, runs):
     samples = []
     for n in range(runs + 2):
@@ -278,6 +266,8 @@ def main():
                    help='run the generation experiment on every Nth photograph')
     p.add_argument('--fit', default='1920x1080',
                    help='fit photographs inside WIDTHxHEIGHT (default: Full HD)')
+    p.add_argument('--charts', type=Path,
+                   help='directory of a second corpus of rendered charts (*.png)')
     p.add_argument('--size-photos', type=Path,
                    help='directory of originals (*.jpg) for the size sweep')
     p.add_argument('--size-crops', default='160x120,320x240,640x480,1280x960',
@@ -296,15 +286,15 @@ def main():
         work = Path(tmp)
         fit = tuple(int(v) for v in args.fit.lower().split('x'))
         photos, photo_sources, photo_profiles = photo_fixtures(args.photos, fit)
-        diagram = diagram_fixture()
+        charts, chart_sources, chart_profiles = photo_fixtures(args.charts, fit) if args.charts else ({}, {}, {})
+        assert not set(photos) & set(charts), 'photograph and chart names must differ'
         size_crops = [tuple(int(v) for v in c.lower().split('x')) for c in args.size_crops.split(',')]
         size_images = sorted(photos)[::args.size_stride] if args.size_photos else []
         sweep, sweep_sources = crop_fixtures(args.size_photos, size_images, size_crops) if args.size_photos else ({}, {})
-        diagram.save(out / 'diagram.png')
-        images = dict(photos, diagram=diagram)
-        # Every Nth photograph in name order keeps the subset spread over the
-        # corpus; the diagram always runs the generation experiment.
-        generation_images = sorted(photos)[::args.generation_stride] + ['diagram']
+        images = dict(photos, **charts)
+        # Every Nth image of each corpus in name order keeps the subset spread
+        # over the corpus.
+        generation_images = sorted(photos)[::args.generation_stride] + sorted(charts)[::args.generation_stride]
         references = {}
         for name, image in images.items():
             references[name] = work / f'{name}.png'
@@ -339,6 +329,9 @@ def main():
             'photo_directory': str(args.photos),
             'photo_sources': photo_sources,
             'photo_profiles_converted_to_srgb': photo_profiles,
+            'chart_directory': str(args.charts) if args.charts else None,
+            'chart_sources': chart_sources,
+            'chart_profiles_converted_to_srgb': chart_profiles,
             'inputs': {k: sha(references[k].read_bytes()) for k in images},
             'input_sizes': {k: list(v.size) for k, v in images.items()},
             'size_sweep': {'photo_directory': str(args.size_photos) if args.size_photos else None,
