@@ -15,6 +15,7 @@ import textwrap
 
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.patches
 import matplotlib.pyplot as plt
 from matplotlib.ticker import LogLocator, FuncFormatter, NullFormatter
 import numpy as np
@@ -202,6 +203,101 @@ def sizes(axes, rows):
         ax.xaxis.crop_ticks = True
 
 
+# Stage roles shared across codecs, so equal work has equal color.
+STAGE_ROLES = [
+    ('color conversion', 'Color conversion', '#999933'),
+    ('sampling', 'Sampling (histogram / initialization)', '#88ccee'),
+    ('palette search', 'Palette search', '#44aa99'),
+    ('lookup setup', 'Lookup setup', '#ddcc77'),
+    ('lookup', 'Lookup and dither (GIF: lookup only)', '#cc6677'),
+    ('filter', 'PNG row filter', '#aa4499'),
+    ('encode', 'Output coding (SIXEL bands, LZW, DEFLATE)', '#332288'),
+    ('other', 'Other (copies, container, wrapper)', '#cfcfcf'),
+]
+STAGE_ROLE = {'color conversion': 'color conversion', 'sampling': 'sampling',
+              'palette search': 'palette search', 'lookup setup': 'lookup setup',
+              'lookup + dither': 'lookup', 'lookup': 'lookup', 'filter': 'filter',
+              'SIXEL encode': 'encode', 'LZW encode': 'encode', 'DEFLATE': 'encode',
+              'other': 'other'}
+
+
+SIZE_NAMES = {(640, 480): 'VGA', (1920, 1080): 'FHD'}
+
+
+def stage_means(payload, codec, size):
+    """Mean over photographs of each stage's per-photograph median."""
+    rows = [r for r in payload['rows'] if r['codec'] == codec and r['size'] == size]
+    names = payload['metadata']['stages'][codec.split()[0]]
+    return {n: np.mean([statistics.median(s['stages'][n] for s in r['samples']) for r in rows])
+            for n in names}
+
+
+def stages_chart(ax, payload, per_pixel):
+    meta = payload['metadata']
+    sizes = meta['sizes']
+    width = .34
+    for index, codec in enumerate(meta['codecs']):
+        bars = []
+        for k, size in enumerate(sizes):
+            means = stage_means(payload, codec, size)
+            scale = 1e6 / (size[0] * size[1]) if per_pixel else 1
+            x = index + (k - .5) * (width + .08)
+            bottom, edges = 0.0, []
+            for name, value in means.items():
+                value *= scale
+                role = STAGE_ROLE[name]
+                ax.bar(x, value, width, bottom=bottom, color=dict((r, c) for r, _, c in STAGE_ROLES)[role],
+                       edgecolor='white', linewidth=.4)
+                bottom += value
+                edges.append((role, bottom))
+            ax.text(x, bottom, f'{bottom:.0f}' if bottom >= 10 else f'{bottom:.1f}',
+                    ha='center', va='bottom', fontsize=8)
+            bars.append((x, edges))
+        # Dotted connectors join the same stage boundary in both sizes.
+        (x0, e0), (x1, e1) = bars
+        for (role, y0), (_, y1) in zip(e0, e1):
+            ax.plot([x0 + width / 2, x1 - width / 2], [y0, y1], linestyle=':', linewidth=1,
+                    color=dict((r, c) for r, _, c in STAGE_ROLES)[role])
+    ax.set_xticks([i + (k - .5) * (width + .08) for i in range(len(meta['codecs'])) for k in range(len(sizes))],
+                  [SIZE_NAMES.get((w, h), f'{w}×{h}') for _ in meta['codecs'] for w, h in sizes], fontsize=8)
+    for i, codec in enumerate(meta['codecs']):
+        ax.text(i, -.13, codec, transform=ax.get_xaxis_transform(), ha='center', va='top', fontsize=10)
+    ax.set_ylabel('Nanoseconds per pixel' if per_pixel else 'Milliseconds per image')
+    ax.margins(y=.08)
+
+
+def render_stages(directory, preview, check):
+    payload = json.loads((directory / 'stages.json').read_text())
+    meta = payload['metadata']
+    handles = [matplotlib.patches.Patch(color=c, label=l) for _, l, c in STAGE_ROLES]
+    for mobile in [False, True]:
+        suffix = 'mobile' if mobile else 'wide'
+        fig, axes = plt.subplots(2 if mobile else 1, 1 if mobile else 2,
+                                 figsize=(6.2, 12) if mobile else (13, 6.2), layout='constrained')
+        for ax, per_pixel in zip(axes, [False, True]):
+            stages_chart(ax, payload, per_pixel)
+            ax.set_title('Time per image' if not per_pixel else 'Time per pixel: fixed work shrinks at the larger size',
+                         fontsize=10)
+        fig.legend(handles=handles, loc='outside lower center', ncol=2 if mobile else 4, fontsize=8)
+        note = (f'One worker; mean over {len(meta["images"])} photographs of each stage\'s median of '
+                f'{meta["runs"]} samples after 2 warm-ups; 1:1 center crops of the same originals at '
+                + ' and '.join(f'{SIZE_NAMES.get(tuple(c), "")} {c[0]} × {c[1]}'.strip() for c in meta['sizes']) + '. '
+                'Dotted lines join the same stage boundary at the two sizes.')
+        fig.suptitle('Where encoding time goes\n' + textwrap.fill(note, width=64 if mobile else 120), fontsize=10)
+        target = directory / f'photo-stages-{suffix}.svg'
+        stream = io.BytesIO()
+        fig.savefig(stream, format='svg', metadata={'Date': None})
+        svg = b'\n'.join(line.rstrip() for line in stream.getvalue().splitlines()) + b'\n'
+        if check:
+            if target.read_bytes() != svg:
+                raise RuntimeError(f'stale figure: {target}')
+        else:
+            target.write_bytes(svg)
+        if preview:
+            fig.savefig(preview / f'photo-stages-{suffix}.png', dpi=110)
+        plt.close(fig)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', type=Path)
@@ -216,6 +312,8 @@ def main():
     groups = {'photo': [r for r in p['rows'] if r['image'] in photos],
               'diagram': [r for r in p['rows'] if r['image'] == 'diagram']}
     runs = meta['runs']
+    if (args.directory / 'stages.json').exists():
+        render_stages(args.directory, args.preview_directory, args.check)
     for image, rows in groups.items():
         corpus = image == 'photo'
         scale_rows = [r for r in rows if r['experiment'] == 'scaling']

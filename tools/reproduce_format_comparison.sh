@@ -62,5 +62,14 @@ esac
     --adapter "${study_dir}/codecs.so" --revision "${REVISION}" \
     --photos "${PHOTOS}" ${SIZE_PHOTOS:+"--size-photos=${SIZE_PHOTOS}"} \
     --output "${output_dir}"
+# The stage breakdown needs the originals and a stage-timed Pillow; see
+# tools/format-comparison/build_stage_pillow.sh.
+if [ -n "${SIZE_PHOTOS}" ] && [ -n "${STAGE_PILLOW_PYTHON-}" ]; then
+    "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/stages.py" \
+        --source "${study_dir}/source" --library "${library}" \
+        --adapter "${study_dir}/codecs.so" --revision "${REVISION}" \
+        --photos "${SIZE_PHOTOS}" --pillow-python "${STAGE_PILLOW_PYTHON}" \
+        --output "${output_dir}"
+fi
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/check.py" "${output_dir}"
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/plot.py" "${output_dir}"

@@ -62,4 +62,16 @@ for name in sweep['images']:
                      and tuple(r['size']) == size and r['codec'] == codec]
             assert sorted(r['threads'] for r in group) == sweep['threads'], (name, size, codec)
             assert len({r['decoder_stream_sha256'] for r in group}) == 1, (name, size, codec)
+stages_path = root / 'stages.json'
+if stages_path.exists():
+    stages = json.loads(stages_path.read_text())
+    smeta = stages['metadata']
+    assert len(stages['rows']) == len(smeta['images']) * len(smeta['sizes']) * len(smeta['codecs'])
+    for row in stages['rows']:
+        names = smeta['stages'][row['codec'].split()[0]]
+        assert len(row['samples']) == smeta['runs'], row['image']
+        for sample in row['samples']:
+            assert list(sample['stages']) == names, (row['codec'], list(sample['stages']))
+            assert all(math.isfinite(v) and v >= 0 for v in sample['stages'].values()), (row['image'], row['codec'], sample)
+            assert math.isclose(sum(sample['stages'].values()), sample['total_ms'], rel_tol=1e-9, abs_tol=1e-9)
 print(f'validated {len(rows)} records for {len(images)} images, lossless pixels and retained-index generations')
