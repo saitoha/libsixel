@@ -37,7 +37,7 @@ sampling_fallback_resolution_valid(void)
         &resolved,
         SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID,
         SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME,
-        SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
+        SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -62,7 +62,7 @@ sampling_fallback_resolution_valid(void)
         &executed,
         SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID,
         SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME,
-        SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
+        SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT);
     if (SIXEL_FAILED(status)) {
         return 0;
     }

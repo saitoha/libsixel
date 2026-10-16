@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify pure stage-boundary sampling and binning resolution.
 
 set -eux

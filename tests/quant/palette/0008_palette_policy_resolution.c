@@ -53,7 +53,7 @@ palette_resolution_lifecycle_is_valid(void)
     status = sixel_palette_policy_resolve(
         &first.quantizer,
         3,
-        SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE);
+        SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT);
     if (status != SIXEL_LOGIC_ERROR || first.quantizer.effective != 2) {
         return 0;
     }

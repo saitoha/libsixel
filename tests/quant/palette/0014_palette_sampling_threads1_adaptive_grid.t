@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify the single-thread legacy path uses the preprocessed full frame.
+# Verify automatic sampling runs synchronously with one thread.
 
 set -eux
 
@@ -20,14 +20,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-case "${trace}" in *LSXSPL1\|requested=auto\|effective=full-frame\|source=preprocessed-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=1\|heavy=0\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=1\|heavy=0\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - single-thread sampling plan changed"
     exit 0
 }
-case "${trace}" in *LSXSMP1\|**) false ;; *) true ;; esac || {
-    echo "not ok 1 - single-thread path unexpectedly ran adaptive sampling"
+case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
+    echo "not ok 1 - synchronous adaptive sampling was not executed"
     exit 0
 }
 
-echo "ok 1 - single-thread path uses the preprocessed full frame"
+echo "ok 1 - single-thread path uses synchronous adaptive sampling"
 exit 0

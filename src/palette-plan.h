@@ -53,11 +53,12 @@ typedef enum sixel_palette_resolution_reason {
     SIXEL_PALETTE_RESOLUTION_SAMPLE_METADATA,
     SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY,
     SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE,
+    SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT,
     SIXEL_PALETTE_RESOLUTION_FALLBACK,
     SIXEL_PALETTE_RESOLUTION_NOT_APPLICABLE
 } sixel_palette_resolution_reason_t;
 
-/* Internal sampling names used while the legacy scheduler split is retained. */
+/* Sampling semantics are independent of worker admission. */
 typedef enum sixel_palette_sampling_policy {
     SIXEL_PALETTE_SAMPLING_AUTO = 0,
     SIXEL_PALETTE_SAMPLING_FULL_FRAME,
@@ -178,9 +179,6 @@ typedef struct sixel_palette_quantizer_selection {
 /* Inputs and immutable result of the sampling-stage resolver. */
 typedef struct sixel_palette_sampling_resolver_input {
     sixel_palette_sampling_policy_t requested;
-    int total_threads;
-    int heavy_operations;
-    int async_eligible;
 } sixel_palette_sampling_resolver_input_t;
 
 typedef struct sixel_palette_sampling_selection {
@@ -233,10 +231,7 @@ sixel_palette_sampling_select(
     sixel_palette_sampling_selection_t *selection);
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
-                                    int total_threads,
-                                    int heavy_operations,
-                                    int async_eligible);
+sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_sampling_resolve_fallback(

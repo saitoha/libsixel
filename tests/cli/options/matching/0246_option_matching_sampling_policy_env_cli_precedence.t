@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify explicit sampling-policy keeps command-line priority over environment.
 # Policy: docs/cli/design-policy.md
 

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify explicit adaptive sampling reuses its sample after thread failure.
 
 set -eux

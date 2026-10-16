@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify scheduler allocation consumes the effective sampling policy.
 
 set -eux

@@ -26,6 +26,11 @@ sampling_scheduler_contract_valid(void)
     sixel_frame_t *frame;
     sixel_encoding_planner_t planner;
     unsigned char pixels[6 * 12 * 3];
+    static int const budgets[] = { 1, 2, 3, 8 };
+    size_t budget;
+    int heavy;
+    int expected_async;
+    int expected_palette;
 
     status = SIXEL_FALSE;
     allocator = NULL;
@@ -56,58 +61,37 @@ sampling_scheduler_contract_valid(void)
     }
 
     sixel_encoding_planner_init(&planner);
-    planner.total_threads = 4;
-    planner.heavy_ops = 1;
-    status = sixel_encoding_planner_schedule(
-        &planner,
-        encoder,
-        frame,
-        SIXEL_PALETTE_SAMPLING_FULL_FRAME);
-    if (SIXEL_FAILED(status) || planner.main_threads != 4 ||
-            planner.palette_threads != 0 ||
-            planner.allow_palette_async != 0) {
-        status = SIXEL_LOGIC_ERROR;
-        goto cleanup;
-    }
-
-    status = sixel_encoding_planner_schedule(
-        &planner,
-        encoder,
-        frame,
-        SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID);
-    if (SIXEL_FAILED(status) || planner.main_threads != 2 ||
-            planner.palette_threads != 2 ||
-            planner.allow_palette_async != 1) {
-        status = SIXEL_LOGIC_ERROR;
-        goto cleanup;
-    }
-
-    planner.total_threads = 2;
-    planner.heavy_ops = 1;
-    status = sixel_encoding_planner_schedule(
-        &planner,
-        encoder,
-        frame,
-        SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID);
-    if (SIXEL_FAILED(status) || planner.main_threads != 2 ||
-            planner.palette_threads != 0 ||
-            planner.allow_palette_async != 0) {
-        status = SIXEL_LOGIC_ERROR;
-        goto cleanup;
-    }
-
-    planner.total_threads = 1;
-    planner.heavy_ops = 0;
-    status = sixel_encoding_planner_schedule(
-        &planner,
-        encoder,
-        frame,
-        SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID);
-    if (SIXEL_FAILED(status) || planner.main_threads != 1 ||
-            planner.palette_threads != 0 ||
-            planner.allow_palette_async != 0) {
-        status = SIXEL_LOGIC_ERROR;
-        goto cleanup;
+    /* Scheduling may overlap a palette worker only inside the total budget.
+     * Cover both sides of admission for each preprocessing workload. */
+    for (budget = 0u; budget < sizeof(budgets) / sizeof(budgets[0]);
+            ++budget) {
+        for (heavy = 0; heavy <= 3; ++heavy) {
+            planner.total_threads = budgets[budget];
+            planner.heavy_ops = heavy;
+            expected_async = budgets[budget] - heavy > 1;
+            /* An admitted palette worker takes floor(N/2) slots; the main
+             * pre-plan keeps the rest while both stages overlap. */
+            expected_palette = expected_async ? budgets[budget] / 2 : 0;
+            status = sixel_encoding_planner_schedule(&planner, encoder,
+                frame, SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID);
+            if (SIXEL_FAILED(status) ||
+                    planner.main_threads !=
+                        budgets[budget] - expected_palette ||
+                    planner.palette_threads != expected_palette ||
+                    planner.allow_palette_async != expected_async) {
+                status = SIXEL_LOGIC_ERROR;
+                goto cleanup;
+            }
+            status = sixel_encoding_planner_schedule(&planner, encoder,
+                frame, SIXEL_PALETTE_SAMPLING_FULL_FRAME);
+            if (SIXEL_FAILED(status) ||
+                    planner.main_threads != budgets[budget] ||
+                    planner.palette_threads != 0 ||
+                    planner.allow_palette_async != 0) {
+                status = SIXEL_LOGIC_ERROR;
+                goto cleanup;
+            }
+        }
     }
 
     status = SIXEL_OK;

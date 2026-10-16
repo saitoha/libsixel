@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify crop work consumes the spare thread needed by palette sampling.
+# Verify crop work leaves adaptive sampling on the main thread.
 
 set -eux
 
@@ -26,14 +26,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-case "${trace}" in *LSXSPL1\|requested=auto\|effective=full-frame\|source=preprocessed-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=2\|heavy=1\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=2\|heavy=1\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
     echo "not ok 1 - cropped two-thread sampling plan changed"
     exit 0
 }
-case "${trace}" in *LSXSMP1\|**) false ;; *) true ;; esac || {
-    echo "not ok 1 - cropped two-thread path ran adaptive sampling"
+case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
+    echo "not ok 1 - synchronous adaptive sampling was not executed"
     exit 0
 }
 
-echo "ok 1 - crop work keeps two threads on the full-frame path"
+echo "ok 1 - crop work uses synchronous adaptive sampling"
 exit 0

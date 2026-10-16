@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify a fifth thread restores sampling beside clip and resize work.
+# Verify a fifth thread admits a palette worker beside clip and resize work.
 
 set -eux
 
@@ -25,7 +25,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=5\|heavy=3\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=5\|heavy=3\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - cropped resize five-thread sampling plan changed"
     exit 0
 }

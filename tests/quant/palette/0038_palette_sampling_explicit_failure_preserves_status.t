@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify explicit sampling propagates worker failure without changing policy.
 
 set -eux

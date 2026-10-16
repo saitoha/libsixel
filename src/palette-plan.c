@@ -136,11 +136,7 @@ sixel_palette_sampling_select(
     sixel_palette_sampling_resolver_input_t const *input,
     sixel_palette_sampling_selection_t *selection)
 {
-    int available;
-
-    available = 0;
-    if (input == NULL || selection == NULL || input->total_threads < 1 ||
-            input->heavy_operations < 0) {
+    if (input == NULL || selection == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (input->requested == SIXEL_PALETTE_SAMPLING_FULL_FRAME) {
@@ -160,25 +156,17 @@ sixel_palette_sampling_select(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    available = input->total_threads - input->heavy_operations;
-    if (input->async_eligible != 0 && input->total_threads > 1 &&
-            available > 1) {
-        selection->effective = SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
-        selection->source = SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME;
-    } else {
-        selection->effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
-        selection->source =
-            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
-    }
-    selection->reason = SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE;
+    /* Keep the sample population stable across execution budgets. Even a
+     * stride-one grid can append solid-region weights, so a small input is
+     * not sufficient reason to substitute the preprocessed full frame. */
+    selection->effective = SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID;
+    selection->source = SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME;
+    selection->reason = SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT;
     return SIXEL_OK;
 }
 
 SIXELSTATUS
-sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
-                                    int total_threads,
-                                    int heavy_operations,
-                                    int async_eligible)
+sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state)
 {
     SIXELSTATUS status;
     sixel_palette_sampling_resolver_input_t input;
@@ -186,13 +174,10 @@ sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state,
 
     status = SIXEL_FALSE;
     input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
-    input.total_threads = total_threads;
-    input.heavy_operations = heavy_operations;
-    input.async_eligible = async_eligible;
     selection.effective = SIXEL_PALETTE_SAMPLING_AUTO;
     selection.source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
     selection.reason = SIXEL_PALETTE_RESOLUTION_NONE;
-    if (state == NULL || total_threads < 1 || heavy_operations < 0 ||
+    if (state == NULL ||
             state->sampling.requested != SIXEL_PALETTE_SAMPLING_AUTO) {
         return SIXEL_BAD_ARGUMENT;
     }

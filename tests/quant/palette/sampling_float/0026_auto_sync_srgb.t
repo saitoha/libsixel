@@ -16,19 +16,20 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     exit 0
 }
 
-case "${trace}" in *"effective=full-frame|source=preprocessed-frame"*) true ;; *) false ;; esac || {
+case "${trace}" in *"effective=adaptive-grid|source=loaded-frame"*) true ;; *) false ;; esac || {
     echo "not ok 1 - auto sync srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-case "${trace}" in *"points=8|quantizer_retries=0"*) true ;; *) false ;; esac || {
+# The explicit target selects two float observations before preprocessing.
+case "${trace}" in *"points=2|quantizer_retries=0"*) true ;; *) false ;; esac || {
     echo "not ok 1 - auto sync srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-case "${trace}" in *"effective=full-frame|source=preprocessed-frame"*) true ;; *) false ;; esac || {
+case "${trace}" in *"reason=sampling-default|threads=1"*) true ;; *) false ;; esac || {
     echo "not ok 1 - auto sync srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0

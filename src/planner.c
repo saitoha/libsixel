@@ -664,8 +664,8 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     }
 
     /*
-     * Describe the work that consumes thread capacity.  Sampling resolution
-     * reads this profile before the scheduler allocates any palette worker.
+     * Describe work that consumes thread capacity. The scheduler uses this
+     * profile for worker admission, never to select the sampling population.
      */
     total = sixel_threads_resolve();
     planner->total_threads = total;
@@ -868,13 +868,9 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     sixel_palette_sampling_resolver_input_t input;
     sixel_palette_sampling_selection_t selection;
     sixel_palette_sampling_policy_t sampling_policy;
-    int async_eligible;
 
     status = SIXEL_FALSE;
     input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
-    input.total_threads = 1;
-    input.heavy_operations = 0;
-    input.async_eligible = 0;
     selection.effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
     selection.source =
         SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
@@ -891,12 +887,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
      * the frame cannot use one.  The encode DAG records the same resolution
      * through analyze, resolve, and schedule explicitly.
      */
-    async_eligible = sixel_encoding_palette_job_eligible(encoder, frame);
     input.requested = (sixel_palette_sampling_policy_t)
         encoder->palette_sampling_policy;
-    input.total_threads = planner->total_threads;
-    input.heavy_operations = planner->heavy_ops;
-    input.async_eligible = async_eligible;
     status = sixel_palette_sampling_select(&input, &selection);
     if (SIXEL_FAILED(status)) {
         return;

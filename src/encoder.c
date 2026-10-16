@@ -767,6 +767,8 @@ sixel_palette_resolution_reason_name(
         return "sample-metadata";
     case SIXEL_PALETTE_RESOLUTION_QUANTIZER_CAPABILITY:
         return "quantizer-capability";
+    case SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT:
+        return "sampling-default";
     case SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE:
         return "resource-profile";
     case SIXEL_PALETTE_RESOLUTION_FALLBACK:
@@ -4988,7 +4990,7 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
 
     if (context->palette_ready == 0) {
         /*
-         * Explicit adaptive sampling keeps its loaded-frame source even when
+         * Adaptive sampling keeps its loaded-frame source even when
          * no palette worker is available.  Run the sample filter before the
          * pre-plan mutates the frame; only execution overlaps are optional.
          */
@@ -9598,7 +9600,6 @@ sixel_encoder_encode_frame_internal(
     int target_pixelformat;
     int palette_ready;
     int sampling_required;
-    int async_eligible;
     int clip_active;
     int current_pixelformat;
     int current_colorspace;
@@ -9818,8 +9819,6 @@ sixel_encoder_encode_frame_internal(
                 <= encoder->reqcolors) {
         sampling_required = 0;
     }
-    async_eligible = sixel_encoding_palette_job_eligible(encoder,
-                                                         context.frame);
     if (sampling_required != 0) {
         status = sixel_encoder_select_palette_quantizer(
             encoder,
@@ -9831,13 +9830,6 @@ sixel_encoder_encode_frame_internal(
         sampling_input.requested =
             (sixel_palette_sampling_policy_t)
                 encoder->palette_sampling_policy;
-        sampling_input.total_threads = planner != NULL
-            ? planner->total_threads
-            : 1;
-        sampling_input.heavy_operations = planner != NULL
-            ? planner->heavy_ops
-            : 0;
-        sampling_input.async_eligible = async_eligible;
         status = sixel_palette_sampling_select(&sampling_input,
                                                 &sampling_selection);
         if (SIXEL_SUCCEEDED(status)) {

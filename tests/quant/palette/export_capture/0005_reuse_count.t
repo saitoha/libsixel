@@ -6,7 +6,10 @@ set -eux
 echo "1..1"
 set -v
 
+# The equal-weight centroid oracle requires the full pixel population;
+# adaptive solid-region weights are a separate sampling contract.
 actual=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    --env SIXEL_SAMPLING_POLICY=full-frame \
     palette/export_capture/0005_reuse_count "${TOP_SRCDIR}/tests/data/inputs/small.ppm") || {
     echo "not ok 1 - repeated palette export failed"
     exit 0

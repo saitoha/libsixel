@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify that thread creation failure reuses the completed sample.
 
 set -eux
@@ -47,7 +48,7 @@ case "${message}" in *LSXPFB1\|stage=thread-create\|action=same-sample-sync\|*\|
     exit 0
 }
 
-case "${message}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
+case "${message}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - palette thread fallback changed sampling state"
     exit 0
 }

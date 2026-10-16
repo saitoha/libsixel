@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify top-level adaptive sampling agrees across short and environment paths.
 # Top-level option regression
 

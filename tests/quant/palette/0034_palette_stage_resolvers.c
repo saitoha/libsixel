@@ -76,9 +76,6 @@ sampling_selection_is_valid(void)
 
     status = SIXEL_FALSE;
     input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
-    input.total_threads = 3;
-    input.heavy_operations = 1;
-    input.async_eligible = 1;
     selection.effective = SIXEL_PALETTE_SAMPLING_AUTO;
     selection.source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
     selection.reason = SIXEL_PALETTE_RESOLUTION_NONE;
@@ -88,7 +85,7 @@ sampling_selection_is_valid(void)
             selection.source !=
                 SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME ||
             selection.reason !=
-                SIXEL_PALETTE_RESOLUTION_RESOURCE_PROFILE) {
+                SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT) {
         return 0;
     }
 

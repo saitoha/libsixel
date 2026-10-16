@@ -31,7 +31,7 @@ case "${trace}" in *LSXBPS1\|quantizer_requested=0\|quantizer_effective=2\|quant
     exit 0
 }
 
-case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - palette work did not use the asynchronous path"
     exit 0
 }

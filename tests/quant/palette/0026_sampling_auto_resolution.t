@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify sampling resolution occurs before scheduler allocation.
 
 set -eux

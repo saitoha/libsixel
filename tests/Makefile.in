@@ -2685,6 +2685,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0033_quantizer_capabilities.c \
 	quant/palette/0034_palette_stage_resolvers.c \
 	quant/palette/0037_palette_sampling_indexed_frame.c \
+	quant/palette/sampling_threads/0001_palette_invariance.c \
+	quant/palette/0080_sampling_small_solid.c \
 	quant/palette/0040_palette_build_attempt_isolation.c \
 	quant/palette/0041_kcenter_binning_filter.c \
 	quant/palette/0042_kcenter_large_buffer.c \
@@ -6347,6 +6349,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0033_quantizer_capabilities.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0034_palette_stage_resolvers.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/sampling_threads/test_runner-0001_palette_invariance.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0080_sampling_small_solid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0041_kcenter_binning_filter.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0042_kcenter_large_buffer.$(OBJEXT) \
@@ -10323,6 +10327,7 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po \
 	quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po \
 	quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po \
+	quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Po \
 	quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-auto_cover_float_common.Po \
@@ -11186,6 +11191,7 @@ am__depfiles_remade =  \
 	quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po \
 	quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po \
 	quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po \
+	quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Po \
 	quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po \
 	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Po \
 	quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Po \
@@ -13586,6 +13592,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_QUANTIZER_CAPABILITIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PALETTE_INVARIANCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_SAMPLING_SMALL_SOLID \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_KCENTER_BINNING_FILTER \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
@@ -18181,6 +18189,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0033_quantizer_capabilities.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0034_palette_stage_resolvers.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0037_palette_sampling_indexed_frame.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/sampling_threads/0001_palette_invariance.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0080_sampling_small_solid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0040_palette_build_attempt_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0041_kcenter_binning_filter.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0042_kcenter_large_buffer.c \
@@ -27432,6 +27442,18 @@ quant/palette/test_runner-0034_palette_stage_resolvers.$(OBJEXT):  \
 quant/palette/test_runner-0037_palette_sampling_indexed_frame.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/sampling_threads/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/sampling_threads
+	@: >>quant/palette/sampling_threads/$(am__dirstamp)
+quant/palette/sampling_threads/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/sampling_threads/$(DEPDIR)
+	@: >>quant/palette/sampling_threads/$(DEPDIR)/$(am__dirstamp)
+quant/palette/sampling_threads/test_runner-0001_palette_invariance.$(OBJEXT):  \
+	quant/palette/sampling_threads/$(am__dirstamp) \
+	quant/palette/sampling_threads/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0080_sampling_small_solid.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0040_palette_build_attempt_isolation.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -31355,6 +31377,7 @@ mostlyclean-compile:
 	-rm -f quant/palette/retention/*.$(OBJEXT)
 	-rm -f quant/palette/rgb101_diffusion/*.$(OBJEXT)
 	-rm -f quant/palette/sampling_float/*.$(OBJEXT)
+	-rm -f quant/palette/sampling_threads/*.$(OBJEXT)
 	-rm -f quant/palette/snap_float/*.$(OBJEXT)
 	-rm -f quant/palette/snap_hooks/*.$(OBJEXT)
 	-rm -f quant/palette/solvers_float/*.$(OBJEXT)
@@ -34124,6 +34147,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0066_srgb_linear_unsnapped_lookup.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0067_srgb_gamma_extended_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0068_srgb_linear_extended_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-alpha_native_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-animation_native_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-auto_cover_float_common.Po@am__quote@ # am--include-marker
@@ -34987,6 +35011,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/retention/$(DEPDIR)/test_runner-retention_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/rgb101_diffusion/$(DEPDIR)/test_runner-0001_spatial_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_float/$(DEPDIR)/test_runner-0001_sampling_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_float/$(DEPDIR)/test_runner-0001_snap_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0001_hook_disabled.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/snap_hooks/$(DEPDIR)/test_runner-0002_policy_disabled.Po@am__quote@ # am--include-marker
@@ -70285,6 +70310,34 @@ quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj: quant/palette
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0037_palette_sampling_indexed_frame.obj `if test -f 'quant/palette/0037_palette_sampling_indexed_frame.c'; then $(CYGPATH_W) 'quant/palette/0037_palette_sampling_indexed_frame.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0037_palette_sampling_indexed_frame.c'; fi`
 
+quant/palette/sampling_threads/test_runner-0001_palette_invariance.o: quant/palette/sampling_threads/0001_palette_invariance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/sampling_threads/test_runner-0001_palette_invariance.o -MD -MP -MF quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Tpo -c -o quant/palette/sampling_threads/test_runner-0001_palette_invariance.o `test -f 'quant/palette/sampling_threads/0001_palette_invariance.c' || echo '$(srcdir)/'`quant/palette/sampling_threads/0001_palette_invariance.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Tpo quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/sampling_threads/0001_palette_invariance.c' object='quant/palette/sampling_threads/test_runner-0001_palette_invariance.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/sampling_threads/test_runner-0001_palette_invariance.o `test -f 'quant/palette/sampling_threads/0001_palette_invariance.c' || echo '$(srcdir)/'`quant/palette/sampling_threads/0001_palette_invariance.c
+
+quant/palette/sampling_threads/test_runner-0001_palette_invariance.obj: quant/palette/sampling_threads/0001_palette_invariance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/sampling_threads/test_runner-0001_palette_invariance.obj -MD -MP -MF quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Tpo -c -o quant/palette/sampling_threads/test_runner-0001_palette_invariance.obj `if test -f 'quant/palette/sampling_threads/0001_palette_invariance.c'; then $(CYGPATH_W) 'quant/palette/sampling_threads/0001_palette_invariance.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/sampling_threads/0001_palette_invariance.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Tpo quant/palette/sampling_threads/$(DEPDIR)/test_runner-0001_palette_invariance.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/sampling_threads/0001_palette_invariance.c' object='quant/palette/sampling_threads/test_runner-0001_palette_invariance.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/sampling_threads/test_runner-0001_palette_invariance.obj `if test -f 'quant/palette/sampling_threads/0001_palette_invariance.c'; then $(CYGPATH_W) 'quant/palette/sampling_threads/0001_palette_invariance.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/sampling_threads/0001_palette_invariance.c'; fi`
+
+quant/palette/test_runner-0080_sampling_small_solid.o: quant/palette/0080_sampling_small_solid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0080_sampling_small_solid.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Tpo -c -o quant/palette/test_runner-0080_sampling_small_solid.o `test -f 'quant/palette/0080_sampling_small_solid.c' || echo '$(srcdir)/'`quant/palette/0080_sampling_small_solid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Tpo quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0080_sampling_small_solid.c' object='quant/palette/test_runner-0080_sampling_small_solid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0080_sampling_small_solid.o `test -f 'quant/palette/0080_sampling_small_solid.c' || echo '$(srcdir)/'`quant/palette/0080_sampling_small_solid.c
+
+quant/palette/test_runner-0080_sampling_small_solid.obj: quant/palette/0080_sampling_small_solid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0080_sampling_small_solid.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Tpo -c -o quant/palette/test_runner-0080_sampling_small_solid.obj `if test -f 'quant/palette/0080_sampling_small_solid.c'; then $(CYGPATH_W) 'quant/palette/0080_sampling_small_solid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0080_sampling_small_solid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Tpo quant/palette/$(DEPDIR)/test_runner-0080_sampling_small_solid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0080_sampling_small_solid.c' object='quant/palette/test_runner-0080_sampling_small_solid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0080_sampling_small_solid.obj `if test -f 'quant/palette/0080_sampling_small_solid.c'; then $(CYGPATH_W) 'quant/palette/0080_sampling_small_solid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0080_sampling_small_solid.c'; fi`
+
 quant/palette/test_runner-0040_palette_build_attempt_isolation.o: quant/palette/0040_palette_build_attempt_isolation.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0040_palette_build_attempt_isolation.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo -c -o quant/palette/test_runner-0040_palette_build_attempt_isolation.o `test -f 'quant/palette/0040_palette_build_attempt_isolation.c' || echo '$(srcdir)/'`quant/palette/0040_palette_build_attempt_isolation.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Tpo quant/palette/$(DEPDIR)/test_runner-0040_palette_build_attempt_isolation.Po
@@ -86986,6 +87039,8 @@ distclean-generic:
 	-$(am__rm_f) quant/palette/rgb101_diffusion/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/sampling_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/sampling_float/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/sampling_threads/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/sampling_threads/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/snap_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/snap_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/snap_hooks/$(DEPDIR)/$(am__dirstamp)

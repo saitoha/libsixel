@@ -25,7 +25,7 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     exit 0
 }
 
-case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=resource-profile\|threads=3\|heavy=1\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
+case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=3\|heavy=1\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
     echo "not ok 1 - linear three-thread sampling plan changed"
     exit 0
 }
