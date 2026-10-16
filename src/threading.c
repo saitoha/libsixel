@@ -891,12 +891,44 @@ sixel_threads_resolve_env(void)
 }
 #endif
 
+static sixel_thread_budget_scope_t *g_thread_budget_scopes;
+
+void
+sixel_thread_budget_enter(sixel_thread_budget_scope_t *scope, int threads)
+{
+    scope->owner = sixel_thread_identity_current();
+    scope->threads = threads > 0 ? threads : 1;
+    sixel_thread_config_lock();
+    scope->next = g_thread_budget_scopes;
+    g_thread_budget_scopes = scope;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_thread_budget_leave(sixel_thread_budget_scope_t *scope)
+{
+    sixel_thread_budget_scope_t **link;
+
+    sixel_thread_config_lock();
+    for (link = &g_thread_budget_scopes; *link != NULL;
+            link = &(*link)->next) {
+        if (*link == scope) {
+            *link = scope->next;
+            break;
+        }
+    }
+    sixel_thread_config_unlock();
+}
+
 SIXELAPI int
 sixel_threads_resolve(void)
 {
     int resolved;
+    sixel_thread_budget_scope_t *scope;
+    sixel_thread_identity_t owner;
 
     resolved = 1;
+    owner = sixel_thread_identity_current();
     sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
     if (g_thread_config.override_active) {
@@ -907,6 +939,13 @@ sixel_threads_resolve(void)
 #else
     resolved = 1;
 #endif
+    for (scope = g_thread_budget_scopes; scope != NULL;
+            scope = scope->next) {
+        if (scope->threads < resolved &&
+                sixel_thread_identity_equal(scope->owner, owner)) {
+            resolved = scope->threads;
+        }
+    }
     sixel_thread_config_unlock();
 
     return resolved;

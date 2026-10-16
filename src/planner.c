@@ -836,7 +836,10 @@ sixel_encoding_planner_schedule(
     budget = total - planner->heavy_ops;
     if (sampling_policy == SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID &&
             budget > 1 && async_eligible != 0) {
-        planner->palette_threads = 1;
+        /* Split the early overlap evenly. Each side includes its caller;
+         * float converters use N-1 children plus that caller. In particular,
+         * the palette worker may parallelize -X without duplicating N. */
+        planner->palette_threads = total / 2;
         planner->allow_palette_async = 1;
         planner->main_threads = total - planner->palette_threads;
     }

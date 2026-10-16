@@ -109,6 +109,21 @@ SIXEL_INTERNAL_API void sixel_thread_join(sixel_thread_t *thread);
 SIXEL_INTERNAL_API int sixel_thread_pin_self(int cpu_index);
 SIXEL_INTERNAL_API int sixel_get_hw_threads(void);
 
+/* Stack-owned, caller-local limits for overlapping stages. Enter/leave must
+ * be paired on the same thread; nested scopes can only reduce the budget.
+ * Registration under the config mutex avoids compiler-specific TLS and
+ * allocation failures on supported C99 thread backends. */
+typedef struct sixel_thread_budget_scope {
+    sixel_thread_identity_t owner;
+    int threads;
+    struct sixel_thread_budget_scope *next;
+} sixel_thread_budget_scope_t;
+
+SIXEL_INTERNAL_API void sixel_thread_budget_enter(
+    sixel_thread_budget_scope_t *scope, int threads);
+SIXEL_INTERNAL_API void sixel_thread_budget_leave(
+    sixel_thread_budget_scope_t *scope);
+
 SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
 SIXEL_INTERNAL_API void sixel_set_threads(int threads);
 SIXEL_INTERNAL_API int sixel_threads_resolve(void);

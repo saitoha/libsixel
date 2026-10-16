@@ -75,8 +75,8 @@ sampling_scheduler_contract_valid(void)
         encoder,
         frame,
         SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID);
-    if (SIXEL_FAILED(status) || planner.main_threads != 3 ||
-            planner.palette_threads != 1 ||
+    if (SIXEL_FAILED(status) || planner.main_threads != 2 ||
+            planner.palette_threads != 2 ||
             planner.allow_palette_async != 1) {
         status = SIXEL_LOGIC_ERROR;
         goto cleanup;

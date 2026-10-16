@@ -27,11 +27,7 @@ load and normalize frame
                   ordered writer thread
 ```
 
-The planner can temporarily reserve one worker for asynchronous palette work
-and assign the remainder to `main_threads`. That early split is distinct from
-the later dither/encode split. Once palette work has joined, the final encoder
-resolves the configured thread count again, so a timeline can contain more
-stage transitions than one static allocation table suggests.
+The planner assigns `floor(N/2)` execution slots to eligible asynchronous palette work and the remaining `ceil(N/2)` slots to `main_threads`. Each side includes its calling thread. Caller-local budget scopes cap nested calls to `sixel_threads_resolve()` while these stages overlap, without changing the process-wide requested count. Scope registration uses the thread-configuration mutex and live thread identities; nested scopes can only reduce the caller's budget. Both sides remove their scopes on return, including failure paths. After collection, palette application and final encoding can resolve the full configured count again.
 
 ## Dither/encode budget policy
 

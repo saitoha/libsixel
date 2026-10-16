@@ -600,6 +600,7 @@ typedef struct sixel_palette_async_job {
     sixel_dither_t *dither;
     SIXELSTATUS status;
     int target_pixelformat;
+    int threads;
     int frame_no;
     int loop_no;
     int multiframe;
@@ -5008,6 +5009,8 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
                                             context->encoder->allocator);
     if (SIXEL_SUCCEEDED(status)) {
         context->palette_job_initialized = 1;
+        context->palette_job.threads = context->planner != NULL
+            ? context->planner->palette_threads : 1;
         /* Match the synchronous builder: a base auto/byte preference
          * must not discard precision already retained by the source. */
         clustering_pixelformat =
@@ -5057,6 +5060,7 @@ static SIXELSTATUS
 sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
+    sixel_thread_budget_scope_t budget;
     int height;
     int index;
     sixel_planner_node_kind_t kind;
@@ -5239,9 +5243,16 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
         }
     }
 
+    if (context->palette_job_started != 0) {
+        sixel_thread_budget_enter(&budget,
+            context->planner->main_threads);
+    }
     status = sixel_encoder_filter_plan_run(&context->pre_plan,
                                            context->encoder->allocator,
                                            context->encoder->logger);
+    if (context->palette_job_started != 0) {
+        sixel_thread_budget_leave(&budget);
+    }
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -5946,6 +5957,7 @@ sixel_encoder_palette_job_thread(void *priv)
     SIXELSTATUS status;
     sixel_dither_t *local;
     sixel_timeline_logger_t *logger;
+    sixel_thread_budget_scope_t budget;
 
     job = (sixel_palette_async_job_t *)priv;
     if (job == NULL) {
@@ -5965,7 +5977,11 @@ sixel_encoder_palette_job_thread(void *priv)
                                        job->multiframe);
     }
 
+    /* Child conversions have an independent pool and never wait on this
+     * parent thread. The main pre-plan owns the complementary budget. */
+    sixel_thread_budget_enter(&budget, job->threads);
     status = sixel_encoder_palette_job_build(job, &local);
+    sixel_thread_budget_leave(&budget);
 
     sixel_mutex_lock(&job->mutex);
     job->status = status;
@@ -6122,6 +6138,7 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
     job->dither = NULL;
     job->status = SIXEL_OK;
     job->target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    job->threads = 1;
     job->frame_no = 0;
     job->loop_no = 0;
     job->multiframe = 0;
