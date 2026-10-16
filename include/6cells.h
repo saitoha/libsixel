@@ -827,6 +827,8 @@ struct sixel_palette_interface {
  * - Lookup option pairs carry both a value and an override flag.  A zero
  *   override lets direct component users retain registry-backed environment
  *   defaults without teaching backends about environment variable names.
+ * - FHEDT retains immutable grid references without consuming reuse_policy;
+ *   reuse_policy_slot may be NULL. Each handle keeps its own cache settings.
  * - Implementations may choose to ignore reuse hints.
  *
  * Mapping:

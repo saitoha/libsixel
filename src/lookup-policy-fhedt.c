@@ -180,6 +180,7 @@ typedef struct sixel_lookup_policy_fhedt_object {
     sixel_allocator_t *allocator;
     int backend_initialized;
     int prepared;
+    int pixelformat;
     sixel_lookup_policy_fhedt_8bit_t state_8bit;
     sixel_lookup_policy_fhedt_float32_t state_float;
 } sixel_lookup_policy_fhedt_object_t;
@@ -507,6 +508,11 @@ sixel_lookup_policy_fhedt_prepare_float_palette(
     return SIXEL_OK;
 }
 
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_fhedt_8bit_vtbl;
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_fhedt_float32_vtbl;
+
 static SIXELSTATUS
 sixel_lookup_policy_fhedt_configure_8bit(
     sixel_lookup_policy_fhedt_8bit_t *lut,
@@ -520,6 +526,7 @@ sixel_lookup_policy_fhedt_configure_8bit(
     int use_cache;
     sixel_lookup_policy_fhedt_settings_t settings;
     uint32_t signature;
+    sixel_lookup_policy_fhedt_object_t const *source;
 
     status = SIXEL_FALSE;
     resolution = 0;
@@ -571,6 +578,23 @@ sixel_lookup_policy_fhedt_configure_8bit(
                                                   1,
                                                   1,
                                                   request->depth);
+    /* The class and representation must match before inspecting the source.
+     * A successful retain leaves its owner usable by all later workers. */
+    source = NULL;
+    if (shared_flag && request->reuse_policy != NULL &&
+            request->reuse_policy->vtbl ==
+                &g_sixel_lookup_policy_fhedt_8bit_vtbl) {
+        source = sixel_lookup_policy_fhedt_from_base_const(
+            request->reuse_policy);
+    }
+    if (source != NULL && source->prepared &&
+            source->pixelformat == request->pixelformat &&
+            sixel_lookup_fhedt_8bit_share(lut->fhedt,
+                source->state_8bit.fhedt, signature, use_dist2, use_cache,
+                request->parallel_dither_active)) {
+        lut->fhedt_ready = 1;
+        return SIXEL_OK;
+    }
     status = sixel_lookup_fhedt_8bit_configure(lut->fhedt,
                                                request->palette,
                                                request->reqcolor,
@@ -613,6 +637,7 @@ sixel_lookup_policy_fhedt_configure_float32(
     int use_cache;
     sixel_lookup_policy_fhedt_settings_t settings;
     uint32_t signature;
+    sixel_lookup_policy_fhedt_object_t const *source;
 
     status = SIXEL_FALSE;
     resolution = 0;
@@ -680,6 +705,23 @@ sixel_lookup_policy_fhedt_configure_float32(
                                                      lut->weights[2],
                                                      lut->depth,
                                                      request->pixelformat);
+    /* The class and representation must match before inspecting the source.
+     * A successful retain leaves its owner usable by all later workers. */
+    source = NULL;
+    if (shared_flag && request->reuse_policy != NULL &&
+            request->reuse_policy->vtbl ==
+                &g_sixel_lookup_policy_fhedt_float32_vtbl) {
+        source = sixel_lookup_policy_fhedt_from_base_const(
+            request->reuse_policy);
+    }
+    if (source != NULL && source->prepared &&
+            source->pixelformat == request->pixelformat &&
+            sixel_lookup_fhedt_float32_share(lut->fhedt,
+                source->state_float.fhedt, signature, use_dist2, use_cache,
+                request->parallel_dither_active)) {
+        lut->fhedt_ready = 1;
+        return SIXEL_OK;
+    }
     status = sixel_lookup_fhedt_float32_configure(lut->fhedt,
                                                   lut->palette,
                                                   lut->ncolors,
@@ -756,20 +798,6 @@ sixel_lookup_policy_fhedt_reset_state(
 }
 
 static void
-sixel_lookup_policy_fhedt_detach_state(
-    sixel_lookup_policy_fhedt_object_t *object)
-{
-    if (object == NULL) {
-        return;
-    }
-
-    memset(&object->state_8bit, 0, sizeof(object->state_8bit));
-    memset(&object->state_float, 0, sizeof(object->state_float));
-    object->backend_initialized = 0;
-    object->prepared = 0;
-}
-
-static void
 sixel_lookup_policy_fhedt_ref(sixel_lookup_policy_interface_t *policy)
 {
     sixel_lookup_policy_fhedt_object_t *object;
@@ -818,13 +846,9 @@ sixel_lookup_policy_fhedt_prepare_8bit(
     SIXELSTATUS status;
     sixel_lookup_policy_fhedt_settings_t settings;
     sixel_lookup_policy_fhedt_object_t *object;
-    sixel_lookup_policy_interface_t *reuse_policy;
-    sixel_lookup_policy_fhedt_object_t *reuse_object;
 
     status = SIXEL_FALSE;
     object = NULL;
-    reuse_policy = NULL;
-    reuse_object = NULL;
 
     if (policy == NULL || request == NULL || request->palette == NULL
             || request->depth <= 0 || request->reqcolor <= 0
@@ -848,32 +872,6 @@ sixel_lookup_policy_fhedt_prepare_8bit(
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    reuse_policy = request->reuse_policy;
-    if (request->parallel_dither_active != 0
-            /* Reuse slot NULL means ownership migration is unsafe. */
-            && request->reuse_policy_slot == NULL) {
-        reuse_policy = NULL;
-    }
-
-
-    if (reuse_policy != NULL
-            && reuse_policy->vtbl == policy->vtbl) {
-        reuse_object = sixel_lookup_policy_fhedt_from_base(reuse_policy);
-        if (reuse_object->prepared != 0) {
-            sixel_lookup_policy_fhedt_reset_state(object);
-            object->state_8bit = reuse_object->state_8bit;
-            object->backend_initialized = reuse_object->backend_initialized;
-            object->prepared = reuse_object->prepared;
-            sixel_lookup_policy_fhedt_detach_state(reuse_object);
-            if (request->reuse_policy_slot != NULL
-                    && *request->reuse_policy_slot == NULL) {
-                *request->reuse_policy_slot = policy;
-                policy->vtbl->ref(policy);
-            }
-            return SIXEL_OK;
-        }
-    }
-
     status = sixel_lookup_policy_fhedt_configure_8bit(
         &object->state_8bit,
         request);
@@ -882,6 +880,7 @@ sixel_lookup_policy_fhedt_prepare_8bit(
         return status;
     }
     object->prepared = 1;
+    object->pixelformat = request->pixelformat;
 
     if (request->reuse_policy_slot != NULL
             && *request->reuse_policy_slot == NULL) {
@@ -900,14 +899,10 @@ sixel_lookup_policy_fhedt_prepare_float32(
     SIXELSTATUS status;
     float weights[3];
     sixel_lookup_policy_fhedt_object_t *object;
-    sixel_lookup_policy_interface_t *reuse_policy;
-    sixel_lookup_policy_fhedt_object_t *reuse_object;
     sixel_lookup_policy_fhedt_settings_t settings;
 
     status = SIXEL_FALSE;
     object = NULL;
-    reuse_policy = NULL;
-    reuse_object = NULL;
 
     if (policy == NULL || request == NULL || request->palette == NULL
             || request->depth <= 0 || request->reqcolor <= 0
@@ -932,35 +927,6 @@ sixel_lookup_policy_fhedt_prepare_float32(
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    reuse_policy = request->reuse_policy;
-    if (request->parallel_dither_active != 0
-            /* Reuse slot NULL means ownership migration is unsafe. */
-            && request->reuse_policy_slot == NULL) {
-        reuse_policy = NULL;
-    }
-
-    if (reuse_policy != NULL
-            && reuse_policy->vtbl == policy->vtbl) {
-        reuse_object = sixel_lookup_policy_fhedt_from_base(reuse_policy);
-        /* A shared grid prepared for the other metric cannot satisfy
-         * this request, even when its palette and resolution match. */
-        if (reuse_object->prepared != 0 &&
-                memcmp(reuse_object->state_float.weights, weights,
-                       sizeof(weights)) == 0) {
-            sixel_lookup_policy_fhedt_reset_state(object);
-            object->state_float = reuse_object->state_float;
-            object->backend_initialized = reuse_object->backend_initialized;
-            object->prepared = reuse_object->prepared;
-            sixel_lookup_policy_fhedt_detach_state(reuse_object);
-            if (request->reuse_policy_slot != NULL
-                    && *request->reuse_policy_slot == NULL) {
-                *request->reuse_policy_slot = policy;
-                policy->vtbl->ref(policy);
-            }
-            return SIXEL_OK;
-        }
-    }
-
     status = sixel_lookup_policy_fhedt_configure_float32(
         &object->state_float,
         request);
@@ -969,6 +935,7 @@ sixel_lookup_policy_fhedt_prepare_float32(
         return status;
     }
     object->prepared = 1;
+    object->pixelformat = request->pixelformat;
 
     if (request->reuse_policy_slot != NULL
             && *request->reuse_policy_slot == NULL) {

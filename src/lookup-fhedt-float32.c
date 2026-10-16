@@ -2052,9 +2052,6 @@ sixel_lookup_fhedt_float32_release_shared(sixel_lookup_fhedt_float32_t *fhedt)
 
     allocator = fhedt->allocator;
     sixel_lookup_fhedt_shared_unref_float32(allocator, fhedt->shared);
-    if (fhedt->shared_published != 0) {
-        sixel_lookup_fhedt_shared_unref_float32(allocator, fhedt->shared);
-    }
     fhedt->shared = NULL;
     fhedt->shared_published = 0;
 }
@@ -2068,6 +2065,36 @@ sixel_lookup_fhedt_float32_unref(sixel_lookup_fhedt_float32_t *fhedt)
 
     sixel_lookup_fhedt_float32_release_shared(fhedt);
     sixel_allocator_free(fhedt->allocator, fhedt);
+}
+
+/* Retain only immutable data. Cache selection belongs to this handle;
+ * actual cache entries remain thread-local, including the no-TLS fallback. */
+int
+sixel_lookup_fhedt_float32_share(
+    sixel_lookup_fhedt_float32_t *fhedt,
+    sixel_lookup_fhedt_float32_t const *source,
+    uint32_t signature, int use_dist2, int use_cache,
+    int parallel_dither_active)
+{
+    if (fhedt == NULL || source == NULL || source == fhedt ||
+            source->shared == NULL || !source->shared_published ||
+            fhedt->allocator != source->allocator ||
+            source->shared->signature != signature ||
+            source->shared->use_dist2 != use_dist2) {
+        return 0;
+    }
+    sixel_lookup_fhedt_shared_ref_float32(source->shared);
+    sixel_lookup_fhedt_float32_release_shared(fhedt);
+    fhedt->shared = source->shared;
+    fhedt->shared_published = 1;
+    fhedt->parallel_dither_active = parallel_dither_active != 0;
+#if SIXEL_FHEDT_TLS_AVAILABLE == 0
+    if (parallel_dither_active != 0) {
+        use_cache = 0;
+    }
+#endif
+    fhedt->use_cache = use_cache;
+    return 1;
 }
 
 SIXELSTATUS
@@ -2146,7 +2173,6 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
     }
 
     if (shared_flag != 0) {
-        sixel_lookup_fhedt_shared_ref_float32(fhedt->shared);
         fhedt->shared_published = 1;
     } else {
         fhedt->shared_published = 0;

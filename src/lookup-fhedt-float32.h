@@ -82,6 +82,13 @@ sixel_lookup_fhedt_float32_create(sixel_allocator_t *allocator,
 SIXEL_INTERNAL_API void
 sixel_lookup_fhedt_float32_unref(sixel_lookup_fhedt_float32_t *fhedt);
 
+SIXEL_INTERNAL_API int
+sixel_lookup_fhedt_float32_share(
+    sixel_lookup_fhedt_float32_t *fhedt,
+    sixel_lookup_fhedt_float32_t const *source,
+    uint32_t signature, int use_dist2, int use_cache,
+    int parallel_dither_active);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                  float const *palette,

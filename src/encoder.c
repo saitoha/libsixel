@@ -5416,13 +5416,16 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
 
     /* Sampling may retain a byte or indexed source while preprocessing
      * promotes the working frame. Lookup consumes that final frame, not
-     * the sample storage used to construct the palette. */
+     * the sample storage used to construct the palette. FHEDT was already
+     * prepared for the planned consumer format by the palette filter. */
     sixel_dither_set_pixelformat(context->dither,
         sixel_frame_get_pixelformat(context->frame));
-    status = sixel_encoder_apply_lut_filter(context->encoder,
-                                            context->dither);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (context->dither->lut_policy != SIXEL_LUT_POLICY_FHEDT) {
+        status = sixel_encoder_apply_lut_filter(context->encoder,
+                                                context->dither);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
     }
 
     if (context->encoder->fdrcs) {
@@ -8893,6 +8896,16 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
 
     sixel_filter_free(filter);
 
+    /* Lookup construction depends only on the finalized working palette.
+     * In the async job this stays inside its existing budget scope and can
+     * overlap the full-frame working-colorspace conversion. */
+    if (SIXEL_SUCCEEDED(status) && *dither_out != NULL &&
+            (*dither_out)->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+        status = sixel_encoder_apply_lut_filter(encoder, *dither_out);
+        if (SIXEL_FAILED(status)) {
+            sixel_encoder_release_dither_output(dither_out);
+        }
+    }
     return status;
 }
 
@@ -9003,6 +9016,15 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.fhedt_pin_threads_override =
         dither->lut_policy_fhedt_pin_threads_override;
     lookup_config.pixelformat = dither->pixelformat;
+    if (policy == SIXEL_LUT_POLICY_FHEDT) {
+        /* Samples can retain their source representation after the palette
+         * has moved to -W. Use the already planned consumer format, without
+         * waiting for or inspecting the concurrently converted frame. */
+        lookup_config.pixelformat = sixel_encoder_pixelformat_for_colorspace(
+            encoder->planner.working_colorspace_effective,
+            SIXEL_PIXELFORMAT_IS_FLOAT32(
+                encoder->planner.working_pixelformat));
+    }
     lookup_config.reuse_policy = dither->lookup_policy;
 
     if (policy == SIXEL_LUT_POLICY_FHEDT) {

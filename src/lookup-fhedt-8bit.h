@@ -81,6 +81,13 @@ sixel_lookup_fhedt_8bit_create(sixel_allocator_t *allocator,
 SIXEL_INTERNAL_API void
 sixel_lookup_fhedt_8bit_unref(sixel_lookup_fhedt_8bit_t *fhedt);
 
+SIXEL_INTERNAL_API int
+sixel_lookup_fhedt_8bit_share(
+    sixel_lookup_fhedt_8bit_t *fhedt,
+    sixel_lookup_fhedt_8bit_t const *source,
+    uint32_t signature, int use_dist2, int use_cache,
+    int parallel_dither_active);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_fhedt_8bit_configure(sixel_lookup_fhedt_8bit_t *fhedt,
                                  unsigned char const *palette,
