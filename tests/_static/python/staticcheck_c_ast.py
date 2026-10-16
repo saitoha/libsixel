@@ -21,10 +21,11 @@ class Finding:
 
 
 class SourceUnit:
-    def __init__(self, src_root: Path, path: Path, parser) -> None:
+    def __init__(self, src_root: Path, path: Path, parser,
+                 source=None) -> None:
         self.src_root = src_root
         self.path = path
-        self.source = path.read_bytes()
+        self.source = path.read_bytes() if source is None else source
         self.tree = parser.parse(self.source)
 
     def text(self, node) -> str:
@@ -180,6 +181,84 @@ class StatusAdditionalMessageStorageRule(Rule):
         return findings
 
 
+class NonfiniteStaticInitializerRule(Rule):
+    name = "nonfinite-static-initializer"
+    path_prefixes = (
+        "src/", "include/", "converters/", "assessment/", "tests/",
+        "tools/", "examples/", "fuzz/", "gdk-pixbuf-loader/", "wic/",
+        "quicklook-extension/",
+    )
+
+    def check(self, unit: SourceUnit) -> Iterable[Finding]:
+        for node in walk(unit.tree.root_node):
+            if node.type != "declaration":
+                continue
+            storage = {
+                unit.text(child) for child in node.named_children
+                if child.type == "storage_class_specifier"
+            }
+            # File-scope objects have static storage even without `static`.
+            # Preprocessor conditionals do not introduce a C block scope.
+            ancestor = node.parent
+            while ancestor is not None and ancestor.type not in (
+                    "compound_statement", "function_definition"):
+                ancestor = ancestor.parent
+            if ancestor is not None and not storage.intersection({
+                    "static", "extern", "_Thread_local", "thread_local"}):
+                continue
+            for declarator in node.named_children:
+                if declarator.type != "init_declarator":
+                    continue
+                value = declarator.child_by_field_name("value")
+                pending = [value] if value is not None else []
+                while pending:
+                    child = pending.pop()
+                    # These operators do not evaluate the floating operand.
+                    if child.type in ("sizeof_expression", "alignof_expression"):
+                        continue
+                    if (child.type == "identifier" and
+                            unit.text(child) in ("NAN", "INFINITY")):
+                        yield Finding(
+                            unit.path, unit.line(child),
+                            f"{unit.text(child)} in a static-storage initializer "
+                            "is not portable to OpenVMS; initialize at runtime",
+                        )
+                    pending.extend(reversed(child.named_children))
+
+
+def check_nonfinite_initializer_fixtures(src_root: Path, parser) -> None:
+    # Exercise the production rule without compiling C or writing fixtures.
+    # Keep both the original nested-array failure and implicit file storage.
+    fixtures = (
+        ("nested static array", b"""void f(void) {
+static double const invalid[3][3] = {
+    {NAN, 0, 0}, {0, INFINITY, 0}, {1e300, 0, 0}
+};
+}""", [3, 3]),
+        ("implicit file storage", b"float value = NAN;", [1]),
+        ("conditional file storage", b"#if ENABLED\nfloat value = INFINITY;\n#endif", [2]),
+        ("multiple declarators", b"static float a = 0, b = -INFINITY;", [1]),
+        ("header inline body", b"static inline void f(void) { static float x = NAN; }", [1]),
+        ("qualified local", b"void f(void) { const static float x = (float)NAN; }", [1]),
+        ("automatic array", b"void f(void) { const double x[] = {NAN, INFINITY}; }", []),
+        ("automatic conditional", b"void f(void) {\n#if X\nfloat x = NAN;\n#endif\n}", []),
+        ("runtime assignment", b"static float x; void f(void) { x = NAN; }", []),
+        ("finite initializer", b"static double x[] = {0.0, 1e300};", []),
+        ("comment and string", b'static const char *s = "NAN INFINITY"; /* NAN */', []),
+        ("unevaluated operand", b"static unsigned n = sizeof(NAN) + sizeof(INFINITY);", []),
+    )
+    rule = NonfiniteStaticInitializerRule()
+    for name, source, expected in fixtures:
+        unit = SourceUnit(src_root, src_root / "src/staticcheck-fixture.c",
+                          parser, source)
+        actual = [finding.line for finding in rule.check(unit)]
+        if unit.tree.root_node.has_error or actual != expected:
+            raise RuntimeError(
+                f"nonfinite initializer fixture {name}: "
+                f"expected lines {expected}, got {actual}"
+            )
+
+
 def make_parser():
     from tree_sitter import Language, Parser
     import tree_sitter_c
@@ -231,9 +310,11 @@ def main(argv: Sequence[str]) -> int:
 
     src_root = Path(argv[1]).resolve()
     parser = make_parser()
+    check_nonfinite_initializer_fixtures(src_root, parser)
     rules: Sequence[Rule] = (
         TimelineLogPathRule(),
         StatusAdditionalMessageStorageRule(),
+        NonfiniteStaticInitializerRule(),
     )
     findings: List[Finding] = []
 

@@ -1,5 +1,7 @@
 #!/bin/sh
 # Emit TAP for optional tree-sitter-c based C AST static checks.
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-15
 
 set -eu
 

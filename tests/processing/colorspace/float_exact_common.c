@@ -64,7 +64,8 @@ test_color_float_exact(int argc, char **argv)
         SIXEL_COLORSPACE_DIN99D, SIXEL_COLORSPACE_SMPTEC
     };
     static int const budgets[] = { 8, 1, 2, 4 };
-    static float const errors[] = { NAN, INFINITY, -INFINITY, FLT_MAX };
+    /* OpenVMS provides nonfinite macros through runtime values. */
+    float const errors[] = { NAN, INFINITY, -INFINITY, FLT_MAX };
     float *input;
     float *expected;
     float *actual;
