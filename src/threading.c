@@ -898,6 +898,9 @@ sixel_thread_budget_enter(sixel_thread_budget_scope_t *scope, int threads)
 {
     scope->owner = sixel_thread_identity_current();
     scope->threads = threads > 0 ? threads : 1;
+    scope->ceiling = scope->threads;
+    scope->reclaim = NULL;
+    scope->reclaim_context = NULL;
     sixel_thread_config_lock();
     scope->next = g_thread_budget_scopes;
     g_thread_budget_scopes = scope;
@@ -920,10 +923,11 @@ sixel_thread_budget_leave(sixel_thread_budget_scope_t *scope)
     sixel_thread_config_unlock();
 }
 
-SIXELAPI int
-sixel_threads_resolve(void)
+static int
+sixel_threads_resolve_limit(int ceiling)
 {
     int resolved;
+    int limit;
     sixel_thread_budget_scope_t *scope;
     sixel_thread_identity_t owner;
 
@@ -941,14 +945,69 @@ sixel_threads_resolve(void)
 #endif
     for (scope = g_thread_budget_scopes; scope != NULL;
             scope = scope->next) {
-        if (scope->threads < resolved &&
+        limit = ceiling ? scope->ceiling : scope->threads;
+        if (limit < resolved &&
                 sixel_thread_identity_equal(scope->owner, owner)) {
-            resolved = scope->threads;
+            resolved = limit;
         }
     }
     sixel_thread_config_unlock();
 
     return resolved;
+}
+
+SIXELAPI int
+sixel_threads_resolve(void)
+{
+    return sixel_threads_resolve_limit(0);
+}
+
+int
+sixel_threads_ceiling(void)
+{
+    return sixel_threads_resolve_limit(1);
+}
+
+void
+sixel_thread_budget_set_reclaim(sixel_thread_budget_scope_t *scope,
+                               int ceiling, int (*reclaim)(void *),
+                               void *context)
+{
+    sixel_thread_config_lock();
+    scope->ceiling = ceiling > scope->threads ? ceiling : scope->threads;
+    scope->reclaim = reclaim;
+    scope->reclaim_context = context;
+    sixel_thread_config_unlock();
+}
+
+int
+sixel_threads_reclaim(void)
+{
+    sixel_thread_budget_scope_t *scope;
+    sixel_thread_identity_t owner;
+
+    owner = sixel_thread_identity_current();
+    for (;;) {
+        sixel_thread_config_lock();
+        for (scope = g_thread_budget_scopes; scope != NULL;
+                scope = scope->next) {
+            if (scope->reclaim != NULL &&
+                    sixel_thread_identity_equal(scope->owner, owner)) {
+                break;
+            }
+        }
+        sixel_thread_config_unlock();
+        /* Only the owner can leave its scope, so it stays alive while its
+         * callback polls and joins the donor outside the global lock. */
+        if (scope == NULL || !scope->reclaim(scope->reclaim_context)) {
+            break;
+        }
+        sixel_thread_config_lock();
+        scope->threads = scope->ceiling;
+        scope->reclaim = NULL;
+        sixel_thread_config_unlock();
+    }
+    return sixel_threads_resolve();
 }
 
 /*

@@ -116,6 +116,9 @@ SIXEL_INTERNAL_API int sixel_get_hw_threads(void);
 typedef struct sixel_thread_budget_scope {
     sixel_thread_identity_t owner;
     int threads;
+    int ceiling;
+    int (*reclaim)(void *);
+    void *reclaim_context;
     struct sixel_thread_budget_scope *next;
 } sixel_thread_budget_scope_t;
 
@@ -123,6 +126,15 @@ SIXEL_INTERNAL_API void sixel_thread_budget_enter(
     sixel_thread_budget_scope_t *scope, int threads);
 SIXEL_INTERNAL_API void sixel_thread_budget_leave(
     sixel_thread_budget_scope_t *scope);
+
+/* A reclaim callback runs only on the scope owner, outside the configuration
+ * lock. It must return true only after all donated execution slots are idle.
+ * The context must outlive the scope; polling must not wait for active work. */
+SIXEL_INTERNAL_API void sixel_thread_budget_set_reclaim(
+    sixel_thread_budget_scope_t *scope, int ceiling,
+    int (*reclaim)(void *), void *context);
+SIXEL_INTERNAL_API int sixel_threads_ceiling(void);
+SIXEL_INTERNAL_API int sixel_threads_reclaim(void);
 
 SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
 SIXEL_INTERNAL_API void sixel_set_threads(int threads);

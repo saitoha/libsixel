@@ -614,6 +614,29 @@ typedef struct sixel_palette_async_job {
     int finished;
 } sixel_palette_async_job_t;
 
+/* Return the palette reservation only after its child pools and native
+ * thread have exited. The main pre-plan polls at conversion chunk boundaries;
+ * palette work never waits for conversion and keeps its entire reservation. */
+static int
+sixel_encoder_palette_job_reclaim(void *context)
+{
+    sixel_palette_async_job_t *job;
+    int finished;
+
+    job = (sixel_palette_async_job_t *)context;
+    sixel_mutex_lock(&job->mutex);
+    finished = job->finished;
+    sixel_mutex_unlock(&job->mutex);
+    if (!finished) {
+        return 0;
+    }
+    sixel_thread_join(&job->thread);
+    sixel_timeline_logger_logf(job->logger, "controller", "palette",
+        "budget-return", -1, -1, 0, 0, 0, 0,
+        "threads=%d", job->threads);
+    return 1;
+}
+
 static char const *
 sixel_palette_job_failure_stage_name(
     sixel_palette_job_failure_stage_t stage)
@@ -5257,6 +5280,9 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     if (context->palette_job_started != 0) {
         sixel_thread_budget_enter(&budget,
             context->planner->main_threads);
+        sixel_thread_budget_set_reclaim(&budget,
+            context->planner->main_threads + context->planner->palette_threads,
+            sixel_encoder_palette_job_reclaim, &context->palette_job);
     }
     status = sixel_encoder_filter_plan_run(&context->pre_plan,
                                            context->encoder->allocator,

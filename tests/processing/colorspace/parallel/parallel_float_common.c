@@ -66,6 +66,7 @@ parallel_float_values(int frame_api)
     int dst;
     int i;
     int c;
+    int budget;
 
     for (src = 0; src < 5; ++src) {
         for (i = 0; i < 257; ++i) {
@@ -84,16 +85,20 @@ parallel_float_values(int frame_api)
         }
         for (dst = 0; dst < 5; ++dst) {
             memcpy(serial, input, sizeof(input));
-            memcpy(parallel, input, sizeof(input));
             sixel_set_threads(1);
             if (SIXEL_FAILED(parallel_convert(serial, src, dst, frame_api))) {
                 return EXIT_FAILURE;
             }
-            sixel_set_threads(4);
-            if (SIXEL_FAILED(parallel_convert(parallel, src, dst, frame_api))
-                    || memcmp(serial, parallel, sizeof(serial)) != 0) {
-                fprintf(stderr, "parallel bits differ: %d -> %d\n", src, dst);
-                return EXIT_FAILURE;
+            for (budget = 2; budget <= 8; budget *= 2) {
+                memcpy(parallel, input, sizeof(input));
+                sixel_set_threads(budget);
+                if (SIXEL_FAILED(parallel_convert(parallel, src, dst,
+                        frame_api)) ||
+                        memcmp(serial, parallel, sizeof(serial)) != 0) {
+                    fprintf(stderr, "parallel bits differ: %d -> %d\n",
+                        src, dst);
+                    return EXIT_FAILURE;
+                }
             }
         }
     }

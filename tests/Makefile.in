@@ -1031,6 +1031,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/colorspace/0012_extended_failure_atomic.c \
 	processing/colorspace/0013_black_log1p_model.c \
 	processing/colorspace/parallel/0007_budget_scope.c \
+	processing/colorspace/parallel/0009_reclaim_budget.c \
+	processing/colorspace/parallel/0010_reclaim_bits.c \
+	processing/colorspace/parallel/0011_reclaim_atomic.c \
+	processing/colorspace/parallel/0008_overlap_reclaim.c \
 	processing/colorspace/parallel/parallel_float_common.c \
 	planner/pipeline/0017_pipeline_auto_worker_counts.c \
 	planner/pipeline/0018_pipeline_full_frame_worker_counts.c \
@@ -4751,6 +4755,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0012_extended_failure_atomic.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/test_runner-0013_black_log1p_model.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0007_budget_scope.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0009_reclaim_budget.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0010_reclaim_bits.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0011_reclaim_atomic.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0008_overlap_reclaim.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-parallel_float_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0017_pipeline_auto_worker_counts.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0018_pipeline_full_frame_worker_counts.$(OBJEXT) \
@@ -9417,6 +9425,10 @@ am__depfiles_remade =  \
 	processing/colorspace/parallel/$(DEPDIR)/test_runner-0005_working_pipeline.Po \
 	processing/colorspace/parallel/$(DEPDIR)/test_runner-0006_clustering_pipeline.Po \
 	processing/colorspace/parallel/$(DEPDIR)/test_runner-0007_budget_scope.Po \
+	processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Po \
+	processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Po \
+	processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Po \
+	processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Po \
 	processing/colorspace/parallel/$(DEPDIR)/test_runner-parallel_float_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
@@ -12093,6 +12105,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PALETTE_CONTINUOUS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_POLICY_CACHE_RESET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_BUDGET_SCOPE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_RECLAIM_BUDGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_RECLAIM_BITS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_RECLAIM_ATOMIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_OVERLAP_RECLAIM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PIPELINE_AUTO_WORKER_COUNTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PIPELINE_FULL_FRAME_WORKER_COUNTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PIPELINE_WORKER_COUNTS_COMMON \
@@ -16610,6 +16626,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0012_extended_failure_atomic.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/0013_black_log1p_model.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0007_budget_scope.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0009_reclaim_budget.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0010_reclaim_bits.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0011_reclaim_atomic.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0008_overlap_reclaim.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/parallel_float_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0017_pipeline_auto_worker_counts.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0018_pipeline_full_frame_worker_counts.c \
@@ -22420,6 +22440,18 @@ processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) processing/colorspace/parallel/$(DEPDIR)
 	@: >>processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/parallel/test_runner-0007_budget_scope.$(OBJEXT):  \
+	processing/colorspace/parallel/$(am__dirstamp) \
+	processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/parallel/test_runner-0009_reclaim_budget.$(OBJEXT):  \
+	processing/colorspace/parallel/$(am__dirstamp) \
+	processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/parallel/test_runner-0010_reclaim_bits.$(OBJEXT):  \
+	processing/colorspace/parallel/$(am__dirstamp) \
+	processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/parallel/test_runner-0011_reclaim_atomic.$(OBJEXT):  \
+	processing/colorspace/parallel/$(am__dirstamp) \
+	processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
+processing/colorspace/parallel/test_runner-0008_overlap_reclaim.$(OBJEXT):  \
 	processing/colorspace/parallel/$(am__dirstamp) \
 	processing/colorspace/parallel/$(DEPDIR)/$(am__dirstamp)
 processing/colorspace/parallel/test_runner-parallel_float_common.$(OBJEXT):  \
@@ -33370,6 +33402,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-0005_working_pipeline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-0006_clustering_pipeline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-0007_budget_scope.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/colorspace/parallel/$(DEPDIR)/test_runner-parallel_float_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
@@ -47850,6 +47886,62 @@ processing/colorspace/parallel/test_runner-0007_budget_scope.obj: processing/col
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0007_budget_scope.c' object='processing/colorspace/parallel/test_runner-0007_budget_scope.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0007_budget_scope.obj `if test -f 'processing/colorspace/parallel/0007_budget_scope.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0007_budget_scope.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0007_budget_scope.c'; fi`
+
+processing/colorspace/parallel/test_runner-0009_reclaim_budget.o: processing/colorspace/parallel/0009_reclaim_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0009_reclaim_budget.o -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Tpo -c -o processing/colorspace/parallel/test_runner-0009_reclaim_budget.o `test -f 'processing/colorspace/parallel/0009_reclaim_budget.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0009_reclaim_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0009_reclaim_budget.c' object='processing/colorspace/parallel/test_runner-0009_reclaim_budget.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0009_reclaim_budget.o `test -f 'processing/colorspace/parallel/0009_reclaim_budget.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0009_reclaim_budget.c
+
+processing/colorspace/parallel/test_runner-0009_reclaim_budget.obj: processing/colorspace/parallel/0009_reclaim_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0009_reclaim_budget.obj -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Tpo -c -o processing/colorspace/parallel/test_runner-0009_reclaim_budget.obj `if test -f 'processing/colorspace/parallel/0009_reclaim_budget.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0009_reclaim_budget.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0009_reclaim_budget.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0009_reclaim_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0009_reclaim_budget.c' object='processing/colorspace/parallel/test_runner-0009_reclaim_budget.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0009_reclaim_budget.obj `if test -f 'processing/colorspace/parallel/0009_reclaim_budget.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0009_reclaim_budget.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0009_reclaim_budget.c'; fi`
+
+processing/colorspace/parallel/test_runner-0010_reclaim_bits.o: processing/colorspace/parallel/0010_reclaim_bits.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0010_reclaim_bits.o -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Tpo -c -o processing/colorspace/parallel/test_runner-0010_reclaim_bits.o `test -f 'processing/colorspace/parallel/0010_reclaim_bits.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0010_reclaim_bits.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0010_reclaim_bits.c' object='processing/colorspace/parallel/test_runner-0010_reclaim_bits.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0010_reclaim_bits.o `test -f 'processing/colorspace/parallel/0010_reclaim_bits.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0010_reclaim_bits.c
+
+processing/colorspace/parallel/test_runner-0010_reclaim_bits.obj: processing/colorspace/parallel/0010_reclaim_bits.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0010_reclaim_bits.obj -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Tpo -c -o processing/colorspace/parallel/test_runner-0010_reclaim_bits.obj `if test -f 'processing/colorspace/parallel/0010_reclaim_bits.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0010_reclaim_bits.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0010_reclaim_bits.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0010_reclaim_bits.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0010_reclaim_bits.c' object='processing/colorspace/parallel/test_runner-0010_reclaim_bits.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0010_reclaim_bits.obj `if test -f 'processing/colorspace/parallel/0010_reclaim_bits.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0010_reclaim_bits.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0010_reclaim_bits.c'; fi`
+
+processing/colorspace/parallel/test_runner-0011_reclaim_atomic.o: processing/colorspace/parallel/0011_reclaim_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0011_reclaim_atomic.o -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Tpo -c -o processing/colorspace/parallel/test_runner-0011_reclaim_atomic.o `test -f 'processing/colorspace/parallel/0011_reclaim_atomic.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0011_reclaim_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0011_reclaim_atomic.c' object='processing/colorspace/parallel/test_runner-0011_reclaim_atomic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0011_reclaim_atomic.o `test -f 'processing/colorspace/parallel/0011_reclaim_atomic.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0011_reclaim_atomic.c
+
+processing/colorspace/parallel/test_runner-0011_reclaim_atomic.obj: processing/colorspace/parallel/0011_reclaim_atomic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0011_reclaim_atomic.obj -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Tpo -c -o processing/colorspace/parallel/test_runner-0011_reclaim_atomic.obj `if test -f 'processing/colorspace/parallel/0011_reclaim_atomic.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0011_reclaim_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0011_reclaim_atomic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0011_reclaim_atomic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0011_reclaim_atomic.c' object='processing/colorspace/parallel/test_runner-0011_reclaim_atomic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0011_reclaim_atomic.obj `if test -f 'processing/colorspace/parallel/0011_reclaim_atomic.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0011_reclaim_atomic.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0011_reclaim_atomic.c'; fi`
+
+processing/colorspace/parallel/test_runner-0008_overlap_reclaim.o: processing/colorspace/parallel/0008_overlap_reclaim.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0008_overlap_reclaim.o -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Tpo -c -o processing/colorspace/parallel/test_runner-0008_overlap_reclaim.o `test -f 'processing/colorspace/parallel/0008_overlap_reclaim.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0008_overlap_reclaim.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0008_overlap_reclaim.c' object='processing/colorspace/parallel/test_runner-0008_overlap_reclaim.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0008_overlap_reclaim.o `test -f 'processing/colorspace/parallel/0008_overlap_reclaim.c' || echo '$(srcdir)/'`processing/colorspace/parallel/0008_overlap_reclaim.c
+
+processing/colorspace/parallel/test_runner-0008_overlap_reclaim.obj: processing/colorspace/parallel/0008_overlap_reclaim.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-0008_overlap_reclaim.obj -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Tpo -c -o processing/colorspace/parallel/test_runner-0008_overlap_reclaim.obj `if test -f 'processing/colorspace/parallel/0008_overlap_reclaim.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0008_overlap_reclaim.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0008_overlap_reclaim.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Tpo processing/colorspace/parallel/$(DEPDIR)/test_runner-0008_overlap_reclaim.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/colorspace/parallel/0008_overlap_reclaim.c' object='processing/colorspace/parallel/test_runner-0008_overlap_reclaim.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/colorspace/parallel/test_runner-0008_overlap_reclaim.obj `if test -f 'processing/colorspace/parallel/0008_overlap_reclaim.c'; then $(CYGPATH_W) 'processing/colorspace/parallel/0008_overlap_reclaim.c'; else $(CYGPATH_W) '$(srcdir)/processing/colorspace/parallel/0008_overlap_reclaim.c'; fi`
 
 processing/colorspace/parallel/test_runner-parallel_float_common.o: processing/colorspace/parallel/parallel_float_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/colorspace/parallel/test_runner-parallel_float_common.o -MD -MP -MF processing/colorspace/parallel/$(DEPDIR)/test_runner-parallel_float_common.Tpo -c -o processing/colorspace/parallel/test_runner-parallel_float_common.o `test -f 'processing/colorspace/parallel/parallel_float_common.c' || echo '$(srcdir)/'`processing/colorspace/parallel/parallel_float_common.c

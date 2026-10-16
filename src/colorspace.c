@@ -2493,6 +2493,10 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     size_t job_count;
     size_t job_index;
     int threads;
+    int ceiling;
+    int adaptive;
+    int available;
+    int submitted;
 #endif
 
     if (colorspace_src == colorspace_dst) {
@@ -2511,7 +2515,11 @@ sixel_convert_pixels_via_linear_float(float *pixels,
 
 #if SIXEL_ENABLE_THREADS
     threads = sixel_threads_resolve();
-    if (threads > 1 && pixel_total > 1U &&
+    ceiling = sixel_threads_ceiling();
+    /* Small and standalone conversions retain one chunk per execution slot.
+     * Only a live donation needs finer chunks and caller-side polling. */
+    adaptive = ceiling > threads && pixel_total > 16384U;
+    if ((threads > 1 || adaptive) && pixel_total > 1U &&
             pixel_total >= sixel_colorspace_parallel_min_pixels_cached()) {
         if ((size_t)threads > pixel_total) {
             threads = (int)pixel_total;
@@ -2521,6 +2529,13 @@ sixel_convert_pixels_via_linear_float(float *pixels,
         ctx.pixel_total = pixel_total;
         ctx.chunk_pixels = (pixel_total + (size_t)threads - 1U)
             / (size_t)threads;
+        if (adaptive) {
+            /* band_index is signed even on 64-bit pixel-address builds. */
+            ctx.chunk_pixels = pixel_total / (size_t)INT_MAX + 1U;
+            if (ctx.chunk_pixels < 16384U) {
+                ctx.chunk_pixels = 16384U;
+            }
+        }
         ctx.colorspace_src = colorspace_src;
         ctx.colorspace_dst = colorspace_dst;
         ctx.logger = logger;
@@ -2532,17 +2547,54 @@ sixel_convert_pixels_via_linear_float(float *pixels,
         pool = NULL;
         status = SIXEL_BAD_ALLOCATION;
         if (converted != NULL && results != NULL && job_count > 1U) {
-            status = sixel_colorspace_create_pool(&pool,
-                (int)job_count - 1, (int)job_count,
-                sixel_colorspace_parallel_worker, &ctx);
+            status = SIXEL_OK;
+            if (threads > 1) {
+                status = sixel_colorspace_create_pool(&pool,
+                    threads - 1, adaptive ? threads : (int)job_count,
+                    sixel_colorspace_parallel_worker, &ctx);
+            }
         }
-        if (status == SIXEL_OK && pool != NULL) {
+        if (status == SIXEL_OK && (pool != NULL || adaptive)) {
             sixel_timeline_logger_logf(logger, "controller", "colorspace",
                 "start", -1, -1, 0, sixel_colorspace_log_clamp(pixel_total),
                 0, sixel_colorspace_log_clamp(pixel_total),
-                "threads=%zu chunk=%zu jobs=%zu", job_count,
+                "threads=%d chunk=%zu jobs=%zu", threads,
                 ctx.chunk_pixels, job_count);
-            for (job_index = 0U; job_index + 1U < job_count; ++job_index) {
+            job_index = 0U;
+            if (adaptive) {
+                /* Keep a bounded queue and make the controller compute one
+                 * chunk per batch. It can reclaim the donor even when the
+                 * initial main reservation is one, without a waiter thread.
+                 * grow() may partially succeed: charge the full requested
+                 * budget once and never retry those slots on failure. */
+                while (job_index < job_count) {
+                    available = sixel_threads_reclaim();
+                    if (available > threads) {
+                        if (pool != NULL) {
+                            (void)pool->vtbl->grow(pool, available - threads);
+                        } else {
+                            (void)sixel_colorspace_create_pool(&pool,
+                                available - 1, available,
+                                sixel_colorspace_parallel_worker, &ctx);
+                        }
+                        threads = available;
+                        sixel_timeline_logger_logf(logger, "controller",
+                            "colorspace", "grow", -1, -1, 0, 0, 0, 0,
+                            "threads=%d", threads);
+                    }
+                    for (submitted = 1; pool != NULL && submitted < threads
+                            && job_index + 1U < job_count; ++submitted) {
+                        job.band_index = (int)job_index;
+                        if (pool->vtbl->push(pool, job) != SIXEL_OK) {
+                            break;
+                        }
+                        ++job_index;
+                    }
+                    job.band_index = (int)job_index++;
+                    (void)sixel_colorspace_parallel_worker(job, &ctx, NULL);
+                }
+            }
+            for (; job_index + 1U < job_count; ++job_index) {
                 job.band_index = (int)job_index;
                 status = pool->vtbl->push(pool, job);
                 if (status != SIXEL_OK) {
@@ -2555,9 +2607,12 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                 job.band_index = (int)job_index;
                 (void)sixel_colorspace_parallel_worker(job, &ctx, NULL);
             }
-            pool->vtbl->finish(pool);
-            status = pool->vtbl->get_error(pool);
-            pool->vtbl->unref(pool);
+            status = SIXEL_OK;
+            if (pool != NULL) {
+                pool->vtbl->finish(pool);
+                status = pool->vtbl->get_error(pool);
+                pool->vtbl->unref(pool);
+            }
             for (job_index = 0U; job_index < job_count; ++job_index) {
                 if (SIXEL_FAILED(results[job_index])) {
                     /* Revalidate only the earliest failing chunk on the
@@ -2576,7 +2631,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
             sixel_timeline_logger_logf(logger, "controller", "colorspace",
                 "finish", -1, -1, 0, sixel_colorspace_log_clamp(pixel_total),
                 0, sixel_colorspace_log_clamp(pixel_total),
-                "parallel status=%d threads=%zu", status, job_count);
+                "parallel status=%d threads=%d", status, threads);
             free(results);
             free(converted);
             sixel_timeline_logger_unref(logger);

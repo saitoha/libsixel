@@ -215,6 +215,10 @@ int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
 int test_pipeline_worker_counts_18(int argc, char **argv);
 int test_parallel_float_0007(int argc, char **argv);
+int test_parallel_float_0009(int argc, char **argv);
+int test_parallel_float_0010(int argc, char **argv);
+int test_parallel_float_0011(int argc, char **argv);
+int test_parallel_float_0008(int argc, char **argv);
 int test_parallel_float_0001(int argc, char **argv);
 int test_parallel_float_0002(int argc, char **argv);
 int test_parallel_float_0003(int argc, char **argv);
@@ -5700,6 +5704,10 @@ static test_entry_t const test_entries[] = {
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
     { "colorspace/0013_black_log1p_model", test_color_0013 },
     { "colorspace/parallel/0007_budget_scope", test_parallel_float_0007 },
+    { "colorspace/parallel/0009_reclaim_budget", test_parallel_float_0009 },
+    { "colorspace/parallel/0010_reclaim_bits", test_parallel_float_0010 },
+    { "colorspace/parallel/0011_reclaim_atomic", test_parallel_float_0011 },
+    { "colorspace/parallel/0008_overlap_reclaim", test_parallel_float_0008 },
     { "planner/pipeline/0017_pipeline_auto_worker_counts",
         test_pipeline_worker_counts_17 },
     { "planner/pipeline/0018_pipeline_full_frame_worker_counts",
