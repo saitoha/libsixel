@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure native, in-memory codecs and save all samples before plotting.
 
-Requires Pillow, numpy, qoi, an isolated libsixel build and the codecs.c
+Requires Pillow (with AVIF support), pillow-heif, numpy, qoi, an isolated libsixel build and the codecs.c
 adapter.
 Input/output copies and wrapper allocation are included; disk I/O and LSQA
 are excluded. Palette formats retain decoded indices between generations.
@@ -20,8 +20,11 @@ import subprocess
 import time
 
 import numpy as np
-from PIL import Image, ImageCms, ImageDraw, ImageOps, features
+from PIL import AvifImagePlugin, Image, ImageCms, ImageDraw, ImageOps, features
+import pillow_heif
 import qoi
+
+pillow_heif.register_heif_opener()
 
 P = C.c_void_p
 I = C.c_int
@@ -87,6 +90,15 @@ class Codecs:
             image.save(output, 'JPEG', quality=int(codec.split()[-1]), subsampling=2, optimize=False)
         elif codec == 'PNG':
             image.save(output, 'PNG', compress_level=6)
+        elif codec.startswith('AVIF'):
+            # libavif/aom receives the exact worker count.
+            image.save(output, 'AVIF', quality=int(codec.split()[-1]), speed=6,
+                       subsampling='4:2:0', max_threads=threads)
+        elif codec.startswith('HEIC'):
+            # libheif forwards x265:pools, the exact x265 worker count.
+            pillow_heif.from_pillow(image).save(output,
+                quality=int(codec.split()[-1]), chroma=420,
+                enc_params={'x265:pools': str(threads)})
         else:
             if image.mode != 'P':
                 image = image.quantize(colors=256, method=Image.Quantize.MEDIANCUT)
@@ -128,8 +140,14 @@ class Codecs:
                 self.a.study_free(pixels)
         if codec == 'QOI':
             return Image.fromarray(qoi.decode(data), 'RGB')
+        # Both decoder thread counts are read when the image is opened.
+        AvifImagePlugin.DEFAULT_MAX_THREADS = threads
+        pillow_heif.options.DECODE_THREADS = threads
         image = Image.open(io.BytesIO(data))
         image.load()
+        expected = {'AVIF': 'AVIF', 'HEIC': 'HEIF'}.get(codec.split()[0])
+        if expected and image.format != expected:
+            raise RuntimeError(f'{codec} opened as {image.format}')
         return image.copy() if indexed else image.convert('RGB')
 
 
@@ -259,7 +277,7 @@ def main():
             assert b'iCCP' not in references[name].read_bytes(), name
         codecs = Codecs(args.adapter.resolve(), args.library.resolve())
         lsqa = args.source / 'assessment/lsqa'
-        settings = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG', 'QOI', 'JPEG 60', 'JPEG 80', 'JPEG 95', 'WebP 60', 'WebP 80', 'WebP 95', 'WebP lossless']
+        settings = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG', 'QOI', 'JPEG 60', 'JPEG 80', 'JPEG 95', 'WebP 60', 'WebP 80', 'WebP 95', 'WebP lossless', 'AVIF 60', 'AVIF 80', 'HEIC 60', 'HEIC 80']
         rows = []
         payload = {'metadata': {'revision': args.revision, 'platform': platform.platform(),
             'cpu_count': os.cpu_count(), 'python': platform.python_version(),
@@ -274,6 +292,10 @@ def main():
             'pillow': Image.__version__, 'jpeg': features.version('jpg'),
             'libjpeg_turbo': features.version('libjpeg_turbo'), 'zlib': features.version('zlib'),
             'qoi': getattr(qoi, '__version__', 'unknown'),
+            'avif': features.version('avif'),
+            'avif_codecs': AvifImagePlugin._avif.codec_versions(),
+            'pillow_heif': pillow_heif.__version__,
+            'libheif': pillow_heif.libheif_info(),
             'adapter_sha256': sha(args.adapter.read_bytes()), 'library_sha256': sha(args.library.read_bytes()),
             'runs': args.runs, 'warmups': 2, 'generations': args.generations,
             'settings': settings, 'fit': list(fit),
@@ -305,7 +327,7 @@ def main():
             print(name, 'scaling complete', flush=True)
             if name not in generation_images:
                 continue
-            for codec in ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless']:
+            for codec in ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']:
                 modes = ['indexed'] if codec in ['SIXEL default', 'GIF'] else ['RGB']
                 for mode in modes:
                     current = image

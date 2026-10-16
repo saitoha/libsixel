@@ -12,7 +12,7 @@ meta = p['metadata']
 rows = p['rows']
 n = meta['generations']
 settings = meta['settings']
-generation_codecs = ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless']
+generation_codecs = ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
 images = set(meta['inputs'])
 assert images == set(meta['photo_sources']) | {'diagram'}
 generation_images = set(meta['generation_images'])

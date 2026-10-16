@@ -20,10 +20,10 @@ from matplotlib.ticker import LogLocator, FuncFormatter, NullFormatter
 import numpy as np
 
 COLORS = {'SIXEL': '#0072b2', 'GIF': '#b36b00', 'PNG': '#009e73', 'QOI': '#d55e00',
-          'JPEG': '#a84073', 'WebP': '#6457a6'}
-MARKERS = {'SIXEL': 'o', 'GIF': 's', 'PNG': 'D', 'QOI': 'v', 'JPEG': '^', 'WebP': 'P'}
-REP = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless']
-GENERATIONS = ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless']
+          'JPEG': '#a84073', 'WebP': '#6457a6', 'AVIF': '#56b4e9', 'HEIC': '#8c7a00'}
+MARKERS = {'SIXEL': 'o', 'GIF': 's', 'PNG': 'D', 'QOI': 'v', 'JPEG': '^', 'WebP': 'P', 'AVIF': 'X', 'HEIC': 'h'}
+REP = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
+GENERATIONS = ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 11,
     'axes.spines.top': False, 'axes.spines.right': False,
     'svg.hashsalt': 'libsixel-format-comparison', 'svg.fonttype': 'none'})
@@ -215,7 +215,7 @@ def main():
                     scaling(axes, scale_rows, corpus)
                     fig.legend(*axes[0].get_legend_handles_labels(), loc='outside lower center', ncol=2 if mobile else 4, fontsize=8)
                     title = 'A thread budget does not guarantee linear scaling'
-                    note = 'SIXEL: N-worker budget. WebP: parallel switch at N > 1. Pillow JPEG/GIF/PNG and QOI remain serial.'
+                    note = 'SIXEL, AVIF (aom/dav1d) and HEIC (x265/libde265): N workers. WebP: parallel switch at N > 1. Pillow JPEG/GIF/PNG and QOI remain serial.'
                     if corpus:
                         note += ' Bands show the per-photo interquartile range.'
                 else:
