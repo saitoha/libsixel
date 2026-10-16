@@ -21,7 +21,7 @@ SIXEL is defined only by the ECMA-48 control-string envelope and DEC's device do
 
 ## An old syntax with a modern image pipeline
 
-Ordinary SIXEL output combines three separable choices: color quantization, six-row color masks with run-length coding, and a terminal protocol that uses only 7-bit bytes. The wire syntax defines how the result is transmitted, not how an encoder chooses its palette, so improvements to clustering, perceptual color spaces, pixel assignment and dithering can improve output without changing the receiving terminal. [SIXEL among contemporary image codecs](comparison/README.md) develops these points and measures quality, latency, transport size, thread budgets, image-size scaling and repeated generations against JPEG, GIF, PNG, QOI, WebP, AVIF and HEIC.
+Ordinary SIXEL output combines three separable choices: color quantization, six-row color masks with run-length coding, and a terminal protocol that uses only 7-bit bytes. The wire syntax defines how the result is transmitted, not how an encoder chooses its palette, so improvements to clustering, perceptual color spaces, pixel assignment and dithering can improve output without changing the receiving terminal. [SIXEL among contemporary image codecs](comparison/README.md) develops these points and measures quality, latency, transport size, thread budgets, image-size scaling, per-stage encoding time and repeated generations against JPEG, GIF, PNG, QOI, WebP, AVIF and HEIC.
 
 ## Wire format
 

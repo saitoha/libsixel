@@ -175,6 +175,39 @@ The corpus fixes one image size, while fixed per-image costs and thread start-up
 
 One-budget default SIXEL encoding has a large fixed cost: 4.0 ms at 160 × 120 (about 210 ns per pixel) against 84 ms at 1280 × 960 (about 68 ns per pixel), whereas PNG grows from 0.75 to 62 ms almost in proportion to the pixel count. It is therefore slower than PNG at every measured size, by 5.3 times at the smallest size and 1.4 times at the largest. The eight-worker budget does not help small images: at 160 × 120 it encodes in 4.7 ms, slower than one worker, and at 320 × 240 it is still slower than PNG; from 640 × 480 it is faster than PNG, 21 versus 62 ms at 1280 × 960. SIXEL decoding is faster than PNG at every size with one worker, but eight workers are slower than one at 160 × 120 (0.35 versus 0.13 ms) and equal at 320 × 240, and they overtake QOI only from 640 × 480. The quality-60 AVIF encoder gains most from size: eight workers speed it up 1.1 times at 160 × 120 and 5.7 times at 1280 × 960. A ranking measured at one image size does not transfer to another.
 
+## Where encoding time goes
+
+An encoder's work falls into two kinds. Some work is done once per image regardless of its size: building a palette from a color histogram, for example, depends mostly on how many distinct colors there are, not on how many pixels carry them. Other work is done once per pixel: assigning every pixel its palette entry, diffusing its error, and writing the compressed output. Work of the first kind costs about the same for a small image and a large one, so it weighs heavily per pixel on small images and fades on large ones; work of the second kind stays at a constant cost per pixel. Comparing one encoder at two image sizes separates the two.
+
+The stage chart encodes 1:1 center crops of nine originals (the size-sweep photographs except `photo-031`, whose original is narrower than 1920 pixels) at VGA, 640 × 480, and at FHD, 1920 × 1080, with one worker, and splits each encode into stages. The left panel shows milliseconds per image; the right panel divides the same bars by the pixel count, so a stage that keeps its height between the two bars scales with the pixels and a stage that shrinks is fixed work. Dotted lines join the same stage boundary at the two sizes.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="figures/photo-stages-mobile.svg">
+  <img alt="Stacked bars of one-worker encoding time for default SIXEL, quality SIXEL, Pillow GIF and Pillow PNG at VGA and FHD, per image and per pixel, split into color conversion, sampling, palette search, lookup setup, lookup and dither, PNG row filter, output coding and other; dotted lines join matching stage boundaries." src="figures/photo-stages-wide.svg">
+</picture>
+
+The stages come from each implementation's own boundaries. SIXEL stages are read from libsixel's timeline log (`SIXEL_LOG_PATH`) of the same in-memory encoder call that the comparison times: palette construction is split at its first refinement step into sampling (histogram or initialization) and palette search, lookup setup ends where palette application starts, and SIXEL encoding is the six-row band jobs. Pillow does not report its stages, so GIF and PNG use the same Pillow version rebuilt from source with timers at its own stage boundaries: color hashing (sampling), median cut and palette computation (palette search), distance tables and pixel mapping (lookup, without dithering), and LZW coding; and for PNG the time inside zlib's `deflate()` against the rest of the encoder, which is mostly row filtering. The rebuilt Pillow links the wheel's own zlib-ng, and its GIF and PNG bytes are verified to equal the wheel's for every crop, so the breakdown describes the implementation measured elsewhere on this page.
+
+| One worker, mean of nine photographs | VGA | FHD | Per pixel, VGA → FHD |
+| --- | --- | --- | --- |
+| Default SIXEL | 27.0 ms | 136.7 ms | 88 → 66 ns |
+| Quality SIXEL | 80.4 ms | 432.3 ms | 262 → 208 ns |
+| Pillow GIF | 60.8 ms | 164.0 ms | 198 → 79 ns |
+| Pillow PNG | 14.9 ms | 103.4 ms | 48 → 50 ns |
+
+PNG is almost purely per-pixel work: DEFLATE takes about 83% of its time and the cost per pixel does not change with size. Pillow's GIF carries the largest fixed stage, its median-cut palette search, which takes about the same 35–45 ms at both sizes and therefore falls from 113 to 21 ns per pixel. Default SIXEL spends little on its palette (sampling, search and lookup setup together take 2.3 ms at VGA and 8.0 ms at FHD); lookup with error diffusion dominates, at 61 ns per pixel at VGA and 47 ns at FHD, followed by band coding at 19 and 15 ns. Quality SIXEL first converts every pixel to its CIELAB working space, a stage that costs a constant 94–95 ns per pixel, about as much as its lookup and diffusion. A one-worker SIXEL encode is therefore not slower than PNG because of a large fixed setup: it performs a nearest-color search and error diffusion for every pixel, work that a lossless coder does not have.
+
+## Worker budgets and serial stages
+
+More workers shorten only the stages that are divided among them. The worker chart encodes the FHD crops of the same nine photographs with one and with eight workers. With several workers, lookup with error diffusion and band coding run as one pipeline over horizontal work bands, and quality SIXEL builds its palette while the color conversion is still running, so stages overlap in time. Each bar therefore partitions the elapsed time: every interval is labeled with the stage that runs in it, the pipelined lookup, diffusion and coding form one segment, and palette work that overlaps the conversion is hatched. Dotted lines join the ends of palette construction, lookup setup, the lookup and coding phase, and the whole encode.
+
+<picture>
+  <source media="(max-width: 640px)" srcset="figures/photo-threads-mobile.svg">
+  <img alt="Stacked bars of FHD encoding time for default and quality SIXEL with one and eight workers: the pipelined lookup, dither and band coding phase shrinks with eight workers while the quality setting's color conversion keeps its length." src="figures/photo-threads-wide.svg">
+</picture>
+
+Default SIXEL falls from 136.1 to 32.1 ms with eight workers. Its lookup, diffusion and coding phase shrinks from 128 to 29 ms, while about 2.2 ms that a single worker does not spend appears before palette construction begins. Quality SIXEL falls only from 431.7 to 236.4 ms: its pipelined phase shrinks from 186 to 39 ms, but the color conversion keeps its length, 194 ms with one worker and 189 ms with eight, and becomes four fifths of the eight-worker encode. Adding workers cannot remove such a serial stage; it has to be parallelized or made cheaper itself.
+
 ## Repeated encoding is a state contract
 
 The generation experiment decodes GIF/SIXEL into its index plane and palette and supplies that representation to the next encoder. JPEG, PNG, QOI, WebP, AVIF and HEIC use their decoded RGB pixels. The first generation always starts with the same original RGB image. Palette construction and nearest-color assignment can then be bypassed from generation two onward for GIF/SIXEL. This is reuse of the decoded representation, not reuse of previously compressed bytes or a warmed encoder object; each SIXEL encode creates a fresh encoder.
@@ -231,7 +264,9 @@ PYTHON=/path/to/venv/bin/python \
     tools/reproduce_format_comparison.sh
 ```
 
-The recorded run took about two hours and ten minutes. Keep the host awake and on power for the whole run: a sleep inside a timed region inflates that sample.
+The recorded run took about two hours and ten minutes.
+
+The stage and worker charts additionally need a Pillow rebuilt with stage timers. [build_stage_pillow.sh](../../../tools/format-comparison/build_stage_pillow.sh) builds the wheel's Pillow version from source with [pillow_stage_timers.py](../../../tools/format-comparison/pillow_stage_timers.py) into a separate virtual environment and, on macOS, binds it to the wheel's bundled zlib. Pass that environment's interpreter as `STAGE_PILLOW_PYTHON`, together with `SIZE_PHOTOS`, to run [stages.py](../../../tools/format-comparison/stages.py); it rejects a build whose GIF or PNG bytes differ from the wheel's. The stage data and charts were recorded separately from the main run, at revision `c79f17f18c66b9fe8bbd7b498e8ea6e9d44f1705`, whose library differs from the main run's only in emitting the encoder timeline for direct frame calls; [stages.json](figures/stages.json) keeps every sample with its revision, script and patch digests. Keep the host awake and on power for the whole run: a sleep inside a timed region inflates that sample.
 
 The wrapper archives a committed revision into an isolated temporary source directory and builds it with `CFLAGS=-O3`. It never benchmarks the shared dirty worktree. Set `REVISION` to reproduce a particular recorded implementation; a branch name is resolved to its commit before the run, and that commit is recorded. The photographs are identified by the SHA-256 of each source file and each prepared input, so a different photo directory is detected when results are compared. The saved records retain every timing sample. The metadata records the full source revision, compiler, CPU, runtime and codec versions, build configuration, adapter/library digests, script digests, the input size and digest of every image, the digest of every source photograph, the ICC profile each photograph was converted from, the photographs used in the generation experiment, and the source digests, photographs and crop sizes of the size sweep. Timing and output records include all seven samples, stream/pixel hashes, quality, native bytes, transport bytes and generation equality assertions. The source snapshot is kept in the temporary study directory for inspection; `STUDY_DIR` can select that location.
 

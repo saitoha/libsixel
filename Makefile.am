@@ -950,7 +950,12 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/sixel-format/comparison/figures/photo-scaling-wide.svg \
 	docs/sixel-format/comparison/figures/photo-sizes-mobile.svg \
 	docs/sixel-format/comparison/figures/photo-sizes-wide.svg \
+	docs/sixel-format/comparison/figures/photo-stages-mobile.svg \
+	docs/sixel-format/comparison/figures/photo-stages-wide.svg \
+	docs/sixel-format/comparison/figures/photo-threads-mobile.svg \
+	docs/sixel-format/comparison/figures/photo-threads-wide.svg \
 	docs/sixel-format/comparison/figures/results.json \
+	docs/sixel-format/comparison/figures/stages.json \
 	docs/testing/mapfile-parser-coverage.md \
 	docs/testing/resampling-coverage.md \
 	tests/tools/palette-gradient/run.py \

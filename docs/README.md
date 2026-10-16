@@ -17,7 +17,7 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 - [Terminal graphics history](sixel-format/terminal-graphics-history/README.md) surveys the two lineages of terminal pictures, with a timeline: pixel and drawing protocols from Tektronix vector terminals and videotex, including its links to JPEG and facsimile coding, to DEC's raster terminals and modern image protocols; and pictures made of characters, from teletext and videotex mosaics to AAlib, libcaca, chafa, and the Unicode mosaic and Braille characters.
 - [SIXEL specification status and interpretation layers](sixel-format/specification-layers.md) explains what ECMA-48 and DEC's device manuals define, SIXEL's de facto history as a `.six` image file, the formal, emulation, and modern-interpretation layers that determine implementation behavior, and libsixel's position on them.
 - [SIXEL patents and royalties](sixel-format/patents-and-royalties.md) summarizes the public evidence that implementing SIXEL requires no license or royalty: disclosure dates, patent terms, the path of DEC's rights, and four decades of open implementations.
-- [SIXEL codec comparison](sixel-format/comparison/README.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, image-size scaling, and repeated generations with JPEG, GIF, PNG, QOI, WebP, AVIF, and HEIC.
+- [SIXEL codec comparison](sixel-format/comparison/README.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, image-size scaling, per-stage encoding time, and repeated generations with JPEG, GIF, PNG, QOI, WebP, AVIF, and HEIC.
 
 ### SIXEL codec tutorial
 
