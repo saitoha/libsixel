@@ -73,6 +73,10 @@ struct sixel_lookup_vptree_float32 {
     int root;
     double *safe_dist2;
     sixel_lookup_vptree_float32_neighbor_t *neighbors;
+    /* Exact double copies of the palette (three components per color) and
+     * weights, so query distances skip the per-term float conversions. */
+    double *palette_wide;
+    double weights_wide[3];
 };
 
 /*
@@ -120,6 +124,10 @@ sixel_lookup_vptree_float32_release(sixel_lookup_vptree_float32_t *tree)
         sixel_allocator_free(tree->allocator, tree->neighbors);
         tree->neighbors = NULL;
     }
+    if (tree->palette_wide != NULL) {
+        sixel_allocator_free(tree->allocator, tree->palette_wide);
+        tree->palette_wide = NULL;
+    }
     tree->node_count = 0;
     tree->root = -1;
 }
@@ -156,13 +164,15 @@ sixel_lookup_vptree_float32_pixel_distance(
     int component;
     double diff;
     double distance;
-    float const *entry;
+    double const *entry;
 
+    /* Same arithmetic as converting the float palette and weights per
+     * term: the double copies hold exactly those values. */
     distance = 0.0f;
-    entry = tree->palette + (size_t)palette_index * (size_t)tree->depth;
+    entry = tree->palette_wide + (size_t)palette_index * 3U;
     for (component = 0; component < 3; ++component) {
         diff = (double)pixel[component] - entry[component];
-        distance += diff * diff * tree->weights[component];
+        distance += diff * diff * tree->weights_wide[component];
     }
 
     return distance;
@@ -591,6 +601,23 @@ sixel_lookup_vptree_float32_configure(sixel_lookup_vptree_float32_t *tree,
     tree->weights[0] = weights[0];
     tree->weights[1] = weights[1];
     tree->weights[2] = weights[2];
+    tree->weights_wide[0] = weights[0];
+    tree->weights_wide[1] = weights[1];
+    tree->weights_wide[2] = weights[2];
+
+    tree->palette_wide = (double *)sixel_allocator_malloc(
+        tree->allocator, (size_t)ncolors * 3U * sizeof(double));
+    if (tree->palette_wide == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_vptree_float32_configure: palette allocation "
+            "failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (index = 0; index < ncolors * 3; ++index) {
+        tree->palette_wide[index] =
+            palette[(size_t)(index / 3) * (size_t)depth
+                    + (size_t)(index % 3)];
+    }
 
     tree->nodes =
         (sixel_lookup_vptree_float32_node_t *)sixel_allocator_malloc(
