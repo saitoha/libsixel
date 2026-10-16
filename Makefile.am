@@ -964,16 +964,15 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/quality/color-evaluation.md \
 	docs/quality/color-difference.md \
 	docs/sixel-format/comparison/README.md \
+	docs/sixel-format/comparison/figures/chart-generations-mobile.svg \
+	docs/sixel-format/comparison/figures/chart-generations-wide.svg \
+	docs/sixel-format/comparison/figures/chart-profile-mobile.svg \
+	docs/sixel-format/comparison/figures/chart-profile-wide.svg \
+	docs/sixel-format/comparison/figures/chart-scaling-mobile.svg \
+	docs/sixel-format/comparison/figures/chart-scaling-wide.svg \
 	docs/sixel-format/comparison/figures/codec-timeline-figures.json \
 	docs/sixel-format/comparison/figures/codec-timeline-mobile.svg \
 	docs/sixel-format/comparison/figures/codec-timeline-wide.svg \
-	docs/sixel-format/comparison/figures/diagram-generations-mobile.svg \
-	docs/sixel-format/comparison/figures/diagram-generations-wide.svg \
-	docs/sixel-format/comparison/figures/diagram-profile-mobile.svg \
-	docs/sixel-format/comparison/figures/diagram-profile-wide.svg \
-	docs/sixel-format/comparison/figures/diagram-scaling-mobile.svg \
-	docs/sixel-format/comparison/figures/diagram-scaling-wide.svg \
-	docs/sixel-format/comparison/figures/diagram.png \
 	docs/sixel-format/comparison/figures/photo-generations-mobile.svg \
 	docs/sixel-format/comparison/figures/photo-generations-wide.svg \
 	docs/sixel-format/comparison/figures/photo-profile-mobile.svg \
