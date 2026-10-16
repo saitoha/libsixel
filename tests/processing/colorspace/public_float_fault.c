@@ -112,6 +112,7 @@ static SIXELSTATUS float_fault_service(char const *name, void **out);
 #define sixel_color_convert_output fault_color_convert_output
 #define sixel_color_from_output fault_color_from_output
 #define sixel_color_convert_rgbf32 fault_color_convert_rgbf32
+#define sixel_color_convert_frame_rgbf32 fault_color_convert_frame_rgbf32
 #define gamma_to_linear_lut cff_gamma_to_linear_lut
 #define linear_to_gamma_lut cff_linear_to_gamma_lut
 #define linear_to_smptec_lut cff_linear_to_smptec_lut
@@ -226,6 +227,7 @@ int sixel_color_from_output(double out[3], double const in[3],
 #undef sixel_color_convert_output
 #undef sixel_color_from_output
 #undef sixel_color_convert_rgbf32
+#undef sixel_color_convert_frame_rgbf32
 
 static sixel_thread_pool_create_request_t float_fault_request;
 static int float_fault_mode;
@@ -320,16 +322,17 @@ test_color_public_float_fault(int argc, char **argv)
         sizeof(pixels), SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
         SIXEL_COLORSPACE_LINEAR, SIXEL_COLORSPACE_GAMMA);
     if (float_fault_created != 1 || float_fault_pushes !=
-            (float_fault_mode == 1 ? 2 : float_fault_mode == 2 ? 0 : 3) ||
+            (float_fault_mode == 2 ? 0 : 2) ||
             status != (float_fault_mode == 3 ? SIXEL_RUNTIME_ERROR :
                 SIXEL_OK)) {
         return EXIT_FAILURE;
     }
-    /* Every completed sample must be transformed exactly once, including
-     * a suffix never enqueued. Double conversion would give about .759. */
+    /* Queue/create fallback converts once; pool errors publish nothing.
+     * Double conversion would give about .759 instead of .537. */
     for (i = 0; i < 9; ++i) {
         if (!isfinite(pixels[i]) ||
-                fabs(pixels[i] - .53709873048319425) > 2e-7) {
+                fabs(pixels[i] - (float_fault_mode == 3 ? .25 :
+                    .53709873048319425)) > 2e-7) {
             return EXIT_FAILURE;
         }
     }

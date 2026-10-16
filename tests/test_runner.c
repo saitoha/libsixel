@@ -212,6 +212,13 @@ int test_icc_0016(int argc, char **argv);
 int test_icc_0017(int argc, char **argv);
 int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
+int test_parallel_float_0007(int argc, char **argv);
+int test_parallel_float_0001(int argc, char **argv);
+int test_parallel_float_0002(int argc, char **argv);
+int test_parallel_float_0003(int argc, char **argv);
+int test_parallel_float_0004(int argc, char **argv);
+int test_parallel_float_0005(int argc, char **argv);
+int test_parallel_float_0006(int argc, char **argv);
 int test_color_public_float(int argc, char **argv);
 int test_color_public_float_fault(int argc, char **argv);
 int test_png_key_0001(int argc, char **argv);
@@ -5663,6 +5670,19 @@ static test_entry_t const test_entries[] = {
       test_sequence_0086 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
     { "colorspace/0013_black_log1p_model", test_color_0013 },
+    { "colorspace/parallel/0007_budget_scope", test_parallel_float_0007 },
+    { "colorspace/parallel/0001_frame_bits",
+        test_parallel_float_0001 },
+    { "colorspace/parallel/0002_helper_bits",
+        test_parallel_float_0002 },
+    { "colorspace/parallel/0003_frame_atomic",
+        test_parallel_float_0003 },
+    { "colorspace/parallel/0004_helper_atomic",
+        test_parallel_float_0004 },
+    { "colorspace/parallel/0005_working_pipeline",
+        test_parallel_float_0005 },
+    { "colorspace/parallel/0006_clustering_pipeline",
+        test_parallel_float_0006 },
     { "colorspace/public_float", test_color_public_float },
     { "colorspace/public_float_fault", test_color_public_float_fault },
     { "jpeg-cmyk/gray16-source", test_jp_gray16 },

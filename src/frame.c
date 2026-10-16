@@ -1905,11 +1905,11 @@ sixel_frame_set_pixelformat(
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(working_pixelformat)) {
             /*
              * Float frames carry intermediate coordinates, including
-             * colors outside sRGB. The public storage converter clamps
-             * RGB and must remain confined to explicit byte boundaries.
+             * colors outside sRGB. Share the public float transaction and
+             * its scoped worker budget without clipping to a byte cube.
              * Failed conversion preserves all pixels and the old tags.
              */
-            status = sixel_color_convert_rgbf32(frame->pixels.f32ptr,
+            status = sixel_color_convert_frame_rgbf32(frame->pixels.f32ptr,
                                                 pixel_total,
                                                 source_colorspace,
                                                 target_colorspace);

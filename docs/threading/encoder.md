@@ -27,7 +27,17 @@ load and normalize frame
                   ordered writer thread
 ```
 
-The planner assigns `floor(N/2)` execution slots to eligible asynchronous palette work and the remaining `ceil(N/2)` slots to `main_threads`. Each side includes its calling thread. Caller-local budget scopes cap nested calls to `sixel_threads_resolve()` while these stages overlap, without changing the process-wide requested count. Scope registration uses the thread-configuration mutex and live thread identities; nested scopes can only reduce the caller's budget. Both sides remove their scopes on return, including failure paths. After collection, palette application and final encoding can resolve the full configured count again.
+The planner splits eligible asynchronous palette work and the main pre-plan into `floor(N/2)` and `ceil(N/2)` execution slots respectively. Each side includes its calling thread. The split applies only while palette construction overlaps preprocessing; after collection, palette application and final encoding can use the configured budget again. With two slots, each overlapping side is serial. With four or more, both the sample conversion for `-X` and the full-frame conversion for `-W` can run in parallel.
+
+## Float colorspace transactions
+
+The frame API and the float path of `sixel_helper_convert_colorspace()` share the same driver in [src/colorspace.c](../../src/colorspace.c). Above `SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS`, it resolves the available budget through `sixel_threads_resolve()`, starts at most `N-1` pool workers, and processes the final chunk on the caller. Every chunk converts into disjoint temporary RGB float32 storage using the same double-intermediate arithmetic as serial conversion. Only after all jobs have joined and succeeded does the controller copy the result into the original image. A nonfinite input, domain error, or float32 overflow leaves all original pixels and frame format tags unchanged; the caller receives the serial diagnostic for the earliest failing chunk.
+
+Scratch storage costs 12 bytes per pixel, approximately 24.9 MB for 1920×1080, plus one status per chunk. This trades memory and a final copy for one arithmetic pass instead of separate validation and write passes. Small conversions and allocation or pool-creation failures use the allocation-free serial two-pass path. Palette elements and individual colors use the explicitly serial `sixel_color_convert_rgbf32()` utility. Frame-sized callers use `sixel_color_convert_frame_rgbf32()`.
+
+The encoder registers stack-owned, caller-local budget scopes around the palette worker and the main pre-plan. Scope registration and lookup use the thread-configuration mutex and live thread identities, without compiler-specific TLS or changing the process-wide requested count. Nested scopes can only lower that caller's budget. Palette child pools do not submit to or wait for the parent palette job, so the parent can participate in conversion and join its children without a pool dependency cycle. Scope removal restores the previous budget even when preprocessing fails. These scopes partition a single encoder's overlapping stages; independent concurrent API clients still share a configured preference, not a process-wide admission scheduler.
+
+Timeline `controller/colorspace` start/finish records enclose the scratch transaction, including validation and publication. `worker/colorspace` events identify each chunk, including the caller's chunk. Both working-space and asynchronous sample-space conversions have a `filter/worker` colorspace-start/finish envelope. Events establish execution and ordering; durations remain benchmark observations rather than test assertions.
 
 ## Dither/encode budget policy
 
@@ -330,3 +340,19 @@ The measured shape is not universal. It can change when:
 - a lookup policy uses shared or per-worker prepared state.
 
 Record all such settings when comparing results.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FC-01 | Frame conversions at one and four threads preserve identical bits for all pairs among gamma, linear, CIELAB, OKLab and DIN99d, including extended coordinates. | [tests/processing/colorspace/parallel/0001_frame_bits.t](../../tests/processing/colorspace/parallel/0001_frame_bits.t) |
+| FC-02 | The public float helper has the same serial/parallel bit consistency. | [tests/processing/colorspace/parallel/0002_helper_bits.t](../../tests/processing/colorspace/parallel/0002_helper_bits.t) |
+| FC-03 | A nonfinite final chunk leaves frame pixels and format tags intact and returns the serial diagnostic. | [tests/processing/colorspace/parallel/0003_frame_atomic.t](../../tests/processing/colorspace/parallel/0003_frame_atomic.t) |
+| FC-04 | A nonfinite final chunk leaves public-helper pixels intact and returns the serial diagnostic. | [tests/processing/colorspace/parallel/0004_helper_atomic.t](../../tests/processing/colorspace/parallel/0004_helper_atomic.t) |
+| FC-05 | API encoding with CIELAB working space executes a colorspace controller and at least two worker thread identities inside the filter interval. | [tests/processing/colorspace/parallel/0005_working_pipeline.t](../../tests/processing/colorspace/parallel/0005_working_pipeline.t) |
+| FC-06 | API encoding with CIELAB clustering executes the asynchronous sample conversion with the same parallel event contract. | [tests/processing/colorspace/parallel/0006_clustering_pipeline.t](../../tests/processing/colorspace/parallel/0006_clustering_pipeline.t) |
+| FC-07 | Caller-local scopes compose by minimum, restore on exit and do not change another thread's budget. | [tests/processing/colorspace/parallel/0007_budget_scope.t](../../tests/processing/colorspace/parallel/0007_budget_scope.t) |
+
+The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/processing/colorspace/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.

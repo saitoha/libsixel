@@ -81,6 +81,12 @@ sixel_color_hls_to_rgb101(unsigned char rgb[3], int const hls[3]);
  * clipping. Validate every result before writing any pixels, so a rejected
  * nonfinite, domain or float32 overflow value leaves the buffer untouched.
  */
+/* Frame transaction with the resolved thread budget and size threshold. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_color_convert_frame_rgbf32(float *pixels, size_t count,
+                                 int source, int target);
+
+/* Serial-only small palette utility; never use for an entire frame. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_color_convert_rgbf32(float *pixels, size_t count,
                            int source, int target);

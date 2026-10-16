@@ -312,6 +312,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0016_ENVIRONMENT_PRECEDENCE \
     -DBUILD_TEST_0017_PALETTE_CONTINUOUS \
     -DBUILD_TEST_0018_POLICY_CACHE_RESET \
+    -DBUILD_TEST_0007_BUDGET_SCOPE \
+    -DBUILD_PARALLEL_FLOAT_COMMON \
+    -DBUILD_TEST_0001_FRAME_BITS \
+    -DBUILD_TEST_0002_HELPER_BITS \
+    -DBUILD_TEST_0003_FRAME_ATOMIC \
+    -DBUILD_TEST_0004_HELPER_ATOMIC \
+    -DBUILD_TEST_0005_WORKING_PIPELINE \
+    -DBUILD_TEST_0006_CLUSTERING_PIPELINE \
     -DBUILD_PUBLIC_FLOAT_COMMON \
     -DBUILD_PUBLIC_FLOAT_FAULT \
     -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
@@ -4765,6 +4773,14 @@ test_runner_SOURCES = test_runner.c \
     processing/cms/profile_format_scope_common.h \
     processing/colorspace/0012_extended_failure_atomic.c \
     processing/colorspace/0013_black_log1p_model.c \
+    processing/colorspace/parallel/0007_budget_scope.c \
+    processing/colorspace/parallel/parallel_float_common.c \
+    processing/colorspace/parallel/0001_frame_bits.c \
+    processing/colorspace/parallel/0002_helper_bits.c \
+    processing/colorspace/parallel/0003_frame_atomic.c \
+    processing/colorspace/parallel/0004_helper_atomic.c \
+    processing/colorspace/parallel/0005_working_pipeline.c \
+    processing/colorspace/parallel/0006_clustering_pipeline.c \
     processing/colorspace/public_float_common.c \
     processing/colorspace/public_float_fault.c \
     loader/libpng/keycolor/0001_frame_samples.c \

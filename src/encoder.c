@@ -6033,6 +6033,7 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
     SIXELSTATUS status;
     sixel_dither_t *local;
     int preserve_alpha_key;
+    sixel_filter_colors_config_t colors;
 
     status = SIXEL_BAD_ARGUMENT;
     local = NULL;
@@ -6069,8 +6070,10 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         return SIXEL_RUNTIME_ERROR;
     }
     if (!preserve_alpha_key) {
-        status = sixel_frame_set_pixelformat(job->samples.frame,
-                                             job->target_pixelformat);
+        memset(&colors, 0, sizeof(colors));
+        colors.target_pixelformat = job->target_pixelformat;
+        status = sixel_filter_colors_convert(&colors, job->samples.frame,
+            job->logger);
         if (SIXEL_FAILED(status)) {
             job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
             return status;

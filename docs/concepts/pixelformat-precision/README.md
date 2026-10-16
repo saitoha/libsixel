@@ -513,4 +513,4 @@ The [tests/processing/frame/0054_frame_float_geometry_state.c](../../../tests/pr
 | FC-19 | Equal-space conversion preserves all bits, including a NaN payload. | [tests/processing/colorspace/0032_public_identity_bits.t](../../../tests/processing/colorspace/0032_public_identity_bits.t) |
 | FC-20 | Float colorspace partial queue failure never converts a completed chunk twice. | [tests/processing/colorspace/0033_public_partial_queue_failure.t](../../../tests/processing/colorspace/0033_public_partial_queue_failure.t) |
 | FC-21 | Pool creation failure converts the untouched buffer serially. | [tests/processing/colorspace/0034_public_pool_creation_failure.t](../../../tests/processing/colorspace/0034_public_pool_creation_failure.t) |
-| FC-22 | A worker error is reported without retrying transformed pixels. | [tests/processing/colorspace/0035_public_worker_error.t](../../../tests/processing/colorspace/0035_public_worker_error.t) |
+| FC-22 | A worker error is reported without publishing any converted pixels. | [tests/processing/colorspace/0035_public_worker_error.t](../../../tests/processing/colorspace/0035_public_worker_error.t) |
