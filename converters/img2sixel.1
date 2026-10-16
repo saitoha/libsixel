@@ -972,7 +972,10 @@ keyed by voxel coordinates to speed up repeated lookups.
 The matching sub-option is \fBcache=0|1\fP (short form \fBC0|C1\fP).
 .br
 SIXEL_LOOKUP_FHEDT_SHARED (0 or 1; default 1) builds the grid once
-before worker threads run and shares it read-only.
+after the working palette is finalized and shares it read-only by reference.
+An asynchronous palette job builds it within its thread budget while full-frame
+preprocessing can continue. Cache entries remain thread-local. Setting 0
+retains independent grid construction for diagnostics and comparisons.
 .br
 The matching sub-option is \fBshared=0|1\fP (short form \fBS0|S1\fP).
 .br
@@ -2725,8 +2728,10 @@ enable a small FHEDT lookup cache keyed by voxel coordinates (0 or 1; default
 .TP 5
 .B SIXEL_LOOKUP_FHEDT_SHARED
 .br
-share the FHEDT grid between workers after building it once (0 or 1; default
-1).
+share the immutable FHEDT grid by reference after building it once when the
+working palette is ready (0 or 1; default 1). Palette, representation,
+resolution, refinement and metric changes require a new grid. Setting 0
+uses independent builds; per-thread caches are never shared.
 .TP 5
 .B SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE
 .br

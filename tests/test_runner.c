@@ -1686,6 +1686,11 @@ int test_heckbert_native_0029(int argc, char **argv);
 int test_fh_lookup_0020(int argc, char **argv);
 int test_fh_lookup_0021(int argc, char **argv);
 int test_fh_lookup_0022(int argc, char **argv);
+int test_fh_lookup_0024(int argc, char **argv);
+int test_fh_lookup_0025(int argc, char **argv);
+int test_fh_lookup_0026(int argc, char **argv);
+int test_fh_lookup_0027(int argc, char **argv);
+int test_fh_lookup_0028(int argc, char **argv);
 int test_fh_lookup_0023(int argc, char **argv);
 int test_mono_lookup_0001(int argc, char **argv);
 int test_mono_lookup_0002(int argc, char **argv);
@@ -6502,6 +6507,16 @@ static test_entry_t const test_entries[] = {
       test_fh_lookup_0021 },
     { "lookup/fhedt/0022_fh_collision_dist2",
       test_fh_lookup_0022 },
+    { "lookup/fhedt/0024_fh_build_once_byte",
+      test_fh_lookup_0024 },
+    { "lookup/fhedt/0025_fh_build_once_float",
+      test_fh_lookup_0025 },
+    { "lookup/fhedt/0026_fh_build_overlap",
+      test_fh_lookup_0026 },
+    { "lookup/fhedt/0027_fh_reuse_byte",
+      test_fh_lookup_0027 },
+    { "lookup/fhedt/0028_fh_reuse_float",
+      test_fh_lookup_0028 },
     { "lookup/fhedt/0023_fh_instance_isolation",
       test_fh_lookup_0023 },
     { "lookup/mono_float/0001_dark_values",

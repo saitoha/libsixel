@@ -987,6 +987,10 @@ extra space       Theta(R^3 + K)
 
 Float exterior scans and native entries colliding at a seed account for the `O(K)` query bound. Collision chains add one integer per palette entry; they do not add an image-sized buffer. The fixed grid-build cost is substantial: increasing `R` from 64 to 256 multiplies cell count by 64. Small images may not amortize construction, and memory bandwidth can dominate the transform.
 
+With `SIXEL_LOOKUP_FHEDT_SHARED=1` (the default), the encoder builds one immutable grid immediately after finalizing the working palette. An asynchronous palette job constructs it inside its existing thread-budget scope, independently of the full-frame working-colorspace conversion. Serial and parallel palette application retain references to that grid; preparing a consumer never consumes the source policy. Each handle owns one grid reference and its cache settings; cache entries remain thread-local, and the non-TLS parallel fallback disables the cache. Mapping needs no grid lock.
+
+Reuse requires the same representation, pixel format, allocator, palette signature, resolution, refinement, metric weights and retained-distance setting. A mismatch builds a new grid while existing consumers retain the original. Tiling, first-touch and pinning govern construction only. `SIXEL_LOOKUP_FHEDT_SHARED=0` deliberately disables reference reuse, retaining independent construction for diagnostics and memory/performance comparisons; it does not promise one build per encode. This opt-out preserves the ability to compare sharing against independent grids without changing lookup results.
+
 Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs change constants and NUMA behavior, not the asymptotic order. Their current names and defaults are in the [`img2sixel(1)` manual](../../../../converters/img2sixel.1).
 
 ### Name and sources
@@ -2220,3 +2224,13 @@ The grid witnesses enumerate every site against all nine independent integer see
 ### Quality regression tests
 
 The existing [lookup quality suite](../../../../tests/quant/palette/usage/) checks perceptual output. Its image scores do not replace the native-coordinate and dispatch assertions above. Paired photo-dataset measurements are separate evidence for broadening the selected path; they are not additional per-test fixtures.
+
+### FHEDT construction coverage
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| LUTC-01 | One byte grid is built for an encode with multiple active dither workers. | [tests/processing/lookup/fhedt/0024_fh_build_once_byte.t](../../../../tests/processing/lookup/fhedt/0024_fh_build_once_byte.t) |
+| LUTC-02 | One native float grid is built for an encode with multiple active dither workers. | [tests/processing/lookup/fhedt/0025_fh_build_once_float.t](../../../../tests/processing/lookup/fhedt/0025_fh_build_once_float.t) |
+| LUTC-03 | Under a bounded palette workload and larger full-frame conversion, the async palette thread begins construction before the main working-colorspace filter finishes. This verifies event order, not a latency threshold or an ordering promise for every workload. | [tests/processing/lookup/fhedt/0026_fh_build_overlap.t](../../../../tests/processing/lookup/fhedt/0026_fh_build_overlap.t) |
+| LUTC-04 | Byte reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/processing/lookup/fhedt/0027_fh_reuse_byte.t](../../../../tests/processing/lookup/fhedt/0027_fh_reuse_byte.t) |
+| LUTC-05 | Float reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/processing/lookup/fhedt/0028_fh_reuse_float.t](../../../../tests/processing/lookup/fhedt/0028_fh_reuse_float.t) |

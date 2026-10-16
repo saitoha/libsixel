@@ -2130,6 +2130,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_SCAN_CONTRACT \
     -DBUILD_TEST_0001_EXTENDED_LOOKUP \
     -DBUILD_FHEDT_TEST_COMMON \
+    -DBUILD_FHEDT_BUILD_COMMON \
+    -DBUILD_FHEDT_REUSE_COMMON \
     -DBUILD_TEST_0023_MAP_P3 \
     -DBUILD_FIXED_MASK_COMMON \
     -DBUILD_TEST_0011_FULL256 \
@@ -2405,6 +2407,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0020_FH_ENCLOSING_CELL \
     -DBUILD_TEST_0021_FH_COLLISION_REFINE \
     -DBUILD_TEST_0022_FH_COLLISION_DIST2 \
+    -DBUILD_TEST_0024_FH_BUILD_ONCE_BYTE \
+    -DBUILD_TEST_0025_FH_BUILD_ONCE_FLOAT \
+    -DBUILD_TEST_0026_FH_BUILD_OVERLAP \
+    -DBUILD_TEST_0027_FH_REUSE_BYTE \
+    -DBUILD_TEST_0028_FH_REUSE_FLOAT \
     -DBUILD_TEST_0023_FH_INSTANCE_ISOLATION \
     -DBUILD_TEST_0018_FH_OUTSIDE_EXTREME \
     -DBUILD_TEST_0019_FH_OUTSIDE_TINY \
@@ -6637,6 +6644,8 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
     processing/lookup/fhedt_test_common.c \
+    processing/lookup/fhedt_build_common.c \
+    processing/lookup/fhedt_reuse_common.c \
     quant/palette/fixed_mask_common.c \
     quant/palette/fixed_mask/0001_srgb_gamma.c \
     quant/palette/fixed_mask/0002_srgb_linear.c \
@@ -6992,6 +7001,11 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/fhedt/0020_fh_enclosing_cell.c \
     processing/lookup/fhedt/0021_fh_collision_refine.c \
     processing/lookup/fhedt/0022_fh_collision_dist2.c \
+    processing/lookup/fhedt/0024_fh_build_once_byte.c \
+    processing/lookup/fhedt/0025_fh_build_once_float.c \
+    processing/lookup/fhedt/0026_fh_build_overlap.c \
+    processing/lookup/fhedt/0027_fh_reuse_byte.c \
+    processing/lookup/fhedt/0028_fh_reuse_float.c \
     processing/lookup/fhedt/0023_fh_instance_isolation.c \
     processing/lookup/fhedt/0018_fh_outside_extreme.c \
     processing/lookup/fhedt/0019_fh_outside_tiny.c \
