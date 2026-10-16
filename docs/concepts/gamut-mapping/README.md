@@ -16,25 +16,27 @@ The outlined 48 × 32-pixel region has source linear-sRGB red values from about 
 
 ## A whole shading pattern can disappear
 
-To isolate complete loss of detail, use a controlled synthetic image. Its pixels are valid encoded Display P3 `(R, 0, 0)` colors, with `R` varying smoothly from about `0.92` to `1.00`. Two broad lobes carry a light-to-dark variation over tens of pixels. The gray panel below shows the shape of this variation by scaling the input red coordinate to black–white; it is a diagnostic, **not a preview of the original color**.
+To isolate complete loss of detail, use a controlled synthetic image. Its pixels are valid encoded Display P3 reds that vary smoothly along one straight segment in linear P3, from a darker pure red at about `(0.92, 0, 0)` to a lighter red at about `(1.00, 0.22, 0.14)`. The light end carries the little green and blue that still leaves every pixel beyond the same sRGB cube corner; compared with pure `(R, 0, 0)`, this widens the available lightness span by about 1.6 times and makes the shading visible in the color previews. Two broad lobes carry a light-to-dark variation over tens of pixels. The gray panel below shows the shape of this variation by scaling the input Oklab lightness to black–white; it is a diagnostic, **not a preview of the original color**.
 
-![A synthetic P3 red shading pattern becomes completely uniform under RGB clipping, both before quantization and after 256-color-budget SIXEL encoding. EdgeSeeker and Ray Trace retain the broad shading; Local MINDE retains only a small part. A graph measures the large-scale lightness variation.](figures/clipping-detail.svg)
+![A synthetic P3 red shading pattern becomes completely uniform under RGB clipping, both before quantization and after 256-color-budget SIXEL encoding. EdgeSeeker and Ray Trace retain the broad shading; Local MINDE retains part of the light lobe only. A gray row shows the decoded lightness on the source's lightness range, and a graph measures the large-scale lightness variation.](figures/clipping-detail.svg)
 
-The loss follows directly from the coordinates. Converting this input to linear sRGB gives red values from about `1.014` to `1.225`, while green and blue are negative throughout. Channel clipping therefore replaces **every pixel** with `(1, 0, 0)`. Different input colors have become exactly the same output color, so no palette size or subsequent dithering can recover their distinction from those clipped values.
+The loss follows directly from the coordinates. Converting this input to linear sRGB gives red values from about `1.004` to `1.216`, while green and blue are negative throughout. Channel clipping therefore replaces **every pixel** with `(1, 0, 0)`. Different input colors have become exactly the same output color, so no palette size or subsequent dithering can recover their distinction from those clipped values.
 
-The lower color row tests the actual encoder, whose `clip` policy defers bounding rather than pre-clipping every source pixel. It uses a **256-color palette budget**, Floyd–Steinberg dithering and the soft feedback limiter. Decoding the resulting SIXEL confirms that `clip` still produces just one RGB color, `(255, 0, 0)`, throughout this image. Its flatness is therefore not caused by an artificially small palette. EdgeSeeker and Ray Trace preserve the broad shading by changing the RGB mixture, accepting less chroma to retain lightness. Local MINDE permits some clipping within its local error criterion and strongly compresses the shading in this example.
+The lower color row tests the actual encoder, whose `clip` policy defers bounding rather than pre-clipping every source pixel. It uses a **256-color palette budget**, Floyd–Steinberg dithering and the soft feedback limiter. Decoding the resulting SIXEL confirms that `clip` still produces just one RGB color, `(255, 0, 0)`, throughout this image. Its flatness is therefore not caused by an artificially small palette. EdgeSeeker and Ray Trace preserve the broad shading by changing the RGB mixture, accepting less chroma to retain lightness. Local MINDE permits some clipping within its local error criterion: in this example it keeps part of the light lobe but flattens most of the dark one.
+
+Even so, the whole lightness span is only about `0.056` in Oklab L, which remains subtle in a saturated red even where it is fully retained. The third row therefore shows the per-pixel Oklab lightness of each decoded SIXEL image as gray, with black and white fixed at the darkest and lightest source pixel for all four methods. Like the input panel, it is a diagnostic, not a color preview: `clip` is a single flat gray, Local MINDE keeps a weakened light lobe and a small dark patch, and EdgeSeeker and Ray Trace reproduce both lobes.
 
 The graph measures large-scale structure rather than repeated palette indices or isolated dither dots. Each point is the arithmetic mean of per-pixel Oklab lightness in a 16 × 32-pixel block across the marked central strip. The span between the largest and smallest of these block means is:
 
 | Method | Continuous lightness span | Decoded SIXEL lightness span |
 | --- | ---: | ---: |
-| Original P3 coordinates | 0.036187 | — |
+| Original P3 coordinates | 0.056385 | — |
 | RGB clip | 0 | 0 |
-| Local MINDE | 0.004011 | 0.005176 |
-| EdgeSeeker | 0.036187 | 0.036434 |
-| Ray Trace | 0.036187 | 0.036409 |
+| Local MINDE | 0.024508 | 0.025137 |
+| EdgeSeeker | 0.056385 | 0.056192 |
+| Ray Trace | 0.056385 | 0.055824 |
 
-Palette selection, RGB101 rounding and diffusion account for the differences between continuous and decoded measurements. The color panels have no contrast enhancement. The [16-bit P3 input](figures/p3-red-shading.png), [block measurements](measurements/clipping-detail.csv) and [generation record](measurements/examples.json) make the construction and comparison reproducible. This deliberately chosen counterexample demonstrates that channel clipping cannot preserve every image's structure; it does not establish how often such loss occurs in photographs or that a particular mapper is universally best.
+Palette selection, RGB101 rounding and diffusion account for the differences between continuous and decoded measurements. The color panels have no contrast enhancement; only the gray rows are scaled. The [16-bit P3 input](figures/p3-red-shading.png), [block measurements](measurements/clipping-detail.csv) and [generation record](measurements/examples.json) make the construction and comparison reproducible. This deliberately chosen counterexample demonstrates that channel clipping cannot preserve every image's structure; it does not establish how often such loss occurs in photographs or that a particular mapper is universally best.
 
 ## Conversion is not replacement
 

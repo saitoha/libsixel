@@ -14,11 +14,11 @@
     "pillow": "12.3.0"
   },
   "implementation_sources": {
-    "src/gamut.c": "d7b039013a78efd3cc1a696c5c2390cc566f75baed2b962a87eb1addba6ca695",
-    "src/colorspace.c": "e68fa997125a065567b890ed8714faaf448afd72fa664ee93f8196772ecf3614",
+    "src/gamut.c": "e4f9883a4d4146df67a2698f79c29ae21bcc230773f2bbd46d91502dfb4a6706",
+    "src/colorspace.c": "46d04dc4136540650c0bb2327de273e9a69be467fc7ac136176ebc8808eb8289",
     "src/cms.c": "90a7830c233d76ea3f415fe2b345b73d605fc072cbcd5cbf40bf21b3ca8fb2be",
-    "src/encoder.c": "e9f2582e8462012fa5ad208abf2f378a2d09d2bdb4d471e279b95628851fec77",
-    "src/palette.c": "161630ec729e39d3d8fb76941a0a9b02d51b75ca5b6f430a8bd882ddad642ae6"
+    "src/encoder.c": "e6933872b305e5d99eb3c7d123d40df71f66839371ae9824ba72472655912d34",
+    "src/palette.c": "9357f5793456fca864cca22853eddb5bb3c58f5f1d03b73c8ad226ffb717afed"
   },
   "orange_source": {
     "definition": "named Display P3",
@@ -603,55 +603,55 @@
       "width": 192,
       "height": 96,
       "bits_per_channel": 16,
-      "definition": "P3 (0.92 + 0.08*f, 0, 0), rounded to PNG16",
+      "definition": "linear P3 (0.82, 0, 0) + f*((1, 0.038, 0.018) - (0.82, 0, 0)), sRGB-TRC encoded, rounded to PNG16",
       "field": "f = 0.5 + 0.5*sin(2*pi*x)*cos(pi*y/2); x in [0,1], y in [-1,1]",
-      "png_sha256": "9828fdb22a51344c0ce659ed3484fb7d865163d922f839b3ecf775942f2be286",
+      "png_sha256": "021f0bf72e6bd69337b183643b262b815e4f18811d514579cc09ac90feed4b3e",
       "icc_sha256": "9d6d78352546bdb31e31d15fc92a74c76edc5594491c6813af60caa1e394ad96",
       "linear_srgb_min": [
-        1.0137565121739278,
-        -0.04204725979332884,
-        -0.019642226052377153
+        1.0044519945610064,
+        -0.03447514437272976,
+        -0.016105645790266368
       ],
       "linear_srgb_max": [
-        1.2249394736603012,
-        -0.0347981956260942,
-        -0.016255851821550333
+        1.2163912424504204,
+        -0.002448605709296048,
+        -0.002859816938401459
       ]
     },
     "measurement": "Mean per-pixel Oklab L in 16x32 blocks, y=32..63; no contrast scaling in color previews",
-    "source_block_L_range": 0.03618717080848677,
+    "source_block_L_range": 0.056385295802307334,
     "policies": [
       {
         "policy": "clip",
         "continuous_block_L_range": 0.0,
         "decoded_block_L_range": 0.0,
         "decoded_unique_rgb": 1,
-        "sixel_bytes": 42722,
+        "sixel_bytes": 43033,
         "decoded_rgb_sha256": "5668f417616b758a46f2203a945d5d9e35c4d1b6bcc7049fbe5844ce6a650da5"
       },
       {
         "policy": "local-minde",
-        "continuous_block_L_range": 0.004011433656185059,
-        "decoded_block_L_range": 0.005175752666720546,
-        "decoded_unique_rgb": 10,
-        "sixel_bytes": 12638,
-        "decoded_rgb_sha256": "8075730a6d94103510a890b26cce5598cec69f196095f0156cae547f93fcd1b2"
+        "continuous_block_L_range": 0.024507537794862033,
+        "decoded_block_L_range": 0.025137488136457997,
+        "decoded_unique_rgb": 36,
+        "sixel_bytes": 26364,
+        "decoded_rgb_sha256": "2156429c33fc6f6dbd9a8bd0c12d10d1447bc20d8a05877d7d3489bd7c54e8e8"
       },
       {
         "policy": "edge-seeker",
-        "continuous_block_L_range": 0.03618716376772202,
-        "decoded_block_L_range": 0.03643377386666369,
-        "decoded_unique_rgb": 37,
-        "sixel_bytes": 42163,
-        "decoded_rgb_sha256": "cb71452bfdd78b74646687ebee71a3806fc9e9d387f7ef39b7b2b12a27e99d19"
+        "continuous_block_L_range": 0.056385288620298235,
+        "decoded_block_L_range": 0.05619212598387191,
+        "decoded_unique_rgb": 52,
+        "sixel_bytes": 42659,
+        "decoded_rgb_sha256": "40ad62525923e95cc8052eff8f12bfe60207555e98dc34b00e4bda66a64bb5fe"
       },
       {
         "policy": "ray-trace",
-        "continuous_block_L_range": 0.03618717506630231,
-        "decoded_block_L_range": 0.036408997180642055,
-        "decoded_unique_rgb": 37,
-        "sixel_bytes": 42378,
-        "decoded_rgb_sha256": "468e6fd3f4e9df1459d7a7c4ef9f8b20690199bd6b5a2360cec8bca64c6697ff"
+        "continuous_block_L_range": 0.05638529987993013,
+        "decoded_block_L_range": 0.055824489461388516,
+        "decoded_unique_rgb": 51,
+        "sixel_bytes": 43046,
+        "decoded_rgb_sha256": "836471051970e3d30564a784d3b210f5fe97b2f47cbfc0b8127a5c3c03c6a283"
       }
     ]
   }

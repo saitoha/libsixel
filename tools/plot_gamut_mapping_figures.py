@@ -465,8 +465,12 @@ def clipping_detail(build, probe, profile, profile_path, figures, measurements,
     x = np.linspace(0, 1, 192)[None, :]
     y = np.linspace(-1, 1, 96)[:, None]
     shape = .5 + .5 * np.sin(2 * np.pi * x) * np.cos(np.pi * y / 2)
-    rgb = np.zeros((96, 192, 3))
-    rgb[:, :, 0] = .92 + .08 * shape
+    # Every channel constraint for one collapsed sRGB corner is linear in
+    # linear P3, so the segment between these ends stays inside it. The
+    # light end adds the little green and blue the red corner allows, which
+    # widens the lightness span over pure (R, 0, 0).
+    dark, light = np.array([.82, 0, 0]), np.array([1, .038, .018])
+    rgb = encode_srgb(dark + shape[:, :, None] * (light - dark))
     source = figures / "p3-red-shading.png"
     source.write_bytes(png16(rgb, profile))
     rgb = np.floor(rgb * 65535 + .5) / 65535
@@ -479,22 +483,28 @@ def clipping_detail(build, probe, profile, profile_path, figures, measurements,
     assert np.allclose(linear_oklab_lightness(data[:, :, :, :3]),
                        data[:, :, :, 3], rtol=0, atol=2e-8)
 
-    fig = plt.figure(figsize=(12, 8.6))
+    fig = plt.figure(figsize=(12, 10.4))
     fig.suptitle("When RGB clipping erases an entire shading pattern", fontsize=16)
-    ax = fig.add_axes([.08, .78, .20, .14])
-    ax.imshow((rgb[:, :, 0] - .92) / .08, cmap="gray", vmin=0, vmax=1,
-              interpolation="nearest")
+    ax = fig.add_axes([.08, .818, .20, .116])
+    lightness_range = (data[:, :, 0, 3].min(), data[:, :, 0, 3].max())
+    ax.imshow(data[:, :, 0, 3], cmap="gray", vmin=lightness_range[0],
+              vmax=lightness_range[1], interpolation="nearest")
     ax.set(xticks=[], yticks=[])
-    ax.set_title("Input R, shown as scaled gray", fontsize=10)
+    ax.set_title("Input Oklab L, shown as scaled gray", fontsize=10)
     ax.add_patch(Rectangle((-.5, 31.5), 192, 32, fill=False,
                           edgecolor="white", linestyle=":", lw=1))
-    fig.text(.32, .88, "Valid Display P3: (R, 0, 0), R = 0.92 … 1.00", fontsize=12)
-    fig.text(.32, .84, "The broad light/dark shape is carried only by P3 red intensity.\n"
+    fig.text(.32, .901, "Valid Display P3 reds: R = 0.92 … 1.00, G ≤ 0.22, B ≤ 0.14", fontsize=12)
+    fig.text(.32, .868, "The broad light/dark shape runs from a darker pure red to a lighter red\n"
+             "that carries the little green and blue this corner allows.\n"
              "In linear sRGB every pixel has R > 1, G < 0, B < 0.\n"
              "Clipping all three channels therefore makes every pixel (1, 0, 0).",
              va="top", fontsize=10, linespacing=1.6)
-    fig.text(.08, .756, "Continuous mapping (no palette)", fontsize=10)
-    fig.text(.08, .532, "Decoded SIXEL: 256-color budget, FS + soft", fontsize=10)
+    fig.text(.08, .798, "Continuous mapping (no palette)", fontsize=10)
+    fig.text(.08, .613, "Decoded SIXEL: 256-color budget, FS + soft", fontsize=10)
+    # The whole retained span is only about 0.036 in Oklab L, which is hard
+    # to see in saturated red. Show it as gray on the source's own L range.
+    fig.text(.08, .44, "Decoded SIXEL lightness as gray: black/white = darkest/lightest source pixel "
+             "(diagnostic, not color)", fontsize=10)
 
     # Each point describes a 16×32 area. Pixel-scale dither is not the
     # structure being compared. Keep the values, rather than derivatives.
@@ -506,7 +516,7 @@ def clipping_detail(build, probe, profile, profile_path, figures, measurements,
     curves = [("source", "continuous", source_line)]
     record = {
         "source": {"width": 192, "height": 96, "bits_per_channel": 16,
-                   "definition": "P3 (0.92 + 0.08*f, 0, 0), rounded to PNG16",
+                   "definition": "linear P3 (0.82, 0, 0) + f*((1, 0.038, 0.018) - (0.82, 0, 0)), sRGB-TRC encoded, rounded to PNG16",
                    "field": "f = 0.5 + 0.5*sin(2*pi*x)*cos(pi*y/2); x in [0,1], y in [-1,1]",
                    "png_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
                    "icc_sha256": hashlib.sha256(profile).hexdigest(),
@@ -530,7 +540,8 @@ def clipping_detail(build, probe, profile, profile_path, figures, measurements,
         encoded = pixels / 255.
         linear = np.where(encoded <= .04045, encoded / 12.92,
                           ((encoded + .055) / 1.055) ** 2.4)
-        decoded_line = strip(linear_oklab_lightness(linear))
+        lightness = linear_oklab_lightness(linear)
+        decoded_line = strip(lightness)
         curves.extend([(policy, "continuous", continuous_line),
                        (policy, "decoded-fs", decoded_line)])
         record["policies"].append({
@@ -540,14 +551,15 @@ def clipping_detail(build, probe, profile, profile_path, figures, measurements,
             "sixel_bytes": len(sixel),
             "decoded_rgb_sha256": hashlib.sha256(decoded.tobytes()).hexdigest(),
         })
-        for row, image in enumerate((preview, decoded)):
-            ax = fig.add_axes([.08 + m * .23, .565 - row * .21, .218, .155])
-            ax.imshow(image, interpolation="nearest")
+        for row, image in enumerate((preview, decoded, lightness)):
+            ax = fig.add_axes([.08 + m * .23, .64 - row * .173, .218, .128])
+            ax.imshow(image, cmap="gray", vmin=lightness_range[0],
+                      vmax=lightness_range[1], interpolation="nearest")
             ax.set(xticks=[], yticks=[])
             if row == 0:
                 ax.set_title(LABELS[m], fontsize=11)
 
-    ax = fig.add_axes([.08, .095, .63, .19])
+    ax = fig.add_axes([.08, .079, .63, .157])
     ax.plot(positions, source_line, ":", color="#172033", lw=2,
             label="Original P3 (coordinates)")
     for m, policy in enumerate(POLICIES):
@@ -558,13 +570,13 @@ def clipping_detail(build, probe, profile, profile_path, figures, measurements,
                 marker=("o", "s", "o", "+")[m], markersize=3,
                 markerfacecolor="none", lw=1.5)
     ax.set(xlabel="Horizontal position / pixel", ylabel="Mean Oklab L",
-           xlim=(0, 191), ylim=(.602, .654), yticks=[.61, .62, .63, .64, .65])
+           xlim=(0, 191), ylim=(.600, .675), yticks=[.61, .62, .63, .64, .65, .66, .67])
     ax.grid(alpha=.2)
     ax.set_title("Large-scale lightness after SIXEL: each point averages 16×32 pixels",
                  fontsize=10, loc="left", pad=10)
     ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1.05), frameon=False,
               fontsize=9)
-    fig.text(.08, .022, "Color previews: sRGB, no contrast enhancement. Gray input panel: normalized R diagnostic, not the original color.",
+    fig.text(.08, .018, "Color previews: sRGB, no contrast enhancement. Gray panels: normalized diagnostics, not the original color.",
              fontsize=9, color="#475569")
     save_plot(fig, figures / "clipping-detail.svg")
     with (measurements / "clipping-detail.csv").open("w", newline="") as file:
