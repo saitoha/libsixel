@@ -169,12 +169,12 @@ missing_headers_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-missing-headers.XXXXXX")
 user_units_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-user-units.XXXXXX")
 unit_guards_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-unit-guards.XXXXXX")
 license_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-licenses.XXXXXX")
-license_hash_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-license-hash.XXXXXX")
+license_units_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-license-units.XXXXXX")
 inline_state_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-inline-once.XXXXXX")
 trap 'rm -f "${header_temp}" "${header_units_temp}" \
     "${header_filter_units_temp}" "${existing_headers_temp}" \
     "${missing_headers_temp}" "${user_units_temp}" "${unit_guards_temp}" \
-    "${license_temp}" "${license_hash_temp}" "${inline_state_temp}"' EXIT
+    "${license_temp}" "${license_units_temp}" "${inline_state_temp}"' EXIT
 
 # Header discovery follows the same default scope as source discovery.  Keep
 # large path lists in temporary files because GNV shell variables can corrupt
@@ -258,122 +258,78 @@ append_unique_unit() {
     printf "%s\n" "${candidate}" >>"${user_units_temp}"
 }
 
+# Set the result in the caller shell. Command substitution in per-file loops
+# can exhaust GNV Bash memory when many shell functions are defined.
 resolve_unit() {
     case "$1" in
         /*)
-            echo "$1"
+            unit_path=$1
             ;;
         *)
-            echo "${src_root}/$1"
+            unit_path="${src_root}/$1"
             ;;
     esac
-}
-
-resolve_header_unit() {
-    case "$1" in
-        /*)
-            echo "$1"
-            ;;
-        *)
-            echo "${src_root}/$1"
-            ;;
-    esac
-}
-
-extract_license_block() {
-    unit_path=$1
-
-    awk '
-BEGIN {
-    in_block = 0;
-    collected = 0;
-}
-NR == 1 {
-    # Use octal escapes for the UTF-8 BOM so BSD awk stays compatible.
-    sub(/^\357\273\277/, "");
-}
-in_block == 0 && collected == 0 {
-    if ($0 ~ /^[ \t]*$/) {
-        next;
-    }
-    if ($0 ~ /^[ \t]*\/\*/) {
-        in_block = 1;
-        collected = 1;
-        print $0;
-        if ($0 ~ /\*\//) {
-            exit;
-        }
-        next;
-    }
-    exit;
-}
-in_block == 1 {
-    print $0;
-    if ($0 ~ /\*\//) {
-        exit;
-    }
-    next;
-}
-' "${unit_path}"
-}
-
-append_license_block() {
-    unit_path=$1
-
-    if [ ! -f "${unit_path}" ]; then
-        return
-    fi
-
-    block=$(extract_license_block "${unit_path}") || true
-    if [ -z "${block}" ]; then
-        return
-    fi
-
-    # Keep the checksum utility last so a missing or failing command cannot
-    # be hidden by a successful downstream parser. Configure supplies CKSUM.
-    hash=$(printf "%s" "${block}" | "${CKSUM:-cksum}")
-    hash=${hash%% *}
-    if grep -q "^${hash}$" "${license_hash_temp}" 2>/dev/null; then
-        return
-    fi
-
-    printf "%s\n" "${hash}" >>"${license_hash_temp}"
-    {
-        printf "/* ==== LICENSE from %s ==== */\n" "${unit_path}"
-        printf "%s\n\n" "${block}"
-    } >>"${license_temp}"
 }
 
 collect_license_blocks() {
+    # Keep the ordered paths in a file rather than an argument vector or a
+    # shell variable: the complete test suite exceeds GNV size limits.
+    : >"${license_units_temp}"
     while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
-
-        case "${unit}" in
-            src/threadpool.h)
-                append_license_block "$(resolve_header_unit "${unit}")"
-                ;;
-            src/loader-quicklook.h|src/loader-coregraphics.h|src/loader-wic.h)
-                append_license_block "$(resolve_header_unit "${unit}")"
-                ;;
-            include/sixel.h)
-                public_header="${build_root}/include/sixel.h"
-                if [ -f "${public_header}" ]; then
-                    append_license_block "${public_header}"
-                else
-                    append_license_block "$(resolve_header_unit "${unit}")"
-                fi
-                ;;
-            *)
-                append_license_block "$(resolve_header_unit "${unit}")"
-                ;;
-        esac
+        resolve_unit "${unit}"
+        if [ "${unit}" = include/sixel.h ] &&
+           [ -f "${build_root}/include/sixel.h" ]; then
+            unit_path="${build_root}/include/sixel.h"
+        fi
+        [ -f "${unit_path}" ] || continue
+        printf '%s\n' "${unit_path}" >>"${license_units_temp}"
     done <"${header_filter_units_temp}"
 
     while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
-
-        append_license_block "$(resolve_unit "${unit}")"
+        resolve_unit "${unit}"
+        [ -f "${unit_path}" ] || continue
+        printf '%s\n' "${unit_path}" >>"${license_units_temp}"
     done <"${user_units_temp}"
+
+    # Extract all leading license blocks in one process. Compare their full
+    # text so distinct licenses cannot be lost through a checksum collision.
+    # Close each input promptly; only unique license texts remain in memory.
+    LC_ALL=C awk '
+{
+    path = $0;
+    block = "";
+    in_block = 0;
+    line_number = 0;
+    while ((getline line < path) > 0) {
+        if (++line_number == 1) {
+            # Use octal escapes for the UTF-8 BOM on BSD awk as well.
+            sub(/^\357\273\277/, "", line);
+        }
+        if (!in_block) {
+            if (line ~ /^[ \t]*$/) {
+                continue;
+            }
+            if (line !~ /^[ \t]*\/\*/) {
+                break;
+            }
+            in_block = 1;
+        }
+        block = block line "\n";
+        if (line ~ /\*\//) {
+            break;
+        }
+    }
+    close(path);
+    # Match shell command substitution: remove trailing newlines only.
+    sub(/\n+$/, "", block);
+    if (block != "" && !(block in seen)) {
+        seen[block] = 1;
+        printf "/* ==== LICENSE from %s ==== */\n%s\n\n", path, block;
+    }
+}
+' "${license_units_temp}" >"${license_temp}"
 }
 
 # Remove project-local includes so the generated translation unit can compile
@@ -457,7 +413,7 @@ BEGIN {
 }
 
 emit_unit() {
-    unit_path=$(resolve_unit "$1")
+    resolve_unit "$1"
     guard_expr=$2
 
     if [ ! -f "${unit_path}" ]; then
@@ -481,7 +437,7 @@ emit_unit() {
 }
 
 emit_header_unit() {
-    unit_path=$(resolve_unit "$1")
+    resolve_unit "$1"
     guard_expr=$2
 
     if [ ! -f "${unit_path}" ]; then
@@ -721,4 +677,4 @@ emit_all_units
 rm -f "${header_temp}" "${header_units_temp}" \
     "${header_filter_units_temp}" "${existing_headers_temp}" \
     "${missing_headers_temp}" "${user_units_temp}" "${unit_guards_temp}" \
-    "${license_temp}" "${license_hash_temp}" "${inline_state_temp}"
+    "${license_temp}" "${license_units_temp}" "${inline_state_temp}"
