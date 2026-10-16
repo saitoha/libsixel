@@ -83,8 +83,9 @@ struct sixel_lookup_vptree_float32 {
  *   [VP-tree search] ---+    (no usable hint)
  *
  * Successive dither queries are close to each other, so the index the caller
- * mapped for the previous pixel is usually the answer or next to it.  Refinement (Orchard's method) scans
- * the start color's neighbors in order of palette distance.  Any color at
+ * mapped for the previous pixel is usually the answer or next to it.
+ * Refinement (Orchard's method) scans the start color's neighbors in order
+ * of palette distance.  Any color at
  * least as close to the query q as the current center c lies within twice
  * |q - c| of c (triangle inequality), so the scan stops at the first
  * neighbor beyond 4 * |q - c|^2 and moves to a strictly closer color when it
