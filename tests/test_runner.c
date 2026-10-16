@@ -1274,6 +1274,8 @@ int test_timeline_0005_timeline_line_policy_environment(int argc,
                                                         char **argv);
 int test_timeline_0006_timeline_encode_frame_session(int argc,
                                                     char **argv);
+int test_timeline_0007_timeline_sample_interval(int argc,
+                                                char **argv);
 int test_platform_path_0001_path_to_libc_runtime(int argc, char **argv);
 int test_threadpool_0001_threadpool_service(int argc, char **argv);
 int test_threadpool_0002_thread_default_counts(int argc, char **argv);
@@ -5076,6 +5078,8 @@ static test_entry_t const test_entries[] = {
       test_timeline_0005_timeline_line_policy_environment },
     { "timeline/0006_timeline_encode_frame_session",
       test_timeline_0006_timeline_encode_frame_session },
+    { "timeline/0007_timeline_sample_interval",
+      test_timeline_0007_timeline_sample_interval },
     { "platform/path/0001_path_to_libc_runtime",
       test_platform_path_0001_path_to_libc_runtime },
     { "threadpool/0001_threadpool_service",

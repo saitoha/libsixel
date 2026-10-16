@@ -39,6 +39,7 @@
 #include "frame.h"
 #include "loader-common.h"
 #include "pixelformat.h"
+#include "timeline-logger.h"
 
 typedef struct sixel_filter_sample_state {
     sixel_filter_sample_config_t config;
@@ -841,9 +842,10 @@ sixel_filter_sample_copy_frame(
 }
 
 static SIXELSTATUS
-sixel_filter_sample_apply(sixel_filter_t *filter,
-                          sixel_allocator_t *allocator,
-                          sixel_timeline_logger_t *logger)
+sixel_filter_sample_apply_body(sixel_filter_t *filter,
+                               sixel_allocator_t *allocator,
+                               sixel_timeline_logger_t *logger,
+                               int *sample_rows)
 {
     SIXELSTATUS status;
     sixel_filter_sample_state_t *state;
@@ -891,6 +893,7 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
             return status;
         }
         sample_height = sixel_frame_get_height(input_frame);
+        *sample_rows = sample_height;
         if (sample_height > 0) {
             filter->progress.total_units = sample_height;
             filter->progress.completed_units = sample_height;
@@ -925,6 +928,7 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
         } else {
             *(filter->output.slot) = sample;
         }
+        *sample_rows = sample_height;
         if (sample_height > 0) {
             filter->progress.total_units = sample_height;
             filter->progress.completed_units = sample_height;
@@ -932,6 +936,59 @@ sixel_filter_sample_apply(sixel_filter_t *filter,
         }
     }
 
+    return status;
+}
+
+/*
+ * Bracket sample extraction on the timeline. Adaptive extraction scans the
+ * loaded frame before preprocessing and is otherwise invisible between the
+ * encode start and palette construction; full-frame binding records an
+ * empty interval so either policy leaves the same event pair.
+ */
+static SIXELSTATUS
+sixel_filter_sample_apply(sixel_filter_t *filter,
+                          sixel_allocator_t *allocator,
+                          sixel_timeline_logger_t *logger)
+{
+    SIXELSTATUS status;
+    sixel_filter_sample_state_t *state;
+    sixel_frame_t *input_frame;
+    int width;
+    int height;
+    int policy;
+    int sample_rows;
+
+    input_frame = NULL;
+    width = 0;
+    height = 0;
+    policy = -1;
+    sample_rows = 0;
+    if (filter != NULL && filter->input.slot != NULL) {
+        input_frame = *(filter->input.slot);
+    }
+    if (input_frame != NULL) {
+        width = sixel_frame_get_width(input_frame);
+        height = sixel_frame_get_height(input_frame);
+    }
+    state = filter != NULL
+        ? (sixel_filter_sample_state_t *)filter->userdata : NULL;
+    if (state != NULL) {
+        policy = (int)state->config.policy;
+    }
+    if (logger != NULL) {
+        sixel_timeline_logger_logf(logger, "filter", "worker",
+                                   "sample-start", -1, -1, 0, 0,
+                                   width, height, "policy=%d", policy);
+    }
+    status = sixel_filter_sample_apply_body(filter, allocator, logger,
+                                            &sample_rows);
+    if (logger != NULL) {
+        sixel_timeline_logger_logf(logger, "filter", "worker",
+                                   "sample-finish", -1, -1, 0, 0,
+                                   width, height,
+                                   "status=%d sample_rows=%d",
+                                   status, sample_rows);
+    }
     return status;
 }
 
