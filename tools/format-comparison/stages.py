@@ -93,6 +93,61 @@ def sixel_stages(events):
     return {k: v * 1e3 for k, v in stages.items()}, (done - begin) * 1e3
 
 
+# Wall-clock segments of a SIXEL encode at any worker budget, in stacking
+# order. With several workers the color conversion can run beside palette
+# construction, and lookup, diffusion and band encoding form one pipeline.
+SEGMENTS = ['color conversion', 'sampling', 'sampling | conversion',
+            'palette search', 'palette search | conversion', 'lookup setup',
+            'lookup + dither', 'SIXEL encode', 'lookup + dither + encode', 'other']
+
+
+def sixel_segments(events, threads):
+    """Partition one encode's wall clock by the activities running in it.
+
+    Every interval between consecutive milestones is labeled with the active
+    stage; palette intervals that overlap the working-space conversion carry
+    a '| conversion' label so the stacked bar still sums to the elapsed time.
+    With one worker the lookup and band phases are separated at the pipeline
+    controller; with more workers they overlap and are reported together.
+    """
+    begin = first(events, 'main', 'encoder', 'encode_begin')
+    done = first(events, 'main', 'encoder', 'encode_done')
+    cs = (first(events, 'worker', 'filter', 'colorspace-start'),
+          first(events, 'worker', 'filter', 'colorspace-finish'))
+    pal_start = first(events, 'palette/build', 'palette', 'start')
+    pal_finish = first(events, 'palette/build', 'palette', 'finish')
+    search = first(events, 'palette/build', 'palette/iterate', 'start')
+    if search is None:
+        search = first(events, 'palette/build', 'palette/init', 'finish')
+    dither = first(events, 'worker', 'filter', 'dither-prepare')
+    end = max(e['ts'] for e in events if e['worker'] == 'encode' and e['role'] == 'worker'
+              and e['event'] == 'finish')
+    bands = first(events, 'pipeline', 'controller', 'configure') if threads == 1 else None
+    assert None not in (begin, done, pal_start, pal_finish, search, dither, end)
+    assert begin <= pal_start <= search <= pal_finish <= dither <= end <= done
+    activities = [('sampling', pal_start, search), ('palette search', search, pal_finish),
+                  ('lookup setup', max(pal_finish, cs[1] or pal_finish), dither)]
+    if bands is not None:
+        assert dither <= bands <= end
+        activities += [('lookup + dither', dither, bands), ('SIXEL encode', bands, end)]
+    else:
+        activities.append(('lookup + dither + encode', dither, end))
+    marks = sorted({begin, done, pal_start, search, pal_finish, dither, end}
+                   | ({bands} if bands is not None else set())
+                   | ({cs[0], cs[1]} if cs[0] is not None else set()))
+    segments = dict.fromkeys(SEGMENTS, 0.0)
+    for a, b in zip(marks, marks[1:]):
+        middle = (a + b) / 2
+        converting = cs[0] is not None and cs[0] <= middle < cs[1]
+        label = next((name for name, lo, hi in activities if lo <= middle < hi), None)
+        if label in ('sampling', 'palette search') and converting:
+            label += ' | conversion'
+        elif label is None:
+            label = 'color conversion' if converting else 'other'
+        segments[label] += (b - a) * 1e3
+    return segments, (done - begin) * 1e3
+
+
 def pillow_reference(image, codec):
     output = io.BytesIO()
     if codec == 'PNG':
@@ -114,6 +169,9 @@ def main():
     p.add_argument('--images', default='photo-001,photo-011,photo-021,photo-041,photo-051,photo-061,photo-071,photo-081,photo-091')
     p.add_argument('--crops', default='640x480,1920x1080')
     p.add_argument('--runs', type=int, default=7)
+    p.add_argument('--thread-crop', default='1920x1080',
+                   help='crop size of the worker-budget comparison')
+    p.add_argument('--thread-budgets', default='1,8')
     p.add_argument('--pillow-python', required=True,
                    help='Python whose Pillow carries pillow_stage_timers.py')
     args = p.parse_args()
@@ -142,6 +200,26 @@ def main():
                     samples.append({'stages': stages, 'total_ms': total, 'call_ms': wall})
             rows.append({'image': name, 'size': list(crop), 'codec': codec, 'samples': samples})
             print(name, crop, codec, round(statistics.median(s['total_ms'] for s in samples), 2), flush=True)
+    thread_crop = tuple(int(v) for v in args.thread_crop.lower().split('x'))
+    budgets = [int(v) for v in args.thread_budgets.split(',')]
+    thread_rows = []
+    for (name, crop), image in images.items():
+        if crop != thread_crop:
+            continue
+        for codec in CODECS[:2]:
+            for threads in budgets:
+                samples = []
+                for n in range(args.runs + 2):
+                    offset = log.stat().st_size if log.exists() else 0
+                    start = time.perf_counter_ns()
+                    codecs.encode(image, codec, threads)
+                    wall = (time.perf_counter_ns() - start) / 1e6
+                    segments, total = sixel_segments(read_events(log, offset), threads)
+                    if n >= 2:
+                        samples.append({'segments': segments, 'total_ms': total, 'call_ms': wall})
+                thread_rows.append({'image': name, 'size': list(crop), 'codec': codec,
+                                    'threads': threads, 'samples': samples})
+                print(name, crop, codec, threads, round(statistics.median(s['total_ms'] for s in samples), 2), flush=True)
     raw = work / 'raw'
     raw.mkdir()
     for (name, (w, h)), image in images.items():
@@ -162,11 +240,12 @@ def main():
         'pillow_patch_sha256': measure.sha(Path(__file__).with_name('pillow_stage_timers.py').read_bytes()),
         'runs': args.runs, 'warmups': 2, 'threads': 1, 'codecs': CODECS, 'stages': STAGES,
         'images': names, 'sizes': [list(c) for c in crops],
+        'thread_size': list(thread_crop), 'thread_budgets': budgets, 'segments': SEGMENTS,
         'photo_directory': str(args.photos), 'photo_sources': sources,
         'inputs': {f'{k[0]}@{k[1][0]}x{k[1][1]}': measure.sha(v.tobytes()) for k, v in images.items()},
         'script_sha256': measure.sha(Path(__file__).read_bytes()),
         'library_sha256': measure.sha(args.library.read_bytes())},
-        'rows': rows}
+        'rows': rows, 'thread_rows': thread_rows}
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / 'stages.json').write_text(json.dumps(payload, indent=2) + '\n')
 

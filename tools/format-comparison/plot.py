@@ -298,6 +298,91 @@ def render_stages(directory, preview, check):
         plt.close(fig)
 
 
+# Worker-budget segments: role color, and hatching for work that overlaps
+# the color conversion. Groups give the boundaries that dotted lines join.
+SEGMENT_STYLE = {
+    'color conversion': ('color conversion', None, 0),
+    'sampling': ('sampling', None, 0),
+    'sampling | conversion': ('sampling', '//', 0),
+    'palette search': ('palette search', None, 0),
+    'palette search | conversion': ('palette search', '//', 0),
+    'lookup setup': ('lookup setup', None, 1),
+    'lookup + dither': ('lookup', None, 2),
+    'SIXEL encode': ('encode', None, 2),
+    'lookup + dither + encode': ('pipeline', None, 2),
+    'other': ('other', None, 3),
+}
+PIPELINE_COLOR = '#7d4f9e'
+
+
+def render_threads(directory, preview, check):
+    payload = json.loads((directory / 'stages.json').read_text())
+    meta = payload['metadata']
+    colors = dict((r, c) for r, _, c in STAGE_ROLES)
+    colors['pipeline'] = PIPELINE_COLOR
+    budgets = meta['thread_budgets']
+    rows = payload['thread_rows']
+    for mobile in [False, True]:
+        suffix = 'mobile' if mobile else 'wide'
+        fig, ax = plt.subplots(figsize=(6.2, 7) if mobile else (10, 6.2), layout='constrained')
+        width = .3
+        codecs = [c for c in meta['codecs'] if c.startswith('SIXEL')]
+        for index, codec in enumerate(codecs):
+            bars = []
+            for k, threads in enumerate(budgets):
+                group = [r for r in rows if r['codec'] == codec and r['threads'] == threads]
+                means = {n: np.mean([statistics.median(s['segments'][n] for s in r['samples']) for r in group])
+                         for n in meta['segments']}
+                x = index + (k - .5) * (width + .12)
+                bottom, tops = 0.0, {}
+                for name, value in means.items():
+                    role, hatch, level = SEGMENT_STYLE[name]
+                    if value > 0:
+                        ax.bar(x, value, width, bottom=bottom, color=colors[role], hatch=hatch,
+                               edgecolor='white', linewidth=.4)
+                    bottom += value
+                    tops[level] = bottom
+                ax.text(x, bottom, f'{bottom:.0f} ms', ha='center', va='bottom', fontsize=8)
+                bars.append((x, tops))
+            (x0, t0), (x1, t1) = bars
+            for level in sorted(t0):
+                ax.plot([x0 + width / 2, x1 - width / 2], [t0[level], t1[level]], linestyle=':',
+                        linewidth=1, color='#505050')
+        ax.set_xticks([i + (k - .5) * (width + .12) for i in range(len(codecs)) for k in range(len(budgets))],
+                      [f'{t} worker' + ('s' if t > 1 else '') for _ in codecs for t in budgets], fontsize=9)
+        for i, codec in enumerate(codecs):
+            ax.text(i, -.08, codec, transform=ax.get_xaxis_transform(), ha='center', va='top', fontsize=10)
+        ax.set_ylabel('Milliseconds per image')
+        labels = {'lookup': 'Lookup and dither', 'encode': 'SIXEL band coding',
+                  'pipeline': 'Lookup, dither and band coding (pipelined)', 'other': 'Other'}
+        handles = [matplotlib.patches.Patch(color=colors[r], label=labels.get(r, l)) for r, l, _ in STAGE_ROLES
+                   if r != 'filter' and r != 'other']
+        handles += [matplotlib.patches.Patch(color=PIPELINE_COLOR, label=labels['pipeline']),
+                    matplotlib.patches.Patch(color=colors['other'], label=labels['other'])]
+        handles.append(matplotlib.patches.Patch(facecolor='white', edgecolor='#505050', hatch='//',
+                                                label='Runs while the color conversion continues'))
+        fig.legend(handles=handles, loc='outside lower center', ncol=2 if mobile else 3, fontsize=8)
+        w, h = meta['thread_size']
+        note = (f'{w} × {h} crops of {len(meta["images"])} photographs; mean of each segment\'s median over '
+                f'{meta["runs"]} samples. Bars partition elapsed time by the work running in each interval; '
+                'dotted lines join the ends of palette construction, lookup setup, the dither and coding phase, '
+                'and the whole encode.')
+        fig.suptitle('Worker budgets shorten some stages and not others\n'
+                     + textwrap.fill(note, width=64 if mobile else 110), fontsize=10)
+        target = directory / f'photo-threads-{suffix}.svg'
+        stream = io.BytesIO()
+        fig.savefig(stream, format='svg', metadata={'Date': None})
+        svg = b'\n'.join(line.rstrip() for line in stream.getvalue().splitlines()) + b'\n'
+        if check:
+            if target.read_bytes() != svg:
+                raise RuntimeError(f'stale figure: {target}')
+        else:
+            target.write_bytes(svg)
+        if preview:
+            fig.savefig(preview / f'photo-threads-{suffix}.png', dpi=110)
+        plt.close(fig)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('directory', type=Path)
@@ -314,6 +399,8 @@ def main():
     runs = meta['runs']
     if (args.directory / 'stages.json').exists():
         render_stages(args.directory, args.preview_directory, args.check)
+        if json.loads((args.directory / 'stages.json').read_text()).get('thread_rows'):
+            render_threads(args.directory, args.preview_directory, args.check)
     for image, rows in groups.items():
         corpus = image == 'photo'
         scale_rows = [r for r in rows if r['experiment'] == 'scaling']
