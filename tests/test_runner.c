@@ -1965,6 +1965,13 @@ int test_fh_byte_0005(int argc, char **argv);
 int test_fh_byte_0006(int argc, char **argv);
 int test_fh_byte_0007(int argc, char **argv);
 int test_fh_byte_0008(int argc, char **argv);
+int test_fh_refine_0001(int argc, char **argv);
+int test_fh_refine_0002(int argc, char **argv);
+int test_fh_refine_0003(int argc, char **argv);
+int test_fh_refine_0004(int argc, char **argv);
+int test_fh_refine_0005(int argc, char **argv);
+int test_fh_refine_0006(int argc, char **argv);
+
 int test_fh_weight_0001(int argc, char **argv);
 int test_fh_weight_0002(int argc, char **argv);
 int test_fh_weight_0003(int argc, char **argv);
@@ -6501,6 +6508,18 @@ static test_entry_t const test_entries[] = {
       test_heckbert_native_0028 },
     { "palette/heckbert_float/0029_heckbert_byte",
       test_heckbert_native_0029 },
+    { "lookup/fhedt_refine/0001_byte_reference_r64",
+      test_fh_refine_0001 },
+    { "lookup/fhedt_refine/0002_byte_reference_r128",
+      test_fh_refine_0002 },
+    { "lookup/fhedt_refine/0003_byte_reference_r256",
+      test_fh_refine_0003 },
+    { "lookup/fhedt_refine/0004_float_reference_r64",
+      test_fh_refine_0004 },
+    { "lookup/fhedt_refine/0005_float_reference_r128",
+      test_fh_refine_0005 },
+    { "lookup/fhedt_refine/0006_float_reference_r256",
+      test_fh_refine_0006 },
     { "lookup/fhedt/0020_fh_enclosing_cell",
       test_fh_lookup_0020 },
     { "lookup/fhedt/0021_fh_collision_refine",

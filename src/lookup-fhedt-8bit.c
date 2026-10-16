@@ -2178,7 +2178,6 @@ sixel_lookup_fhedt_refine_candidates_8bit(
     int cx;
     int cy;
     int cz;
-    int idx;
     int candidate;
     double dx;
     double dy;
@@ -2190,8 +2189,6 @@ sixel_lookup_fhedt_refine_candidates_8bit(
     unsigned char p1;
     unsigned char p2;
     unsigned char p3;
-    int used[8];
-    int used_count;
     size_t offset;
     size_t plane;
 
@@ -2217,8 +2214,11 @@ sixel_lookup_fhedt_refine_candidates_8bit(
     weight3 = shared->weights[2];
     best_index = -1;
     best_distance = DBL_MAX;
-    used_count = 0;
 
+    /* Revisit duplicate labels instead of searching a growing used[] list.
+     * The strict comparison below leaves the first minimum in place, so a
+     * repeated distance cannot change the answer or the corner tie order.
+     * Keep the distance expression intact, including its rounding order. */
     for (cz = 0; cz < 2; ++cz) {
         for (cy = 0; cy < 2; ++cy) {
             for (cx = 0; cx < 2; ++cx) {
@@ -2226,18 +2226,6 @@ sixel_lookup_fhedt_refine_candidates_8bit(
                        + ((size_t)corner_y[cy] * (size_t)shared->resolution)
                        + (size_t)corner_x[cx];
                 candidate = sixel_lookup_fhedt_read_index_8bit(shared, offset);
-
-                for (idx = 0; idx < used_count; ++idx) {
-                    if (used[idx] == candidate) {
-                        candidate = -1;
-                        break;
-                    }
-                }
-                if (candidate < 0) {
-                    continue;
-                }
-                used[used_count] = candidate;
-                ++used_count;
 
                 p1 = shared->palette[sixel_lookup_fhedt_palette_index_8bit(
                     shared->depth,

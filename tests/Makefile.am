@@ -2395,6 +2395,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_ENCODER_DARK \
     -DBUILD_TEST_0009_ENCODER_LIGHT \
     -DBUILD_TEST_0010_ENCODER_FS \
+    -DBUILD_FHEDT_REFINE_TEST_COMMON \
+    -DBUILD_TEST_0001_BYTE_REFERENCE_R64 \
+    -DBUILD_TEST_0002_BYTE_REFERENCE_R128 \
+    -DBUILD_TEST_0003_BYTE_REFERENCE_R256 \
+    -DBUILD_TEST_0004_FLOAT_REFERENCE_R64 \
+    -DBUILD_TEST_0005_FLOAT_REFERENCE_R128 \
+    -DBUILD_TEST_0006_FLOAT_REFERENCE_R256 \
     -DBUILD_FHEDT_BYTE_TEST_COMMON \
     -DBUILD_TEST_0001_Y_LABELS \
     -DBUILD_TEST_0002_Z_LABELS \
@@ -6643,6 +6650,13 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/p3_snap/0002_pipeline.c \
     quant/palette/merge_float/0002_scan_contract.c \
     processing/lookup/extended/0001_extended_lookup.c \
+    processing/lookup/fhedt_refine_test_common.c \
+    processing/lookup/fhedt_refine/0001_byte_reference_r64.c \
+    processing/lookup/fhedt_refine/0002_byte_reference_r128.c \
+    processing/lookup/fhedt_refine/0003_byte_reference_r256.c \
+    processing/lookup/fhedt_refine/0004_float_reference_r64.c \
+    processing/lookup/fhedt_refine/0005_float_reference_r128.c \
+    processing/lookup/fhedt_refine/0006_float_reference_r256.c \
     processing/lookup/fhedt_test_common.c \
     processing/lookup/fhedt_build_common.c \
     processing/lookup/fhedt_reuse_common.c \

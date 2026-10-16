@@ -962,6 +962,8 @@ refinement compares up to eight seed labels
 (float also visits native entries sharing those seeds)
 ```
 
+Corner visits retain Z/Y/X order (X changes fastest), and the winner changes only for a strictly smaller weighted squared distance. Byte refinement compares repeated labels again instead of searching a per-query deduplication list: an identical repeated distance cannot replace the first minimum. Float refinement retains its ordered deduplication of all corner labels before following collision chains, avoiding redundant native-distance calculations and chain traversal. The distance expression and its double-precision arithmetic remain unchanged. The byte query optimization preserves the palette index, including tie choices, and therefore preserves the encoded SIXEL bytes for the same input and settings. Boundary gates, retained-distance gates, exterior scans and voxel-cache behavior retain their existing semantics.
+
 This improves a boundary answer but is not an exhaustive palette scan. A true nearest color whose label is absent from those corners can still be omitted.
 
 ### Guarantee
@@ -984,6 +986,8 @@ whole byte image  Theta(R^3 + K + P)
 whole float image O(R^3 + K + P K) worst case
 extra space       Theta(R^3 + K)
 ```
+
+Byte refinement performs at most eight distance comparisons without a growing duplicate-label search. Float refinement uses at most eight local integers to deduplicate corner labels before native-distance comparisons. Neither path needs a precomputed candidate table or additional grid storage.
 
 Float exterior scans and native entries colliding at a seed account for the `O(K)` query bound. Collision chains add one integer per palette entry; they do not add an image-sized buffer. The fixed grid-build cost is substantial: increasing `R` from 64 to 256 multiplies cell count by 64. Small images may not amortize construction, and memory bandwidth can dominate the transform.
 
@@ -2185,6 +2189,19 @@ The following focused tests cover the selected extended float lookup path. Range
 | LUTY-13 | `eytzinger`: sRGB/P3 wire output, retained native palette and actual consumer. | [tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t](../../../../tests/quant/palette/eytzinger_float/0001_eyt_gamma_srgb.t), [tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t](../../../../tests/quant/palette/eytzinger_float/0002_eyt_gamma_p3.t), [tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t](../../../../tests/quant/palette/eytzinger_float/0003_eyt_linear_srgb.t), [tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t](../../../../tests/quant/palette/eytzinger_float/0004_eyt_linear_p3.t), [tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0005_eyt_oklab_srgb.t), [tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t](../../../../tests/quant/palette/eytzinger_float/0006_eyt_oklab_p3.t), [tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t](../../../../tests/quant/palette/eytzinger_float/0007_eyt_cielab_srgb.t), [tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t](../../../../tests/quant/palette/eytzinger_float/0008_eyt_cielab_p3.t), [tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t](../../../../tests/quant/palette/eytzinger_float/0009_eyt_din99d_srgb.t), [tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t](../../../../tests/quant/palette/eytzinger_float/0010_eyt_din99d_p3.t) |
 | LUTY-14 | `eytzinger`: Byte fast-path eligibility. | [tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t](../../../../tests/quant/palette/eytzinger_float/0011_eyt_byte_eligibility.t) |
 | LUTY-15 | `eytzinger`: Worker-local FS bands, overlap and stable wire cache. | [tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t](../../../../tests/quant/palette/eytzinger_float/0012_eyt_bands_private.t) |
+
+### FHEDT refinement equivalence
+
+The reference reproduces the original ordered, deduplicating corner comparisons using the actual unrefined grid labels. It checks every cell at `R=64` and deterministic random and edge queries at `R=128/256`. This establishes index compatibility with that approximate lookup, not an exhaustive nearest-palette guarantee. Existing native-float tests cover exterior scans and retained-distance gates.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FHR-01 | Byte refinement at `R=64` preserves the ordered deduplicating reference with duplicate labels, nonuniform weights and 8/16-bit labels. | [tests/processing/lookup/fhedt_refine/0001_byte_reference_r64.t](../../../../tests/processing/lookup/fhedt_refine/0001_byte_reference_r64.t) |
+| FHR-02 | Byte refinement at `R=128` preserves the ordered deduplicating reference with duplicate labels, nonuniform weights and 8/16-bit labels. | [tests/processing/lookup/fhedt_refine/0002_byte_reference_r128.t](../../../../tests/processing/lookup/fhedt_refine/0002_byte_reference_r128.t) |
+| FHR-03 | Byte refinement at `R=256` preserves the ordered deduplicating reference with duplicate labels, nonuniform weights and 8/16-bit labels. | [tests/processing/lookup/fhedt_refine/0003_byte_reference_r256.t](../../../../tests/processing/lookup/fhedt_refine/0003_byte_reference_r256.t) |
+| FHR-04 | Float refinement at `R=64` preserves the ordered deduplicating reference with duplicate labels, nonuniform weights and 8/16-bit labels, native seed collisions and an expanded palette box. | [tests/processing/lookup/fhedt_refine/0004_float_reference_r64.t](../../../../tests/processing/lookup/fhedt_refine/0004_float_reference_r64.t) |
+| FHR-05 | Float refinement at `R=128` preserves the ordered deduplicating reference with duplicate labels, nonuniform weights and 8/16-bit labels, native seed collisions and an expanded palette box. | [tests/processing/lookup/fhedt_refine/0005_float_reference_r128.t](../../../../tests/processing/lookup/fhedt_refine/0005_float_reference_r128.t) |
+| FHR-06 | Float refinement at `R=256` preserves the ordered deduplicating reference with duplicate labels, nonuniform weights and 8/16-bit labels, native seed collisions and an expanded palette box. | [tests/processing/lookup/fhedt_refine/0006_float_reference_r256.t](../../../../tests/processing/lookup/fhedt_refine/0006_float_reference_r256.t) |
 
 ### FHEDT byte-grid coverage
 
