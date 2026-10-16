@@ -9830,6 +9830,8 @@ sixel_encoder_encode_frame_internal(
         sampling_input.requested =
             (sixel_palette_sampling_policy_t)
                 encoder->palette_sampling_policy;
+        sampling_input.adaptive_eligible =
+            sixel_encoding_palette_job_eligible(encoder, context.frame);
         status = sixel_palette_sampling_select(&sampling_input,
                                                 &sampling_selection);
         if (SIXEL_SUCCEEDED(status)) {

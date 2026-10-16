@@ -87,7 +87,7 @@ sample point:
 An explicit weight prevents a later binning implementation from accidentally
 discarding the protection provided to a small solid-colored feature.
 
-`-4`/`--sampling-policy=auto|full-frame|adaptive-grid` selects which source pixels feed palette construction. `SIXEL_SAMPLING_POLICY` supplies the environment default; an explicit command-line value takes precedence. `auto` resolves to `adaptive-grid` with reason `sampling-default`, independently of thread count, clip, resize, colorspace work, and palette-worker availability. Explicit policies retain reason `explicit`.
+`-4`/`--sampling-policy=auto|full-frame|adaptive-grid` selects which source pixels feed palette construction. `SIXEL_SAMPLING_POLICY` supplies the environment default; an explicit command-line value takes precedence. `auto` resolves to `adaptive-grid` with reason `sampling-default`, independently of thread count, clip, resize, colorspace work, and palette-worker availability. An input that cannot use adaptive sampling resolves to `full-frame` with reason `input-metadata` instead: a palette-format frame whose palette is retained, a fixed or reused palette, or a disabled palette job. This eligibility depends only on the input and encoder configuration, so it does not reintroduce a thread-count dependency. Explicit policies retain reason `explicit`.
 
 | Effective sampling | Input source | Selection |
 | --- | --- | --- |
@@ -885,3 +885,4 @@ The following tests compare emitted `#n;2;r;g;b` palette definitions across 1, 2
 | PS-32 | Worker creation failure reuses the completed adaptive sample. | [tests/quant/palette/0011_palette_worker_thread_fallback.t](../../../../tests/quant/palette/0011_palette_worker_thread_fallback.t) |
 | PS-33 | Explicit adaptive failure retains the original status instead of retrying full-frame. | [tests/quant/palette/0038_palette_sampling_explicit_failure_preserves_status.t](../../../../tests/quant/palette/0038_palette_sampling_explicit_failure_preserves_status.t) |
 | PS-34 | Explicit adaptive thread-creation failure reuses the completed sample. | [tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t](../../../../tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t) |
+| PS-35 | Automatic sampling resolves an input that is not eligible for adaptive sampling, such as a PAL8 frame given to `sixel_encoder_encode_frame()`, to the full frame, so re-encoding decoded indices reproduces the first generation's pixels at 1, 2 and 8 threads. | [tests/quant/palette/0081_sampling_auto_pal8_retention.t](../../../../tests/quant/palette/0081_sampling_auto_pal8_retention.t) |

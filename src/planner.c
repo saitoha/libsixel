@@ -871,6 +871,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
 
     status = SIXEL_FALSE;
     input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
+    input.adaptive_eligible = 0;
     selection.effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
     selection.source =
         SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
@@ -889,6 +890,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
      */
     input.requested = (sixel_palette_sampling_policy_t)
         encoder->palette_sampling_policy;
+    input.adaptive_eligible =
+        sixel_encoding_palette_job_eligible(encoder, frame);
     status = sixel_palette_sampling_select(&input, &selection);
     if (SIXEL_FAILED(status)) {
         return;

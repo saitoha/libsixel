@@ -76,6 +76,7 @@ sampling_selection_is_valid(void)
 
     status = SIXEL_FALSE;
     input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
+    input.adaptive_eligible = 1;
     selection.effective = SIXEL_PALETTE_SAMPLING_AUTO;
     selection.source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
     selection.reason = SIXEL_PALETTE_RESOLUTION_NONE;
@@ -88,6 +89,18 @@ sampling_selection_is_valid(void)
                 SIXEL_PALETTE_RESOLUTION_SAMPLING_DEFAULT) {
         return 0;
     }
+
+    /* An ineligible input (PAL8, fixed palette) keeps the full frame. */
+    input.adaptive_eligible = 0;
+    status = sixel_palette_sampling_select(&input, &selection);
+    if (SIXEL_FAILED(status) ||
+            selection.effective != SIXEL_PALETTE_SAMPLING_FULL_FRAME ||
+            selection.source !=
+                SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME ||
+            selection.reason != SIXEL_PALETTE_RESOLUTION_INPUT_METADATA) {
+        return 0;
+    }
+    input.adaptive_eligible = 1;
 
     input.requested = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
     status = sixel_palette_sampling_select(&input, &selection);

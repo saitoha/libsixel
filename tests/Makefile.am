@@ -1877,6 +1877,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
     -DBUILD_TEST_0001_PALETTE_INVARIANCE \
     -DBUILD_TEST_0080_SAMPLING_SMALL_SOLID \
+    -DBUILD_TEST_0081_SAMPLING_AUTO_PAL8_RETENTION \
     -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
     -DBUILD_TEST_0041_KCENTER_BINNING_FILTER \
     -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
@@ -6445,6 +6446,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0037_palette_sampling_indexed_frame.c \
     quant/palette/sampling_threads/0001_palette_invariance.c \
     quant/palette/0080_sampling_small_solid.c \
+    quant/palette/0081_sampling_auto_pal8_retention.c \
     quant/palette/0040_palette_build_attempt_isolation.c \
     quant/palette/0041_kcenter_binning_filter.c \
     quant/palette/0042_kcenter_large_buffer.c \

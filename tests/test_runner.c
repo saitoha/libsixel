@@ -1392,6 +1392,7 @@ int test_cli_stdin_interrupt(int argc, char **argv);
 int test_rgb101_spatial(int argc, char **argv);
 int test_palette_space(int argc, char **argv);
 int test_palette_0080_sampling_small_solid(int argc, char **argv);
+int test_palette_0081_sampling_auto_pal8_retention(int argc, char **argv);
 int test_palette_sampling_threads(int argc, char **argv);
 int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
@@ -7439,6 +7440,8 @@ static test_entry_t const test_entries[] = {
       test_palette_solvers_float },
     { "palette/0080_sampling_small_solid",
       test_palette_0080_sampling_small_solid },
+    { "palette/0081_sampling_auto_pal8_retention",
+      test_palette_0081_sampling_auto_pal8_retention },
     { "palette/sampling_threads/0001_palette_invariance",
       test_palette_sampling_threads },
     { "palette/sampling_float/0001_sampling_contract",

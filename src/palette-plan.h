@@ -179,6 +179,13 @@ typedef struct sixel_palette_quantizer_selection {
 /* Inputs and immutable result of the sampling-stage resolver. */
 typedef struct sixel_palette_sampling_resolver_input {
     sixel_palette_sampling_policy_t requested;
+    /*
+     * Whether the frame and encoder configuration admit adaptive sampling:
+     * a palette-format input, a fixed or reused palette, or a disabled
+     * palette job keeps its palette path and must resolve auto to the full
+     * frame. This depends on the input, never on the thread budget.
+     */
+    int adaptive_eligible;
 } sixel_palette_sampling_resolver_input_t;
 
 typedef struct sixel_palette_sampling_selection {

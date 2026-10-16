@@ -156,6 +156,16 @@ sixel_palette_sampling_select(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /* An ineligible input (for example PAL8 whose palette is retained)
+     * keeps the full-frame path, as before the policy split. */
+    if (input->adaptive_eligible == 0) {
+        selection->effective = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
+        selection->source =
+            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME;
+        selection->reason = SIXEL_PALETTE_RESOLUTION_INPUT_METADATA;
+        return SIXEL_OK;
+    }
+
     /* Keep the sample population stable across execution budgets. Even a
      * stride-one grid can append solid-region weights, so a small input is
      * not sufficient reason to substitute the preprocessed full frame. */
@@ -174,6 +184,7 @@ sixel_palette_sampling_resolve_auto(sixel_palette_frame_state_t *state)
 
     status = SIXEL_FALSE;
     input.requested = SIXEL_PALETTE_SAMPLING_AUTO;
+    input.adaptive_eligible = 1;
     selection.effective = SIXEL_PALETTE_SAMPLING_AUTO;
     selection.source = SIXEL_PALETTE_SAMPLING_SOURCE_NONE;
     selection.reason = SIXEL_PALETTE_RESOLUTION_NONE;
