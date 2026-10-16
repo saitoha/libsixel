@@ -130,6 +130,8 @@ diffuse_varerr_term(int32_t error, int weight, int denom)
  * only on that row index and the sign.  diffuse_varerr_term() rounds half
  * away from zero, symmetric in the sign, so a table of the taps for every
  * positive residual reproduces each per-pixel quotient exactly.
+ * Readers use the same array type as the initializer: C99 cannot add const
+ * through a pointer to an array. Only lso2_prepare_terms_8bit writes it.
  */
 typedef int32_t sixel_lso2_terms_8bit_t[256][6];
 
@@ -190,7 +192,7 @@ diffuse_lso2(unsigned char *data,
              int32_t error,
              int index,
              int direction,
-             sixel_lso2_terms_8bit_t const terms)
+             sixel_lso2_terms_8bit_t terms)
 {
     const int (*table)[7];
     const int *entry;
@@ -310,7 +312,7 @@ diffuse_lso2_6delta_error(unsigned char *data,
                           unsigned char const *source_pixel,
                           unsigned char const *retained_pixel,
                           int direction,
-                          sixel_lso2_terms_8bit_t const terms)
+                          sixel_lso2_terms_8bit_t terms)
 {
     int32_t target_scaled;
     int32_t error_scaled;

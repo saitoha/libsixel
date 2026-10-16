@@ -27,7 +27,7 @@ test_progressive_predict_case(int mode)
     sixel_palette_emitted_color_t colors[2];
     sixel_repair_work_t work;
     unsigned int slots[2] = {0, 1};
-    float palette[2][3] = {{0.0f, 0, 0}, {1.0f, 0, 0}};
+    float const palette[2][3] = {{0.0f, 0, 0}, {1.0f, 0, 0}};
     float target[3] = {0.5f, 0, 0};
     float source[384];
     double errors[128];

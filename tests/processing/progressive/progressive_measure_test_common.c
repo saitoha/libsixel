@@ -194,9 +194,11 @@ test_progressive_measure_case(int mode)
                 record.bands[i]);
         }
         MEASURE_REQUIRE(total == 64);
+        /* C99 needs an explicit read-only view of the array member. */
         MEASURE_REQUIRE(sixel_repair_predict(&record.prediction_model,
-            record.palette, record.palette_count, record.mask_squared,
-            256, &prediction) == SIXEL_OK && prediction.exact &&
+            (float const (*)[3])record.palette, record.palette_count,
+            record.mask_squared, 256, &prediction) == SIXEL_OK &&
+            prediction.exact &&
             fabs(prediction.gain - record.proposal_gain) < 1e-10 &&
             prediction.painted == record.proposal_pixels);
         MEASURE_REQUIRE(sixel_decode_sequence_mapped(sink.data, sink.size,

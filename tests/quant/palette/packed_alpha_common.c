@@ -461,7 +461,8 @@ test_packed_wire_run(int space, int mode, int animated)
         if (mode == 11 && pass == 1) {
             memset(source_rgb[0], 255, 3);
         }
-        pa_pack(input, 0, source_rgb, alpha);
+        /* C99 needs an explicit read-only view of this mutable array. */
+        pa_pack(input, 0, (unsigned char const (*)[3])source_rgb, alpha);
         memcpy(saved, input, sizeof(input));
         memset(&capture, 0, sizeof(capture));
         memset(&transparency, 0, sizeof(transparency));
