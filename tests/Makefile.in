@@ -1474,6 +1474,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0043_filter_dither_transparent_mask_fence_serial.c \
 	processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c \
 	processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c \
+	processing/filter/0046_filter_sample_parallel_exact.c \
 	processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 	processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 	processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -1605,6 +1606,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/timeline/0005_timeline_line_policy_environment.c \
 	processing/timeline/0006_timeline_encode_frame_session.c \
 	processing/timeline/0007_timeline_sample_interval.c \
+	processing/timeline/0008_timeline_parallel_sample.c \
 	platform/path/0001_path_to_libc_runtime.c \
 	processing/threadpool/0001_threadpool_service.c \
 	processing/threadpool/0002_thread_default_counts.c \
@@ -5176,6 +5178,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0043_filter_dither_transparent_mask_fence_serial.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0046_filter_sample_parallel_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-filter_transparent_mask_fence_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0001_defaults.$(OBJEXT) \
@@ -5302,6 +5305,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0005_timeline_line_policy_environment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0006_timeline_encode_frame_session.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0007_timeline_sample_interval.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0008_timeline_parallel_sample.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	platform/path/test_runner-0001_path_to_libc_runtime.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0001_threadpool_service.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0002_thread_default_counts.$(OBJEXT) \
@@ -9774,6 +9778,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po \
 	processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po \
 	processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po \
+	processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Po \
 	processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po \
 	processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
@@ -10300,6 +10305,7 @@ am__depfiles_remade =  \
 	processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0006_timeline_encode_frame_session.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0007_timeline_sample_interval.Po \
+	processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Po \
 	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
 	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po \
@@ -13584,6 +13590,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0043_FILTER_DITHER_TRANSPARENT_MASK_FENCE_SERIAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0044_FILTER_DITHER_TRANSPARENT_MASK_FENCE_PARALLEL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_FILTER_BINNING_STREAM_ALPHA_ZERO_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_FILTER_SAMPLE_PARALLEL_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PERTURB_API \
@@ -13670,6 +13677,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_TIMELINE_LINE_POLICY_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_TIMELINE_ENCODE_FRAME_SESSION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_TIMELINE_SAMPLE_INTERVAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_TIMELINE_PARALLEL_SAMPLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PATH_TO_LIBC_RUNTIME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_THREADPOOL_SERVICE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
@@ -16984,6 +16992,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0043_filter_dither_transparent_mask_fence_serial.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0046_filter_sample_parallel_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_binning_stream_alpha_zero_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_binning_stream_alpha_zero_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -17115,6 +17124,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0005_timeline_line_policy_environment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0006_timeline_encode_frame_session.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0007_timeline_sample_interval.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0008_timeline_parallel_sample.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    platform/path/0001_path_to_libc_runtime.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0001_threadpool_service.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0002_thread_default_counts.c \
@@ -23720,6 +23730,9 @@ processing/filter/test_runner-0044_filter_dither_transparent_mask_fence_parallel
 processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0046_filter_sample_parallel_exact.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
@@ -24174,6 +24187,9 @@ processing/timeline/test_runner-0006_timeline_encode_frame_session.$(OBJEXT):  \
 	processing/timeline/$(am__dirstamp) \
 	processing/timeline/$(DEPDIR)/$(am__dirstamp)
 processing/timeline/test_runner-0007_timeline_sample_interval.$(OBJEXT):  \
+	processing/timeline/$(am__dirstamp) \
+	processing/timeline/$(DEPDIR)/$(am__dirstamp)
+processing/timeline/test_runner-0008_timeline_parallel_sample.$(OBJEXT):  \
 	processing/timeline/$(am__dirstamp) \
 	processing/timeline/$(DEPDIR)/$(am__dirstamp)
 platform/path/$(am__dirstamp):
@@ -33612,6 +33628,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0043_filter_dither_transparent_mask_fence_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
@@ -34138,6 +34155,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0005_timeline_line_policy_environment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0006_timeline_encode_frame_session.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0007_timeline_sample_interval.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po@am__quote@ # am--include-marker
@@ -53884,6 +53902,20 @@ processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.obj
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0045_filter_binning_stream_alpha_zero_disabled.obj `if test -f 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; then $(CYGPATH_W) 'processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c'; fi`
 
+processing/filter/test_runner-0046_filter_sample_parallel_exact.o: processing/filter/0046_filter_sample_parallel_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0046_filter_sample_parallel_exact.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Tpo -c -o processing/filter/test_runner-0046_filter_sample_parallel_exact.o `test -f 'processing/filter/0046_filter_sample_parallel_exact.c' || echo '$(srcdir)/'`processing/filter/0046_filter_sample_parallel_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Tpo processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0046_filter_sample_parallel_exact.c' object='processing/filter/test_runner-0046_filter_sample_parallel_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0046_filter_sample_parallel_exact.o `test -f 'processing/filter/0046_filter_sample_parallel_exact.c' || echo '$(srcdir)/'`processing/filter/0046_filter_sample_parallel_exact.c
+
+processing/filter/test_runner-0046_filter_sample_parallel_exact.obj: processing/filter/0046_filter_sample_parallel_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0046_filter_sample_parallel_exact.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Tpo -c -o processing/filter/test_runner-0046_filter_sample_parallel_exact.obj `if test -f 'processing/filter/0046_filter_sample_parallel_exact.c'; then $(CYGPATH_W) 'processing/filter/0046_filter_sample_parallel_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0046_filter_sample_parallel_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Tpo processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0046_filter_sample_parallel_exact.c' object='processing/filter/test_runner-0046_filter_sample_parallel_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0046_filter_sample_parallel_exact.obj `if test -f 'processing/filter/0046_filter_sample_parallel_exact.c'; then $(CYGPATH_W) 'processing/filter/0046_filter_sample_parallel_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0046_filter_sample_parallel_exact.c'; fi`
+
 processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o: processing/filter/filter_binning_stream_alpha_zero_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo -c -o processing/filter/test_runner-filter_binning_stream_alpha_zero_test_common.o `test -f 'processing/filter/filter_binning_stream_alpha_zero_test_common.c' || echo '$(srcdir)/'`processing/filter/filter_binning_stream_alpha_zero_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Tpo processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po
@@ -55647,6 +55679,20 @@ processing/timeline/test_runner-0007_timeline_sample_interval.obj: processing/ti
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/timeline/0007_timeline_sample_interval.c' object='processing/timeline/test_runner-0007_timeline_sample_interval.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/timeline/test_runner-0007_timeline_sample_interval.obj `if test -f 'processing/timeline/0007_timeline_sample_interval.c'; then $(CYGPATH_W) 'processing/timeline/0007_timeline_sample_interval.c'; else $(CYGPATH_W) '$(srcdir)/processing/timeline/0007_timeline_sample_interval.c'; fi`
+
+processing/timeline/test_runner-0008_timeline_parallel_sample.o: processing/timeline/0008_timeline_parallel_sample.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/timeline/test_runner-0008_timeline_parallel_sample.o -MD -MP -MF processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Tpo -c -o processing/timeline/test_runner-0008_timeline_parallel_sample.o `test -f 'processing/timeline/0008_timeline_parallel_sample.c' || echo '$(srcdir)/'`processing/timeline/0008_timeline_parallel_sample.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Tpo processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/timeline/0008_timeline_parallel_sample.c' object='processing/timeline/test_runner-0008_timeline_parallel_sample.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/timeline/test_runner-0008_timeline_parallel_sample.o `test -f 'processing/timeline/0008_timeline_parallel_sample.c' || echo '$(srcdir)/'`processing/timeline/0008_timeline_parallel_sample.c
+
+processing/timeline/test_runner-0008_timeline_parallel_sample.obj: processing/timeline/0008_timeline_parallel_sample.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/timeline/test_runner-0008_timeline_parallel_sample.obj -MD -MP -MF processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Tpo -c -o processing/timeline/test_runner-0008_timeline_parallel_sample.obj `if test -f 'processing/timeline/0008_timeline_parallel_sample.c'; then $(CYGPATH_W) 'processing/timeline/0008_timeline_parallel_sample.c'; else $(CYGPATH_W) '$(srcdir)/processing/timeline/0008_timeline_parallel_sample.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Tpo processing/timeline/$(DEPDIR)/test_runner-0008_timeline_parallel_sample.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/timeline/0008_timeline_parallel_sample.c' object='processing/timeline/test_runner-0008_timeline_parallel_sample.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/timeline/test_runner-0008_timeline_parallel_sample.obj `if test -f 'processing/timeline/0008_timeline_parallel_sample.c'; then $(CYGPATH_W) 'processing/timeline/0008_timeline_parallel_sample.c'; else $(CYGPATH_W) '$(srcdir)/processing/timeline/0008_timeline_parallel_sample.c'; fi`
 
 platform/path/test_runner-0001_path_to_libc_runtime.o: platform/path/0001_path_to_libc_runtime.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/path/test_runner-0001_path_to_libc_runtime.o -MD -MP -MF platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Tpo -c -o platform/path/test_runner-0001_path_to_libc_runtime.o `test -f 'platform/path/0001_path_to_libc_runtime.c' || echo '$(srcdir)/'`platform/path/0001_path_to_libc_runtime.c

@@ -123,6 +123,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     if (option_id == "SIXEL_OPTION_SCHEMA_RUNTIME_POLICY") {
         if (name == "colorspace_min") {
             expected_runtime_contract[key] = "trace=colorspace_min=257"
+        } else if (name == "sample_min") {
+            expected_runtime_contract[key] = "trace=sample_min=257"
         } else if (name == "parallel_factor") {
             expected_runtime_contract[key] = \
                 "runner=scale/0001_parallel_factor_environment|mode=cli"

@@ -939,6 +939,10 @@ _runtimepolicy() {
                      "${prefix}${key}=256" \
                      "${prefix}${key}=65537"
           return 0
+        elif [[ ${key} == sample_min ]]; then
+          compadd -- "${prefix}${key}=0" "${prefix}${key}=1" \
+                     "${prefix}${key}=524288"
+          return 0
         elif [[ ${key} == parallel_factor ]]; then
           compadd -- "${prefix}${key}=1" \
                      "${prefix}${key}=2" \
@@ -963,6 +967,8 @@ _runtimepolicy() {
                    "${prefix}Rpreserve" "${prefix}Rlinear" \
                    "${prefix}Rfloat" "${prefix}B0" \
                    "${prefix}B65536" \
+                   "${prefix}S0" "${prefix}S524288" \
+                   "${prefix}sample_min=" \
                    "${prefix}colorspace_min=" \
                    "${prefix}parallel_factor=" \
                    "${prefix}resize_precision=" \

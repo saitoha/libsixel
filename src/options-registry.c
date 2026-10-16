@@ -1981,6 +1981,15 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         colorspace_parallel_min_pixels,
         colorspace_parallel_min_pixels_override),
+    SIXEL_REGISTRY_RUNTIME_SIZE(
+        SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
+        "sample_min", 'S',
+        "SIXEL_SAMPLE_PARALLEL_MIN_PIXELS",
+        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_SIZE_WIDTH,
+        "runtime sample_min must be an unsigned integer.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        sample_parallel_min_pixels,
+        sample_parallel_min_pixels_override),
     SIXEL_REGISTRY_RUNTIME_UINT(
         SIXEL_OPTION_SCHEMA_RUNTIME_POLICY, NULL,
         "parallel_factor", 'F', "SIXEL_PARALLEL_FACTOR",

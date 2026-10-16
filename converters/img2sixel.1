@@ -137,7 +137,8 @@ choose process-wide runtime tuning.  \fIPOLICY\fP is \fBauto\fP,
 \fBnone/scalar\fP, \fBsse2\fP, \fBavx\fP, or \fBneon\fP and limits the SIMD
 implementation selected at runtime.
 Encoder suboptions are \fB:colorspace_min=PIXELS\fP
-(short form \fB:CPIXELS\fP), \fB:parallel_factor=ROWS\fP
+(short form \fB:CPIXELS\fP), \fB:sample_min=PIXELS\fP
+(\fB:SPIXELS\fP), \fB:parallel_factor=ROWS\fP
 (\fB:FROWS\fP), \fB:resize_precision=preserve|linear|float\fP
 (\fB:Rvalue\fP), and \fB:scale_min_bytes=BYTES\fP
 (\fB:BBYTES\fP).
@@ -2070,6 +2071,12 @@ keeps eager threading. Overridden by \fB\-j *:scale_min_bytes=BYTES\fP
 override the row span assigned to each resize worker. Accepts positive
 integers. Overridden by \fB\-j *:parallel_factor=ROWS\fP
 (short form \fB:FROWS\fP).
+.TP 5
+.B SIXEL_SAMPLE_PARALLEL_MIN_PIXELS
+.br
+defer adaptive-grid sampling fan-out until the clipped source reaches this
+pixel count. Defaults to 524288. Overridden by
+\fB\-j *:sample_min=PIXELS\fP (short form \fB:SPIXELS\fP).
 .TP 5
 .B SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
 .br

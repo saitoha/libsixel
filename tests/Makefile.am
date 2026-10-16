@@ -1861,6 +1861,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0043_FILTER_DITHER_TRANSPARENT_MASK_FENCE_SERIAL \
     -DBUILD_TEST_0044_FILTER_DITHER_TRANSPARENT_MASK_FENCE_PARALLEL \
     -DBUILD_TEST_0045_FILTER_BINNING_STREAM_ALPHA_ZERO_DISABLED \
+    -DBUILD_TEST_0046_FILTER_SAMPLE_PARALLEL_EXACT \
     -DBUILD_TEST_0018_PERTURB_KEEP_LOOKUP \
     -DBUILD_TEST_0017_PERTURB_KEEP_EARLY \
     -DBUILD_TEST_0002_PERTURB_API \
@@ -1947,6 +1948,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0005_TIMELINE_LINE_POLICY_ENVIRONMENT \
     -DBUILD_TEST_0006_TIMELINE_ENCODE_FRAME_SESSION \
     -DBUILD_TEST_0007_TIMELINE_SAMPLE_INTERVAL \
+    -DBUILD_TEST_0008_TIMELINE_PARALLEL_SAMPLE \
     -DBUILD_TEST_0001_PATH_TO_LIBC_RUNTIME \
     -DBUILD_TEST_0001_THREADPOOL_SERVICE \
     -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
@@ -5230,6 +5232,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0043_filter_dither_transparent_mask_fence_serial.c \
     processing/filter/0044_filter_dither_transparent_mask_fence_parallel.c \
     processing/filter/0045_filter_binning_stream_alpha_zero_disabled.c \
+    processing/filter/0046_filter_sample_parallel_exact.c \
     processing/filter/filter_binning_stream_alpha_zero_test_common.c \
     processing/filter/filter_binning_stream_alpha_zero_test_common.h \
     processing/filter/filter_transparent_mask_fence_test_common.c \
@@ -5361,6 +5364,7 @@ test_runner_SOURCES = test_runner.c \
     processing/timeline/0005_timeline_line_policy_environment.c \
     processing/timeline/0006_timeline_encode_frame_session.c \
     processing/timeline/0007_timeline_sample_interval.c \
+    processing/timeline/0008_timeline_parallel_sample.c \
     platform/path/0001_path_to_libc_runtime.c \
     processing/threadpool/0001_threadpool_service.c \
     processing/threadpool/0002_thread_default_counts.c \

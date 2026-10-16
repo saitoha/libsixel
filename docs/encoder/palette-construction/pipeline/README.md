@@ -145,6 +145,12 @@ it with the resolver's cross-policy rejection status.
 
 Synchronous sample or palette-construction errors propagate when no worker is admitted. Worker-stage failures can instead enter the automatic full-frame retry described above. Thus failure outcomes and fallback palettes can still depend on worker admission; successful automatic resolution does not.
 
+### Parallel adaptive extraction
+
+Adaptive-grid extraction partitions grid rows into disjoint output ranges and scans solid regions into one private 4096-cell integer histogram per job. Histograms are merged in job order; farthest-point selection and round-robin solid-color repetition remain serial. Thread count does not change sample bytes, order, repeated-color weights, transparency, dimensions, or the reported sample row count. RGB888, expanded PAL8, and float32 grid copies share this contract, including clips, explicit sample targets, and high/full quality targets. Solid-region augmentation retains its byte-format eligibility (three or four bytes per pixel); float32 samples have no byte solid-color scan. Indexed expansion and packed-grayscale normalization finish before dispatch.
+
+Parallel dispatch requires a threaded build, more than one available slot and at least 524288 pixels in the clipped source. This floor keeps 640×480 and 160×120 inputs serial to avoid pool setup costs. `SIXEL_SAMPLE_PARALLEL_MIN_PIXELS` overrides the floor; `-j auto:sample_min=PIXELS` (`:SPIXELS`) takes precedence through the runtime-policy registry. Zero removes the size floor but preserves the thread and row limits. Each phase uses at most one job per available slot and per sampled row. The caller runs the final job, so the pool adds at most N−1 threads. Partial-histogram allocation or pool creation failure uses the serial path; rejected submissions run on the caller without overlapping accepted ranges. See [encoder threading](../../../threading/encoder.md#adaptive-sample-extraction) for budget scopes and timeline events.
+
 ## Binning policy
 
 Binning consumes points after their palette-space coordinates are known. It
@@ -886,3 +892,4 @@ The following tests compare emitted `#n;2;r;g;b` palette definitions across 1, 2
 | PS-33 | Explicit adaptive failure retains the original status instead of retrying full-frame. | [tests/quant/palette/0038_palette_sampling_explicit_failure_preserves_status.t](../../../../tests/quant/palette/0038_palette_sampling_explicit_failure_preserves_status.t) |
 | PS-34 | Explicit adaptive thread-creation failure reuses the completed sample. | [tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t](../../../../tests/quant/palette/0039_palette_sampling_explicit_thread_failure_reuses_sample.t) |
 | PS-35 | Automatic sampling resolves an input that is not eligible for adaptive sampling, such as a PAL8 frame given to `sixel_encoder_encode_frame()`, to the full frame, so re-encoding decoded indices reproduces the first generation's pixels at 1, 2 and 8 threads. | [tests/quant/palette/0081_sampling_auto_pal8_retention.t](../../../../tests/quant/palette/0081_sampling_auto_pal8_retention.t) |
+| PS-36 | RGB888, PAL8 expansion and float32 samples (including solid repetition and transparency) agree at 1, 2, 4 and 8 threads with clipping, high/full quality, sparse and stride-one target overrides; encoded bytes agree between serial and parallel extraction at each fixed encoder budget. | [tests/processing/filter/0046_filter_sample_parallel_exact.t](../../../../tests/processing/filter/0046_filter_sample_parallel_exact.t) |

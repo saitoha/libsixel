@@ -836,6 +836,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    neon.\n"
         "    encoder sub-options:\n"
         "      :colorspace_min=PIXELS (:CPIXELS)\n"
+        "      :sample_min=PIXELS (:SPIXELS)\n"
         "      :parallel_factor=ROWS (:FROWS)\n"
         "      :resize_precision=preserve|linear|float (:RVALUE)\n"
         "      :scale_min_bytes=BYTES (:BBYTES)\n"
@@ -1756,6 +1757,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "override the row span assigned to each resize worker. Accepts\n"
         "positive integers. Overridden by\n"
         "-j *:parallel_factor=ROWS (:FROWS)."
+    },
+    {
+        "SIXEL_SAMPLE_PARALLEL_MIN_PIXELS",
+        "defer adaptive-grid sampling fan-out until the clipped source\n"
+        "reaches this pixel count. Defaults to 524288. Overridden by\n"
+        "-j *:sample_min=PIXELS (:SPIXELS)."
     },
     {
         "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS",

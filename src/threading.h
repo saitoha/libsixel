@@ -133,6 +133,8 @@ SIXEL_INTERNAL_API void sixel_runtime_policy_load(
 SIXEL_INTERNAL_API void sixel_runtime_policy_store(
     struct sixel_runtime_policy_options const *options);
 SIXEL_INTERNAL_API int sixel_runtime_policy_simd_level(int fallback);
+SIXEL_INTERNAL_API size_t sixel_runtime_policy_sample_min_pixels(
+    size_t fallback);
 SIXEL_INTERNAL_API size_t sixel_runtime_policy_colorspace_min_pixels(
     size_t fallback);
 SIXEL_INTERNAL_API unsigned int sixel_runtime_policy_parallel_factor(

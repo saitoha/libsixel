@@ -39,6 +39,12 @@ The encoder registers stack-owned, caller-local budget scopes around the palette
 
 Timeline `controller/colorspace` start/finish records enclose the scratch transaction, including validation and publication. `worker/colorspace` events identify each chunk, including the caller's chunk. Both working-space and asynchronous sample-space conversions have a `filter/worker` colorspace-start/finish envelope. Events establish execution and ordering; durations remain benchmark observations rather than test assertions.
 
+## Adaptive sample extraction
+
+Sampling finishes before palette construction and preprocessing can overlap. Its grid and solid-region phases resolve the caller's budget with `sixel_threads_resolve()`, including any enclosing `sixel_thread_budget_enter()` scope. Each phase includes the caller in its budget and joins all children before returning. Thresholds, format eligibility, deterministic histogram reduction and the byte-equivalence contract belong to [parallel adaptive extraction](../encoder/palette-construction/pipeline/README.md#parallel-adaptive-extraction).
+
+Within the existing `filter/worker` sample-start/sample-finish envelope, each parallel phase emits `controller/sample` start/finish and nested `worker/sample` start/finish records. Worker records include the caller's partition and identify the solid or grid phase. These events prove participation and ordering without imposing a duration or a scheduling order between independent workers.
+
 ## Dither/encode budget policy
 
 Verbose `workers: total/main/palette` describes the earlier palette/preprocessing overlap. The subsequent `pipeline` summary uses the full `total` budget after palette collection, including the initial dither/encode split and its band height. Queue depth is three times the initial encode count, capped by the number of six-row bands. These diagnostic values do not configure the runtime pipeline; the encoder resolves the same policy separately.
@@ -358,5 +364,6 @@ Record all such settings when comparing results.
 | TE-07 | Caller-local scopes compose by minimum, restore on exit and do not change another thread's budget. | [tests/processing/colorspace/parallel/0007_budget_scope.t](../../tests/processing/colorspace/parallel/0007_budget_scope.t) |
 | TE-08 | At eight threads with automatic sampling, the verbose post-palette geometry matches the fixed raster and initial dither/encode counts agree with distinct worker identities in the same run. Encode identities are counted before all dither workers finish, excluding subsequent pool growth. | [tests/planner/pipeline/0017_pipeline_auto_worker_counts.t](../../tests/planner/pipeline/0017_pipeline_auto_worker_counts.t) |
 | TE-09 | At eight threads with full-frame sampling, the verbose post-palette geometry matches the fixed raster and initial dither/encode counts agree with distinct worker identities in the same run. Encode identities are counted before all dither workers finish, excluding subsequent pool growth. | [tests/planner/pipeline/0018_pipeline_full_frame_worker_counts.t](../../tests/planner/pipeline/0018_pipeline_full_frame_worker_counts.t) |
+| TE-10 | Public encode-frame sampling encloses controller intervals and workers on at least two distinct threads within sample-start/sample-finish when four threads and a low threshold are requested. | [tests/processing/timeline/0008_timeline_parallel_sample.t](../../tests/processing/timeline/0008_timeline_parallel_sample.t) |
 
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/processing/colorspace/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.

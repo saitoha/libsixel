@@ -1139,6 +1139,7 @@ int test_filter_0044_filter_dither_transparent_mask_fence_parallel(
 int test_filter_0045_filter_binning_stream_alpha_zero_disabled(
     int argc,
     char **argv);
+int test_filter_0046_filter_sample_parallel_exact(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpupal_0002_reserved_key(int argc, char **argv);
 int test_gpupal_0003_fade_history(int argc, char **argv);
@@ -1265,6 +1266,7 @@ int test_precision_0009(int argc, char **argv);
 int test_precision_0018(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_chunk_cancel_callback(int argc, char **argv);
+int test_timeline_0008_timeline_parallel_sample(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
@@ -4869,6 +4871,8 @@ static test_entry_t const test_entries[] = {
       test_filter_0044_filter_dither_transparent_mask_fence_parallel },
     { "filter/0045_filter_binning_stream_alpha_zero_disabled",
       test_filter_0045_filter_binning_stream_alpha_zero_disabled },
+    { "filter/0046_filter_sample_parallel_exact",
+      test_filter_0046_filter_sample_parallel_exact },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
       test_gpupal_0001_strtoul },
     { "gpu-palette/0002_reserved_key", test_gpupal_0002_reserved_key },
@@ -5079,6 +5083,8 @@ static test_entry_t const test_entries[] = {
       test_timeline_0005_timeline_line_policy_environment },
     { "timeline/0006_timeline_encode_frame_session",
       test_timeline_0006_timeline_encode_frame_session },
+    { "timeline/0008_timeline_parallel_sample",
+      test_timeline_0008_timeline_parallel_sample },
     { "timeline/0007_timeline_sample_interval",
       test_timeline_0007_timeline_sample_interval },
     { "platform/path/0001_path_to_libc_runtime",

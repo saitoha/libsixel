@@ -19,6 +19,7 @@ Accepted base values are `auto`, `none`, `scalar`, `sse2`, `avx`, and `neon`; `n
 | Suboption | Consumer | Meaning | Environment fallback |
 | --- | --- | --- | --- |
 | `colorspace_min=PIXELS` (`C`) | `img2sixel` | Unsigned pixel-count floor for eligible colorspace parallel work. It does not create workers when the budget or build has none. | `SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS` |
+| `sample_min=PIXELS` (`S`) | `img2sixel` | Pixel-count floor for adaptive-grid extraction, measured over the clipped source; default 524288. See [sampling](../encoder/palette-construction/pipeline/README.md#parallel-adaptive-extraction). | `SIXEL_SAMPLE_PARALLEL_MIN_PIXELS` |
 | `parallel_factor=ROWS` (`F`) | `img2sixel` | Positive row span per resize thread-pool job, clamped to the available rows. This is not a multiplier on the thread count. | `SIXEL_PARALLEL_FACTOR` |
 | `resize_precision=preserve\|linear\|float` (`R`) | `img2sixel` | Selects the resize representation policy described in [crop and resize](../encoder/preprocessing/crop-resize/README.md). | `SIXEL_PLANNER_RESIZE_PRECISION_MODE` |
 | `scale_min_bytes=BYTES` (`B`) | `img2sixel` | Unsigned byte threshold for eligible parallel resize work. Zero preserves the eager threshold behavior; other eligibility checks still apply. | `SIXEL_SCALE_PARALLEL_MIN_BYTES` |

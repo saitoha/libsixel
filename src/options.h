@@ -454,6 +454,8 @@ typedef struct sixel_dequantize_options {
 typedef struct sixel_runtime_policy_options {
     int simd_level;
     int simd_level_override;
+    size_t sample_parallel_min_pixels;
+    int sample_parallel_min_pixels_override;
     size_t colorspace_parallel_min_pixels;
     int colorspace_parallel_min_pixels_override;
     unsigned int parallel_factor;

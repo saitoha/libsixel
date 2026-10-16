@@ -1245,6 +1245,29 @@ sixel_runtime_policy_colorspace_min_pixels(size_t fallback)
     return fallback;
 }
 
+size_t
+sixel_runtime_policy_sample_min_pixels(size_t fallback)
+{
+    sixel_runtime_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&options, 0, sizeof(options));
+    memset(&value, 0, sizeof(value));
+    sixel_runtime_policy_load(&options);
+    if (options.sample_parallel_min_pixels_override) {
+        return options.sample_parallel_min_pixels;
+    }
+    if (sixel_option_registry_resolve_runtime_binding(
+            SIXEL_SUBOPTION_BINDING_ID_2(
+                sample_parallel_min_pixels,
+                sample_parallel_min_pixels_override),
+            SIXEL_SUBOPTION_VALUE_SIZE,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.size_value;
+    }
+    return fallback;
+}
+
 unsigned int
 sixel_runtime_policy_parallel_factor(unsigned int fallback)
 {

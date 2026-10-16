@@ -40,6 +40,8 @@
 #include "loader-common.h"
 #include "pixelformat.h"
 #include "timeline-logger.h"
+#include "threading.h"
+#include <6cells.h>
 
 typedef struct sixel_filter_sample_state {
     sixel_filter_sample_config_t config;
@@ -233,8 +235,264 @@ typedef struct sixel_filter_sample_solid_cell {
 #define SIXEL_SAMPLE_SOLID_BITS 4
 #define SIXEL_SAMPLE_SOLID_CELLS (1u << (SIXEL_SAMPLE_SOLID_BITS * 3u))
 
-SIXEL_INTERNAL_API unsigned int
-sixel_filter_sample_solid_colors(unsigned char const *pixels,
+/* Each job owns complete grid rows and a private integer histogram.
+ * Keep source-relative scan coordinates: a partition must not shift the
+ * three-pixel solid scan or change the grid phase at a clip boundary. */
+typedef struct sixel_filter_sample_job {
+    unsigned char const *pixels;
+    unsigned char const *mask;
+    unsigned char *output;
+    unsigned char *output_mask;
+    sixel_filter_sample_solid_cell_t *cells;
+    sixel_timeline_logger_t *logger;
+    int width;
+    int height;
+    int depth;
+    int clip_x;
+    int clip_y;
+    int clip_width;
+    int rows;
+    int jobs;
+    int stride;
+    int sample_width;
+} sixel_filter_sample_job_t;
+
+static int
+sixel_filter_sample_worker(sixel_thread_pool_job_t job,
+                           void *userdata, void *workspace)
+{
+    sixel_filter_sample_job_t *ctx;
+    sixel_filter_sample_solid_cell_t *cells;
+    unsigned char const *px;
+    unsigned int const shift = 8u - SIXEL_SAMPLE_SOLID_BITS;
+    unsigned int key;
+    size_t source;
+    size_t dest;
+    int first;
+    int end;
+    int rows_per_job;
+    int extra_rows;
+    int row;
+    int x;
+    int y;
+    int c;
+    unsigned char const *pixels;
+    unsigned char const *mask;
+    unsigned char *output;
+    unsigned char *output_mask;
+    int width;
+    int height;
+    int depth;
+    int clip_x;
+    int clip_y;
+    int clip_width;
+    int stride;
+    int sample_width;
+
+    (void)workspace;
+    ctx = (sixel_filter_sample_job_t *)userdata;
+    /* Quotient/remainder partitioning stays within rows even when size_t
+     * is 32 bits and rows multiplied by a job index would overflow. */
+    rows_per_job = ctx->rows / ctx->jobs;
+    extra_rows = ctx->rows % ctx->jobs;
+    first = rows_per_job * job.band_index
+        + (job.band_index < extra_rows ? job.band_index : extra_rows);
+    end = first + rows_per_job + (job.band_index < extra_rows);
+    /* Output bytes may alias arbitrary objects under C's aliasing rules.
+     * Snapshot read-only geometry before writing, so neither grid memcpy
+     * nor histogram updates force repeated context loads in the hot loop. */
+    pixels = ctx->pixels;
+    mask = ctx->mask;
+    output = ctx->output;
+    output_mask = ctx->output_mask;
+    width = ctx->width;
+    height = ctx->height;
+    depth = ctx->depth;
+    clip_x = ctx->clip_x;
+    clip_y = ctx->clip_y;
+    clip_width = ctx->clip_width;
+    stride = ctx->stride;
+    sample_width = ctx->sample_width;
+    sixel_timeline_logger_logf(ctx->logger, "worker", "sample", "start",
+        job.band_index, first, first, end, first, end,
+        "%s", ctx->cells != NULL ? "solid" : "grid");
+    if (ctx->cells == NULL) {
+        for (row = first; row < end; ++row) {
+            y = clip_y + row * stride;
+            dest = (size_t)row * (size_t)sample_width;
+            for (x = 0; x < clip_width; x += stride) {
+                source = (size_t)y * (size_t)width
+                    + (size_t)(clip_x + x);
+                memcpy(output + dest * (size_t)depth,
+                       pixels + source * (size_t)depth,
+                       (size_t)depth);
+                if (output_mask != NULL) {
+                    output_mask[dest] = mask[source];
+                }
+                ++dest;
+            }
+        }
+    } else {
+        /* Preserve the byte scan's bounded channel count after moving it
+         * out of collect_solid(), so the compiler can unroll RGB/RGBA. */
+        if (depth < 3 || depth > 4) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        cells = ctx->cells + (size_t)job.band_index
+            * SIXEL_SAMPLE_SOLID_CELLS;
+        for (row = first; row < end; ++row) {
+            y = clip_y + row * SIXEL_SAMPLE_SOLID_STRIDE;
+            for (x = clip_x;
+                 x < clip_x + clip_width;
+                 x += SIXEL_SAMPLE_SOLID_STRIDE) {
+                if (mask != NULL
+                        && mask[(size_t)y * (size_t)width
+                                     + (size_t)x] != 0) {
+                    continue;
+                }
+                /*
+                 * Either axis qualifies.  A horizontal run is a scrub bar or an
+                 * underline; a vertical run is a scrollbar or window edge.
+                 * Requiring both would reject every one of them.
+                 */
+                if (sixel_filter_sample_line_spread(
+                        pixels, width, height, depth,
+                        x, y, 1, 0)
+                            > SIXEL_SAMPLE_SOLID_TOL
+                        && sixel_filter_sample_line_spread(
+                            pixels, width, height, depth,
+                            x, y, 0, 1)
+                            > SIXEL_SAMPLE_SOLID_TOL) {
+                    continue;
+                }
+                px = pixels + ((size_t)y * (size_t)width + (size_t)x)
+                              * (size_t)depth;
+                key = ((unsigned int)(px[0] >> shift)
+                       << (SIXEL_SAMPLE_SOLID_BITS * 2u))
+                    | ((unsigned int)(px[1] >> shift)
+                       << SIXEL_SAMPLE_SOLID_BITS)
+                    | (unsigned int)(px[2] >> shift);
+                cells[key].count++;
+                for (c = 0; c < depth; ++c) {
+                    cells[key].sum[c] += px[c];
+                }
+
+            }
+        }
+    }
+    sixel_timeline_logger_logf(ctx->logger, "worker", "sample", "finish",
+        job.band_index, end, first, end, first, end, "complete");
+    return SIXEL_OK;
+}
+
+/* The caller executes the last partition, using at most budget - 1 extra
+ * threads. A failed pool creation falls back before any output is written;
+ * rejected submissions run on the caller, disjoint from accepted jobs. */
+static void
+sixel_filter_sample_dispatch(sixel_filter_sample_job_t *ctx)
+{
+    sixel_thread_pool_job_t job;
+    sixel_timeline_logger_t *logger;
+#if SIXEL_ENABLE_THREADS
+    sixel_threadpool_service_t *service;
+    sixel_thread_pool_create_request_t request;
+    sixel_thread_pool_t *pool;
+    void *object;
+    SIXELSTATUS status;
+#endif
+
+    job.band_index = 0;
+#if SIXEL_ENABLE_THREADS
+    pool = NULL;
+    object = NULL;
+    status = SIXEL_FALSE;
+    if (ctx->jobs > 1) {
+        status = sixel_components_getservice("services/threadpool", &object);
+        if (SIXEL_SUCCEEDED(status) && object != NULL) {
+            service = (sixel_threadpool_service_t *)object;
+            memset(&request, 0, sizeof(request));
+            request.threads = ctx->jobs - 1;
+            request.queue_size = ctx->jobs;
+            request.worker = sixel_filter_sample_worker;
+            request.userdata = ctx;
+            status = service->vtbl->create_pool(service, &request, &pool);
+            service->vtbl->unref(service);
+        }
+    }
+    if (SIXEL_FAILED(status) || pool == NULL) {
+        ctx->jobs = 1;
+    }
+#endif
+    if (ctx->jobs == 1) {
+#if SIXEL_ENABLE_THREADS
+        if (pool != NULL) {
+            pool->vtbl->unref(pool);
+        }
+#endif
+        /* The outer sample interval already measures serial extraction.
+         * Avoid per-phase log I/O when there is no parallel work to show. */
+        logger = ctx->logger;
+        ctx->logger = NULL;
+        (void)sixel_filter_sample_worker(job, ctx, NULL);
+        ctx->logger = logger;
+        return;
+    }
+    sixel_timeline_logger_logf(ctx->logger, "controller", "sample", "start",
+        -1, -1, 0, ctx->rows, 0, ctx->rows, "threads=%d %s", ctx->jobs,
+        ctx->cells != NULL ? "solid" : "grid");
+#if SIXEL_ENABLE_THREADS
+    if (pool != NULL) {
+        for (; job.band_index + 1 < ctx->jobs; ++job.band_index) {
+            if (pool->vtbl->push(pool, job) != SIXEL_OK) {
+                break;
+            }
+        }
+    }
+#endif
+    for (; job.band_index < ctx->jobs; ++job.band_index) {
+        (void)sixel_filter_sample_worker(job, ctx, NULL);
+    }
+#if SIXEL_ENABLE_THREADS
+    if (pool != NULL) {
+        pool->vtbl->finish(pool);
+        pool->vtbl->unref(pool);
+    }
+#endif
+    sixel_timeline_logger_logf(ctx->logger, "controller", "sample", "finish",
+        -1, -1, 0, ctx->rows, 0, ctx->rows, "threads=%d", ctx->jobs);
+}
+
+static int
+sixel_filter_sample_threads(int width, int height, int rows)
+{
+    int threads;
+#if SIXEL_ENABLE_THREADS
+    size_t threshold;
+#endif
+
+    threads = 1;
+#if SIXEL_ENABLE_THREADS
+    /* Avoid pool setup for VGA and smaller inputs. The threshold measures
+     * the clipped source area, which dominates the solid-region scan. */
+    threshold = sixel_runtime_policy_sample_min_pixels(524288u);
+    sixel_trace_topic_message("runtime_contract",
+        "LSXRT1|sample_min=%zu", threshold);
+    if ((size_t)width * (size_t)height >= threshold) {
+        threads = sixel_threads_resolve();
+        if (threads > rows) {
+            threads = rows;
+        }
+    }
+#else
+    (void)width;
+    (void)height;
+    (void)rows;
+#endif
+    return threads > 0 ? threads : 1;
+}
+
+static unsigned int
+sixel_filter_sample_collect_solid(unsigned char const *pixels,
                                  int width,
                                  int height,
                                  int depth,
@@ -245,15 +503,26 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
                                  int clip_height,
                                  unsigned char *out,
                                  unsigned int out_max,
-                                 sixel_allocator_t *allocator)
+                                 sixel_allocator_t *allocator,
+                                 sixel_timeline_logger_t *logger)
 {
     sixel_filter_sample_solid_cell_t *cells;
-    unsigned int const shift = 8u - SIXEL_SAMPLE_SOLID_BITS;
     unsigned int found;
     unsigned int seen;
-    int x;
-    int y;
+    sixel_filter_sample_job_t ctx;
+    sixel_filter_sample_solid_cell_t *partial;
+    unsigned int cell;
+    int part;
     int c;
+    unsigned int *nearest;
+    unsigned int index;
+    unsigned char rgb[4];
+    unsigned int best_cell;
+    unsigned int best_score;
+    int have_best;
+    unsigned int score;
+    unsigned char other[4];
+    unsigned int d;
 
     found = 0u;
     seen = 0u;
@@ -272,42 +541,52 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
     if (cells == NULL) {
         return 0u;
     }
-    for (y = clip_y; y < clip_y + clip_height; y += SIXEL_SAMPLE_SOLID_STRIDE) {
-        for (x = clip_x;
-             x < clip_x + clip_width;
-             x += SIXEL_SAMPLE_SOLID_STRIDE) {
-            unsigned char const *px;
-            unsigned int key;
-
-            if (mask != NULL
-                    && mask[(size_t)y * (size_t)width + (size_t)x] != 0) {
-                continue;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.pixels = pixels;
+    ctx.mask = mask;
+    ctx.width = width;
+    ctx.height = height;
+    ctx.depth = depth;
+    ctx.clip_x = clip_x;
+    ctx.clip_y = clip_y;
+    ctx.clip_width = clip_width;
+    ctx.rows = 1 + (clip_height - 1) / SIXEL_SAMPLE_SOLID_STRIDE;
+    ctx.jobs = sixel_filter_sample_threads(clip_width, clip_height, ctx.rows);
+    ctx.logger = logger;
+    /* Allocate all private histograms on the caller. Allocator callbacks
+     * need not support concurrent calls. Allocation failure keeps the
+     * already allocated serial histogram and its original behavior. */
+    partial = NULL;
+    /* Check before multiplying: an explicit large thread budget must not
+     * wrap the private histogram allocation on a 32-bit size_t target. */
+    if (ctx.jobs > 1 && (size_t)ctx.jobs <= SIXEL_ALLOCATE_BYTES_MAX
+            / SIXEL_SAMPLE_SOLID_CELLS / sizeof(*partial)) {
+        partial = (sixel_filter_sample_solid_cell_t *)sixel_allocator_calloc(
+            allocator, (size_t)ctx.jobs * SIXEL_SAMPLE_SOLID_CELLS,
+            sizeof(*partial));
+    }
+    if (partial == NULL) {
+        ctx.jobs = 1;
+    }
+    ctx.cells = partial != NULL ? partial : cells;
+    sixel_filter_sample_dispatch(&ctx);
+    if (partial != NULL) {
+        /* Unsigned sums have the same modular arithmetic as the serial
+         * scan. Merge in job order; selection and tie breaking stay serial. */
+        for (part = 0; part < ctx.jobs; ++part) {
+            for (cell = 0; cell < SIXEL_SAMPLE_SOLID_CELLS; ++cell) {
+                cells[cell].count += partial[
+                    (size_t)part * SIXEL_SAMPLE_SOLID_CELLS + cell].count;
+                for (c = 0; c < depth; ++c) {
+                    cells[cell].sum[c] += partial[
+                        (size_t)part * SIXEL_SAMPLE_SOLID_CELLS + cell].sum[c];
+                }
             }
-            /*
-             * Either axis qualifies.  A horizontal run is a scrub bar or an
-             * underline, a vertical run is a scrollbar or a window edge, and
-             * requiring both would reject every one of them.
-             */
-            if (sixel_filter_sample_line_spread(pixels, width, height, depth,
-                                                x, y, 1, 0)
-                        > SIXEL_SAMPLE_SOLID_TOL
-                    && sixel_filter_sample_line_spread(pixels, width, height,
-                                                       depth, x, y, 0, 1)
-                        > SIXEL_SAMPLE_SOLID_TOL) {
-                continue;
-            }
-            px = pixels + ((size_t)y * (size_t)width + (size_t)x)
-                          * (size_t)depth;
-            key = ((unsigned int)(px[0] >> shift)
-                   << (SIXEL_SAMPLE_SOLID_BITS * 2u))
-                | ((unsigned int)(px[1] >> shift) << SIXEL_SAMPLE_SOLID_BITS)
-                | (unsigned int)(px[2] >> shift);
-            cells[key].count++;
-            for (c = 0; c < depth; ++c) {
-                cells[key].sum[c] += px[c];
-            }
-            seen++;
         }
+        sixel_allocator_free(allocator, partial);
+    }
+    for (cell = 0; cell < SIXEL_SAMPLE_SOLID_CELLS; ++cell) {
+        seen += cells[cell].count;
     }
     if (seen == 0u) {
         sixel_allocator_free(allocator, cells);
@@ -327,9 +606,6 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
      * most of what this stage costs.
      */
     {
-        unsigned int *nearest;
-        unsigned int index;
-
         nearest = (unsigned int *)sixel_allocator_calloc(
             allocator, (size_t)SIXEL_SAMPLE_SOLID_CELLS, sizeof(unsigned int));
         if (nearest == NULL) {
@@ -340,17 +616,10 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
             nearest[index] = ~0u;
         }
         while (found < out_max) {
-            unsigned char rgb[4];
-            unsigned int best_cell;
-            unsigned int best_score;
-            int have_best;
-
             best_cell = 0u;
             best_score = 0u;
             have_best = 0;
             for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
-                unsigned int score;
-
                 if (cells[index].count == 0u) {
                     continue;
                 }
@@ -379,9 +648,6 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
             }
             found++;
             for (index = 0u; index < SIXEL_SAMPLE_SOLID_CELLS; ++index) {
-                unsigned char other[4];
-                unsigned int d;
-
                 if (cells[index].count == 0u) {
                     continue;
                 }
@@ -400,6 +666,21 @@ sixel_filter_sample_solid_colors(unsigned char const *pixels,
     sixel_allocator_free(allocator, cells);
 
     return found;
+}
+
+/* Direct solid-color callers share the same budget and deterministic scan. */
+SIXEL_INTERNAL_API unsigned int
+sixel_filter_sample_solid_colors(unsigned char const *pixels,
+                                 int width, int height, int depth,
+                                 unsigned char const *mask,
+                                 int clip_x, int clip_y,
+                                 int clip_width, int clip_height,
+                                 unsigned char *out, unsigned int out_max,
+                                 sixel_allocator_t *allocator)
+{
+    return sixel_filter_sample_collect_solid(pixels, width, height, depth,
+        mask, clip_x, clip_y, clip_width, clip_height, out, out_max,
+        allocator, NULL);
 }
 
 static SIXELSTATUS
@@ -445,15 +726,16 @@ sixel_filter_sample_copy_frame(
     size_t payload_size;
     size_t mask_size;
     size_t dst_index;
-    size_t src_offset;
-    int x;
-    int y;
+    sixel_filter_sample_job_t ctx;
     unsigned char *normalized_src_pixels;
     unsigned char solid[SIXEL_SAMPLE_SOLID_MAX * 4u];
     unsigned int solid_count;
     unsigned int solid_weight;
     size_t solid_slots;
     int solid_rows;
+    size_t grid_count;
+    size_t slot;
+    unsigned int which;
 
     status = SIXEL_FALSE;
     solid_count = 0u;
@@ -492,9 +774,6 @@ sixel_filter_sample_copy_frame(
     payload_size = 0u;
     mask_size = 0u;
     dst_index = 0u;
-    src_offset = 0u;
-    x = 0;
-    y = 0;
     normalized_src_pixels = NULL;
 
     if (frame == NULL || sample_out == NULL) {
@@ -602,12 +881,6 @@ sixel_filter_sample_copy_frame(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    /*
-     * The logger is currently unused, but it will be wired once planner
-     * driven progress messages are emitted from the filter layer.
-     */
-    (void)logger;
-
     if (config != NULL) {
         clip_x = config->clip_x;
         clip_y = config->clip_y;
@@ -658,7 +931,7 @@ sixel_filter_sample_copy_frame(
      * Find the solid regions before sizing the sample, because their colors
      * are appended to it and the extra rows have to be accounted for here.
      */
-    solid_count = sixel_filter_sample_solid_colors(src_pixels,
+    solid_count = sixel_filter_sample_collect_solid(src_pixels,
                                                    src_width,
                                                    src_height,
                                                    depth,
@@ -669,10 +942,8 @@ sixel_filter_sample_copy_frame(
                                                    height,
                                                    solid,
                                                    SIXEL_SAMPLE_SOLID_MAX,
-                                                   allocator);
+                                                   allocator, logger);
     if (solid_count > 0u) {
-        size_t grid_count;
-
         grid_count = (size_t)sample_width * (size_t)sample_height;
         /*
          * Enough copies of each color that it clears the mass floor the
@@ -794,36 +1065,31 @@ sixel_filter_sample_copy_frame(
         return status;
     }
 
-    dst_index = 0u;
-    for (y = 0; y < height; y += (int)stride) {
-        for (x = 0; x < width; x += (int)stride) {
-            src_offset = ((size_t)(clip_y + y) * (size_t)src_width
-                       + (size_t)(clip_x + x))
-                       * (size_t)depth;
-            memcpy(dst_pixels + dst_index * (size_t)depth,
-                   src_pixels + src_offset,
-                   (size_t)depth);
-            if (dst_mask != NULL) {
-                dst_mask[dst_index] =
-                    src_mask[(size_t)(clip_y + y) * (size_t)src_width
-                             + (size_t)(clip_x + x)];
-            }
-            ++dst_index;
-        }
-
-    }
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.pixels = src_pixels;
+    ctx.mask = src_mask;
+    ctx.output = dst_pixels;
+    ctx.output_mask = dst_mask;
+    ctx.width = src_width;
+    ctx.depth = depth;
+    ctx.clip_x = clip_x;
+    ctx.clip_y = clip_y;
+    ctx.clip_width = width;
+    ctx.rows = sample_height - solid_rows;
+    ctx.stride = (int)stride;
+    ctx.sample_width = sample_width;
+    ctx.jobs = sixel_filter_sample_threads(width, height, ctx.rows);
+    ctx.logger = logger;
+    sixel_filter_sample_dispatch(&ctx);
+    dst_index = (size_t)ctx.rows * (size_t)sample_width;
 
     /*
      * Append the solid colors, round-robin so the row padding is shared out
      * rather than over-weighting whichever color happened to be last.
      */
     if (solid_count > 0u) {
-        size_t slot;
-
         for (slot = 0u; slot < solid_slots && dst_index < sample_count;
              ++slot) {
-            unsigned int which;
-
             which = (unsigned int)(slot % (size_t)solid_count);
             memcpy(dst_pixels + dst_index * (size_t)depth,
                    solid + (size_t)which * (size_t)depth,
