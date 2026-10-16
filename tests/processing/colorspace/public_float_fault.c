@@ -14,6 +14,12 @@
 static SIXELSTATUS float_fault_service(char const *name, void **out);
 /* The real converter also exists in an amalgamated test runner. Keep
  * every test-copy type, table and helper local to this include seam. */
+#define gamma_float_grid cff_memo_0
+#define gamma_float_to_linear_lut cff_memo_1
+#define sixel_float_memo_entry cff_memo_2
+#define sixel_float_memo_entry_t cff_memo_3
+#define sixel_float_memo_slot cff_memo_4
+#define sixel_color_decode_srgb_float cff_memo_5
 #define gamma_to_linear_double_lut cff_0
 #define sixel_cbrt_lut cff_1
 #define sixel_cbrt_lut_double cff_2
@@ -118,6 +124,7 @@ static SIXELSTATUS float_fault_service(char const *name, void **out);
 #define linear_to_smptec_lut cff_linear_to_smptec_lut
 #define sixel_components_getservice float_fault_service
 /* The ordinary header can already be guarded in an amalgamated build. */
+double sixel_color_decode_srgb(double value);
 int sixel_color_convert(double out[3], double const in[3],
     int source, int target);
 int sixel_color_convert_output(double out[3], double const in[3],
@@ -129,6 +136,12 @@ int sixel_color_from_output(double out[3], double const in[3],
 #undef linear_to_smptec_lut
 #undef linear_to_gamma_lut
 #undef gamma_to_linear_lut
+#undef gamma_float_grid
+#undef gamma_float_to_linear_lut
+#undef sixel_float_memo_entry
+#undef sixel_float_memo_entry_t
+#undef sixel_float_memo_slot
+#undef sixel_color_decode_srgb_float
 #undef gamma_to_linear_double_lut
 #undef sixel_cbrt_lut
 #undef sixel_cbrt_lut_double

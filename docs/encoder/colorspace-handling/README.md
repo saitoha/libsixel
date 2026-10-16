@@ -27,6 +27,8 @@ The implementation may reuse storage, clone only the palette-building view, or s
 
 ## Lazy conversion at operation boundaries
 
+Float-buffer conversion may reuse exact promoted-byte sRGB transfer values and previously converted triplets within each worker chunk. These are exact arithmetic caches: they do not snap coordinates, approximate cube roots, or change failure publication. The [float conversion arithmetic contract](../../concepts/pixelformat-precision/README.md#float-conversion-arithmetic) defines their scope and equivalence coverage.
+
 Here, "lazy" means converting when a consuming operation needs different coordinates or storage. It is implemented through loader branches, frame metadata, and the encoder planner; it is not a cache holding a copy of every image in every color space. A linear intermediate inside one pixel's conversion also does not imply a separate full-frame linear buffer.
 
 | Trigger | Why conversion occurs | Where it happens |

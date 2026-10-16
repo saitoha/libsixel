@@ -326,6 +326,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0004_HELPER_ATOMIC \
     -DBUILD_TEST_0005_WORKING_PIPELINE \
     -DBUILD_TEST_0006_CLUSTERING_PIPELINE \
+    -DBUILD_FLOAT_EXACT_COMMON \
     -DBUILD_PUBLIC_FLOAT_COMMON \
     -DBUILD_PUBLIC_FLOAT_FAULT \
     -DBUILD_TEST_0015_DELTA_SIGNED_THRESHOLD \
@@ -4796,6 +4797,7 @@ test_runner_SOURCES = test_runner.c \
     processing/colorspace/parallel/0004_helper_atomic.c \
     processing/colorspace/parallel/0005_working_pipeline.c \
     processing/colorspace/parallel/0006_clustering_pipeline.c \
+    processing/colorspace/float_exact_common.c \
     processing/colorspace/public_float_common.c \
     processing/colorspace/public_float_fault.c \
     loader/libpng/keycolor/0001_frame_samples.c \

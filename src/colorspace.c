@@ -191,6 +191,9 @@ static SIXELSTATUS sixel_colorspace_convert_sse2(unsigned char *pixels,
 static unsigned char gamma_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_gamma_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static double gamma_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
+/* Float promotion rounds the grid before the double-intermediate TRC. */
+static double gamma_float_grid[SIXEL_COLORSPACE_LUT_SIZE];
+static double gamma_float_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static double smptec_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_smptec_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static float sixel_cbrt_lut[SIXEL_CBR_LUT_SIZE];
@@ -1369,6 +1372,9 @@ sixel_colorspace_build_tables(void)
      * unaffected while keeping the mapping faithful.
      */
     for (i = 0; i < SIXEL_COLORSPACE_LUT_SIZE; ++i) {
+        gamma_float_grid[i] = (double)(float)((double)i / 255.0);
+        gamma_float_to_linear_lut[i] =
+            sixel_color_decode_srgb(gamma_float_grid[i]);
         gamma_value = (double)i / 255.0;
         if (gamma_value <= 0.04045) {
             converted = gamma_value / 12.92;
@@ -2226,6 +2232,49 @@ end:
     return status;
 }
 
+/* Cache only exact float triplets, including all sign bits. A chunk owns
+ * its table, so neither hits nor replacement require synchronization. The
+ * valid flag distinguishes an empty slot from a real all-zero input. */
+#define SIXEL_FLOAT_MEMO_SIZE 16384U
+#define SIXEL_FLOAT_MEMO_MIN_PIXELS 1024U
+typedef struct sixel_float_memo_entry {
+    uint32_t key[3];
+    float value[3];
+    int valid;
+} sixel_float_memo_entry_t;
+
+static size_t
+sixel_float_memo_slot(uint32_t const key[3])
+{
+    uint32_t hash;
+
+    /* Mix exponent and mantissa bits before masking the low index bits.
+     * Unsigned wraparound is intentional; equality still checks 96 bits. */
+    hash = key[0] * UINT32_C(0x9e3779b1);
+    hash ^= key[1] * UINT32_C(0x85ebca77);
+    hash ^= key[2] * UINT32_C(0xc2b2ae3d);
+    hash ^= hash >> 16;
+    return (size_t)(hash & (SIXEL_FLOAT_MEMO_SIZE - 1U));
+}
+
+static double
+sixel_color_decode_srgb_float(double value)
+{
+    int index;
+
+    /* Guard lrint before conversion: extended, nonfinite and negative
+     * inputs must retain the analytic path. Equality admits no snapping.
+     * copysign also preserves -0.0, which compares equal to grid zero. */
+    if (value >= 0.0 && value <= 1.0) {
+        index = (int)lrint(value * 255.0);
+        if (index >= 0 && index < SIXEL_COLORSPACE_LUT_SIZE &&
+                value == gamma_float_grid[index]) {
+            return copysign(gamma_float_to_linear_lut[index], value);
+        }
+    }
+    return sixel_color_decode_srgb(value);
+}
+
 /* One double-intermediate kernel serves public and internal float buffers.
  * Validation checks the entire buffer before original pixels may change;
  * finite signed/extended coordinates are never projected onto a byte cube.
@@ -2244,26 +2293,60 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
     size_t index;
     int channel;
     int converted;
+    int source;
+    uint32_t key[3];
+    sixel_float_memo_entry_t *memo;
+    sixel_float_memo_entry_t *entry;
 
+    if (colorspace_src == SIXEL_COLORSPACE_GAMMA) {
+        sixel_colorspace_init_tables();
+    }
+    /* Tiny palette calls avoid a large table clear. Allocation failure is
+     * merely a cache miss for the entire chunk, never a new API failure. */
+    memo = NULL;
+    if (pixel_total >= SIXEL_FLOAT_MEMO_MIN_PIXELS) {
+        memo = (sixel_float_memo_entry_t *)calloc(SIXEL_FLOAT_MEMO_SIZE,
+            sizeof(*memo));
+    }
     for (index = 0U; index < pixel_total; ++index) {
+        entry = NULL;
+        if (memo != NULL) {
+            memcpy(key, pixels + index * 3U, sizeof(key));
+            entry = memo + sixel_float_memo_slot(key);
+            if (entry->valid && memcmp(entry->key, key, sizeof(key)) == 0) {
+                if (converted_pixels != NULL) {
+                    memcpy(converted_pixels + index * 3U, entry->value,
+                        sizeof(entry->value));
+                }
+                continue;
+            }
+        }
         for (channel = 0; channel < 3; ++channel) {
             input[channel] = pixels[index * 3U + channel];
         }
-        if (colorspace_src == SIXEL_COLORSPACE_SMPTEC) {
+        source = colorspace_src;
+        if (source == SIXEL_COLORSPACE_GAMMA) {
+            for (channel = 0; channel < 3; ++channel) {
+                input[channel] = sixel_color_decode_srgb_float(input[channel]);
+            }
+            source = SIXEL_COLORSPACE_LINEAR;
+        }
+        if (source == SIXEL_COLORSPACE_SMPTEC) {
             converted = sixel_color_from_output(output, input,
-                colorspace_src, colorspace_dst);
+                source, colorspace_dst);
         } else if (colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
             converted = sixel_color_convert_output(output, input,
-                colorspace_src, colorspace_dst);
+                source, colorspace_dst);
         } else {
             converted = sixel_color_convert(output, input,
-                colorspace_src, colorspace_dst);
+                source, colorspace_dst);
         }
         if (!converted) {
             if (converted_pixels == NULL || converted_pixels == pixels) {
                 sixel_helper_set_additional_message(
                     "float frame conversion: nonfinite or domain error.");
             }
+            free(memo);
             return SIXEL_BAD_INPUT;
         }
         for (channel = 0; channel < 3; ++channel) {
@@ -2272,8 +2355,18 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
                     sixel_helper_set_additional_message(
                         "float frame conversion: float32 overflow.");
                 }
+                free(memo);
                 return SIXEL_BAD_INPUT;
             }
+        }
+        /* Store only after every domain/finite/storage check succeeds.
+         * In-place output may overwrite the input, so retain the saved key. */
+        if (entry != NULL) {
+            memcpy(entry->key, key, sizeof(key));
+            for (channel = 0; channel < 3; ++channel) {
+                entry->value[channel] = (float)output[channel];
+            }
+            entry->valid = 1;
         }
         if (converted_pixels != NULL) {
             for (channel = 0; channel < 3; ++channel) {
@@ -2281,6 +2374,7 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
             }
         }
     }
+    free(memo);
     return SIXEL_OK;
 }
 
@@ -2378,7 +2472,8 @@ sixel_colorspace_parallel_worker(sixel_thread_pool_job_t job,
 /* Both frame and public float adapters use this transaction. A temporary
  * RGB32F image costs 12 bytes/pixel (24.9 MB at 1080p), but computes each
  * expensive double-intermediate transform only once. Serial/small calls
- * retain the allocation-free validate/write path. The caller participates
+ * retain the validate/write path without full-frame scratch storage. Each
+ * chunk may allocate its bounded memo independently. The caller participates
  * in the last chunk, so a budget of N needs only N-1 additional threads. */
 static SIXELSTATUS
 sixel_convert_pixels_via_linear_float(float *pixels,
@@ -2633,7 +2728,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 
     loader_timeline_optional_mark("post/colorspace");
 
-    /* Analytic float conversion does not build or consult byte LUTs. */
+    /* Float conversion uses its own exact promoted grid, not byte LUTs. */
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         return sixel_convert_pixels_via_linear_float((float *)pixels,
                                                      size,
@@ -2856,6 +2951,13 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
  * adapters use these functions regardless of encoder policy selection;
  * byte storage keeps its LUTs and explicit representability limits.
  */
+/* Keep LUT construction and analytic fallback in the same compiled body.
+ * Inlining at different callers can otherwise change FP contraction. */
+#if defined(_MSC_VER)
+__declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
 double
 sixel_color_decode_srgb(double value)
 {

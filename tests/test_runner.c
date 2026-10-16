@@ -221,6 +221,7 @@ int test_parallel_float_0003(int argc, char **argv);
 int test_parallel_float_0004(int argc, char **argv);
 int test_parallel_float_0005(int argc, char **argv);
 int test_parallel_float_0006(int argc, char **argv);
+int test_color_float_exact(int argc, char **argv);
 int test_color_public_float(int argc, char **argv);
 int test_color_public_float_fault(int argc, char **argv);
 int test_png_key_0001(int argc, char **argv);
@@ -5702,6 +5703,7 @@ static test_entry_t const test_entries[] = {
         test_parallel_float_0005 },
     { "colorspace/parallel/0006_clustering_pipeline",
         test_parallel_float_0006 },
+    { "colorspace/float_exact", test_color_float_exact },
     { "colorspace/public_float", test_color_public_float },
     { "colorspace/public_float_fault", test_color_public_float_fault },
     { "jpeg-cmyk/gray16-source", test_jp_gray16 },
