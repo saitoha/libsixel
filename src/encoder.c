@@ -16417,9 +16417,11 @@ sixel_encoder_encode_frame_owned(
     SIXELSTATUS status;
     sixel_writer_controls_t controls;
     int restore_envelope;
+    sixel_timeline_logger_t *logger;
 
     status = SIXEL_FALSE;
     restore_envelope = 0;
+    logger = NULL;
 
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -16453,7 +16455,32 @@ sixel_encoder_encode_frame_owned(
         sixel_output_ref(output);
     }
 
+    /*
+     * A direct frame call has no file-level session.  Open the same
+     * diagnostic timeline as sixel_encoder_encode() so SIXEL_LOG_PATH
+     * shows the color conversion and filter stages of this path too.  A
+     * caller that already installed a logger keeps it.
+     */
+    if (encoder->logger == NULL) {
+        (void)sixel_timeline_logger_prepare_env(encoder->allocator, &logger);
+        if (logger != NULL) {
+            encoder->logger = logger;
+            sixel_encoder_log_stage(encoder, NULL, "main", "encoder",
+                                    "encode_begin", "input=%s", "(frame)");
+        }
+    }
+
     status = sixel_encoder_encode_frame_internal(encoder, frame, output, NULL);
+
+    if (logger != NULL) {
+        sixel_encoder_log_stage(encoder, NULL, "main", "encoder",
+                                SIXEL_FAILED(status)
+                                    ? "encode_failed"
+                                    : "encode_done",
+                                "status=%d", status);
+        encoder->logger = NULL;
+        sixel_timeline_logger_unref(logger);
+    }
 
     /* DRCS borrows body-only framing. Do not leave that override on a
      * caller-owned output reused for an ordinary image, even on failure.

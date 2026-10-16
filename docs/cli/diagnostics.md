@@ -47,7 +47,7 @@ img2sixel -S --threads=4 -J run.jsonl -o /dev/null image.png
 python3 tools/timeline.py run.jsonl --output timeline.png
 ```
 
-The renderer is a repository tool and requires its Python plotting dependencies. Use [threading measurements](../threading/measurement.md) for the maintained reproduction setup. `-J` overrides `SIXEL_LOG_PATH`. The writer opens a new log with truncation when logging initializes; use distinct paths for independent processes. The process shares the writer, and changing the log path after logging starts is rejected. Logging is not a per-image append-file selector.
+The renderer is a repository tool and requires its Python plotting dependencies. Use [threading measurements](../threading/measurement.md) for the maintained reproduction setup. `-J` overrides `SIXEL_LOG_PATH`. The writer opens a new log with truncation when logging initializes; use distinct paths for independent processes. The process shares the writer, and changing the log path after logging starts is rejected. Logging is not a per-image append-file selector. A library caller that encodes in-memory frames with `sixel_encoder_encode_frame()` gets the same stage events as file encoding: each call forms its own session, bracketed by `main`/`encoder` `encode_begin` and `encode_done` events.
 
 Records contain `ts`, `session_id`, `thread`, `worker`, `role`, `event`, `job`, `frame_no`, `loop_no`, and `multiframe`. A line is an event, not necessarily a complete span. The renderer pairs and groups events; missing frame metadata, nested jobs, or a worker label do not independently prove concurrency or a worker-count contract. See [encoder timeline interpretation](../threading/encoder.md#timeline-interpretation) and [animation threading](../threading/animation.md).
 
@@ -68,6 +68,7 @@ Use `-S` or bounded playback when recording animations. An infinite loop produce
 | DG-01 | CLI log-path selection overrides the environment; both forms create nonempty logs and leave image output equivalent. | [tests/cli/options/migration/0019_log_path_environment_cli_equivalence.t](../../tests/cli/options/migration/0019_log_path_environment_cli_equivalence.t) |
 | DG-02 | Invalid encoder thread values produce the expected diagnostic. | [tests/cli/options/migration/0013_img2sixel_invalid_threads_diagnostic.t](../../tests/cli/options/migration/0013_img2sixel_invalid_threads_diagnostic.t) |
 | DG-03 | Unset/empty line-event policy is disabled; legacy zero/negative/invalid intervals enable every-line sampling. | [tests/processing/timeline/0005_timeline_line_policy_environment.t](../../tests/processing/timeline/0005_timeline_line_policy_environment.t) |
+| DG-04 | A direct `sixel_encoder_encode_frame()` call records its own `main`/`encoder` begin and done events around the palette and band stages, so library callers get the same timeline as file encoding. | [tests/processing/timeline/0006_timeline_encode_frame_session.t](../../tests/processing/timeline/0006_timeline_encode_frame_session.t) |
 
 ### Coverage boundary
 
