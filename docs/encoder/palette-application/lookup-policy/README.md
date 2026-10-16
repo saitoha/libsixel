@@ -1125,7 +1125,7 @@ refined query               proportional to the neighbors inside 2 d(c,x),
 extra space                 Theta(K^2)
 ```
 
-With `K = 256` the neighbor lists occupy 512 KiB per prepared instance. A refined query is cheap when consecutive pixels are close in color, which error diffusion and natural images usually provide; a query far from its hint pays for the moves toward its nearest color. Calling the lookup logarithmic or constant without qualification would be misleading.
+With `K = 256` the neighbor lists occupy 512 KiB per prepared instance. The 8-bit backend also keeps an exact-result memo of 2^18 one-word entries (1 MiB per prepared instance) keyed by the full RGB value: dithered byte queries repeat often, and a hit skips the search. Each entry is a single relaxed atomic word holding the query's nearest index, so the memo is safe for concurrent callers and never changes a result. A refined query is cheap when consecutive pixels are close in color, which error diffusion and natural images usually provide; a query far from its hint pays for the moves toward its nearest color. Calling the lookup logarithmic or constant without qualification would be misleading.
 
 ### Name and sources
 

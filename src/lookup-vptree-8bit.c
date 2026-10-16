@@ -38,6 +38,7 @@
 
 #include "allocator.h"
 #include "lookup-vptree-8bit.h"
+#include "sixel_atomic.h"
 #include "status.h"
 
 typedef struct sixel_lookup_vptree_8bit_node {
@@ -68,7 +69,20 @@ struct sixel_lookup_vptree_8bit {
     int root;
     int *safe_dist2;
     sixel_lookup_vptree_8bit_neighbor_t *neighbors;
+    sixel_atomic_i32_t *memo;
 };
+
+/*
+ * Exact-result memo for RGB queries.  Dithered queries repeat byte values
+ * often, so a direct-mapped table of (24-bit key, 8-bit index) words returns
+ * most results without a search.  Each slot is one relaxed atomic word: a
+ * reader sees either an old complete entry or a new complete entry, and every
+ * entry holds the query's nearest index, so concurrent callers can share it
+ * and it never changes a result.  The all-ones word marks an empty slot; the
+ * one entry with that pattern (white mapped to index 255) is not memoized.
+ */
+#define SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS 18
+#define SIXEL_LOOKUP_VPTREE_8BIT_MEMO_EMPTY (-1)
 
 /*
  * VP-tree lookup flow summary:
@@ -110,6 +124,10 @@ sixel_lookup_vptree_8bit_release(sixel_lookup_vptree_8bit_t *tree)
     if (tree->neighbors != NULL) {
         sixel_allocator_free(tree->allocator, tree->neighbors);
         tree->neighbors = NULL;
+    }
+    if (tree->memo != NULL) {
+        sixel_allocator_free(tree->allocator, tree->memo);
+        tree->memo = NULL;
     }
     tree->node_count = 0;
     tree->root = -1;
@@ -667,6 +685,28 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
         return SIXEL_BAD_ALLOCATION;
     }
 
+    /* The memo packs a byte index, so it serves RGB palettes of up to 256
+     * colors; other shapes search every time. */
+    if (depth == 3 && ncolors <= 256) {
+        tree->memo = (sixel_atomic_i32_t *)sixel_allocator_malloc(
+            tree->allocator,
+            ((size_t)1 << SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS)
+                * sizeof(sixel_atomic_i32_t));
+        if (tree->memo == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_vptree_8bit_configure: memo allocation "
+                "failed.");
+            sixel_lookup_vptree_8bit_release(tree);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        for (index = 0;
+                index < (1 << SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
+                ++index) {
+            sixel_atomic_store_relaxed_i32(&tree->memo[index],
+                                           SIXEL_LOOKUP_VPTREE_8BIT_MEMO_EMPTY);
+        }
+    }
+
     return SIXEL_OK;
 }
 
@@ -677,9 +717,26 @@ sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
 {
     int best_index;
     int best_distance;
+    unsigned int key;
+    unsigned int slot;
+    unsigned int entry;
 
     if (tree == NULL || pixel == NULL || tree->root < 0) {
         return 0;
+    }
+
+    key = 0U;
+    slot = 0U;
+    if (tree->memo != NULL) {
+        key = ((unsigned int)pixel[0] << 16)
+            | ((unsigned int)pixel[1] << 8)
+            | (unsigned int)pixel[2];
+        slot = (key * 2654435761U) >> (32 - SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
+        entry = (unsigned int)sixel_atomic_load_relaxed_i32(&tree->memo[slot]);
+        if ((entry >> 8) == key
+                && entry != (unsigned int)SIXEL_LOOKUP_VPTREE_8BIT_MEMO_EMPTY) {
+            return (int)(entry & 0xffU);
+        }
     }
 
     best_index = hint;
@@ -693,7 +750,15 @@ sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
                                         &best_distance);
     }
 
-    return sixel_lookup_vptree_8bit_refine(tree, pixel, best_index);
+    best_index = sixel_lookup_vptree_8bit_refine(tree, pixel, best_index);
+    if (tree->memo != NULL) {
+        entry = (key << 8) | (unsigned int)best_index;
+        if (entry != (unsigned int)SIXEL_LOOKUP_VPTREE_8BIT_MEMO_EMPTY) {
+            sixel_atomic_store_relaxed_i32(&tree->memo[slot], (int)entry);
+        }
+    }
+
+    return best_index;
 }
 
 /* emacs Local Variables:      */
