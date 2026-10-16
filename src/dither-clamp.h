@@ -42,6 +42,12 @@ typedef struct sixel_dither_clamp {
     double threshold;
     double minimum[SIXEL_MAX_CHANNELS];
     double maximum[SIXEL_MAX_CHANNELS];
+    /* Nominal bounds less the policy margin.  They lie inside every
+     * source-containing bound, so a corrected sample within them is left
+     * unchanged; valid only when every snapshot sample is finite. */
+    double inner_low[SIXEL_MAX_CHANNELS];
+    double inner_high[SIXEL_MAX_CHANNELS];
+    int source_finite;
     sixel_allocator_t *allocator;
 } sixel_dither_clamp_t;
 

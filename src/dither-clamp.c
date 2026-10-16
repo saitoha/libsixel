@@ -40,6 +40,8 @@ sixel_dither_clamp_init(sixel_dither_clamp_t *clamp,
                         double threshold, sixel_allocator_t *allocator)
 {
     size_t count;
+    size_t index;
+    double margin;
     int n;
 
     if (clamp == NULL) {
@@ -82,6 +84,20 @@ sixel_dither_clamp_init(sixel_dither_clamp_t *clamp,
         return SIXEL_BAD_ALLOCATION;
     }
     memcpy(clamp->source, pixels, count * sizeof(float));
+    for (n = 0; n < depth; ++n) {
+        margin = clamp->policy == SIXEL_DITHER_CLAMP_SOFT
+            ? (clamp->threshold - 1.0)
+                * (clamp->maximum[n] - clamp->minimum[n]) : 0.0;
+        clamp->inner_low[n] = clamp->minimum[n] - margin;
+        clamp->inner_high[n] = clamp->maximum[n] + margin;
+    }
+    clamp->source_finite = 1;
+    for (index = 0; index < count; ++index) {
+        if (!isfinite(clamp->source[index])) {
+            clamp->source_finite = 0;
+            break;
+        }
+    }
     return SIXEL_OK;
 }
 
@@ -114,6 +130,24 @@ sixel_dither_clamp_pixel(sixel_dither_clamp_t const *clamp,
         return SIXEL_BAD_ARGUMENT;
     }
     base = pixel * (size_t)clamp->depth;
+    if (clamp->policy != SIXEL_DITHER_CLAMP_NONE && clamp->source_finite) {
+        /*
+         * Most corrected samples stay inside the nominal bounds less the
+         * margin.  Those bounds lie inside lower and upper below for every
+         * finite source, so neither policy would change such a sample; a
+         * non-finite sample fails the comparison and takes the full path,
+         * which reports it.
+         */
+        for (n = 0; n < clamp->depth; ++n) {
+            if (!((double)corrected[n] >= clamp->inner_low[n]
+                    && (double)corrected[n] <= clamp->inner_high[n])) {
+                break;
+            }
+        }
+        if (n == clamp->depth) {
+            return SIXEL_OK;
+        }
+    }
     ratio = 1.0;
     for (n = 0; n < clamp->depth; ++n) {
         if (!isfinite(corrected[n])) {
