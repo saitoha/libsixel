@@ -236,7 +236,11 @@ completed palette and pixel format
               |
               no
               v
- auto? -- yes --> vptree
+ auto? -- yes --> vptree (same exact distance and tie rule)
+              |                  |
+              |                  +-- none --> ordered bulk rows
+              |                  +-- diffusion --> hinted point queries
+              |                  +-- other --> existing point queries
               |
               no
               v
@@ -247,9 +251,15 @@ completed palette and pixel format
              6bit
 ```
 
-`auto` currently resolves to `vptree`, selecting the 8-bit or float32 implementation from the pixel representation. [`vptree`](#policy-vptree) is exact and, with its neighbor-list refinement, the fastest general backend in the current tree. Only an unrecognized policy value reaches the `6bit` fallback.
+`auto` selects the exact [`vptree`](#policy-vptree) backend and chooses the invocation strategy from the resolved dither method. `none` uses ordered bulk rows when [its fences permit](../dithering/README.md#none-nearest-color-without-error-shaping); error diffusion retains causal hinted point queries, and other methods retain their existing point queries. Byte bulk mapping reuses consecutive identical colors and the existing atomic 24-bit exact-key memo. With NEON or SSE2, eight cold queries are mapped together by exhaustive SIMD distance evaluation; a short tail and builds without SIMD use the exact scalar search. Palette-order strict comparisons retain the lowest-index tie rule. No approximate backend is eligible for `auto`; only an unrecognized policy value reaches the historical `6bit` fallback.
+
+Both byte and float bulk mapping preserve scan order. Float rows reuse bit-identical consecutive native coordinates and use the existing double-distance search; they do not narrow extended coordinates for SIMD. Explicit `vptree` uses the same bulk operation under `none`, while every other explicit policy retains its own mapping implementation. Image size and worker count do not change the selected metric or tie rule. The timeline records the resolved class as an event under role `lookup`, with worker `batch` or `point`; `none-batch` separately records actual fast-loop entry. A selected bulk strategy can still fall back to point mapping when transparency, retained pixels or output clipping require it.
 
 The selected extended float path bypasses the byte black/white shortcut: its byte projection cannot establish equality of native float coordinates. It enables the requested lookup even for supplied palettes. Thus `auto`, explicit or default, always resolves to `vptree.float32` on that path.
+
+### Bulk mapping contract
+
+`ILookupPolicy.map_pixels(pixels, count, pixel_stride, result, result_stride)` returns the same ordered indices as repeated `map_pixel` calls on an identically prepared policy. Input stride is in bytes; output stride is in indices. Signed strides allow a reversed row without changing approximate cache insertion order. Every addressed sample and output must be valid, input and output buffers must not overlap, and zero count touches neither buffer. Implementations without a bulk kernel use the common scalar fallback. A bulk call keeps no persistent scan history and follows the prepared policy's existing concurrency rules; vptree's shared memo publishes complete exact-key entries atomically. This contract does not strengthen approximate policies into order-independent nearest-neighbor searches.
 
 ### Guarantee and cost
 
@@ -2252,13 +2262,10 @@ The existing [lookup quality suite](../../../../tests/quant/palette/usage/) chec
 | LUTC-04 | Byte reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/processing/lookup/fhedt/0027_fh_reuse_byte.t](../../../../tests/processing/lookup/fhedt/0027_fh_reuse_byte.t) |
 | LUTC-05 | Float reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/processing/lookup/fhedt/0028_fh_reuse_float.t](../../../../tests/processing/lookup/fhedt/0028_fh_reuse_float.t) |
 
-## Bulk mapping contract
-
-`ILookupPolicy.map_pixels(pixels, count, pixel_stride, result, result_stride)` returns the same ordered indices as repeated `map_pixel` calls on an identically prepared policy. Input stride is in bytes; output stride is in indices. Signed strides allow a reversed row without changing approximate cache insertion order. Every addressed sample and output must be valid, input and output buffers must not overlap, and zero count touches neither buffer. Implementations without a bulk kernel use the common scalar fallback. A bulk call keeps no persistent scan history and follows the prepared policy's existing concurrency rules; vptree's shared memo publishes complete exact-key entries atomically. This contract does not strengthen approximate policies into order-independent nearest-neighbor searches.
-
-
-### Bulk mapping coverage
+### Bulk mapping and dither dispatch
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | LUTBULK-01 | All byte and float lookup classes map runs, separated repeats, distinct queries, reverse rows, empty input and short tails identically to ordered scalar calls on independent cold state. | [tests/processing/lookup/0015_lookup_batch_contract.c](../../../../tests/processing/lookup/0015_lookup_batch_contract.c), [tests/processing/lookup/0015_lookup_batch_contract.t](../../../../tests/processing/lookup/0015_lookup_batch_contract.t) |
+| LUTBULK-02 | AUTO and explicit vptree preserve the selected exact backend; NONE selects bulk mapping while causal and positional dithers select point mapping. CLI timeline witnesses verify actual NONE bulk entry and point execution for FS/LSO2. | [tests/processing/lookup/0016_lookup_auto_dither.c](../../../../tests/processing/lookup/0016_lookup_auto_dither.c), [tests/processing/lookup/0016_lookup_auto_dither.t](../../../../tests/processing/lookup/0016_lookup_auto_dither.t) |
+| LUTBULK-03 | Byte and float NONE bulk rows match generic rows, preserve float work-buffer replacement and row notifications, and respect transparent pixels, output clipping and retained-plane keep. | [tests/processing/lookup/0017_lookup_none_batch_fences.c](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.c), [tests/processing/lookup/0017_lookup_none_batch_fences.t](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.t) |

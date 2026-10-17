@@ -676,6 +676,8 @@ sixel_dither_prepare_lookup_policy(
     select_request.reqcolor = reqcolor;
     select_request.optimize_lookup = optimize_lookup;
     select_request.lut_policy = lut_policy;
+    select_request.method_for_diffuse = dither != NULL
+        ? dither->method_for_diffuse : SIXEL_DIFFUSE_AUTO;
     select_request.pixelformat = pixelformat;
 
     if (dither != NULL && dither->use_rgb101_palette != 0) {
@@ -692,6 +694,12 @@ sixel_dither_prepare_lookup_policy(
         lut_policy_override);
     if (policy_name == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (dither != NULL && dither->pipeline_logger != NULL) {
+        sixel_timeline_logger_logf(dither->pipeline_logger,
+            "lookup",
+            sixel_lookup_policy_select_batch(select_request.method_for_diffuse)
+                ? "batch" : "point", policy_name, -1);
     }
     if (sixel_trace_topic_is_enabled("lookup_contract")) {
         fprintf(stderr,

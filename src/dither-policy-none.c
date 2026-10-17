@@ -39,6 +39,8 @@
 #include "dither.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
+#include "lookup-policy.h"
+#include "timeline-logger.h"
 #include "sixel_atomic.h"
 
 /*
@@ -87,17 +89,6 @@ none_sixel_dither_scanline_params_fixed_8bit(int serpentine,
     }
 }
 
-/* Shared diffusion helper kernels. */
-
-static void none_diffuse_none(unsigned char *data,
-                         int width,
-                         int height,
-                         int x,
-                         int y,
-                         int depth,
-                         int error,
-                         int direction);
-
 static SIXELSTATUS
 sixel_dither_apply_none_8bit(
     sixel_index_t *result,
@@ -127,9 +118,6 @@ sixel_dither_apply_none_8bit(
     unsigned char const *source_pixel;
     int color_index;
     int output_index;
-    int n;
-    int palette_value;
-    int offset;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -182,6 +170,32 @@ sixel_dither_apply_none_8bit(
     }
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
+
+    /* Preserve row notifications and scan order, including approximate cache
+     * insertion order. Only unconstrained rows may bypass per-pixel fences. */
+    if (sixel_lookup_policy_select_batch(dither->method_for_diffuse)
+            && !use_transparent_fence && !dither->pipeline_6delta_enabled
+            && band_origin >= output_start && band_origin >= 0
+            && width > 0 && height > 0
+            && lookup_policy->vtbl->map_pixels != NULL) {
+        if (dither->pipeline_logger != NULL) {
+            sixel_timeline_logger_logf(dither->pipeline_logger,
+                "lookup", "policy", "none-batch", -1, -1, 0, 0, 0, 0,
+                "byte");
+        }
+        for (y = 0; y < height; ++y) {
+            absolute_y = band_origin + y;
+            none_sixel_dither_scanline_params_fixed_8bit(
+                serpentine, absolute_y, width,
+                &start, &end, &step, &direction);
+            pos = y * width + start;
+            lookup_policy->vtbl->map_pixels(lookup_policy,
+                data + (size_t)pos * (size_t)depth, (size_t)width,
+                step * depth, result + pos, step);
+            sixel_dither_pipeline_row_notify(dither, absolute_y);
+        }
+        return SIXEL_OK;
+    }
 
     lookup_hint = -1;
     for (y = 0; y < height; ++y) {
@@ -273,13 +287,6 @@ sixel_dither_apply_none_8bit(
                  */
                 result[pos] = (sixel_index_t)output_index;
             }
-
-            for (n = 0; n < depth; ++n) {
-                palette_value = palette[color_index * depth + n];
-                offset = (int)source_pixel[n] - palette_value;
-                none_diffuse_none(data + n, width, height, x, y,
-                          depth, offset, direction);
-            }
         }
         if (absolute_y >= output_start) {
             sixel_dither_pipeline_row_notify(dither, absolute_y);
@@ -290,20 +297,6 @@ sixel_dither_apply_none_8bit(
 
 end:
     return status;
-}
-
-static void
-none_diffuse_none(unsigned char *data, int width, int height,
-             int x, int y, int depth, int error, int direction)
-{
-    /* unused */ (void) data;
-    /* unused */ (void) width;
-    /* unused */ (void) height;
-    /* unused */ (void) x;
-    /* unused */ (void) y;
-    /* unused */ (void) depth;
-    /* unused */ (void) error;
-    /* unused */ (void) direction;
 }
 
 static void
@@ -327,49 +320,6 @@ none_sixel_dither_scanline_params_fixed_float32(int serpentine,
         *direction = 1;
     }
 }
-
-static void
-none_diffuse_none_float(float *data,
-                   int width,
-                   int height,
-                   int x,
-                   int y,
-                   int depth,
-                   float error,
-                   int direction,
-                   int pixelformat,
-                   int channel_index)
-{
-    (void)data;
-    (void)width;
-    (void)height;
-    (void)x;
-    (void)y;
-    (void)depth;
-    (void)error;
-    (void)direction;
-    (void)pixelformat;
-    (void)channel_index;
-}
-
-/*
- * Atkinson's kernel spreads the error within a 3x3 neighborhood using
- * symmetric 1/8 weights.  The float variant mirrors the integer version
- * but keeps the higher precision samples intact.
- */
-
-/*
- * Shared helper that applies a row of diffusion weights to neighbors on the
- * current or subsequent scanlines.  Each caller provides the offset table and
- * numerator/denominator pairs so the classic kernels can be described using a
- * compact table instead of open-coded loops.
- */
-
-/*
- * Jarvis, Judice, and Ninke kernel using the canonical 5x3 mask.  Three rows
- * of weights are applied with consistent 1/48 denominators to preserve the
- * reference diffusion matrix.
- */
 
 static SIXELSTATUS
 sixel_dither_apply_none_float32(
@@ -400,7 +350,6 @@ sixel_dither_apply_none_float32(
     int output_index;
     unsigned char palette_value_u8;
     float palette_value_float;
-    float error;
     int n;
     float *data;
     unsigned char *palette;
@@ -459,6 +408,45 @@ sixel_dither_apply_none_float32(
         have_palette_float = 1;
     } else {
         have_palette_float = 0;
+    }
+
+    /* Mapping must precede mutation of the float work row. A lookup reads
+     * only its own sample; after the row is mapped we preserve the historical
+     * replacement of every sample by its selected native palette entry. */
+    if (sixel_lookup_policy_select_batch(dither->method_for_diffuse)
+            && !use_transparent_fence && !dither->pipeline_6delta_enabled
+            && context->band_origin >= context->output_start
+            && context->band_origin >= 0
+            && context->width > 0 && context->height > 0
+            && context->lookup_policy->vtbl->map_pixels != NULL) {
+        if (dither->pipeline_logger != NULL) {
+            sixel_timeline_logger_logf(dither->pipeline_logger,
+                "lookup", "policy", "none-batch", -1, -1, 0, 0, 0, 0,
+                "float");
+        }
+        for (y = 0; y < context->height; ++y) {
+            absolute_y = context->band_origin + y;
+            none_sixel_dither_scanline_params_fixed_float32(
+                serpentine, absolute_y, context->width,
+                &start, &end, &step, &direction);
+            pos = y * context->width + start;
+            context->lookup_policy->vtbl->map_pixels(context->lookup_policy,
+                (unsigned char const *)(void const *)(data + pos * 3),
+                (size_t)context->width, step * 3 * (int)sizeof(float),
+                context->result + pos, step);
+            for (x = 0; x < context->width; ++x) {
+                pos = y * context->width + x;
+                color_index = context->result[pos];
+                for (n = 0; n < 3; ++n) {
+                    data[pos * 3 + n] = have_palette_float
+                        ? palette_float[color_index * float_depth + n]
+                        : sixel_pixelformat_byte_to_float(context->pixelformat,
+                            n, palette[color_index * 3 + n]);
+                }
+            }
+            sixel_dither_pipeline_row_notify(dither, absolute_y);
+        }
+        return SIXEL_OK;
     }
 
     lookup_hint = -1;
@@ -539,18 +527,7 @@ sixel_dither_apply_none_float32(
                                   n,
                                   palette_value_u8);
                     }
-                error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
-                none_diffuse_none_float(data + (size_t)n,
-                          context->width,
-                          context->height,
-                          x,
-                          y,
-                          context->depth,
-                          error,
-                          direction,
-                          context->pixelformat,
-                          n);
             }
         }
         if (absolute_y >= context->output_start) {

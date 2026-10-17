@@ -48,6 +48,7 @@ typedef struct sixel_filter_lookup_config {
     int float_depth;
     int ncolors;
     int method_for_largest;
+    int method_for_diffuse;
     int lut_policy;
     int lut_policy_override;
     int lut_policy_packing;

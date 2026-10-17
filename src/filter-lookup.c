@@ -140,6 +140,7 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     select_request.reqcolor = config->ncolors;
     select_request.optimize_lookup = optimize_lookup;
     select_request.lut_policy = config->lut_policy;
+    select_request.method_for_diffuse = config->method_for_diffuse;
     select_request.pixelformat = config->pixelformat;
     policy_name = sixel_lookup_policy_select_name_with_override(
         &select_request,

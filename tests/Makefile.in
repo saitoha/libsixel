@@ -1692,6 +1692,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/lookup/0013_lookup_parallel_dense_cache.c \
 	processing/lookup/0014_lookup_hint_contract.c \
 	processing/lookup/0015_lookup_batch_contract.c \
+	processing/lookup/0016_lookup_auto_dither.c \
+	processing/lookup/0017_lookup_none_batch_fences.c \
 	processing/dither/0001_dither_policy.c \
 	processing/dither/perturb/0018_perturb_keep_lookup.c \
 	processing/dither/perturb/0017_perturb_keep_early.c \
@@ -5430,6 +5432,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0013_lookup_parallel_dense_cache.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0014_lookup_hint_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0015_lookup_batch_contract.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0016_lookup_auto_dither.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0017_lookup_none_batch_fences.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0018_perturb_keep_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0017_perturb_keep_early.$(OBJEXT) \
@@ -9970,6 +9974,8 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0014_lookup_hint_contract.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0015_lookup_batch_contract.Po \
+	processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po \
+	processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po \
@@ -13850,6 +13856,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_LOOKUP_PARALLEL_DENSE_CACHE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_LOOKUP_HINT_CONTRACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_LOOKUP_BATCH_CONTRACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_LOOKUP_AUTO_DITHER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_LOOKUP_NONE_BATCH_FENCES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_COVER_ANCHOR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -17378,6 +17386,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0013_lookup_parallel_dense_cache.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0014_lookup_hint_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0015_lookup_batch_contract.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0016_lookup_auto_dither.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0017_lookup_none_batch_fences.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0018_perturb_keep_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0017_perturb_keep_early.c \
@@ -24670,6 +24680,12 @@ processing/lookup/test_runner-0014_lookup_hint_contract.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-0015_lookup_batch_contract.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-0016_lookup_auto_dither.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-0017_lookup_none_batch_fences.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/dither/$(am__dirstamp):
@@ -34086,6 +34102,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0014_lookup_hint_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0015_lookup_batch_contract.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po@am__quote@ # am--include-marker
@@ -57233,6 +57251,34 @@ processing/lookup/test_runner-0015_lookup_batch_contract.obj: processing/lookup/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0015_lookup_batch_contract.c' object='processing/lookup/test_runner-0015_lookup_batch_contract.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0015_lookup_batch_contract.obj `if test -f 'processing/lookup/0015_lookup_batch_contract.c'; then $(CYGPATH_W) 'processing/lookup/0015_lookup_batch_contract.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0015_lookup_batch_contract.c'; fi`
+
+processing/lookup/test_runner-0016_lookup_auto_dither.o: processing/lookup/0016_lookup_auto_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0016_lookup_auto_dither.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Tpo -c -o processing/lookup/test_runner-0016_lookup_auto_dither.o `test -f 'processing/lookup/0016_lookup_auto_dither.c' || echo '$(srcdir)/'`processing/lookup/0016_lookup_auto_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Tpo processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0016_lookup_auto_dither.c' object='processing/lookup/test_runner-0016_lookup_auto_dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0016_lookup_auto_dither.o `test -f 'processing/lookup/0016_lookup_auto_dither.c' || echo '$(srcdir)/'`processing/lookup/0016_lookup_auto_dither.c
+
+processing/lookup/test_runner-0016_lookup_auto_dither.obj: processing/lookup/0016_lookup_auto_dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0016_lookup_auto_dither.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Tpo -c -o processing/lookup/test_runner-0016_lookup_auto_dither.obj `if test -f 'processing/lookup/0016_lookup_auto_dither.c'; then $(CYGPATH_W) 'processing/lookup/0016_lookup_auto_dither.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0016_lookup_auto_dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Tpo processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0016_lookup_auto_dither.c' object='processing/lookup/test_runner-0016_lookup_auto_dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0016_lookup_auto_dither.obj `if test -f 'processing/lookup/0016_lookup_auto_dither.c'; then $(CYGPATH_W) 'processing/lookup/0016_lookup_auto_dither.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0016_lookup_auto_dither.c'; fi`
+
+processing/lookup/test_runner-0017_lookup_none_batch_fences.o: processing/lookup/0017_lookup_none_batch_fences.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0017_lookup_none_batch_fences.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Tpo -c -o processing/lookup/test_runner-0017_lookup_none_batch_fences.o `test -f 'processing/lookup/0017_lookup_none_batch_fences.c' || echo '$(srcdir)/'`processing/lookup/0017_lookup_none_batch_fences.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Tpo processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0017_lookup_none_batch_fences.c' object='processing/lookup/test_runner-0017_lookup_none_batch_fences.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0017_lookup_none_batch_fences.o `test -f 'processing/lookup/0017_lookup_none_batch_fences.c' || echo '$(srcdir)/'`processing/lookup/0017_lookup_none_batch_fences.c
+
+processing/lookup/test_runner-0017_lookup_none_batch_fences.obj: processing/lookup/0017_lookup_none_batch_fences.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0017_lookup_none_batch_fences.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Tpo -c -o processing/lookup/test_runner-0017_lookup_none_batch_fences.obj `if test -f 'processing/lookup/0017_lookup_none_batch_fences.c'; then $(CYGPATH_W) 'processing/lookup/0017_lookup_none_batch_fences.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0017_lookup_none_batch_fences.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Tpo processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0017_lookup_none_batch_fences.c' object='processing/lookup/test_runner-0017_lookup_none_batch_fences.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0017_lookup_none_batch_fences.obj `if test -f 'processing/lookup/0017_lookup_none_batch_fences.c'; then $(CYGPATH_W) 'processing/lookup/0017_lookup_none_batch_fences.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0017_lookup_none_batch_fences.c'; fi`
 
 processing/dither/test_runner-0001_dither_policy.o: processing/dither/0001_dither_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/test_runner-0001_dither_policy.o -MD -MP -MF processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo -c -o processing/dither/test_runner-0001_dither_policy.o `test -f 'processing/dither/0001_dither_policy.c' || echo '$(srcdir)/'`processing/dither/0001_dither_policy.c

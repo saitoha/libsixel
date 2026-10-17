@@ -9083,6 +9083,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
         --lookup_config.ncolors;
     }
     lookup_config.lut_policy = policy;
+    lookup_config.method_for_diffuse = dither->method_for_diffuse;
     lookup_config.lut_policy_override = dither->lut_policy_override;
     lookup_config.lut_policy_packing = dither->lut_policy_packing;
     lookup_config.lut_policy_packing_override =

@@ -118,9 +118,9 @@ y[p] = x[p]
 i[p] = nearest_palette_index(x[p])
 ```
 
-It still performs one palette lookup for every pixel. Do not confuse it with
-`--lookup-policy=none`, which selects a direct palette scan. The two options
-control different pipeline stages and can be used independently.
+Every pixel is assigned a palette index, with repeated colors eligible for reuse. Do not confuse this with `--lookup-policy=none`, which selects a direct palette scan. The two options control different pipeline stages and can be used independently.
+
+The byte and float CPU paths map complete rows through the lookup policy's [bulk operation](../lookup-policy/README.md#bulk-mapping-contract) when there is no active transparent fence, 6delta is disabled, the band's origin is nonnegative and at or after `output_start`, and the prepared policy supplies bulk mapping. The generic loop retains all conditional behavior otherwise. Raster and serpentine order are preserved, including approximate lookup cache insertion order. Every completed output row still triggers its producer notification. Float work pixels are replaced by the selected native palette values after mapping each row; retained pixels keep the generic path's behavior. Neither path calls a no-op diffusion kernel.
 
 This policy has no dither dependency between pixels, introduces no dither
 state, and adds only `Theta(P)` traversal work around the palette queries. It
@@ -1260,3 +1260,9 @@ The following 64x64 snake comparisons pin the admitted float path and verify act
 ### Coverage limits
 
 These tests cover opaque three-channel CPU candidates and the selected native float palette path. The GPU controls cover arithmetic candidates, automatic amplitudes, environment/numeric precedence and exclusion of a reserved omission key from the count. Metal admits gamma RGB888 with none, a_dither, x_dither or bluenoise and direct or Eytzinger lookup under AUTO; unsupported shapes fall back to CPU. FORCE retains its explicit error contract. A/X coordinate arithmetic, byte truncation and saturation match the CPU kernels. No neighbor error buffer or blue-noise texture sampling is needed for A/X. These tests do not establish temporal history, general transparency handling, or every blue-noise phase/gradient combination. Byte controls protect the serial candidate rule, which uses absolute image coordinates so that output does not depend on band boundaries. The [quality measurements](#a_dither-addition-based-positional-dither) describe their recorded configurations and do not cover every combination of candidate path, palette path, and dither method.
+
+### Undithered bulk rows
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DNONE-01 | Bulk and generic rows agree in byte and float modes, retain work-buffer and notification behavior, and honor transparent, clipped and 6delta pixels. | [tests/processing/lookup/0017_lookup_none_batch_fences.c](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.c), [tests/processing/lookup/0017_lookup_none_batch_fences.t](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.t) |
