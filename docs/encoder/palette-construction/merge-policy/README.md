@@ -64,6 +64,10 @@ The selected native K-means path keeps aggregate populations in double precision
 
 For example, provisional one-axis centers `-2`, `-1` and `3`, with weights `1`, `3` and `2`, have pair costs proportional to `3/4`, `96/5` and `50/3`. Ward merges the first pair into `-1.25` with weight `4`, leaving `3` with weight `2`. Bounds enforcement here would change both the centroid and subsequent distances. The selected path reports cluster-workspace allocation failure instead of truncating an unmerged palette or retrying a byte solver. The existing dense-matrix-to-full-scan fallback preserves the same Ward criterion.
 
+## Final representative selection
+
+Heckbert's explicit `-s` selects representatives after Ward reduction and the last Lloyd assignment. Ward carries distinct-color count, unweighted sums and channel extrema along its actual merge tree; Lloyd rebuilds those statistics from each assignment pass. Its pair costs and iterative centers continue to use population-weighted statistics. `center` exports the extrema midpoint, `average` exports the distinct-color mean, and `histogram` exports the existing weighted centroid. Empty Lloyd clusters retain their established center fallback. `auto` retains weighted-centroid export after actual reduction and center otherwise. Byte export rounds half up; extended float export stays fractional. The [quantization contract](../quantization/README.md#explicit-split-and-representative-controls-f-and-s) defines solver rejection and fixed-palette bypass behavior.
+
 ## Ward and Lloyd solve different steps
 
 Ward and Lloyd are not two interchangeable values of `--merge-policy`. Ward is the reduction rule used to move from `Q` clusters down to `K`; Lloyd is an optional refinement performed after that reduction.

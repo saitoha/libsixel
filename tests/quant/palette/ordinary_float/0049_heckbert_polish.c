@@ -7,5 +7,7 @@ test_ordinary_heckbert_polish(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return ordinary_heckbert_representative(SIXEL_REP_CENTER_BOX, 1) ? 0 : 1;
+    /* AUTO owns the weighted-mean contract after Ward. Explicit center
+     * now exports member extrema, covered by the Heckbert policy tests. */
+    return ordinary_heckbert_representative(SIXEL_REP_AUTO, 1) ? 0 : 1;
 }

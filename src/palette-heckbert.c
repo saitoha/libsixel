@@ -1906,6 +1906,7 @@ colormapFromBv(unsigned int newcolors,
 
     for (bi = 0U; bi < boxes; ++bi) {
         switch (methodForRep) {
+        case SIXEL_REP_AUTO:
         case SIXEL_REP_CENTER_BOX:
             centerBox(bv[bi].ind,
                       bv[bi].colors,
@@ -2087,6 +2088,30 @@ end:
  * aligned with their nearest tuples.  The loop iterates through assignment,
  * accumulation, and centroid update until convergence or the iteration limit.
  */
+/* Rebuild these statistics from assignments, never from rounded centers. */
+static void
+sixel_heckbert_rep_add(sixel_palette_rep_stats_t *stats,
+                       struct tupleint const *entry, unsigned int depth)
+{
+    unsigned int plane;
+    double value;
+
+    if (stats == NULL) {
+        return;
+    }
+    for (plane = 0U; plane < depth; ++plane) {
+        value = entry->tuple[plane];
+        stats->sums[plane] += value;
+        if (stats->colors == 0U || value < stats->min[plane]) {
+            stats->min[plane] = value;
+        }
+        if (stats->colors == 0U || value > stats->max[plane]) {
+            stats->max[plane] = value;
+        }
+    }
+    ++stats->colors;
+}
+
 static void
 sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                                   unsigned int depth,
@@ -2095,7 +2120,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                                   double *cluster_sums,
                                   unsigned int iterations,
                                   unsigned int *executed_iterations,
-                                  int pixelformat)
+                                  int pixelformat,
+                                  sixel_palette_rep_stats_t *stats)
 {
     double centers[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
     unsigned long cluster_weight_local[SIXEL_PALETTE_MAX];
@@ -2223,6 +2249,9 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         }
     }
     for (iteration = 0U; iteration < iterations; ++iteration) {
+        if (stats != NULL) {
+            memset(stats, 0, cluster_count * sizeof(*stats));
+        }
         assignment_changed = 0;
         center_changed = 0;
         /* Reset cluster accumulators in one contiguous pass. */
@@ -2374,6 +2403,9 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 }
             }
             offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
+            if (stats != NULL) {
+                sixel_heckbert_rep_add(stats + best_cluster, entry, depth);
+            }
             cluster_weight_local[best_cluster] += value;
             weighted_value = (double)value;
             /* Mirror the hot-path specialization for weighted sum updates. */
@@ -2481,6 +2513,8 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
                                    int pixelformat,
                                    tupletable2 *colormapP,
                                    int preserve_extended,
+                                   int method_for_rep,
+                                   sixel_palette_rep_stats_t const *stats,
                                    sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -2510,6 +2544,16 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
         for (plane = 0U; plane < depth; ++plane) {
             component = sums[(size_t)index * (size_t)depth + plane];
             component /= (double)weight;
+            /* Empty Lloyd clusters retain the existing centroid fallback. */
+            if (stats != NULL && stats[index].colors != 0U) {
+                if (method_for_rep == SIXEL_REP_CENTER_BOX) {
+                    component = (stats[index].min[plane]
+                        + stats[index].max[plane]) / 2.0;
+                } else if (method_for_rep == SIXEL_REP_AVERAGE_COLORS) {
+                    component = stats[index].sums[plane]
+                        / (double)stats[index].colors;
+                }
+            }
             if (!preserve_extended && component < 0.0) {
                 component = 0.0;
             }
@@ -2949,6 +2993,7 @@ mediancut(tupletable2 const colorfreqtable,
     int resolved_merge;
     unsigned long *cluster_weight;
     double *cluster_sums;
+    sixel_palette_rep_stats_t *rep_stats;
     int cluster_total;
     unsigned int plane;
     unsigned int offset;
@@ -2974,6 +3019,7 @@ mediancut(tupletable2 const colorfreqtable,
     bv = NULL;
     cluster_weight = NULL;
     cluster_sums = NULL;
+    rep_stats = NULL;
     cluster_total = 0;
     working_colors = newcolors;
     resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
@@ -3107,6 +3153,21 @@ mediancut(tupletable2 const colorfreqtable,
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        if (methodForRep == SIXEL_REP_CENTER_BOX ||
+                methodForRep == SIXEL_REP_AVERAGE_COLORS) {
+            rep_stats = sixel_allocator_calloc(allocator, boxes,
+                sizeof(*rep_stats));
+            if (rep_stats == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            for (bi = 0U; bi < boxes; ++bi) {
+                for (i = 0U; i < bv[bi].colors; ++i) {
+                    sixel_heckbert_rep_add(rep_stats + bi,
+                        colorfreqtable.table[bv[bi].ind + i], depth);
+                }
+            }
+        }
         for (bi = 0U; bi < boxes; ++bi) {
             offset = bv[bi].ind;
             size = bv[bi].colors;
@@ -3148,7 +3209,7 @@ mediancut(tupletable2 const colorfreqtable,
                                                      engine_name,
                                                      "palette/merge",
                                                      "merge");
-        cluster_total = sixel_palette_apply_merge(cluster_weight,
+        cluster_total = sixel_palette_merge_representatives(cluster_weight,
                                                   cluster_sums,
                                                   depth,
                                                   (int)boxes,
@@ -3158,6 +3219,7 @@ mediancut(tupletable2 const colorfreqtable,
                                                   pixelformat,
                                                   colorfreqtable
                                                       .preserve_extended,
+                                                  rep_stats,
                                                   allocator);
         if (colorfreqtable.preserve_extended && cluster_total < 1) {
             status = SIXEL_BAD_ALLOCATION;
@@ -3189,13 +3251,15 @@ mediancut(tupletable2 const colorfreqtable,
                                                   cluster_sums,
                                                   iteration_limit,
                                                   &iteration_actual,
-                                                  pixelformat);
+                                                  pixelformat,
+                                                  rep_stats);
             }
         }
         merge_status = sixel_palette_clusters_to_colormap(
             cluster_weight, cluster_sums, depth,
             (unsigned int)cluster_total, use_reversible, pixelformat,
-            colormapP, colorfreqtable.preserve_extended, allocator);
+            colormapP, colorfreqtable.preserve_extended, methodForRep,
+            rep_stats, allocator);
         merge_wall_stop = sixel_timer_now();
         if (merge_ms != NULL) {
             *merge_ms += (merge_wall_stop - merge_wall_start) * 1000.0;
@@ -3242,6 +3306,7 @@ mediancut(tupletable2 const colorfreqtable,
     status = SIXEL_OK;
 
 end:
+    sixel_allocator_free(allocator, rep_stats);
     if (bv != NULL) {
         sixel_allocator_free(allocator, bv);
     }

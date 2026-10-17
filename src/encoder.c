@@ -8228,6 +8228,16 @@ sixel_encoder_prepare_palette(
         goto end;
     }
     effective_quantize_model = quantizer_selection.effective;
+    /* Validate only when a palette is constructed. Fixed palettes and reuse
+     * have no representative-selection stage and intentionally bypass -s. */
+    if (encoder->method_for_rep != SIXEL_REP_AUTO &&
+            effective_quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        sixel_helper_set_additional_message(
+            "-s/--select-color requires heckbert; use -s auto with "
+            "kmeans, medoids or center.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
     requested_binning = (sixel_palette_binning_policy_t)
         palette_state->binning.policy.requested;
     binning_origin = palette_state->binning.policy.origin;

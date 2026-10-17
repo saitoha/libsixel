@@ -33,6 +33,8 @@ typedef struct ward_scan_cluster ward_scan_cluster_t;
 #define sixel_final_merge_lloyd_iterations ward_scan_get_lloyd
 #define sixel_final_merge_target ward_scan_target
 #define sixel_palette_apply_merge ward_scan_merge_integer
+#define sixel_palette_merge_representatives ward_scan_merge_representatives
+#define sixel_final_merge_rep_stats ward_scan_rep_stats
 #define sixel_palette_merge_weighted ward_scan_merge_weighted
 #define malloc ward_scan_malloc
 #define env_final_merge_additional_lloyd ward_scan_local_0
@@ -86,6 +88,8 @@ typedef struct ward_scan_cluster ward_scan_cluster_t;
 #undef sixel_final_merge_lloyd_iterations
 #undef sixel_final_merge_target
 #undef sixel_palette_apply_merge
+#undef sixel_palette_merge_representatives
+#undef sixel_final_merge_rep_stats
 #undef sixel_palette_merge_weighted
 #undef malloc
 #undef env_final_merge_additional_lloyd

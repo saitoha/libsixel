@@ -130,14 +130,9 @@ Median cut is deterministic for fixed inputs and settings, but it has no general
 
 `-f` / `--find-largest` selects the Heckbert box-splitting method. `norm` compares channel ranges, `lum` uses luminance-oriented weighting, and `pca` estimates the first principal direction and splits around a weighted median. `auto` defers to automatic/default resolution; it is not a fourth mathematical split method. An explicit split setting is retained when a Heckbert profile supplies defaults. Degenerate partitions can trigger the implementation's fallback directions, so selecting PCA does not guarantee that every individual split uses a principal axis.
 
-`-s` / `--select-color` selects the representative of a completed box: `center` uses the box center, `average` averages its represented colors, and `histogram` weights them by their occurrence counts. `auto` resolves to the default center representative. The distinction between `average` and `histogram` matters when a rare color and a frequent color occupy the same box.
+`-s` / `--select-color` selects the representative of each final Heckbert cluster, including after Ward and Lloyd: `center` is the midpoint of its member extrema, `average` is the unweighted mean of its distinct retained histogram colors, and `histogram` is the occurrence-weighted mean. Histogram binning and sampling determine which colors are retained. Byte representatives round to nearest, with exact halves rounded up; native float representatives retain fractions and extended coordinates. Reversible mapping and explicit snapping remain separate subsequent policies.
 
-```sh
-img2sixel -Q heckbert:profile=compat -f pca -s histogram \
-    -p 32 -F none image.png
-```
-
-These are palette-construction controls, not alternatives to nearest-color lookup or diffusion. They can act with the default requested palette size; an explicit `-p` is not required to enable construction. They do not configure the objectives of K-means, K-medoids, or K-center, and fixed palettes bypass their consumer. A subsequent merge/refinement stage can change the representatives, so keep `-F` fixed when comparing `-s`. Repeating either selector replaces its earlier value.
+`auto` uses center without actual Ward reduction and the weighted centroid after Ward. Explicit `-s center|average|histogram` is rejected when the resolved CLI solver is K-means, K-medoids or K-center: changing their final representatives would change their centroid, observed-member or radius objective. Use `-s auto` with those solvers. Structured external palettes, builtin palettes, preserved PAL8 inputs and reused palettes bypass construction and ignore `-s`. Image mapfiles that construct a palette obey the solver contract. These controls work with the default palette size; explicit `-p` is unnecessary. Repeating a selector replaces its earlier value.
 
 ### Deprecated complexion score
 

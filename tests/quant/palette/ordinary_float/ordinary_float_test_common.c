@@ -605,7 +605,7 @@ ordinary_heckbert_representative(int representative, int polish)
     expected[0] = representative == SIXEL_REP_CENTER_BOX ? .5
         : representative == SIXEL_REP_AVERAGE_COLORS ? .25 : .05;
     if (polish) {
-        expected[0] = .05;
+        /* Explicit methods keep their definition after reassignment. */
         sixel_set_final_merge_lloyd_iterations_override(1, 3);
     }
     if (SIXEL_FAILED(ordinary_new(&object))) {

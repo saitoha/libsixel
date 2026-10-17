@@ -67,6 +67,28 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode);
 int
 sixel_resolve_final_merge_mode(int final_merge_mode);
 
+/* Optional representative statistics follow Ward membership without affecting
+ * its centroid objective. Each source tuple is one distinct histogram color. */
+typedef struct sixel_palette_rep_stats {
+    unsigned int colors;
+    double sums[4];
+    double min[4];
+    double max[4];
+} sixel_palette_rep_stats_t;
+
+SIXEL_INTERNAL_API int
+sixel_palette_merge_representatives(unsigned long *weights,
+                                    double *sums,
+                                    unsigned int depth,
+                                    int cluster_count,
+                                    int target,
+                                    int final_merge_mode,
+                                    int use_reversible,
+                                    int pixelformat,
+                                    int preserve_extended,
+                                    sixel_palette_rep_stats_t *stats,
+                                    sixel_allocator_t *allocator);
+
 /* Nominal byte-scaled double coordinates may remain out of range when
  * preserve_extended is set. Returns -1 on workspace allocation failure in
  * that mode; callers must report failure rather than truncate the palette. */

@@ -230,7 +230,34 @@ struct sixel_final_merge_cluster {
     double g;
     double b;
     double count;
+    sixel_palette_rep_stats_t *stats;
 };
+
+/* Merge auxiliary statistics in the same tree as the weighted centers. */
+static void
+sixel_final_merge_rep_stats(sixel_palette_rep_stats_t *lhs,
+                            sixel_palette_rep_stats_t const *rhs)
+{
+    unsigned int plane;
+
+    if (lhs == NULL || rhs == NULL || rhs->colors == 0U) {
+        return;
+    }
+    if (lhs->colors == 0U) {
+        *lhs = *rhs;
+        return;
+    }
+    lhs->colors += rhs->colors;
+    for (plane = 0U; plane < 4U; ++plane) {
+        lhs->sums[plane] += rhs->sums[plane];
+        if (rhs->min[plane] < lhs->min[plane]) {
+            lhs->min[plane] = rhs->min[plane];
+        }
+        if (rhs->max[plane] > lhs->max[plane]) {
+            lhs->max[plane] = rhs->max[plane];
+        }
+    }
+}
 
 static double
 sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
@@ -738,6 +765,8 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
             / merged_weight;
         sixel_final_merge_snap_cluster(&merged, pixelformat,
             SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
+        merged.stats = clusters[best_i].stats;
+        sixel_final_merge_rep_stats(merged.stats, clusters[best_j].stats);
         clusters[best_i] = merged;
         clusters[best_j].count = 0.0;
         clusters[best_j].r = 0.0;
@@ -1060,6 +1089,8 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
             / merged_weight;
         sixel_final_merge_snap_cluster(&merged, pixelformat,
             SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
+        merged.stats = clusters[best_i].stats;
+        sixel_final_merge_rep_stats(merged.stats, clusters[best_j].stats);
         clusters[best_i] = merged;
         clusters[best_j].count = 0.0;
         clusters[best_j].r = 0.0;
@@ -1192,6 +1223,7 @@ sixel_palette_merge_impl(unsigned long *weights,
                           int use_reversible,
                           int pixelformat,
                           int preserve_extended,
+                          sixel_palette_rep_stats_t *stats,
                           sixel_allocator_t *allocator)
 {
     sixel_final_merge_cluster_t *clusters;
@@ -1238,6 +1270,7 @@ sixel_palette_merge_impl(unsigned long *weights,
         weight = populations != NULL
             ? populations[index] : (double)weights[index];
         clusters[index].count = weight;
+        clusters[index].stats = stats != NULL ? stats + index : NULL;
         if (weight <= 0.0) {
             clusters[index].r = 0.0;
             clusters[index].g = 0.0;
@@ -1285,6 +1318,9 @@ sixel_palette_merge_impl(unsigned long *weights,
     for (index = 0; index < cluster_count && result < limit; ++index) {
         if (clusters[index].count <= 0.0) {
             continue;
+        }
+        if (stats != NULL) {
+            stats[result] = *clusters[index].stats;
         }
         weight = clusters[index].count;
         if (populations != NULL) {
@@ -1394,7 +1430,25 @@ sixel_palette_apply_merge(unsigned long *weights,
 {
     return sixel_palette_merge_impl(weights, NULL, sums, depth,
         cluster_count, target, final_merge_mode, use_reversible,
-        pixelformat, preserve_extended, allocator);
+        pixelformat, preserve_extended, NULL, allocator);
+}
+
+int
+sixel_palette_merge_representatives(unsigned long *weights,
+                                    double *sums,
+                                    unsigned int depth,
+                                    int cluster_count,
+                                    int target,
+                                    int final_merge_mode,
+                                    int use_reversible,
+                                    int pixelformat,
+                                    int preserve_extended,
+                                    sixel_palette_rep_stats_t *stats,
+                                    sixel_allocator_t *allocator)
+{
+    return sixel_palette_merge_impl(weights, NULL, sums, depth,
+        cluster_count, target, final_merge_mode, use_reversible,
+        pixelformat, preserve_extended, stats, allocator);
 }
 
 /* Fractional populations are measures, not rounded pixel counts. In
@@ -1414,7 +1468,7 @@ sixel_palette_merge_weighted(double *populations,
 {
     return sixel_palette_merge_impl(NULL, populations, sums, depth,
         cluster_count, target, final_merge_mode, use_reversible,
-        pixelformat, preserve_extended, allocator);
+        pixelformat, preserve_extended, NULL, allocator);
 }
 
 /* emacs Local Variables:      */

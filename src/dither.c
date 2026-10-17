@@ -2718,7 +2718,8 @@ sixel_dither_initialize_internal(
     palette_request.pixelformat = palette_pixelformat;
     palette_request.requested_colors = (unsigned int)dither->reqcolors;
     palette_request.method_for_largest = method_for_largest_for_palette;
-    palette_request.method_for_rep = dither->method_for_rep;
+    /* Preserve AUTO until the builder knows whether Ward actually ran. */
+    palette_request.method_for_rep = method_for_rep;
     palette_request.quality_mode = dither->quality_mode;
     palette_request.force_palette = dither->force_palette;
     palette_request.use_reversible = sixel_palette_snap_is_enabled();

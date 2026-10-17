@@ -31,13 +31,21 @@ static int const ward_models[] = {
 static char const *const ward_quantizers[] = {
     "kmeans:seed=1", "center:seed=1", "medoids:seed=1"
 };
+/* Mirror the private Ward workspace layout for the targeted allocation
+ * failure. The representative-statistics pointer is not a fifth channel. */
+struct ward_cluster_allocation_layout {
+    double channels_and_population[4];
+    sixel_palette_rep_stats_t *stats;
+};
+
 static int ward_fail;
 static int ward_fail_cluster;
 
 static void *
 ward_malloc(size_t size)
 {
-    if (ward_fail_cluster && size == 3u * 4u * sizeof(double)) {
+    if (ward_fail_cluster &&
+            size == 3u * sizeof(struct ward_cluster_allocation_layout)) {
         ward_fail_cluster = 0;
         return NULL;
     }
