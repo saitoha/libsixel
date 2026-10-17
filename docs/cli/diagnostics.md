@@ -71,6 +71,10 @@ Use `-S` or bounded playback when recording animations. An infinite loop produce
 | DG-04 | A direct `sixel_encoder_encode_frame()` call records its own `main`/`encoder` begin and done events around the palette and band stages, so library callers get the same timeline as file encoding. | [tests/processing/timeline/0006_timeline_encode_frame_session.t](../../tests/processing/timeline/0006_timeline_encode_frame_session.t) |
 | DG-05 | Sample extraction records one `sample-start`/`sample-finish` pair on the encoding thread, closing before palette construction, for both automatic and explicit full-frame sampling. | [tests/processing/timeline/0007_timeline_sample_interval.t](../../tests/processing/timeline/0007_timeline_sample_interval.t) |
 
+| DG-06 | Concurrent encoder/decoder producers emit nonempty JSONL with the required fields and at least two distinct sessions; the shell verifies the flushed file and reports native failure status and the first record. | [tests/processing/timeline/0002_timeline_parallel_encode_decode.t](../../tests/processing/timeline/0002_timeline_parallel_encode_decode.t) |
+| DG-07 | Sequential loggers share the writer clock origin: the shell observes ordered first/second events and a nonzero second timestamp after the wait, with JSONL diagnostics on failure. | [tests/processing/timeline/0003_timeline_clock_origin.t](../../tests/processing/timeline/0003_timeline_clock_origin.t) |
+| DG-08 | Timeline logger/writer ownership, initialization, and native-producer/shell-verifier boundaries remain componentized. | [tests/_static/sh/staticcheck-timeline-logging-boundary.sh](../../tests/_static/sh/staticcheck-timeline-logging-boundary.sh) |
+
 ### Coverage boundary
 
 The [diagnostic suites](../../tests/diagnostics/) test selected record families, and the suggestion/abort documents own their respective controls. A parseable log does not establish scheduling performance or exhaustive event coverage. Human messages, planner layouts, and third-party decoder errors are not all stable machine interfaces merely because `-x code` was selected.

@@ -1,4 +1,6 @@
 #!/bin/sh
+# Staticcheck: staticcheck-kcenter-auto-perceptual-preference
+# Policy: docs/testing/staticcheck.md
 # TAP test: static contract for auto+perceptual+OKLab hybrid preference.
 
 set -eux

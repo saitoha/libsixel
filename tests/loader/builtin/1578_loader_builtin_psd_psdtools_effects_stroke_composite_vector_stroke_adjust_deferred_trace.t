@@ -1,4 +1,6 @@
 #!/bin/sh
+# Staticcheck: staticcheck-psd-deferred-stroke-adjust
+# Policy: docs/testing/staticcheck.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred miter stroke-adjust diagnostics stay mapped after split.
 

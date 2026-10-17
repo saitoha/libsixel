@@ -1,4 +1,6 @@
 #!/bin/sh
+# Staticcheck: staticcheck-psd-deferred-solid-overlay
+# Policy: docs/testing/staticcheck.md
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify deferred solid-overlay diagnostic codes remain mapped in PSD source.
 

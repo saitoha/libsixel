@@ -27,8 +27,40 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
+# Source-only TAP contracts retain ordinary test-harness coverage. Discover
+# their stable roles once; the registrations below require exactly one owner.
+find "$src_root/tests" -type f -name '*.t' -exec awk '
+/^# Staticcheck: / {
+    if (FNR > 20 || NF != 3 || $3 !~ /^staticcheck-[a-z0-9-]+$/) {
+        print FILENAME ": invalid Staticcheck registration" > "/dev/stderr"
+        exit 1
+    }
+    print $3 "|" FILENAME
+}
+' {} + > "$tmpdir/source-contracts"
+
+run_source_contract() {
+    run_case_tap "$1" run_source_contract_test "$1"
+}
+
+# shellcheck disable=SC2329
+run_source_contract_test() {
+    contract_name=$1
+    contract_path=$(awk -F "|" -v name="$contract_name" '
+        $1 == name { path = $2; count++ }
+        END { if (count != 1) exit 1; print path }
+    ' "$tmpdir/source-contracts") || {
+        echo "1..1"
+        echo "not ok 1 - $contract_name requires exactly one Staticcheck owner"
+        return 1
+    }
+    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/$contract_name" \
+        TOP_SRCDIR="$TOP_SRCDIR" TOP_BUILDDIR="$TOP_BUILDDIR" \
+        sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" "$contract_path"
+}
+
 total=$(awk '
-$1 ~ /^run_case_(tap|plain|skip)$/ {
+$1 ~ /^(run_case_(tap|plain|skip)|run_source_contract)$/ {
     name=$2
     gsub(/"/, "", name)
     if (name ~ /^staticcheck-/) {
@@ -670,26 +702,11 @@ run_case_tap "staticcheck-test-plan-links" \
     "$src_root/tests/_static/sh/staticcheck-test-plan-links.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-loader-builtin-1464-static-contract" \
-    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1464" \
-    TOP_SRCDIR="$TOP_SRCDIR" \
-    TOP_BUILDDIR="$TOP_BUILDDIR" \
-    sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
-    "$src_root/tests/loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t" || fail_and_exit $?
+run_source_contract "staticcheck-psd-deferred-solid-overlay" || fail_and_exit $?
 
-run_case_tap "staticcheck-loader-builtin-1578-static-contract" \
-    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1578" \
-    TOP_SRCDIR="$TOP_SRCDIR" \
-    TOP_BUILDDIR="$TOP_BUILDDIR" \
-    sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
-    "$src_root/tests/loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t" || fail_and_exit $?
+run_source_contract "staticcheck-psd-deferred-stroke-adjust" || fail_and_exit $?
 
-run_case_tap "staticcheck-quant-palette-init-0073-static-contract" \
-    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-quant-palette-init-0073" \
-    TOP_SRCDIR="$TOP_SRCDIR" \
-    TOP_BUILDDIR="$TOP_BUILDDIR" \
-    sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
-    "$src_root/tests/quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t" || fail_and_exit $?
+run_source_contract "staticcheck-kcenter-auto-perceptual-preference" || fail_and_exit $?
 
 printf 'staticcheck summary: total=%d pass=%d skip=%d fail=%d\n' \
     "$index" "$pass_count" "$skip_count" "$fail_count"

@@ -86,4 +86,26 @@ END { exit target && runner ? 0 : 1 }
     exit 1
 }
 
+# Source-only TAP contracts register stable roles, not numbered filenames.
+# Check both directions so a new marker cannot silently stay unregistered.
+awk '
+$1 == "run_source_contract" {
+    name = $2
+    gsub(/"/, "", name)
+    print name
+}
+' "$suite_file" | LC_ALL=C sort > "$tmpdir/source-registered"
+find "$src_root/tests" -type f -name '*.t' -exec awk '
+/^# Staticcheck:/ { print $3 }
+' {} + | LC_ALL=C sort > "$tmpdir/source-declared"
+uniq -d "$tmpdir/source-declared" > "$tmpdir/source-duplicates"
+comm -3 "$tmpdir/source-declared" "$tmpdir/source-registered" \
+    > "$tmpdir/source-drift"
+test ! -s "$tmpdir/source-duplicates" -a ! -s "$tmpdir/source-drift" || {
+    echo "not ok 1 - staticcheck suite registration is synchronized"
+    echo "# duplicate, unregistered, or missing source-contract roles:"
+    sed 's/^/# /' "$tmpdir/source-duplicates" "$tmpdir/source-drift"
+    exit 1
+}
+
 echo "ok 1 - staticcheck suite registration is synchronized"

@@ -1,6 +1,9 @@
 #!/bin/sh
 # Emit TAP for legacy -y scan option usage in shell tests.
 
+# The named rejection test is the sole allowlisted use of the retired option;
+# its identity is an exception boundary, not a behavioral coverage inventory.
+
 set -eu
 
 echo "1..1"
@@ -23,7 +26,7 @@ missing="$tmpdir/missing.txt"
 status=0
 
 if test ! -f "$allow_test"; then
-    echo "# tests/cli/options/matching: missing 0147 legacy -y rejection test" \
+    echo "# missing legacy -y allowlist test: $allow_test" \
         >> "$missing"
     status=1
 fi

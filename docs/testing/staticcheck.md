@@ -112,11 +112,15 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 
 | ID | Staticcheck meta-contract | Owning check |
 | --- | --- | --- |
-| SC-01 | Every standalone `staticcheck-*.sh` implementation other than the runner itself is registered in the umbrella suite, the suite does not reference missing implementations, and both Autotools and Meson invoke that suite. | [tests/_static/sh/staticcheck-staticcheck-suite-sync.sh](../../tests/_static/sh/staticcheck-staticcheck-suite-sync.sh) |
+| SC-01 | Every standalone `staticcheck-*.sh` implementation other than the runner itself is registered in the umbrella suite, the suite does not reference missing implementations, source-only TAP roles have exactly one owner and one registration, and both Autotools and Meson invoke that suite. | [tests/_static/sh/staticcheck-staticcheck-suite-sync.sh](../../tests/_static/sh/staticcheck-staticcheck-suite-sync.sh) |
 | SC-02 | This document and its owning meta-checks maintain complete reciprocal links. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
 | SC-03 | Exhaustive test-plan markers, their scoped test links, and reciprocal test comments remain complete and duplicate-free. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
 | SC-04 | The actual TAP dispatcher preserves failure diagnostics and rejects failed, missing, malformed, misnumbered, prematurely terminated, or bailed-out results while distinguishing mixed success/skip from all-skip. | [tests/_static/sh/staticcheck-tap-dispatch.sh](../../tests/_static/sh/staticcheck-tap-dispatch.sh) |
 | SC-05 | Registry image-evidence inspection accepts supported assertion forms but detects missing assignments, wrong bindings, missing consumers, missing output comparisons, and missing independent image references. | [tests/_static/sh/staticcheck-suboption-image-coverage.sh](../../tests/_static/sh/staticcheck-suboption-image-coverage.sh) |
+
+| SC-06 | PSD source retains the deferred solid-overlay and split diagnostic mappings. | [tests/loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t](../../tests/loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t) |
+| SC-07 | PSD source retains the deferred miter stroke-adjust diagnostic, adjustment gate, and coverage-join call. | [tests/loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t](../../tests/loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t) |
+| SC-08 | The k-center constraint source contains the auto/perceptual/OKLab hybrid-preference comparison and dispatch contract. | [tests/quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t](../../tests/quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t) |
 
 ### Coverage boundary
 

@@ -3,6 +3,9 @@
 # Policy: docs/testing/staticcheck.md
 # Mutations below are literal shell source, not values to expand here.
 # shellcheck disable=SC2016
+# Named tests are mutation fixtures for this checker itself. Their exact
+# assertion syntax is the input under test, not a behavioral coverage ledger.
+
 set -eu
 
 echo '1..1'
@@ -74,6 +77,11 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
             esac
             ;;
     esac
+    test -f "$fixture" || {
+        echo "not ok 1 - registry image-evidence fixtures exist"
+        echo "# missing checker fixture: $fixture"
+        exit 1
+    }
     PATTERN_NEEDLE="$needle" PATTERN_REPLACEMENT="$replacement" awk '
     BEGIN { needle = ENVIRON["PATTERN_NEEDLE"]; replacement = ENVIRON["PATTERN_REPLACEMENT"] }
     {

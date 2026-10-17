@@ -1,5 +1,7 @@
 #!/bin/sh
 # Emit TAP for timeline logging component boundary checks.
+# Behavioral session and clock assertions belong to policy-linked TAP tests.
+# Policy: docs/cli/diagnostics.md
 
 set -eu
 
@@ -29,8 +31,7 @@ test ! -e "$src_root/src/logger.h" || {
 }
 
 find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    -type f \( -name '*.[ch]' -o -name '*.inc.c' \) -print |
-awk -v src_root="$src_root" '
+    -type f \( -name '*.[ch]' -o -name '*.inc.c' \) -exec awk -v src_root="$src_root" '
 function rel(path) {
     sub("^" src_root "/", "", path)
     return path
@@ -42,12 +43,12 @@ FILENAME != last_file {
 /# *include[ \t]+"logger\.h"/ {
     print path ":" FNR ": old logger.h include is forbidden"
 }
-	/sixel_logger_t/ {
-	    print path ":" FNR ": old sixel_logger_t type is forbidden"
-	}
-	/sixel_logger_/ {
-	    print path ":" FNR ": old sixel_logger_ symbol is forbidden"
-	}
+    /sixel_logger_t/ {
+        print path ":" FNR ": old sixel_logger_t type is forbidden"
+    }
+    /sixel_logger_/ {
+        print path ":" FNR ": old sixel_logger_ symbol is forbidden"
+    }
 /sixel_timeline_logger_t[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*;/ {
     print path ":" FNR ": timeline logger must be held by pointer"
 }
@@ -60,8 +61,9 @@ FILENAME != last_file {
 /timeline_logger.*enabled|timeline_logger.*flush/ {
     print path ":" FNR ": timeline_logger IDL must not expose enabled or flush"
 }
-/timeline_writer.*enabled/ {
-    print path ":" FNR ": timeline_writer IDL must not expose enabled"
+# A path-policy probe is allowed; an enabled method on the writer is not.
+/sixel_timeline_writer_is_enabled|timeline_writer.*->[ \t]*enabled/ {
+    print path ":" FNR ": timeline writer must not expose an enabled method"
 }
 /logger->[ \t]*(active|file|delegate)/ {
     print path ":" FNR ": timeline logger direct field access is forbidden"
@@ -90,17 +92,11 @@ FILENAME ~ /\/tests\/processing\/timeline\/.*\.c$/ &&
     print path ":" FNR \
         ": timeline helper names must be unique for amalgamation"
 }
-FILENAME ~ /\/tests\/processing\/timeline\/000[23]_.*\.c$/ &&
-    /sixel_compat_fopen[ \t]*\(|fopen[ \t]*\(|fgets[ \t]*\(/ {
-    print path ":" FNR \
-        ": timeline producer must not read back JSONL in native process"
-}
-'
+' {} +
 
 find "$src_root/amalgamation" "$src_root/wic" "$src_root/src" \
     -type f \( -name 'Makefile.am' -o -name 'Makefile.in' \
-        -o -name 'meson.build' \) -print |
-awk -v src_root="$src_root" '
+        -o -name 'meson.build' \) -exec awk -v src_root="$src_root" '
 function rel(path) {
     sub("^" src_root "/", "", path)
     return path
@@ -112,7 +108,7 @@ FILENAME != last_file {
 /(^|[^A-Za-z0-9_-])logger\.(c|h)([^A-Za-z0-9_-]|$)/ {
     print path ":" FNR ": old logger build input is forbidden"
 }
-'
+' {} +
 
 awk -v src_root="$src_root" '
 /sixel_timeline_writer_init_storage[ \t]*\(/ {
@@ -160,6 +156,7 @@ in_func && /sixel_allocator_new[ \t]*\(/ {
 ' "$src_root/src/timeline-logger.c"
 
 awk '
+FNR == 1 { in_func = 0 }
 /^timeline_parallel_encode_decode\(void\)/ {
     in_func = 1
     saw_log_path_zero = 0
@@ -173,22 +170,21 @@ in_func && /sixel_compat_strcpy[ \t]*\([ \t]*log_path[ \t]*,/ {
 }
 in_func && /timeline_build_source_path\(/ {
     if (!saw_log_path_zero) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.c:" FNR \
+        print FILENAME ":" FNR \
             ": log_path must be zeroed before early cleanup paths"
     }
 }
 in_func && /sixel_mutex_init[ \t]*\(/ {
     if (!saw_log_path_copy) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.c:" FNR \
+        print FILENAME ":" FNR \
             ": SIXEL_LOG_PATH must be copied before writer use"
     }
     in_func = 0
 }
-' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
+' "$src_root"/tests/processing/timeline/*.c
 
 awk '
+FNR == 1 { in_func = 0 }
 /^timeline_clock_origin_is_shared\(void\)/ {
     in_func = 1
     saw_log_path_zero = 0
@@ -202,155 +198,103 @@ in_func && /sixel_compat_strcpy[ \t]*\([ \t]*log_path[ \t]*,/ {
 }
 in_func && /sixel_allocator_new[ \t]*\(/ {
     if (!saw_log_path_zero) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.c:" FNR \
+        print FILENAME ":" FNR \
             ": log_path must be zeroed before early cleanup paths"
     }
     if (!saw_log_path_copy) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.c:" FNR \
+        print FILENAME ":" FNR \
             ": SIXEL_LOG_PATH must be copied before writer use"
     }
     in_func = 0
 }
-' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
+' "$src_root"/tests/processing/timeline/*.c
 
+# Environment setup and the single native producer boundary apply to the
+# whole timeline suite. Behavioral JSONL assertions execute in the TAP tests.
 awk '
 /--env[ \t]+SIXEL_LOG_PATH=/ {
-    print "tests/processing/timeline/" \
-        "0002_timeline_parallel_encode_decode.t:" FNR \
-        ": timeline tests must not rely on test_runner --env"
+    print FILENAME ":" FNR ": timeline tests must not rely on test_runner --env"
 }
-/timeline\/0002_timeline_parallel_encode_decode_verify/ {
-    print "tests/processing/timeline/" \
-        "0002_timeline_parallel_encode_decode.t:" FNR \
-        ": timeline TAP must not launch a second MSVC verifier process"
+/timeline\/[^"[:space:]]*_verify/ {
+    print FILENAME ":" FNR ": timeline TAP must not launch a native verifier"
 }
-/test_runner exit status/ {
-    saw_failure_status_diag = 1
-}
-/timeline JSONL first line/ {
-    saw_failure_line_diag = 1
-}
-/timeline JSONL has fewer than two sessions/ {
-    saw_shell_session_verify = 1
-}
-/SIXEL_ENABLE_THREADS/ {
-    saw_thread_skip = 1
-}
-END {
-    if (!saw_failure_status_diag || !saw_failure_line_diag) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.t:" \
-            ": timeline failure must print JSONL diagnostics"
-    }
-    if (!saw_shell_session_verify) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.t:" \
-            ": timeline TAP must verify multiple sessions"
-    }
-    if (!saw_thread_skip) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.t:" \
-            ": timeline TAP must skip no-threads builds"
-    }
-}
-' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
+' "$src_root"/tests/processing/timeline/*.t
 
 awk '
-/--env[ \t]+SIXEL_LOG_PATH=/ {
-    print "tests/processing/timeline/" \
-        "0003_timeline_clock_origin.t:" FNR \
-        ": timeline tests must not rely on test_runner --env"
-}
-/timeline\/0003_timeline_clock_origin_verify/ {
-    print "tests/processing/timeline/" \
-        "0003_timeline_clock_origin.t:" FNR \
-        ": timeline TAP must not launch a second MSVC verifier process"
-}
-/test_runner exit status/ {
-    saw_failure_status_diag = 1
-}
-/timeline JSONL first line/ {
-    saw_failure_line_diag = 1
-}
-/timeline clock origin regressed/ {
-    saw_shell_clock_verify = 1
-}
-END {
-    if (!saw_failure_status_diag || !saw_failure_line_diag) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.t:" \
-            ": timeline failure must print JSONL diagnostics"
-    }
-    if (!saw_shell_clock_verify) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.t:" \
-            ": timeline TAP must verify the shared clock origin"
-    }
-}
-' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
-
-awk '
- /timeline\/000[23].*_verify/ {
+ /timeline\/[^"[:space:]]*_verify/ {
     print "tests/test_runner.c:" FNR \
         ": timeline verifier entry points must not be restored"
 }
 ' "$src_root/tests/test_runner.c"
 
 awk '
-	/^timeline_parallel_encode_decode\(void\)/ {
-	    in_func = 1
-	}
-	in_func && /timeline_flush_writer[ \t]*\([ \t]*log_path[ \t]*\)/ {
-	    saw_flush = 1
-	}
-	in_func && /timeline_verify_jsonl[ \t]*\([ \t]*log_path[ \t]*\)/ {
-	    saw_inline_verify = 1
-	}
-	in_func && /^#endif/ {
-	    in_func = 0
-	}
-	END {
-	    if (!saw_flush) {
-	        print "tests/processing/timeline/" \
-	            "0002_timeline_parallel_encode_decode.c:" \
-	            ": producer must flush JSONL before returning success"
-	    }
-	    if (saw_inline_verify) {
-	        print "tests/processing/timeline/" \
-	            "0002_timeline_parallel_encode_decode.c:" \
-	            ": producer must leave JSONL verification to TAP shell"
-	    }
-	}
-	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
+    FNR == 1 { in_func = 0 }
+    /^timeline_parallel_encode_decode\(void\)/ {
+        in_func = 1
+        producer_file = FILENAME
+    }
+    in_func && /timeline_flush_writer[ \t]*\([ \t]*log_path[ \t]*\)/ {
+        saw_flush = 1
+    }
+    in_func && /timeline_verify_jsonl[ \t]*\([ \t]*log_path[ \t]*\)/ {
+        saw_inline_verify = 1
+    }
+    in_func && /^#endif/ {
+        in_func = 0
+    }
+    END {
+        if (!saw_flush) {
+            print producer_file \
+                ": producer must flush JSONL before returning success"
+        }
+        if (saw_inline_verify) {
+            print producer_file \
+                ": producer must leave JSONL verification to TAP shell"
+        }
+    }
+' "$src_root"/tests/processing/timeline/*.c
 
-	awk '
-	/^timeline_clock_origin_is_shared\(void\)/ {
-	    in_func = 1
-	}
-	in_func && /writer->[ \t]*vtbl->[ \t]*flush[ \t]*\([ \t]*writer[ \t]*\)/ {
-	    saw_flush = 1
-	}
-	in_func && /timeline_read_clock_samples[ \t]*\([ \t]*log_path[ \t]*,/ {
-	    saw_inline_verify = 1
-	}
-	in_func && /return[ \t]+success[ \t]*;/ {
-	    in_func = 0
-	}
-	END {
-	    if (!saw_flush) {
-	        print "tests/processing/timeline/" \
-	            "0003_timeline_clock_origin.c:" \
-	            ": producer must flush JSONL before returning success"
-	    }
-	    if (saw_inline_verify) {
-	        print "tests/processing/timeline/" \
-	            "0003_timeline_clock_origin.c:" \
-	            ": producer must leave clock JSONL verification to TAP shell"
-	    }
-	}
-	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
+awk '
+    FNR == 1 { in_func = 0 }
+    /^timeline_clock_origin_is_shared\(void\)/ {
+        in_func = 1
+        producer_file = FILENAME
+    }
+    in_func && /writer->[ \t]*vtbl->[ \t]*flush[ \t]*\([ \t]*writer[ \t]*\)/ {
+        saw_flush = 1
+    }
+    in_func && /timeline_read_clock_samples[ \t]*\([ \t]*log_path[ \t]*,/ {
+        saw_inline_verify = 1
+    }
+    in_func && /return[ \t]+success[ \t]*;/ {
+        in_func = 0
+    }
+    END {
+        if (!saw_flush) {
+            print producer_file \
+                ": producer must flush JSONL before returning success"
+        }
+        if (saw_inline_verify) {
+            print producer_file \
+                ": producer must leave clock JSONL verification to TAP shell"
+        }
+    }
+' "$src_root"/tests/processing/timeline/*.c
+# Tests borrowing SIXEL_LOG_PATH are native producers for shell verification.
+# Inspect the complete file because helpers can precede the getenv call.
+awk '
+/sixel_compat_getenv[ \t]*\("SIXEL_LOG_PATH"\)/ { producer[FILENAME] = 1 }
+/sixel_compat_fopen[ \t]*\(|fopen[ \t]*\(|fgets[ \t]*\(/ {
+    reader[FILENAME] = FNR
+}
+END {
+    for (file in producer) {
+        if (file in reader) {
+            print file ":" reader[file] ": native timeline producer must not read JSONL"
+        }
+    }
+}
+' "$src_root"/tests/processing/timeline/*.c
 } >>"$report"
 
 if test -s "$report"; then

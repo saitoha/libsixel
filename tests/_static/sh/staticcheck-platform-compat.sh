@@ -20,6 +20,9 @@
 # Coverage: MAC-01 MAC-02 POSIX-01 POSIX-02 HAIKU-01 HAIKU-02
 # Coverage: SOL-01 SOL-02 SOL-03 SOL-04
 
+# Named tests pin platform compatibility seams (Haiku skips, Solaris binary
+# probes, and builtin round trips), not a behavioral coverage inventory.
+
 set -eu
 
 src_root=$1
@@ -49,6 +52,10 @@ require_fixed()
     pattern=$1
     path=$2
 
+    test -f "$src_root/$path" || {
+        fail "missing compatibility file: $path"
+        return
+    }
     grep -F -- "$pattern" "$src_root/$path" >/dev/null 2>&1 ||
         fail "$path is missing: $pattern"
 }
@@ -447,6 +454,8 @@ require_fixed '00 00 00 1f 00 00 00 05' \
     tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t
 require_fixed 'loader/image_values' \
     tests/loader/builtin/0016_roundtrip_rgba_samples.t
+# The shell variables are literal source fragments.
+# shellcheck disable=SC2016
 require_fixed '"${output_sixel}" "${output_png}" '"'"'builtin:Enone!'"'"' 0' \
     tests/loader/builtin/0016_roundtrip_rgba_samples.t
 require_fixed '#if defined(_MSC_VER)' assessment/lsqa.c

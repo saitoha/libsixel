@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/diagnostics.md
 # Verify timeline sessions share the writer clock origin.
 
 set -eux

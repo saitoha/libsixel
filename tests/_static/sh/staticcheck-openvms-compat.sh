@@ -3,6 +3,9 @@
 # Policy: docs/misc/platforms/openvms.md
 # Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12 OV-14 OV-17
 
+# Named tests form the OpenVMS compatibility ledger: each records a specific
+# RMS record, native exit-status, or GNV I/O workaround, not suite coverage.
+
 set -eu
 
 src_root=$1
@@ -20,6 +23,10 @@ require_fixed()
     pattern=$1
     path=$2
 
+    test -f "$src_root/$path" || {
+        fail "missing compatibility file: $path"
+        return
+    }
     grep -F -- "$pattern" "$src_root/$path" >/dev/null 2>&1 ||
         fail "$path is missing: $pattern"
 }

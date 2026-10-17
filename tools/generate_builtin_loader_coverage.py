@@ -214,7 +214,7 @@ def opening_observation(lines: list[str]) -> str | None:
                 break
             continue
         text = line[1:].strip()
-        if text.startswith(("Policy:", "Test-plan:", "shellcheck")):
+        if text.startswith(("Policy:", "Test-plan:", "Staticcheck:", "shellcheck")):
             continue
         if text.startswith(
             (

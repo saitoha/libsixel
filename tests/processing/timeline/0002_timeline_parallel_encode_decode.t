@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/diagnostics.md
 # Exercise concurrent encoder/decoder timeline sessions sharing one writer.
 
 set -eux
