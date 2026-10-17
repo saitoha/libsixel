@@ -119,7 +119,10 @@ subject of the experiment:
 - palette size and palette source;
 - alpha background;
 - diffusion, lookup, and quantization policy;
-- compiler optimization and relevant build options.
+- compiler optimization and relevant build options;
+- the viewing geometry assumed by spatial metrics: the S-CIELAB pixels per degree, any reduction applied before MS-SSIM, and the regional tile size.
+
+State the effective pixels per degree that a quality conclusion targets. The MS-SSIM gate implicitly evaluates at 32 pixels per degree and per-pixel ΔE00 at none, while S-CIELAB defaults to 60. When a conclusion depends on how visible fine-scale noise is, such as a choice between dither amplitude and integrated color, confirm it at the target density with S-CIELAB or a reduced-image MS-SSIM before ranking configurations. [Viewing geometry of each metric](metrics.md#viewing-geometry-of-each-metric) gives the geometry of each metric and the reduction rule.
 
 Run repeated measurements when nondeterminism is plausible. A quality gate must
 not depend on a lucky palette seed, iteration order, or scheduling outcome.

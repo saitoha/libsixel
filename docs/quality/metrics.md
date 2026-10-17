@@ -122,7 +122,7 @@ Scores use an absolute tolerance of `1.5e-5`, not bit identity. The reference be
 
 ### What it measures
 
-MS-SSIM is sensitive to changes in local mean, contrast, and correlation of the luma signal, summarized over five scales. It is insensitive to chroma, because only luma is compared, and to errors that preserve local statistics. On dithered output its finest scale sees the dither pattern as lost correlation, while coarser scales see the locally averaged tone, which is closer to what a viewer perceives at a distance. See [why multiscale structure matters](#why-multiscale-structure-matters).
+MS-SSIM is sensitive to changes in local mean, contrast, and correlation of the luma signal, summarized over five scales. It is insensitive to chroma, because only luma is compared, and to errors that preserve local statistics. On dithered output its finest scale sees the dither pattern as lost correlation, while coarser scales see the locally averaged tone, which is closer to what a viewer perceives at a distance. See [why multiscale structure matters](#why-multiscale-structure-matters). Its weights assume a viewing density of 32 pixels per degree; see [viewing geometry of each metric](#viewing-geometry-of-each-metric).
 
 ## Gradient metric: GMSD
 
@@ -248,6 +248,22 @@ A metric evaluated at one scale implicitly assumes one viewing geometry. Because
 A multiscale metric hedges against this uncertainty. Each dyadic scale corresponds to a band of image frequencies; evaluating structure in every band and weighting the bands approximates integrating visibility over the CSF across a range of plausible viewing conditions, in the spirit of Campbell and Robson's spatial-frequency channels. The fitted MS-SSIM weights favor the middle scales because those carried the most visible distortion in the calibration experiment.
 
 For dithered images the scale decomposition has a direct interpretation. A ditherer trades fine-scale fidelity, where it places quantization noise, for coarse-scale fidelity, where the locally averaged tone should match the reference. Single-scale SSIM at full resolution sees mostly the noise and can rank a dither below a posterized image whose flat areas happen to correlate locally. MS-SSIM's coarser scales see through the noise to the reproduced tone and structure, and its finest scale still registers the noise, so the score reflects the trade the ditherer actually makes.
+
+## Viewing geometry of each metric
+
+Every spatial metric assumes, explicitly or implicitly, how large one image pixel appears to the viewer. That size is expressed in pixels per degree (ppd) of visual angle, computed from the pixel pitch and the viewing distance as described in [from pixels to cycles per degree](visual-perception/README.md#from-pixels-to-cycles-per-degree). The value that matters is the effective density of the image, not of the panel: a terminal or operating system that draws one image pixel with `k × k` device pixels divides the device's ppd by `k`. Desktop and notebook displays in current use range from about 34 to about 90 ppd at their usual distances; [pixel density and the eye](../concepts/displays/README.md#pixels-per-degree) traces how that range developed.
+
+| Metric | Assumed geometry | Consequence |
+| --- | --- | --- |
+| `PSNR-Y`, `Δ E00_mean`, `DE00_max`, `Δ Chroma_mean` | None; each pixel is compared on its own | Equivalent to inspecting individual pixels. Dither noise counts in full at every viewing distance |
+| `GMSD`, `HighFreqRatio_delta`, `StripeScore_rel`, `BandingIndex_*` | Fixed filters in pixel units, no ppd parameter | The same pixel-domain scale corresponds to a different visual angle at a different density |
+| `DE00_region_mean`, `DE00_region_max` | Square tiles of 8 to 64 pixels, default 16 | A 16-pixel tile spans 0.5° at 32 ppd and about 0.27° at 60 ppd |
+| `MS-SSIM` | Implicitly 32 ppd at scale 1 | The published scale weights were calibrated at that density |
+| `S-CIELAB` | Explicit, `-v PPD`, default 60 | The opponent filters are defined in degrees of visual angle |
+
+The MS-SSIM weights were fitted in a psychophysical experiment that used ten 64 × 64 grayscale images viewed at 32 pixels per degree (Wang, Simoncelli and Bovik, 2003, section 3.2). `lsqa` treats the input pixels as scale 1, so its MS-SSIM assumes that each image pixel subtends 1/32 of a degree: the density of the SIXEL terminals of the 1980s and of the desktop LCDs of the 2000s, and coarser than the high-density displays that followed. At a higher effective density the viewer integrates fine-scale error that the finest factors still count. Error diffusion and blue-noise dithering, which place their error at the highest frequencies, are therefore penalized more than a viewer at that density sees. `lsqa` has no viewing-geometry option for MS-SSIM. To approximate an effective density of `P` ppd, reduce the reference and the output by the same integer factor near `P / 32` with an area filter before the comparison, keeping both images at least 176 pixels in each dimension, and report the factor with the score.
+
+Metrics with different assumed geometry can rank the same outputs in opposite order. The typical case is a trade between dither-noise amplitude and integrated color. A palette whose entries reach farther toward the edge of an image's color distribution lets diffusion reproduce local averages more closely, but at the cost of larger noise; a palette concentrated on the most frequent colors produces smaller noise but cannot reach the outer colors on average. Per-pixel ΔE00 and MS-SSIM at the image's own resolution favor the smaller noise, while S-CIELAB at 60 ppd and MS-SSIM on a reduced image favor the closer averages. Such a disagreement states which viewing distance each metric represents rather than a contradiction between metrics. Resolve it by naming the target effective density, as the [measurement policy](measurement-policy.md#controlled-comparisons) requires, not by selecting the metric whose ranking is preferred.
 
 ## Spatial color difference: S-CIELAB
 
