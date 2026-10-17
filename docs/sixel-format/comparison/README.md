@@ -131,26 +131,26 @@ The roughly 33% expansion changes the comparison but does not guarantee a SIXEL 
 
 ## Observed results on the recorded host
 
-The checked-in run used an Apple M3 Max (14 logical CPUs), macOS 27.0.1, Apple Clang 21 with `-O3`, and libsixel revision `ac8506fd9dd7937721302682c0c765faf280e2a1`. The other implementations were Pillow 12.3.0 with libjpeg-turbo 3.1.4.1, zlib-ng reporting 1.3.1.zlib-ng and libavif 1.4.2 (aom 3.14.1, dav1d 1.5.3); pillow-heif 1.8.1 with libheif 1.23.6 (x265 4.3, libde265 1.1.3); `qoi` 0.7.2; and libwebp 1.6.0, driven from Python 3.12.0. Plotting used matplotlib 3.10.3. The source revision identifies the isolated codec build, not unrelated work in the shared checkout.
+The checked-in run used an Apple M3 Max (14 logical CPUs), macOS 27.0.1, Apple Clang 21 with `-O3`, and libsixel revision `8b2a7bc3d5d0eeb465157c57cc6833181bff8474`. The other implementations were Pillow 12.3.0 with libjpeg-turbo 3.1.4.1, zlib-ng reporting 1.3.1.zlib-ng and libavif 1.4.2 (aom 3.14.1, dav1d 1.5.3); pillow-heif 1.8.1 with libheif 1.23.6 (x265 4.3, libde265 1.1.3); `qoi` 0.7.2; and libwebp 1.6.0, driven from Python 3.12.0. Plotting used matplotlib 3.10.3. The source revision identifies the isolated codec build, not unrelated work in the shared checkout.
 
 | Observation over the 20 photographs | Mean of per-photograph medians or scores |
 | --- | --- |
-| Default SIXEL encode, budget 1 → 8 | 25.9 → 9.8 ms (median per-photograph speedup 2.6×); mean MS-SSIM 0.9958, mean Delta E00 2.42 at both budgets |
-| Quality SIXEL encode, budget 1 → 8 | 68.7 → 17.8 ms (3.9×); mean MS-SSIM 0.9979, mean Delta E00 2.11 at both budgets |
-| Default SIXEL decode, identical bytes, budget 1 → 8 | 1.91 → 1.16 ms (median per-photograph speedup 1.6×) |
-| PNG / QOI, budget 1 | encode 15.1 / 1.86 ms, decode 4.16 / 1.42 ms; both lossless |
-| JPEG quality 80, budget 1 | 0.54 ms encode, 0.64 ms decode; mean MS-SSIM 0.9966 |
-| AVIF / HEIC quality 80, budget 1 → 8 | encode 161.5 → 50.2 / 385.0 → 129.8 ms; decode 4.38 → 2.79 / 16.9 → 16.1 ms; mean MS-SSIM 0.9978 / 0.9997 |
+| Default SIXEL encode, budget 1 → 8 | 25.5 → 9.8 ms (median per-photograph speedup 2.6×); mean MS-SSIM 0.9958, mean Delta E00 2.42 at both budgets |
+| Quality SIXEL encode, budget 1 → 8 | 47.4 → 17.2 ms (2.8×); mean MS-SSIM 0.9979, mean Delta E00 2.11 at both budgets |
+| Default SIXEL decode, identical bytes, budget 1 → 8 | 1.84 → 1.14 ms (median per-photograph speedup 1.5×) |
+| PNG / QOI, budget 1 | encode 15.1 / 1.83 ms, decode 4.13 / 1.40 ms; both lossless |
+| JPEG quality 80, budget 1 | 0.53 ms encode, 0.62 ms decode; mean MS-SSIM 0.9966 |
+| AVIF / HEIC quality 80, budget 1 → 8 | encode 155.0 → 49.4 / 369.5 → 131.4 ms; decode 4.20 → 2.87 / 17.0 → 16.2 ms; mean MS-SSIM 0.9978 / 0.9997 |
 | Transport payload per photograph | default SIXEL 588 KiB, quality SIXEL 549 KiB, PNG 671 KiB, QOI 758 KiB, JPEG 80 77 KiB, WebP 80 59 KiB, AVIF 80 80 KiB, HEIC 80 203 KiB |
-| Retained-index encode, generation 1 → 2 | SIXEL 25.9 → 5.4 ms, GIF 61.8 → 2.9 ms; generations 2–8 preserve generation-one RGB exactly |
+| Retained-index encode, generation 1 → 2 | SIXEL 25.8 → 5.4 ms, GIF 60.8 → 2.8 ms; generations 2–8 preserve generation-one RGB exactly |
 
-Per photograph, one-budget default SIXEL decoding is faster than PNG, quality-95 and lossless WebP, quality-80 AVIF and both HEIC settings for every photograph, and than quality-80 WebP for 17 of the 20; it is slower than JPEG for every photograph and slower than QOI and GIF for 16. At budget eight, where only SIXEL, AVIF and lossy WebP decoders use additional workers, it is faster than PNG for every photograph, than GIF and quality-80 WebP for 19 and than QOI for 17, and still slower than quality-60 and quality-80 JPEG for every photograph.
+Per photograph, one-budget default SIXEL decoding is faster than PNG, quality-95 and lossless WebP, quality-80 AVIF and both HEIC settings for every photograph, and than quality-80 WebP for 18 of the 20; it is slower than JPEG for every photograph, than GIF for 15 and than QOI for 14. At budget eight, where only SIXEL, AVIF and lossy WebP decoders use additional workers, it is faster than PNG and GIF for every photograph, than quality-80 WebP for 19 and than QOI for 16, and still slower than quality-60 and quality-80 JPEG for every photograph.
 
-One-budget default SIXEL encoding is faster than Pillow's GIF, lossless WebP, AVIF and HEIC for every photograph, close to quality-95 WebP (faster for 12), and slower than PNG for 18 and than quality-60/80 WebP, QOI and JPEG for every or all but one photograph. At budget eight it is faster than PNG and every WebP setting for every photograph, while QOI and JPEG remain faster. Default SIXEL's transport payload is smaller than PNG's for 17 photographs, smaller than QOI's for every photograph and smaller than lossless WebP's for 3; it is lossy and larger than GIF and every lossy configuration for every photograph.
+One-budget default SIXEL encoding is faster than Pillow's GIF, lossless WebP, AVIF and HEIC for every photograph, close to quality-95 WebP (faster for 11), and slower than PNG for 18 and than quality-60/80 WebP, QOI and JPEG for every or all but one photograph. At budget eight it is faster than PNG and every WebP setting for every photograph, while QOI and JPEG remain faster. Default SIXEL's transport payload is smaller than PNG's for 17 photographs, smaller than QOI's for every photograph and smaller than lossless WebP's for 3; it is lossy and larger than GIF and every lossy configuration for every photograph.
 
 Every photograph scores at least 0.98 MS-SSIM with every measured setting; the lowest SIXEL scores are 0.989 (default) and 0.995 (quality) on `photo-066`. Default SIXEL's mean Delta E00 of 2.42 is at the level of quality-60 JPEG and WebP (2.45 and 2.42). The quality settings reduce it to 2.11, near GIF and quality-80 WebP and JPEG (2.06, 2.03 and 1.98).
 
-On the 20 charts, which run at a quarter of the photographic payload, default SIXEL encodes in 9.9 ms with one worker and 4.9 ms with eight, against 5.9 ms for PNG, 12.3 ms for quality-80 WebP and 14.1 ms for GIF, and it decodes in about 1.0 ms at either budget, against 1.6 ms for PNG, 1.2 ms for quality-80 WebP, 1.0 ms for GIF and 0.6 ms for QOI. Its 160 KiB payload is larger than PNG's 133 KiB for 15 charts and larger than GIF's 104 KiB for 18, while scoring 0.9976 MS-SSIM and 0.49 mean Delta E00; the quality settings reach 0.9995 and 0.27 at 157 KiB. Lossy JPEG and WebP are much smaller but leave Delta E00 near 1 at quality 80, so on charts the comparison is closer to the lossless coders than on photographs. These are workload-dependent tradeoffs, not a Huffman-versus-RLE law or a matched-quality victory.
+On the 20 charts, which run at a quarter of the photographic payload, default SIXEL encodes in 9.9 ms with one worker and 4.9 ms with eight, against 5.9 ms for PNG, 12.2 ms for quality-80 WebP and 14.1 ms for GIF, and it decodes in about 1.0 ms at either budget, against 1.6 ms for PNG, 1.2 ms for quality-80 WebP, 1.0 ms for GIF and 0.6 ms for QOI. Its 160 KiB payload is larger than PNG's 133 KiB for 15 charts and larger than GIF's 104 KiB for 18, while scoring 0.9976 MS-SSIM and 0.49 mean Delta E00; the quality settings reach 0.9995 and 0.27 at 157 KiB. Lossy JPEG and WebP are much smaller but leave Delta E00 near 1 at quality 80, so on charts the comparison is closer to the lossless coders than on photographs. These are workload-dependent tradeoffs, not a Huffman-versus-RLE law or a matched-quality victory.
 
 ## Photographic workload
 
@@ -175,7 +175,7 @@ The corpus fixes one image size, while fixed per-image costs and thread start-up
   <img alt="Encode and decode latency against pixel count for 1:1 crops from 160 × 120 to 1280 × 960 at budgets one and eight; lines are means over ten photographs and dots are individual photographs." src="figures/photo-sizes-wide.svg">
 </picture>
 
-One-budget default SIXEL encoding has a fixed cost: 3.6 ms at 160 × 120 (about 190 ns per pixel) against 84 ms at 1280 × 960 (about 68 ns per pixel), whereas PNG grows from 0.72 to 61 ms almost in proportion to the pixel count. It is therefore slower than PNG at every measured size, by 5.0 times at the smallest size and 1.4 times at the largest. The eight-worker budget does not help small images: at 160 × 120 it encodes in 4.4 ms, slower than one worker, and at 320 × 240 it is still slower than PNG; from 640 × 480 it is faster than PNG, 21 versus 61 ms at 1280 × 960. Quality SIXEL gains more from the budget, 5.2 times at 1280 × 960 (238 → 46 ms). SIXEL decoding is faster than PNG at every size with one worker, but eight workers are slower than one at 160 × 120 (0.33 versus 0.12 ms) and equal at 320 × 240, and they overtake QOI only from 640 × 480. The quality-60 AVIF encoder gains most from size: eight workers speed it up 1.1 times at 160 × 120 and 5.7 times at 1280 × 960. A ranking measured at one image size does not transfer to another.
+One-budget default SIXEL encoding has a fixed cost: 3.6 ms at 160 × 120 (about 190 ns per pixel) against 84 ms at 1280 × 960 (about 68 ns per pixel), whereas PNG grows from 0.72 to 61 ms almost in proportion to the pixel count. It is therefore slower than PNG at every measured size, by 5.0 times at the smallest size and 1.4 times at the largest. The eight-worker budget does not help small images: at 160 × 120 it encodes in 4.5 ms, slower than one worker, and at 320 × 240 it is still slower than PNG; from 640 × 480 it is faster than PNG, 21 versus 61 ms at 1280 × 960. Quality SIXEL gains more from the budget, 4.6 times at 1280 × 960 (155 → 34 ms). SIXEL decoding is faster than PNG at every size with one worker, but eight workers are slower than one at 160 × 120 (0.33 versus 0.13 ms) and equal at 320 × 240, and they overtake QOI only from 640 × 480. The quality-60 AVIF encoder gains most from size: eight workers speed it up 1.1 times at 160 × 120 and 5.7 times at 1280 × 960. A ranking measured at one image size does not transfer to another.
 
 ## Where encoding time goes
 
@@ -192,12 +192,12 @@ The stages come from each implementation's own boundaries. SIXEL stages are read
 
 | One worker, mean of nine photographs | VGA | FHD | Per pixel, VGA → FHD |
 | --- | --- | --- | --- |
-| Default SIXEL | 26.6 ms | 136.9 ms | 87 → 66 ns |
-| Quality SIXEL | 68.7 ms | 386.8 ms | 224 → 187 ns |
-| Pillow GIF | 60.5 ms | 164.7 ms | 197 → 79 ns |
-| Pillow PNG | 14.9 ms | 103.2 ms | 48 → 50 ns |
+| Default SIXEL | 26.1 ms | 135.2 ms | 85 → 65 ns |
+| Quality SIXEL | 47.4 ms | 249.1 ms | 154 → 120 ns |
+| Pillow GIF | 60.1 ms | 164.0 ms | 196 → 79 ns |
+| Pillow PNG | 14.9 ms | 103.4 ms | 49 → 50 ns |
 
-PNG is almost purely per-pixel work: DEFLATE takes about 83% of its time and the cost per pixel does not change with size. Pillow's GIF carries the largest fixed stage, its median-cut palette search, which takes 34–44 ms at both sizes and therefore falls from 111 to 21 ns per pixel. Default SIXEL spends little on its palette (sampling and search together take 1.1 ms at VGA and 2.9 ms at FHD); lookup with error diffusion dominates, at 63 ns per pixel at VGA and 50 ns at FHD, followed by band coding at 20 and 15 ns. Quality SIXEL first converts every pixel to its CIELAB working space, a stage that costs a constant 93–94 ns per pixel, about as much as its lookup and diffusion. A one-worker SIXEL encode is therefore not slower than PNG because of a large fixed setup: it performs a nearest-color search and error diffusion for every pixel, work that a lossless coder does not have.
+PNG is almost purely per-pixel work: DEFLATE takes about 83% of its time and the cost per pixel does not change with size. Pillow's GIF carries the largest fixed stage, its median-cut palette search, which takes 34–44 ms at both sizes and therefore falls from 110 to 21 ns per pixel. Default SIXEL spends little on its palette (sampling and search together take 1.3 ms at VGA and 3.2 ms at FHD); lookup with error diffusion dominates, at 62 ns per pixel at VGA and 49 ns at FHD, followed by band coding at 19 and 15 ns. Quality SIXEL first converts every pixel to its CIELAB working space, a stage that costs a constant 28 ns per pixel, less than a third of its lookup and diffusion (93 ns at VGA and 74 ns at FHD). A one-worker SIXEL encode is therefore not slower than PNG because of a large fixed setup: it performs a nearest-color search and error diffusion for every pixel, work that a lossless coder does not have.
 
 ## Worker budgets and serial stages
 
@@ -205,10 +205,10 @@ More workers shorten only the stages that are divided among them. The worker cha
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-threads-mobile.svg">
-  <img alt="Stacked bars of FHD encoding time for default and quality SIXEL with one and eight workers: the pipelined lookup, dither and band coding phase shrinks with eight workers while the quality setting's color conversion keeps its length." src="figures/photo-threads-wide.svg">
+  <img alt="Stacked bars of FHD encoding time for default and quality SIXEL with one and eight workers: the pipelined lookup, dither and band coding phase and the quality setting's color conversion both shrink with eight workers." src="figures/photo-threads-wide.svg">
 </picture>
 
-Default SIXEL falls from 136.7 to 32.3 ms with eight workers. Its lookup, diffusion and coding phase shrinks from 134 to 29 ms, while sample extraction stays at about 2.2 ms because it runs on the encoding thread before palette construction and preprocessing may start; it is about 7% of the eight-worker encode. Quality SIXEL falls from 387.3 to 92.1 ms: the pipelined phase shrinks from 186 to 39 ms and the CIELAB conversion from 193 to 45 ms. The conversion is divided among workers, but while palette construction overlaps it, the encoder gives each side half of the budget, so the conversion runs on four of the eight slots even though palette construction finishes after about 6 ms. A serial stage, or one confined to part of the budget, bounds what more workers can achieve; it has to be divided further or made cheaper itself.
+Default SIXEL falls from 136.8 to 31.7 ms with eight workers. Its lookup, diffusion and coding phase shrinks from 133 to 30 ms. Sample extraction has to finish before palette construction and preprocessing may start, but it is divided among the workers and falls from 2.2 to 0.9 ms. Quality SIXEL falls from 251.7 to 51.4 ms: the pipelined phase shrinks from 185 to 39 ms and the CIELAB conversion from 58.5 to 11.4 ms of elapsed time, of which 5.9 ms run beside sampling and palette construction. While palette construction overlaps the conversion, the encoder first gives each side half of the budget; when palette construction finishes, its workers join the conversion, which is cut into small chunks so that late workers still find work. A serial stage, or one confined to part of the budget, bounds what more workers can achieve; it has to be divided further or made cheaper itself.
 
 ## Repeated encoding is a state contract
 
