@@ -37,6 +37,18 @@ typedef enum sixel_lookup_packing {
     SIXEL_LOOKUP_PACK_HILBERT
 } sixel_lookup_packing_t;
 
+/* AUTO keeps the exact VP-tree backend and selects its invocation strategy
+ * from diffusion causality. Constraints may still require the point loop. */
+SIXEL_INTERNAL_API int
+sixel_lookup_policy_select_batch(int method_for_diffuse);
+
+/* Ordered scalar fallback for policies without a bulk kernel. */
+SIXEL_INTERNAL_API void
+sixel_lookup_policy_map_pixels_default(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixels, size_t count, int pixel_stride,
+    sixel_index_t *result, int result_stride);
+
 SIXEL_INTERNAL_API int
 sixel_lookup_policy_resolve_packing(
     sixel_lookup_policy_prepare_request_t const *request,

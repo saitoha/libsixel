@@ -2251,3 +2251,14 @@ The existing [lookup quality suite](../../../../tests/quant/palette/usage/) chec
 | LUTC-03 | Under a bounded palette workload and larger full-frame conversion, the async palette thread begins construction before the main working-colorspace filter finishes. This verifies event order, not a latency threshold or an ordering promise for every workload. | [tests/processing/lookup/fhedt/0026_fh_build_overlap.t](../../../../tests/processing/lookup/fhedt/0026_fh_build_overlap.t) |
 | LUTC-04 | Byte reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/processing/lookup/fhedt/0027_fh_reuse_byte.t](../../../../tests/processing/lookup/fhedt/0027_fh_reuse_byte.t) |
 | LUTC-05 | Float reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/processing/lookup/fhedt/0028_fh_reuse_float.t](../../../../tests/processing/lookup/fhedt/0028_fh_reuse_float.t) |
+
+## Bulk mapping contract
+
+`ILookupPolicy.map_pixels(pixels, count, pixel_stride, result, result_stride)` returns the same ordered indices as repeated `map_pixel` calls on an identically prepared policy. Input stride is in bytes; output stride is in indices. Signed strides allow a reversed row without changing approximate cache insertion order. Every addressed sample and output must be valid, input and output buffers must not overlap, and zero count touches neither buffer. Implementations without a bulk kernel use the common scalar fallback. A bulk call keeps no persistent scan history and follows the prepared policy's existing concurrency rules; vptree's shared memo publishes complete exact-key entries atomically. This contract does not strengthen approximate policies into order-independent nearest-neighbor searches.
+
+
+### Bulk mapping coverage
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| LUTBULK-01 | All byte and float lookup classes map runs, separated repeats, distinct queries, reverse rows, empty input and short tails identically to ordered scalar calls on independent cold state. | [tests/processing/lookup/0015_lookup_batch_contract.c](../../../../tests/processing/lookup/0015_lookup_batch_contract.c), [tests/processing/lookup/0015_lookup_batch_contract.t](../../../../tests/processing/lookup/0015_lookup_batch_contract.t) |

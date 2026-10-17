@@ -254,6 +254,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_mono_darkbg_prepare,
     sixel_lookup_policy_mono_darkbg_map_pixel,
     sixel_lookup_policy_mono_darkbg_map_pixel_hint,
+    sixel_lookup_policy_map_pixels_default,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -263,6 +264,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_mono_darkbg_prepare_float32,
     sixel_lookup_policy_mono_darkbg_map_float32,
     sixel_lookup_policy_mono_darkbg_map_pixel_hint_float32,
+    sixel_lookup_policy_map_pixels_default,
 };
 
 SIXELSTATUS

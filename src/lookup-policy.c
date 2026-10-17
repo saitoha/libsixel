@@ -31,6 +31,32 @@
 
 
 int
+sixel_lookup_policy_select_batch(int method_for_diffuse)
+{
+    return method_for_diffuse == SIXEL_DIFFUSE_NONE;
+}
+
+
+void
+sixel_lookup_policy_map_pixels_default(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixels, size_t count, int pixel_stride,
+    sixel_index_t *result, int result_stride)
+{
+    size_t i;
+
+    for (i = 0; i < count; ++i) {
+        *result = (sixel_index_t)policy->vtbl->map_pixel(policy, pixels);
+        /* Do not form a pointer before the buffer after a reverse row. */
+        if (i + 1 < count) {
+            pixels += pixel_stride;
+            result += result_stride;
+        }
+    }
+}
+
+
+int
 sixel_lookup_policy_resolve_packing(
     sixel_lookup_policy_prepare_request_t const *request,
     char const *base_name)
@@ -154,14 +180,17 @@ sixel_lookup_policy_name_from_lut_policy(int lut_policy,
 }
 
 static int
-sixel_lookup_policy_normalize_fast_lut_policy(int lut_policy)
+sixel_lookup_policy_normalize_fast_lut_policy(
+    sixel_lookup_policy_select_request_t const *request)
 {
     int normalized;
 
-    normalized = lut_policy;
+    normalized = request->lut_policy;
     if (normalized == SIXEL_LUT_POLICY_AUTO) {
-        /* The exact VP-tree with neighbor-list refinement is the fastest
-         * general lookup, so AUTO dispatches to it. */
+        /* NONE uses the VP-tree bulk operation, including SIMD cold misses.
+         * Causal diffusion retains hinted point queries; other dithers retain
+         * their existing point mapping. Both use the same exact tie rule.
+         * Approximate grids are deliberately excluded from AUTO. */
         return SIXEL_LUT_POLICY_VPTREE;
     }
     if (normalized != SIXEL_LUT_POLICY_CERTLUT
@@ -239,7 +268,7 @@ sixel_lookup_policy_select_name_with_override(
     }
 
     normalized_lut_policy = sixel_lookup_policy_normalize_fast_lut_policy(
-        request->lut_policy);
+        request);
     return sixel_lookup_policy_name_from_lut_policy(normalized_lut_policy,
                                                     prefer_float32);
 }

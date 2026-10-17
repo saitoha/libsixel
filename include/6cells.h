@@ -837,14 +837,21 @@ struct sixel_palette_interface {
  *   the previous pixel of the same scan; a negative hint means none.  It may
  *   only change the work done, never the result, so an implementation
  *   without a use for it forwards to map_pixel().
- * - Both methods are const.  A prepared policy may memoize results only in
- *   caches that are safe for concurrent callers and cannot change a result;
+ * - map_pixels maps count samples in their supplied order, exactly as repeated
+ *   map_pixel calls on the same prepared state. Strides are signed byte/input
+ *   and index/output offsets, permitting reverse rows without reordering
+ *   approximate caches. Zero count touches neither buffer. Buffers must not
+ *   overlap; each addressed sample and output must be valid. Implementations
+ *   without a bulk kernel use sixel_lookup_policy_map_pixels_default.
+ * - Mapping methods are const. A prepared policy may memoize results only
+ *   in caches safe for concurrent callers that cannot change a result;
  *   it keeps no scan history.  Continuity across pixels belongs to the
  *   caller, which passes it back as hint.
  */
 typedef struct sixel_lookup_policy_interface sixel_lookup_policy_interface_t;
 
 typedef struct sixel_lookup_policy_select_request {
+    int method_for_diffuse;
     unsigned char const *palette;
     int depth;
     int reqcolor;
@@ -919,6 +926,12 @@ typedef int sixel_lookup_policy_result_t;
  *     [const] lookup_policy_result map_pixel_hint(
  *         in unsigned char const *pixel,
  *         in int hint);
+ *     [const] void map_pixels(
+ *         in unsigned char const *pixels,
+ *         in size_t count,
+ *         in int pixel_stride,
+ *         out sixel_index_t *result,
+ *         in int result_stride);
  * };
  */
 
@@ -935,6 +948,13 @@ typedef struct sixel_lookup_policy_vtbl {
         sixel_lookup_policy_interface_t const *self,
         unsigned char const *pixel,
         int hint);
+    void (*map_pixels)(
+        sixel_lookup_policy_interface_t const *self,
+        unsigned char const *pixels,
+        size_t count,
+        int pixel_stride,
+        sixel_index_t *result,
+        int result_stride);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy_interface {

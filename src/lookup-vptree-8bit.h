@@ -53,6 +53,12 @@ sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
                              unsigned char const *pixel,
                              int hint);
 
+void
+sixel_lookup_vptree_8bit_map_pixels(
+    sixel_lookup_vptree_8bit_t const *tree,
+    unsigned char const *pixels, size_t count, int pixel_stride,
+    sixel_index_t *result, int result_stride);
+
 #ifdef __cplusplus
 }
 #endif

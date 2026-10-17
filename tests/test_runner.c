@@ -1338,6 +1338,7 @@ int test_lookup_0001_lookup_policy(int argc, char **argv);
 int test_lookup_0012_packing_registry_direct(int argc, char **argv);
 int test_lookup_0013_parallel_dense_cache(int argc, char **argv);
 int test_lookup_0014_hint_contract(int argc, char **argv);
+int test_lookup_0015_batch_contract(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
@@ -6009,6 +6010,8 @@ static test_entry_t const test_entries[] = {
       test_lookup_0013_parallel_dense_cache },
     { "lookup/0014_hint_contract",
       test_lookup_0014_hint_contract },
+    { "lookup/0015_batch_contract",
+      test_lookup_0015_batch_contract },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",

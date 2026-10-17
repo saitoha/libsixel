@@ -1127,6 +1127,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_bit5_prepare_8bit,
     sixel_lookup_policy_bit5_map_pixel_8bit,
     sixel_lookup_policy_bit5_map_pixel_hint_8bit,
+    sixel_lookup_policy_map_pixels_default,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -1136,6 +1137,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_bit5_prepare_float32,
     sixel_lookup_policy_bit5_map_pixel_float32,
     sixel_lookup_policy_bit5_map_pixel_hint_float32,
+    sixel_lookup_policy_map_pixels_default,
 };
 
 SIXELSTATUS

@@ -29,6 +29,13 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
+#if HAVE_NEON
+#include <arm_neon.h>
+#elif HAVE_SSE2
+#include <emmintrin.h>
+#endif
+
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
@@ -759,6 +766,196 @@ sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
     }
 
     return best_index;
+}
+
+#if HAVE_NEON || HAVE_SSE2
+/* Eight independent exhaustive searches amortize SIMD work over cold memo
+ * entries. Strict comparison in palette order preserves the lowest-index
+ * tie rule, including duplicate colors. All squared byte distances fit in
+ * signed 32 bits. Warm entries never pay for this scan. */
+static void
+sixel_lookup_vptree_8bit_map_cold8(
+    sixel_lookup_vptree_8bit_t const *tree,
+    unsigned int const *keys, int *indexes)
+{
+    int16_t red[8];
+    int16_t green[8];
+    int16_t blue[8];
+    int i;
+    int j;
+    unsigned char const *p;
+#if HAVE_NEON
+    int16x8_t r, g, b, dr, dg, db;
+    int32x4_t lo, hi, best_lo, best_hi, idx_lo, idx_hi, index;
+    uint32x4_t mask;
+#else
+    __m128i r, g, b, dr, dg, db, zero;
+    __m128i lo, hi, best_lo, best_hi, idx_lo, idx_hi, index, mask, v;
+#endif
+
+    for (j = 0; j < 8; ++j) {
+        red[j] = (int16_t)(keys[j] >> 16);
+        green[j] = (int16_t)((keys[j] >> 8) & 255U);
+        blue[j] = (int16_t)(keys[j] & 255U);
+    }
+#if HAVE_NEON
+    r = vld1q_s16(red);
+    g = vld1q_s16(green);
+    b = vld1q_s16(blue);
+    best_lo = best_hi = vdupq_n_s32(INT_MAX);
+    idx_lo = idx_hi = vdupq_n_s32(0);
+#else
+    r = _mm_loadu_si128((__m128i const *)(void const *)red);
+    g = _mm_loadu_si128((__m128i const *)(void const *)green);
+    b = _mm_loadu_si128((__m128i const *)(void const *)blue);
+    best_lo = best_hi = _mm_set1_epi32(INT_MAX);
+    zero = idx_lo = idx_hi = _mm_setzero_si128();
+#endif
+    for (i = 0; i < tree->ncolors; ++i) {
+        p = tree->palette + i * 3;
+#if HAVE_NEON
+        dr = vsubq_s16(r, vdupq_n_s16(p[0]));
+        dg = vsubq_s16(g, vdupq_n_s16(p[1]));
+        db = vsubq_s16(b, vdupq_n_s16(p[2]));
+        lo = vmull_s16(vget_low_s16(dr), vget_low_s16(dr));
+        hi = vmull_s16(vget_high_s16(dr), vget_high_s16(dr));
+        lo = vmlal_s16(lo, vget_low_s16(dg), vget_low_s16(dg));
+        hi = vmlal_s16(hi, vget_high_s16(dg), vget_high_s16(dg));
+        lo = vmlal_s16(lo, vget_low_s16(db), vget_low_s16(db));
+        hi = vmlal_s16(hi, vget_high_s16(db), vget_high_s16(db));
+        index = vdupq_n_s32(i);
+        mask = vcltq_s32(lo, best_lo);
+        idx_lo = vbslq_s32(mask, index, idx_lo);
+        best_lo = vminq_s32(lo, best_lo);
+        mask = vcltq_s32(hi, best_hi);
+        idx_hi = vbslq_s32(mask, index, idx_hi);
+        best_hi = vminq_s32(hi, best_hi);
+#else
+        dr = _mm_sub_epi16(r, _mm_set1_epi16(p[0]));
+        dg = _mm_sub_epi16(g, _mm_set1_epi16(p[1]));
+        db = _mm_sub_epi16(b, _mm_set1_epi16(p[2]));
+        v = _mm_unpacklo_epi16(dr, zero);
+        lo = _mm_madd_epi16(v, v);
+        v = _mm_unpackhi_epi16(dr, zero);
+        hi = _mm_madd_epi16(v, v);
+        v = _mm_unpacklo_epi16(dg, zero);
+        lo = _mm_add_epi32(lo, _mm_madd_epi16(v, v));
+        v = _mm_unpackhi_epi16(dg, zero);
+        hi = _mm_add_epi32(hi, _mm_madd_epi16(v, v));
+        v = _mm_unpacklo_epi16(db, zero);
+        lo = _mm_add_epi32(lo, _mm_madd_epi16(v, v));
+        v = _mm_unpackhi_epi16(db, zero);
+        hi = _mm_add_epi32(hi, _mm_madd_epi16(v, v));
+        index = _mm_set1_epi32(i);
+        mask = _mm_cmplt_epi32(lo, best_lo);
+        idx_lo = _mm_or_si128(_mm_and_si128(mask, index),
+                              _mm_andnot_si128(mask, idx_lo));
+        best_lo = _mm_or_si128(_mm_and_si128(mask, lo),
+                               _mm_andnot_si128(mask, best_lo));
+        mask = _mm_cmplt_epi32(hi, best_hi);
+        idx_hi = _mm_or_si128(_mm_and_si128(mask, index),
+                              _mm_andnot_si128(mask, idx_hi));
+        best_hi = _mm_or_si128(_mm_and_si128(mask, hi),
+                               _mm_andnot_si128(mask, best_hi));
+#endif
+    }
+#if HAVE_NEON
+    vst1q_s32(indexes, idx_lo);
+    vst1q_s32(indexes + 4, idx_hi);
+#else
+    _mm_storeu_si128((__m128i *)(void *)indexes, idx_lo);
+    _mm_storeu_si128((__m128i *)(void *)(indexes + 4), idx_hi);
+#endif
+}
+#endif
+
+/* Map an ordered row with caller-local continuity. The shared exact-key memo
+ * remains the sole persistent cache; no scan state escapes this call. */
+void
+sixel_lookup_vptree_8bit_map_pixels(
+    sixel_lookup_vptree_8bit_t const *tree,
+    unsigned char const *pixels, size_t count, int pixel_stride,
+    sixel_index_t *result, int result_stride)
+{
+    size_t i;
+    unsigned int key;
+    unsigned int previous;
+    int hint;
+#if HAVE_NEON || HAVE_SSE2
+    unsigned int keys[8];
+    unsigned int slots[8];
+    int indexes[8];
+    sixel_index_t *outputs[8];
+    unsigned int slot;
+    unsigned int entry;
+    int pending;
+    int j;
+    unsigned char pixel[3];
+#endif
+
+    previous = 0x1000000U;
+    hint = -1;
+#if HAVE_NEON || HAVE_SSE2
+    pending = 0;
+#endif
+    for (i = 0; i < count; ++i) {
+        key = ((unsigned int)pixels[0] << 16)
+            | ((unsigned int)pixels[1] << 8) | pixels[2];
+#if HAVE_NEON || HAVE_SSE2
+        if (tree->memo != NULL && key != previous) {
+            slot = (key * 2654435761U)
+                >> (32 - SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
+            entry = (unsigned int)sixel_atomic_load_relaxed_i32(
+                &tree->memo[slot]);
+            if ((entry >> 8) == key && entry != (unsigned int)-1) {
+                hint = (int)(entry & 255U);
+                previous = key;
+                *result = (sixel_index_t)hint;
+            } else {
+                /* Delay only exact independent misses. Repeats of a pending
+                 * key may occupy another lane, but never read stale output. */
+                keys[pending] = key;
+                slots[pending] = slot;
+                outputs[pending++] = result;
+                if (pending == 8) {
+                    sixel_lookup_vptree_8bit_map_cold8(tree, keys, indexes);
+                    for (j = 0; j < 8; ++j) {
+                        *outputs[j] = (sixel_index_t)indexes[j];
+                        entry = (keys[j] << 8) | (unsigned int)indexes[j];
+                        if (entry != (unsigned int)-1) {
+                            sixel_atomic_store_relaxed_i32(
+                                &tree->memo[slots[j]], (int)entry);
+                        }
+                    }
+                    pending = 0;
+                    hint = indexes[7];
+                    previous = key;
+                }
+            }
+        } else
+#endif
+        {
+            if (key != previous) {
+                hint = sixel_lookup_vptree_8bit_map(tree, pixels, hint);
+                previous = key;
+            }
+            *result = (sixel_index_t)hint;
+        }
+        if (i + 1 < count) {
+            pixels += pixel_stride;
+            result += result_stride;
+        }
+    }
+#if HAVE_NEON || HAVE_SSE2
+    /* A short tail uses the ordinary exact search without reading padding. */
+    for (j = 0; j < pending; ++j) {
+        pixel[0] = (unsigned char)(keys[j] >> 16);
+        pixel[1] = (unsigned char)(keys[j] >> 8);
+        pixel[2] = (unsigned char)keys[j];
+        hint = sixel_lookup_vptree_8bit_map(tree, pixel, hint);
+        *outputs[j] = (sixel_index_t)hint;
+    }
+#endif
 }
 
 /* emacs Local Variables:      */
