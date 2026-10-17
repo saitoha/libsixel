@@ -218,6 +218,8 @@ int test_parallel_float_0007(int argc, char **argv);
 int test_parallel_float_0009(int argc, char **argv);
 int test_parallel_float_0010(int argc, char **argv);
 int test_parallel_float_0011(int argc, char **argv);
+int test_parallel_float_0012(int argc, char **argv);
+int test_color_worker_memo_lifetime(int argc, char **argv);
 int test_parallel_float_0008(int argc, char **argv);
 int test_parallel_float_0001(int argc, char **argv);
 int test_parallel_float_0002(int argc, char **argv);
@@ -5707,6 +5709,9 @@ static test_entry_t const test_entries[] = {
     { "colorspace/parallel/0009_reclaim_budget", test_parallel_float_0009 },
     { "colorspace/parallel/0010_reclaim_bits", test_parallel_float_0010 },
     { "colorspace/parallel/0011_reclaim_atomic", test_parallel_float_0011 },
+    { "colorspace/parallel/0012_worker_memo_exact", test_parallel_float_0012 },
+    { "colorspace/parallel/0013_worker_memo_lifetime",
+      test_color_worker_memo_lifetime },
     { "colorspace/parallel/0008_overlap_reclaim", test_parallel_float_0008 },
     { "planner/pipeline/0017_pipeline_auto_worker_counts",
         test_pipeline_worker_counts_17 },

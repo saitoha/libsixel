@@ -1928,7 +1928,10 @@ sixel_colorspace_create_pool(sixel_thread_pool_t **pool,
                              int threads,
                              int queue_depth,
                              sixel_thread_pool_worker_function_t worker,
-                             void *userdata)
+                             void *userdata,
+                             size_t workspace_size,
+                             sixel_thread_pool_workspace_cleanup_function_t
+                                 workspace_cleanup)
 {
     sixel_threadpool_service_t *service;
     sixel_thread_pool_create_request_t request;
@@ -1961,10 +1964,10 @@ sixel_colorspace_create_pool(sixel_thread_pool_t **pool,
 
     request.threads = threads;
     request.queue_size = queue_depth;
-    request.workspace_size = 0U;
+    request.workspace_size = workspace_size;
     request.worker = worker;
     request.userdata = userdata;
-    request.workspace_cleanup = NULL;
+    request.workspace_cleanup = workspace_cleanup;
     status = service->vtbl->create_pool(service, &request, pool);
     if (service->vtbl->unref != NULL) {
         service->vtbl->unref(service);
@@ -2090,7 +2093,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                 threads,
                 queue_depth,
                 sixel_colorspace_parallel_worker_bytes,
-                &ctx);
+                &ctx, 0U, NULL);
             if (rc == SIXEL_OK && pool != NULL) {
                 for (job_index = 0U; job_index < job_count; ++job_index) {
                     job.band_index = (int)job_index;
@@ -2232,9 +2235,9 @@ end:
     return status;
 }
 
-/* Cache only exact float triplets, including all sign bits. A chunk owns
- * its table, so neither hits nor replacement require synchronization. The
- * valid flag distinguishes an empty slot from a real all-zero input. */
+/* Cache only exact float triplets, including all sign bits. Each execution
+ * slot owns its table for one conversion, so hits and replacement need no
+ * synchronization. The valid flag distinguishes an empty slot from zero. */
 #define SIXEL_FLOAT_MEMO_SIZE 16384U
 #define SIXEL_FLOAT_MEMO_MIN_PIXELS 1024U
 typedef struct sixel_float_memo_entry {
@@ -2242,6 +2245,35 @@ typedef struct sixel_float_memo_entry {
     float value[3];
     int valid;
 } sixel_float_memo_entry_t;
+
+/* The pool zero-initializes this small owner record, including on grow().
+ * Allocate the optional table lazily: a failed allocation disables caching
+ * for this worker without failing a job or repeatedly retrying each chunk. */
+typedef struct sixel_float_memo_workspace {
+    sixel_float_memo_entry_t *memo;
+    int initialized;
+} sixel_float_memo_workspace_t;
+
+static sixel_float_memo_entry_t *
+sixel_float_memo_create(size_t pixel_total)
+{
+    if (pixel_total < SIXEL_FLOAT_MEMO_MIN_PIXELS) {
+        return NULL;
+    }
+    return (sixel_float_memo_entry_t *)calloc(SIXEL_FLOAT_MEMO_SIZE,
+        sizeof(sixel_float_memo_entry_t));
+}
+
+#if SIXEL_ENABLE_THREADS
+static void
+sixel_float_memo_cleanup(void *workspace)
+{
+    sixel_float_memo_workspace_t *state;
+
+    state = (sixel_float_memo_workspace_t *)workspace;
+    free(state->memo);
+}
+#endif
 
 static size_t
 sixel_float_memo_slot(uint32_t const key[3])
@@ -2286,7 +2318,8 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
                                             size_t pixel_total,
                                             int colorspace_src,
                                             int colorspace_dst,
-                                            float *converted_pixels)
+                                            float *converted_pixels,
+                                            sixel_float_memo_entry_t *memo)
 {
     double input[3];
     double output[3];
@@ -2295,18 +2328,10 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
     int converted;
     int source;
     uint32_t key[3];
-    sixel_float_memo_entry_t *memo;
     sixel_float_memo_entry_t *entry;
 
     if (colorspace_src == SIXEL_COLORSPACE_GAMMA) {
         sixel_colorspace_init_tables();
-    }
-    /* Tiny palette calls avoid a large table clear. Allocation failure is
-     * merely a cache miss for the entire chunk, never a new API failure. */
-    memo = NULL;
-    if (pixel_total >= SIXEL_FLOAT_MEMO_MIN_PIXELS) {
-        memo = (sixel_float_memo_entry_t *)calloc(SIXEL_FLOAT_MEMO_SIZE,
-            sizeof(*memo));
     }
     for (index = 0U; index < pixel_total; ++index) {
         entry = NULL;
@@ -2346,7 +2371,6 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
                 sixel_helper_set_additional_message(
                     "float frame conversion: nonfinite or domain error.");
             }
-            free(memo);
             return SIXEL_BAD_INPUT;
         }
         for (channel = 0; channel < 3; ++channel) {
@@ -2355,7 +2379,6 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
                     sixel_helper_set_additional_message(
                         "float frame conversion: float32 overflow.");
                 }
-                free(memo);
                 return SIXEL_BAD_INPUT;
             }
         }
@@ -2374,8 +2397,29 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
             }
         }
     }
-    free(memo);
     return SIXEL_OK;
+}
+
+/* A serial call owns one optional memo through validation and writeback.
+ * It is never reused for another source/target pair or another call. */
+static SIXELSTATUS
+sixel_convert_pixels_via_linear_float_serial(float *pixels,
+                                             size_t pixel_total,
+                                             int colorspace_src,
+                                             int colorspace_dst)
+{
+    sixel_float_memo_entry_t *memo;
+    SIXELSTATUS status;
+
+    memo = sixel_float_memo_create(pixel_total);
+    status = sixel_convert_pixels_via_linear_float_chunk(pixels,
+        pixel_total, colorspace_src, colorspace_dst, NULL, memo);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_convert_pixels_via_linear_float_chunk(pixels,
+            pixel_total, colorspace_src, colorspace_dst, pixels, memo);
+    }
+    free(memo);
+    return status;
 }
 
 #if SIXEL_ENABLE_THREADS
@@ -2389,6 +2433,8 @@ sixel_colorspace_parallel_worker(sixel_thread_pool_job_t job,
                                  void *workspace)
 {
     sixel_colorspace_parallel_context_t *ctx;
+    sixel_float_memo_workspace_t *state;
+    sixel_float_memo_entry_t *memo;
     sixel_timeline_logger_t *logger;
     size_t start;
     size_t remaining;
@@ -2396,8 +2442,6 @@ sixel_colorspace_parallel_worker(sixel_thread_pool_job_t job,
     int status;
     int start_row;
     int end_row;
-
-    (void)workspace;
 
     ctx = (sixel_colorspace_parallel_context_t *)userdata;
     logger = NULL;
@@ -2443,12 +2487,21 @@ sixel_colorspace_parallel_worker(sixel_thread_pool_job_t job,
                           "chunk=%zu", remaining);
     }
 
+    state = (sixel_float_memo_workspace_t *)workspace;
+    memo = NULL;
+    if (state != NULL) {
+        if (!state->initialized) {
+            state->memo = sixel_float_memo_create(remaining);
+            state->initialized = 1;
+        }
+        memo = state->memo;
+    }
     status = sixel_convert_pixels_via_linear_float_chunk(
         ctx->pixels + start * 3U,
         remaining,
         ctx->colorspace_src,
         ctx->colorspace_dst,
-        ctx->converted + start * 3U);
+        ctx->converted + start * 3U, memo);
     ctx->results[job.band_index] = status;
 
     if (logger != NULL) {
@@ -2472,9 +2525,10 @@ sixel_colorspace_parallel_worker(sixel_thread_pool_job_t job,
 /* Both frame and public float adapters use this transaction. A temporary
  * RGB32F image costs 12 bytes/pixel (24.9 MB at 1080p), but computes each
  * expensive double-intermediate transform only once. Serial/small calls
- * retain the validate/write path without full-frame scratch storage. Each
- * chunk may allocate its bounded memo independently. The caller participates
- * in the last chunk, so a budget of N needs only N-1 additional threads. */
+ * retain the validate/write path without full-frame scratch storage. Pool
+ * workers and the controller keep separate optional memos until the end of
+ * this transaction; small chunks reuse their slot's successful conversions.
+ * The caller participates, so N slots need only N-1 additional threads. */
 static SIXELSTATUS
 sixel_convert_pixels_via_linear_float(float *pixels,
                                       size_t size,
@@ -2486,6 +2540,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     sixel_timeline_logger_t *logger;
 #if SIXEL_ENABLE_THREADS
     sixel_colorspace_parallel_context_t ctx;
+    sixel_float_memo_workspace_t controller;
     sixel_thread_pool_t *pool;
     sixel_thread_pool_job_t job;
     float *converted;
@@ -2525,6 +2580,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
             threads = (int)pixel_total;
         }
         memset(&ctx, 0, sizeof(ctx));
+        memset(&controller, 0, sizeof(controller));
         ctx.pixels = pixels;
         ctx.pixel_total = pixel_total;
         ctx.chunk_pixels = (pixel_total + (size_t)threads - 1U)
@@ -2551,7 +2607,9 @@ sixel_convert_pixels_via_linear_float(float *pixels,
             if (threads > 1) {
                 status = sixel_colorspace_create_pool(&pool,
                     threads - 1, adaptive ? threads : (int)job_count,
-                    sixel_colorspace_parallel_worker, &ctx);
+                    sixel_colorspace_parallel_worker, &ctx,
+                    sizeof(sixel_float_memo_workspace_t),
+                    sixel_float_memo_cleanup);
             }
         }
         if (status == SIXEL_OK && (pool != NULL || adaptive)) {
@@ -2575,7 +2633,9 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                         } else {
                             (void)sixel_colorspace_create_pool(&pool,
                                 available - 1, available,
-                                sixel_colorspace_parallel_worker, &ctx);
+                                sixel_colorspace_parallel_worker, &ctx,
+                                sizeof(sixel_float_memo_workspace_t),
+                                sixel_float_memo_cleanup);
                         }
                         threads = available;
                         sixel_timeline_logger_logf(logger, "controller",
@@ -2591,7 +2651,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                         ++job_index;
                     }
                     job.band_index = (int)job_index++;
-                    (void)sixel_colorspace_parallel_worker(job, &ctx, NULL);
+                    (void)sixel_colorspace_parallel_worker(job, &ctx,
+                        &controller);
                 }
             }
             for (; job_index + 1U < job_count; ++job_index) {
@@ -2605,7 +2666,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
              * the caller; accepted jobs own disjoint scratch ranges. */
             for (; job_index < job_count; ++job_index) {
                 job.band_index = (int)job_index;
-                (void)sixel_colorspace_parallel_worker(job, &ctx, NULL);
+                (void)sixel_colorspace_parallel_worker(job, &ctx,
+                    &controller);
             }
             status = SIXEL_OK;
             if (pool != NULL) {
@@ -2621,7 +2683,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                     status = sixel_convert_pixels_via_linear_float_chunk(
                         pixels + job_index * ctx.chunk_pixels * 3U,
                         pixel_total - job_index * ctx.chunk_pixels,
-                        colorspace_src, colorspace_dst, NULL);
+                        colorspace_src, colorspace_dst, NULL, NULL);
                     break;
                 }
             }
@@ -2632,6 +2694,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                 "finish", -1, -1, 0, sixel_colorspace_log_clamp(pixel_total),
                 0, sixel_colorspace_log_clamp(pixel_total),
                 "parallel status=%d threads=%d", status, threads);
+            sixel_float_memo_cleanup(&controller);
             free(results);
             free(converted);
             sixel_timeline_logger_unref(logger);
@@ -2652,12 +2715,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     sixel_timeline_logger_logf(logger, "worker", "colorspace", "start",
         0, 0, 0, sixel_colorspace_log_clamp(pixel_total),
         0, sixel_colorspace_log_clamp(pixel_total), "serial");
-    status = sixel_convert_pixels_via_linear_float_chunk(pixels,
-        pixel_total, colorspace_src, colorspace_dst, NULL);
-    if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_convert_pixels_via_linear_float_chunk(pixels,
-            pixel_total, colorspace_src, colorspace_dst, pixels);
-    }
+    status = sixel_convert_pixels_via_linear_float_serial(pixels,
+        pixel_total, colorspace_src, colorspace_dst);
     sixel_timeline_logger_logf(logger, "worker", "colorspace", "finish",
         0, 0, 0, sixel_colorspace_log_clamp(pixel_total),
         0, sixel_colorspace_log_clamp(pixel_total), "serial status=%d", status);
@@ -3186,8 +3245,6 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_color_convert_rgbf32(float *pixels, size_t count,
                            int source, int target)
 {
-    SIXELSTATUS status;
-
     if (pixels == NULL || count == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -3196,13 +3253,8 @@ sixel_color_convert_rgbf32(float *pixels, size_t count,
     }
     /* Serial-only palette/single-color utility. Full frames must use
      * sixel_color_convert_frame_rgbf32() to honor their worker budget. */
-    status = sixel_convert_pixels_via_linear_float_chunk(pixels, count,
-        source, target, NULL);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    return sixel_convert_pixels_via_linear_float_chunk(pixels, count,
-        source, target, pixels);
+    return sixel_convert_pixels_via_linear_float_serial(pixels, count,
+        source, target);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS

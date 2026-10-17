@@ -319,6 +319,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_RECLAIM_BUDGET \
     -DBUILD_TEST_0010_RECLAIM_BITS \
     -DBUILD_TEST_0011_RECLAIM_ATOMIC \
+    -DBUILD_TEST_0012_WORKER_MEMO_EXACT \
     -DBUILD_TEST_0008_OVERLAP_RECLAIM \
     -DBUILD_TEST_0017_PIPELINE_AUTO_WORKER_COUNTS \
     -DBUILD_TEST_0018_PIPELINE_FULL_FRAME_WORKER_COUNTS \
@@ -4809,6 +4810,7 @@ test_runner_SOURCES = test_runner.c \
     processing/colorspace/parallel/0009_reclaim_budget.c \
     processing/colorspace/parallel/0010_reclaim_bits.c \
     processing/colorspace/parallel/0011_reclaim_atomic.c \
+    processing/colorspace/parallel/0012_worker_memo_exact.c \
     processing/colorspace/parallel/0008_overlap_reclaim.c \
     processing/colorspace/parallel/parallel_float_common.c \
     planner/pipeline/0017_pipeline_auto_worker_counts.c \
