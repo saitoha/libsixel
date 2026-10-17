@@ -1787,6 +1787,11 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
     return SIXEL_OK;
 }
 
+/* Byte tuples are integers and total population fits unsigned int. Their
+ * sums are below 255 * UINT_MAX, exactly representable in double. The
+ * nearest non-half mean is at least 1/(2*UINT_MAX) from a half, comfortably
+ * above division roundoff here. floor(mean + 0.5) therefore agrees with
+ * exact integer half-up rounding. Native float tuples bypass rounding. */
 static void
 centerBox(unsigned int boxStart,
           unsigned int boxSize,
@@ -1815,7 +1820,7 @@ centerBox(unsigned int boxStart,
         }
         newTuple[plane] = (minval + maxval) / 2;
         if (!colorfreqtable.preserve_extended) {
-            newTuple[plane] = floor(newTuple[plane]);
+            newTuple[plane] = floor(newTuple[plane] + 0.5);
         }
     }
 }
@@ -1845,7 +1850,7 @@ averageColors(unsigned int boxStart,
         }
         newTuple[plane] = sum / boxSize;
         if (!colorfreqtable.preserve_extended) {
-            newTuple[plane] = floor(newTuple[plane]);
+            newTuple[plane] = floor(newTuple[plane] + 0.5);
         }
     }
 }
@@ -1877,7 +1882,7 @@ averagePixels(unsigned int boxStart,
         if (n != 0U) {
             newTuple[plane] = sum / n;
             if (!colorfreqtable.preserve_extended) {
-                newTuple[plane] = floor(newTuple[plane]);
+                newTuple[plane] = floor(newTuple[plane] + 0.5);
             }
         } else {
             newTuple[plane] = 0;

@@ -1,6 +1,10 @@
 #!/bin/sh
 # TAP test ensuring interframe output is stable across threads on builtin APNG.
 
+# Half-up box centers change this two-color fixture and expose a redundant
+# band-boundary color selector (decoded pixels still agree). Pin histogram
+# representatives so this byte-equality test isolates interframe behavior;
+# representative rounding is covered by palette/heckbert_policy tests.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -20,7 +24,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin \
     -ldisable \
     -S -T 1 \
-    -d fs -p 2 \
+    -d fs -p 2 -s histogram \
     "${input_apng}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
@@ -35,7 +39,7 @@ single_thread_output=$(
         -L builtin \
         -ldisable \
         -S -T 1 \
-        -d interframe -p 2 \
+        -d interframe -p 2 -s histogram \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "interframe builtin APNG single-thread failed"
@@ -48,7 +52,7 @@ multi_thread_output=$(
         -L builtin \
         -ldisable \
         -S -T 1 \
-        -d interframe -p 2 \
+        -d interframe -p 2 -s histogram \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "interframe builtin APNG multi-thread failed"
