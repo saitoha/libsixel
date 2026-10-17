@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring float32 STBN hash differs from diffusion on animation.
 
 set -eux

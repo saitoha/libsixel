@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring interframe float32 accepts builtin APNG animation input.
 
 set -eux

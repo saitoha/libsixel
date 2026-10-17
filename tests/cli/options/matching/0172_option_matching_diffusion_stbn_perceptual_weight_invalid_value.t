@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying invalid stbn perceptual_weight value is rejected.
 
 set -eux

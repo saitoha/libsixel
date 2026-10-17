@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying stbn cli motion_adapt overrides invalid env value.
 
 set -eux

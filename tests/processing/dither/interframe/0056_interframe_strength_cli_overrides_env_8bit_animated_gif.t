@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring CLI strength overrides env for 8bit interframe.
 
 set -eux

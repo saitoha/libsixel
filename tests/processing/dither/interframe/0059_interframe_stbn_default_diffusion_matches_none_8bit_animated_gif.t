@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring 8bit stbn defaults to diffusion=none.
 
 set -eux

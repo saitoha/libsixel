@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring stbn scene_cut_reset changes float32 animated gif output.
 
 set -eux

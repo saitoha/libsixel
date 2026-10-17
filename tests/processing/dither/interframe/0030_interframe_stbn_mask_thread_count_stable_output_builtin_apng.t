@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring 8bit stbn-mask output is stable across thread counts.
 
 # Half-up box centers change this two-color fixture and expose a redundant

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring unknown float32 interframe strategy falls back to diffusion.
 
 set -eux

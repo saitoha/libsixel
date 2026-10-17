@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring float32 stbn-mask mapfile capture is repeatable.
 
 set -eux

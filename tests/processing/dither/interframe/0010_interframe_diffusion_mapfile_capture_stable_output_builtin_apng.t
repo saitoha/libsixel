@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring mapfile capture is stable on builtin APNG path.
 
 set -eux

@@ -1,4 +1,7 @@
 #!/bin/sh
+# Strategy-token: diffusion
+# Strategy-token: stbn
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring internal STBN placeholder stays diffusion-equivalent.
 
 set -eux

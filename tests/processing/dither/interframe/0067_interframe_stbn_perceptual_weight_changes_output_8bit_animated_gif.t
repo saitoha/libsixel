@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring stbn perceptual_weight changes 8bit gif output.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying non-interframe diffusion rejects diffusion key.
 
 set -eux

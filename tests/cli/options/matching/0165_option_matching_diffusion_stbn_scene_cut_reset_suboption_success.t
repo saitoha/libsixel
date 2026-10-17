@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying -d stbn accepts scene_cut_reset suboption.
 
 set -eux

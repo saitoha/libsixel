@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring interframe diffusion matches fs on a static frame render.
 
 set -eux

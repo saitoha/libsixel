@@ -1,4 +1,6 @@
 #!/bin/sh
+# Strategy-token: stbn-hash
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring stbn-hash strategy alias matches stbn output.
 
 set -eux

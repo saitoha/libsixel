@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying -d stbn accepts alpha_guard suboption.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying CLI scene_detect override ignores invalid env value.
 
 set -eux

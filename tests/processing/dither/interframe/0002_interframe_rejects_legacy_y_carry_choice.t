@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test confirming legacy -Y carry is still rejected.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring stbn-mask strength=0 matches diffusion on APNG.
 
 set -eux

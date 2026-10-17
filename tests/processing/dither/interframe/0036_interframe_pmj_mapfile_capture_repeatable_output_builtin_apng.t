@@ -1,4 +1,6 @@
 #!/bin/sh
+# Strategy-token: pmj
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring 8bit PMJ mapfile capture output is repeatable.
 
 set -eux

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying invalid stbn motion_adapt value is rejected.
 
 set -eux

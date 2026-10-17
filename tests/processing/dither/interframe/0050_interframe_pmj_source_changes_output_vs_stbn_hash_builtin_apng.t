@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring 8bit PMJ strategy contract differs from STBN hash.
 
 set -eux

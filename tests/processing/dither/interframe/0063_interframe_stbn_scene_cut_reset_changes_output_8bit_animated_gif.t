@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring stbn scene_cut_reset changes 8bit animated gif output.
 
 set -eux

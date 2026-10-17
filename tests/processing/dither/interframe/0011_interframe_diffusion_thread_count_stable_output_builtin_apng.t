@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring interframe output is stable across threads on builtin APNG.
 
 # Half-up box centers change this two-color fixture and expose a redundant

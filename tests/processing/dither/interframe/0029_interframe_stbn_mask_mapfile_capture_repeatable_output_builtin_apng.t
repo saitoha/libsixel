@@ -1,4 +1,6 @@
 #!/bin/sh
+# Strategy-token: stbn-mask
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring 8bit stbn-mask mapfile capture is repeatable on APNG.
 
 set -eux

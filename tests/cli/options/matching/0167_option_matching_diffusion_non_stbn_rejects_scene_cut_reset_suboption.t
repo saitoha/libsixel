@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test verifying non-stbn diffusion rejects scene_cut_reset key.
 
 set -eux

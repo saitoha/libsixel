@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring alpha_guard=1 is reflected in 8bit STBN contract.
 
 set -eux
