@@ -96,6 +96,10 @@ The normal precedence is:
 
 Help and manuals must publish the primary mapping, including its scope when one structured option has multiple bases. The environment name is not derived mechanically from the CLI spelling. [`staticcheck-suboption-registry.sh`](../../tests/_static/sh/staticcheck-suboption-registry.sh) audits the registry-backed converter mappings and their required image-level coverage, and [`staticcheck-docs-envvars-help-table.sh`](../../tests/_static/sh/staticcheck-docs-envvars-help-table.sh) audits their help exposure. The rule applies to the whole public CLI design even where equivalent structural enforcement has not yet been added.
 
+## Heckbert partition controls
+
+`-Q heckbert` accepts `cut=median|sse` (`T`), `order=population|sse` (`O`) and `weights=auto|L/A/B` (`W`) alongside `profile` (`P`). The [quantization reference](../encoder/palette-construction/quantization/README.md#cut-box-order-and-native-axis-ratios) owns defaults, environment mappings, coordinate interpretation and numerical behavior. Weights share FHEDT's positive finite ratio syntax; they configure partition geometry rather than lookup.
+
 ## Diagnostics and failure behavior
 
 An invalid base, key, and value are distinct failures because each has a different valid domain. Diagnostics identify the owning option and active base where applicable. Unknown keys may list the keys valid in that scope, and the independent [correction-suggestion policy](correction-suggestions.md) may add a close canonical spelling. Neither a candidate list nor a typo suggestion changes failure into success.

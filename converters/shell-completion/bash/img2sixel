@@ -131,6 +131,15 @@ _img2sixel()
             ${quant_base} == auto* || \
             ${quant_base} == heckbert || \
             ${quant_base} == heckbert* ) ]]; then
+            if [[ ${quant_base} != auto* ]]; then
+                quant_prefix="${cur%${quant_item}}"
+                for quant_candidate in profile=compat profile=speed profile=quality \
+                    cut=median cut=sse Tmedian Tsse order=population order=sse \
+                    Opopulation Osse weights=auto weights=2/1/1 Wauto W2/1/1; do
+                    [[ ${quant_candidate} == ${quant_item}* ]] || continue
+                    COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                done
+            fi
             if [[ ${quant_item} == *=* ]]; then
                 quant_key="${quant_item%%=*}"
                 quant_value="${quant_item#*=}"

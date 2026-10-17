@@ -313,6 +313,15 @@ _quantizemodel() {
     segment=${current##*:}
     if [[ ${base} == auto || ${base} == auto* || \
           ${base} == heckbert || ${base} == heckbert* ]]; then
+      if [[ ${base} != auto* ]]; then
+        prefix=${current%"${segment}"}
+        compadd -- "${prefix}profile=compat" "${prefix}profile=speed" \
+          "${prefix}profile=quality" "${prefix}cut=median" "${prefix}cut=sse" \
+          "${prefix}Tmedian" "${prefix}Tsse" "${prefix}order=population" \
+          "${prefix}order=sse" "${prefix}Opopulation" "${prefix}Osse" \
+          "${prefix}weights=auto" "${prefix}weights=2/1/1" \
+          "${prefix}Wauto" "${prefix}W2/1/1"
+      fi
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%"${segment}"}

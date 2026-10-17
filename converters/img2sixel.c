@@ -279,7 +279,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :feedback_interval=COUNT run feedback every N iterations (1-64, default 1).\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all models: sample_target=C\n"
-        "        heckbert: profile=P\n"
+        "        heckbert: profile=P, cut=median|sse (T),\n"
+        "          order=population|sse (O), weights=auto|L/A/B (W)\n"
         "        kmeans: backend=G, inittype=I, threshold=T, binbits=N, mapping=M,\n"
         "          softdist=D, feedback=F,\n"
         "          prune=P, seed=S, restarts=E, iter=A, iter_max=X,\n"
@@ -693,24 +694,26 @@ static cli_option_help_t const g_option_help_table[] = {
         'f',
         "find-largest",
         "-f FINDTYPE, --find-largest=FINDTYPE\n"
-        "    choose method for finding the largest dimension of median cut boxes for splitting,\n"
-        "    make sense only when -p option (color reduction) is specified FINDTYPE is one of\n"
-        "    them:\n"
-        "      auto -> choose finding method automatically (default)\n"
-        "      norm -> simply comparing the range in RGB space\n"
-        "      lum  -> transforming into luminosities before the comparison\n"
-        "      pca  -> split along the first principal component and cut at weighted median\n"
+        "    choose Heckbert split direction; explicit -p is not required.\n"
+        "      auto -> norm unless a profile supplies another default\n"
+        "      norm -> native channel ranges weighted by color space\n"
+        "      lum  -> BT.601 for RGB; double norm lightness weight for Lab\n"
+        "      pca  -> first principal component\n"
+        "    Norm ratios: CIELAB 3/1/1, DIN99d 2/1/1, RGB/OKLab 1/1/1.\n"
+        "    heckbert:weights overrides norm/lum; cut selects median or SSE.\n"
     },
     {
         's',
         "select-color",
         "-s SELECTTYPE, --select-color=SELECTTYPE\n"
-        "    choose the method for selecting representative color from each median-cut box, make\n"
-        "    sense only when -p option (color reduction) is specified SELECTTYPE is one of them:\n"
-        "      auto      -> choose selecting method automatically (default)\n"
-        "      center    -> choose the center of the box\n"
-        "      average    -> calculate the color average into the box\n"
-        "      histogram -> similar with average but considers color histogram\n"
+        "    select final Heckbert cluster representatives, including Ward.\n"
+        "      auto      -> center without merge; weighted mean after Ward\n"
+        "      center    -> midpoint of member channel extrema\n"
+        "      average   -> unweighted mean of distinct retained colors\n"
+        "      histogram -> occurrence-weighted mean\n"
+        "    Byte representatives round half up; floats stay fractional.\n"
+        "    Explicit values require Heckbert; other solvers require auto.\n"
+        "    Fixed palettes and reuse bypass -s; explicit -p is not required.\n"
     },
     {
         'c',
@@ -2060,6 +2063,19 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         "Repeat Lloyd refinement after the final merge. Accepts 0-30.\n"
         "Default is 3."
+    },
+    {
+        "SIXEL_PALETTE_HECKBERT_CUT",
+        "Heckbert cut: median (default) or sse; -Q heckbert:cut overrides."
+    },
+    {
+        "SIXEL_PALETTE_HECKBERT_ORDER",
+        "Heckbert box order: population (default) or sse; -Q order overrides."
+    },
+    {
+        "SIXEL_PALETTE_HECKBERT_WEIGHTS",
+        "Heckbert native ratios: auto (default) or positive finite L/A/B;\n"
+        "-Q heckbert:weights overrides; common multipliers cancel."
     },
     {
         "SIXEL_PALETTE_HECKBERT_PROFILE",
