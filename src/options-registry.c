@@ -1687,6 +1687,16 @@ static sixel_suboption_choice_t const g_palette_snap_grid_choices[] = {
     { "full", SIXEL_SNAP_GRID_FULL }
 };
 
+static sixel_suboption_choice_t const g_heckbert_cut_choices[] = {
+    { "median", 0 },
+    { "sse", 1 }
+};
+
+static sixel_suboption_choice_t const g_heckbert_order_choices[] = {
+    { "population", 0 },
+    { "sse", 1 }
+};
+
 static sixel_suboption_choice_t const g_heckbert_profile_choices[] = {
     { "compat", SIXEL_HECKBERT_PROFILE_COMPAT },
     { "speed", SIXEL_HECKBERT_PROFILE_SPEED },
@@ -2293,6 +2303,22 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "profile", 'P', "SIXEL_PALETTE_HECKBERT_PROFILE", NULL, NULL,
         g_heckbert_profile_choices,
         quantize_model_heckbert_profile),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        g_quantize_values + SIXEL_QUANTIZE_BASE_HECKBERT,
+        "cut", 'T', "SIXEL_PALETTE_HECKBERT_CUT", NULL, NULL,
+        g_heckbert_cut_choices, heckbert_cut, heckbert_cut_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        g_quantize_values + SIXEL_QUANTIZE_BASE_HECKBERT,
+        "order", 'O', "SIXEL_PALETTE_HECKBERT_ORDER", NULL, NULL,
+        g_heckbert_order_choices, heckbert_order, heckbert_order_override),
+    SIXEL_REGISTRY_ENCODER_RATIO3(
+        SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,
+        g_quantize_values + SIXEL_QUANTIZE_BASE_HECKBERT,
+        "weights", 'W', "SIXEL_PALETTE_HECKBERT_WEIGHTS", NULL, NULL,
+        "Heckbert weights must be auto or positive finite ratios L/A/B.",
+        heckbert_weights, heckbert_weights_override),
 
     SIXEL_REGISTRY_ENCODER_CHOICE(
         SIXEL_OPTION_SCHEMA_QUANTIZE_MODEL,

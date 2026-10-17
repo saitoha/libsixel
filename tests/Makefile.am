@@ -2096,6 +2096,26 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0046_HECKBERT_CENTER \
     -DBUILD_TEST_0047_HECKBERT_AVERAGE \
     -DBUILD_TEST_0048_HECKBERT_HISTOGRAM \
+    -DBUILD_TEST_0001_HECKBERT_CENTER_HALF \
+    -DBUILD_TEST_0002_HECKBERT_AVERAGE_HALF \
+    -DBUILD_TEST_0003_HECKBERT_HISTOGRAM_HALF \
+    -DBUILD_TEST_0004_HECKBERT_WARD_CENTER \
+    -DBUILD_TEST_0005_HECKBERT_WARD_AVERAGE \
+    -DBUILD_TEST_0006_HECKBERT_WARD_HISTOGRAM \
+    -DBUILD_TEST_0007_HECKBERT_LLOYD_CENTER \
+    -DBUILD_TEST_0008_HECKBERT_LLOYD_AVERAGE \
+    -DBUILD_TEST_0009_HECKBERT_LLOYD_HISTOGRAM \
+    -DBUILD_TEST_0010_HECKBERT_AXIS_RGB \
+    -DBUILD_TEST_0011_HECKBERT_AXIS_CIELAB \
+    -DBUILD_TEST_0012_HECKBERT_AXIS_DIN99D \
+    -DBUILD_TEST_0013_HECKBERT_AXIS_OKLAB \
+    -DBUILD_TEST_0014_HECKBERT_SSE_NORM \
+    -DBUILD_TEST_0015_HECKBERT_SSE_PCA \
+    -DBUILD_TEST_0016_HECKBERT_SSE_FLOAT_NORM \
+    -DBUILD_TEST_0017_HECKBERT_SSE_FLOAT_PCA \
+    -DBUILD_TEST_0018_HECKBERT_ORDER_SSE \
+    -DBUILD_TEST_0032_HECKBERT_LLOYD_REASSIGNMENT \
+    -DBUILD_HECKBERT_POLICY_COMMON \
     -DBUILD_TEST_0049_HECKBERT_POLISH \
     -DBUILD_TEST_0050_HECKBERT_ONCE \
     -DBUILD_TEST_0051_HECKBERT_UNIQUE \
@@ -6507,6 +6527,26 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/snap_hooks/0013_stage_ladder.c \
     quant/palette/snap_hooks/0014_kmeans_once.c \
     quant/palette/snap_hooks/0015_kmeans_all.c \
+    quant/palette/heckbert_policy/0001_heckbert_center_half.c \
+    quant/palette/heckbert_policy/0002_heckbert_average_half.c \
+    quant/palette/heckbert_policy/0003_heckbert_histogram_half.c \
+    quant/palette/heckbert_policy/0004_heckbert_ward_center.c \
+    quant/palette/heckbert_policy/0005_heckbert_ward_average.c \
+    quant/palette/heckbert_policy/0006_heckbert_ward_histogram.c \
+    quant/palette/heckbert_policy/0007_heckbert_lloyd_center.c \
+    quant/palette/heckbert_policy/0008_heckbert_lloyd_average.c \
+    quant/palette/heckbert_policy/0009_heckbert_lloyd_histogram.c \
+    quant/palette/heckbert_policy/0010_heckbert_axis_rgb.c \
+    quant/palette/heckbert_policy/0011_heckbert_axis_cielab.c \
+    quant/palette/heckbert_policy/0012_heckbert_axis_din99d.c \
+    quant/palette/heckbert_policy/0013_heckbert_axis_oklab.c \
+    quant/palette/heckbert_policy/0014_heckbert_sse_norm.c \
+    quant/palette/heckbert_policy/0015_heckbert_sse_pca.c \
+    quant/palette/heckbert_policy/0016_heckbert_sse_float_norm.c \
+    quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.c \
+    quant/palette/heckbert_policy/0018_heckbert_order_sse.c \
+    quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c \
+    quant/palette/heckbert_policy/heckbert_policy_common.c \
     quant/palette/ordinary_float/ordinary_float_test_common.c \
     quant/palette/ordinary_float/ordinary_float_test_common.h \
     quant/palette/ordinary_float/0001_center_sources.c \

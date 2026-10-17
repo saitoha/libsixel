@@ -82,7 +82,7 @@ An explicitly requested final snap remains effective and follows the [snap polic
 ## `heckbert`: recursive median cut
 
 ```text
--Q heckbert[:profile=compat|speed|quality]
+-Q heckbert[:profile=compat|speed|quality][:cut=median|sse][:order=population|sse][:weights=auto|L/A/B]
 ```
 
 Heckbert quantization is a top-down partitioning heuristic. The implementation
@@ -109,7 +109,7 @@ occupied histogram cells
 The traditional split direction is a channel with a large range. libsixel can
 also choose a luminance-oriented direction or estimate a principal component
 from the weighted covariance matrix. The representative of a leaf may be its
-geometric center, weighted average, or histogram-derived value. These choices
+geometric center, unweighted color mean, or frequency-weighted mean. These choices
 control the partition and representative; they do not turn median cut into an
 optimizer for the K-means or K-center objectives.
 
@@ -122,17 +122,42 @@ corresponding profile defaults.
 
 The independent [`-F` final merge policy](../merge-policy/README.md) explains the oversplit size, Ward reduction criterion, optional Lloyd polishing, quantizer interactions, and measured cost and quality. It is a post-solver policy even when a `-Q` profile supplies its defaults.
 
-If splits remain reasonably balanced, each occupied histogram cell participates in approximately `log K` partition levels, giving usual `O(S log K)` splitting work. Repeatedly peeling off a very small box can reach `O(S K)`. Histogram clearing and ingestion add `Theta(N + B)`, where `B` is the number of addressable histogram cells. PCA selection is normally linear per box, but a fallback may sort, so the balanced bound is not a hard bound for every path.
+If splits remain reasonably balanced, each occupied histogram cell participates in approximately `log K` partition levels, giving usual `O(S log K)` splitting work. Repeatedly peeling off a very small box can reach `O(S K)`. Histogram clearing and ingestion add `Theta(N + B)`, where `B` is the number of addressable histogram cells. PCA median selection is normally linear per box, but a fallback may sort. SSE cuts fully sort PCA/native-float ranges in `O(S log S)` per box before their linear scan, while byte channel sorts use buckets. The balanced bound is therefore not a hard bound for every path.
 
 Median cut is deterministic for fixed inputs and settings, but it has no general guarantee of minimizing squared error or maximum radius. Its appeal is bounded work, balanced coverage of occupied regions, and compatibility with the quantizer descended from Netpbm. The original algorithm and design tradeoff are described by Heckbert in [Color Image Quantization for Frame Buffer Display](https://publications.ri.cmu.edu/color-image-quantization-for-frame-buffer-display).
 
 ### Explicit split and representative controls: `-f` and `-s`
 
-`-f` / `--find-largest` selects the Heckbert box-splitting method. `norm` compares channel ranges, `lum` uses luminance-oriented weighting, and `pca` estimates the first principal direction and splits around a weighted median. `auto` defers to automatic/default resolution; it is not a fourth mathematical split method. An explicit split setting is retained when a Heckbert profile supplies defaults. Degenerate partitions can trigger the implementation's fallback directions, so selecting PCA does not guarantee that every individual split uses a principal axis.
+`-f` / `--find-largest` selects the Heckbert box-splitting method. `norm` compares channel ranges, `lum` uses luminance-oriented weighting, and `pca` estimates the first principal direction; the `cut` suboption selects its split position. `auto` defers to automatic/default resolution; it is not a fourth mathematical split method. An explicit split setting is retained when a Heckbert profile supplies defaults. Degenerate partitions can trigger the implementation's fallback directions, so selecting PCA does not guarantee that every individual split uses a principal axis.
 
 `-s` / `--select-color` selects the representative of each final Heckbert cluster, including after Ward and Lloyd: `center` is the midpoint of its member extrema, `average` is the unweighted mean of its distinct retained histogram colors, and `histogram` is the occurrence-weighted mean. Histogram binning and sampling determine which colors are retained. Byte representatives round to nearest, with exact halves rounded up; native float representatives retain fractions and extended coordinates. Reversible mapping and explicit snapping remain separate subsequent policies.
 
 `auto` uses center without actual Ward reduction and the weighted centroid after Ward. Explicit `-s center|average|histogram` is rejected when the resolved CLI solver is K-means, K-medoids or K-center: changing their final representatives would change their centroid, observed-member or radius objective. Use `-s auto` with those solvers. Structured external palettes, builtin palettes, preserved PAL8 inputs and reused palettes bypass construction and ignore `-s`. Image mapfiles that construct a palette obey the solver contract. These controls work with the default palette size; explicit `-p` is unnecessary. Repeating a selector replaces its earlier value.
+
+### Cut, box order and native axis ratios
+
+| Key | Compact | Default | Environment |
+| --- | --- | --- | --- |
+| `cut=median|sse` | `Tmedian`, `Tsse` | `median` | `SIXEL_PALETTE_HECKBERT_CUT` |
+| `order=population|sse` | `Opopulation`, `Osse` | `population` | `SIXEL_PALETTE_HECKBERT_ORDER` |
+| `weights=auto|L/A/B` | `Wauto`, `W2/1/1` | `auto` | `SIXEL_PALETTE_HECKBERT_WEIGHTS` |
+
+These settings belong only to `heckbert`, coexist with `profile`, and retain ordinary CLI-over-environment precedence. `T` denotes the cut threshold; `C` is already the common sample-count key. Profiles retain median cuts and population ordering.
+
+| Clustering coordinates | Norm native ratios | Lum native ratios |
+| --- | --- | --- |
+| Gamma or linear RGB | 1:1:1 | 0.2989:0.5866:0.1145 |
+| CIELAB | 3:1:1 | 6:1:1 |
+| DIN99d | 2:1:1 | 4:1:1 |
+| OKLab | 1:1:1 | 2:1:1 |
+
+Ratios multiply channel ranges in native color-space units; compensation for the histogram's nominal normalization is explicit. Norm defaults preserve the established geometry exactly. Lum doubles the norm lightness emphasis in perceptual spaces; RGB retains BT.601. Custom ratios replace either rule, require three positive finite values and cancel a common multiplier. `auto` restores the format-specific rule. A median norm/PCA split that falls back to luminosity keeps the legacy BT.601 fallback multipliers on top of the norm ratios; it does not become an explicit perceptual `-f lum` request. Thus specifying the norm default ratios explicitly also preserves the default partitions.
+
+`cut=sse` completely sorts the selected axis, including PCA and native float norm/lum paths, then scans cumulative weighted sums and squared sums to minimize the sum of child errors. The objective squares the same effective coordinate weights used for axis selection. PCA retains its established nominal-coordinate projection; custom ratios affect its SSE evaluation, not its covariance. Ties choose the first cut. A singleton outlier is valid: only empty or out-of-range partitions are rejected. `order=sse` caches each box's error, reuses cut moments, and selects the largest error with deterministic position/count tie breaks. Accumulation is serial in fixed table order; worker count does not change it. This does not promise identical floating-point arithmetic on compilers using incompatible contraction or fast-math rules.
+
+```sh
+img2sixel -Q heckbert:cut=sse:order=sse:weights=2/1/1 -Xc -s histogram image.png
+```
 
 ### Deprecated complexion score
 
@@ -817,3 +842,40 @@ These value observations call ordinary `generate()` directly, so native output a
 | OF-52 | Heckbert once snap runs only on the final palette. | [tests/quant/palette/ordinary_float/0050_heckbert_once.t](../../../../tests/quant/palette/ordinary_float/0050_heckbert_once.t) |
 | OF-53 | Heckbert distinguishes subbyte float colors. | [tests/quant/palette/ordinary_float/0051_heckbert_unique.t](../../../../tests/quant/palette/ordinary_float/0051_heckbert_unique.t) |
 | OF-54 | A failed ordinary float Heckbert build reaches the CLI without retry or published success state. | [tests/cli/options/matching/0282_option_matching_palette_heckbert_float_failure.t](../../../../tests/cli/options/matching/0282_option_matching_palette_heckbert_float_failure.t) |
+
+### Heckbert policy numerical contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| HP-01 | center half numerical contract. | [tests/quant/palette/heckbert_policy/0001_heckbert_center_half.t](../../../../tests/quant/palette/heckbert_policy/0001_heckbert_center_half.t) |
+| HP-02 | average half numerical contract. | [tests/quant/palette/heckbert_policy/0002_heckbert_average_half.t](../../../../tests/quant/palette/heckbert_policy/0002_heckbert_average_half.t) |
+| HP-03 | histogram half numerical contract. | [tests/quant/palette/heckbert_policy/0003_heckbert_histogram_half.t](../../../../tests/quant/palette/heckbert_policy/0003_heckbert_histogram_half.t) |
+| HP-04 | ward center numerical contract. | [tests/quant/palette/heckbert_policy/0004_heckbert_ward_center.t](../../../../tests/quant/palette/heckbert_policy/0004_heckbert_ward_center.t) |
+| HP-05 | ward average numerical contract. | [tests/quant/palette/heckbert_policy/0005_heckbert_ward_average.t](../../../../tests/quant/palette/heckbert_policy/0005_heckbert_ward_average.t) |
+| HP-06 | ward histogram numerical contract. | [tests/quant/palette/heckbert_policy/0006_heckbert_ward_histogram.t](../../../../tests/quant/palette/heckbert_policy/0006_heckbert_ward_histogram.t) |
+| HP-07 | lloyd center numerical contract. | [tests/quant/palette/heckbert_policy/0007_heckbert_lloyd_center.t](../../../../tests/quant/palette/heckbert_policy/0007_heckbert_lloyd_center.t) |
+| HP-08 | lloyd average numerical contract. | [tests/quant/palette/heckbert_policy/0008_heckbert_lloyd_average.t](../../../../tests/quant/palette/heckbert_policy/0008_heckbert_lloyd_average.t) |
+| HP-09 | lloyd histogram numerical contract. | [tests/quant/palette/heckbert_policy/0009_heckbert_lloyd_histogram.t](../../../../tests/quant/palette/heckbert_policy/0009_heckbert_lloyd_histogram.t) |
+| HP-10 | axis rgb numerical contract. | [tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t](../../../../tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t) |
+| HP-11 | axis cielab numerical contract. | [tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t](../../../../tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t) |
+| HP-12 | axis din99d numerical contract. | [tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t](../../../../tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t) |
+| HP-13 | axis oklab numerical contract. | [tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t](../../../../tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t) |
+| HP-14 | sse norm numerical contract. | [tests/quant/palette/heckbert_policy/0014_heckbert_sse_norm.t](../../../../tests/quant/palette/heckbert_policy/0014_heckbert_sse_norm.t) |
+| HP-15 | sse pca numerical contract. | [tests/quant/palette/heckbert_policy/0015_heckbert_sse_pca.t](../../../../tests/quant/palette/heckbert_policy/0015_heckbert_sse_pca.t) |
+| HP-16 | sse float norm numerical contract. | [tests/quant/palette/heckbert_policy/0016_heckbert_sse_float_norm.t](../../../../tests/quant/palette/heckbert_policy/0016_heckbert_sse_float_norm.t) |
+| HP-17 | sse float pca numerical contract. | [tests/quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.t](../../../../tests/quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.t) |
+| HP-18 | order sse numerical contract. | [tests/quant/palette/heckbert_policy/0018_heckbert_order_sse.t](../../../../tests/quant/palette/heckbert_policy/0018_heckbert_order_sse.t) |
+| HP-19 | kmeans rejects explicit CLI representatives. | [tests/quant/palette/heckbert_policy/0019_heckbert_reject_kmeans.t](../../../../tests/quant/palette/heckbert_policy/0019_heckbert_reject_kmeans.t) |
+| HP-20 | medoids rejects explicit CLI representatives. | [tests/quant/palette/heckbert_policy/0020_heckbert_reject_medoids.t](../../../../tests/quant/palette/heckbert_policy/0020_heckbert_reject_medoids.t) |
+| HP-21 | center rejects explicit CLI representatives. | [tests/quant/palette/heckbert_policy/0021_heckbert_reject_center.t](../../../../tests/quant/palette/heckbert_policy/0021_heckbert_reject_center.t) |
+| HP-22 | Explicit partition defaults preserve output. | [tests/quant/palette/heckbert_policy/0022_heckbert_explicit_defaults.t](../../../../tests/quant/palette/heckbert_policy/0022_heckbert_explicit_defaults.t) |
+| HP-23 | Common ratio scaling cancels and explicit weights override environment. | [tests/quant/palette/heckbert_policy/0023_heckbert_weight_scale.t](../../../../tests/quant/palette/heckbert_policy/0023_heckbert_weight_scale.t) |
+| HP-24 | gamma norm SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0024_heckbert_gamma_norm_threads.t](../../../../tests/quant/palette/heckbert_policy/0024_heckbert_gamma_norm_threads.t) |
+| HP-25 | gamma pca SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0025_heckbert_gamma_pca_threads.t](../../../../tests/quant/palette/heckbert_policy/0025_heckbert_gamma_pca_threads.t) |
+| HP-26 | cielab norm SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0026_heckbert_cielab_norm_threads.t](../../../../tests/quant/palette/heckbert_policy/0026_heckbert_cielab_norm_threads.t) |
+| HP-27 | cielab pca SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0027_heckbert_cielab_pca_threads.t](../../../../tests/quant/palette/heckbert_policy/0027_heckbert_cielab_pca_threads.t) |
+| HP-28 | Reject invalid ratio `0/1/1` with a diagnostic. | [tests/quant/palette/heckbert_policy/0028_heckbert_invalid_weights_1.t](../../../../tests/quant/palette/heckbert_policy/0028_heckbert_invalid_weights_1.t) |
+| HP-29 | Reject invalid ratio `nan/1/1` with a diagnostic. | [tests/quant/palette/heckbert_policy/0029_heckbert_invalid_weights_2.t](../../../../tests/quant/palette/heckbert_policy/0029_heckbert_invalid_weights_2.t) |
+| HP-30 | Reject invalid ratio `1/1` with a diagnostic. | [tests/quant/palette/heckbert_policy/0030_heckbert_invalid_weights_3.t](../../../../tests/quant/palette/heckbert_policy/0030_heckbert_invalid_weights_3.t) |
+| HP-31 | Reject invalid ratio `1/1/inf` with a diagnostic. | [tests/quant/palette/heckbert_policy/0031_heckbert_invalid_weights_4.t](../../../../tests/quant/palette/heckbert_policy/0031_heckbert_invalid_weights_4.t) |
+| HP-32 | Lloyd rebuilds statistics after membership changes. | [tests/quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.t](../../../../tests/quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.t) |

@@ -8674,6 +8674,14 @@ sixel_encoder_prepare_palette(
             goto end;
         }
     }
+    build_attempt.heckbert.cut_sse = encoder->heckbert_cut_override
+        ? encoder->heckbert_cut : 0;
+    build_attempt.heckbert.order_sse = encoder->heckbert_order_override
+        ? encoder->heckbert_order : 0;
+    if (encoder->heckbert_weights_override) {
+        memcpy(build_attempt.heckbert.weights, encoder->heckbert_weights,
+            sizeof(build_attempt.heckbert.weights));
+    }
     build_attempt.quantize_model = effective_quantize_model;
     status = sixel_dither_initialize_with_palette_attempt(
         *dither,
@@ -10401,6 +10409,13 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model        = SIXEL_QUANTIZE_MODEL_AUTO;
     (*ppencoder)->quantize_model_heckbert_profile
         = SIXEL_HECKBERT_PROFILE_COMPAT;
+    (*ppencoder)->heckbert_cut = 0;
+    (*ppencoder)->heckbert_cut_override = 0;
+    (*ppencoder)->heckbert_order = 0;
+    (*ppencoder)->heckbert_order_override = 0;
+    (*ppencoder)->heckbert_weights_override = 0;
+    memset((*ppencoder)->heckbert_weights, 0,
+        sizeof((*ppencoder)->heckbert_weights));
     (*ppencoder)->quantize_model_kmeans_backend_override = 0;
     (*ppencoder)->quantize_model_kmeans_backend =
         SIXEL_PALETTE_KMEANS_BACKEND_CPU;

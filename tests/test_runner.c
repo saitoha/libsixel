@@ -2205,6 +2205,25 @@ int test_ordinary_heckbert_reuse(int argc, char **argv);
 int test_ordinary_heckbert_center(int argc, char **argv);
 int test_ordinary_heckbert_average(int argc, char **argv);
 int test_ordinary_heckbert_histogram(int argc, char **argv);
+int test_policy_heckbert_reassignment(int argc, char **argv);
+int test_policy_heckbert_center_half(int argc, char **argv);
+int test_policy_heckbert_average_half(int argc, char **argv);
+int test_policy_heckbert_histogram_half(int argc, char **argv);
+int test_policy_heckbert_ward_center(int argc, char **argv);
+int test_policy_heckbert_ward_average(int argc, char **argv);
+int test_policy_heckbert_ward_histogram(int argc, char **argv);
+int test_policy_heckbert_lloyd_center(int argc, char **argv);
+int test_policy_heckbert_lloyd_average(int argc, char **argv);
+int test_policy_heckbert_lloyd_histogram(int argc, char **argv);
+int test_policy_heckbert_axis_rgb(int argc, char **argv);
+int test_policy_heckbert_axis_cielab(int argc, char **argv);
+int test_policy_heckbert_axis_din99d(int argc, char **argv);
+int test_policy_heckbert_axis_oklab(int argc, char **argv);
+int test_policy_heckbert_sse_norm(int argc, char **argv);
+int test_policy_heckbert_sse_pca(int argc, char **argv);
+int test_policy_heckbert_sse_float_norm(int argc, char **argv);
+int test_policy_heckbert_sse_float_pca(int argc, char **argv);
+int test_policy_heckbert_order_sse(int argc, char **argv);
 int test_ordinary_heckbert_polish(int argc, char **argv);
 int test_ordinary_heckbert_once(int argc, char **argv);
 int test_ordinary_heckbert_unique(int argc, char **argv);
@@ -7609,6 +7628,44 @@ static test_entry_t const test_entries[] = {
       test_ordinary_heckbert_average },
     { "palette/ordinary_float/heckbert_histogram",
       test_ordinary_heckbert_histogram },
+    { "palette/heckbert_policy/reassignment",
+      test_policy_heckbert_reassignment },
+    { "palette/heckbert_policy/center_half",
+      test_policy_heckbert_center_half },
+    { "palette/heckbert_policy/average_half",
+      test_policy_heckbert_average_half },
+    { "palette/heckbert_policy/histogram_half",
+      test_policy_heckbert_histogram_half },
+    { "palette/heckbert_policy/ward_center",
+      test_policy_heckbert_ward_center },
+    { "palette/heckbert_policy/ward_average",
+      test_policy_heckbert_ward_average },
+    { "palette/heckbert_policy/ward_histogram",
+      test_policy_heckbert_ward_histogram },
+    { "palette/heckbert_policy/lloyd_center",
+      test_policy_heckbert_lloyd_center },
+    { "palette/heckbert_policy/lloyd_average",
+      test_policy_heckbert_lloyd_average },
+    { "palette/heckbert_policy/lloyd_histogram",
+      test_policy_heckbert_lloyd_histogram },
+    { "palette/heckbert_policy/axis_rgb",
+      test_policy_heckbert_axis_rgb },
+    { "palette/heckbert_policy/axis_cielab",
+      test_policy_heckbert_axis_cielab },
+    { "palette/heckbert_policy/axis_din99d",
+      test_policy_heckbert_axis_din99d },
+    { "palette/heckbert_policy/axis_oklab",
+      test_policy_heckbert_axis_oklab },
+    { "palette/heckbert_policy/sse_norm",
+      test_policy_heckbert_sse_norm },
+    { "palette/heckbert_policy/sse_pca",
+      test_policy_heckbert_sse_pca },
+    { "palette/heckbert_policy/sse_float_norm",
+      test_policy_heckbert_sse_float_norm },
+    { "palette/heckbert_policy/sse_float_pca",
+      test_policy_heckbert_sse_float_pca },
+    { "palette/heckbert_policy/order_sse",
+      test_policy_heckbert_order_sse },
     { "palette/ordinary_float/heckbert_polish",
       test_ordinary_heckbert_polish },
     { "palette/ordinary_float/heckbert_once",

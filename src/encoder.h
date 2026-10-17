@@ -172,6 +172,12 @@ struct sixel_encoder {
     int quality_mode;
     int quantize_model;
     int quantize_model_heckbert_profile;
+    int heckbert_cut;
+    int heckbert_cut_override;
+    int heckbert_order;
+    int heckbert_order_override;
+    double heckbert_weights[3];
+    int heckbert_weights_override;
     int quantize_model_kmeans_backend_override;
     int quantize_model_kmeans_backend;
     int quantize_model_kmeans_init_override;
