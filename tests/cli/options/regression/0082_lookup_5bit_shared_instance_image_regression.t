@@ -24,7 +24,7 @@ env_output="${artifact_dir}/0082-lookup-5bit-shared_instance-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=2 "-~5bit:S1" "${input_image}" 2>&1 >"${short_output}") || {
+    --threads=2 "-~5bit:S1" "${input_image}" -o "${short_output}" 2>&1) || {
     echo "not ok" 1 - "5bit:shared_instance short conversion failed"
     exit 0
 }
@@ -42,7 +42,7 @@ case "${short_trace}" in *LSXDTH1\|*shared=1\|shared_override=1**) true ;; *) fa
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE=1" --threads=2 "-~5bit" \
-    "${input_image}" 2>&1 >"${env_output}") || {
+    "${input_image}" -o "${env_output}" 2>&1) || {
     echo "not ok" 1 - "5bit:shared_instance env conversion failed"
     exit 0
 }

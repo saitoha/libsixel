@@ -401,11 +401,15 @@ FILENAME != registry_file {
     if (index($0, "env-$$.") > 0) {
         has_unique_environment_output[FILENAME] = 1
     }
-    if (index($0, ">\"${short_output}\"") > 0) {
-        has_short_redirection[FILENAME] = 1
+    # img2sixel -o opens with O_TRUNC and preserves binary bytes on RMS.
+    # Both forms replace an existing capture; append is rejected below.
+    if (index($0, ">\"${short_output}\"") > 0 ||
+            index($0, "-o \"${short_output}\"") > 0) {
+        has_short_capture[FILENAME] = 1
     }
-    if (index($0, ">\"${env_output}\"") > 0) {
-        has_environment_redirection[FILENAME] = 1
+    if (index($0, ">\"${env_output}\"") > 0 ||
+            index($0, "-o \"${env_output}\"") > 0) {
+        has_environment_capture[FILENAME] = 1
     }
     # Complete CMS records are stronger than the older wildcard probes.
     # Retain the extraction, equality and actual-apply requirements, tied to
@@ -418,10 +422,12 @@ FILENAME != registry_file {
         cms_clip[FILENAME] = 0
         cms_engine[FILENAME] = 0
     }
-    if (index($0, ">\"${short_output}\"") > 0) {
+    if (index($0, ">\"${short_output}\"") > 0 ||
+            index($0, "-o \"${short_output}\"") > 0) {
         cms_phase[FILENAME] = "short"
     }
-    if (index($0, ">\"${env_output}\"") > 0) {
+    if (index($0, ">\"${env_output}\"") > 0 ||
+            index($0, "-o \"${env_output}\"") > 0) {
         cms_phase[FILENAME] = "env"
     }
     phase = cms_phase[FILENAME]
@@ -530,8 +536,8 @@ FILENAME != registry_file {
     if (index($0, "ARTIFACT_ROOT") > 0 ||
             (index($0, "mkdir ") > 0 && !lazy_artifact_mkdir &&
              !clipboard_output_mkdir) ||
-            index($0, "-o \"${short_output}\"") > 0 ||
-            index($0, "-o \"${env_output}\"") > 0) {
+            index($0, ">>\"${short_output}\"") > 0 ||
+            index($0, ">>\"${env_output}\"") > 0) {
         has_unsafe_artifact_handling[FILENAME] = 1
     }
     environment_needle = "--env \"" expected_environment[key] "="
@@ -648,8 +654,8 @@ END {
                 !has_unique_environment_output[file])) {
             fail(file " does not isolate output in its local artifact dir")
         }
-        if (!is_completion && (!has_short_redirection[file] ||
-                !has_environment_redirection[file] ||
+        if (!is_completion && (!has_short_capture[file] ||
+                !has_environment_capture[file] ||
                 has_unsafe_artifact_handling[file])) {
             fail(file " can reuse or collide with stale image output")
         }
@@ -726,9 +732,15 @@ END {
             for (route = 1; route <= 4; ++route) {
                 trace = route == 1 ? "short" : route == 2 ? "env" \
                     : route == 3 ? "delta_short" : "delta_env"
+                outcome = expected_presentation_stop[key] " passes=1\"*"
+                # Time need not advance between two calls. The CLI checks
+                # its consumed budget with a deterministic one-pass cap;
+                # injected-clock C tests own actual deadline behavior.
+                if (expected_presentation_stop[key] == "max_seconds") {
+                    outcome = "max_passes passes=1\"*\"max_seconds=1e-300\"*"
+                }
                 needle = "case \"${" trace "_trace}\" in *\"progressive: stop=" \
-                    expected_presentation_stop[key] " passes=1\"*) true ;; " \
-                    "*) false ;; esac || {"
+                    outcome ") true ;; *) false ;; esac || {"
                 if (index(source, needle) == 0) {
                     fail(file " lacks the " trace " presentation outcome")
                 }

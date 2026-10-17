@@ -16,9 +16,10 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 for sample in baseline assignment binding base consumer-event consumer-engine \
         consumer-result comparison image-reference legacy-assignment \
         legacy-binding legacy-consumer perceptual-pair perceptual-status \
-        perceptual-capture perceptual-reference \
+        perceptual-capture perceptual-reference perceptual-output \
+        perceptual-env-output perceptual-append \
         literal-reference presentation-base presentation-outcome \
-        presentation-environment value-nonempty; do
+        presentation-environment presentation-seconds value-nonempty; do
     fixture="$regression_dir/0085_loader_libpng_cms_engine_image_regression.t"
     expected=fail
     needle=__unchanged_positive_control__
@@ -48,6 +49,9 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
                 perceptual-capture) needle='equivalence_status=$?'; replacement=': $?' ;;
                 perceptual-status) needle='test "${equivalence_status:-0}" -eq 0'; replacement='test "${equivalence_status:-0}" -eq 1' ;;
                 perceptual-reference) needle='lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}"'; replacement='lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${OTHER_PATH}"' ;;
+                perceptual-output) needle='-o "${short_output}"'; replacement='' ;;
+                perceptual-env-output) needle='-o "${env_output}"'; replacement='' ;;
+                perceptual-append) needle='-o "${short_output}"'; replacement='>>"${short_output}"' ;;
             esac
             ;;
         value-nonempty)
@@ -61,6 +65,9 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         presentation-*)
             fixture="$regression_dir/0176_update_progressive_max_passes_image_regression.t"
             case "$sample" in
+                presentation-seconds)
+                    fixture="$regression_dir/0177_update_progressive_max_seconds_image_regression.t"
+                    needle='*"max_seconds=1e-300"*'; replacement='*"max_seconds=0"*' ;;
                 presentation-base) needle='-Z delta:P1'; replacement='-Z progressive' ;;
                 presentation-outcome) needle='progressive: stop=max_passes'; replacement='progressive: stop=converged' ;;
                 presentation-environment) needle='case "${delta_env_trace}" in *"progressive:'; replacement='case "${delta_short_trace}" in *"progressive:' ;;

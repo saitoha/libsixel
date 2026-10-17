@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify max_seconds reaches both progressive presentation consumers.
+# Policy: docs/encoder/output/delta-encoding.md
 # Registry row: SIXEL_OPTION_SCHEMA_UPDATE_POLICY|SIXEL_UPDATE_BASE_SET_REPAIR|max_seconds
 # Registry binding: progressive_max_seconds|progressive_seconds_override
 # Image assertion: option-values-and-output-equivalence
@@ -13,16 +14,18 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-# These captures are independently decoded and compared.
+# One pass makes output deterministic even when the platform clock has not
+# advanced. Inspect the budget held by the actual presentation consumer; the
+# injected-clock C tests own deadline and admitted-packet stop behavior.
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
-short_output="${artifact_dir}/0174-max_seconds-short-$$.six"
-env_output="${artifact_dir}/0174-max_seconds-env-$$.six"
+short_output="${artifact_dir}/0177-max_seconds-short-$$.six"
+env_output="${artifact_dir}/0177-max_seconds-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
-    -Z progressive:M1e-300 "${input_image}" 2>&1 >"${short_output}") || {
+    -Z progressive:N1:M1e-300 "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok 1 - short max_seconds conversion failed"
     exit 0
 }
@@ -30,14 +33,14 @@ case "${short_trace}" in *LSXSUB1\|*key=max_seconds\|stored=1\|binding=progressi
     echo "not ok 1 - short max_seconds assignment missing"
     exit 0
 }
-case "${short_trace}" in *"progressive: stop=max_seconds passes=1"*) true ;; *) false ;; esac || {
+case "${short_trace}" in *"progressive: stop=max_passes passes=1"*"max_seconds=1e-300"*) true ;; *) false ;; esac || {
     echo "not ok 1 - short max_seconds missed the presentation consumer"
     exit 0
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
-    --env "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS=1e-300" -Z progressive "${input_image}" 2>&1 >"${env_output}") || {
+    --env "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS=1e-300" -Z progressive:N1 "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok 1 - env max_seconds conversion failed"
     exit 0
 }
@@ -45,14 +48,14 @@ case "${env_trace}" in *LSXSUB1\|*key=max_seconds\|stored=1\|binding=progressive
     echo "not ok 1 - env max_seconds assignment missing"
     exit 0
 }
-case "${env_trace}" in *"progressive: stop=max_seconds passes=1"*) true ;; *) false ;; esac || {
+case "${env_trace}" in *"progressive: stop=max_passes passes=1"*"max_seconds=1e-300"*) true ;; *) false ;; esac || {
     echo "not ok 1 - env max_seconds missed the presentation consumer"
     exit 0
 }
 
 delta_short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
-    -Z delta:P1:M1e-300 "${input_image}" 2>&1 >/dev/null) || {
+    -Z delta:P1:N1:M1e-300 "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok 1 - delta_short max_seconds conversion failed"
     exit 0
 }
@@ -60,14 +63,14 @@ case "${delta_short_trace}" in *LSXSUB1\|*key=max_seconds\|stored=1\|binding=pro
     echo "not ok 1 - delta_short max_seconds assignment missing"
     exit 0
 }
-case "${delta_short_trace}" in *"progressive: stop=max_seconds passes=1"*) true ;; *) false ;; esac || {
+case "${delta_short_trace}" in *"progressive: stop=max_passes passes=1"*"max_seconds=1e-300"*) true ;; *) false ;; esac || {
     echo "not ok 1 - delta_short max_seconds missed the presentation consumer"
     exit 0
 }
 
 delta_env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
-    --env "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS=1e-300" -Z delta:P1 "${input_image}" 2>&1 >/dev/null) || {
+    --env "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS=1e-300" -Z delta:P1:N1 "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok 1 - delta_env max_seconds conversion failed"
     exit 0
 }
@@ -75,7 +78,7 @@ case "${delta_env_trace}" in *LSXSUB1\|*key=max_seconds\|stored=1\|binding=progr
     echo "not ok 1 - delta_env max_seconds assignment missing"
     exit 0
 }
-case "${delta_env_trace}" in *"progressive: stop=max_seconds passes=1"*) true ;; *) false ;; esac || {
+case "${delta_env_trace}" in *"progressive: stop=max_passes passes=1"*"max_seconds=1e-300"*) true ;; *) false ;; esac || {
     echo "not ok 1 - delta_env max_seconds missed the presentation consumer"
     exit 0
 }

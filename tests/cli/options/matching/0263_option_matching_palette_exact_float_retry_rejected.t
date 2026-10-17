@@ -21,7 +21,9 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || status=$?
 
-test "${status}" -eq 1 || {
+# Native C runtimes can map the same failure to another condition severity.
+test "${status}" -ge 1 -a \
+    "${status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
     echo "not ok 1 - exact float failure entered the RGB888 retry"
     exit 0
 }

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
-# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12 OV-14
+# Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12 OV-14 OV-17
 
 set -eu
 
@@ -175,6 +175,12 @@ require_fixed "tr -d '\\n' <\"\${out_file}\" | \"\${CKSUM:-cksum}\"" \
     tests/planner/pipeline/0013_pipeline_gpu_force_reject_closes_dcs.t
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' \
     tests/security/issue/0012_issue220_dcs_signed_integer_overflow.t
+for retry_test in \
+    tests/cli/options/matching/0263_option_matching_palette_exact_float_retry_rejected.t \
+    tests/cli/options/matching/0266_option_matching_palette_kcenter_exact_retry_rejected.t
+do
+    require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' "$retry_test"
+done
 for palette_test in \
     tests/quant/palette/0009_palette_worker_init_fallback.t \
     tests/quant/palette/0010_palette_worker_sample_fallback.t \
@@ -189,6 +195,35 @@ do
 done
 
 require_fixed 'tests/data/inputs/mapfile/* -text' .gitattributes
+# Captures used by quality assertions must retain every byte even when a
+# SIXEL packet exceeds the GNV shell-created RMS record-size limit.
+for capture_test in \
+    tests/cli/options/regression/0082_lookup_5bit_shared_instance_image_regression.t \
+    tests/cli/options/regression/0083_lookup_6bit_shared_instance_image_regression.t
+do
+    # Match shell source, not values from this checker environment.
+    # shellcheck disable=SC2016
+    require_fixed '-o "${short_output}"' "$capture_test"
+    # shellcheck disable=SC2016
+    require_fixed '-o "${env_output}"' "$capture_test"
+done
+for capture_test in \
+    tests/loader/builtin/0001_lsqa_format_grayscale.t \
+    tests/loader/builtin/0003_lsqa_format_rgb.t \
+    tests/loader/builtin/0115_loader_builtin_jpeg_ycbcr_12bit_seq420_r0_expected_lsqa.t \
+    tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader/builtin/0120_loader_builtin_jpeg_ycbcr_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader/builtin/0121_loader_builtin_jpeg_ycbcr_8bit_prog420_r0_expected_lsqa.t \
+    tests/loader/builtin/0122_loader_builtin_jpeg_cmyk_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader/builtin/0124_loader_builtin_jpeg_embedded_esrgb_cms0_expected_lsqa.t \
+    tests/loader/builtin/0125_loader_builtin_jpeg_embedded_esrgb_nolcms_cms1_expected_lsqa.t \
+    tests/loader/builtin/0128_loader_builtin_jpeg_cmyk_12bit_seq444_r0_expected_lsqa.t \
+    tests/loader/builtin/0130_loader_builtin_jpeg_ycck_12bit_seq444_r0_expected_lsqa.t
+do
+    # shellcheck disable=SC2016
+    require_fixed '-o "${output_sixel}"' "$capture_test"
+done
 test -f "$record_fixture_ledger" ||
     fail "OpenVMS record-fixture ledger is missing"
 tab=$(printf '\t')

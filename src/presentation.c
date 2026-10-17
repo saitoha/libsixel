@@ -39,11 +39,13 @@ sixel_presentation_stop(sixel_presentation_t *presentation, int reason)
         : reason == SIXEL_PRESENTATION_STOP_PASSES ? "max_passes"
         : "max_seconds";
     if (presentation->verbose) {
-        fprintf(stderr, "progressive: stop=%s passes=%" PRIu64 "%s\n",
+        fprintf(stderr, "progressive: stop=%s passes=%" PRIu64
+            "%s max_seconds=%g\n",
             name, presentation->passes,
             reason == SIXEL_PRESENTATION_STOP_PASSES ||
             reason == SIXEL_PRESENTATION_STOP_SECONDS
-                ? " (quality not certified)" : "");
+                ? " (quality not certified)" : "",
+            presentation->max_seconds);
     }
 }
 

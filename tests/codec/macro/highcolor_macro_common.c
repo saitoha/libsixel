@@ -57,6 +57,7 @@ hm_check(char const *path, int mode, int phase, int width,
     file = sixel_compat_fopen(path, "rb");
     ok = 0;
     if (file == NULL) {
+        perror("high-color macro capture");
         goto end;
     }
     size = fread(wire, 1, sizeof(wire) - 1, file);
@@ -307,7 +308,13 @@ test_highcolor_macro(int mode, char const *directory)
         }
         /* NULL output is essential: a raw supplied callback bypasses hex. */
         if (SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, NULL)) ||
-                memcmp(samples, saved, sizeof(samples)) != 0 ||
+                memcmp(samples, saved, sizeof(samples)) != 0) {
+            goto end;
+        }
+        /* RMS holds an exclusive writer lock until the fd is closed.
+         * Switching the sink closes it while preserving encoder state for
+         * the reuse and animation replay phases below. */
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'o', "/dev/null")) ||
                 !hm_check(path, mode, phase, width, expected) ||
                 encoder->diagnostic_dither == NULL) {
             goto end;

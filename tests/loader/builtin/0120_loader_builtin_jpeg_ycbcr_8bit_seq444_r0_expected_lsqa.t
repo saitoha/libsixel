@@ -30,7 +30,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-8bit-ycbcr-seq444
 reference_path="${TOP_SRCDIR}/tests/data/loader/quality/0120-0010_jpeg_ycbcr_8bit_seq444_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_ycbcr_8bit_seq444_r0.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin! "${input_jpeg}" -o "${output_sixel}" || {
     echo "not ok" 1 - "builtin YCbCr 8-bit sequential 4:4:4 JPEG decode failed"
     exit 0
 }

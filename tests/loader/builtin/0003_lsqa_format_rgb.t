@@ -22,7 +22,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgb.six"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" -o "${output_sixel}" || {
     echo "not ok" 1 - "rgb quality regressed"
     exit 0
 }

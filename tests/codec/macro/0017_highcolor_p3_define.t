@@ -1,6 +1,8 @@
 #!/bin/sh
 # Verify highcolor p3 define through the actual hexadecimal callback.
 # Policy: docs/encoder/output/terminal-macros.md
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-16
 set -eux
 
 echo "1..1"

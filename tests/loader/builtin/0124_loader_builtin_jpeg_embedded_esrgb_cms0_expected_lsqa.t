@@ -28,7 +28,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/loader/quality/0124-0014_jpeg_embedded_esrgb_cms0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_embedded_esrgb_cms0.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin:cms_engine=none! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin:cms_engine=none! "${input_jpeg}" -o "${output_sixel}" || {
     echo "not ok" 1 - "builtin embedded-ICC JPEG decode failed (cms=0)"
     exit 0
 }

@@ -30,7 +30,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/loader/quality/0115-0006_jpeg_ycbcr_12bit_seq420_r0_reference.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_jpeg_12bit.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin! "${input_jpeg}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Lbuiltin! "${input_jpeg}" -o "${output_sixel}" || {
     echo "not ok" 1 - "builtin 12-bit JPEG decode failed"
     exit 0
 }

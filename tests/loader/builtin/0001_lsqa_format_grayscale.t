@@ -24,7 +24,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-192-grayscale.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-192-reference-gray.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/grayscale.six"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${image_path}" -o "${output_sixel}" || {
     echo "not ok" 1 - "grayscale quality regressed"
     exit 0
 }
