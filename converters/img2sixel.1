@@ -745,18 +745,18 @@ This is a simple heuristic, not an image-specific quality optimum.
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose the Heckbert split direction; an explicit -p is not required.
 Auto normally resolves to norm. Norm compares native channel ranges with
-ratios CIELAB 3:1:1, DIN99d 2:1:1, and RGB/linear RGB/OKLab 1:1:1.
+ratios CIELAB 2:1:1, DIN99d 2:1:1, and RGB/linear RGB/OKLab 1:1:1.
 Lum uses BT.601 (0.2989:0.5866:0.1145) for RGB and linear RGB;
-CIELAB, DIN99d and OKLab use 6:1:1, 4:1:1 and 2:1:1 respectively.
+CIELAB, DIN99d and OKLab use 4:1:1, 4:1:1 and 2:1:1 respectively.
 Pca uses the first principal component of nominal histogram coordinates.
 The Heckbert weights suboption overrides norm/lum ratios with positive finite
 native-coordinate L/A/B ratios; a common multiplier cancels. Auto restores
-the color-space defaults. The cut suboption chooses median (default) or the
-minimum weighted within-child squared error (sse). Order chooses the next
-box by population (default) or largest within-box squared error (sse).
+the color-space defaults. The cut suboption chooses the minimum weighted within-child squared error (sse, default)
+or the weighted median. Order chooses the next
+box by largest within-box squared error (sse, default) or population.
 SSE uses squared, range-compensated axis weights in all channels; it permits
 singleton outliers. PCA retains its projection geometry and uses these
-weights only for the SSE objective. Profiles retain median/population.
+weights only for the SSE objective. All profiles inherit sse/sse unless explicitly overridden.
 .TP 5
 .B \-s \fISELECTTYPE\fP, \-\-select\-color=\fISELECTTYPE\fP
 choose each final Heckbert cluster representative, including after Ward
@@ -765,8 +765,10 @@ Center is the midpoint of member channel extrema; average is the unweighted
 mean of distinct retained histogram colors; histogram is their
 occurrence-weighted mean. Byte representatives round to nearest with halves
 rounded up. Extended float representatives remain fractional.
-Auto keeps center without actual Ward reduction and the weighted centroid
-after reduction. Other solvers retain their own representatives with auto;
+Auto uses average with any enabled dither and histogram with none, including
+after Ward and Lloyd. Auto diffusion resolves to FS above 16 colors and
+Atkinson otherwise; both are enabled dithers. Positional and interframe
+dithering also use average. Other solvers retain their representatives with auto;
 explicit center, average and histogram are rejected for kmeans, medoids and
 center solvers. Ward and Lloyd still use weighted centroids internally.
 Structured external palettes (-m), builtin palettes (-b), preserved PAL8
@@ -2416,11 +2418,11 @@ Accepts soft or hard.
 .TP 5
 .B SIXEL_PALETTE_HECKBERT_CUT
 .br
-Heckbert cut: median (default) or sse. The cut suboption takes precedence.
+Heckbert cut: sse (default) or median. The cut suboption takes precedence.
 .TP 5
 .B SIXEL_PALETTE_HECKBERT_ORDER
 .br
-Heckbert box order: population (default) or sse. Order takes precedence.
+Heckbert box order: sse (default) or population. Order takes precedence.
 .TP 5
 .B SIXEL_PALETTE_HECKBERT_WEIGHTS
 .br

@@ -88,7 +88,7 @@ An explicitly requested final snap remains effective and follows the [snap polic
 Heckbert quantization is a top-down partitioning heuristic. The implementation
 first accumulates a finite color histogram. One box initially covers all
 occupied cells. Until enough leaves exist, it chooses a box, chooses a split
-direction, and divides the box near its weighted median:
+direction, and divides the box at the selected cut:
 
 ```text
 occupied histogram cells
@@ -96,7 +96,7 @@ occupied histogram cells
           v
        one box
           |
-   split at weighted median
+   split at minimum child SSE
        /          \
   left box     right box
        \          /
@@ -113,12 +113,7 @@ geometric center, unweighted color mean, or frequency-weighted mean. These choic
 control the partition and representative; they do not turn median cut into an
 optimizer for the K-means or K-center objectives.
 
-The `compat`, `speed`, and `quality` profiles are bundles of solver defaults.
-`compat` preserves the established median-cut behavior. `speed` favors less
-expensive splitting and final processing. `quality` uses PCA-oriented
-splitting and may create more than `K` intermediate leaves before Ward merging
-them. Explicit split, representative, and final-merge options override the
-corresponding profile defaults.
+The `compat`, `speed`, and `quality` profiles fill only unspecified solver settings. `compat` uses the ordinary axis and merge policies; its name does not promise historical byte output. `speed` uses norm splitting and no final merge. `quality` uses PCA-oriented splitting and may create more than `K` intermediate leaves before Ward merging them. All three use the common SSE cut/order and dither-dependent representative defaults. Explicit split, representative, and final-merge options override the corresponding profile defaults.
 
 The independent [`-F` final merge policy](../merge-policy/README.md) explains the oversplit size, Ward reduction criterion, optional Lloyd polishing, quantizer interactions, and measured cost and quality. It is a post-solver policy even when a `-Q` profile supplies its defaults.
 
@@ -132,26 +127,43 @@ Median cut is deterministic for fixed inputs and settings, but it has no general
 
 `-s` / `--select-color` selects the representative of each final Heckbert cluster, including after Ward and Lloyd: `center` is the midpoint of its member extrema, `average` is the unweighted mean of its distinct retained histogram colors, and `histogram` is the occurrence-weighted mean. Histogram binning and sampling determine which colors are retained. Byte representatives round to nearest, with exact halves rounded up; native float representatives retain fractions and extended coordinates. Reversible mapping and explicit snapping remain separate subsequent policies.
 
-`auto` uses center without actual Ward reduction and the weighted centroid after Ward. Explicit `-s center|average|histogram` is rejected when the resolved CLI solver is K-means, K-medoids or K-center: changing their final representatives would change their centroid, observed-member or radius objective. Use `-s auto` with those solvers. Structured external palettes, builtin palettes, preserved PAL8 inputs and reused palettes bypass construction and ignore `-s`. Image mapfiles that construct a palette obey the solver contract. These controls work with the default palette size; explicit `-p` is unnecessary. Repeating a selector replaces its earlier value.
+Explicit `-s center|average|histogram` is rejected when the resolved CLI solver is K-means, K-medoids or K-center: changing their final representatives would change their centroid, observed-member or radius objective. Use `-s auto` with those solvers. Structured external palettes, builtin palettes, preserved PAL8 inputs and reused palettes bypass construction and ignore `-s`. Image mapfiles that construct a palette obey the solver contract. These controls work with the default palette size; explicit `-p` is unnecessary. Repeating a selector replaces its earlier value.
+
+### Dither-dependent defaults
+
+| Diffusion at palette construction | `-s auto` | Cut | Box order |
+| --- | --- | --- | --- |
+| Any enabled dither | `average` | `sse` | `sse` |
+| `none` | `histogram` | `sse` | `sse` |
+
+Only unspecified controls use this table. Explicit representatives, Heckbert suboptions and their environment values retain ordinary CLI-over-environment precedence. `weights=auto` selects the native ratios below independently of diffusion.
+
+The encoder passes its diffusion request through `sixel_dither_set_diffusion_type()` before construction. That same setter resolves `auto` to FS above 16 palette entries and Atkinson otherwise, and runs again for application when the final palette size is known. Both outcomes are dithered. Error diffusion (including FS, Atkinson, Jajuni, Stucki, Burkes, Sierra and LSO), positional arithmetic/XOR/blue-noise dithering, and interframe diffusion all use `average`: each modulates the available colors, and unmeasured methods conservatively share the enabled-dither policy. If every retained color already fits, the exact-palette shortcut can disable diffusion afterward; singleton representatives are identical under all three selectors, so this does not change their colors.
+
+The public dither API uses the diffusion set before `sixel_dither_initialize()`. A newly created object starts with FS, so initialization before a diffusion setter uses `average`; changing diffusion afterward does not retroactively rebuild the palette. Direct palette generation without a dither object also treats `auto` as `average`. Reinitialization uses the object's current diffusion state. Fixed palettes and reuse bypass this resolution.
+
+Ward and Lloyd retain weighted centroids for their optimization, then export the representative from this table using final membership statistics. Dithered Ward therefore exports `average`; undithered Ward exports `histogram`. Explicit `-s` always wins, including when no merge actually occurs.
+
+A box-extrema midpoint can shift a broad neutral region toward a sparse outlying color. The distinct-color average reduces this sensitivity while retaining more color range than a frequency-weighted mean. With diffusion it balances per-pixel color error and MS-SSIM against spatial color fidelity: a 20-photo/20-chart VGA comparison found roughly 1–4% higher photo S-CIELAB error than center and a small chart ΔE00 cost, despite improved photo ΔE00 and MS-SSIM. After Ward, average also preserves better spatial color fidelity than histogram on the photo corpus, at a per-pixel error cost. Without diffusion the frequency-weighted representative favors pixel color error and MS-SSIM. These are measured tradeoffs, not per-image quality guarantees; the [measurement policy](../../../quality/measurement-policy.md) requires reporting viewing geometry and individual outliers.
 
 ### Cut, box order and native axis ratios
 
 | Key | Compact | Default | Environment |
 | --- | --- | --- | --- |
-| `cut=median|sse` | `Tmedian`, `Tsse` | `median` | `SIXEL_PALETTE_HECKBERT_CUT` |
-| `order=population|sse` | `Opopulation`, `Osse` | `population` | `SIXEL_PALETTE_HECKBERT_ORDER` |
+| `cut=median|sse` | `Tmedian`, `Tsse` | `sse` | `SIXEL_PALETTE_HECKBERT_CUT` |
+| `order=population|sse` | `Opopulation`, `Osse` | `sse` | `SIXEL_PALETTE_HECKBERT_ORDER` |
 | `weights=auto|L/A/B` | `Wauto`, `W2/1/1` | `auto` | `SIXEL_PALETTE_HECKBERT_WEIGHTS` |
 
-These settings belong only to `heckbert`, coexist with `profile`, and retain ordinary CLI-over-environment precedence. `T` denotes the cut threshold; `C` is already the common sample-count key. Profiles retain median cuts and population ordering.
+These settings belong only to `heckbert`, coexist with `profile`, and retain ordinary CLI-over-environment precedence. `T` denotes the cut threshold; `C` is already the common sample-count key. All profiles inherit SSE cuts and SSE ordering unless explicitly overridden.
 
 | Clustering coordinates | Norm native ratios | Lum native ratios |
 | --- | --- | --- |
 | Gamma or linear RGB | 1:1:1 | 0.2989:0.5866:0.1145 |
-| CIELAB | 3:1:1 | 6:1:1 |
+| CIELAB | 2:1:1 | 4:1:1 |
 | DIN99d | 2:1:1 | 4:1:1 |
 | OKLab | 1:1:1 | 2:1:1 |
 
-Ratios multiply channel ranges in native color-space units; compensation for the histogram's nominal normalization is explicit. Norm defaults preserve the established geometry exactly. Lum doubles the norm lightness emphasis in perceptual spaces; RGB retains BT.601. Custom ratios replace either rule, require three positive finite values and cancel a common multiplier. `auto` restores the format-specific rule. A median norm/PCA split that falls back to luminosity keeps the legacy BT.601 fallback multipliers on top of the norm ratios; it does not become an explicit perceptual `-f lum` request. Thus specifying the norm default ratios explicitly also preserves the default partitions.
+Ratios multiply channel ranges in native color-space units; compensation for the histogram's nominal normalization is explicit. CIELAB norm gives lightness twice the chromatic-axis emphasis; DIN99d, OKLab and RGB keep their own native ratios. Lum doubles the norm lightness emphasis in perceptual spaces; RGB retains BT.601. Custom ratios replace either rule, require three positive finite values and cancel a common multiplier. `auto` restores the format-specific rule. A median norm/PCA split that falls back to luminosity keeps the legacy BT.601 fallback multipliers on top of the norm ratios; it does not become an explicit perceptual `-f lum` request. Thus specifying the norm default ratios explicitly also preserves the default partitions.
 
 `cut=sse` completely sorts the selected axis, including PCA and native float norm/lum paths, then scans cumulative weighted sums and squared sums to minimize the sum of child errors. The objective squares the same effective coordinate weights used for axis selection. PCA retains its established nominal-coordinate projection; custom ratios affect its SSE evaluation, not its covariance. Ties choose the first cut. A singleton outlier is valid: only empty or out-of-range partitions are rejected. `order=sse` caches each box's error, reuses cut moments, and selects the largest error with deterministic position/count tie breaks. Accumulation is serial in fixed table order; worker count does not change it. This does not promise identical floating-point arithmetic on compilers using incompatible contraction or fast-math rules.
 
@@ -167,7 +179,7 @@ img2sixel -Q heckbert:cut=sse:order=sse:weights=2/1/1 -Xc -s histogram image.png
 
 For every typed float generation request, including ordinary library entry points outside the [selected CPU float output path](../../output/output-colorspace.md#heckbert-representatives), `-Qheckbert` and `auto` resolved to Heckbert build a histogram of identical finite source triples without an 8bit projection or bounded grid. The tuple coordinates use double arithmetic and a fixed per-axis scale derived from the nominal `-X` channel span. Signed axes are not translated, so very small coordinates are not lost by adding and subtracting a nominal minimum. Negative and above-range values remain available to splitting and representative construction. Distinct native colors also determine whether a palette is large enough to omit diffusion: colors that merely share a byte/bin projection must not trigger that optimization. Nonfinite input fails; a failed float build cannot retry the bounded byte histogram. The actual input format selects arithmetic even when the caller supplies a byte preference hint.
 
-The three `-s` choices retain their distinct meanings: `center` is the midpoint of each box's extrema, `average` is the mean of its distinct colors, and `histogram` is the occurrence-weighted mean. None rounds its float representative to a byte or a SIXEL percentage. Axis splits use the existing weighted-median projection partitioner for unbounded coordinates; the byte histogram retains its counting-sort implementation. PCA uses centered covariance to avoid cancellation between large second moments. Optional Ward reduction and Lloyd refinement retain signed and fractional coordinates; as in the legacy merge path, refinement may replace the initial `-s` representative with a population centroid.
+The three `-s` choices retain their distinct meanings: `center` is the midpoint of each box's extrema, `average` is the mean of its distinct colors, and `histogram` is the occurrence-weighted mean. None rounds its float representative to a byte or a SIXEL percentage. Native axis splits use the selected SSE or weighted-median partition rule; the byte histogram retains its counting-sort implementation. PCA uses centered covariance to avoid cancellation between large second moments. Optional Ward reduction and Lloyd refinement retain signed and fractional coordinates; the final representative uses the resolved `-s` rule after the last membership assignment.
 
 This exact native histogram may contain more entries than the legacy 5bit/6bit histogram. Its initial deterministic sort costs `O(N log N)` time after upstream sampling. It sorts borrowed source references using `N * sizeof(float *)` bytes, then allocates double tuple storage for the `U` distinct triples, preserving exact occurrence counts. On a typical 64-bit host that tuple pool costs `40 * U` bytes; it is not allocated for all `N` samples before deduplication. The references and tuple pool coexist during construction; when nearly every sample is distinct, their combined peak can exceed a per-pixel table. The temporary references are freed before median cut. Existing allocator limits still apply to each allocation: a sufficiently large distinct-color set can exceed the tuple-pool limit and reports an allocation error without lossy fallback. The legacy byte path keeps its bounded histogram and integer representative rounding. The `speed` profile's lookup preference applies to palette application but does not coarsen the native histogram. `-Qauto` uses this arithmetic when it resolves to Heckbert with typed float input. Default/AUTO cover admits the native path with repair off. Output caching and cover follow the [current output admission rules](../../output/output-colorspace.md#selected-ordinary-srgb-float-path). Ordinary sRGB representative and final snap use typed coordinates and their requested timing/rate; histogram collection itself does not snap float inputs. The separately documented [byte histogram and early merge snap defects](../snap-policy/README.md#known-contract-violations) remain scoped to their consumers.
 
@@ -838,7 +850,7 @@ These value observations call ordinary `generate()` directly, so native output a
 | OF-48 | Heckbert box center retains float extrema. | [tests/quant/palette/ordinary_float/0046_heckbert_center.t](../../../../tests/quant/palette/ordinary_float/0046_heckbert_center.t) |
 | OF-49 | Heckbert distinct-color mean retains float values. | [tests/quant/palette/ordinary_float/0047_heckbert_average.t](../../../../tests/quant/palette/ordinary_float/0047_heckbert_average.t) |
 | OF-50 | Heckbert occurrence mean retains float values. | [tests/quant/palette/ordinary_float/0048_heckbert_histogram.t](../../../../tests/quant/palette/ordinary_float/0048_heckbert_histogram.t) |
-| OF-51 | Heckbert Ward refinement retains signed means. | [tests/quant/palette/ordinary_float/0049_heckbert_polish.t](../../../../tests/quant/palette/ordinary_float/0049_heckbert_polish.t) |
+| OF-51 | Heckbert AUTO retains signed distinct-color means after Ward refinement. | [tests/quant/palette/ordinary_float/0049_heckbert_polish_auto_average.t](../../../../tests/quant/palette/ordinary_float/0049_heckbert_polish_auto_average.t) |
 | OF-52 | Heckbert once snap runs only on the final palette. | [tests/quant/palette/ordinary_float/0050_heckbert_once.t](../../../../tests/quant/palette/ordinary_float/0050_heckbert_once.t) |
 | OF-53 | Heckbert distinguishes subbyte float colors. | [tests/quant/palette/ordinary_float/0051_heckbert_unique.t](../../../../tests/quant/palette/ordinary_float/0051_heckbert_unique.t) |
 | OF-54 | A failed ordinary float Heckbert build reaches the CLI without retry or published success state. | [tests/cli/options/matching/0282_option_matching_palette_heckbert_float_failure.t](../../../../tests/cli/options/matching/0282_option_matching_palette_heckbert_float_failure.t) |
@@ -856,10 +868,10 @@ These value observations call ordinary `generate()` directly, so native output a
 | HP-07 | lloyd center numerical contract. | [tests/quant/palette/heckbert_policy/0007_heckbert_lloyd_center.t](../../../../tests/quant/palette/heckbert_policy/0007_heckbert_lloyd_center.t) |
 | HP-08 | lloyd average numerical contract. | [tests/quant/palette/heckbert_policy/0008_heckbert_lloyd_average.t](../../../../tests/quant/palette/heckbert_policy/0008_heckbert_lloyd_average.t) |
 | HP-09 | lloyd histogram numerical contract. | [tests/quant/palette/heckbert_policy/0009_heckbert_lloyd_histogram.t](../../../../tests/quant/palette/heckbert_policy/0009_heckbert_lloyd_histogram.t) |
-| HP-10 | axis rgb numerical contract. | [tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t](../../../../tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t) |
-| HP-11 | axis cielab numerical contract. | [tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t](../../../../tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t) |
-| HP-12 | axis din99d numerical contract. | [tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t](../../../../tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t) |
-| HP-13 | axis oklab numerical contract. | [tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t](../../../../tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t) |
+| HP-10 | rgb norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t](../../../../tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t) |
+| HP-11 | cielab norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t](../../../../tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t) |
+| HP-12 | din99d norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t](../../../../tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t) |
+| HP-13 | oklab norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t](../../../../tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t) |
 | HP-14 | sse norm numerical contract. | [tests/quant/palette/heckbert_policy/0014_heckbert_sse_norm.t](../../../../tests/quant/palette/heckbert_policy/0014_heckbert_sse_norm.t) |
 | HP-15 | sse pca numerical contract. | [tests/quant/palette/heckbert_policy/0015_heckbert_sse_pca.t](../../../../tests/quant/palette/heckbert_policy/0015_heckbert_sse_pca.t) |
 | HP-16 | sse float norm numerical contract. | [tests/quant/palette/heckbert_policy/0016_heckbert_sse_float_norm.t](../../../../tests/quant/palette/heckbert_policy/0016_heckbert_sse_float_norm.t) |
@@ -879,3 +891,39 @@ These value observations call ordinary `generate()` directly, so native output a
 | HP-30 | Reject invalid ratio `1/1` with a diagnostic. | [tests/quant/palette/heckbert_policy/0030_heckbert_invalid_weights_3.t](../../../../tests/quant/palette/heckbert_policy/0030_heckbert_invalid_weights_3.t) |
 | HP-31 | Reject invalid ratio `1/1/inf` with a diagnostic. | [tests/quant/palette/heckbert_policy/0031_heckbert_invalid_weights_4.t](../../../../tests/quant/palette/heckbert_policy/0031_heckbert_invalid_weights_4.t) |
 | HP-32 | Lloyd rebuilds statistics after membership changes. | [tests/quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.t](../../../../tests/quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.t) |
+| HP-33 | Public dither API api initial uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0033_heckbert_api_initial.t](../../../../tests/quant/palette/heckbert_policy/0033_heckbert_api_initial.t) |
+| HP-34 | Public dither API api none uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0034_heckbert_api_none.t](../../../../tests/quant/palette/heckbert_policy/0034_heckbert_api_none.t) |
+| HP-35 | Public dither API api auto uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0035_heckbert_api_auto.t](../../../../tests/quant/palette/heckbert_policy/0035_heckbert_api_auto.t) |
+| HP-36 | Public dither API api explicit center uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0036_heckbert_api_explicit_center.t](../../../../tests/quant/palette/heckbert_policy/0036_heckbert_api_explicit_center.t) |
+| HP-37 | Public dither API api ward average uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0037_heckbert_api_ward_average.t](../../../../tests/quant/palette/heckbert_policy/0037_heckbert_api_ward_average.t) |
+| HP-38 | Public dither API api ward histogram uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0038_heckbert_api_ward_histogram.t](../../../../tests/quant/palette/heckbert_policy/0038_heckbert_api_ward_histogram.t) |
+| HP-39 | default auto resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0039_heckbert_default_auto.t](../../../../tests/quant/palette/heckbert_policy/0039_heckbert_default_auto.t) |
+| HP-40 | default fs resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0040_heckbert_default_fs.t](../../../../tests/quant/palette/heckbert_policy/0040_heckbert_default_fs.t) |
+| HP-41 | default atkinson resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0041_heckbert_default_atkinson.t](../../../../tests/quant/palette/heckbert_policy/0041_heckbert_default_atkinson.t) |
+| HP-42 | default ordered resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0042_heckbert_default_ordered.t](../../../../tests/quant/palette/heckbert_policy/0042_heckbert_default_ordered.t) |
+| HP-43 | default xor resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0043_heckbert_default_xor.t](../../../../tests/quant/palette/heckbert_policy/0043_heckbert_default_xor.t) |
+| HP-44 | default bluenoise resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0044_heckbert_default_bluenoise.t](../../../../tests/quant/palette/heckbert_policy/0044_heckbert_default_bluenoise.t) |
+| HP-45 | default interframe resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0045_heckbert_default_interframe.t](../../../../tests/quant/palette/heckbert_policy/0045_heckbert_default_interframe.t) |
+| HP-46 | default none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0046_heckbert_default_none.t](../../../../tests/quant/palette/heckbert_policy/0046_heckbert_default_none.t) |
+| HP-47 | default auto16 resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0047_heckbert_default_auto16.t](../../../../tests/quant/palette/heckbert_policy/0047_heckbert_default_auto16.t) |
+| HP-48 | explicit center resolves to representative 1, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0048_heckbert_explicit_center.t](../../../../tests/quant/palette/heckbert_policy/0048_heckbert_explicit_center.t) |
+| HP-49 | explicit histogram resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0049_heckbert_explicit_histogram.t](../../../../tests/quant/palette/heckbert_policy/0049_heckbert_explicit_histogram.t) |
+| HP-50 | explicit average resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0050_heckbert_explicit_average.t](../../../../tests/quant/palette/heckbert_policy/0050_heckbert_explicit_average.t) |
+| HP-51 | explicit cut resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0051_heckbert_explicit_cut.t](../../../../tests/quant/palette/heckbert_policy/0051_heckbert_explicit_cut.t) |
+| HP-52 | explicit order resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0052_heckbert_explicit_order.t](../../../../tests/quant/palette/heckbert_policy/0052_heckbert_explicit_order.t) |
+| HP-53 | explicit weights resolves to representative 2, cut sse, order sse, weights 3/1/1. | [tests/quant/palette/heckbert_policy/0053_heckbert_explicit_weights.t](../../../../tests/quant/palette/heckbert_policy/0053_heckbert_explicit_weights.t) |
+| HP-54 | env cut resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0054_heckbert_env_cut.t](../../../../tests/quant/palette/heckbert_policy/0054_heckbert_env_cut.t) |
+| HP-55 | env order resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0055_heckbert_env_order.t](../../../../tests/quant/palette/heckbert_policy/0055_heckbert_env_order.t) |
+| HP-56 | env weights resolves to representative 2, cut sse, order sse, weights 3/1/1. | [tests/quant/palette/heckbert_policy/0056_heckbert_env_weights.t](../../../../tests/quant/palette/heckbert_policy/0056_heckbert_env_weights.t) |
+| HP-57 | cli cut precedence resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0057_heckbert_cli_cut_precedence.t](../../../../tests/quant/palette/heckbert_policy/0057_heckbert_cli_cut_precedence.t) |
+| HP-58 | cli order precedence resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0058_heckbert_cli_order_precedence.t](../../../../tests/quant/palette/heckbert_policy/0058_heckbert_cli_order_precedence.t) |
+| HP-59 | cli weights precedence resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0059_heckbert_cli_weights_precedence.t](../../../../tests/quant/palette/heckbert_policy/0059_heckbert_cli_weights_precedence.t) |
+| HP-60 | profile compat resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0060_heckbert_profile_compat.t](../../../../tests/quant/palette/heckbert_policy/0060_heckbert_profile_compat.t) |
+| HP-61 | profile compat none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0061_heckbert_profile_compat_none.t](../../../../tests/quant/palette/heckbert_policy/0061_heckbert_profile_compat_none.t) |
+| HP-62 | profile compat explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/quant/palette/heckbert_policy/0062_heckbert_profile_compat_explicit.t](../../../../tests/quant/palette/heckbert_policy/0062_heckbert_profile_compat_explicit.t) |
+| HP-63 | profile speed resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0063_heckbert_profile_speed.t](../../../../tests/quant/palette/heckbert_policy/0063_heckbert_profile_speed.t) |
+| HP-64 | profile speed none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0064_heckbert_profile_speed_none.t](../../../../tests/quant/palette/heckbert_policy/0064_heckbert_profile_speed_none.t) |
+| HP-65 | profile speed explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/quant/palette/heckbert_policy/0065_heckbert_profile_speed_explicit.t](../../../../tests/quant/palette/heckbert_policy/0065_heckbert_profile_speed_explicit.t) |
+| HP-66 | profile quality resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0066_heckbert_profile_quality.t](../../../../tests/quant/palette/heckbert_policy/0066_heckbert_profile_quality.t) |
+| HP-67 | profile quality none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0067_heckbert_profile_quality_none.t](../../../../tests/quant/palette/heckbert_policy/0067_heckbert_profile_quality_none.t) |
+| HP-68 | profile quality explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/quant/palette/heckbert_policy/0068_heckbert_profile_quality_explicit.t](../../../../tests/quant/palette/heckbert_policy/0068_heckbert_profile_quality_explicit.t) |

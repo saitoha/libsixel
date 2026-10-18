@@ -699,7 +699,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      norm -> native channel ranges weighted by color space\n"
         "      lum  -> BT.601 for RGB; double norm lightness weight for Lab\n"
         "      pca  -> first principal component\n"
-        "    Norm ratios: CIELAB 3/1/1, DIN99d 2/1/1, RGB/OKLab 1/1/1.\n"
+        "    Norm ratios: CIELAB 2/1/1, DIN99d 2/1/1, RGB/OKLab 1/1/1.\n"
         "    heckbert:weights overrides norm/lum; cut selects median or SSE.\n"
     },
     {
@@ -707,7 +707,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "select-color",
         "-s SELECTTYPE, --select-color=SELECTTYPE\n"
         "    select final Heckbert cluster representatives, including Ward.\n"
-        "      auto      -> center without merge; weighted mean after Ward\n"
+        "      auto      -> average with dither; histogram with none\n"
         "      center    -> midpoint of member channel extrema\n"
         "      average   -> unweighted mean of distinct retained colors\n"
         "      histogram -> occurrence-weighted mean\n"
@@ -2066,11 +2066,11 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_HECKBERT_CUT",
-        "Heckbert cut: median (default) or sse; -Q heckbert:cut overrides."
+        "Heckbert cut: sse (default) or median; -Q heckbert:cut overrides."
     },
     {
         "SIXEL_PALETTE_HECKBERT_ORDER",
-        "Heckbert box order: population (default) or sse; -Q order overrides."
+        "Heckbert box order: sse (default) or population; -Q order overrides."
     },
     {
         "SIXEL_PALETTE_HECKBERT_WEIGHTS",

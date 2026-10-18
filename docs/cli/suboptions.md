@@ -98,7 +98,7 @@ Help and manuals must publish the primary mapping, including its scope when one 
 
 ## Heckbert partition controls
 
-`-Q heckbert` accepts `cut=median|sse` (`T`), `order=population|sse` (`O`) and `weights=auto|L/A/B` (`W`) alongside `profile` (`P`). The [quantization reference](../encoder/palette-construction/quantization/README.md#cut-box-order-and-native-axis-ratios) owns defaults, environment mappings, coordinate interpretation and numerical behavior. Weights share FHEDT's positive finite ratio syntax; they configure partition geometry rather than lookup.
+`-Q heckbert` accepts `cut=median|sse` (`T`), `order=population|sse` (`O`) and `weights=auto|L/A/B` (`W`) alongside `profile` (`P`). Unspecified cut/order use SSE in every profile, while `-s auto` follows the diffusion selected for palette construction. The [quantization reference](../encoder/palette-construction/quantization/README.md#cut-box-order-and-native-axis-ratios) owns defaults, environment mappings, coordinate interpretation and numerical behavior. Weights share FHEDT's positive finite ratio syntax; they configure partition geometry rather than lookup.
 
 ## Diagnostics and failure behavior
 
