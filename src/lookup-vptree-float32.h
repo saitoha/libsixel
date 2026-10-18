@@ -54,6 +54,17 @@ sixel_lookup_vptree_float32_map(sixel_lookup_vptree_float32_t const *tree,
                                 float const *pixel,
                                 int hint);
 
+/* Optional caller-owned, zero-initialized scratch for one prepared tree. */
+size_t
+sixel_lookup_vptree_float32_workspace_size(
+    sixel_lookup_vptree_float32_t const *tree);
+
+void
+sixel_lookup_vptree_float32_map_pixels(
+    sixel_lookup_vptree_float32_t const *tree,
+    unsigned char const *pixels, size_t count, int pixel_stride,
+    sixel_index_t *result, int result_stride, void *workspace);
+
 #ifdef __cplusplus
 }
 #endif

@@ -843,6 +843,12 @@ struct sixel_palette_interface {
  *   approximate caches. Zero count touches neither buffer. Buffers must not
  *   overlap; each addressed sample and output must be valid. Implementations
  *   without a bulk kernel use sixel_lookup_policy_map_pixels_default.
+ * - workspace_size is optional (NULL means zero). The caller may allocate
+ *   that many zeroed bytes, aligned as malloc, for map_pixels. This scratch
+ *   belongs to one caller and one unchanged prepared policy; never share it
+ *   concurrently or retain it across prepare. It owns no resources and can
+ *   be freed directly by its allocator. NULL scratch always remains valid,
+ *   including allocation failure; it changes only performance.
  * - Mapping methods are const. A prepared policy may memoize results only
  *   in caches safe for concurrent callers that cannot change a result;
  *   it keeps no scan history.  Continuity across pixels belongs to the
@@ -931,7 +937,9 @@ typedef int sixel_lookup_policy_result_t;
  *         in size_t count,
  *         in int pixel_stride,
  *         out sixel_index_t *result,
- *         in int result_stride);
+ *         in int result_stride,
+ *         inout void *workspace);
+ *     [const] size_t workspace_size();
  * };
  */
 
@@ -954,7 +962,9 @@ typedef struct sixel_lookup_policy_vtbl {
         size_t count,
         int pixel_stride,
         sixel_index_t *result,
-        int result_stride);
+        int result_stride,
+        void *workspace);
+    size_t (*workspace_size)(sixel_lookup_policy_interface_t const *self);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy_interface {

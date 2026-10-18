@@ -494,6 +494,12 @@ coclass palette_component {
  *   approximate caches. Zero count touches neither buffer. Buffers must not
  *   overlap; each addressed sample and output must be valid. Implementations
  *   without a bulk kernel use sixel_lookup_policy_map_pixels_default.
+ * - workspace_size is optional (NULL means zero). The caller may allocate
+ *   that many zeroed bytes, aligned as malloc, for map_pixels. This scratch
+ *   belongs to one caller and one unchanged prepared policy; never share it
+ *   concurrently or retain it across prepare. It owns no resources and can
+ *   be freed directly by its allocator. NULL scratch always remains valid,
+ *   including allocation failure; it changes only performance.
  * - Mapping methods are const. A prepared policy may memoize results only
  *   in caches safe for concurrent callers that cannot change a result;
  *   it keeps no scan history.  Continuity across pixels belongs to the
@@ -569,7 +575,9 @@ interface lookup_policy {
         in size_t count,
         in int pixel_stride,
         out sixel_index_t *result,
-        in int result_stride);
+        in int result_stride,
+        inout void *workspace);
+    [const] size_t workspace_size();
 };
 
 /*

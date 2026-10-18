@@ -161,7 +161,7 @@ batch_contract_check(char const *class_name,
     if (policy->vtbl->map_pixels == NULL) {
         goto cleanup;
     }
-    policy->vtbl->map_pixels(policy, NULL, 0, stride, NULL, 1);
+    policy->vtbl->map_pixels(policy, NULL, 0, stride, NULL, 1, NULL);
     for (direction = -1; direction <= 1; direction += 2) {
         /* Both cold and warm calls, SIMD tails, and reverse traversal. */
         for (length = 1; length <= BATCH_CONTRACT_QUERIES;
@@ -180,7 +180,7 @@ batch_contract_check(char const *class_name,
             memset(actual, 0xff, sizeof(actual));
             policy->vtbl->map_pixels(policy, query + start * stride,
                 (size_t)length, direction * stride,
-                actual + start, direction);
+                actual + start, direction, NULL);
             if (memcmp(expected, actual, (size_t)length) != 0) {
                 fprintf(stderr, "%s: cold batch length %d direction %d\n",
                         class_name, length, direction);
@@ -188,7 +188,7 @@ batch_contract_check(char const *class_name,
             }
             policy->vtbl->map_pixels(policy, query + start * stride,
                 (size_t)length, direction * stride,
-                actual + start, direction);
+                actual + start, direction, NULL);
             if (memcmp(expected, actual, (size_t)length) != 0) {
                 goto cleanup;
             }

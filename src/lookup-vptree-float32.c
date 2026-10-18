@@ -29,6 +29,7 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -39,6 +40,20 @@
 #include "allocator.h"
 #include "lookup-vptree-float32.h"
 #include "status.h"
+
+#if HAVE_NEON && defined(__aarch64__)
+#include <arm_neon.h>
+#elif HAVE_SSE2
+#include <emmintrin.h>
+#endif
+
+/* Explicit fma below preserves the native AArch64 scalar metric. Elsewhere
+ * separate operations match SSE2; compiler target flags must not fuse them. */
+#if defined(__clang__)
+#pragma clang fp contract(off)
+#elif defined(__GNUC__)
+#pragma GCC optimize ("fp-contract=off")
+#endif
 
 typedef struct sixel_lookup_vptree_float32_node {
     int pivot;
@@ -66,6 +81,7 @@ struct sixel_lookup_vptree_float32 {
     sixel_allocator_t *allocator;
     float const *palette;
     int ncolors;
+    int bulk_finite;
     int depth;
     float weights[3];
     sixel_lookup_vptree_float32_node_t *nodes;
@@ -149,7 +165,11 @@ sixel_lookup_vptree_float32_palette_distance(
     right = tree->palette + (size_t)right_index * (size_t)tree->depth;
     for (component = 0; component < 3; ++component) {
         diff = (double)left[component] - right[component];
+#if defined(__aarch64__)
+        distance = fma(diff * diff, tree->weights[component], distance);
+#else
         distance += diff * diff * tree->weights[component];
+#endif
     }
 
     return distance;
@@ -172,7 +192,11 @@ sixel_lookup_vptree_float32_pixel_distance(
     entry = tree->palette_wide + (size_t)palette_index * 3U;
     for (component = 0; component < 3; ++component) {
         diff = (double)pixel[component] - entry[component];
+#if defined(__aarch64__)
+        distance = fma(diff * diff, tree->weights_wide[component], distance);
+#else
         distance += diff * diff * tree->weights_wide[component];
+#endif
     }
 
     return distance;
@@ -597,6 +621,7 @@ sixel_lookup_vptree_float32_configure(sixel_lookup_vptree_float32_t *tree,
     sixel_lookup_vptree_float32_release(tree);
     tree->palette = palette;
     tree->ncolors = ncolors;
+    tree->bulk_finite = 1;
     tree->depth = depth;
     tree->weights[0] = weights[0];
     tree->weights[1] = weights[1];
@@ -613,10 +638,18 @@ sixel_lookup_vptree_float32_configure(sixel_lookup_vptree_float32_t *tree,
             "failed.");
         return SIXEL_BAD_ALLOCATION;
     }
+    for (index = 0; index < 3; ++index) {
+        if (!isfinite(weights[index]) || weights[index] < 0.0f) {
+            tree->bulk_finite = 0;
+        }
+    }
     for (index = 0; index < ncolors * 3; ++index) {
         tree->palette_wide[index] =
             palette[(size_t)(index / 3) * (size_t)depth
                     + (size_t)(index % 3)];
+        if (!isfinite(tree->palette_wide[index])) {
+            tree->bulk_finite = 0;
+        }
     }
 
     tree->nodes =
@@ -718,6 +751,259 @@ sixel_lookup_vptree_float32_map(sixel_lookup_vptree_float32_t const *tree,
     }
 
     return sixel_lookup_vptree_float32_refine(tree, pixel, best_index);
+}
+
+/* The caller zeroes this table once per band. Full native keys distinguish
+ * every float bit pattern; collisions replace entries, never alias colors.
+ * No shared mutable state or synchronization is needed between workers. */
+#define SIXEL_FLOAT_MEMO_SIZE 32768U
+
+typedef struct sixel_float_memo_entry {
+    uint32_t key[3];
+    unsigned int index_plus_one;
+} sixel_float_memo_entry_t;
+
+typedef struct sixel_float_workspace {
+    sixel_float_memo_entry_t memo[SIXEL_FLOAT_MEMO_SIZE];
+} sixel_float_workspace_t;
+
+static unsigned int
+sixel_float_memo_slot(uint32_t const *key)
+{
+    uint32_t hash;
+
+    hash = key[0] * 0x9e3779b1U;
+    hash = (hash ^ key[1]) * 0x85ebca6bU;
+    hash = (hash ^ key[2]) * 0xc2b2ae35U;
+    hash ^= hash >> 16;
+    return hash & (SIXEL_FLOAT_MEMO_SIZE - 1U);
+}
+
+static int
+sixel_float_memo_key(float const *pixel, uint32_t *key)
+{
+    memcpy(key, pixel, 3 * sizeof(uint32_t));
+    return (key[0] & 0x7f800000U) != 0x7f800000U
+        && (key[1] & 0x7f800000U) != 0x7f800000U
+        && (key[2] & 0x7f800000U) != 0x7f800000U;
+}
+
+size_t
+sixel_lookup_vptree_float32_workspace_size(
+    sixel_lookup_vptree_float32_t const *tree)
+{
+    return tree != NULL && tree->ncolors <= 256
+        ? sizeof(sixel_float_workspace_t) : 0;
+}
+
+#if (HAVE_NEON && defined(__aarch64__)) || HAVE_SSE2
+#if HAVE_NEON && defined(__aarch64__)
+typedef float64x2_t sixel_float_distance2_t;
+#else
+typedef __m128d sixel_float_distance2_t;
+#endif
+
+/* Each lane is an independent query. Do not reassociate channels, narrow
+ * intermediates, or fuse the square with another operation. AArch64 uses
+ * the same explicitly fused weighted accumulation as the scalar distance;
+ * SSE2 uses separate multiply/add, including when the compiler targets FMA. */
+static sixel_float_distance2_t
+sixel_float_distance2(sixel_lookup_vptree_float32_t const *tree,
+                     sixel_float_distance2_t r,
+                     sixel_float_distance2_t g,
+                     sixel_float_distance2_t b, int index)
+{
+    double const *p;
+    sixel_float_distance2_t d, sum;
+
+    p = tree->palette_wide + index * 3;
+#if HAVE_NEON && defined(__aarch64__)
+    sum = vdupq_n_f64(0.0);
+    d = vsubq_f64(r, vdupq_n_f64(p[0]));
+    sum = vfmaq_n_f64(sum, vmulq_f64(d, d), tree->weights_wide[0]);
+    d = vsubq_f64(g, vdupq_n_f64(p[1]));
+    sum = vfmaq_n_f64(sum, vmulq_f64(d, d), tree->weights_wide[1]);
+    d = vsubq_f64(b, vdupq_n_f64(p[2]));
+    return vfmaq_n_f64(sum, vmulq_f64(d, d), tree->weights_wide[2]);
+#else
+    sum = _mm_setzero_pd();
+    d = _mm_sub_pd(r, _mm_set1_pd(p[0]));
+    sum = _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(d, d),
+                                   _mm_set1_pd(tree->weights_wide[0])));
+    d = _mm_sub_pd(g, _mm_set1_pd(p[1]));
+    sum = _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(d, d),
+                                   _mm_set1_pd(tree->weights_wide[1])));
+    d = _mm_sub_pd(b, _mm_set1_pd(p[2]));
+    return _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(d, d),
+                                    _mm_set1_pd(tree->weights_wide[2])));
+#endif
+}
+
+static void
+sixel_lookup_vptree_float32_map_cold8(
+    sixel_lookup_vptree_float32_t const *tree,
+    float const pixels[8][3], int *indexes)
+{
+    double channels[3][8];
+    double out[8];
+    sixel_float_distance2_t r[4], g[4], b[4], best[4], idx[4];
+    sixel_float_distance2_t distance, index;
+    int i, j, c;
+#if HAVE_NEON && defined(__aarch64__)
+    uint64x2_t mask;
+#else
+    __m128d mask;
+#endif
+
+    for (j = 0; j < 8; ++j) {
+        for (c = 0; c < 3; ++c) {
+            channels[c][j] = pixels[j][c];
+        }
+    }
+    for (j = 0; j < 4; ++j) {
+#if HAVE_NEON && defined(__aarch64__)
+        r[j] = vld1q_f64(channels[0] + j * 2);
+        g[j] = vld1q_f64(channels[1] + j * 2);
+        b[j] = vld1q_f64(channels[2] + j * 2);
+        best[j] = vdupq_n_f64(DBL_MAX);
+        idx[j] = vdupq_n_f64(0.0);
+#else
+        r[j] = _mm_loadu_pd(channels[0] + j * 2);
+        g[j] = _mm_loadu_pd(channels[1] + j * 2);
+        b[j] = _mm_loadu_pd(channels[2] + j * 2);
+        best[j] = _mm_set1_pd(DBL_MAX);
+        idx[j] = _mm_setzero_pd();
+#endif
+    }
+    for (i = 0; i < tree->ncolors; ++i) {
+#if HAVE_NEON && defined(__aarch64__)
+        index = vdupq_n_f64((double)i);
+#else
+        index = _mm_set1_pd((double)i);
+#endif
+        for (j = 0; j < 4; ++j) {
+            distance = sixel_float_distance2(tree, r[j], g[j], b[j], i);
+#if HAVE_NEON && defined(__aarch64__)
+            mask = vcltq_f64(distance, best[j]);
+            best[j] = vbslq_f64(mask, distance, best[j]);
+            idx[j] = vbslq_f64(mask, index, idx[j]);
+#else
+            mask = _mm_cmplt_pd(distance, best[j]);
+            best[j] = _mm_or_pd(_mm_and_pd(mask, distance),
+                                _mm_andnot_pd(mask, best[j]));
+            idx[j] = _mm_or_pd(_mm_and_pd(mask, index),
+                               _mm_andnot_pd(mask, idx[j]));
+#endif
+        }
+    }
+    for (j = 0; j < 4; ++j) {
+#if HAVE_NEON && defined(__aarch64__)
+        vst1q_f64(out + j * 2, idx[j]);
+#else
+        _mm_storeu_pd(out + j * 2, idx[j]);
+#endif
+    }
+    for (j = 0; j < 8; ++j) {
+        indexes[j] = (int)out[j];
+    }
+}
+#endif
+
+void
+sixel_lookup_vptree_float32_map_pixels(
+    sixel_lookup_vptree_float32_t const *tree,
+    unsigned char const *pixels, size_t count, int pixel_stride,
+    sixel_index_t *result, int result_stride, void *workspace)
+{
+    sixel_float_workspace_t *scratch;
+    sixel_float_memo_entry_t *entry;
+    uint32_t key[3];
+    float sample[3];
+    float previous[3];
+    int hint, finite, have_previous;
+    size_t i;
+#if (HAVE_NEON && defined(__aarch64__)) || HAVE_SSE2
+    float cold[8][3];
+    sixel_index_t *dest[8];
+    int indexes[8];
+    unsigned int slots[8];
+    int pending, j;
+#endif
+
+    scratch = (sixel_float_workspace_t *)workspace;
+    if (tree == NULL || tree->ncolors > 256) {
+        scratch = NULL;
+    }
+    hint = -1;
+    have_previous = 0;
+#if (HAVE_NEON && defined(__aarch64__)) || HAVE_SSE2
+    pending = 0;
+#endif
+    for (i = 0; i < count; ++i) {
+        memcpy(sample, pixels, sizeof(sample));
+        finite = sixel_float_memo_key(sample, key);
+        entry = scratch != NULL && finite
+            ? &scratch->memo[sixel_float_memo_slot(key)] : NULL;
+        if (have_previous && memcmp(previous, sample, sizeof(sample)) == 0) {
+            *result = (sixel_index_t)hint;
+        } else if (entry != NULL && entry->index_plus_one != 0
+                && memcmp(entry->key, key, sizeof(key)) == 0) {
+            hint = (int)entry->index_plus_one - 1;
+            *result = (sixel_index_t)hint;
+            memcpy(previous, sample, sizeof(sample));
+            have_previous = 1;
+        } else {
+#if (HAVE_NEON && defined(__aarch64__)) || HAVE_SSE2
+            /* A full double scan wins for small palettes. With more than
+             * 64 entries, spatial hints usually refine fewer distances;
+             * keep that search while still memoizing complete float keys. */
+            if (entry != NULL && tree->bulk_finite && tree->ncolors <= 64) {
+                memcpy(cold[pending], sample, sizeof(sample));
+                slots[pending] = sixel_float_memo_slot(key);
+                dest[pending++] = result;
+                /* Unresolved samples cannot seed the adjacent-repeat hint. */
+                have_previous = 0;
+                if (pending == 8) {
+                    sixel_lookup_vptree_float32_map_cold8(tree, cold, indexes);
+                    for (j = 0; j < 8; ++j) {
+                        *dest[j] = (sixel_index_t)indexes[j];
+                        entry = &scratch->memo[slots[j]];
+                        memcpy(entry->key, cold[j], sizeof(entry->key));
+                        entry->index_plus_one = (unsigned int)indexes[j] + 1;
+                    }
+                    pending = 0;
+                    hint = indexes[7];
+                    memcpy(previous, sample, sizeof(sample));
+                    have_previous = 1;
+                }
+            } else
+#endif
+            {
+                hint = sixel_lookup_vptree_float32_map(tree, sample,
+                                                      finite ? hint : -1);
+                *result = (sixel_index_t)hint;
+                if (entry != NULL) {
+                    memcpy(entry->key, key, sizeof(key));
+                    entry->index_plus_one = (unsigned int)hint + 1;
+                }
+                memcpy(previous, sample, sizeof(sample));
+                have_previous = finite;
+            }
+        }
+        if (i + 1 < count) {
+            pixels += pixel_stride;
+            result += result_stride;
+        }
+    }
+#if (HAVE_NEON && defined(__aarch64__)) || HAVE_SSE2
+    for (j = 0; j < pending; ++j) {
+        hint = sixel_lookup_vptree_float32_map(tree, cold[j], hint);
+        *dest[j] = (sixel_index_t)hint;
+        entry = &scratch->memo[slots[j]];
+        memcpy(entry->key, cold[j], sizeof(entry->key));
+        entry->index_plus_one = (unsigned int)hint + 1;
+    }
+#endif
 }
 
 /* emacs Local Variables:      */

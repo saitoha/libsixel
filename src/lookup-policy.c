@@ -41,10 +41,11 @@ void
 sixel_lookup_policy_map_pixels_default(
     sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixels, size_t count, int pixel_stride,
-    sixel_index_t *result, int result_stride)
+    sixel_index_t *result, int result_stride, void *workspace)
 {
     size_t i;
 
+    (void)workspace;
     for (i = 0; i < count; ++i) {
         *result = (sixel_index_t)policy->vtbl->map_pixel(policy, pixels);
         /* Do not form a pointer before the buffer after a reverse row. */

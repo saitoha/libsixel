@@ -191,7 +191,7 @@ sixel_dither_apply_none_8bit(
             pos = y * width + start;
             lookup_policy->vtbl->map_pixels(lookup_policy,
                 data + (size_t)pos * (size_t)depth, (size_t)width,
-                step * depth, result + pos, step);
+                step * depth, result + pos, step, NULL);
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
         return SIXEL_OK;
@@ -327,6 +327,8 @@ sixel_dither_apply_none_float32(
     sixel_dither_policy_none_context_t *context
     )
 {
+    void *workspace;
+    size_t workspace_size;
     int lookup_hint;
     SIXELSTATUS status;
     float *palette_float;
@@ -424,6 +426,21 @@ sixel_dither_apply_none_float32(
                 "lookup", "policy", "none-batch", -1, -1, 0, 0, 0, 0,
                 "float");
         }
+        /* Scratch stays private to this band, including across row calls.
+         * A failed optional allocation must not fail palette application. */
+        workspace = NULL;
+        workspace_size = 0;
+        if (context->lookup_policy->vtbl->workspace_size != NULL) {
+            workspace_size = context->lookup_policy->vtbl->workspace_size(
+                context->lookup_policy);
+        }
+        if (workspace_size != 0) {
+            workspace = sixel_allocator_malloc(dither->allocator,
+                                                workspace_size);
+            if (workspace != NULL) {
+                memset(workspace, 0, workspace_size);
+            }
+        }
         for (y = 0; y < context->height; ++y) {
             absolute_y = context->band_origin + y;
             none_sixel_dither_scanline_params_fixed_float32(
@@ -433,7 +450,7 @@ sixel_dither_apply_none_float32(
             context->lookup_policy->vtbl->map_pixels(context->lookup_policy,
                 (unsigned char const *)(void const *)(data + pos * 3),
                 (size_t)context->width, step * 3 * (int)sizeof(float),
-                context->result + pos, step);
+                context->result + pos, step, workspace);
             for (x = 0; x < context->width; ++x) {
                 pos = y * context->width + x;
                 color_index = context->result[pos];
@@ -446,6 +463,7 @@ sixel_dither_apply_none_float32(
             }
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
+        sixel_allocator_free(dither->allocator, workspace);
         return SIXEL_OK;
     }
 

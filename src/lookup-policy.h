@@ -47,7 +47,7 @@ SIXEL_INTERNAL_API void
 sixel_lookup_policy_map_pixels_default(
     sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixels, size_t count, int pixel_stride,
-    sixel_index_t *result, int result_stride);
+    sixel_index_t *result, int result_stride, void *workspace);
 
 SIXEL_INTERNAL_API int
 sixel_lookup_policy_resolve_packing(

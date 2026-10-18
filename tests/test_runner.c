@@ -1341,6 +1341,9 @@ int test_lookup_0014_hint_contract(int argc, char **argv);
 int test_lookup_0015_batch_contract(int argc, char **argv);
 int test_lookup_0016_auto_dither(int argc, char **argv);
 int test_lookup_0017_none_batch_fences(int argc, char **argv);
+int test_lookup_0018_float_batch_exact(int argc, char **argv);
+int test_lookup_0019_float_simd_distance(int argc, char **argv);
+int test_lookup_0020_float_workspace_failure(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
@@ -6018,6 +6021,12 @@ static test_entry_t const test_entries[] = {
       test_lookup_0016_auto_dither },
     { "lookup/0017_none_batch_fences",
       test_lookup_0017_none_batch_fences },
+    { "lookup/0018_float_batch_exact",
+      test_lookup_0018_float_batch_exact },
+    { "lookup/0019_float_simd_distance",
+      test_lookup_0019_float_simd_distance },
+    { "lookup/0020_float_workspace_failure",
+      test_lookup_0020_float_workspace_failure },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",

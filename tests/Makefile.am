@@ -1997,6 +1997,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0015_LOOKUP_BATCH_CONTRACT \
     -DBUILD_TEST_0016_LOOKUP_AUTO_DITHER \
     -DBUILD_TEST_0017_LOOKUP_NONE_BATCH_FENCES \
+    -DBUILD_TEST_0018_LOOKUP_FLOAT_BATCH_EXACT \
+    -DBUILD_TEST_0019_LOOKUP_FLOAT_SIMD_DISTANCE \
+    -DBUILD_TEST_0020_LOOKUP_FLOAT_WORKSPACE_FAILURE \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -5496,6 +5499,9 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0015_lookup_batch_contract.c \
     processing/lookup/0016_lookup_auto_dither.c \
     processing/lookup/0017_lookup_none_batch_fences.c \
+    processing/lookup/0018_lookup_float_batch_exact.c \
+    processing/lookup/0019_lookup_float_simd_distance.c \
+    processing/lookup/0020_lookup_float_workspace_failure.c \
     processing/dither/0001_dither_policy.c \
     processing/dither/perturb/0018_perturb_keep_lookup.c \
     processing/dither/perturb/0017_perturb_keep_early.c \

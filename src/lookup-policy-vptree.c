@@ -695,14 +695,14 @@ static void
 sixel_lookup_policy_vptree_map_pixels_8bit(
     sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixels, size_t count, int pixel_stride,
-    sixel_index_t *result, int result_stride)
+    sixel_index_t *result, int result_stride, void *workspace)
 {
     sixel_lookup_policy_vptree_object_t const *object;
 
     object = sixel_lookup_policy_vptree_from_base_const(policy);
     if (!object->prepared || (pixel_stride != 3 && pixel_stride != -3)) {
         sixel_lookup_policy_map_pixels_default(policy, pixels, count,
-            pixel_stride, result, result_stride);
+            pixel_stride, result, result_stride, workspace);
         return;
     }
     sixel_lookup_vptree_8bit_map_pixels(object->state_8bit.vptree,
@@ -713,30 +713,25 @@ static void
 sixel_lookup_policy_vptree_map_pixels_float32(
     sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixels, size_t count, int pixel_stride,
-    sixel_index_t *result, int result_stride)
+    sixel_index_t *result, int result_stride, void *workspace)
 {
     sixel_lookup_policy_vptree_object_t const *object;
-    unsigned char const *previous;
-    int hint;
-    size_t i;
+    object = sixel_lookup_policy_vptree_from_base_const(policy);
+    /* Native 96-bit keys and double SIMD distances retain palette precision.
+     * The optional memo belongs to the caller, never to shared policy state. */
+    sixel_lookup_vptree_float32_map_pixels(object->state_float.vptree,
+        pixels, count, pixel_stride, result, result_stride, workspace);
+}
+
+static size_t
+sixel_lookup_policy_vptree_workspace_size_float32(
+    sixel_lookup_policy_interface_t const *policy)
+{
+    sixel_lookup_policy_vptree_object_t const *object;
 
     object = sixel_lookup_policy_vptree_from_base_const(policy);
-    previous = NULL;
-    hint = -1;
-    for (i = 0; i < count; ++i) {
-        /* Compare the complete native coordinate, never its byte projection.
-         * No persistent memo or narrowed SIMD arithmetic is introduced. */
-        if (previous == NULL || memcmp(previous, pixels, 3 * sizeof(float))) {
-            hint = sixel_lookup_policy_vptree_map_float32(
-                &object->state_float, pixels, hint);
-            previous = pixels;
-        }
-        *result = (sixel_index_t)hint;
-        if (i + 1 < count) {
-            pixels += pixel_stride;
-            result += result_stride;
-        }
-    }
+    return sixel_lookup_vptree_float32_workspace_size(
+        object->state_float.vptree);
 }
 
 static sixel_lookup_policy_vtbl_t
@@ -747,6 +742,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_vptree_map_pixel_8bit,
     sixel_lookup_policy_vptree_map_pixel_hint_8bit,
     sixel_lookup_policy_vptree_map_pixels_8bit,
+    NULL,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -757,6 +753,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_vptree_map_pixel_float32,
     sixel_lookup_policy_vptree_map_pixel_hint_float32,
     sixel_lookup_policy_vptree_map_pixels_float32,
+    sixel_lookup_policy_vptree_workspace_size_float32,
 };
 
 SIXELSTATUS
