@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "src/lookup-policy.h"
 #include "src/palette.h"
 #include "src/dither-policy-fs.h"
 #include "src/lookup-policy-none.h"
@@ -131,6 +132,8 @@ test_palette_0062_p3_fs_error(int argc, char **argv)
     }
     capture_vtbl.map_pixel = p3_fs_map;
     capture_vtbl.map_pixel_hint = p3_fs_map_hint;
+    capture_vtbl.map_pixels = sixel_lookup_policy_map_pixels_default;
+    capture_vtbl.workspace_size = NULL;
     capture.vtbl = &capture_vtbl;
     dither->use_rgb101_palette = !hard;
     /* Open feedback protects the historical extended-error contract.

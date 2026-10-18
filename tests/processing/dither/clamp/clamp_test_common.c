@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/dither.h"
+#include "src/lookup-policy.h"
 #include "src/encoder.h"
 #include "src/dither-policy-fs.h"
 #include "src/dither-policy-atkinson.h"
@@ -133,7 +134,8 @@ clamp_lookup_pixel_hint(sixel_lookup_policy_interface_t const *self,
 }
 
 static sixel_lookup_policy_vtbl_t const clamp_lookup_vtbl = {
-    NULL, NULL, NULL, clamp_lookup_pixel, clamp_lookup_pixel_hint, NULL
+    NULL, NULL, NULL, clamp_lookup_pixel, clamp_lookup_pixel_hint,
+    sixel_lookup_policy_map_pixels_default, NULL
 };
 
 int

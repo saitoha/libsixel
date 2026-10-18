@@ -10,6 +10,7 @@
 #include <sixel.h>
 #include "src/encoder.h"
 #include "src/dither.h"
+#include "src/lookup-policy.h"
 #include "src/palette.h"
 #include "src/dither-policy-a-dither.h"
 #include "src/dither-policy-x-dither.h"
@@ -534,7 +535,8 @@ dn_observe_hint(sixel_lookup_policy_interface_t const *self,
 }
 
 static sixel_lookup_policy_vtbl_t const dn_observer_vtbl = {
-    NULL, NULL, NULL, dn_observe, dn_observe_hint, NULL
+    NULL, NULL, NULL, dn_observe, dn_observe_hint,
+    sixel_lookup_policy_map_pixels_default, NULL
 };
 
 int

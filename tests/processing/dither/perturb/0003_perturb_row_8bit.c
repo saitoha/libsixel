@@ -8,6 +8,7 @@
 #include <math.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "src/lookup-policy.h"
 #include "src/dither-policy-fs.h"
 
 static unsigned char captured_8bit;
@@ -65,6 +66,8 @@ test_perturb_0003_row_8bit(int argc, char **argv)
     memset(&vtbl, 0, sizeof(vtbl));
     vtbl.map_pixel = perturb_row_8bit_map;
     vtbl.map_pixel_hint = perturb_row_8bit_map_hint;
+    vtbl.map_pixels = sixel_lookup_policy_map_pixels_default;
+    vtbl.workspace_size = NULL;
     lookup.vtbl = &vtbl;
     if (SIXEL_FAILED(sixel_allocator_new(&allocator,
                                         NULL, NULL, NULL, NULL))

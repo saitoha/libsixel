@@ -8,6 +8,7 @@
 #include <math.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "src/lookup-policy.h"
 #include "src/dither-policy-fs.h"
 
 static float captured_float;
@@ -65,6 +66,8 @@ test_perturb_0004_row_float(int argc, char **argv)
     memset(&vtbl, 0, sizeof(vtbl));
     vtbl.map_pixel = perturb_row_float_map;
     vtbl.map_pixel_hint = perturb_row_float_map_hint;
+    vtbl.map_pixels = sixel_lookup_policy_map_pixels_default;
+    vtbl.workspace_size = NULL;
     lookup.vtbl = &vtbl;
     if (SIXEL_FAILED(sixel_allocator_new(&allocator,
                                         NULL, NULL, NULL, NULL))
