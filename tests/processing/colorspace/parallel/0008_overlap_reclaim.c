@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
-/* A cheap solid palette precedes a large -W conversion. Assert event order
- * and participating identities, never a duration or speed threshold. */
+/* A cheap solid palette precedes a large -W conversion. Assert donation,
+ * pool expansion and subsequent work, not the scheduler's worker selection. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -27,15 +27,14 @@ reclaim_trace(char const *path)
     char *field;
     unsigned long long thread;
     unsigned long long main_thread;
-    unsigned long long workers[8];
     unsigned int session;
     unsigned int conversion_session;
     int palette_done;
     int returned;
+    int expanded;
     int in_filter;
     int in_conversion;
     int count;
-    int i;
     int ok;
 
     file = sixel_compat_fopen(path, "rb");
@@ -45,7 +44,8 @@ reclaim_trace(char const *path)
     }
     main_thread = 0;
     conversion_session = 0;
-    palette_done = returned = in_filter = in_conversion = count = ok = 0;
+    palette_done = returned = expanded = 0;
+    in_filter = in_conversion = count = ok = 0;
     while (fgets(line, sizeof(line), file) != NULL) {
         field = strstr(line, "\"thread\":");
         if (field == NULL || sscanf(field, "\"thread\":%llu", &thread) != 1) {
@@ -58,9 +58,10 @@ reclaim_trace(char const *path)
         }
         if (strstr(line, "\"event\":\"encode_begin\"") != NULL) {
             main_thread = thread;
-            palette_done = returned = count = 0;
+            palette_done = returned = expanded = count = 0;
         }
         if (strstr(line, "\"worker\":\"palette/build\"") != NULL &&
+                strstr(line, "\"role\":\"palette\"") != NULL &&
                 strstr(line, "\"event\":\"finish\"") != NULL) {
             palette_done = 1;
         }
@@ -68,7 +69,7 @@ reclaim_trace(char const *path)
                 strstr(line, "\"event\":\"colorspace-start\"") != NULL) {
             in_filter = 1;
         }
-        if (in_filter && thread == main_thread &&
+        if (in_filter && in_conversion && thread == main_thread &&
                 strstr(line, "\"event\":\"budget-return\"") != NULL) {
             returned = palette_done;
         }
@@ -78,31 +79,34 @@ reclaim_trace(char const *path)
                 if (strstr(line, "\"event\":\"start\"") != NULL) {
                     conversion_session = session;
                     in_conversion = 1;
+                } else if (in_conversion && returned &&
+                        session == conversion_session &&
+                        strstr(line, "\"event\":\"grow\"") != NULL) {
+                    expanded = 1;
                 } else if (strstr(line, "\"event\":\"finish\"") != NULL) {
                     in_conversion = 0;
                 }
-            } else if (in_conversion && returned &&
+            } else if (in_conversion && expanded &&
                     session == conversion_session &&
-                    strstr(line, "\"event\":\"start\"") != NULL) {
-                for (i = 0; i < count && workers[i] != thread; ++i) {
-                    ;
-                }
-                if (i == count) {
-                    if (count == 8) {
-                        fclose(file);
-                        return 0;
-                    }
-                    workers[count++] = thread;
-                }
+                    strstr(line, "\"event\":\"finish\"") != NULL) {
+                /* Existing workers may drain all queued chunks before a
+                 * newly created thread is scheduled. Growth does not promise
+                 * that every available worker receives a chunk. */
+                ++count;
             }
         }
         if (thread == main_thread &&
                 strstr(line, "\"event\":\"colorspace-finish\"") != NULL) {
-            ok |= returned && count > 4;
+            ok |= returned && expanded && count > 0;
             in_filter = 0;
         }
     }
     fclose(file);
+    if (!ok) {
+        fprintf(stderr, "palette reclaim: palette_done=%d returned=%d "
+                "expanded=%d completed_chunks=%d conversion_session=%u\n",
+                palette_done, returned, expanded, count, conversion_session);
+    }
     return ok;
 }
 
