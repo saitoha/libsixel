@@ -838,10 +838,12 @@ sixel_float_distance2(sixel_lookup_vptree_float32_t const *tree,
 #endif
 }
 
+/* C99 cannot add const through a pointer to an array. The caller owns
+ * this mutable batch, but the SIMD search only reads its samples. */
 static void
 sixel_lookup_vptree_float32_map_cold8(
     sixel_lookup_vptree_float32_t const *tree,
-    float const pixels[8][3], int *indexes)
+    float pixels[8][3], int *indexes)
 {
     double channels[3][8];
     double out[8];
