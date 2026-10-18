@@ -2122,7 +2122,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0018_HECKBERT_ORDER_SSE \
     -DBUILD_TEST_0032_HECKBERT_LLOYD_REASSIGNMENT \
     -DBUILD_HECKBERT_POLICY_COMMON \
-    -DBUILD_TEST_0049_HECKBERT_POLISH \
+    -DBUILD_HECKBERT_DEFAULTS_COMMON \
+    -DBUILD_TEST_0033_HECKBERT_API_INITIAL \
+    -DBUILD_TEST_0034_HECKBERT_API_NONE \
+    -DBUILD_TEST_0035_HECKBERT_API_AUTO \
+    -DBUILD_TEST_0036_HECKBERT_API_EXPLICIT_CENTER \
+    -DBUILD_TEST_0037_HECKBERT_API_WARD_AVERAGE \
+    -DBUILD_TEST_0038_HECKBERT_API_WARD_HISTOGRAM \
+    -DBUILD_TEST_0049_HECKBERT_POLISH_AUTO_AVERAGE \
     -DBUILD_TEST_0050_HECKBERT_ONCE \
     -DBUILD_TEST_0051_HECKBERT_UNIQUE \
     -DBUILD_RETENTION_TEST_COMMON \
@@ -6564,6 +6571,13 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/heckbert_policy/0018_heckbert_order_sse.c \
     quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c \
     quant/palette/heckbert_policy/heckbert_policy_common.c \
+    quant/palette/heckbert_policy/heckbert_defaults_common.c \
+    quant/palette/heckbert_policy/0033_heckbert_api_initial.c \
+    quant/palette/heckbert_policy/0034_heckbert_api_none.c \
+    quant/palette/heckbert_policy/0035_heckbert_api_auto.c \
+    quant/palette/heckbert_policy/0036_heckbert_api_explicit_center.c \
+    quant/palette/heckbert_policy/0037_heckbert_api_ward_average.c \
+    quant/palette/heckbert_policy/0038_heckbert_api_ward_histogram.c \
     quant/palette/ordinary_float/ordinary_float_test_common.c \
     quant/palette/ordinary_float/ordinary_float_test_common.h \
     quant/palette/ordinary_float/0001_center_sources.c \
@@ -6614,7 +6628,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/ordinary_float/0046_heckbert_center.c \
     quant/palette/ordinary_float/0047_heckbert_average.c \
     quant/palette/ordinary_float/0048_heckbert_histogram.c \
-    quant/palette/ordinary_float/0049_heckbert_polish.c \
+    quant/palette/ordinary_float/0049_heckbert_polish_auto_average.c \
     quant/palette/ordinary_float/0050_heckbert_once.c \
     quant/palette/ordinary_float/0051_heckbert_unique.c \
     quant/palette/retention/retention_test_common.c \

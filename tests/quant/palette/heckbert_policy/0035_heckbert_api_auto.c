@@ -1,0 +1,10 @@
+/* SPDX-License-Identifier: MIT */
+int heckbert_defaults_check(int diffusion, int representative, int ward,
+                            int expected);
+int
+test_policy_heckbert_api_auto(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return heckbert_defaults_check(0, 0, 0, 2);
+}

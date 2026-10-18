@@ -7,7 +7,7 @@ set -v
 implicit=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png")
 explicit=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 \
-    -Qheckbert:cut=median:order=population:weights=auto \
+    -Qheckbert:cut=sse:order=sse:weights=auto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png")
 test -n "$implicit" && test "$implicit" = "$explicit" || {
     echo "not ok 1 - explicit defaults changed output"

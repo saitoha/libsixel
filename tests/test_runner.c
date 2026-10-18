@@ -2211,6 +2211,12 @@ int test_ordinary_heckbert_reuse(int argc, char **argv);
 int test_ordinary_heckbert_center(int argc, char **argv);
 int test_ordinary_heckbert_average(int argc, char **argv);
 int test_ordinary_heckbert_histogram(int argc, char **argv);
+int test_policy_heckbert_api_initial(int argc, char **argv);
+int test_policy_heckbert_api_none(int argc, char **argv);
+int test_policy_heckbert_api_auto(int argc, char **argv);
+int test_policy_heckbert_api_explicit_center(int argc, char **argv);
+int test_policy_heckbert_api_ward_average(int argc, char **argv);
+int test_policy_heckbert_api_ward_histogram(int argc, char **argv);
 int test_policy_heckbert_reassignment(int argc, char **argv);
 int test_policy_heckbert_center_half(int argc, char **argv);
 int test_policy_heckbert_average_half(int argc, char **argv);
@@ -2230,7 +2236,7 @@ int test_policy_heckbert_sse_pca(int argc, char **argv);
 int test_policy_heckbert_sse_float_norm(int argc, char **argv);
 int test_policy_heckbert_sse_float_pca(int argc, char **argv);
 int test_policy_heckbert_order_sse(int argc, char **argv);
-int test_ordinary_heckbert_polish(int argc, char **argv);
+int test_ordinary_heckbert_polish_auto_average(int argc, char **argv);
 int test_ordinary_heckbert_once(int argc, char **argv);
 int test_ordinary_heckbert_unique(int argc, char **argv);
 int test_palette_retention_kmeans(int argc, char **argv);
@@ -7648,6 +7654,18 @@ static test_entry_t const test_entries[] = {
       test_ordinary_heckbert_histogram },
     { "palette/heckbert_policy/reassignment",
       test_policy_heckbert_reassignment },
+    { "palette/heckbert_policy/api_initial",
+      test_policy_heckbert_api_initial },
+    { "palette/heckbert_policy/api_none",
+      test_policy_heckbert_api_none },
+    { "palette/heckbert_policy/api_auto",
+      test_policy_heckbert_api_auto },
+    { "palette/heckbert_policy/api_explicit_center",
+      test_policy_heckbert_api_explicit_center },
+    { "palette/heckbert_policy/api_ward_average",
+      test_policy_heckbert_api_ward_average },
+    { "palette/heckbert_policy/api_ward_histogram",
+      test_policy_heckbert_api_ward_histogram },
     { "palette/heckbert_policy/center_half",
       test_policy_heckbert_center_half },
     { "palette/heckbert_policy/average_half",
@@ -7684,8 +7702,8 @@ static test_entry_t const test_entries[] = {
       test_policy_heckbert_sse_float_pca },
     { "palette/heckbert_policy/order_sse",
       test_policy_heckbert_order_sse },
-    { "palette/ordinary_float/heckbert_polish",
-      test_ordinary_heckbert_polish },
+    { "palette/ordinary_float/heckbert_polish_auto_average",
+      test_ordinary_heckbert_polish_auto_average },
     { "palette/ordinary_float/heckbert_once",
       test_ordinary_heckbert_once },
     { "palette/ordinary_float/heckbert_unique",

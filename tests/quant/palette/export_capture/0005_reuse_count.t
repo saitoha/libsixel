@@ -15,8 +15,9 @@ actual=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     exit 0
 }
 # The first six primary/secondary entries may occur in solver order.
-# Heckbert splits the six equal-weight colors on R; the two centers
-# have G=B=0.5 exactly, so the sRGB8 means are 128.
+# Heckbert splits the six equal-weight colors on R. With no diffusion,
+# AUTO exports occurrence means: the three R=0 members have G=B=2/3,
+# while the three R=1 members have G=B=1/3, yielding bytes 170 and 85.
 case "${actual}" in
     'JASC-PAL
 0100
@@ -25,8 +26,8 @@ case "${actual}" in
 JASC-PAL
 0100
 2
-0 128 128
-255 128 128') ;;
+0 170 170
+255 85 85') ;;
     *)
         echo "not ok 1 - reused export has a stale count or wrong centroid"
         exit 0
