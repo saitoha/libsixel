@@ -13,6 +13,7 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -109,6 +110,24 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+libfloatlookuptests_la_LIBADD =
+am__libfloatlookuptests_la_SOURCES_DIST =  \
+	processing/lookup/0018_lookup_float_batch_exact.c \
+	processing/lookup/0019_lookup_float_simd_distance.c
+am__dirstamp = $(am__leading_dot)dirstamp
+@WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_OBJECTS = processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo
+libfloatlookuptests_la_OBJECTS = $(am_libfloatlookuptests_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 =
+libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libfloatlookuptests_la_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+@WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/delta_native/0015_delta_signed_threshold.c \
 	quant/palette/delta_native/0016_delta_p3_or_recovery.c \
@@ -1694,8 +1713,6 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/lookup/0015_lookup_batch_contract.c \
 	processing/lookup/0016_lookup_auto_dither.c \
 	processing/lookup/0017_lookup_none_batch_fences.c \
-	processing/lookup/0018_lookup_float_batch_exact.c \
-	processing/lookup/0019_lookup_float_simd_distance.c \
 	processing/lookup/0020_lookup_float_workspace_failure.c \
 	processing/dither/0001_dither_policy.c \
 	processing/dither/perturb/0018_perturb_keep_lookup.c \
@@ -3882,7 +3899,6 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/terminal-color.c \
 	$(top_srcdir)/converters/terminal-color-tty.c \
 	$(top_srcdir)/converters/path.c
-am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0015_delta_signed_threshold.$(OBJEXT) \
@@ -5437,8 +5453,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0015_lookup_batch_contract.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0016_lookup_auto_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0017_lookup_none_batch_fences.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0018_lookup_float_batch_exact.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0019_lookup_float_simd_distance.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0020_lookup_float_workspace_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0018_perturb_keep_lookup.$(OBJEXT) \
@@ -7634,6 +7648,7 @@ am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	libfloatlookuptests.la \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
@@ -9975,6 +9990,8 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
+	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo \
+	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Plo \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
@@ -9982,8 +9999,6 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0015_lookup_batch_contract.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po \
-	processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Po \
-	processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0020_lookup_float_workspace_failure.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po \
@@ -11391,10 +11406,6 @@ am__depfiles_remade =  \
 	writer/png/$(DEPDIR)/test_runner-0031_dci_p3_snapshot.Po \
 	writer/png/$(DEPDIR)/test_runner-color_test_common.Po
 am__mv = mv -f
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -11413,8 +11424,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_runner_SOURCES) $(nodist_test_runner_SOURCES)
-DIST_SOURCES = $(am__test_runner_SOURCES_DIST)
+SOURCES = $(libfloatlookuptests_la_SOURCES) $(test_runner_SOURCES) \
+	$(nodist_test_runner_SOURCES)
+DIST_SOURCES = $(am__libfloatlookuptests_la_SOURCES_DIST) \
+	$(am__test_runner_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -11712,6 +11725,7 @@ EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 FILECMD = @FILECMD@
 FILE_CMD = @FILE_CMD@
+FLOAT_LOOKUP_CFLAGS = @FLOAT_LOOKUP_CFLAGS@
 FUZZ_CFLAGS = @FUZZ_CFLAGS@
 FUZZ_LDFLAGS = @FUZZ_LDFLAGS@
 GDK_PIXBUF_BINARY_VERSION = @GDK_PIXBUF_BINARY_VERSION@
@@ -15784,7 +15798,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDADD = libfloatlookuptests.la $(TESTS_COMMON_LDADD_VAL) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(LIBS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(LIBCURL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(LIBFETCH_LIBS) \
@@ -15809,6 +15823,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # libsixel amalgamation already contains lookup-policy objects.
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
+@WANT_AMALGAMATED_TOOLS_FALSE@noinst_LTLIBRARIES = libfloatlookuptests.la
+@WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0018_lookup_float_batch_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0019_lookup_float_simd_distance.c
+
+@WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
+@WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0015_delta_signed_threshold.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0016_delta_p3_or_recovery.c \
@@ -17400,8 +17421,6 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0015_lookup_batch_contract.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0016_lookup_auto_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0017_lookup_none_batch_fences.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0018_lookup_float_batch_exact.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0019_lookup_float_simd_distance.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0020_lookup_float_workspace_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0018_perturb_keep_lookup.c \
@@ -19825,6 +19844,30 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+
+clean-noinstLTLIBRARIES:
+	-$(am__rm_f) $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	echo rm -f $${locs}; \
+	$(am__rm_f) $${locs}
+processing/lookup/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup
+	@: >>processing/lookup/$(am__dirstamp)
+processing/lookup/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/$(DEPDIR)
+	@: >>processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo:  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo:  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+
+libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES)
+	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
 quant/palette/delta_native/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/delta_native
 	@: >>quant/palette/delta_native/$(am__dirstamp)
@@ -24676,12 +24719,6 @@ processing/decoder/test_runner-palette_map_test_common.$(OBJEXT):  \
 processing/decoder/test_runner-ormode_test_common.$(OBJEXT):  \
 	processing/decoder/$(am__dirstamp) \
 	processing/decoder/$(DEPDIR)/$(am__dirstamp)
-processing/lookup/$(am__dirstamp):
-	@$(MKDIR_P) processing/lookup
-	@: >>processing/lookup/$(am__dirstamp)
-processing/lookup/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) processing/lookup/$(DEPDIR)
-	@: >>processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
@@ -24701,12 +24738,6 @@ processing/lookup/test_runner-0016_lookup_auto_dither.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-0017_lookup_none_batch_fences.$(OBJEXT):  \
-	processing/lookup/$(am__dirstamp) \
-	processing/lookup/$(DEPDIR)/$(am__dirstamp)
-processing/lookup/test_runner-0018_lookup_float_batch_exact.$(OBJEXT):  \
-	processing/lookup/$(am__dirstamp) \
-	processing/lookup/$(DEPDIR)/$(am__dirstamp)
-processing/lookup/test_runner-0019_lookup_float_simd_distance.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-0020_lookup_float_workspace_failure.$(OBJEXT):  \
@@ -31750,6 +31781,7 @@ mostlyclean-compile:
 	-rm -f processing/gpu-dequant/*.$(OBJEXT)
 	-rm -f processing/gpu-palette/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
+	-rm -f processing/lookup/*.lo
 	-rm -f processing/lookup/extended/*.$(OBJEXT)
 	-rm -f processing/lookup/eytzinger/*.$(OBJEXT)
 	-rm -f processing/lookup/fhedt/*.$(OBJEXT)
@@ -34121,6 +34153,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
@@ -34128,8 +34162,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0015_lookup_batch_contract.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0020_lookup_float_workspace_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po@am__quote@ # am--include-marker
@@ -35564,6 +35596,20 @@ $(am__depfiles_remade):
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo: processing/lookup/0018_lookup_float_batch_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -MT processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo -MD -MP -MF processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Tpo -c -o processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo `test -f 'processing/lookup/0018_lookup_float_batch_exact.c' || echo '$(srcdir)/'`processing/lookup/0018_lookup_float_batch_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Tpo processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0018_lookup_float_batch_exact.c' object='processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -c -o processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo `test -f 'processing/lookup/0018_lookup_float_batch_exact.c' || echo '$(srcdir)/'`processing/lookup/0018_lookup_float_batch_exact.c
+
+processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo: processing/lookup/0019_lookup_float_simd_distance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -MT processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo -MD -MP -MF processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Tpo -c -o processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo `test -f 'processing/lookup/0019_lookup_float_simd_distance.c' || echo '$(srcdir)/'`processing/lookup/0019_lookup_float_simd_distance.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Tpo processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0019_lookup_float_simd_distance.c' object='processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -c -o processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo `test -f 'processing/lookup/0019_lookup_float_simd_distance.c' || echo '$(srcdir)/'`processing/lookup/0019_lookup_float_simd_distance.c
 
 test_runner-test_runner.o: test_runner.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT test_runner-test_runner.o -MD -MP -MF $(DEPDIR)/test_runner-test_runner.Tpo -c -o test_runner-test_runner.o `test -f 'test_runner.c' || echo '$(srcdir)/'`test_runner.c
@@ -57306,34 +57352,6 @@ processing/lookup/test_runner-0017_lookup_none_batch_fences.obj: processing/look
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0017_lookup_none_batch_fences.c' object='processing/lookup/test_runner-0017_lookup_none_batch_fences.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0017_lookup_none_batch_fences.obj `if test -f 'processing/lookup/0017_lookup_none_batch_fences.c'; then $(CYGPATH_W) 'processing/lookup/0017_lookup_none_batch_fences.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0017_lookup_none_batch_fences.c'; fi`
-
-processing/lookup/test_runner-0018_lookup_float_batch_exact.o: processing/lookup/0018_lookup_float_batch_exact.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0018_lookup_float_batch_exact.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Tpo -c -o processing/lookup/test_runner-0018_lookup_float_batch_exact.o `test -f 'processing/lookup/0018_lookup_float_batch_exact.c' || echo '$(srcdir)/'`processing/lookup/0018_lookup_float_batch_exact.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Tpo processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0018_lookup_float_batch_exact.c' object='processing/lookup/test_runner-0018_lookup_float_batch_exact.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0018_lookup_float_batch_exact.o `test -f 'processing/lookup/0018_lookup_float_batch_exact.c' || echo '$(srcdir)/'`processing/lookup/0018_lookup_float_batch_exact.c
-
-processing/lookup/test_runner-0018_lookup_float_batch_exact.obj: processing/lookup/0018_lookup_float_batch_exact.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0018_lookup_float_batch_exact.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Tpo -c -o processing/lookup/test_runner-0018_lookup_float_batch_exact.obj `if test -f 'processing/lookup/0018_lookup_float_batch_exact.c'; then $(CYGPATH_W) 'processing/lookup/0018_lookup_float_batch_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0018_lookup_float_batch_exact.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Tpo processing/lookup/$(DEPDIR)/test_runner-0018_lookup_float_batch_exact.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0018_lookup_float_batch_exact.c' object='processing/lookup/test_runner-0018_lookup_float_batch_exact.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0018_lookup_float_batch_exact.obj `if test -f 'processing/lookup/0018_lookup_float_batch_exact.c'; then $(CYGPATH_W) 'processing/lookup/0018_lookup_float_batch_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0018_lookup_float_batch_exact.c'; fi`
-
-processing/lookup/test_runner-0019_lookup_float_simd_distance.o: processing/lookup/0019_lookup_float_simd_distance.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0019_lookup_float_simd_distance.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Tpo -c -o processing/lookup/test_runner-0019_lookup_float_simd_distance.o `test -f 'processing/lookup/0019_lookup_float_simd_distance.c' || echo '$(srcdir)/'`processing/lookup/0019_lookup_float_simd_distance.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Tpo processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0019_lookup_float_simd_distance.c' object='processing/lookup/test_runner-0019_lookup_float_simd_distance.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0019_lookup_float_simd_distance.o `test -f 'processing/lookup/0019_lookup_float_simd_distance.c' || echo '$(srcdir)/'`processing/lookup/0019_lookup_float_simd_distance.c
-
-processing/lookup/test_runner-0019_lookup_float_simd_distance.obj: processing/lookup/0019_lookup_float_simd_distance.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0019_lookup_float_simd_distance.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Tpo -c -o processing/lookup/test_runner-0019_lookup_float_simd_distance.obj `if test -f 'processing/lookup/0019_lookup_float_simd_distance.c'; then $(CYGPATH_W) 'processing/lookup/0019_lookup_float_simd_distance.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0019_lookup_float_simd_distance.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Tpo processing/lookup/$(DEPDIR)/test_runner-0019_lookup_float_simd_distance.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0019_lookup_float_simd_distance.c' object='processing/lookup/test_runner-0019_lookup_float_simd_distance.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0019_lookup_float_simd_distance.obj `if test -f 'processing/lookup/0019_lookup_float_simd_distance.c'; then $(CYGPATH_W) 'processing/lookup/0019_lookup_float_simd_distance.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0019_lookup_float_simd_distance.c'; fi`
 
 processing/lookup/test_runner-0020_lookup_float_workspace_failure.o: processing/lookup/0020_lookup_float_workspace_failure.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0020_lookup_float_workspace_failure.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0020_lookup_float_workspace_failure.Tpo -c -o processing/lookup/test_runner-0020_lookup_float_workspace_failure.o `test -f 'processing/lookup/0020_lookup_float_workspace_failure.c' || echo '$(srcdir)/'`processing/lookup/0020_lookup_float_workspace_failure.c
@@ -87664,6 +87682,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf processing/lookup/.libs processing/lookup/_libs
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -87957,7 +87976,7 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
 install: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) install-am
@@ -88256,7 +88275,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
-	mostlyclean-am
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -88323,18 +88342,19 @@ uninstall-am:
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
 	check-am clean clean-checkPROGRAMS clean-generic clean-libtool \
-	clean-local cscopelist-am ctags ctags-am dist-hook distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installcheck-local \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
-	uninstall uninstall-am
+	clean-local clean-noinstLTLIBRARIES cscopelist-am ctags \
+	ctags-am dist-hook distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installcheck-local installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
+	uninstall-am
 
 .PRECIOUS: Makefile
 

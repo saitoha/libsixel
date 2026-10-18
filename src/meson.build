@@ -106,7 +106,6 @@ srcs = [
   'lookup-fhedt-8bit.c',
   'lookup-fhedt-float32.c',
   'lookup-vptree-8bit.c',
-  'lookup-vptree-float32.c',
   'dither.c',
   'oklch-lattice256.h',
   'dither-policy.c',
@@ -350,12 +349,21 @@ endif
 lt_soversion = ls_lt_current - ls_lt_age
 lt_version = '@0@.@1@.@2@'.format(lt_soversion, ls_lt_age, ls_lt_revision)
 
+float_lookup_objects = []
 if amalgamated_lib_enabled
   libsixel_sources = [
     amalgamation_out,
   ]
   libsixel_c_args = libsixel_posix_defs
 else
+  float_lookup = static_library('sixel_float_lookup',
+    ['lookup-vptree-float32.c', sixcells_h],
+    include_directories: project_inc,
+    dependencies: deps,
+    c_args: libsixel_posix_defs + float_lookup_c_args,
+    pic: true,
+    install: false)
+  float_lookup_objects = float_lookup.extract_all_objects(recursive: true)
   libsixel_sources = srcs
   libsixel_c_args = libsixel_posix_defs
 endif
@@ -364,6 +372,7 @@ libsixel_build_deps = deps + msvc_pgo_post_wic_deps
 
 libsixel = library('sixel',
                    libsixel_sources,
+                   objects: float_lookup_objects,
                    include_directories: project_inc,
                    c_args: libsixel_c_args,
                    objc_args: libsixel_c_args,

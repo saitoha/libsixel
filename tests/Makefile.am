@@ -3908,6 +3908,13 @@ else
 TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
+noinst_LTLIBRARIES = libfloatlookuptests.la
+libfloatlookuptests_la_SOURCES = \
+    processing/lookup/0018_lookup_float_batch_exact.c \
+    processing/lookup/0019_lookup_float_simd_distance.c
+libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
+libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
+
 test_runner_SOURCES = test_runner.c \
     quant/palette/delta_native/0015_delta_signed_threshold.c \
     quant/palette/delta_native/0016_delta_p3_or_recovery.c \
@@ -5499,8 +5506,6 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0015_lookup_batch_contract.c \
     processing/lookup/0016_lookup_auto_dither.c \
     processing/lookup/0017_lookup_none_batch_fences.c \
-    processing/lookup/0018_lookup_float_batch_exact.c \
-    processing/lookup/0019_lookup_float_simd_distance.c \
     processing/lookup/0020_lookup_float_workspace_failure.c \
     processing/dither/0001_dither_policy.c \
     processing/dither/perturb/0018_perturb_keep_lookup.c \
@@ -7722,7 +7727,7 @@ test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
     -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
 test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
 test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
+test_runner_LDADD = libfloatlookuptests.la $(TESTS_COMMON_LDADD_VAL) \
         $(LIBS) \
         $(LIBCURL_LIBS) \
         $(LIBFETCH_LIBS) \

@@ -74,6 +74,7 @@ function remember(token) {
         print tests_base "/" token
     }
 }
+# Include test-runner convenience libraries with isolated compiler flags.
 function scan_sources(line, token) {
     sub(/#.*/, "", line)
     while (match(line,
@@ -83,7 +84,7 @@ function scan_sources(line, token) {
         line = substr(line, RSTART + RLENGTH)
     }
 }
-$0 ~ /^[[:space:]]*test_runner_SOURCES[[:space:]]*=/ {
+$0 ~ /^[[:space:]]*(test_runner|[[:alnum:]_]+_la)_SOURCES[[:space:]]*=/ {
     in_sources = 1
 }
 in_sources {

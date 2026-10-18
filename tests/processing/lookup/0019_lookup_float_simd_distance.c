@@ -24,12 +24,14 @@ test_lookup_0019_float_simd_distance(int argc, char **argv)
     float pixels[2][3];
     double lanes[3][2], actual[2], expected[2];
     int i, q, c, lane;
-#if (HAVE_NEON && defined(__aarch64__)) || HAVE_SSE2
+#if SIXEL_FLOAT_LOOKUP_SIMD
     sixel_float_distance2_t r, g, b, distance;
 #endif
 
     (void)argc;
     (void)argv;
+    fprintf(stderr, "float lookup distance: %s\n",
+            SIXEL_FLOAT_LOOKUP_SIMD ? "SIMD" : "native scalar");
     memset(&tree, 0, sizeof(tree));
     tree.palette_wide = palette;
     tree.weights_wide[0] = (float)(1.0 / 10000.0);
@@ -57,13 +59,13 @@ test_lookup_0019_float_simd_distance(int argc, char **argv)
                 expected[lane] = sixel_lookup_vptree_float32_pixel_distance(
                     &tree, pixels[lane], i);
             }
-#if HAVE_NEON && defined(__aarch64__)
+#if SIXEL_FLOAT_LOOKUP_SIMD && HAVE_NEON && defined(__aarch64__)
             r = vld1q_f64(lanes[0]);
             g = vld1q_f64(lanes[1]);
             b = vld1q_f64(lanes[2]);
             distance = sixel_float_distance2(&tree, r, g, b, i);
             vst1q_f64(actual, distance);
-#elif HAVE_SSE2
+#elif SIXEL_FLOAT_LOOKUP_SIMD && HAVE_SSE2
             r = _mm_loadu_pd(lanes[0]);
             g = _mm_loadu_pd(lanes[1]);
             b = _mm_loadu_pd(lanes[2]);
@@ -75,13 +77,8 @@ test_lookup_0019_float_simd_distance(int argc, char **argv)
                 actual[lane] = 0.0;
                 for (c = 0; c < 3; ++c) {
                     lanes[c][lane] -= palette[i * 3 + c];
-#if defined(__aarch64__)
-                    actual[lane] = fma(lanes[c][lane] * lanes[c][lane],
-                        tree.weights_wide[c], actual[lane]);
-#else
                     actual[lane] += lanes[c][lane] * lanes[c][lane]
                         * tree.weights_wide[c];
-#endif
                     lanes[c][lane] = pixels[lane][c];
                 }
             }

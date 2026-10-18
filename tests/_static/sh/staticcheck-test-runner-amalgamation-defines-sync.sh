@@ -38,6 +38,7 @@ function remember_source(path, basename, macro, parts, part_count, external) {
     }
     sources["BUILD_" macro] = path
 }
+# Include test-runner convenience libraries with isolated compiler flags.
 function scan_sources(line, token) {
     while (match(line, /(\$\(top_srcdir\)\/)?[A-Za-z0-9_.\/-]+\.[cm]([[:space:]]|$)/)) {
         token = substr(line, RSTART, RLENGTH)
@@ -54,7 +55,7 @@ function scan_defines(line, token) {
     }
 }
 {
-    if ($0 ~ /^[[:space:]]*test_runner_SOURCES[[:space:]]*\+?=/) {
+    if ($0 ~ /^[[:space:]]*(test_runner|[[:alnum:]_]+_la)_SOURCES[[:space:]]*\+?=/) {
         in_sources = 1
     }
     if ($0 ~ /^[[:space:]]*TEST_RUNNER_AMALGAMATION_DEFINES[[:space:]]*\+?=/) {

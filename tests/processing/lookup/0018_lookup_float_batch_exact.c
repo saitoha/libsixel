@@ -71,12 +71,12 @@ test_lookup_0018_float_batch_exact(int argc, char **argv)
     memcpy(pixels[1], pixels[0], sizeof(pixels[0]));
     memcpy(pixels[23], pixels[0], sizeof(pixels[0]));
     /* Find two distinct finite 96-bit keys in one actual memo slot. */
-    sixel_float_memo_key(pixels[2], key);
-    slot = sixel_float_memo_slot(key);
+    sixel_vptree_float_memo_key(pixels[2], key);
+    slot = sixel_vptree_float_memo_slot(key);
     for (collision = 1; collision < 1000000U; ++collision) {
         pixels[24][0] = (float)collision / 1024;
-        sixel_float_memo_key(pixels[24], key);
-        if (sixel_float_memo_slot(key) == slot) {
+        sixel_vptree_float_memo_key(pixels[24], key);
+        if (sixel_vptree_float_memo_slot(key) == slot) {
             break;
         }
     }
@@ -122,10 +122,10 @@ test_lookup_0018_float_batch_exact(int argc, char **argv)
                 }
             }
         }
-        for (slot = 0; slot < SIXEL_FLOAT_MEMO_SIZE; ++slot) {
+        for (slot = 0; slot < SIXEL_VPTREE_FLOAT_MEMO_SIZE; ++slot) {
             if (scratch->memo[slot].index_plus_one != 0) {
                 memcpy(sample, scratch->memo[slot].key, sizeof(key));
-                if (n == 257 || !sixel_float_memo_key(sample, key)) {
+                if (n == 257 || !sixel_vptree_float_memo_key(sample, key)) {
                     goto cleanup;
                 }
             }

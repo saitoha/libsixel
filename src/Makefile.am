@@ -68,6 +68,12 @@ libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
 	$(AMALGAMATION_COMPILE) -c -o $@ $<
 
 else
+# Isolate arithmetic flags from every other translation unit.
+noinst_LTLIBRARIES = libfloatlookup.la
+libfloatlookup_la_SOURCES = $(srcdir)/lookup-vptree-float32.c
+libfloatlookup_la_CPPFLAGS = $(libsixel_la_CPPFLAGS)
+libfloatlookup_la_CFLAGS = $(libsixel_la_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
+FLOAT_LOOKUP_LIB = libfloatlookup.la
 libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
@@ -106,7 +112,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-fhedt-float32.h \
                 $(srcdir)/lookup-vptree-8bit.c \
                 $(srcdir)/lookup-vptree-8bit.h \
-                $(srcdir)/lookup-vptree-float32.c \
                 $(srcdir)/lookup-vptree-float32.h \
                 $(srcdir)/lookup-policy.h \
                 $(srcdir)/lookup-policy-none.h \
@@ -466,7 +471,7 @@ libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) \
                 $(MAYBE_COVERAGE) $(LIBSIXEL_LDFLAGS)
 endif
 LS_LT_CURRENT = $(word 1,$(subst :, ,$(LS_LTVERSION)))
-libsixel_la_LIBADD = -lm \
+libsixel_la_LIBADD = $(FLOAT_LOOKUP_LIB) -lm \
                 $(LIBCURL_LIBS) \
                 $(LIBFETCH_LIBS) \
                 $(WINHTTP_LIBS) \

@@ -2666,6 +2666,53 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
   AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
 ])
 
+# Preserve native scalar rounding. A supported switch alone does not prove
+# that adding it leaves the user's compiler settings unchanged. Admit explicit
+# contract-off builds or x86-64 targets without any FMA instruction set; all
+# other builds retain memoization and the native scalar expression.
+FLOAT_LOOKUP_CFLAGS=""
+sixel_float_contract=unknown
+for sixel_float_arg in $CPPFLAGS $CFLAGS; do
+  case "$sixel_float_arg" in
+    -ffp-contract=*) sixel_float_contract="$sixel_float_arg" ;;
+  esac
+done
+LS_CHECK_CFLAG([-ffp-contract=off], [
+  # Match Automake's CPPFLAGS-before-CFLAGS order for target/FP switches.
+  sixel_float_saved_cflags="$CFLAGS"
+  sixel_float_saved_cppflags="$CPPFLAGS"
+  CFLAGS="$CPPFLAGS $CFLAGS"
+  CPPFLAGS=""
+  AS_IF([test "x$sixel_float_contract" = "x-ffp-contract=off"], [
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <float.h>
+#if defined(__FAST_MATH__) || FLT_EVAL_METHOD != 0
+#error Exact double arithmetic is not established
+#endif
+int main(void) { return 0; }
+]])], [sixel_float_exact=yes], [sixel_float_exact=no])
+  ], [
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <float.h>
+#if !defined(__x86_64__) || defined(__FMA__) || defined(__FMA4__) \
+    || defined(__AVX512F__) || defined(__FAST_MATH__) || FLT_EVAL_METHOD != 0
+#error Native noncontracting arithmetic is not established
+#endif
+int main(void) { return 0; }
+]])], [sixel_float_exact=yes], [sixel_float_exact=no])
+  ])
+  CFLAGS="$sixel_float_saved_cflags"
+  CPPFLAGS="$sixel_float_saved_cppflags"
+  AS_IF([test "x$sixel_float_exact" = xyes \
+      && test "x$want_amalgamated_sources" != xyes], [
+    FLOAT_LOOKUP_CFLAGS="-ffp-contract=off -DSIXEL_FLOAT_LOOKUP_EXACT_SIMD=1"
+  ])
+], [], [fp_contract_off])
+AC_MSG_CHECKING([whether float lookup can preserve native scalar arithmetic with SIMD])
+AS_IF([test -n "$FLOAT_LOOKUP_CFLAGS"],
+      [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no; using native scalar lookup])])
+AC_SUBST([FLOAT_LOOKUP_CFLAGS])
+
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([LIBSIXEL_LDFLAGS])
 

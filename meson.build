@@ -2181,6 +2181,37 @@ amalgamated_lib_enabled = get_option('amalgamated_lib')
 amalgamated_tools_enabled = get_option('amalgamated_tools')
 amalgamated_sources_enabled = amalgamated_lib_enabled or amalgamated_tools_enabled
 
+# Keep native scalar arithmetic unless noncontraction is already guaranteed.
+# Do not infer this from the compiler family or the selected C dialect.
+float_lookup_c_args = []
+float_lookup_contract_off = false
+foreach arg : get_option('c_args')
+  if arg.startswith('-ffp-contract=')
+    float_lookup_contract_off = arg == '-ffp-contract=off'
+  endif
+endforeach
+if cc.has_argument('-ffp-contract=off')
+  float_lookup_standard = cc.compiles('''
+#include <float.h>
+#if defined(__FAST_MATH__) || FLT_EVAL_METHOD != 0
+#error Exact double arithmetic is not established
+#endif
+int main(void) { return 0; }
+''', name: 'standard double evaluation for float lookup')
+  float_lookup_exact = float_lookup_standard and (float_lookup_contract_off or cc.compiles('''
+#if !defined(__x86_64__) || defined(__FMA__) || defined(__FMA4__) \
+    || defined(__AVX512F__) || defined(__FAST_MATH__)
+#error Native noncontracting arithmetic is not established
+#endif
+int main(void) { return 0; }
+''', name: 'native noncontracting float lookup'))
+  if float_lookup_exact and not amalgamated_sources_enabled
+    float_lookup_c_args = ['-ffp-contract=off',
+                           '-DSIXEL_FLOAT_LOOKUP_EXACT_SIMD=1']
+  endif
+endif
+message('Float lookup exact SIMD flags: ' + ' '.join(float_lookup_c_args))
+
 amalgamated_dither_policy_sources = files(
   'src/dither-policy-none.c',
   'src/dither-policy-fs.c',

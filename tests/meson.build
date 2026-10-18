@@ -195,7 +195,9 @@ test_runner_tests_sources_text = run_command(
   '-o -path "./.ruby-test-venv" -o -path "./.php-test-venv" ' +
   '-o -path "./_artifacts" \\) ' +
   '-prune -o -type f \\( -name "*.c" -o -name "*.h" \\) ' +
-  '! -name "*.inc.c" -print | ' +
+  '! -name "*.inc.c" ' +
+  '! -name "0018_lookup_float_batch_exact.c" ' +
+  '! -name "0019_lookup_float_simd_distance.c" -print | ' +
   'LC_ALL=C sort | sed "s|^\\./||"',
   'meson-test-runner-sources',
   meson.current_source_dir(),
@@ -226,7 +228,16 @@ test_runner_inc = [
 
 test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
 
+float_lookup_tests = static_library('sixel_float_lookup_tests',
+  ['processing/lookup/0018_lookup_float_batch_exact.c',
+   'processing/lookup/0019_lookup_float_simd_distance.c', sixcells_h],
+  include_directories: test_runner_inc,
+  dependencies: test_runner_deps,
+  c_args: libsixel_posix_defs + float_lookup_c_args,
+  install: false)
+
 test_runner_exe = executable('test_runner', test_runner_sources,
+  objects: float_lookup_tests.extract_all_objects(recursive: true),
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,
   # Keep feature-test macros aligned with converter/library targets so

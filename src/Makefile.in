@@ -153,16 +153,31 @@ am__uninstall_files_from_dir = { \
        $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"
-LTLIBRARIES = $(lib_LTLIBRARIES)
+LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
+libfloatlookup_la_LIBADD =
+am__libfloatlookup_la_SOURCES_DIST =  \
+	$(srcdir)/lookup-vptree-float32.c
+@WANT_AMALGAMATED_LIB_FALSE@am_libfloatlookup_la_OBJECTS = libfloatlookup_la-lookup-vptree-float32.lo
+libfloatlookup_la_OBJECTS = $(am_libfloatlookup_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 =
+libfloatlookup_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libfloatlookup_la_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
+@WANT_AMALGAMATED_LIB_FALSE@am_libfloatlookup_la_rpath =
 am__DEPENDENCIES_1 =
-libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+libsixel_la_DEPENDENCIES = $(FLOAT_LOOKUP_LIB) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/output-factory.h $(srcdir)/sixel-writer.c \
 	$(srcdir)/sixel-writer.h $(srcdir)/encoder-core.c \
@@ -185,7 +200,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-fhedt-8bit.h $(srcdir)/lookup-fhedt-float32.c \
 	$(srcdir)/lookup-fhedt-float32.h \
 	$(srcdir)/lookup-vptree-8bit.c $(srcdir)/lookup-vptree-8bit.h \
-	$(srcdir)/lookup-vptree-float32.c \
 	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-policy.h \
 	$(srcdir)/lookup-policy-none.h \
 	$(srcdir)/lookup-policy-mono-darkbg.h \
@@ -399,7 +413,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-fhedt-8bit.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-fhedt-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vptree-8bit.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vptree-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-cover.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-cover-native.lo \
@@ -550,10 +563,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_5)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
 	$(nodist_libsixel_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 libsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(OBJCLD) $(AM_OBJCFLAGS) \
 	$(OBJCFLAGS) $(libsixel_la_LDFLAGS) $(LDFLAGS) -o $@
@@ -574,6 +583,7 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo \
+	./$(DEPDIR)/libfloatlookup_la-lookup-vptree-float32.Plo \
 	./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
@@ -689,7 +699,6 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo \
-	./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
 	./$(DEPDIR)/libsixel_la-mapfile.Plo \
 	./$(DEPDIR)/libsixel_la-options-registry.Plo \
@@ -781,8 +790,10 @@ AM_V_OBJCLD = $(am__v_OBJCLD_@AM_V@)
 am__v_OBJCLD_ = $(am__v_OBJCLD_@AM_DEFAULT_V@)
 am__v_OBJCLD_0 = @echo "  OBJCLD  " $@;
 am__v_OBJCLD_1 = 
-SOURCES = $(libsixel_la_SOURCES) $(nodist_libsixel_la_SOURCES)
-DIST_SOURCES = $(am__libsixel_la_SOURCES_DIST)
+SOURCES = $(libfloatlookup_la_SOURCES) $(libsixel_la_SOURCES) \
+	$(nodist_libsixel_la_SOURCES)
+DIST_SOURCES = $(am__libfloatlookup_la_SOURCES_DIST) \
+	$(am__libsixel_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -864,6 +875,7 @@ EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 FILECMD = @FILECMD@
 FILE_CMD = @FILE_CMD@
+FLOAT_LOOKUP_CFLAGS = @FLOAT_LOOKUP_CFLAGS@
 FUZZ_CFLAGS = @FUZZ_CFLAGS@
 FUZZ_LDFLAGS = @FUZZ_LDFLAGS@
 GDK_PIXBUF_BINARY_VERSION = @GDK_PIXBUF_BINARY_VERSION@
@@ -1120,7 +1132,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-fhedt-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-8bit.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-8bit.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-none.h \
@@ -1434,6 +1445,13 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/oklch-lattice256.h \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_2) $(am__append_3) \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4) $(am__append_5)
+
+# Isolate arithmetic flags from every other translation unit.
+@WANT_AMALGAMATED_LIB_FALSE@noinst_LTLIBRARIES = libfloatlookup.la
+@WANT_AMALGAMATED_LIB_FALSE@libfloatlookup_la_SOURCES = $(srcdir)/lookup-vptree-float32.c
+@WANT_AMALGAMATED_LIB_FALSE@libfloatlookup_la_CPPFLAGS = $(libsixel_la_CPPFLAGS)
+@WANT_AMALGAMATED_LIB_FALSE@libfloatlookup_la_CFLAGS = $(libsixel_la_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
+@WANT_AMALGAMATED_LIB_FALSE@FLOAT_LOOKUP_LIB = libfloatlookup.la
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include \
                 -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
@@ -1465,7 +1483,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 @BUILDING_ON_WINDOWS_TRUE@                $(LIBSIXEL_LDFLAGS)
 
 LS_LT_CURRENT = $(word 1,$(subst :, ,$(LS_LTVERSION)))
-libsixel_la_LIBADD = -lm \
+libsixel_la_LIBADD = $(FLOAT_LOOKUP_LIB) -lm \
                 $(LIBCURL_LIBS) \
                 $(LIBFETCH_LIBS) \
                 $(WINHTTP_LIBS) \
@@ -1632,6 +1650,18 @@ clean-libLTLIBRARIES:
 	      sort -u`; \
 	echo rm -f $${locs}; \
 	$(am__rm_f) $${locs}
+
+clean-noinstLTLIBRARIES:
+	-$(am__rm_f) $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	echo rm -f $${locs}; \
+	$(am__rm_f) $${locs}
+
+libfloatlookup.la: $(libfloatlookup_la_OBJECTS) $(libfloatlookup_la_DEPENDENCIES) $(EXTRA_libfloatlookup_la_DEPENDENCIES)
+	$(AM_V_CCLD)$(libfloatlookup_la_LINK) $(am_libfloatlookup_la_rpath) $(libfloatlookup_la_OBJECTS) $(libfloatlookup_la_LIBADD) $(LIBS)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
 	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
@@ -1654,6 +1684,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfloatlookup_la-lookup-vptree-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard.Plo@am__quote@ # am--include-marker
@@ -1769,7 +1800,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-mapfile.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options-registry.Plo@am__quote@ # am--include-marker
@@ -1852,6 +1882,13 @@ $(am__depfiles_remade):
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libfloatlookup_la-lookup-vptree-float32.lo: lookup-vptree-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookup_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookup_la_CFLAGS) $(CFLAGS) -MT libfloatlookup_la-lookup-vptree-float32.lo -MD -MP -MF $(DEPDIR)/libfloatlookup_la-lookup-vptree-float32.Tpo -c -o libfloatlookup_la-lookup-vptree-float32.lo `test -f 'lookup-vptree-float32.c' || echo '$(srcdir)/'`lookup-vptree-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfloatlookup_la-lookup-vptree-float32.Tpo $(DEPDIR)/libfloatlookup_la-lookup-vptree-float32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-vptree-float32.c' object='libfloatlookup_la-lookup-vptree-float32.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookup_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookup_la_CFLAGS) $(CFLAGS) -c -o libfloatlookup_la-lookup-vptree-float32.lo `test -f 'lookup-vptree-float32.c' || echo '$(srcdir)/'`lookup-vptree-float32.c
 
 libsixel_la-output.lo: output.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-output.lo -MD -MP -MF $(DEPDIR)/libsixel_la-output.Tpo -c -o libsixel_la-output.lo `test -f 'output.c' || echo '$(srcdir)/'`output.c
@@ -2027,13 +2064,6 @@ libsixel_la-lookup-vptree-8bit.lo: lookup-vptree-8bit.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-vptree-8bit.c' object='libsixel_la-lookup-vptree-8bit.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-vptree-8bit.lo `test -f 'lookup-vptree-8bit.c' || echo '$(srcdir)/'`lookup-vptree-8bit.c
-
-libsixel_la-lookup-vptree-float32.lo: lookup-vptree-float32.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-vptree-float32.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-vptree-float32.Tpo -c -o libsixel_la-lookup-vptree-float32.lo `test -f 'lookup-vptree-float32.c' || echo '$(srcdir)/'`lookup-vptree-float32.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-vptree-float32.Tpo $(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-vptree-float32.c' object='libsixel_la-lookup-vptree-float32.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-vptree-float32.lo `test -f 'lookup-vptree-float32.c' || echo '$(srcdir)/'`lookup-vptree-float32.c
 
 libsixel_la-palette-heckbert.lo: palette-heckbert.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-heckbert.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-heckbert.Tpo -c -o libsixel_la-palette-heckbert.lo `test -f 'palette-heckbert.c' || echo '$(srcdir)/'`palette-heckbert.c
@@ -3259,10 +3289,11 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	mostlyclean-am
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
+	-rm -f ./$(DEPDIR)/libfloatlookup_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
@@ -3378,7 +3409,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
@@ -3479,6 +3509,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
+	-rm -f ./$(DEPDIR)/libfloatlookup_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
@@ -3594,7 +3625,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-mapfile.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
@@ -3674,19 +3704,20 @@ uninstall-man: uninstall-man5
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am \
 	check-local clean clean-generic clean-libLTLIBRARIES \
-	clean-libtool cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-man5 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-man uninstall-man5
+	clean-libtool clean-noinstLTLIBRARIES cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-man \
+	install-man5 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-libLTLIBRARIES uninstall-man \
+	uninstall-man5
 
 .PRECIOUS: Makefile
 
