@@ -1409,7 +1409,7 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
 }
 
 /* Define ratios in native units, then compensate the histogram's nominal
- * byte scaling. Default norm factors are exactly one, preserving all ties.
+ * byte scaling. CIELAB emphasizes lightness by two in native coordinates.
  * A common ratio multiplier cancels before any squared-error accumulation. */
 static void
 sixel_heckbert_axis_weights(int pixelformat, int method,
@@ -1425,7 +1425,7 @@ sixel_heckbert_axis_weights(int pixelformat, int method,
     perceptual = pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
         pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
         pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    ratios[0] = pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ? 3.0 :
+    ratios[0] = pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ? 2.0 :
         pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32 ? 2.0 : 1.0;
     ratios[1] = ratios[2] = 1.0;
     if (method == SIXEL_LARGE_LUM) {

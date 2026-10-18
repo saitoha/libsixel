@@ -250,7 +250,21 @@ heckbert_policy_check(int scenario)
             : SIXEL_PIXELFORMAT_OKLABFLOAT32;
         policy_sixel_heckbert_axis_weights(format, SIXEL_LARGE_NORM,
             &options, weights);
-        ok = weights[0] == 1.0 && weights[1] == 1.0 && weights[2] == 1.0;
+        /* The histogram scales chromatic Lab axes by their nominal span.
+         * Check native ratios independently for both norm and luminosity. */
+        expected = scenario == 10 ? 1.5 : 1.0;
+        ok = weights[0] == 1.0 && weights[1] == expected &&
+            weights[2] == expected;
+        policy_sixel_heckbert_axis_weights(format, SIXEL_LARGE_LUM,
+            &options, weights);
+        if (scenario == 9) {
+            ok = ok && weights[0] == .2989 && weights[1] == .5866 &&
+                weights[2] == .1145;
+        } else {
+            expected = scenario == 10 ? .75 : .5;
+            ok = ok && weights[0] == 1.0 && weights[1] == expected &&
+                weights[2] == expected;
+        }
         options.weights[0] = 2.0;
         options.weights[1] = options.weights[2] = 1.0;
         policy_sixel_heckbert_axis_weights(format, SIXEL_LARGE_NORM,
