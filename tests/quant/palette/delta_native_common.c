@@ -534,7 +534,7 @@ dn_observe_hint(sixel_lookup_policy_interface_t const *self,
 }
 
 static sixel_lookup_policy_vtbl_t const dn_observer_vtbl = {
-    NULL, NULL, NULL, dn_observe, dn_observe_hint
+    NULL, NULL, NULL, dn_observe, dn_observe_hint, NULL
 };
 
 int

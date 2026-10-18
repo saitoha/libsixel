@@ -133,7 +133,7 @@ clamp_lookup_pixel_hint(sixel_lookup_policy_interface_t const *self,
 }
 
 static sixel_lookup_policy_vtbl_t const clamp_lookup_vtbl = {
-    NULL, NULL, NULL, clamp_lookup_pixel, clamp_lookup_pixel_hint
+    NULL, NULL, NULL, clamp_lookup_pixel, clamp_lookup_pixel_hint, NULL
 };
 
 int

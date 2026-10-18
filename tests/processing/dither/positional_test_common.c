@@ -114,7 +114,7 @@ positional_observe_hint(sixel_lookup_policy_interface_t const *self,
 }
 
 static sixel_lookup_policy_vtbl_t const positional_observer_vtbl = {
-    NULL, NULL, NULL, positional_observe, positional_observe_hint
+    NULL, NULL, NULL, positional_observe, positional_observe_hint, NULL
 };
 
 static void

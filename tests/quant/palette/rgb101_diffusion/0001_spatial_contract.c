@@ -191,7 +191,7 @@ static int
 spatial_residual(spatial_method_t const *method, int p3, int space)
 {
     static sixel_lookup_policy_vtbl_t const vtbl = {
-        NULL, NULL, NULL, spatial_lookup_pixel, spatial_lookup_pixel_hint
+        NULL, NULL, NULL, spatial_lookup_pixel, spatial_lookup_pixel_hint, NULL
     };
     static int const colors[] = {
         SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
