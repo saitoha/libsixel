@@ -160,6 +160,7 @@ parallel_trace(char const *path, int clustering)
 
     file = sixel_compat_fopen(path, "rb");
     if (file == NULL) {
+        perror("open timeline log");
         return 0;
     }
     in_filter = in_controller = worker_count = completed = 0;

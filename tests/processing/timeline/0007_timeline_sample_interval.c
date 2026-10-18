@@ -96,6 +96,7 @@ timeline_0007_read_log(void)
     text = NULL;
     file = sixel_compat_fopen(TIMELINE_0007_LOG_PATH, "rb");
     if (file == NULL) {
+        perror("open timeline log");
         return NULL;
     }
     if (fseek(file, 0L, SEEK_END) == 0) {

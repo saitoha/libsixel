@@ -74,7 +74,7 @@ typedef struct sixel_timeline_writer_storage {
     char *log_path;
     unsigned int next_session_id;
     double clock_origin;
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(LIBSIXEL_OPENVMS)
     char *path;
 #endif
 } sixel_timeline_writer_storage_t;
@@ -207,7 +207,7 @@ sixel_timeline_writer_unlock(sixel_timeline_writer_storage_t *writer)
 #endif
 }
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(LIBSIXEL_OPENVMS)
 static int
 sixel_timeline_writer_save_path_locked(
     sixel_timeline_writer_storage_t *writer,
@@ -266,7 +266,7 @@ sixel_timeline_writer_open_configured_locked(
     if (writer == NULL) {
         return;
     }
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(LIBSIXEL_OPENVMS)
     if (writer->env_checked != 0) {
         sixel_timeline_writer_reopen_locked(writer);
         return;
@@ -287,7 +287,7 @@ sixel_timeline_writer_open_configured_locked(
         return;
     }
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(LIBSIXEL_OPENVMS)
     if (!sixel_timeline_writer_save_path_locked(writer, path)) {
         writer->active = 0;
         return;
@@ -296,7 +296,7 @@ sixel_timeline_writer_open_configured_locked(
     writer->file = sixel_compat_fopen(path, "w");
     if (writer->file == NULL) {
         writer->active = 0;
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(LIBSIXEL_OPENVMS)
         if (writer->path != NULL) {
             free(writer->path);
             writer->path = NULL;
@@ -452,11 +452,11 @@ sixel_timeline_writer_flush(sixel_timeline_writer_t *writer)
             (void)_commit(fd);
         }
 #endif
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(LIBSIXEL_OPENVMS)
         /*
-         * GitHub's MSVC jobs read the JSONL immediately after flush().  Closing
-         * the writer handle gives readers a normal completed file; the next
-         * write reopens it in append mode under the same mutex.
+         * MSVC and OpenVMS readers need a completed file after flush().
+         * Closing also releases the RMS exclusive writer lock. The next
+         * event reopens in append mode under this mutex, retaining sessions.
          */
         (void)fclose(storage->file);
         storage->file = NULL;

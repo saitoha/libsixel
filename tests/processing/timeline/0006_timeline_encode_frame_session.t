@@ -2,6 +2,8 @@
 # Policy: docs/cli/diagnostics.md
 # Pin the timeline session recorded by a direct encode_frame call.
 
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-18
 set -eux
 
 echo "1..1"

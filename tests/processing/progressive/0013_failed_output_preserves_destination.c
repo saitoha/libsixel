@@ -2,6 +2,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
@@ -16,8 +17,9 @@ test_progressive_0013(int argc, char **argv)
     int descriptor;
     int ok;
 
-    (void)argc;
-    (void)argv;
+    if (argc != 2) {
+        return EXIT_FAILURE;
+    }
     encoder = NULL;
     if (sixel_encoder_new(&encoder, NULL) != SIXEL_OK) {
         return EXIT_FAILURE;
@@ -28,14 +30,18 @@ test_progressive_0013(int argc, char **argv)
     previous = encoder->png_output_path;
     descriptor = encoder->outfd;
     revision = encoder->configuration_revision;
-    /* A directory cannot be opened as the requested read/write file. */
+    /* A regular fixture cannot serve as the parent of an output file.
+     * Unlike ".", this does not depend on native directory-name syntax. */
     ok = ok && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                            SIXEL_OPTFLAG_OUTFILE, "."));
+                            SIXEL_OPTFLAG_OUTFILE, argv[1]));
     ok = ok && encoder->output_is_png &&
         encoder->png_output_path == previous && previous != NULL &&
         strcmp(previous, "preserved.png") == 0 &&
         encoder->outfd == descriptor &&
         encoder->configuration_revision == revision;
+    if (!ok) {
+        fprintf(stderr, "failed output changed the retained destination\n");
+    }
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -1,12 +1,15 @@
 #!/bin/sh
 # Verify failed output preserves destination.
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-19
 set -eux
 
 echo "1..1"
 set -v
 
 set +e
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0013_failed_output_preserves_destination"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "progressive/0013_failed_output_preserves_destination" \
+    "${TOP_SRCDIR}/images/snake-grayscale.png/output.six"
 result=$?
 set -e
 test "$result" -ne 77 || {

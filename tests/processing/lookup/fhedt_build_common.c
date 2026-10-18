@@ -33,6 +33,7 @@ fhedt_build_trace(char const *path, int overlap)
 
     file = sixel_compat_fopen(path, "rb");
     if (file == NULL) {
+        perror("open timeline log");
         return EXIT_FAILURE;
     }
     builders = workers = main_finish = early_builder = 0;

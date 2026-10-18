@@ -40,6 +40,7 @@ reclaim_trace(char const *path)
 
     file = sixel_compat_fopen(path, "rb");
     if (file == NULL) {
+        perror("open timeline log");
         return 0;
     }
     main_thread = 0;
