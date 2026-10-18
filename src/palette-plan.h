@@ -132,8 +132,9 @@ typedef struct sixel_palette_binning_state {
  * palette instance owns a copy while generate() is active, so solver retries
  * cannot publish through thread-local pointers to an encoder stack frame.
  */
-/* Per-build Heckbert policy: zero initialization preserves legacy splitting.
- * Ratios are expressed in native color-space units; zero means auto. */
+/* Resolved per-build Heckbert policy: zero selects median/population, while
+ * public defaults set both flags to one (SSE). Ratios use native color-space
+ * units; zero means auto. */
 typedef struct sixel_heckbert_options {
     int cut_sse;
     int order_sse;

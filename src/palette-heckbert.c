@@ -65,6 +65,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "timeline-logger.h"
+#include "loader-common.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
@@ -3664,7 +3665,8 @@ static SIXELSTATUS
 sixel_palette_heckbert_colormap(
     sixel_palette_heckbert_colormap_request_t const *request)
 {
-    sixel_heckbert_options_t defaults = {0, 0, {0.0, 0.0, 0.0}};
+    sixel_heckbert_options_t defaults = {1, 1, {0.0, 0.0, 0.0}};
+    sixel_heckbert_options_t const *options;
     SIXELSTATUS status;
     sixel_palette_t *palette;
     unsigned char const *data;
@@ -3687,6 +3689,7 @@ sixel_palette_heckbert_colormap(
     tupletable2 colorfreqtable;
     unsigned int i;
     unsigned int n;
+    int representative;
 
     status = SIXEL_FALSE;
     colorfreqtable.preserve_extended = 0;
@@ -3697,6 +3700,19 @@ sixel_palette_heckbert_colormap(
         return SIXEL_BAD_ARGUMENT;
     }
     palette = request->palette;
+    options = SIXEL_PALETTE_CONTEXT(palette)->attempt != NULL
+        ? &SIXEL_PALETTE_CONTEXT(palette)->attempt->heckbert : &defaults;
+    /* Direct palette callers have no diffusion state. Use the dithered
+     * default; dither initialization resolves NONE before reaching here. */
+    representative = SIXEL_PALETTE_CONTEXT(palette)->method_for_rep;
+    if (representative == SIXEL_REP_AUTO) {
+        representative = SIXEL_REP_AVERAGE_COLORS;
+    }
+    sixel_trace_topic_message("palette_contract",
+        "LSXHBC1|rep=%d|cut=%s|order=%s|weights=%.17g/%.17g/%.17g",
+        representative, options->cut_sse ? "sse" : "median",
+        options->order_sse ? "sse" : "population",
+        options->weights[0], options->weights[1], options->weights[2]);
     data = request->data;
     length = request->length;
     depth = request->depth;
@@ -3775,7 +3791,7 @@ sixel_palette_heckbert_colormap(
                            SIXEL_PALETTE_STORAGE(palette)
                                ->requested_colors,
                            SIXEL_PALETTE_CONTEXT(palette)->method_for_largest,
-                           SIXEL_PALETTE_CONTEXT(palette)->method_for_rep,
+                           representative,
                            use_reversible,
                            SIXEL_PALETTE_CONTEXT(palette)->final_merge_mode,
                            pixelformat,
@@ -3789,9 +3805,7 @@ sixel_palette_heckbert_colormap(
                            merge_ms,
                            merge_iterate_count,
                            merge_mode,
-                           SIXEL_PALETTE_CONTEXT(palette)->attempt != NULL
-                               ? &SIXEL_PALETTE_CONTEXT(palette)
-                                   ->attempt->heckbert : &defaults);
+                           options);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

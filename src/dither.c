@@ -2555,7 +2555,8 @@ sixel_dither_set_method_for_rep(
     int             /* in */ method_for_rep)
 {
     if (method_for_rep == SIXEL_REP_AUTO) {
-        method_for_rep = SIXEL_REP_CENTER_BOX;
+        method_for_rep = dither->method_for_diffuse == SIXEL_DIFFUSE_NONE
+            ? SIXEL_REP_AVERAGE_PIXELS : SIXEL_REP_AVERAGE_COLORS;
     }
     dither->method_for_rep = method_for_rep;
 }
@@ -2726,8 +2727,14 @@ sixel_dither_initialize_internal(
     palette_request.pixelformat = palette_pixelformat;
     palette_request.requested_colors = (unsigned int)dither->reqcolors;
     palette_request.method_for_largest = method_for_largest_for_palette;
-    /* Preserve AUTO until the builder knows whether Ward actually ran. */
-    palette_request.method_for_rep = method_for_rep;
+    /* Resolve Heckbert representatives from the diffusion selected at build
+     * time, including Ward/Lloyd's final clusters. Other solvers retain their
+     * own objectives. A caller that sets diffusion only after initialize()
+     * uses the object's initial FS policy and does not rebuild its palette. */
+    palette_request.method_for_rep =
+        dither->quantize_model == SIXEL_QUANTIZE_MODEL_AUTO ||
+        dither->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            ? dither->method_for_rep : method_for_rep;
     palette_request.quality_mode = dither->quality_mode;
     palette_request.force_palette = dither->force_palette;
     palette_request.use_reversible = sixel_palette_snap_is_enabled();
@@ -2900,6 +2907,8 @@ sixel_dither_initialize(
     memset(&attempt, 0, sizeof(attempt));
     if (native) {
         dither->standalone_palette_pixelformat = pixelformat;
+        attempt.heckbert.cut_sse = 1;
+        attempt.heckbert.order_sse = 1;
         /* AUTO's unbinned public default is Heckbert, as in the encoder
          * resolver. Scope this effective choice to the one build only. */
         dither->quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;

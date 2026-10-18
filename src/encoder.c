@@ -8675,14 +8675,18 @@ sixel_encoder_prepare_palette(
         }
     }
     build_attempt.heckbert.cut_sse = encoder->heckbert_cut_override
-        ? encoder->heckbert_cut : 0;
+        ? encoder->heckbert_cut : 1;
     build_attempt.heckbert.order_sse = encoder->heckbert_order_override
-        ? encoder->heckbert_order : 0;
+        ? encoder->heckbert_order : 1;
     if (encoder->heckbert_weights_override) {
         memcpy(build_attempt.heckbert.weights, encoder->heckbert_weights,
             sizeof(build_attempt.heckbert.weights));
     }
     build_attempt.quantize_model = effective_quantize_model;
+    /* Resolve through the same setter used for palette application. AUTO
+     * may be resolved again after construction changes the palette size;
+     * both of its outcomes use the dithered representative policy. */
+    sixel_dither_set_diffusion_type(*dither, encoder->method_for_diffuse);
     status = sixel_dither_initialize_with_palette_attempt(
         *dither,
         palette_pixels,
