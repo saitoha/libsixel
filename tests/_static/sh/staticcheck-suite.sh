@@ -54,7 +54,7 @@ run_source_contract_test() {
         echo "not ok 1 - $contract_name requires exactly one Staticcheck owner"
         return 1
     }
-    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/$contract_name" \
+    ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/$contract_name" \
         TOP_SRCDIR="$TOP_SRCDIR" TOP_BUILDDIR="$TOP_BUILDDIR" \
         sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" "$contract_path"
 }
