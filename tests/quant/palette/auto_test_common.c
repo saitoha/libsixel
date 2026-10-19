@@ -173,10 +173,8 @@ test_auto_palette(int mode, int space)
             goto end;
         }
         if (byte_work) {
-            if (strstr(capture.data, mode == 14
-                    ? ";2;13;13;13" : ";2;14;14;14") == NULL ||
-                    strstr(capture.data, mode == 14
-                    ? ";2;88;88;88" : ";2;89;89;89") == NULL) {
+            if (strstr(capture.data, ";2;13;13;13") == NULL ||
+                    strstr(capture.data, ";2;88;88;88") == NULL) {
                 goto end;
             }
         } else if (mode == 12) {

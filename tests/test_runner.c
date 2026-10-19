@@ -2218,6 +2218,13 @@ int test_policy_heckbert_api_explicit_center(int argc, char **argv);
 int test_policy_heckbert_api_ward_average(int argc, char **argv);
 int test_policy_heckbert_api_ward_histogram(int argc, char **argv);
 int test_policy_heckbert_reassignment(int argc, char **argv);
+int test_heckbert_bucket_rgb_mean(int argc, char **argv);
+int test_heckbert_bucket_rgba_mean(int argc, char **argv);
+int test_heckbert_bucket_gray_mean(int argc, char **argv);
+int test_heckbert_bucket_none_exact(int argc, char **argv);
+int test_heckbert_bucket_reversible_mean(int argc, char **argv);
+int test_heckbert_bucket_fractional_axis(int argc, char **argv);
+int test_heckbert_bucket_sparse_rgba(int argc, char **argv);
 int test_policy_heckbert_center_half(int argc, char **argv);
 int test_policy_heckbert_average_half(int argc, char **argv);
 int test_policy_heckbert_histogram_half(int argc, char **argv);
@@ -7666,6 +7673,20 @@ static test_entry_t const test_entries[] = {
       test_policy_heckbert_api_ward_average },
     { "palette/heckbert_policy/api_ward_histogram",
       test_policy_heckbert_api_ward_histogram },
+    { "palette/heckbert_policy/bucket_rgb_mean",
+      test_heckbert_bucket_rgb_mean },
+    { "palette/heckbert_policy/bucket_rgba_mean",
+      test_heckbert_bucket_rgba_mean },
+    { "palette/heckbert_policy/bucket_gray_mean",
+      test_heckbert_bucket_gray_mean },
+    { "palette/heckbert_policy/bucket_none_exact",
+      test_heckbert_bucket_none_exact },
+    { "palette/heckbert_policy/bucket_reversible_mean",
+      test_heckbert_bucket_reversible_mean },
+    { "palette/heckbert_policy/bucket_fractional_axis",
+      test_heckbert_bucket_fractional_axis },
+    { "palette/heckbert_policy/bucket_sparse_rgba",
+      test_heckbert_bucket_sparse_rgba },
     { "palette/heckbert_policy/center_half",
       test_policy_heckbert_center_half },
     { "palette/heckbert_policy/average_half",

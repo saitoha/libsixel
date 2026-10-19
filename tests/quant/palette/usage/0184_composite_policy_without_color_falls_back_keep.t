@@ -17,7 +17,7 @@ set +x
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-minimal-1x1-rgba.png"
 esc="$(printf '\033')"
-expected="${esc}P0;1q\"1;1;1;1#0;2;1;1;1${esc}\\"
+expected="${esc}P0;1q\"1;1;1;1#0;2;0;0;0${esc}\\"
 
 composite_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
     --alpha-policy=composite \

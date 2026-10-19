@@ -20,11 +20,11 @@ sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-case "${sixel_output}" in *#0\;2\;60\;1\;1*) true ;; *) false ;; esac || {
+case "${sixel_output}" in *#0\;2\;60\;0\;0*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "mapfile SIXEL palette slot range changed"
     exit 0
 }
-case "${sixel_output}" in *#7\;2\;1\;1\;1*) true ;; *) false ;; esac || {
+case "${sixel_output}" in *#7\;2\;0\;0\;0*) true ;; *) false ;; esac || {
     echo "not ok" 1 - "mapfile SIXEL palette slot range changed"
     exit 0
 }

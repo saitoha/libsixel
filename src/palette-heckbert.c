@@ -86,8 +86,8 @@ int palette_test_kmeans_float32_merge_scaling(void);
  * Tuple table primitives live exclusively inside the Heckbert implementation.
  * Exposing them here avoids leaking histogram internals into palette.c.
  */
-/* Double tuples also carry native float input. Legacy histogram coordinates
- * remain integral; their representative rounding is explicit below. */
+/* Double tuples retain byte-bucket means as well as native float input.
+ * Only final byte representatives are rounded, after cluster selection. */
 typedef double sample;
 typedef sample *tuple;
 
@@ -399,32 +399,9 @@ histogram_control_make_for_policy(unsigned int depth, int lut_policy)
     return control;
 }
 
-/*
- * Reconstruct an 8-bit channel value from its quantized representation.  The
- * behaviour mirrors Netpbm's midpoint rounding so that palette synthesis and
- * lookup tables agree on the representative colour for each bucket.
- */
-static unsigned int
-histogram_reconstruct(unsigned int quantized,
-                      struct histogram_control const *control)
-{
-    unsigned int value;
-
-    value = quantized << control->channel_shift;
-    if (quantized == control->channel_mask) {
-        value = 255U;
-    } else {
-        if (control->channel_shift > 0U) {
-            value |= (1U << (control->channel_shift - 1U));
-        }
-    }
-    if (value > 255U) {
-        value = 255U;
-    }
-
-    return value;
-}
-
+/* Bucket keys group nearby samples; they do not encode representative colors.
+ * Keep the reversible grouping offset to preserve its occupied-cell contract.
+ * Representatives are computed from the actual samples in each bucket. */
 static unsigned int
 histogram_quantize(unsigned int sample8,
                    struct histogram_control const *control)
@@ -568,13 +545,56 @@ histogram_pack_color_from_lut(unsigned char const *data,
     return packed;
 }
 
+/* Grow only the occupied-cell statistics. Each slot stores an exact count
+ * followed by depth channel sums; the dense map stores only slot + 1, with
+ * zero reserved for an unseen bucket. Slot order is first occurrence order,
+ * the same order formerly recorded by refmap. The byte-length bound keeps
+ * every count and 255 * count safely within uint64_t. */
+static SIXELSTATUS
+histogram_add_slot(uint64_t **moments,
+                    size_t *capacity,
+                    unsigned int slot,
+                    unsigned int depth,
+                    size_t limit,
+                    sixel_allocator_t *allocator)
+{
+    size_t grown;
+    size_t stride;
+    uint64_t *replacement;
+
+    stride = (size_t)depth + 1U;
+    if ((size_t)slot == *capacity) {
+        grown = *capacity == 0U ? 256U : *capacity * 2U;
+        if (grown > limit) {
+            grown = limit;
+        }
+        if (grown <= (size_t)slot ||
+                grown > SIZE_MAX / stride / sizeof(uint64_t)) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        replacement = sixel_allocator_realloc(allocator, *moments,
+            grown * stride * sizeof(uint64_t));
+        if (replacement == NULL) {
+            sixel_helper_set_additional_message(
+                "unable to allocate occupied histogram statistics.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        *moments = replacement;
+        *capacity = grown;
+    }
+    memset(*moments + (size_t)slot * stride, 0,
+        stride * sizeof(uint64_t));
+    return SIXEL_OK;
+}
+
 /*
  * Construct the histogram consumed by the median-cut splitter.  The control
  * flow is intentionally verbose:
  *
  *   1. Consume every byte pixel supplied by upstream sampling.
  *   2. Quantize each pixel into the dense histogram space.
- *   3. Build a sparse reference map and reconstruct representative tuples.
+ *   3. Accumulate exact counts/sums only for occupied cells.
+ *   4. Export fractional means, independently of saturated tuple weights.
  */
 static SIXELSTATUS
 sixel_lut_build_histogram(unsigned char const *data,
@@ -590,15 +610,16 @@ sixel_lut_build_histogram(unsigned char const *data,
 {
     SIXELSTATUS status;
     typedef uint32_t unit_t;
-    unit_t *histogram;
-    unit_t *refmap;
-    unit_t *ref;
+    unit_t *slotmap;
+    uint64_t *moments;
+    uint64_t *moment;
+    size_t capacity;
+    size_t limit;
+    unsigned int slots;
+    unit_t slot;
     unsigned int bucket_index;
     unsigned int step;
     size_t hist_size;
-    unit_t bucket_value;
-    unsigned int component;
-    unsigned int reconstructed;
     struct histogram_control control;
     unsigned int depth_u;
     unsigned char reversible_pixel[sixel_palette_heckbert_max_channels];
@@ -613,8 +634,10 @@ sixel_lut_build_histogram(unsigned char const *data,
     int use_fast_pack;
 
     status = SIXEL_FALSE;
-    histogram = NULL;
-    refmap = NULL;
+    slotmap = NULL;
+    moments = NULL;
+    capacity = 0U;
+    slots = 0U;
     bucket_input = NULL;
     if (colorfreqtable == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -650,6 +673,8 @@ sixel_lut_build_histogram(unsigned char const *data,
      * The encoder now owns sampling, so the histogram walks every supplied
      * pixel.  The stride stays aligned to the caller's layout to avoid losing
      * information after the upstream down-sampler trimmed the dataset.
+     * Stop at the last complete pixel without adding stride to the loop
+     * index in the comparison: that addition can wrap at UINT_MAX.
      */
     step = pixel_stride;
 
@@ -671,23 +696,22 @@ sixel_lut_build_histogram(unsigned char const *data,
         use_fast_pack = 1;
     }
     hist_size = histogram_dense_size(depth_u, &control);
-    histogram = (unit_t *)sixel_allocator_calloc(allocator,
-                                                 hist_size,
-                                                 sizeof(unit_t));
-    if (histogram == NULL) {
+    if (hist_size > SIZE_MAX / sizeof(unit_t)) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+    slotmap = (unit_t *)sixel_allocator_calloc(allocator,
+                                                hist_size,
+                                                sizeof(unit_t));
+    if (slotmap == NULL) {
         sixel_helper_set_additional_message(
-            "unable to allocate memory for histogram.");
+            "unable to allocate memory for histogram slot map.");
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
-    ref = refmap = (unit_t *)sixel_allocator_malloc(allocator,
-                                                    hist_size
-                                                    * sizeof(unit_t));
-    if (refmap == NULL) {
-        sixel_helper_set_additional_message(
-            "unable to allocate memory for lookup table.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
+    limit = length / pixel_stride;
+    if (limit > hist_size) {
+        limit = hist_size;
     }
 
     /*
@@ -697,31 +721,50 @@ sixel_lut_build_histogram(unsigned char const *data,
     if (!use_reversible
             && use_fast_pack
             && depth_u == 3U) {
-        for (i = 0U; i + pixel_stride <= length; i += step) {
+        for (i = 0U; i < length - length % pixel_stride; i += step) {
             bucket_index = histogram_pack_color_fast_rgb(data + i,
                                                          packed_lut);
-            if (histogram[bucket_index] == 0U) {
-                *ref++ = bucket_index;
+            slot = slotmap[bucket_index];
+            if (slot == 0U) {
+                status = histogram_add_slot(&moments, &capacity, slots,
+                    depth_u, limit, allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto cleanup;
+                }
+                slot = ++slots;
+                slotmap[bucket_index] = slot;
             }
-            if (histogram[bucket_index] < UINT32_MAX) {
-                histogram[bucket_index]++;
-            }
+            moment = moments + (size_t)(slot - 1U) * 4U;
+            ++moment[0];
+            moment[1] += data[i + 0U];
+            moment[2] += data[i + 1U];
+            moment[3] += data[i + 2U];
         }
     } else if (!use_reversible
                && use_fast_pack
                && depth_u == 4U) {
-        for (i = 0U; i + pixel_stride <= length; i += step) {
+        for (i = 0U; i < length - length % pixel_stride; i += step) {
             bucket_index = histogram_pack_color_fast_rgba(data + i,
                                                           packed_lut);
-            if (histogram[bucket_index] == 0U) {
-                *ref++ = bucket_index;
+            slot = slotmap[bucket_index];
+            if (slot == 0U) {
+                status = histogram_add_slot(&moments, &capacity, slots,
+                    depth_u, limit, allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto cleanup;
+                }
+                slot = ++slots;
+                slotmap[bucket_index] = slot;
             }
-            if (histogram[bucket_index] < UINT32_MAX) {
-                histogram[bucket_index]++;
-            }
+            moment = moments + (size_t)(slot - 1U) * 5U;
+            ++moment[0];
+            moment[1] += data[i + 0U];
+            moment[2] += data[i + 1U];
+            moment[3] += data[i + 2U];
+            moment[4] += data[i + 3U];
         }
     } else {
-        for (i = 0U; i + pixel_stride <= length; i += step) {
+        for (i = 0U; i < length - length % pixel_stride; i += step) {
             bucket_input = data + i;
             if (use_reversible) {
                 for (plane = 0U; plane < depth_u; ++plane) {
@@ -746,40 +789,42 @@ sixel_lut_build_histogram(unsigned char const *data,
                                                              bits,
                                                              quantized_lut);
             }
-            if (histogram[bucket_index] == 0U) {
-                *ref++ = bucket_index;
+            slot = slotmap[bucket_index];
+            if (slot == 0U) {
+                status = histogram_add_slot(&moments, &capacity, slots,
+                    depth_u, limit, allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto cleanup;
+                }
+                slot = ++slots;
+                slotmap[bucket_index] = slot;
             }
-            if (histogram[bucket_index] < UINT32_MAX) {
-                histogram[bucket_index]++;
+            moment = moments + (size_t)(slot - 1U) * (depth_u + 1U);
+            ++moment[0];
+            for (plane = 0U; plane < depth_u; ++plane) {
+                moment[plane + 1U] += bucket_input[plane];
             }
         }
     }
 
-    colorfreqtable->size = (unsigned int)(ref - refmap);
-    status = alloctupletable(&colorfreqtable->table,
-                             depth,
-                             (unsigned int)(ref - refmap),
-                             allocator);
+    colorfreqtable->size = slots;
+    status = alloctupletable(&colorfreqtable->table, depth, slots, allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    for (i = 0U; i < colorfreqtable->size; ++i) {
-        bucket_value = refmap[i];
-        if (histogram[bucket_value] > 0U) {
-            colorfreqtable->table[i]->value = histogram[bucket_value];
-            for (n = 0U; n < depth; ++n) {
-                component = (unsigned int)
-                    ((bucket_value >> (n * control.channel_bits))
-                     & control.channel_mask);
-                reconstructed = histogram_reconstruct(component,
-                                                      &control);
-                if (use_reversible) {
-                    reconstructed =
-                        (unsigned int)sixel_palette_reversible_value(
-                            reconstructed);
-                }
-                colorfreqtable->table[i]->tuple[depth - 1U - n]
-                    = (sample)reconstructed;
+    for (i = 0U; i < slots; ++i) {
+        moment = moments + (size_t)i * (depth_u + 1U);
+        colorfreqtable->table[i]->value = moment[0] > UINT32_MAX
+            ? UINT32_MAX : (unsigned int)moment[0];
+        for (n = 0U; n < depth; ++n) {
+            colorfreqtable->table[i]->tuple[n]
+                = (sample)moment[n + 1U] / (sample)moment[0];
+            if (use_reversible) {
+                /* Average the snapped input, then restore its tone grid.
+                 * Rounding here is part of reversible mapping only. */
+                colorfreqtable->table[i]->tuple[n]
+                    = sixel_palette_reversible_value((unsigned int)floor(
+                        colorfreqtable->table[i]->tuple[n] + 0.5));
             }
         }
     }
@@ -788,8 +833,8 @@ sixel_lut_build_histogram(unsigned char const *data,
     status = SIXEL_OK;
 
 cleanup:
-    sixel_allocator_free(allocator, refmap);
-    sixel_allocator_free(allocator, histogram);
+    sixel_allocator_free(allocator, moments);
+    sixel_allocator_free(allocator, slotmap);
 
     return status;
 }
@@ -1259,6 +1304,7 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
     struct tupleint const *entry;
     unsigned int weight;
     unsigned int axis_value;
+    sample value;
 
     for (plane = 0U; plane < depth; ++plane) {
         minval[plane] = colorfreqtable.table[boxStart]->tuple[plane];
@@ -1282,8 +1328,6 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
             *total_weight += (unsigned long)weight;
         }
         for (plane = 0U; plane < depth; ++plane) {
-            sample value;
-
             value = entry->tuple[plane];
             if (value < minval[plane]) {
                 minval[plane] = value;
@@ -1302,9 +1346,66 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
     }
 }
 
+/* Restore full numeric order inside an integer-axis bucket. A heap avoids
+ * quadratic work for heavily occupied buckets and needs no extra workspace
+ * or global comparator state. Buckets containing one coordinate retain their
+ * existing permutation, including the integral lookup-policy=none path. */
+static void
+sortAxisFractions(tupletable entries, unsigned int count, unsigned int axis)
+{
+    unsigned int i;
+    unsigned int root;
+    unsigned int child;
+    unsigned int end;
+    unsigned int start;
+    struct tupleint *entry;
+    int differs;
+
+    if (count < 2U) {
+        return;
+    }
+    differs = 0;
+    for (i = 1U; i < count; ++i) {
+        if (entries[i]->tuple[axis] != entries[0]->tuple[axis]) {
+            differs = 1;
+            break;
+        }
+    }
+    if (!differs) {
+        return;
+    }
+    start = count / 2U;
+    end = count;
+    while (end > 1U) {
+        if (start > 0U) {
+            --start;
+            entry = entries[start];
+        } else {
+            --end;
+            entry = entries[end];
+            entries[end] = entries[0];
+        }
+        root = start;
+        while (root < end / 2U) {
+            child = root * 2U + 1U;
+            if (child + 1U < end && entries[child]->tuple[axis]
+                    < entries[child + 1U]->tuple[axis]) {
+                ++child;
+            }
+            if (entry->tuple[axis] >= entries[child]->tuple[axis]) {
+                break;
+            }
+            entries[root] = entries[child];
+            root = child;
+        }
+        entries[root] = entry;
+    }
+}
+
 /*
  * Reorder tuples by one 8-bit axis using an in-place bucket permutation.
- * This replaces O(n log n) qsort for norm/lum splits with O(n + 256) work.
+ * The coarse permutation takes O(n + 256) work; fractional means sharing
+ * an integer coordinate then receive a bounded in-place comparison sort.
  */
 static SIXELSTATUS
 sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
@@ -1375,7 +1476,7 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
             }
         }
     }
-    if (boxSize == 0U || min_bucket >= max_bucket) {
+    if (boxSize < 2U) {
         return SIXEL_OK;
     }
 
@@ -1403,6 +1504,12 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
             colorfreqtable.table[index] = swapped;
             bucket_next[axis_value] += 1U;
         }
+    }
+
+    for (bucket = min_bucket; bucket <= max_bucket; ++bucket) {
+        sortAxisFractions(colorfreqtable.table
+            + bucket_end[bucket] - bucket_count[bucket],
+            bucket_count[bucket], axis);
     }
 
     return SIXEL_OK;
@@ -1822,11 +1929,9 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
     return SIXEL_OK;
 }
 
-/* Byte tuples are integers and total population fits unsigned int. Their
- * sums are below 255 * UINT_MAX, exactly representable in double. The
- * nearest non-half mean is at least 1/(2*UINT_MAX) from a half, comfortably
- * above division roundoff here. floor(mean + 0.5) therefore agrees with
- * exact integer half-up rounding. Native float tuples bypass rounding. */
+/* Bucket means remain fractional through partitioning and representative
+ * selection. Round only the resulting byte representative, with exact halves
+ * upward; native float tuples retain their fractions and extended range. */
 static void
 centerBox(unsigned int boxStart,
           unsigned int boxSize,
@@ -1837,14 +1942,13 @@ centerBox(unsigned int boxStart,
     unsigned int plane;
     sample minval;
     sample maxval;
+    sample v;
     unsigned int i;
 
     for (plane = 0U; plane < depth; ++plane) {
         minval = colorfreqtable.table[boxStart]->tuple[plane];
         maxval = minval;
         for (i = 1U; i < boxSize; ++i) {
-            sample v;
-
             v = colorfreqtable.table[boxStart + i]->tuple[plane];
             if (v < minval) {
                 minval = v;
@@ -1900,6 +2004,7 @@ averagePixels(unsigned int boxStart,
     unsigned int n;
     unsigned int plane;
     unsigned int i;
+    sample sum;
 
     n = 0U;
     for (i = 0U; i < boxSize; ++i) {
@@ -1907,8 +2012,6 @@ averagePixels(unsigned int boxStart,
     }
 
     for (plane = 0U; plane < depth; ++plane) {
-        sample sum;
-
         sum = 0;
         for (i = 0U; i < boxSize; ++i) {
             sum += colorfreqtable.table[boxStart + i]->tuple[plane]
@@ -4031,8 +4134,10 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                             (int)plane, (float)component);
                     continue;
                 }
+                /* The few-colors shortcut also exports bucket means. */
                 SIXEL_PALETTE_STORAGE(palette)->entries[index * depth + plane]
-                    = (unsigned char)colormap.table[index]->tuple[plane];
+                    = (unsigned char)floor(
+                        colormap.table[index]->tuple[plane] + 0.5);
             }
         }
     }

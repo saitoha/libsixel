@@ -18,7 +18,7 @@ mapfile_image="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-no-netscape-2fra
 expected_palette='JASC-PAL
 0100
 1
-255 2 2'
+255 0 0'
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! \

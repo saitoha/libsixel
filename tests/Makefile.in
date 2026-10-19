@@ -2765,6 +2765,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.c \
 	quant/palette/heckbert_policy/0018_heckbert_order_sse.c \
 	quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c \
+	quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c \
+	quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c \
+	quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c \
+	quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c \
+	quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c \
+	quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c \
+	quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c \
 	quant/palette/heckbert_policy/heckbert_policy_common.c \
 	quant/palette/heckbert_policy/heckbert_defaults_common.c \
 	quant/palette/heckbert_policy/0033_heckbert_api_initial.c \
@@ -6483,6 +6490,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0017_heckbert_sse_float_pca.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0018_heckbert_order_sse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0032_heckbert_lloyd_reassignment.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-heckbert_policy_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-heckbert_defaults_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/heckbert_policy/test_runner-0033_heckbert_api_initial.$(OBJEXT) \
@@ -11059,6 +11073,13 @@ am__depfiles_remade =  \
 	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0036_heckbert_api_explicit_center.Po \
 	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0037_heckbert_api_ward_average.Po \
 	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0038_heckbert_api_ward_histogram.Po \
+	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Po \
+	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Po \
+	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Po \
+	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Po \
+	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Po \
+	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Po \
+	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Po \
 	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_defaults_common.Po \
 	quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_policy_common.Po \
 	quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Po \
@@ -14026,6 +14047,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_HECKBERT_SSE_FLOAT_PCA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_HECKBERT_ORDER_SSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_HECKBERT_LLOYD_REASSIGNMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_HECKBERT_BUCKET_RGB_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_HECKBERT_BUCKET_RGBA_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_HECKBERT_BUCKET_GRAY_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_HECKBERT_BUCKET_NONE_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_HECKBERT_BUCKET_REVERSIBLE_MEAN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_HECKBERT_BUCKET_FRACTIONAL_AXIS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_HECKBERT_BUCKET_SPARSE_RGBA \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HECKBERT_POLICY_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_HECKBERT_DEFAULTS_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_HECKBERT_API_INITIAL \
@@ -18506,6 +18534,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0018_heckbert_order_sse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/heckbert_policy_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/heckbert_defaults_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/heckbert_policy/0033_heckbert_api_initial.c \
@@ -27983,6 +28018,27 @@ quant/palette/heckbert_policy/test_runner-0018_heckbert_order_sse.$(OBJEXT):  \
 quant/palette/heckbert_policy/test_runner-0032_heckbert_lloyd_reassignment.$(OBJEXT):  \
 	quant/palette/heckbert_policy/$(am__dirstamp) \
 	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
+quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.$(OBJEXT):  \
+	quant/palette/heckbert_policy/$(am__dirstamp) \
+	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
+quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.$(OBJEXT):  \
+	quant/palette/heckbert_policy/$(am__dirstamp) \
+	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
+quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.$(OBJEXT):  \
+	quant/palette/heckbert_policy/$(am__dirstamp) \
+	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
+quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.$(OBJEXT):  \
+	quant/palette/heckbert_policy/$(am__dirstamp) \
+	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
+quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.$(OBJEXT):  \
+	quant/palette/heckbert_policy/$(am__dirstamp) \
+	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
+quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.$(OBJEXT):  \
+	quant/palette/heckbert_policy/$(am__dirstamp) \
+	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
+quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.$(OBJEXT):  \
+	quant/palette/heckbert_policy/$(am__dirstamp) \
+	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
 quant/palette/heckbert_policy/test_runner-heckbert_policy_common.$(OBJEXT):  \
 	quant/palette/heckbert_policy/$(am__dirstamp) \
 	quant/palette/heckbert_policy/$(DEPDIR)/$(am__dirstamp)
@@ -35264,6 +35320,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0036_heckbert_api_explicit_center.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0037_heckbert_api_ward_average.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0038_heckbert_api_ward_histogram.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_defaults_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_policy_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/icc_output/$(DEPDIR)/test_runner-0001_icc_output.Po@am__quote@ # am--include-marker
@@ -71737,6 +71800,104 @@ quant/palette/heckbert_policy/test_runner-0032_heckbert_lloyd_reassignment.obj: 
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c' object='quant/palette/heckbert_policy/test_runner-0032_heckbert_lloyd_reassignment.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0032_heckbert_lloyd_reassignment.obj `if test -f 'quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c'; fi`
+
+quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.o: quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.o `test -f 'quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c' object='quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.o `test -f 'quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c
+
+quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.obj: quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.obj -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.obj `if test -f 'quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0069_heckbert_bucket_rgb_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c' object='quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0069_heckbert_bucket_rgb_mean.obj `if test -f 'quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c'; fi`
+
+quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.o: quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.o `test -f 'quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c' object='quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.o `test -f 'quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c
+
+quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.obj: quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.obj -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.obj `if test -f 'quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0070_heckbert_bucket_rgba_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c' object='quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0070_heckbert_bucket_rgba_mean.obj `if test -f 'quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c'; fi`
+
+quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.o: quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.o `test -f 'quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c' object='quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.o `test -f 'quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c
+
+quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.obj: quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.obj -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.obj `if test -f 'quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0071_heckbert_bucket_gray_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c' object='quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0071_heckbert_bucket_gray_mean.obj `if test -f 'quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c'; fi`
+
+quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.o: quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Tpo -c -o quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.o `test -f 'quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c' object='quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.o `test -f 'quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c
+
+quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.obj: quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.obj -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Tpo -c -o quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.obj `if test -f 'quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0072_heckbert_bucket_none_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c' object='quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0072_heckbert_bucket_none_exact.obj `if test -f 'quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c'; fi`
+
+quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.o: quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.o `test -f 'quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c' object='quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.o `test -f 'quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c
+
+quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.obj: quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.obj -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Tpo -c -o quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.obj `if test -f 'quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0073_heckbert_bucket_reversible_mean.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c' object='quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0073_heckbert_bucket_reversible_mean.obj `if test -f 'quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c'; fi`
+
+quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.o: quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Tpo -c -o quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.o `test -f 'quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c' object='quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.o `test -f 'quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c
+
+quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.obj: quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.obj -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Tpo -c -o quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.obj `if test -f 'quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0074_heckbert_bucket_fractional_axis.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c' object='quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0074_heckbert_bucket_fractional_axis.obj `if test -f 'quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c'; fi`
+
+quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.o: quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Tpo -c -o quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.o `test -f 'quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c' object='quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.o `test -f 'quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c
+
+quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.obj: quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.obj -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Tpo -c -o quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.obj `if test -f 'quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Tpo quant/palette/heckbert_policy/$(DEPDIR)/test_runner-0075_heckbert_bucket_sparse_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c' object='quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/heckbert_policy/test_runner-0075_heckbert_bucket_sparse_rgba.obj `if test -f 'quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c'; then $(CYGPATH_W) 'quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c'; fi`
 
 quant/palette/heckbert_policy/test_runner-heckbert_policy_common.o: quant/palette/heckbert_policy/heckbert_policy_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/heckbert_policy/test_runner-heckbert_policy_common.o -MD -MP -MF quant/palette/heckbert_policy/$(DEPDIR)/test_runner-heckbert_policy_common.Tpo -c -o quant/palette/heckbert_policy/test_runner-heckbert_policy_common.o `test -f 'quant/palette/heckbert_policy/heckbert_policy_common.c' || echo '$(srcdir)/'`quant/palette/heckbert_policy/heckbert_policy_common.c

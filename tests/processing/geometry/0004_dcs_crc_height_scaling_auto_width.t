@@ -11,7 +11,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-expected="3871514854 39"
+# The default source register is gray 204: exact mean emits 80 percent.
+expected="2131974829 39"
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 source_sixel="${ARTIFACT_LOCAL_DIR}/dcs-height-auto-width-input.sixel"

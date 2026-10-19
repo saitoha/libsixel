@@ -85,6 +85,9 @@ test_progressive_presentation_case(int mode)
             "apng_8x8_libpng_default_image_first_valid.png";
     }
     if (mode == 116) {
+        /* A one-color budget leaves a real repair residual even when the
+         * source primaries are represented by exact histogram means. */
+        PRESENT_REQUIRE(sixel_encoder_setopt(encoder, 'p', "1") == SIXEL_OK);
         PRESENT_REQUIRE(sixel_encoder_setopt(encoder, 'Z', "delta:P1")
             == SIXEL_OK);
         PRESENT_REQUIRE(sixel_encoder_setopt(encoder, 'g', NULL) == SIXEL_OK);
@@ -151,9 +154,12 @@ test_progressive_presentation_case(int mode)
         /* Disposal=3 restores the earlier red image before the blue patch.
          * A raw selected subframe would lose the retained red foreground. */
         PRESENT_REQUIRE(width == 8 && height == 8);
-        PRESENT_REQUIRE(pixels[0] == 255 && pixels[3] == 255);
-        PRESENT_REQUIRE(pixels[(3 * 8 + 2) * 4 + 2] == 255 &&
+        PRESENT_REQUIRE(pixels[3] == 255 &&
             pixels[(3 * 8 + 2) * 4 + 3] == 255);
+        if (mode != 116) {
+            PRESENT_REQUIRE(pixels[0] == 255 &&
+                pixels[(3 * 8 + 2) * 4 + 2] == 255);
+        }
         PRESENT_REQUIRE(pixels[(7 * 8 + 7) * 4 + 3] == 0);
     }
     ok = 1;

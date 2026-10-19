@@ -106,6 +106,8 @@ occupied histogram cells
     one representative per leaf
 ```
 
+On the byte path, each occupied histogram cell retains the mean of the actual input samples assigned to that cell. Exact 64-bit counts and channel sums are stored only for occupied cells, in first-occurrence order; the mean uses the unsaturated count independently of the capped histogram weight. Fractional means survive box bounds, axis ordering, representative selection and Ward statistics until final byte rounding. `--lookup-policy=none` gives every distinct byte color its own cell. Reversible input mapping precedes binning and accumulation, and each resulting mean is projected back onto the reversible tone grid.
+
 The traditional split direction is a channel with a large range. libsixel can
 also choose a luminance-oriented direction or estimate a principal component
 from the weighted covariance matrix. The representative of a leaf may be its
@@ -117,7 +119,7 @@ The `compat`, `speed`, and `quality` profiles fill only unspecified solver setti
 
 The independent [`-F` final merge policy](../merge-policy/README.md) explains the oversplit size, Ward reduction criterion, optional Lloyd polishing, quantizer interactions, and measured cost and quality. It is a post-solver policy even when a `-Q` profile supplies its defaults.
 
-If splits remain reasonably balanced, each occupied histogram cell participates in approximately `log K` partition levels, giving usual `O(S log K)` splitting work. Repeatedly peeling off a very small box can reach `O(S K)`. Histogram clearing and ingestion add `Theta(N + B)`, where `B` is the number of addressable histogram cells. PCA median selection is normally linear per box, but a fallback may sort. SSE cuts fully sort PCA/native-float ranges in `O(S log S)` per box before their linear scan, while byte channel sorts use buckets. The balanced bound is therefore not a hard bound for every path.
+If splits remain reasonably balanced, each occupied histogram cell participates in approximately `log K` partition levels, giving usual `O(S log K)` splitting work. Repeatedly peeling off a very small box can reach `O(S K)`. Histogram clearing and ingestion add `Theta(N + B)`, where `B` is the number of addressable histogram cells. PCA median selection is normally linear per box, but a fallback may sort. SSE cuts fully sort PCA/native-float ranges in `O(S log S)` per box before their linear scan, while byte channel sorts first use integer buckets and then sort fractional means within each bucket. The balanced bound is therefore not a hard bound for every path.
 
 Median cut is deterministic for fixed inputs and settings, but it has no general guarantee of minimizing squared error or maximum radius. Its appeal is bounded work, balanced coverage of occupied regions, and compatibility with the quantizer descended from Netpbm. The original algorithm and design tradeoff are described by Heckbert in [Color Image Quantization for Frame Buffer Display](https://publications.ri.cmu.edu/color-image-quantization-for-frame-buffer-display).
 
@@ -763,6 +765,31 @@ For the surrounding data flow, start with
 | HQ-32 | Three sub-byte source colors reduced to two entries keep requested FS diffusion active. | [tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t](../../../../tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t) |
 | HQ-33 | Repeated colors retain their population-weighted mean and leave source bytes unchanged within a compact allocation budget. | [tests/quant/palette/heckbert_float/0033_heckbert_repeated_population.t](../../../../tests/quant/palette/heckbert_float/0033_heckbert_repeated_population.t) |
 | HQ-34 | Repeated sub-byte colors remain distinct, signed zeros share one histogram color, and borrowed source bytes stay unchanged. | [tests/quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.t](../../../../tests/quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.t) |
+| HQ-35 | Uniform byte gray 0 emits 0 percent with lookup auto. | [tests/quant/palette/heckbert_float/0035_heckbert_byte_gray_000_auto.t](../../../../tests/quant/palette/heckbert_float/0035_heckbert_byte_gray_000_auto.t) |
+| HQ-36 | Uniform byte gray 51 emits 20 percent with lookup auto. | [tests/quant/palette/heckbert_float/0036_heckbert_byte_gray_051_auto.t](../../../../tests/quant/palette/heckbert_float/0036_heckbert_byte_gray_051_auto.t) |
+| HQ-37 | Uniform byte gray 90 emits 35 percent with lookup auto. | [tests/quant/palette/heckbert_float/0037_heckbert_byte_gray_090_auto.t](../../../../tests/quant/palette/heckbert_float/0037_heckbert_byte_gray_090_auto.t) |
+| HQ-38 | Uniform byte gray 128 emits 50 percent with lookup auto. | [tests/quant/palette/heckbert_float/0038_heckbert_byte_gray_128_auto.t](../../../../tests/quant/palette/heckbert_float/0038_heckbert_byte_gray_128_auto.t) |
+| HQ-39 | Uniform byte gray 204 emits 80 percent with lookup auto. | [tests/quant/palette/heckbert_float/0039_heckbert_byte_gray_204_auto.t](../../../../tests/quant/palette/heckbert_float/0039_heckbert_byte_gray_204_auto.t) |
+| HQ-40 | Uniform byte gray 255 emits 100 percent with lookup auto. | [tests/quant/palette/heckbert_float/0040_heckbert_byte_gray_255_auto.t](../../../../tests/quant/palette/heckbert_float/0040_heckbert_byte_gray_255_auto.t) |
+| HQ-41 | Uniform byte gray 0 emits 0 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0041_heckbert_byte_gray_000_5bit.t](../../../../tests/quant/palette/heckbert_float/0041_heckbert_byte_gray_000_5bit.t) |
+| HQ-42 | Uniform byte gray 51 emits 20 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0042_heckbert_byte_gray_051_5bit.t](../../../../tests/quant/palette/heckbert_float/0042_heckbert_byte_gray_051_5bit.t) |
+| HQ-43 | Uniform byte gray 90 emits 35 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0043_heckbert_byte_gray_090_5bit.t](../../../../tests/quant/palette/heckbert_float/0043_heckbert_byte_gray_090_5bit.t) |
+| HQ-44 | Uniform byte gray 128 emits 50 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0044_heckbert_byte_gray_128_5bit.t](../../../../tests/quant/palette/heckbert_float/0044_heckbert_byte_gray_128_5bit.t) |
+| HQ-45 | Uniform byte gray 204 emits 80 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0045_heckbert_byte_gray_204_5bit.t](../../../../tests/quant/palette/heckbert_float/0045_heckbert_byte_gray_204_5bit.t) |
+| HQ-46 | Uniform byte gray 255 emits 100 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0046_heckbert_byte_gray_255_5bit.t](../../../../tests/quant/palette/heckbert_float/0046_heckbert_byte_gray_255_5bit.t) |
+| HQ-47 | Uniform byte gray 0 emits 0 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0047_heckbert_byte_gray_000_6bit.t](../../../../tests/quant/palette/heckbert_float/0047_heckbert_byte_gray_000_6bit.t) |
+| HQ-48 | Uniform byte gray 51 emits 20 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0048_heckbert_byte_gray_051_6bit.t](../../../../tests/quant/palette/heckbert_float/0048_heckbert_byte_gray_051_6bit.t) |
+| HQ-49 | Uniform byte gray 90 emits 35 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0049_heckbert_byte_gray_090_6bit.t](../../../../tests/quant/palette/heckbert_float/0049_heckbert_byte_gray_090_6bit.t) |
+| HQ-50 | Uniform byte gray 128 emits 50 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0050_heckbert_byte_gray_128_6bit.t](../../../../tests/quant/palette/heckbert_float/0050_heckbert_byte_gray_128_6bit.t) |
+| HQ-51 | Uniform byte gray 204 emits 80 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0051_heckbert_byte_gray_204_6bit.t](../../../../tests/quant/palette/heckbert_float/0051_heckbert_byte_gray_204_6bit.t) |
+| HQ-52 | Uniform byte gray 255 emits 100 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0052_heckbert_byte_gray_255_6bit.t](../../../../tests/quant/palette/heckbert_float/0052_heckbert_byte_gray_255_6bit.t) |
+| HQ-53 | RGB buckets retain fractional population means. | [tests/quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.t](../../../../tests/quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.t) |
+| HQ-54 | Four-channel 5bit buckets retain fractional channel means. | [tests/quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.t](../../../../tests/quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.t) |
+| HQ-55 | The generic one-channel path retains fractional means. | [tests/quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.t](../../../../tests/quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.t) |
+| HQ-56 | Lookup none retains exact source colors and populations. | [tests/quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.t](../../../../tests/quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.t) |
+| HQ-57 | Reversible bucket means retain the reversible tone grid. | [tests/quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.t](../../../../tests/quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.t) |
+| HQ-58 | Axis splits order fractional means inside integer buckets. | [tests/quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.t](../../../../tests/quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.t) |
+| HQ-59 | Sparse four-channel 5bit statistics stay within a 5 MiB allocation budget. | [tests/quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.t](../../../../tests/quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.t) |
 
 ### Automatic native-path selection
 

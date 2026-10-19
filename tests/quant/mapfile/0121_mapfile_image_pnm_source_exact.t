@@ -19,7 +19,7 @@ mapfile_image="${ARTIFACT_LOCAL_DIR}/map.ppm"
 expected_palette='JASC-PAL
 0100
 2
-2 2 2
+0 0 0
 255 255 255'
 
 printf 'P3\n2 1\n255\n0 0 0 255 255 255\n' >"${mapfile_image}"

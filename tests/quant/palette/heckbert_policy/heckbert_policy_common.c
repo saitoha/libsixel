@@ -12,7 +12,7 @@
 #define histogram_dense_size policy_histogram_dense_size
 #define histogram_control_make_for_policy \
     policy_histogram_control_make_for_policy
-#define histogram_reconstruct policy_histogram_reconstruct
+#define histogram_add_slot policy_histogram_add_slot
 #define histogram_quantize policy_histogram_quantize
 #define histogram_build_quantize_lut policy_histogram_build_quantize_lut
 #define histogram_build_fast_pack_lut policy_histogram_build_fast_pack_lut
@@ -36,6 +36,7 @@
 #define sixel_palette_heckbert_entry_weight \
     policy_sixel_palette_heckbert_entry_weight
 #define findBoxBoundariesAndWeight policy_findBoxBoundariesAndWeight
+#define sortAxisFractions policy_sortAxisFractions
 #define sortBoxByAxisBuckets policy_sortBoxByAxisBuckets
 #define sixel_heckbert_axis_weights policy_sixel_heckbert_axis_weights
 #define largestByWeights policy_largestByWeights
@@ -92,7 +93,7 @@
 #undef alloctupletable
 #undef histogram_dense_size
 #undef histogram_control_make_for_policy
-#undef histogram_reconstruct
+#undef histogram_add_slot
 #undef histogram_quantize
 #undef histogram_build_quantize_lut
 #undef histogram_build_fast_pack_lut
@@ -114,6 +115,7 @@
 #undef newBoxVector
 #undef sixel_palette_heckbert_entry_weight
 #undef findBoxBoundariesAndWeight
+#undef sortAxisFractions
 #undef sortBoxByAxisBuckets
 #undef sixel_heckbert_axis_weights
 #undef largestByWeights
@@ -357,6 +359,139 @@ heckbert_policy_check(int scenario)
     }
     if (output.table != NULL) {
         sixel_allocator_free(allocator, output.table);
+    }
+    sixel_allocator_free(allocator, table.table);
+    sixel_allocator_unref(allocator);
+    return ok ? 0 : 1;
+}
+
+/* A sparse RGBA input needs one 4 MiB dense slot map, not dense channel
+ * moments or a second dense reference map. Count all requested allocation
+ * bytes so freeing a dense temporary cannot hide its cost. */
+static size_t bucket_mean_allocation_bytes;
+
+static void *
+bucket_mean_budget_malloc(size_t size)
+{
+    bucket_mean_allocation_bytes += size;
+    if (bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
+        return NULL;
+    }
+    return malloc(size);
+}
+
+static void *
+bucket_mean_budget_calloc(size_t count, size_t size)
+{
+    bucket_mean_allocation_bytes += count * size;
+    if (bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
+        return NULL;
+    }
+    return calloc(count, size);
+}
+
+static void *
+bucket_mean_budget_realloc(void *ptr, size_t size)
+{
+    bucket_mean_allocation_bytes += size;
+    if (bucket_mean_allocation_bytes > 5U * 1024U * 1024U) {
+        return NULL;
+    }
+    return realloc(ptr, size);
+}
+
+/* Exercise the private byte histogram independently of palette rounding.
+ * These exact rational means are not integer bucket centers. */
+int
+heckbert_bucket_mean_check(int scenario)
+{
+    policy_tupletable2 table;
+    sixel_allocator_t *allocator;
+    unsigned char pixels[12];
+    unsigned int depth;
+    unsigned int i;
+    unsigned int channel;
+    double expected;
+    int policy;
+    int reversible;
+    int ok;
+    SIXELSTATUS status;
+
+    allocator = NULL;
+    memset(&table, 0, sizeof(table));
+    depth = scenario == 1 || scenario == 5 ? 4U
+        : scenario == 2 ? 1U : 3U;
+    policy = scenario == 1 || scenario >= 4 ? SIXEL_LUT_POLICY_5BIT
+        : scenario == 3 ? SIXEL_LUT_POLICY_NONE : SIXEL_LUT_POLICY_AUTO;
+    reversible = scenario == 4;
+    for (i = 0U; i < 3U; ++i) {
+        for (channel = 0U; channel < depth; ++channel) {
+            pixels[i * depth + channel] = (unsigned char)(reversible
+                ? 49U + i : 26U + (i != 0U) + channel * 8U);
+        }
+    }
+    bucket_mean_allocation_bytes = 0U;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator,
+            scenario == 5 ? bucket_mean_budget_malloc : NULL,
+            scenario == 5 ? bucket_mean_budget_calloc : NULL,
+            scenario == 5 ? bucket_mean_budget_realloc : NULL,
+            scenario == 5 ? free : NULL))) {
+        return 1;
+    }
+    status = policy_sixel_lut_build_histogram(pixels, 3U * depth, depth,
+        depth, SIXEL_PIXELFORMAT_RGB888, SIXEL_QUALITY_AUTO, reversible,
+        policy, &table, allocator);
+    ok = SIXEL_SUCCEEDED(status) && table.size ==
+        (scenario == 3 ? 2U : 1U);
+    if (ok) {
+        for (i = 0U; i < table.size; ++i) {
+            ok = ok && table.table[i]->value ==
+                (scenario == 3 ? i + 1U : 3U);
+            for (channel = 0U; channel < depth; ++channel) {
+                expected = reversible ? 51.0 : scenario == 3
+                    ? 26.0 + i + channel * 8.0
+                    : 80.0 / 3.0 + channel * 8.0;
+                ok = ok && fabs(table.table[i]->policy_tuple[channel]
+                    - expected) < 1e-12;
+            }
+        }
+    }
+    sixel_allocator_free(allocator, table.table);
+    sixel_allocator_unref(allocator);
+    return ok ? 0 : 1;
+}
+
+/* Means in the same integer bucket must be ordered before an SSE scan.
+ * Include duplicates and surrounding buckets to exercise the permutation. */
+int
+heckbert_fractional_axis_check(void)
+{
+    static double const values[] = { 2.75, 1.5, 2.25, 2.5, 2.25, 3.0 };
+    static double const expected[] = { 1.5, 2.25, 2.25, 2.5, 2.75, 3.0 };
+    policy_tupletable2 table;
+    sixel_allocator_t *allocator;
+    unsigned int i;
+    int ok;
+    SIXELSTATUS status;
+
+    allocator = NULL;
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL,
+            NULL))) {
+        return 1;
+    }
+    table = policy_newColorMap(6U, 3U, allocator);
+    if (table.size != 6U) {
+        sixel_allocator_unref(allocator);
+        return 1;
+    }
+    for (i = 0U; i < 6U; ++i) {
+        table.table[i]->policy_tuple[0] = values[i];
+    }
+    status = policy_sortBoxByAxisBuckets(table, 0U, 6U, 0U,
+        NULL, NULL, NULL);
+    ok = SIXEL_SUCCEEDED(status);
+    for (i = 0U; i < 6U; ++i) {
+        ok = ok && table.table[i]->policy_tuple[0] == expected[i];
     }
     sixel_allocator_free(allocator, table.table);
     sixel_allocator_unref(allocator);

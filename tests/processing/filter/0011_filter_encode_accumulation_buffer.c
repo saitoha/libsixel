@@ -465,8 +465,8 @@ accumulation_encode_sequence(sixel_allocator_t *allocator,
     }
     /*
      * Auto-seeded accumulation stores quantized display RGB, not the source
-     * frame.  Permit one LSB so stable source colors can still exercise the
-     * retained-plane path after palette application.
+     * frame. Permit eight levels so stable source colors can still exercise
+     * the retained-plane path after palette application.
      */
     status = sixel_encoder_setopt(encoder,
                                   SIXEL_OPTFLAG_UPDATE_POLICY,
@@ -815,15 +815,17 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
         current[index * 3 + 0] = previous[index * 3 + 0];
         current[index * 3 + 1] = 0u;
         current[index * 3 + 2] = previous[index * 3 + 2];
-        near_previous[index * 3 + 0] = 100u;
-        near_previous[index * 3 + 1] = 100u;
-        near_previous[index * 3 + 2] = 100u;
-        near_current[index * 3 + 0] = 104u;
-        near_current[index * 3 + 1] = 104u;
-        near_current[index * 3 + 2] = 104u;
-        near_next[index * 3 + 0] = 108u;
-        near_next[index * 3 + 1] = 108u;
-        near_next[index * 3 + 2] = 108u;
+        /* 102 is exactly 40 percent on the displayed SIXEL grid.
+         * The next frames differ by four and eight from that plane. */
+        near_previous[index * 3 + 0] = 102u;
+        near_previous[index * 3 + 1] = 102u;
+        near_previous[index * 3 + 2] = 102u;
+        near_current[index * 3 + 0] = 106u;
+        near_current[index * 3 + 1] = 106u;
+        near_current[index * 3 + 2] = 106u;
+        near_next[index * 3 + 0] = 110u;
+        near_next[index * 3 + 1] = 110u;
+        near_next[index * 3 + 2] = 110u;
         hidden_first[index * 4 + 0] = 100u;
         hidden_first[index * 4 + 1] = 100u;
         hidden_first[index * 4 + 2] = 100u;

@@ -2121,6 +2121,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0017_HECKBERT_SSE_FLOAT_PCA \
     -DBUILD_TEST_0018_HECKBERT_ORDER_SSE \
     -DBUILD_TEST_0032_HECKBERT_LLOYD_REASSIGNMENT \
+    -DBUILD_TEST_0069_HECKBERT_BUCKET_RGB_MEAN \
+    -DBUILD_TEST_0070_HECKBERT_BUCKET_RGBA_MEAN \
+    -DBUILD_TEST_0071_HECKBERT_BUCKET_GRAY_MEAN \
+    -DBUILD_TEST_0072_HECKBERT_BUCKET_NONE_EXACT \
+    -DBUILD_TEST_0073_HECKBERT_BUCKET_REVERSIBLE_MEAN \
+    -DBUILD_TEST_0074_HECKBERT_BUCKET_FRACTIONAL_AXIS \
+    -DBUILD_TEST_0075_HECKBERT_BUCKET_SPARSE_RGBA \
     -DBUILD_HECKBERT_POLICY_COMMON \
     -DBUILD_HECKBERT_DEFAULTS_COMMON \
     -DBUILD_TEST_0033_HECKBERT_API_INITIAL \
@@ -6570,6 +6577,13 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.c \
     quant/palette/heckbert_policy/0018_heckbert_order_sse.c \
     quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c \
+    quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c \
+    quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c \
+    quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c \
+    quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c \
+    quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c \
+    quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c \
+    quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c \
     quant/palette/heckbert_policy/heckbert_policy_common.c \
     quant/palette/heckbert_policy/heckbert_defaults_common.c \
     quant/palette/heckbert_policy/0033_heckbert_api_initial.c \

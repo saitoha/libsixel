@@ -115,10 +115,8 @@ lookup_encode(int policy, int space, int p3, int byte,
     if (byte) {
         ok = dither->use_rgb101_palette == 0 &&
             dither->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-            strstr(capture.data, strcmp(solver, "heckbert") == 0
-                ? ";2;14;14;14" : ";2;13;13;13") != NULL &&
-            strstr(capture.data, strcmp(solver, "heckbert") == 0
-                ? ";2;89;89;89" : ";2;88;88;88") != NULL;
+            strstr(capture.data, ";2;13;13;13") != NULL &&
+            strstr(capture.data, ";2;88;88;88") != NULL;
         goto end;
     }
     /* Neutral endpoints serialize as black and white in both output

@@ -19,14 +19,14 @@ mapfile_png="${TOP_SRCDIR}/images/map8-palette.png"
 expected_palette='JASC-PAL
 0100
 8
-162 6 6
-6 178 6
-150 158 6
-126 106 250
-194 6 182
-6 174 186
-194 194 194
-2 2 2'
+159 3 3
+3 175 3
+149 157 3
+123 102 248
+190 3 180
+3 171 185
+191 191 191
+0 0 0'
 
 # The fixture has PLTE entries 0 through 8, but its pixels use only 0 through 7.
 actual_palette=$(
