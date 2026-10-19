@@ -925,13 +925,34 @@ sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
     sixel_encoding_planner_build_dag(planner, encoder, palette_branch_active);
 }
 
-/* Keep the automatic policy separate from the allocation mechanism. */
+/* Small budgets benefit from giving each phase the whole reservation.
+ * Beyond four slots, retain row overlap instead of extrapolating that gain.
+ * Use the effective method: exact-fit palettes can turn diffusion into NONE,
+ * whose bulk lookup path does not justify the same allocation change. */
 int
 sixel_dither_encode_default_staged(int total_threads, int method_for_diffuse)
 {
-    (void)total_threads;
-    (void)method_for_diffuse;
-    return 0;
+    if (total_threads < 2 || total_threads > 4) {
+        return 0;
+    }
+    switch (method_for_diffuse) {
+    case SIXEL_DIFFUSE_AUTO:
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+    case SIXEL_DIFFUSE_LSO2:
+    case SIXEL_DIFFUSE_A_DITHER:
+    case SIXEL_DIFFUSE_X_DITHER:
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        return 1;
+    default:
+        return 0;
+    }
 }
 
 void
@@ -1046,6 +1067,18 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
         band_height = ((band_height + 5) / 6) * 6;
     }
     overlap = request->ncolors <= 32 ? 6 : 0;
+    /* These policies depend only on the current pixel and its absolute
+     * position. Replaying preceding rows cannot warm any residual state. */
+    switch (request->method_for_diffuse) {
+    case SIXEL_DIFFUSE_NONE:
+    case SIXEL_DIFFUSE_A_DITHER:
+    case SIXEL_DIFFUSE_X_DITHER:
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        overlap = 0;
+        break;
+    default:
+        break;
+    }
     if (request->overlap_set) {
         overlap = (int)request->overlap;
     }
