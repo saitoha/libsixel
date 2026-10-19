@@ -634,7 +634,7 @@ sixel_dither_policy_sierra3_apply_8bit(
     }
 
     return sixel_dither_carry_apply(&effective,
-                                    SIXEL_DIFFUSE_SIERRA3, 5.0);
+                                    SIXEL_DIFFUSE_SIERRA3);
 }
 
 static SIXELSTATUS

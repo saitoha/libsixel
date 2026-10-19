@@ -611,7 +611,7 @@ sixel_dither_policy_atkinson_apply_8bit(
     }
 
     return sixel_dither_carry_apply(&effective,
-                                    SIXEL_DIFFUSE_ATKINSON, 5.0);
+                                    SIXEL_DIFFUSE_ATKINSON);
 }
 
 static SIXELSTATUS

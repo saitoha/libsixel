@@ -852,6 +852,7 @@ _img2sixel()
                                    stbn:fastpath=1 \
                                    stbn:source=pmj:fastpath=1 \
                                    fs:perturb=0.5 \
+                                   fs:deadzone=5 \
                                    fs:perturb=0.5:perturb_seed=1 \
                                    fs:U0.5:R1 \
                                    fs:perturb=0.5:scan=serpentine \

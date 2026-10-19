@@ -118,6 +118,8 @@ struct sixel_encoder {
     int builtin_palette;
     int method_for_diffuse;
     /* Paired FS coefficient perturbation; zero preserves classic weights. */
+    double diffusion_deadzone;
+    int diffusion_deadzone_override;
     float diffusion_perturb;
     int diffusion_perturb_override;
     int diffusion_perturb_seed;

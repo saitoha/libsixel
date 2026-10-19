@@ -142,6 +142,8 @@ struct sixel_dither {
     int method_for_diffuse;         /* method for diffusing */
     int method_for_scan;            /* scan order for diffusing */
     /* Paired FS coefficient perturbation; zero preserves classic weights. */
+    double diffusion_deadzone;
+    int diffusion_deadzone_override;
     float diffusion_perturb;
     int diffusion_perturb_override;
     int diffusion_perturb_seed;

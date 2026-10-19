@@ -53,6 +53,6 @@ sixel_dither_carry_candidate(unsigned char const *source,
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
-                        int method, double deadzone);
+                        int method);
 
 #endif /* LIBSIXEL_DITHER_CARRY_H */

@@ -2174,6 +2174,8 @@ sixel_dither_new(
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
     (*ppdither)->method_for_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->method_for_scan = SIXEL_SCAN_AUTO;
+    (*ppdither)->diffusion_deadzone = 5.0;
+    (*ppdither)->diffusion_deadzone_override = 0;
     (*ppdither)->diffusion_perturb = 0.0f;
     (*ppdither)->diffusion_perturb_override = 0;
     (*ppdither)->diffusion_perturb_seed = 0;

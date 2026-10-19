@@ -2070,6 +2070,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
         "scan", 'N', "SIXEL_DITHER_SCAN", NULL, NULL,
         g_diffusion_scan_choices, method_for_scan),
+    SIXEL_REGISTRY_ENCODER_DOUBLE(
+        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
+        "deadzone", 'D', "SIXEL_DITHER_DEADZONE", NULL, NULL, 0.0, DBL_MAX,
+        "-d deadzone must be a nonnegative finite number.",
+        diffusion_deadzone, diffusion_deadzone_override),
     SIXEL_REGISTRY_ENCODER_FLOAT_RANGE(
         SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
         "perturb", 'U', "SIXEL_DITHER_PERTURB", NULL, NULL, 0.0, 1.0,

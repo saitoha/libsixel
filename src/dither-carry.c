@@ -98,7 +98,7 @@ sixel_dither_carry_candidate(unsigned char const *source,
      * int64 sum overflow for unbounded NONE feedback. A radius beyond the
      * maximum possible int32 vector discards every correction directly.
      */
-    radius = deadzone * denominator;
+    radius = (deadzone > 1.0e10 ? 1.0e10 : deadzone) * denominator;
     scale = norm < radius * radius ? 0.0 : 1.0;
     margin = (threshold - 1.0) * 255.0;
     if (scale != 0.0 && policy != SIXEL_DITHER_CLAMP_NONE
@@ -144,7 +144,7 @@ sixel_dither_carry_candidate(unsigned char const *source,
 
 SIXELSTATUS
 sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
-                        int method, double deadzone)
+                        int method)
 {
     sixel_dither_carry_kernel_t const *kernel;
     sixel_dither_t *dither;
@@ -248,7 +248,8 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
             }
             status = sixel_dither_carry_candidate(
                 request->data + position * depth, current, depth, denominator,
-                dither->clamp_policy, dither->clamp_threshold, deadzone,
+                dither->clamp_policy, dither->clamp_threshold,
+                dither->diffusion_deadzone,
                 candidate, pixel);
             if (SIXEL_FAILED(status)) goto end;
             retained = NULL;

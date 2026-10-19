@@ -437,9 +437,9 @@ static cli_option_help_t const g_option_help_table[] = {
         '0',
         "clamp-policy",
         "-0 POLICY, --clamp-policy=POLICY\n"
-        "    control float dither feedback only: auto, soft, hard, none.\n"
-        "    Default auto selects soft; byte dithering and colorspace\n"
-        "    conversion are unaffected, and no policy promotes to float.\n"
+        "    control byte/float spatial dither feedback: auto, soft, hard, none.\n"
+        "    Default auto selects soft; colorspace\n"
+        "    conversion is unaffected; no policy promotes to float.\n"
         "    :threshold=VALUE (:TVALUE), 1.0-16.0, soft headroom boundary.\n"
         "    Default threshold: 1.01.\n"
         "    SIXEL_DITHER_CLAMP_POLICY and SIXEL_DITHER_CLAMP_THRESHOLD\n"
@@ -568,6 +568,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "-d DIFFUSION, --diffusion=DIFFUSION\n"
         "    choose diffusion method used with -p option (color reduction).\n"
         "    common sub-option:\n"
+        "      deadzone=D          -> discard RGB corrections smaller than D\n"
+        "      DD                  -> compact form; byte default 5, 0 off\n"
+        "      Nonnegative finite decimals; auto and spatial kernels only.\n"
+        "      Float32 keeps its existing default (no deadzone).\n"
         "      perturb=P           -> paired FS weight perturbation, 0.0-1.0\n"
         "                              (default 0.0; FS only)\n"
         "      UP                  -> short form of perturb\n"
@@ -679,7 +683,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                   (default raster)\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
-        "                     threads_max=J, pin_threads=I, perturb=U,\n"
+        "                     threads_max=J, pin_threads=I, deadzone=D, perturb=U,\n"
         "                     perturb_seed=R\n"
         "        sierra: variant=V\n"
         "        a_dither, x_dither: strength=T\n"
@@ -1689,6 +1693,13 @@ static cli_env_help_t const g_env_help_table[] = {
         "override the band height assigned to each dither worker.\n"
         "Values are rounded to a multiple of six scanlines. The -d\n"
         "suboption band_width (short form BVALUE) takes precedence."
+    },
+    {
+        "SIXEL_DITHER_DEADZONE",
+        "discard byte RGB corrections with Euclidean length below D.\n"
+        "Default 5; 0 disables; accepts nonnegative finite decimals.\n"
+        "The -d deadzone suboption (short form DVALUE) takes precedence.\n"
+        "Applies to auto, fs, atkinson, jajuni, stucki, burkes and sierra."
     },
     {
         "SIXEL_DITHER_PERTURB",

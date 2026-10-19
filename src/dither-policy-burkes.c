@@ -615,7 +615,7 @@ sixel_dither_policy_burkes_apply_8bit(
     }
 
     return sixel_dither_carry_apply(&effective,
-                                    SIXEL_DIFFUSE_BURKES, 5.0);
+                                    SIXEL_DIFFUSE_BURKES);
 }
 
 static SIXELSTATUS

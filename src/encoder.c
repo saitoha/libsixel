@@ -1140,6 +1140,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "pin_threads=%d|pin_threads_override=%d|gpu_threshold=%zu|"
             "gpu_threshold_override=%d|perturb=%.9g|perturb_override=%d|"
             "perturb_seed=%d|perturb_seed_override=%d|"
+            "deadzone=%.9g|deadzone_override=%d|"
             "clamp_requested=%d|clamp_effective=%d|"
             "clamp_threshold=%.9g|rgb101=%d|allocation_mode=%s|codes=",
             status,
@@ -1193,6 +1194,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->diffusion_perturb_override,
             dither->diffusion_perturb_seed,
             dither->diffusion_perturb_seed_override,
+            dither->diffusion_deadzone,
+            dither->diffusion_deadzone_override,
             dither->clamp_policy,
             dither->clamp_policy == SIXEL_DITHER_CLAMP_AUTO
                 ? SIXEL_DITHER_CLAMP_SOFT : dither->clamp_policy,
@@ -5535,6 +5538,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
     context->dither->clamp_policy = context->encoder->clamp_policy;
     context->dither->clamp_threshold = context->encoder->clamp_threshold;
+    context->dither->diffusion_deadzone =
+        context->encoder->diffusion_deadzone;
+    context->dither->diffusion_deadzone_override =
+        context->encoder->diffusion_deadzone_override;
     context->dither->diffusion_perturb =
         context->encoder->diffusion_perturb;
     context->dither->diffusion_perturb_override =
@@ -10361,6 +10368,8 @@ sixel_encoder_new(
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
+    (*ppencoder)->diffusion_deadzone = 5.0;
+    (*ppencoder)->diffusion_deadzone_override = 0;
     (*ppencoder)->diffusion_perturb = 0.0f;
     (*ppencoder)->diffusion_perturb_override = 0;
     (*ppencoder)->diffusion_perturb_seed = 0;
@@ -11633,6 +11642,7 @@ sixel_encoder_apply_diffusion_resolution(
      */
     encoder->method_for_diffuse = resolution->resolved_base_value;
     encoder->method_for_scan = SIXEL_SCAN_AUTO;
+    encoder->diffusion_deadzone = 5.0;
     encoder->diffusion_perturb = 0.0f;
     encoder->diffusion_perturb_seed = 0;
     encoder->dither_parallel_band_overwrap = 0u;

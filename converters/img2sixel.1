@@ -450,17 +450,18 @@ The lazy cache adds 256 KiB, and the full grid uses about 23.6 MiB per build.
 The corresponding \fBSIXEL_PALETTE_SNAP_*\fP environments provide defaults.
 .TP 5
 .B \-0 \fIPOLICY\fP, \-\-clamp\-policy=\fIPOLICY\fP
-limit float error-diffusion feedback. Values are \fBauto\fP, \fBsoft\fP,
+limit byte and float spatial error-diffusion feedback. Values are \fBauto\fP, \fBsoft\fP,
 \fBhard\fP and \fBnone\fP. The default \fBauto\fP selects \fBsoft\fP.
-The policy applies only when diffusion already runs in float coordinates;
-byte diffusion keeps its per-tap saturation, and no policy promotes byte
-work to float.
+The policy bounds byte carry candidates and float working coordinates.
+No policy promotes byte work to float.
 This option does not clamp loader, CMS, resize or color-space conversions.
 Original extended-range source coordinates remain intact.
 .br
 \fBsoft\fP scales the correction vector to fit the source-containing
 working-coordinate bounds plus headroom. \fBhard\fP clips channels to the
-source-containing bounds without headroom. \fBnone\fP leaves feedback open.
+source-containing bounds without headroom. \fBnone\fP leaves feedback open;
+unrepresentable palette colors can accumulate growing error. Byte carry
+overflow returns an error instead of wrapping.
 .br
 Suboption \fBthreshold\fP (short form \fBTFACTOR\fP) accepts a finite
 value from 1 through 16; default 1.01. The soft margin per channel is
@@ -562,6 +563,13 @@ render animated GIF as a static image.
 choose diffusion method used with color reduction.
 .br
 common sub-option:
+.br
+\fBdeadzone=D\fP -> discard byte RGB corrections of Euclidean length below D
+.br
+\fBDD\fP -> compact form; default 5, 0 disables; finite nonnegative decimals
+.br
+Applies to auto, fs, atkinson, jajuni, stucki, burkes and sierra.
+Float32 retains its existing behavior without a deadzone.
 .br
 \fBperturb=P\fP -> paired FS weight perturbation, 0.0-1.0 (default 0.0)
 .br
@@ -723,7 +731,7 @@ sub-option:
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
 all methods scan=N, band_overwrap=O, band_width=B, threads_max=J,
-pin_threads=I, perturb=U, perturb_seed=R;
+pin_threads=I, deadzone=D, perturb=U, perturb_seed=R;
 sierra variant=V; a_dither/x_dither strength=T;
 interframe diffusion=D;
 stbn source=S, diffusion=D, strength=T, motion_adapt=M,
@@ -1951,6 +1959,12 @@ override the band height assigned to each dither worker. Values are rounded to
 a multiple of six scanlines. The \fB-d\fP suboption
 \fBband_width=LINES\fP (short form \fB:BLINES\fP) takes precedence.
 .TP 5
+.B SIXEL_DITHER_DEADZONE
+Discard byte RGB corrections below this Euclidean distance (default 5).
+Accepts nonnegative finite decimals; 0 disables. The \fB-d\fP suboption
+\fBdeadzone=D\fP (compact \fBDD\fP) takes precedence.
+Applies to auto and the eight fixed spatial diffusion kernels.
+.TP
 .B SIXEL_DITHER_PERTURB
 .br
 set paired FS weight perturbation, 0.0-1.0 (default 0.0).

@@ -639,7 +639,7 @@ sixel_dither_policy_jajuni_apply_8bit(
     }
 
     return sixel_dither_carry_apply(&effective,
-                                    SIXEL_DIFFUSE_JAJUNI, 5.0);
+                                    SIXEL_DIFFUSE_JAJUNI);
 }
 
 static SIXELSTATUS
