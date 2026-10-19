@@ -214,6 +214,10 @@ int test_color_0012(int argc, char **argv);
 int test_color_0013(int argc, char **argv);
 int test_pipeline_worker_counts_17(int argc, char **argv);
 int test_pipeline_worker_counts_18(int argc, char **argv);
+int test_allocation_slots(int argc, char **argv);
+int test_allocation_controls(int argc, char **argv);
+int test_allocation_gpu(int argc, char **argv);
+int test_allocation_serial_policy(int argc, char **argv);
 int test_parallel_float_0007(int argc, char **argv);
 int test_parallel_float_0009(int argc, char **argv);
 int test_parallel_float_0010(int argc, char **argv);
@@ -5758,6 +5762,14 @@ static test_entry_t const test_entries[] = {
         test_pipeline_worker_counts_17 },
     { "planner/pipeline/0018_pipeline_full_frame_worker_counts",
         test_pipeline_worker_counts_18 },
+    { "planner/allocation/0001_allocation_slots",
+        test_allocation_slots },
+    { "planner/allocation/0002_allocation_controls",
+        test_allocation_controls },
+    { "planner/allocation/0003_allocation_gpu",
+        test_allocation_gpu },
+    { "planner/allocation/0004_allocation_serial_policy",
+        test_allocation_serial_policy },
     { "colorspace/parallel/0001_frame_bits",
         test_parallel_float_0001 },
     { "colorspace/parallel/0002_helper_bits",

@@ -323,6 +323,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_OVERLAP_RECLAIM \
     -DBUILD_TEST_0017_PIPELINE_AUTO_WORKER_COUNTS \
     -DBUILD_TEST_0018_PIPELINE_FULL_FRAME_WORKER_COUNTS \
+    -DBUILD_TEST_0001_ALLOCATION_SLOTS \
+    -DBUILD_TEST_0002_ALLOCATION_CONTROLS \
+    -DBUILD_TEST_0003_ALLOCATION_GPU \
+    -DBUILD_TEST_0004_ALLOCATION_SERIAL_POLICY \
     -DBUILD_PIPELINE_WORKER_COUNTS_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
@@ -4863,6 +4867,10 @@ test_runner_SOURCES = test_runner.c \
     processing/colorspace/parallel/parallel_float_common.c \
     planner/pipeline/0017_pipeline_auto_worker_counts.c \
     planner/pipeline/0018_pipeline_full_frame_worker_counts.c \
+    planner/allocation/0001_allocation_slots.c \
+    planner/allocation/0002_allocation_controls.c \
+    planner/allocation/0003_allocation_gpu.c \
+    planner/allocation/0004_allocation_serial_policy.c \
     planner/pipeline/pipeline_worker_counts_common.c \
     processing/colorspace/parallel/0001_frame_bits.c \
     processing/colorspace/parallel/0002_helper_bits.c \
