@@ -327,6 +327,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_ALLOCATION_CONTROLS \
     -DBUILD_TEST_0003_ALLOCATION_GPU \
     -DBUILD_TEST_0004_ALLOCATION_SERIAL_POLICY \
+    -DBUILD_TEST_0005_ALLOCATION_RUNTIME_PHASES \
+    -DBUILD_TEST_0006_ALLOCATION_EFFECTIVE_NONE \
+    -DBUILD_TEST_0008_ALLOCATION_STATELESS_OVERLAP \
+    -DBUILD_TEST_0009_ALLOCATION_AUTOMATIC_POLICY \
+    -DBUILD_ALLOCATION_RUNTIME_COMMON \
     -DBUILD_PIPELINE_WORKER_COUNTS_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
@@ -4871,6 +4876,12 @@ test_runner_SOURCES = test_runner.c \
     planner/allocation/0002_allocation_controls.c \
     planner/allocation/0003_allocation_gpu.c \
     planner/allocation/0004_allocation_serial_policy.c \
+    planner/allocation/0005_allocation_runtime_phases.c \
+    planner/allocation/0006_allocation_effective_none.c \
+    planner/allocation/0008_allocation_stateless_overlap.c \
+    planner/allocation/0009_allocation_automatic_policy.c \
+    planner/allocation/allocation_runtime_common.c \
+    planner/allocation/allocation_runtime_common.h \
     planner/pipeline/pipeline_worker_counts_common.c \
     processing/colorspace/parallel/0001_frame_bits.c \
     processing/colorspace/parallel/0002_helper_bits.c \

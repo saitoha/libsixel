@@ -1062,6 +1062,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	planner/allocation/0002_allocation_controls.c \
 	planner/allocation/0003_allocation_gpu.c \
 	planner/allocation/0004_allocation_serial_policy.c \
+	planner/allocation/0005_allocation_runtime_phases.c \
+	planner/allocation/0006_allocation_effective_none.c \
+	planner/allocation/0008_allocation_stateless_overlap.c \
+	planner/allocation/0009_allocation_automatic_policy.c \
+	planner/allocation/allocation_runtime_common.c \
+	planner/allocation/allocation_runtime_common.h \
 	planner/pipeline/pipeline_worker_counts_common.c \
 	processing/colorspace/parallel/0001_frame_bits.c \
 	processing/colorspace/parallel/0002_helper_bits.c \
@@ -4829,6 +4835,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-0002_allocation_controls.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-0003_allocation_gpu.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-0004_allocation_serial_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-0005_allocation_runtime_phases.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-0006_allocation_effective_none.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-0008_allocation_stateless_overlap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-0009_allocation_automatic_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/allocation/test_runner-allocation_runtime_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-pipeline_worker_counts_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0001_frame_bits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0002_helper_bits.$(OBJEXT) \
@@ -9309,6 +9320,11 @@ am__depfiles_remade =  \
 	planner/allocation/$(DEPDIR)/test_runner-0002_allocation_controls.Po \
 	planner/allocation/$(DEPDIR)/test_runner-0003_allocation_gpu.Po \
 	planner/allocation/$(DEPDIR)/test_runner-0004_allocation_serial_policy.Po \
+	planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Po \
+	planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Po \
+	planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Po \
+	planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Po \
+	planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po \
@@ -12268,6 +12284,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ALLOCATION_CONTROLS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ALLOCATION_GPU \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_ALLOCATION_SERIAL_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_ALLOCATION_RUNTIME_PHASES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_ALLOCATION_EFFECTIVE_NONE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_ALLOCATION_STATELESS_OVERLAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_ALLOCATION_AUTOMATIC_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ALLOCATION_RUNTIME_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PIPELINE_WORKER_COUNTS_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARALLEL_FLOAT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_BITS \
@@ -16843,6 +16864,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/0002_allocation_controls.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/0003_allocation_gpu.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/0004_allocation_serial_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/0005_allocation_runtime_phases.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/0006_allocation_effective_none.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/0008_allocation_stateless_overlap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/0009_allocation_automatic_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/allocation_runtime_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/allocation/allocation_runtime_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/pipeline_worker_counts_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0001_frame_bits.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0002_helper_bits.c \
@@ -22761,6 +22788,21 @@ planner/allocation/test_runner-0003_allocation_gpu.$(OBJEXT):  \
 	planner/allocation/$(am__dirstamp) \
 	planner/allocation/$(DEPDIR)/$(am__dirstamp)
 planner/allocation/test_runner-0004_allocation_serial_policy.$(OBJEXT):  \
+	planner/allocation/$(am__dirstamp) \
+	planner/allocation/$(DEPDIR)/$(am__dirstamp)
+planner/allocation/test_runner-0005_allocation_runtime_phases.$(OBJEXT):  \
+	planner/allocation/$(am__dirstamp) \
+	planner/allocation/$(DEPDIR)/$(am__dirstamp)
+planner/allocation/test_runner-0006_allocation_effective_none.$(OBJEXT):  \
+	planner/allocation/$(am__dirstamp) \
+	planner/allocation/$(DEPDIR)/$(am__dirstamp)
+planner/allocation/test_runner-0008_allocation_stateless_overlap.$(OBJEXT):  \
+	planner/allocation/$(am__dirstamp) \
+	planner/allocation/$(DEPDIR)/$(am__dirstamp)
+planner/allocation/test_runner-0009_allocation_automatic_policy.$(OBJEXT):  \
+	planner/allocation/$(am__dirstamp) \
+	planner/allocation/$(DEPDIR)/$(am__dirstamp)
+planner/allocation/test_runner-allocation_runtime_common.$(OBJEXT):  \
 	planner/allocation/$(am__dirstamp) \
 	planner/allocation/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-pipeline_worker_counts_common.$(OBJEXT):  \
@@ -33593,6 +33635,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-0002_allocation_controls.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-0003_allocation_gpu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-0004_allocation_serial_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po@am__quote@ # am--include-marker
@@ -48528,6 +48575,76 @@ planner/allocation/test_runner-0004_allocation_serial_policy.obj: planner/alloca
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0004_allocation_serial_policy.c' object='planner/allocation/test_runner-0004_allocation_serial_policy.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0004_allocation_serial_policy.obj `if test -f 'planner/allocation/0004_allocation_serial_policy.c'; then $(CYGPATH_W) 'planner/allocation/0004_allocation_serial_policy.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0004_allocation_serial_policy.c'; fi`
+
+planner/allocation/test_runner-0005_allocation_runtime_phases.o: planner/allocation/0005_allocation_runtime_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0005_allocation_runtime_phases.o -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Tpo -c -o planner/allocation/test_runner-0005_allocation_runtime_phases.o `test -f 'planner/allocation/0005_allocation_runtime_phases.c' || echo '$(srcdir)/'`planner/allocation/0005_allocation_runtime_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Tpo planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0005_allocation_runtime_phases.c' object='planner/allocation/test_runner-0005_allocation_runtime_phases.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0005_allocation_runtime_phases.o `test -f 'planner/allocation/0005_allocation_runtime_phases.c' || echo '$(srcdir)/'`planner/allocation/0005_allocation_runtime_phases.c
+
+planner/allocation/test_runner-0005_allocation_runtime_phases.obj: planner/allocation/0005_allocation_runtime_phases.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0005_allocation_runtime_phases.obj -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Tpo -c -o planner/allocation/test_runner-0005_allocation_runtime_phases.obj `if test -f 'planner/allocation/0005_allocation_runtime_phases.c'; then $(CYGPATH_W) 'planner/allocation/0005_allocation_runtime_phases.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0005_allocation_runtime_phases.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Tpo planner/allocation/$(DEPDIR)/test_runner-0005_allocation_runtime_phases.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0005_allocation_runtime_phases.c' object='planner/allocation/test_runner-0005_allocation_runtime_phases.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0005_allocation_runtime_phases.obj `if test -f 'planner/allocation/0005_allocation_runtime_phases.c'; then $(CYGPATH_W) 'planner/allocation/0005_allocation_runtime_phases.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0005_allocation_runtime_phases.c'; fi`
+
+planner/allocation/test_runner-0006_allocation_effective_none.o: planner/allocation/0006_allocation_effective_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0006_allocation_effective_none.o -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Tpo -c -o planner/allocation/test_runner-0006_allocation_effective_none.o `test -f 'planner/allocation/0006_allocation_effective_none.c' || echo '$(srcdir)/'`planner/allocation/0006_allocation_effective_none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Tpo planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0006_allocation_effective_none.c' object='planner/allocation/test_runner-0006_allocation_effective_none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0006_allocation_effective_none.o `test -f 'planner/allocation/0006_allocation_effective_none.c' || echo '$(srcdir)/'`planner/allocation/0006_allocation_effective_none.c
+
+planner/allocation/test_runner-0006_allocation_effective_none.obj: planner/allocation/0006_allocation_effective_none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0006_allocation_effective_none.obj -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Tpo -c -o planner/allocation/test_runner-0006_allocation_effective_none.obj `if test -f 'planner/allocation/0006_allocation_effective_none.c'; then $(CYGPATH_W) 'planner/allocation/0006_allocation_effective_none.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0006_allocation_effective_none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Tpo planner/allocation/$(DEPDIR)/test_runner-0006_allocation_effective_none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0006_allocation_effective_none.c' object='planner/allocation/test_runner-0006_allocation_effective_none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0006_allocation_effective_none.obj `if test -f 'planner/allocation/0006_allocation_effective_none.c'; then $(CYGPATH_W) 'planner/allocation/0006_allocation_effective_none.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0006_allocation_effective_none.c'; fi`
+
+planner/allocation/test_runner-0008_allocation_stateless_overlap.o: planner/allocation/0008_allocation_stateless_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0008_allocation_stateless_overlap.o -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Tpo -c -o planner/allocation/test_runner-0008_allocation_stateless_overlap.o `test -f 'planner/allocation/0008_allocation_stateless_overlap.c' || echo '$(srcdir)/'`planner/allocation/0008_allocation_stateless_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Tpo planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0008_allocation_stateless_overlap.c' object='planner/allocation/test_runner-0008_allocation_stateless_overlap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0008_allocation_stateless_overlap.o `test -f 'planner/allocation/0008_allocation_stateless_overlap.c' || echo '$(srcdir)/'`planner/allocation/0008_allocation_stateless_overlap.c
+
+planner/allocation/test_runner-0008_allocation_stateless_overlap.obj: planner/allocation/0008_allocation_stateless_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0008_allocation_stateless_overlap.obj -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Tpo -c -o planner/allocation/test_runner-0008_allocation_stateless_overlap.obj `if test -f 'planner/allocation/0008_allocation_stateless_overlap.c'; then $(CYGPATH_W) 'planner/allocation/0008_allocation_stateless_overlap.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0008_allocation_stateless_overlap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Tpo planner/allocation/$(DEPDIR)/test_runner-0008_allocation_stateless_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0008_allocation_stateless_overlap.c' object='planner/allocation/test_runner-0008_allocation_stateless_overlap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0008_allocation_stateless_overlap.obj `if test -f 'planner/allocation/0008_allocation_stateless_overlap.c'; then $(CYGPATH_W) 'planner/allocation/0008_allocation_stateless_overlap.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0008_allocation_stateless_overlap.c'; fi`
+
+planner/allocation/test_runner-0009_allocation_automatic_policy.o: planner/allocation/0009_allocation_automatic_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0009_allocation_automatic_policy.o -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Tpo -c -o planner/allocation/test_runner-0009_allocation_automatic_policy.o `test -f 'planner/allocation/0009_allocation_automatic_policy.c' || echo '$(srcdir)/'`planner/allocation/0009_allocation_automatic_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Tpo planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0009_allocation_automatic_policy.c' object='planner/allocation/test_runner-0009_allocation_automatic_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0009_allocation_automatic_policy.o `test -f 'planner/allocation/0009_allocation_automatic_policy.c' || echo '$(srcdir)/'`planner/allocation/0009_allocation_automatic_policy.c
+
+planner/allocation/test_runner-0009_allocation_automatic_policy.obj: planner/allocation/0009_allocation_automatic_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-0009_allocation_automatic_policy.obj -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Tpo -c -o planner/allocation/test_runner-0009_allocation_automatic_policy.obj `if test -f 'planner/allocation/0009_allocation_automatic_policy.c'; then $(CYGPATH_W) 'planner/allocation/0009_allocation_automatic_policy.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0009_allocation_automatic_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Tpo planner/allocation/$(DEPDIR)/test_runner-0009_allocation_automatic_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/0009_allocation_automatic_policy.c' object='planner/allocation/test_runner-0009_allocation_automatic_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-0009_allocation_automatic_policy.obj `if test -f 'planner/allocation/0009_allocation_automatic_policy.c'; then $(CYGPATH_W) 'planner/allocation/0009_allocation_automatic_policy.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/0009_allocation_automatic_policy.c'; fi`
+
+planner/allocation/test_runner-allocation_runtime_common.o: planner/allocation/allocation_runtime_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-allocation_runtime_common.o -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Tpo -c -o planner/allocation/test_runner-allocation_runtime_common.o `test -f 'planner/allocation/allocation_runtime_common.c' || echo '$(srcdir)/'`planner/allocation/allocation_runtime_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Tpo planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/allocation_runtime_common.c' object='planner/allocation/test_runner-allocation_runtime_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-allocation_runtime_common.o `test -f 'planner/allocation/allocation_runtime_common.c' || echo '$(srcdir)/'`planner/allocation/allocation_runtime_common.c
+
+planner/allocation/test_runner-allocation_runtime_common.obj: planner/allocation/allocation_runtime_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/allocation/test_runner-allocation_runtime_common.obj -MD -MP -MF planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Tpo -c -o planner/allocation/test_runner-allocation_runtime_common.obj `if test -f 'planner/allocation/allocation_runtime_common.c'; then $(CYGPATH_W) 'planner/allocation/allocation_runtime_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/allocation_runtime_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Tpo planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/allocation/allocation_runtime_common.c' object='planner/allocation/test_runner-allocation_runtime_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/allocation/test_runner-allocation_runtime_common.obj `if test -f 'planner/allocation/allocation_runtime_common.c'; then $(CYGPATH_W) 'planner/allocation/allocation_runtime_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/allocation/allocation_runtime_common.c'; fi`
 
 planner/pipeline/test_runner-pipeline_worker_counts_common.o: planner/pipeline/pipeline_worker_counts_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-pipeline_worker_counts_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Tpo -c -o planner/pipeline/test_runner-pipeline_worker_counts_common.o `test -f 'planner/pipeline/pipeline_worker_counts_common.c' || echo '$(srcdir)/'`planner/pipeline/pipeline_worker_counts_common.c

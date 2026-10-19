@@ -218,6 +218,10 @@ int test_allocation_slots(int argc, char **argv);
 int test_allocation_controls(int argc, char **argv);
 int test_allocation_gpu(int argc, char **argv);
 int test_allocation_serial_policy(int argc, char **argv);
+int test_allocation_runtime_phases(int argc, char **argv);
+int test_allocation_effective_none(int argc, char **argv);
+int test_allocation_stateless_overlap(int argc, char **argv);
+int test_allocation_automatic_policy(int argc, char **argv);
 int test_parallel_float_0007(int argc, char **argv);
 int test_parallel_float_0009(int argc, char **argv);
 int test_parallel_float_0010(int argc, char **argv);
@@ -5770,6 +5774,14 @@ static test_entry_t const test_entries[] = {
         test_allocation_gpu },
     { "planner/allocation/0004_allocation_serial_policy",
         test_allocation_serial_policy },
+    { "planner/allocation/0005_allocation_runtime_phases",
+        test_allocation_runtime_phases },
+    { "planner/allocation/0006_allocation_effective_none",
+        test_allocation_effective_none },
+    { "planner/allocation/0008_allocation_stateless_overlap",
+        test_allocation_stateless_overlap },
+    { "planner/allocation/0009_allocation_automatic_policy",
+        test_allocation_automatic_policy },
     { "colorspace/parallel/0001_frame_bits",
         test_parallel_float_0001 },
     { "colorspace/parallel/0002_helper_bits",
