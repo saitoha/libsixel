@@ -1735,19 +1735,15 @@ interframe_diffuse_sierra2(unsigned char *data, int width, int height,
                 int x, int y, int depth, int error, int direction)
 {
     /* Sierra Two-row Method
-     *                  curr    4/32    3/32
-     *  1/32    2/32    3/32    2/32    1/32
-     *                  2/32    3/32    2/32
+     *                  curr    4/16    3/16
+     *  1/16    2/16    3/16    2/16    1/16
      */
     static const int row0_offsets[] = { 1, 2 };
     static const int row0_num[] = { 4, 3 };
-    static const int row0_den[] = { 32, 32 };
+    static const int row0_den[] = { 16, 16 };
     static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
     static const int row1_num[] = { 1, 2, 3, 2, 1 };
-    static const int row1_den[] = { 32, 32, 32, 32, 32 };
-    static const int row2_offsets[] = { -1, 0, 1 };
-    static const int row2_num[] = { 2, 3, 2 };
-    static const int row2_den[] = { 32, 32, 32 };
+    static const int row1_den[] = { 16, 16, 16, 16, 16 };
     int pos;
     int sign;
     int i;
@@ -1778,19 +1774,6 @@ interframe_diffuse_sierra2(unsigned char *data, int width, int height,
                                   row + (neighbor - x),
                                   depth, error,
                                   row1_num[i], row1_den[i]);
-        }
-    }
-    if (y < height - 2) {
-        row = pos + width * 2;
-        for (i = 0; i < 3; ++i) {
-            neighbor = x + sign * row2_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            interframe_error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row2_num[i], row2_den[i]);
         }
     }
 }
@@ -2523,13 +2506,10 @@ interframe_diffuse_sierra2_float(float *data,
 {
     static const int row0_offsets[] = { 1, 2 };
     static const int row0_num[] = { 4, 3 };
-    static const int row0_den[] = { 32, 32 };
+    static const int row0_den[] = { 16, 16 };
     static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
     static const int row1_num[] = { 1, 2, 3, 2, 1 };
-    static const int row1_den[] = { 32, 32, 32, 32, 32 };
-    static const int row2_offsets[] = { -1, 0, 1 };
-    static const int row2_num[] = { 2, 3, 2 };
-    static const int row2_den[] = { 32, 32, 32 };
+    static const int row1_den[] = { 16, 16, 16, 16, 16 };
     int pos;
 
     pos = y * width + x;
@@ -2562,22 +2542,6 @@ interframe_diffuse_sierra2_float(float *data,
                              row1_num,
                              row1_den,
                              5);
-    }
-    if (y < height - 2) {
-        interframe_diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width * 2,
-                             row2_offsets,
-                             row2_num,
-                             row2_den,
-                             3);
     }
 }
 

@@ -303,21 +303,14 @@ or compressibility: at `K=8` it is only 1.02x slower than `none`, yet has the
 lowest MS-SSIM of the three Sierra variants and the largest measured stream,
 2.563x the baseline.
 
-Variant 2 currently uses this ten-tap libsixel matrix:
+Variant 2 is the seven-tap Two-row Sierra matrix:
 
 ```text
              *  4  3
-       1  2  3  2  1
-          2  3  2       / 32 in libsixel
+       1  2  3  2  1    / 16
 ```
 
-Its numerators sum to 23, so it propagates `23/32` of the residual. Despite
-the historical “Sierra Two-row” label in the CLI help, the current libsixel
-implementation reaches two rows below the current pixel. This differs from
-the commonly reproduced two-row `1/16` matrix; the source, not the historical
-label, is the output contract. Variant 2 is the strongest Sierra result on the
-current fixture: it improves MS-SSIM at every measured `K` and has the
-smallest encoded size of the three variants at both endpoints.
+Its numerators sum to 16 and it reaches only the next scanline. The byte, float, interframe/STBN, and high-color implementations use this same matrix. Historical measurements of the three-row, denominator-32 implementation do not rank this kernel against the other Sierra variants.
 
 Variant 3 uses the original full Sierra-shaped matrix:
 
@@ -327,7 +320,7 @@ Variant 3 uses the original full Sierra-shaped matrix:
           2  3  2       / 32
 ```
 
-Its ten coefficients sum to `32/32`. It has the same footprint as libsixel's
+Its ten coefficients sum to `32/32`. It has a larger vertical footprint than
 variant 2 but conserves the complete interior residual. On the fixture its
 MS-SSIM is below `none` at `K=8` but above it at `K=256`, and its `K=8`
 stream is 2.305x the baseline. The contrast with variant 2 is another reason

@@ -609,76 +609,51 @@ dither_func_sierra2(unsigned char *data, int width)
     error_b += 4;
 
     /* Sierra Two-row Method
-     *                  curr    4/32    3/32
-     *  1/32    2/32    3/32    2/32    1/32
-     *                  2/32    3/32    2/32
+     *                  curr    4/16    3/16
+     *  1/16    2/16    3/16    2/16    1/16
      */
-    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 32);
-    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 32);
-    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 32);
+    r = data[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 16);
+    g = data[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 16);
+    b = data[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 16);
     data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
     data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
     data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 0 + 2) * 3 + 0] + (error_r * 3 / 32);
-    g = data[(width * 0 + 2) * 3 + 1] + (error_g * 3 / 32);
-    b = data[(width * 0 + 2) * 3 + 2] + (error_b * 3 / 32);
+    r = data[(width * 0 + 2) * 3 + 0] + (error_r * 3 / 16);
+    g = data[(width * 0 + 2) * 3 + 1] + (error_g * 3 / 16);
+    b = data[(width * 0 + 2) * 3 + 2] + (error_b * 3 / 16);
     data[(width * 0 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
     data[(width * 0 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
     data[(width * 0 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 32);
-    g = data[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 32);
-    b = data[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 32);
+    r = data[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 16);
+    g = data[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 16);
+    b = data[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 16);
     data[(width * 1 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
     data[(width * 1 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
     data[(width * 1 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 32);
-    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 32);
-    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 32);
+    r = data[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 16);
+    g = data[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 16);
+    b = data[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 16);
     data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
     data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
     data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 3 / 32);
-    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 3 / 32);
-    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 3 / 32);
+    r = data[(width * 1 + 0) * 3 + 0] + (error_r * 3 / 16);
+    g = data[(width * 1 + 0) * 3 + 1] + (error_g * 3 / 16);
+    b = data[(width * 1 + 0) * 3 + 2] + (error_b * 3 / 16);
     data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
     data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
     data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 32);
-    g = data[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 32);
-    b = data[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 32);
+    r = data[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 16);
+    g = data[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 16);
+    b = data[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 16);
     data[(width * 1 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
     data[(width * 1 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
     data[(width * 1 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 32);
-    g = data[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 32);
-    b = data[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 32);
+    r = data[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 16);
+    g = data[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 16);
+    b = data[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 16);
     data[(width * 1 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
     data[(width * 1 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
     data[(width * 1 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 32);
-    g = data[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 32);
-    b = data[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 2 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
-    data[(width * 2 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
-    data[(width * 2 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 2 + 0) * 3 + 0] + (error_r * 3 / 32);
-    g = data[(width * 2 + 0) * 3 + 1] + (error_g * 3 / 32);
-    b = data[(width * 2 + 0) * 3 + 2] + (error_b * 3 / 32);
-    data[(width * 2 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
-    data[(width * 2 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
-    data[(width * 2 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 32);
-    g = data[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 32);
-    b = data[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 2 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
-    data[(width * 2 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
-    data[(width * 2 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
-    r = data[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 32);
-    g = data[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 32);
-    b = data[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 32);
-    data[(width * 2 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
-    data[(width * 2 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
-    data[(width * 2 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -848,7 +823,7 @@ sixel_apply_15bpp_dither(
         }
         break;
     case SIXEL_DIFFUSE_SIERRA2:
-        if (x < width - 2 && y < height - 2) {
+        if (x < width - 2 && y < height - 1) {
             dither_func_sierra2(pixels, width);
         }
         break;
