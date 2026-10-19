@@ -27,8 +27,9 @@ trace=$(SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" 
     echo "not ok 1 - byte-source float clustering encode"
     exit 0
 }
+# Other diagnostic fields may follow rgb101 before the status codes.
 case "$trace" in
-    *'|rgb101=1|codes='*) ;;
+    *'|rgb101=1|'*) ;;
     *)
         echo "$trace" >&2
         echo "not ok 1 - float clustering lost native palette"

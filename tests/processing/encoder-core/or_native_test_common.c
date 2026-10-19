@@ -11,6 +11,7 @@
 #include "src/encoder.h"
 #include "src/dither.h"
 #include "src/palette.h"
+#include "src/planner.h"
 #include "src/encoder-core-private.h"
 
 typedef struct or_native_capture {
@@ -264,7 +265,11 @@ or_native_encoder_case(int scenario)
         fprintf(stderr, "OR pipeline did not run\n");
         goto end;
     }
-    if (offset && dither->pipeline_last_encode_threads != 0) {
+    /* The resolved mode identifies the direct offset path. Encode capacity
+     * may still report the configured budget without a row pipeline. */
+    if (offset &&
+            (dither->pipeline_last_mode != SIXEL_DITHER_ENCODE_SERIAL ||
+             dither->pipeline_last_band_height != 0)) {
         goto end;
     }
     if (!byte) {
