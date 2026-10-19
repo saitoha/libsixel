@@ -1569,14 +1569,14 @@ interframe_diffuse_stucki(unsigned char *data, int width, int height,
     int pos;
     int sign;
     static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 1, 1 };
-    static const int row0_den[] = { 6, 12 };
+    static const int row0_num[] = { 8, 4 };
+    static const int row0_den[] = { 42, 42 };
     static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 1, 1, 1, 1, 1 };
-    static const int row1_den[] = { 24, 12, 6, 12, 24 };
+    static const int row1_num[] = { 2, 4, 8, 4, 2 };
+    static const int row1_den[] = { 42, 42, 42, 42, 42 };
     static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row2_num[] = { 1, 1, 1, 1, 1 };
-    static const int row2_den[] = { 42, 24, 12, 24, 42 };
+    static const int row2_num[] = { 1, 2, 4, 2, 1 };
+    static const int row2_den[] = { 42, 42, 42, 42, 42 };
     int i;
 
     pos = y * width + x;
@@ -2327,14 +2327,14 @@ interframe_diffuse_stucki_float(float *data,
                      int channel_index)
 {
     static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 1, 1 };
-    static const int row0_den[] = { 6, 12 };
+    static const int row0_num[] = { 8, 4 };
+    static const int row0_den[] = { 42, 42 };
     static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 1, 1, 1, 1, 1 };
-    static const int row1_den[] = { 24, 12, 6, 12, 24 };
+    static const int row1_num[] = { 2, 4, 8, 4, 2 };
+    static const int row1_den[] = { 42, 42, 42, 42, 42 };
     static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row2_num[] = { 1, 1, 1, 1, 1 };
-    static const int row2_den[] = { 42, 24, 12, 24, 42 };
+    static const int row2_num[] = { 1, 2, 4, 2, 1 };
+    static const int row2_den[] = { 42, 42, 42, 42, 42 };
     int pos;
 
     pos = y * width + x;
