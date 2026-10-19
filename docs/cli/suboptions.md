@@ -100,6 +100,10 @@ Help and manuals must publish the primary mapping, including its scope when one 
 
 `-Q heckbert` accepts `cut=median|sse` (`T`), `order=population|sse` (`O`) and `weights=auto|L/A/B` (`W`) alongside `profile` (`P`). Unspecified cut/order use SSE in every profile, while `-s auto` follows the diffusion selected for palette construction. The [quantization reference](../encoder/palette-construction/quantization/README.md#cut-box-order-and-native-axis-ratios) owns defaults, environment mappings, coordinate interpretation and numerical behavior. Weights share FHEDT's positive finite ratio syntax; they configure partition geometry rather than lookup.
 
+## Spatial diffusion deadzone
+
+`-d fs:deadzone=5` uses compact key `D`; the same row is shared by `auto`, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes and Sierra. The explicit base set keeps `D` unambiguous with the temporal policies' existing `diffusion` suboption. The [dithering reference](../encoder/palette-application/dithering/README.md#byte-spatial-diffusion) owns the byte RGB distance, default, environment mapping and precision scope. This is subordinate to error propagation rather than a separate pipeline stage.
+
 ## Diagnostics and failure behavior
 
 An invalid base, key, and value are distinct failures because each has a different valid domain. Diagnostics identify the owning option and active base where applicable. Unknown keys may list the keys valid in that scope, and the independent [correction-suggestion policy](correction-suggestions.md) may add a close canonical spelling. Neither a candidate list nor a typo suggestion changes failure into success.

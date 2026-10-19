@@ -82,7 +82,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
               (name == "scan" || name == "band_overwrap" ||
                name == "band_width" || name == "threads_max" ||
                name == "pin_threads" || name == "perturb" ||
-               name == "perturb_seed")) ||
+               name == "perturb_seed" || name == "deadzone")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_X_DITHER/ ||
@@ -108,6 +108,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         if (option_id == "SIXEL_OPTION_SCHEMA_UPDATE_POLICY") {
             expected_presentation_stop[key] = name == "stop_threshold" \
                 ? "converged" : name
+        } else if (option_id == "SIXEL_OPTION_SCHEMA_DIFFUSION") {
+            expected_dither_contract[key] = 1
         } else if (option_id != "SIXEL_OPTION_SCHEMA_LUT_POLICY") {
             fail(option_id ":" name " lacks a multi-base consumer check")
         }
