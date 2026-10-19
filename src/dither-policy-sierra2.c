@@ -37,6 +37,7 @@
 #include "compat_stub.h"
 #include "dither-policy-sierra2.h"
 #include "dither.h"
+#include "dither-carry.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
@@ -65,333 +66,6 @@ typedef struct sixel_dither_policy_sierra2_context {
     size_t transparent_mask_size;
     int transparent_keycolor;
 } sixel_dither_policy_sierra2_context_t;
-
-static void
-sierra2_sixel_dither_scanline_params_fixed_8bit(int serpentine,
-                             int index,
-                             int limit,
-                             int *start,
-                             int *end,
-                             int *step,
-                             int *direction)
-{
-    if (serpentine && (index & 1)) {
-        *start = limit - 1;
-        *end = -1;
-        *step = -1;
-        *direction = -1;
-    } else {
-        *start = 0;
-        *end = limit;
-        *step = 1;
-        *direction = 1;
-    }
-}
-
-/* Shared diffusion helper kernels. */
-static void
-sierra2_error_diffuse_precise(
-    unsigned char /* in */    *data,      /* base address of pixel buffer */
-    int           /* in */    pos,        /* address of the destination pixel */
-    int           /* in */    depth,      /* color depth in bytes */
-    int           /* in */    error,      /* error energy */
-    int           /* in */    numerator,  /* numerator of diffusion coefficient */
-    int           /* in */    denominator /* denominator of diffusion coefficient */)
-{
-    int c;
-
-    data += pos * depth;
-
-    c = (int)(*data + error * numerator / (double)denominator + 0.5);
-    if (c < 0) {
-        c = 0;
-    }
-    if (c >= 1 << 8) {
-        c = (1 << 8) - 1;
-    }
-    *data = (unsigned char)c;
-}
-
-static void sierra2_diffuse_sierra2(unsigned char *data,
-                            int width,
-                            int height,
-                            int x,
-                            int y,
-                            int depth,
-                            int error,
-                            int direction);
-
-static SIXELSTATUS
-sixel_dither_apply_sierra2_8bit(
-    sixel_index_t *result,
-    unsigned char *data,
-    int width,
-    int height,
-    int band_origin,
-    int output_start,
-    int depth,
-    unsigned char *palette,
-    int method_for_scan,
-    sixel_lookup_policy_interface_t const *lookup_policy,
-    sixel_dither_t *dither)
-{
-    int lookup_hint;
-    SIXELSTATUS status;
-    int serpentine;
-    int y;
-    int start;
-    int end;
-    int step;
-    int direction;
-    int x;
-    int absolute_y;
-    int pos;
-    size_t base;
-    unsigned char const *source_pixel;
-    int color_index;
-    int output_index;
-    int n;
-    int palette_value;
-    int offset;
-    unsigned char const *transparent_mask;
-    size_t transparent_mask_size;
-    int transparent_keycolor;
-    int use_transparent_fence;
-    int is_transparent;
-    size_t absolute_index;
-    unsigned char const *accumulation_pixel;
-    int accumulation_keycolor;
-    int is_6delta_keep;
-    int record_result;
-    int diffuse_6delta_error;
-
-    status = SIXEL_FALSE;
-
-    if (dither == NULL || result == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-    if (data == NULL || palette == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-    if (lookup_policy == NULL || lookup_policy->vtbl == NULL
-            || lookup_policy->vtbl->map_pixel == NULL
-            || lookup_policy->vtbl->map_pixel_hint == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
-    if (depth > SIXEL_MAX_CHANNELS) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
-    transparent_mask = NULL;
-    transparent_mask_size = 0U;
-    transparent_keycolor = (-1);
-    use_transparent_fence = 0;
-    accumulation_pixel = NULL;
-    accumulation_keycolor = (-1);
-    is_6delta_keep = 0;
-    record_result = 0;
-    diffuse_6delta_error =
-        sixel_dither_pipeline_6delta_error_mode(dither)
-        == SIXEL_6DELTA_ERROR_DIFFUSE ? 1 : 0;
-    if (dither != NULL
-            && dither->pipeline_transparent_mask != NULL
-            && dither->pipeline_transparent_keycolor >= 0
-            && dither->pipeline_transparent_keycolor < SIXEL_PALETTE_MAX) {
-        transparent_mask = dither->pipeline_transparent_mask;
-        transparent_mask_size = dither->pipeline_transparent_mask_size;
-        transparent_keycolor = dither->pipeline_transparent_keycolor;
-        use_transparent_fence = 1;
-    }
-
-    serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
-
-    lookup_hint = -1;
-    for (y = 0; y < height; ++y) {
-        absolute_y = band_origin + y;
-        sierra2_sixel_dither_scanline_params_fixed_8bit(
-            serpentine, absolute_y, width,
-            &start, &end, &step, &direction);
-        for (x = start; x != end; x += step) {
-            pos = y * width + x;
-            base = (size_t)pos * (size_t)depth;
-            is_transparent = 0;
-            absolute_index = 0U;
-            if (absolute_y >= 0) {
-                absolute_index = (size_t)absolute_y * (size_t)width
-                    + (size_t)x;
-            }
-            if (use_transparent_fence && absolute_y >= 0) {
-                if (absolute_index < transparent_mask_size
-                        && transparent_mask[absolute_index] != 0U) {
-                    is_transparent = 1;
-                }
-            }
-            if (is_transparent) {
-                if (absolute_y >= output_start) {
-                    result[pos] = (sixel_index_t)transparent_keycolor;
-                }
-                continue;
-            }
-
-            source_pixel = data + base;
-            record_result = absolute_y >= output_start ? 1 : 0;
-            is_6delta_keep = 0;
-            if (absolute_y >= 0) {
-                is_6delta_keep =
-                    sixel_dither_pipeline_6delta_try_keep_rgb888(
-                        dither,
-                        absolute_index,
-                        x,
-                        absolute_y,
-                        source_pixel,
-                        record_result,
-                        &accumulation_pixel,
-                        &accumulation_keycolor);
-            }
-            if (is_6delta_keep != 0) {
-                if (record_result != 0) {
-                    result[pos] = (sixel_index_t)accumulation_keycolor;
-                }
-                if (diffuse_6delta_error != 0) {
-                    for (n = 0; n < depth; ++n) {
-                        offset = (int)source_pixel[n]
-                            - (int)accumulation_pixel[n];
-                        sierra2_diffuse_sierra2(data + n,
-                                                width,
-                                                height,
-                                                x,
-                                                y,
-                                                depth,
-                                                offset,
-                                                direction);
-                    }
-                }
-                continue;
-            }
-            color_index = lookup_policy->vtbl->map_pixel_hint(
-                lookup_policy,
-                source_pixel,
-                lookup_hint);
-            lookup_hint = color_index;
-            /*
-             * Let the retained display color compete with the palette result.
-             * Keeping wins ties because it is at least as accurate and emits
-             * no replacement pixel.
-             */
-            if (absolute_y >= 0 && depth >= 3) {
-                is_6delta_keep =
-                    sixel_dither_pipeline_6delta_try_keep_after_lookup(
-                        dither,
-                        absolute_index,
-                        x,
-                        absolute_y,
-                        source_pixel,
-                        palette + (size_t)color_index * (size_t)depth,
-                        color_index,
-                        record_result,
-                        &accumulation_pixel,
-                        &accumulation_keycolor);
-                if (is_6delta_keep != 0) {
-                    if (record_result != 0) {
-                        result[pos] = (sixel_index_t)accumulation_keycolor;
-                    }
-                    if (diffuse_6delta_error != 0) {
-                        for (n = 0; n < depth; ++n) {
-                            offset = (int)source_pixel[n]
-                                - (int)accumulation_pixel[n];
-                            sierra2_diffuse_sierra2(data + n,
-                                                    width,
-                                                    height,
-                                                    x,
-                                                    y,
-                                                    depth,
-                                                    offset,
-                                                    direction);
-                        }
-                    }
-                    continue;
-                }
-            }
-            output_index = color_index;
-
-            if (absolute_y >= output_start) {
-                /*
-                 * Palette indices are bounded by SIXEL_PALETTE_MAX,
-                 * which fits in sixel_index_t (unsigned char).
-                 */
-                result[pos] = (sixel_index_t)output_index;
-            }
-
-            for (n = 0; n < depth; ++n) {
-                palette_value = palette[color_index * depth + n];
-                offset = (int)source_pixel[n] - palette_value;
-                sierra2_diffuse_sierra2(data + n, width, height, x, y,
-                          depth, offset, direction);
-            }
-        }
-        if (absolute_y >= output_start) {
-            sixel_dither_pipeline_row_notify(dither, absolute_y);
-        }
-    }
-
-    status = SIXEL_OK;
-
-end:
-    return status;
-}
-
-static void
-sierra2_diffuse_sierra2(unsigned char *data, int width, int height,
-                int x, int y, int depth, int error, int direction)
-{
-    /* Sierra Two-row Method
-     *                  curr    4/16    3/16
-     *  1/16    2/16    3/16    2/16    1/16
-     */
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 4, 3 };
-    static const int row0_den[] = { 16, 16 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 1, 2, 3, 2, 1 };
-    static const int row1_den[] = { 16, 16, 16, 16, 16 };
-    int pos;
-    int sign;
-    int i;
-    int neighbor;
-    int row;
-
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
-
-    for (i = 0; i < 2; ++i) {
-        neighbor = x + sign * row0_offsets[i];
-        if (neighbor < 0 || neighbor >= width) {
-            continue;
-        }
-        sierra2_error_diffuse_precise(data,
-                              pos + (neighbor - x),
-                              depth, error,
-                              row0_num[i], row0_den[i]);
-    }
-    if (y < height - 1) {
-        row = pos + width;
-        for (i = 0; i < 5; ++i) {
-            neighbor = x + sign * row1_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            sierra2_error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row1_num[i], row1_den[i]);
-        }
-    }
-}
 
 static void
 sierra2_error_diffuse_float(float *data,
@@ -437,12 +111,6 @@ sierra2_sixel_dither_scanline_params_fixed_float32(int serpentine,
 }
 
 /*
- * Atkinson's kernel spreads the error within a 3x3 neighborhood using
- * symmetric 1/8 weights.  The float variant mirrors the integer version
- * but keeps the higher precision samples intact.
- */
-
-/*
  * Shared helper that applies a row of diffusion weights to neighbors on the
  * current or subsequent scanlines.  Each caller provides the offset table and
  * numerator/denominator pairs so the classic kernels can be described using a
@@ -486,12 +154,6 @@ sierra2_diffuse_weighted_row(float *data,
                             channel_index);
     }
 }
-
-/*
- * Jarvis, Judice, and Ninke kernel using the canonical 5x3 mask.  Three rows
- * of weights are applied with consistent 1/48 denominators to preserve the
- * reference diffusion matrix.
- */
 
 static void
 sierra2_diffuse_sierra2_float(float *data,
@@ -941,7 +603,6 @@ sixel_dither_policy_sierra2_apply_8bit(
 {
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
-    sixel_dither_policy_sierra2_context_t context;
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
@@ -953,24 +614,8 @@ sixel_dither_policy_sierra2_apply_8bit(
         return status;
     }
 
-    status = sixel_dither_policy_sierra2_build_context(&effective,
-                                                    &context);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    return sixel_dither_apply_sierra2_8bit(
-        context.result,
-        context.pixels,
-        context.width,
-        context.height,
-        context.band_origin,
-        context.output_start,
-        context.depth,
-        context.palette,
-        context.method_for_scan,
-        context.lookup_policy,
-        effective.dither);
+    return sixel_dither_carry_apply(&effective,
+                                    SIXEL_DIFFUSE_SIERRA2, 5.0);
 }
 
 static SIXELSTATUS
