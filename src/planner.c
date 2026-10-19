@@ -547,6 +547,7 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->colorspace_after_scale = 0;
     planner->resize_precision_mode = 1;
     planner->pipeline_active = 0;
+    planner->pipeline_staged = 0;
     planner->pipeline_band_height = 0;
     planner->pipeline_overlap = 0;
     planner->pipeline_queue_depth = 0;
@@ -924,6 +925,145 @@ sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
     sixel_encoding_planner_build_dag(planner, encoder, palette_branch_active);
 }
 
+/* Keep the automatic policy separate from the allocation mechanism. */
+int
+sixel_dither_encode_default_staged(int total_threads, int method_for_diffuse)
+{
+    (void)total_threads;
+    (void)method_for_diffuse;
+    return 0;
+}
+
+void
+sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
+                              sixel_dither_encode_allocation_t *allocation)
+{
+    int threads;
+    int dither_threads;
+    int encode_threads;
+    int band_height;
+    int overlap;
+    int staged;
+
+    if (allocation == NULL) {
+        return;
+    }
+    allocation->mode = SIXEL_DITHER_ENCODE_SERIAL;
+    allocation->dither_threads = 1;
+    allocation->encode_threads = 1;
+    allocation->band_height = 0;
+    allocation->overlap = 0;
+    if (request == NULL) {
+        return;
+    }
+    threads = request->total_threads;
+    if (threads <= 1 || request->height <= 0) {
+        return;
+    }
+    allocation->encode_threads = threads;
+    if (request->gpu_encode_only) {
+        /* GPU application has no CPU producer reservation. Preserve the
+         * full encode budget, independently of CPU geometry overrides. */
+        allocation->mode = SIXEL_DITHER_ENCODE_PIPELINE;
+        allocation->dither_threads = 0;
+        allocation->band_height = 6;
+        return;
+    }
+
+    staged = request->prefer_staged && !request->threads_max_set;
+    /* Only the spatial policies support independent work bands. A staged
+     * frame-global or unknown policy would lose overlap without gaining
+     * parallel application. Keep its existing reservation instead. */
+    switch (request->method_for_diffuse) {
+    case SIXEL_DIFFUSE_AUTO:
+    case SIXEL_DIFFUSE_NONE:
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+    case SIXEL_DIFFUSE_LSO2:
+    case SIXEL_DIFFUSE_A_DITHER:
+    case SIXEL_DIFFUSE_X_DITHER:
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        break;
+    default:
+        staged = 0;
+        break;
+    }
+#if !SIXEL_ENABLE_THREADS || defined(__PCC__) || defined(__TINYC__)
+    /* Match the application path's platform-specific serial restriction. */
+    staged = 0;
+#endif
+    if (staged) {
+        dither_threads = threads;
+        encode_threads = threads;
+    } else {
+        /* ceil(0.7 * threads), without overflowing the multiplication. */
+        dither_threads = (threads / 10) * 7
+            + ((threads % 10) * 7 + 9) / 10;
+        if (request->threads_max_set) {
+            dither_threads = (int)request->threads_max;
+        }
+        if (dither_threads < 1) {
+            dither_threads = 1;
+        }
+        if (dither_threads > threads) {
+            dither_threads = threads;
+        }
+        encode_threads = threads - dither_threads;
+        /* Explicit caps retain the existing minimum encode reservation. */
+        if (encode_threads < 2 && threads > 2) {
+            encode_threads = 2;
+            dither_threads = threads - encode_threads;
+        }
+        if (encode_threads < 1) {
+            encode_threads = 1;
+            dither_threads = threads - encode_threads;
+        }
+        if (encode_threads <= 1) {
+            /* The legacy fallback applies serially, then lets the encoder
+             * use the full budget. Its E=1 split never starts a pipeline. */
+            return;
+        }
+    }
+
+    band_height = request->band_height_set
+        ? (int)request->band_height : 0;
+    if (band_height <= 0) {
+        band_height = request->height / dither_threads
+            + (request->height % dither_threads != 0);
+    }
+    if (band_height < 6) {
+        band_height = 6;
+    }
+    if (band_height > INT_MAX - 5) {
+        band_height = INT_MAX - (INT_MAX % 6);
+    } else if (band_height % 6 != 0) {
+        band_height = ((band_height + 5) / 6) * 6;
+    }
+    overlap = request->ncolors <= 32 ? 6 : 0;
+    if (request->overlap_set) {
+        overlap = (int)request->overlap;
+    }
+    if (overlap < 0) {
+        overlap = 0;
+    }
+    if (overlap > band_height / 2) {
+        overlap = band_height / 2;
+    }
+
+    allocation->mode = staged ? SIXEL_DITHER_ENCODE_STAGED
+        : SIXEL_DITHER_ENCODE_PIPELINE;
+    allocation->dither_threads = dither_threads;
+    allocation->encode_threads = encode_threads;
+    allocation->band_height = band_height;
+    allocation->overlap = overlap;
+}
+
 void
 sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
                                      sixel_encoder_t *encoder,
@@ -934,47 +1074,17 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     int height;
     int nbands;
     int threads;
-    int dither_threads;
-    int encode_threads;
-    int band_height;
-    int overlap;
     int queue_depth;
-    int dither_env_override;
     int pin_threads;
-    int ncolors;
-    int gpu_encode_only;
-    unsigned int configured_overlap;
-    int has_configured_overlap;
-    unsigned int configured_band_height;
-    int has_configured_band_height;
-    unsigned int configured_threads_max;
-    int has_configured_threads_max;
-
-    pixel_count = 0U;
-    width = 0;
-    height = 0;
-    nbands = 0;
-    threads = 0;
-    dither_threads = 0;
-    encode_threads = 0;
-    band_height = 0;
-    overlap = 0;
-    queue_depth = 0;
-    dither_env_override = 0;
-    ncolors = SIXEL_PALETTE_MAX;
-    gpu_encode_only = 0;
-    configured_overlap = 0u;
-    has_configured_overlap = 0;
-    configured_band_height = 0u;
-    has_configured_band_height = 0;
-    configured_threads_max = 0u;
-    has_configured_threads_max = 0;
+    sixel_dither_encode_request_t request = {0};
+    sixel_dither_encode_allocation_t allocation;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
     }
 
     planner->pipeline_active = 0;
+    planner->pipeline_staged = 0;
     planner->pipeline_band_height = 0;
     planner->pipeline_overlap = 0;
     planner->pipeline_queue_depth = 0;
@@ -989,13 +1099,10 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
 
     pin_threads = sixel_encoding_planner_resolve_pin_threads(encoder);
     planner->pipeline_pin_threads = pin_threads;
-
     height = sixel_frame_get_height(frame);
     width = sixel_frame_get_width(frame);
-    /*
-     * Palette construction has joined before this pipeline starts. Its
-     * temporary main/palette split must not reduce the final worker budget.
-     */
+    /* Palette construction joins before this phase. Its earlier overlap
+     * reservation must not reduce the final dither/encode worker budget. */
     threads = planner->total_threads;
     if (width <= 0 || height <= 0 || threads <= 1) {
         return;
@@ -1004,119 +1111,50 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         return;
     }
     pixel_count = (size_t)width * (size_t)height;
-
-    nbands = (height + 5) / 6;
+    nbands = height / 6 + (height % 6 != 0);
     planner->pipeline_bands = nbands;
     if (nbands <= 1) {
         return;
     }
 
-    dither_threads = (threads * 7 + 9) / 10;
-    has_configured_threads_max =
-        sixel_encoding_planner_resolve_threads_max(
-            encoder,
-            &configured_threads_max);
-    if (has_configured_threads_max != 0) {
-        dither_threads = (int)configured_threads_max;
-        dither_env_override = 1;
+    request.total_threads = threads;
+    request.height = height;
+    request.ncolors = encoder->reqcolors;
+    if (request.ncolors <= 0 || request.ncolors > SIXEL_PALETTE_MAX) {
+        request.ncolors = SIXEL_PALETTE_MAX;
     }
-    if (dither_threads < 1) {
-        dither_threads = 1;
-    }
-    if (dither_threads > threads) {
-        dither_threads = threads;
-    }
+    /* This pre-palette estimate uses the request. Runtime invokes the same
+     * allocator with the completed palette and effective diffusion method. */
+    request.method_for_diffuse = encoder->method_for_diffuse;
+    request.prefer_staged = sixel_dither_encode_default_staged(
+        threads, request.method_for_diffuse);
+    request.gpu_encode_only = sixel_gpu_palette_policy_claims_apply_stage(
+        encoder->gpu_policy, encoder->gpu_palette_threshold,
+        encoder->lut_policy, encoder->method_for_diffuse,
+        encoder->method_for_scan, pixel_count);
+    request.threads_max_set = sixel_encoding_planner_resolve_threads_max(
+        encoder, &request.threads_max);
+    request.band_height_set = sixel_encoding_planner_resolve_band_width(
+        encoder, &request.band_height);
+    request.overlap_set = sixel_encoding_planner_resolve_band_overwrap(
+        encoder, &request.overlap);
+    sixel_dither_encode_allocate(&request, &allocation);
 
-    if (dither_env_override == 0 && threads >= 4 && dither_threads < 2) {
-        dither_threads = threads - 2;
+    /* The queue belongs to the initial encode reservation. In staged mode
+     * it is created only after the application workers have all joined. */
+    queue_depth = nbands;
+    if (allocation.encode_threads <= nbands / 3) {
+        queue_depth = allocation.encode_threads * 3;
     }
-
-    encode_threads = threads - dither_threads;
-    if (encode_threads < 2 && threads > 2) {
-        encode_threads = 2;
-        dither_threads = threads - encode_threads;
-    }
-    if (encode_threads < 1) {
-        encode_threads = 1;
-        dither_threads = threads - encode_threads;
-    }
-    gpu_encode_only =
-        sixel_gpu_palette_policy_claims_apply_stage(
-            encoder->gpu_policy,
-            encoder->gpu_palette_threshold,
-            encoder->lut_policy,
-            encoder->method_for_diffuse,
-            encoder->method_for_scan,
-            pixel_count);
-    if (gpu_encode_only != 0) {
-        dither_threads = 0;
-        encode_threads = threads;
-        band_height = 6;
-        overlap = 0;
-    } else {
-        if (dither_threads < 1) {
-            return;
-        }
-
-        has_configured_band_height =
-            sixel_encoding_planner_resolve_band_width(
-                encoder,
-                &configured_band_height);
-        if (has_configured_band_height != 0) {
-            band_height = (int)configured_band_height;
-        }
-        if (band_height <= 0) {
-            band_height = (height + dither_threads - 1) / dither_threads;
-        }
-        if (band_height < 6) {
-            band_height = 6;
-        }
-        if (band_height > INT_MAX - 5) {
-            band_height = INT_MAX - (INT_MAX % 6);
-        } else if ((band_height % 6) != 0) {
-            band_height = ((band_height + 5) / 6) * 6;
-        }
-
-        ncolors = encoder->reqcolors;
-        if (ncolors <= 0 || ncolors > SIXEL_PALETTE_MAX) {
-            ncolors = SIXEL_PALETTE_MAX;
-        }
-        if (ncolors <= 32) {
-            overlap = 6;
-        } else {
-            overlap = 0;
-        }
-        has_configured_overlap =
-            sixel_encoding_planner_resolve_band_overwrap(
-                encoder,
-                &configured_overlap);
-        if (has_configured_overlap != 0) {
-            overlap = (int)configured_overlap;
-        }
-        if (overlap < 0) {
-            overlap = 0;
-        }
-        if (overlap > band_height / 2) {
-            overlap = band_height / 2;
-        }
-    }
-
-    /* Match the initial encode queue, before retired dither slots join it. */
-    queue_depth = encode_threads * 3;
-    if (queue_depth > nbands) {
-        queue_depth = nbands;
-    }
-    if (queue_depth < 1) {
-        queue_depth = 1;
-    }
-
-    planner->pipeline_active = 1;
-    planner->pipeline_band_height = band_height;
-    planner->pipeline_overlap = overlap;
+    planner->pipeline_active =
+        allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE;
+    planner->pipeline_staged =
+        allocation.mode == SIXEL_DITHER_ENCODE_STAGED;
+    planner->pipeline_band_height = allocation.band_height;
+    planner->pipeline_overlap = allocation.overlap;
     planner->pipeline_queue_depth = queue_depth;
-    planner->pipeline_dither_threads = dither_threads;
-    planner->pipeline_encode_threads = encode_threads;
-    planner->pipeline_pin_threads = pin_threads;
+    planner->pipeline_dither_threads = allocation.dither_threads;
+    planner->pipeline_encode_threads = allocation.encode_threads;
 }
 
 
@@ -1314,10 +1352,12 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     }
 
     fprintf(stream, "  pipeline:\n");
+    fprintf(stream, "    resolution=pre-palette-estimate\n");
     fprintf(stream, "    bands=%d queue=%d mode=%s\n",
             planner->pipeline_bands,
             planner->pipeline_queue_depth,
-            planner->pipeline_active != 0 ? "pipeline" : "serial");
+            planner->pipeline_active != 0 ? "pipeline"
+                : planner->pipeline_staged != 0 ? "staged" : "serial");
     fprintf(stream,
             "    band_height=%d overlap=%d threads: dither=%d encode=%d\n",
             planner->pipeline_band_height,

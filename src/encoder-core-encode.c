@@ -75,6 +75,7 @@
 #include "threading.h"
 #include "encoder-core-highcolor.h"
 #include "gpu-palette.h"
+#include "planner.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
 # include <6cells.h>
@@ -92,15 +93,6 @@
 #define DCS_8BIT(x)          DCS_START_8BIT x DCS_END_8BIT
 #define SCREEN_PACKET_SIZE   256
 
-typedef struct sixel_parallel_dither_config {
-    int enabled;
-    int band_height;
-    int overlap;
-    int dither_threads;
-    int encode_threads;
-    int dither_env_override;
-    int pin_threads;
-} sixel_parallel_dither_config_t;
 
 typedef struct sixel_encode_work {
     char *map;
@@ -327,171 +319,67 @@ sixel_timeline_logger_prepare_default(sixel_allocator_t *allocator,
 
 static void
 sixel_parallel_dither_configure(int height,
-                                int pipeline_threads,
+                                int total_threads,
+                                size_t pixel_count,
                                 sixel_dither_t const *dither,
-                                sixel_parallel_dither_config_t *config)
+                                sixel_dither_encode_allocation_t *allocation)
 {
-    int band_height;
-    int overlap;
-    int dither_threads;
-    int encode_threads;
-    int dither_env_override;
-    int ncolors;
-    unsigned int configured_overlap;
-    int has_configured_overlap;
-    unsigned int configured_band_height;
-    int has_configured_band_height;
-    unsigned int configured_threads_max;
-    int has_configured_threads_max;
+    sixel_dither_encode_request_t request = {0};
 
-    if (config == NULL) {
-        return;
-    }
+    request.height = height;
+    request.total_threads = total_threads;
+    request.ncolors = dither->ncolors;
+    request.method_for_diffuse = dither->method_for_diffuse;
+    request.prefer_staged = sixel_dither_encode_default_staged(
+        total_threads, request.method_for_diffuse);
+    request.gpu_encode_only = sixel_gpu_palette_policy_claims_apply_stage(
+        dither->gpu_policy, dither->gpu_palette_threshold,
+        dither->lut_policy, dither->method_for_diffuse,
+        dither->method_for_scan, pixel_count);
 
-    config->enabled = 0;
-    config->band_height = 0;
-    config->overlap = 0;
-    config->dither_threads = 0;
-    config->encode_threads = pipeline_threads;
-    config->pin_threads = 0;
-    ncolors = 0;
-    configured_overlap = 0u;
-    has_configured_overlap = 0;
-    configured_band_height = 0u;
-    has_configured_band_height = 0;
-    configured_threads_max = 0u;
-    has_configured_threads_max = 0;
-
-    if (pipeline_threads <= 1 || height <= 0 || dither == NULL) {
-        return;
-    }
-    config->pin_threads = dither->pipeline_pin_threads != 0 ? 1 : 0;
-    ncolors = dither->ncolors;
-
-    dither_env_override = 0;
-    dither_threads = (pipeline_threads * 7 + 9) / 10;
+    /* Resolve each request-bound control before consulting its registered
+     * environment. The pure allocator sees identical precedence in the
+     * early planner and this post-palette execution path. */
     if (dither->dither_parallel_threads_max_override != 0) {
-        configured_threads_max = dither->dither_parallel_threads_max;
-        has_configured_threads_max = 1;
+        request.threads_max = dither->dither_parallel_threads_max;
+        request.threads_max_set = 1;
     } else {
-        has_configured_threads_max =
+        request.threads_max_set =
             sixel_option_resolve_registered_uint_binding(
                 SIXEL_OPTION_SCHEMA_DIFFUSION,
                 NULL,
                 SIXEL_SUBOPTION_BINDING_ID_2(
                     dither_parallel_threads_max,
                     dither_parallel_threads_max_override),
-                &configured_threads_max);
+                &request.threads_max);
     }
-    if (has_configured_threads_max != 0) {
-        dither_threads = (int)configured_threads_max;
-        dither_env_override = 1;
-    }
-    if (dither_threads < 1) {
-        dither_threads = 1;
-    }
-    if (dither_threads > pipeline_threads) {
-        dither_threads = pipeline_threads;
-    }
-
-    if (!dither_env_override && pipeline_threads >= 4 && dither_threads < 2) {
-        /*
-         * When the total budget is ample, keep at least two dither workers so
-         * the banded producer can feed the encoder fast enough to pipeline.
-         */
-        dither_threads = pipeline_threads - 2;
-    }
-
-    encode_threads = pipeline_threads - dither_threads;
-    if (encode_threads < 2 && pipeline_threads > 2) {
-        /*
-         * Preserve a minimal pair of encoder workers to keep the pipeline
-         * alive while leaving the rest to dithering. Small budgets fall back
-         * to the serial encoder path later in the caller.
-         */
-        encode_threads = 2;
-        dither_threads = pipeline_threads - encode_threads;
-    }
-    if (encode_threads < 1) {
-        encode_threads = 1;
-        dither_threads = pipeline_threads - encode_threads;
-    }
-    if (dither_threads < 1) {
-        return;
-    }
-
-    /*
-     * Prefer the request-bound suboption, then its registered environment.
-     * Otherwise split the image across the initial dither workers so each
-     * thread starts with a single band. The result is rounded to a six-line
-     * multiple to stay aligned with the encoder's natural cadence.
-     */
-    band_height = 0;
     if (dither->dither_parallel_band_width_override != 0) {
-        configured_band_height = dither->dither_parallel_band_width;
-        has_configured_band_height = 1;
+        request.band_height = dither->dither_parallel_band_width;
+        request.band_height_set = 1;
     } else {
-        has_configured_band_height =
+        request.band_height_set =
             sixel_option_resolve_registered_uint_binding(
                 SIXEL_OPTION_SCHEMA_DIFFUSION,
                 NULL,
                 SIXEL_SUBOPTION_BINDING_ID_2(
                     dither_parallel_band_width,
                     dither_parallel_band_width_override),
-                &configured_band_height);
-    }
-    if (has_configured_band_height != 0) {
-        band_height = (int)configured_band_height;
-    }
-    if (band_height <= 0) {
-        band_height = (height + dither_threads - 1) / dither_threads;
-    }
-    if (band_height < 6) {
-        band_height = 6;
-    }
-    if (band_height > INT_MAX - 5) {
-        band_height = INT_MAX - (INT_MAX % 6);
-    } else if ((band_height % 6) != 0) {
-        band_height = ((band_height + 5) / 6) * 6;
-    }
-
-    /*
-     * Default overlap favors quality for small palettes and speed when
-     * colors are plentiful. Registered controls can override this policy.
-     */
-    if (ncolors <= 32) {
-        overlap = 6;
-    } else {
-        overlap = 0;
+                &request.band_height);
     }
     if (dither->dither_parallel_band_overwrap_override != 0) {
-        configured_overlap = dither->dither_parallel_band_overwrap;
-        has_configured_overlap = 1;
+        request.overlap = dither->dither_parallel_band_overwrap;
+        request.overlap_set = 1;
     } else {
-        has_configured_overlap =
+        request.overlap_set =
             sixel_option_resolve_registered_uint_binding(
                 SIXEL_OPTION_SCHEMA_DIFFUSION,
                 NULL,
                 SIXEL_SUBOPTION_BINDING_ID_2(
                     dither_parallel_band_overwrap,
                     dither_parallel_band_overwrap_override),
-                &configured_overlap);
+                &request.overlap);
     }
-    if (has_configured_overlap != 0) {
-        overlap = (int)configured_overlap;
-    }
-    if (overlap < 0) {
-        overlap = 0;
-    }
-    if (overlap > band_height / 2) {
-        overlap = band_height / 2;
-    }
-
-    config->enabled = 1;
-    config->band_height = band_height;
-    config->overlap = overlap;
-    config->dither_threads = dither_threads;
-    config->encode_threads = encode_threads;
+    sixel_dither_encode_allocate(&request, allocation);
 }
 
 static int
@@ -4577,7 +4465,7 @@ sixel_encode_dither(
     int pipeline_nbands;
     int encoded_width;
     int encoded_height;
-    sixel_parallel_dither_config_t dither_parallel;
+    sixel_dither_encode_allocation_t dither_parallel;
     sixel_palette_entries_view_t palette_view;
     sixel_palette_float32_entries_view_t palette_float_view;
     sixel_timeline_logger_t *serial_logger;
@@ -4616,10 +4504,11 @@ sixel_encode_dither(
      * encoder emits that trace, so the live hint fields cannot carry this
      * diagnostic state.
      */
+    dither->pipeline_last_mode = SIXEL_DITHER_ENCODE_SERIAL;
     dither->pipeline_last_band_height = 0;
     dither->pipeline_last_band_overlap = 0;
     dither->pipeline_last_dither_threads = 0;
-    dither->pipeline_last_encode_threads = 0;
+    dither->pipeline_last_encode_threads = sixel_threads_resolve();
 
     serial_logger = NULL;
     close_status = SIXEL_FALSE;
@@ -4756,20 +4645,12 @@ sixel_encode_dither(
     }
 
     pipeline_active = 0;
-#if SIXEL_ENABLE_THREADS
-    #endif
-    dither_parallel.enabled = 0;
-    dither_parallel.band_height = 0;
-    dither_parallel.overlap = 0;
-    dither_parallel.dither_threads = 0;
-    dither_parallel.encode_threads = 0;
     /*
      * Normalize the planner-provided pinning request so both palette and
      * encode workers see the same 0/1 flag.
      */
     dither->pipeline_pin_threads =
         dither->pipeline_pin_threads != 0 ? 1 : 0;
-    dither_parallel.pin_threads = dither->pipeline_pin_threads;
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
@@ -4803,6 +4684,7 @@ sixel_encode_dither(
         break;
     default:
         /* apply palette */
+        dither->pipeline_last_dither_threads = 1;
         pipeline_threads = sixel_threads_resolve();
         pipeline_nbands = sixel_count_sixel_bands(encoded_height);
         /*
@@ -4829,62 +4711,31 @@ sixel_encode_dither(
     }
 
     if (pipeline_active) {
-        sixel_parallel_dither_configure(height,
-                                        pipeline_threads,
-                                        dither,
+        sixel_parallel_dither_configure(height, pipeline_threads,
+                                        pixel_count, dither,
                                         &dither_parallel);
-        if (dither_parallel.enabled) {
-            if (sixel_gpu_palette_policy_claims_apply_stage(
-                    dither->gpu_policy,
-                    dither->gpu_palette_threshold,
-                    dither->lut_policy,
-                    dither->method_for_diffuse,
-                    dither->method_for_scan,
-                    pixel_count)) {
-                /*
-                 * GPU PaletteApply produces the whole index plane after a
-                 * command-buffer wait, not a stream of CPU dither bands.
-                 * Keep all CPU workers on the encode side so the first band
-                 * can start with the full worker budget once the GPU result is
-                 * visible.
-                 */
-                dither_parallel.dither_threads = 0;
-                dither_parallel.encode_threads = pipeline_threads;
-                dither_parallel.band_height = 6;
-                dither_parallel.overlap = 0;
-            }
-            dither->pipeline_parallel_active = 1;
-            dither->pipeline_band_height = dither_parallel.band_height;
-            dither->pipeline_band_overlap = dither_parallel.overlap;
-            dither->pipeline_last_band_height =
-                dither_parallel.band_height;
-            dither->pipeline_last_band_overlap = dither_parallel.overlap;
-            dither->pipeline_last_dither_threads =
-                dither_parallel.dither_threads;
-            dither->pipeline_last_encode_threads =
-                dither_parallel.encode_threads;
-            dither->pipeline_dither_threads =
-                dither_parallel.dither_threads;
-            pipeline_threads = dither_parallel.encode_threads;
-        }
-        if (pipeline_threads <= 1) {
-            /*
-             * Disable the pipeline when the encode side cannot spawn at
-             * least two workers.  A single encode thread cannot consume the
-             * six-line jobs that PaletteApply produces, so fall back to the
-             * serialized encoder path.
-             */
-            pipeline_active = 0;
-            dither->pipeline_parallel_active = 0;
-            dither->pipeline_last_dither_threads = 0;
-            dither->pipeline_last_encode_threads = 0;
+        dither->pipeline_parallel_active =
+            dither_parallel.mode != SIXEL_DITHER_ENCODE_SERIAL;
+        dither->pipeline_band_height = dither_parallel.band_height;
+        dither->pipeline_band_overlap = dither_parallel.overlap;
+        dither->pipeline_dither_threads = dither_parallel.dither_threads;
+        dither->pipeline_last_mode = (int)dither_parallel.mode;
+        dither->pipeline_last_band_height = dither_parallel.band_height;
+        dither->pipeline_last_band_overlap = dither_parallel.overlap;
+        dither->pipeline_last_dither_threads = dither_parallel.dither_threads;
+        dither->pipeline_last_encode_threads = dither_parallel.encode_threads;
+        pipeline_active =
+            dither_parallel.mode == SIXEL_DITHER_ENCODE_PIPELINE;
+        pipeline_threads = dither_parallel.encode_threads;
+        if (!pipeline_active) {
+            /* A staged allocation keeps band application enabled without
+             * row-pipeline submission. Application joins every dither
+             * worker before the body encoder claims the full budget. */
+            paletted_pixels = sixel_dither_apply_palette(dither, pixels,
+                                                         width, height);
             if (paletted_pixels == NULL) {
-                paletted_pixels = sixel_dither_apply_palette(dither, pixels,
-                                                             width, height);
-                if (paletted_pixels == NULL) {
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto end;
-                }
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
             }
             input_pixels = paletted_pixels;
         }
@@ -4915,7 +4766,13 @@ sixel_encode_dither(
                               height,
                               0,
                               height,
-                              "serial path threads=1");
+                              dither->pipeline_last_mode ==
+                                  SIXEL_DITHER_ENCODE_STAGED
+                                  ? "staged path dither=%d encode=%d"
+                                  : "serial path threads=1 "
+                                    "dither=%d encode=%d",
+                              dither->pipeline_last_dither_threads,
+                              dither->pipeline_last_encode_threads);
         }
     }
 

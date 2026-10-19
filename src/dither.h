@@ -246,6 +246,7 @@ struct sixel_dither {
     int pipeline_parallel_active;   /* enable overlapped dither bands */
     int pipeline_band_height;       /* band thickness for dither */
     int pipeline_band_overlap;      /* overlap rows for burn-in */
+    int pipeline_last_mode;         /* resolved dither/encode phase mode */
     int pipeline_last_band_height;  /* last band height used by encoder */
     int pipeline_last_band_overlap; /* last overlap used by encoder */
     int pipeline_last_dither_threads; /* last dither worker count */

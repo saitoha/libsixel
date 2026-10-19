@@ -30,6 +30,46 @@
 
 struct sixel_encoder;
 
+typedef enum sixel_dither_encode_mode {
+    SIXEL_DITHER_ENCODE_SERIAL = 0,
+    SIXEL_DITHER_ENCODE_PIPELINE,
+    SIXEL_DITHER_ENCODE_STAGED
+} sixel_dither_encode_mode_t;
+
+/* Callers resolve CLI/environment precedence before allocating work slots.
+ * Presence flags keep an explicit zero overlap distinct from its default. */
+typedef struct sixel_dither_encode_request {
+    int total_threads;
+    int height;
+    int ncolors;
+    int method_for_diffuse;
+    int gpu_encode_only;
+    int prefer_staged;
+    unsigned int threads_max;
+    int threads_max_set;
+    unsigned int band_height;
+    int band_height_set;
+    unsigned int overlap;
+    int overlap_set;
+} sixel_dither_encode_request_t;
+
+/* D and E overlap only in PIPELINE mode. In STAGED mode each phase owns
+ * its complete reservation after all workers from the previous phase join. */
+typedef struct sixel_dither_encode_allocation {
+    sixel_dither_encode_mode_t mode;
+    int dither_threads;
+    int encode_threads;
+    int band_height;
+    int overlap;
+} sixel_dither_encode_allocation_t;
+
+SIXEL_INTERNAL_API void
+sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
+                              sixel_dither_encode_allocation_t *allocation);
+
+SIXEL_INTERNAL_API int
+sixel_dither_encode_default_staged(int total_threads, int method_for_diffuse);
+
 typedef enum sixel_planner_node_kind {
     SIXEL_PLANNER_NODE_LOAD = 0,
     SIXEL_PLANNER_NODE_PALETTE,
@@ -77,6 +117,7 @@ typedef struct sixel_encoding_planner {
     int colorspace_after_scale;
     int resize_precision_mode;
     int pipeline_active;
+    int pipeline_staged;
     int pipeline_band_height;
     int pipeline_overlap;
     int pipeline_queue_depth;

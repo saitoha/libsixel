@@ -1141,7 +1141,7 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             "gpu_threshold_override=%d|perturb=%.9g|perturb_override=%d|"
             "perturb_seed=%d|perturb_seed_override=%d|"
             "clamp_requested=%d|clamp_effective=%d|"
-            "clamp_threshold=%.9g|rgb101=%d|codes=",
+            "clamp_threshold=%.9g|rgb101=%d|allocation_mode=%s|codes=",
             status,
             sixel_encoder_dither_diffuse_name(dither->method_for_diffuse),
             sixel_encoder_dither_scan_name(dither->method_for_scan),
@@ -1196,7 +1196,10 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->clamp_policy,
             dither->clamp_policy == SIXEL_DITHER_CLAMP_AUTO
                 ? SIXEL_DITHER_CLAMP_SOFT : dither->clamp_policy,
-            dither->clamp_threshold, dither->use_rgb101_palette);
+            dither->clamp_threshold, dither->use_rgb101_palette,
+            dither->pipeline_last_mode == SIXEL_DITHER_ENCODE_PIPELINE
+                ? "pipeline" : dither->pipeline_last_mode ==
+                    SIXEL_DITHER_ENCODE_STAGED ? "staged" : "serial");
     if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
     }

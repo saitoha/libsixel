@@ -2282,6 +2282,7 @@ sixel_dither_new(
     (*ppdither)->pipeline_parallel_active = 0;
     (*ppdither)->pipeline_band_height = 0;
     (*ppdither)->pipeline_band_overlap = 0;
+    (*ppdither)->pipeline_last_mode = 0;
     (*ppdither)->pipeline_last_band_height = 0;
     (*ppdither)->pipeline_last_band_overlap = 0;
     (*ppdither)->pipeline_last_dither_threads = 0;
