@@ -674,6 +674,17 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/encoder/palette-application/dithering/perturb/rapsd.png \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-delta-e00.png \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-ms-ssim.png \
+	docs/encoder/palette-application/dithering/measurements/carry-gray-bias.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-highcolor-bias.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-lookup-colors.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-quality-float.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-quality-main.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-quality-sweep.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-run.json \
+	docs/encoder/palette-application/dithering/measurements/carry-speed-summary.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-summary-float.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-summary-main.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-timings.csv \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-quality.csv \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-run.json \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-size.csv \

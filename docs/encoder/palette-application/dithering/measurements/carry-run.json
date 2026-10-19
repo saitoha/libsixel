@@ -1,0 +1,301 @@
+{
+  "date": "2026-10-20",
+  "baseline": "bcec0359b",
+  "implementation": "056a52dbe (same arithmetic as 306219591; scoped deadzone registry correction)",
+  "platform": {
+    "system": "macOS 27.0.1 (26A434)",
+    "cpu": "Apple M3 Max",
+    "cores": 14,
+    "architecture": "arm64",
+    "build": "Meson release, Apple clang 21.0.0 (clang-2100.3.34.2), -O3"
+  },
+  "quality": {
+    "main": {
+      "before": "bcec0359b",
+      "after": "306219591249daae7247abe0a05a45ac74a48bd0",
+      "inputs": {
+        "chart-001.png": "58b277ae1d73dcc743a6f894ae07a7dc0a0b20392a1360ff6ea6a3bbd8ff928d",
+        "chart-002.png": "4b593fce02aa879b01fb2d51fdfc105f9c7e508de0f4f38033cc1fe7eba01366",
+        "chart-003.png": "24a3e946c1247d7acf67cffe16e0afc3b958843bdd308420883771143016847a",
+        "chart-004.png": "93251a6b883669972025618c471aa125cf4a027de5d255b6b10d4761048127a7",
+        "chart-005.png": "6a0a31d1d72cc133b3abb23af58a583d6a98695d38bed5c78d688323c70b0dca",
+        "chart-006.png": "7274c78fe08a0a165afd179fa8534a1fa512444c5fc3aa4d66a1aeff09ff9043",
+        "chart-007.png": "5d5402379bb86bf00b84970d3ab479fff50f22916bd821850911ad0bccd2473b",
+        "chart-008.png": "84edf47d5069a7340e4b3ca3c20d818a7f11c7188a83df04215fcba6a90a76ea",
+        "chart-009.png": "40e45b76f0b130fa400466a754be29800c311859cf67bbbb34d0a04124b94fe3",
+        "chart-010.png": "b5aca1d53680bae743ff5546fd885f73119f924b25882ac53ec90c175c1b84b6",
+        "photo-001-fhd.png": "d128d4a6296130bf8096929693568f83e71ef6b8623641785e882bb1a0c10539",
+        "photo-001.png": "7b1d3ed2703cc05b0c735d23a450a24176c138298528f0c1af97d9ede7c8b690",
+        "photo-002.png": "3370218a9bb33a6e549a5896ad0a6842dd4ead65259f089c2cb46e8f080763e0",
+        "photo-003.png": "4415046bd04fd1bcba44115a507fc37aaac287e7c4d74fe3432c56305a9ecd51",
+        "photo-004.png": "65125d443207902f3852f7cf2aea8d5176cffa137f30af9e9c494f8114f7fab0",
+        "photo-005.png": "9302f541f52c7b8db71cc66d56af6d37cfa02ba6ba02173181967b28da4da950",
+        "photo-006.png": "ebfb79425148dd6af89399cde5e074fb22cd1022e66413d37fbdc56aae4ddacd",
+        "photo-007.png": "6ba2e2f78332d222e14471f1b5d689819fb8bc8aff9a81d1da9dbc8e688288fe",
+        "photo-008.png": "dbf12cca696bb603a97ea39954eccd4aca86b11c863aef5476e6cb17fdd9d101",
+        "photo-009.png": "0abb2c7fa46f5805383e6637ffe68d9685ce76ac15559609976f2c90e81b27fe",
+        "photo-010.png": "f0bd97b710e8f181f07de5d778becbd2a32e86873d1395ff0f1453b7458eb836",
+        "photo-011-fhd.png": "a5c9e03679b3f00097f203c64357ba709125bfef77586769345af8cf2d61223c"
+      },
+      "flags": [
+        "-=1",
+        "-Goff",
+        "--precision=8bit",
+        "-Xgamma",
+        "-Wgamma",
+        "-Ugamma"
+      ],
+      "metrics": {
+        "MS-SSIM": 32,
+        "MS-SSIM-half": 64,
+        "S-CIELAB": [
+          60,
+          30
+        ],
+        "flat_tile": 8,
+        "flat_reference_sigma_lt": 1
+      }
+    },
+    "sweep": {
+      "before": "bcec0359b",
+      "after": "306219591249daae7247abe0a05a45ac74a48bd0",
+      "inputs": {
+        "chart-001.png": "58b277ae1d73dcc743a6f894ae07a7dc0a0b20392a1360ff6ea6a3bbd8ff928d",
+        "chart-002.png": "4b593fce02aa879b01fb2d51fdfc105f9c7e508de0f4f38033cc1fe7eba01366",
+        "chart-003.png": "24a3e946c1247d7acf67cffe16e0afc3b958843bdd308420883771143016847a",
+        "chart-004.png": "93251a6b883669972025618c471aa125cf4a027de5d255b6b10d4761048127a7",
+        "chart-005.png": "6a0a31d1d72cc133b3abb23af58a583d6a98695d38bed5c78d688323c70b0dca",
+        "chart-006.png": "7274c78fe08a0a165afd179fa8534a1fa512444c5fc3aa4d66a1aeff09ff9043",
+        "chart-007.png": "5d5402379bb86bf00b84970d3ab479fff50f22916bd821850911ad0bccd2473b",
+        "chart-008.png": "84edf47d5069a7340e4b3ca3c20d818a7f11c7188a83df04215fcba6a90a76ea",
+        "chart-009.png": "40e45b76f0b130fa400466a754be29800c311859cf67bbbb34d0a04124b94fe3",
+        "chart-010.png": "b5aca1d53680bae743ff5546fd885f73119f924b25882ac53ec90c175c1b84b6",
+        "photo-001-fhd.png": "d128d4a6296130bf8096929693568f83e71ef6b8623641785e882bb1a0c10539",
+        "photo-001.png": "7b1d3ed2703cc05b0c735d23a450a24176c138298528f0c1af97d9ede7c8b690",
+        "photo-002.png": "3370218a9bb33a6e549a5896ad0a6842dd4ead65259f089c2cb46e8f080763e0",
+        "photo-003.png": "4415046bd04fd1bcba44115a507fc37aaac287e7c4d74fe3432c56305a9ecd51",
+        "photo-004.png": "65125d443207902f3852f7cf2aea8d5176cffa137f30af9e9c494f8114f7fab0",
+        "photo-005.png": "9302f541f52c7b8db71cc66d56af6d37cfa02ba6ba02173181967b28da4da950",
+        "photo-006.png": "ebfb79425148dd6af89399cde5e074fb22cd1022e66413d37fbdc56aae4ddacd",
+        "photo-007.png": "6ba2e2f78332d222e14471f1b5d689819fb8bc8aff9a81d1da9dbc8e688288fe",
+        "photo-008.png": "dbf12cca696bb603a97ea39954eccd4aca86b11c863aef5476e6cb17fdd9d101",
+        "photo-009.png": "0abb2c7fa46f5805383e6637ffe68d9685ce76ac15559609976f2c90e81b27fe",
+        "photo-010.png": "f0bd97b710e8f181f07de5d778becbd2a32e86873d1395ff0f1453b7458eb836",
+        "photo-011-fhd.png": "a5c9e03679b3f00097f203c64357ba709125bfef77586769345af8cf2d61223c"
+      },
+      "flags": [
+        "-=1",
+        "-Goff",
+        "--precision=8bit",
+        "-Xgamma",
+        "-Wgamma",
+        "-Ugamma"
+      ],
+      "metrics": {
+        "MS-SSIM": 32,
+        "MS-SSIM-half": 64,
+        "S-CIELAB": [
+          60,
+          30
+        ],
+        "flat_tile": 8,
+        "flat_reference_sigma_lt": 1
+      },
+      "binaries": {
+        "before": "bad383d6426bc64fb835bd7aeda6ecd6abccd460a596a07a657c054ec9471469",
+        "after": "1f0a4e0d75fbe32af6e367f2f6375fbacb0f71e084776a52db77361c703b8815",
+        "float0": "73b1790277a2dea10dfd39730bdd86f556ff654c449496a830b4e8acf41ffd8a",
+        "float5": "73b1790277a2dea10dfd39730bdd86f556ff654c449496a830b4e8acf41ffd8a"
+      },
+      "working_diff_sha256": "f7de066df6747fe79cbb257d36b9f73ae221a3b52baadb9a0254d2cdcd813230"
+    },
+    "float": {
+      "before": "bcec0359b",
+      "after": "306219591249daae7247abe0a05a45ac74a48bd0",
+      "inputs": {
+        "chart-001.png": "58b277ae1d73dcc743a6f894ae07a7dc0a0b20392a1360ff6ea6a3bbd8ff928d",
+        "chart-002.png": "4b593fce02aa879b01fb2d51fdfc105f9c7e508de0f4f38033cc1fe7eba01366",
+        "chart-003.png": "24a3e946c1247d7acf67cffe16e0afc3b958843bdd308420883771143016847a",
+        "chart-004.png": "93251a6b883669972025618c471aa125cf4a027de5d255b6b10d4761048127a7",
+        "chart-005.png": "6a0a31d1d72cc133b3abb23af58a583d6a98695d38bed5c78d688323c70b0dca",
+        "chart-006.png": "7274c78fe08a0a165afd179fa8534a1fa512444c5fc3aa4d66a1aeff09ff9043",
+        "chart-007.png": "5d5402379bb86bf00b84970d3ab479fff50f22916bd821850911ad0bccd2473b",
+        "chart-008.png": "84edf47d5069a7340e4b3ca3c20d818a7f11c7188a83df04215fcba6a90a76ea",
+        "chart-009.png": "40e45b76f0b130fa400466a754be29800c311859cf67bbbb34d0a04124b94fe3",
+        "chart-010.png": "b5aca1d53680bae743ff5546fd885f73119f924b25882ac53ec90c175c1b84b6",
+        "photo-001-fhd.png": "d128d4a6296130bf8096929693568f83e71ef6b8623641785e882bb1a0c10539",
+        "photo-001.png": "7b1d3ed2703cc05b0c735d23a450a24176c138298528f0c1af97d9ede7c8b690",
+        "photo-002.png": "3370218a9bb33a6e549a5896ad0a6842dd4ead65259f089c2cb46e8f080763e0",
+        "photo-003.png": "4415046bd04fd1bcba44115a507fc37aaac287e7c4d74fe3432c56305a9ecd51",
+        "photo-004.png": "65125d443207902f3852f7cf2aea8d5176cffa137f30af9e9c494f8114f7fab0",
+        "photo-005.png": "9302f541f52c7b8db71cc66d56af6d37cfa02ba6ba02173181967b28da4da950",
+        "photo-006.png": "ebfb79425148dd6af89399cde5e074fb22cd1022e66413d37fbdc56aae4ddacd",
+        "photo-007.png": "6ba2e2f78332d222e14471f1b5d689819fb8bc8aff9a81d1da9dbc8e688288fe",
+        "photo-008.png": "dbf12cca696bb603a97ea39954eccd4aca86b11c863aef5476e6cb17fdd9d101",
+        "photo-009.png": "0abb2c7fa46f5805383e6637ffe68d9685ce76ac15559609976f2c90e81b27fe",
+        "photo-010.png": "f0bd97b710e8f181f07de5d778becbd2a32e86873d1395ff0f1453b7458eb836",
+        "photo-011-fhd.png": "a5c9e03679b3f00097f203c64357ba709125bfef77586769345af8cf2d61223c"
+      },
+      "flags": [
+        "-=1",
+        "-Goff",
+        "--precision=8bit",
+        "-Xgamma",
+        "-Wgamma",
+        "-Ugamma"
+      ],
+      "metrics": {
+        "MS-SSIM": 32,
+        "MS-SSIM-half": 64,
+        "S-CIELAB": [
+          60,
+          30
+        ],
+        "flat_tile": 8,
+        "flat_reference_sigma_lt": 1
+      },
+      "binaries": {
+        "before": "bad383d6426bc64fb835bd7aeda6ecd6abccd460a596a07a657c054ec9471469",
+        "after": "1f0a4e0d75fbe32af6e367f2f6375fbacb0f71e084776a52db77361c703b8815",
+        "float0": "73b1790277a2dea10dfd39730bdd86f556ff654c449496a830b4e8acf41ffd8a",
+        "float5": "73b1790277a2dea10dfd39730bdd86f556ff654c449496a830b4e8acf41ffd8a"
+      },
+      "working_diff_sha256": "f7de066df6747fe79cbb257d36b9f73ae221a3b52baadb9a0254d2cdcd813230"
+    }
+  },
+  "limitations": [
+    "No terminal or device rendering validation.",
+    "Half-size MS-SSIM uses 2x2 gamma RGB box means rounded ties-to-even to 8-bit PPM.",
+    "Flat grain uses gamma-byte luma 0.2126R+0.7152G+0.0722B, 8x8 tiles, reference sigma <1; missing flat tiles are omitted rather than zero-filled.",
+    "Highcolor uses its native dynamic 15-bit palette, not the fixed 51/204 palette.",
+    "Float deadzone experiment applies only to gamma RGB spatial correction; it does not change the shipped float32 path.",
+    "Timing minima of five alternating samples; warmup excluded; total includes process startup and JSONL tracing.",
+    "Dither wall window is latest worker finish minus earliest worker start, not a sum of CPU times.",
+    "Distinct lookup colors are measured separately using atomic 24-bit bitset instrumentation; instrumented runtimes are not compared."
+  ],
+  "effective_lookup": [
+    {
+      "version": "before",
+      "precision": "8bit",
+      "command": [
+        "$RUN/build-base/converters/img2sixel",
+        "--precision=8bit",
+        "-=1",
+        "-Goff",
+        "-Xgamma",
+        "-Wgamma",
+        "-dfs",
+        "-p256",
+        "-v",
+        "-o",
+        "/dev/null",
+        "$DATASET/photo/crop-640x480/photo-001.png"
+      ],
+      "trace": "libsixel: scale plan active=0 width=640 height=480 fmt=00000003\nlibsixel: scale plan active=0 width=640 height=480 fmt=00000003\n[planner] DAG (Directed Acyclic Graph)\n  workers: total=1 main=1 palette=0 heavy_ops=0\n  formats: source=rgb888 work=rgb888 scale_out=rgb888\n  resize: mode=1 input=rgb888\n  loader: multiframe=no handoff=serial\n  nodes:\n    load\n    dither\n    encode\n  edges:\n    load -> dither\n    dither -> encode\n  pipeline:\n    resolution=pre-palette-estimate\n    bands=0 queue=0 mode=serial\n    band_height=0 overlap=0 threads: dither=0 encode=0\nLSXLUT2|phase=palette-apply|selected=lookup/vptree.8bit|explicit=0\n"
+    },
+    {
+      "version": "before",
+      "precision": "float32",
+      "command": [
+        "$RUN/build-base/converters/img2sixel",
+        "--precision=float32",
+        "-=1",
+        "-Goff",
+        "-Xgamma",
+        "-Wgamma",
+        "-dfs",
+        "-p256",
+        "-v",
+        "-o",
+        "/dev/null",
+        "$DATASET/photo/crop-640x480/photo-001.png"
+      ],
+      "trace": "libsixel: scale plan active=0 width=640 height=480 fmt=00000003\nlibsixel: scale plan active=0 width=640 height=480 fmt=00000003\n[planner] DAG (Directed Acyclic Graph)\n  workers: total=1 main=1 palette=0 heavy_ops=1\n  formats: source=rgb888 work=rgb-f32 scale_out=rgb888\n  resize: mode=3 input=rgb888\n  loader: multiframe=no handoff=serial\n  nodes:\n    load\n    colorspace(post)\n    dither\n    encode\n  edges:\n    load -> colorspace(post)\n    colorspace(post) -> dither\n    dither -> encode\n  pipeline:\n    resolution=pre-palette-estimate\n    bands=0 queue=0 mode=serial\n    band_height=0 overlap=0 threads: dither=0 encode=0\nLSXLUT2|phase=palette-apply|selected=lookup/vptree.float32|explicit=0\n"
+    },
+    {
+      "version": "after",
+      "precision": "8bit",
+      "command": [
+        "$SOURCE/build/converters/img2sixel",
+        "--precision=8bit",
+        "-=1",
+        "-Goff",
+        "-Xgamma",
+        "-Wgamma",
+        "-dfs",
+        "-p256",
+        "-v",
+        "-o",
+        "/dev/null",
+        "$DATASET/photo/crop-640x480/photo-001.png"
+      ],
+      "trace": "libsixel: scale plan active=0 width=640 height=480 fmt=00000003\nlibsixel: scale plan active=0 width=640 height=480 fmt=00000003\n[planner] DAG (Directed Acyclic Graph)\n  workers: total=1 main=1 palette=0 heavy_ops=0\n  formats: source=rgb888 work=rgb888 scale_out=rgb888\n  resize: mode=1 input=rgb888\n  loader: multiframe=no handoff=serial\n  nodes:\n    load\n    dither\n    encode\n  edges:\n    load -> dither\n    dither -> encode\n  pipeline:\n    resolution=pre-palette-estimate\n    bands=0 queue=0 mode=serial\n    band_height=0 overlap=0 threads: dither=0 encode=0\nLSXLUT2|phase=palette-apply|selected=lookup/vptree.8bit|explicit=0\n"
+    },
+    {
+      "version": "after",
+      "precision": "float32",
+      "command": [
+        "$SOURCE/build/converters/img2sixel",
+        "--precision=float32",
+        "-=1",
+        "-Goff",
+        "-Xgamma",
+        "-Wgamma",
+        "-dfs",
+        "-p256",
+        "-v",
+        "-o",
+        "/dev/null",
+        "$DATASET/photo/crop-640x480/photo-001.png"
+      ],
+      "trace": "libsixel: scale plan active=0 width=640 height=480 fmt=00000003\nlibsixel: scale plan active=0 width=640 height=480 fmt=00000003\n[planner] DAG (Directed Acyclic Graph)\n  workers: total=1 main=1 palette=0 heavy_ops=1\n  formats: source=rgb888 work=rgb-f32 scale_out=rgb888\n  resize: mode=3 input=rgb888\n  loader: multiframe=no handoff=serial\n  nodes:\n    load\n    colorspace(post)\n    dither\n    encode\n  edges:\n    load -> colorspace(post)\n    colorspace(post) -> dither\n    dither -> encode\n  pipeline:\n    resolution=pre-palette-estimate\n    bands=0 queue=0 mode=serial\n    band_height=0 overlap=0 threads: dither=0 encode=0\nLSXLUT2|phase=palette-apply|selected=lookup/vptree.float32|explicit=0\n"
+    }
+  ],
+  "source_sha256": {
+    "src/dither-carry.c": "d4c8ea3073a8a2658189cca08c39db2455844c5c73e49853b278317f9d79e2aa",
+    "src/options-registry.c": "c6550583d3377654c9e5ec10c940d097bf5388b34df300733b4b559fba80aa9e"
+  },
+  "artifact_sha256": {
+    "carry-quality-sweep.csv": "e45356a25d2c5f61375a387f64cc2d79cef7dbcf21b73b03cdf955c4726a07e7",
+    "carry-timings.csv": "b9ff6e8537381d148521b5e0439c5454fef4723f269dd2299a453f3db8f74e54",
+    "carry-quality-main.csv": "f60f20c468d71faecccc2068f23400a2d3d3ea205ab75c0ef73f8a79cbfcc907",
+    "carry-highcolor-bias.csv": "f7a0b9872d77afb0fbb0e1d0c3e264cad3f8c076f47625950f9b2870755db3f9",
+    "carry-speed-summary.csv": "af50dc3f0b0ff398110636df8bb97efe00f1bef96787da3e42f93b382d86c0f7",
+    "carry-quality-float.csv": "ebcd576a5efbda265f32d8c766181dc3c61a3f0562d1233133adad66dfae2886",
+    "carry-gray-bias.csv": "d0447d57b3685cb6ac84969b761d34e2f85b4e103e20f53dccc42a7e414316e4",
+    "carry-summary-main.csv": "5c86a3514c0f0652afdbf1f4b04cac3cc4c0007fa4be98781cd25d2f4a61863c",
+    "carry-lookup-colors.csv": "6b0b0e1417b766e60bc6b8602b4fc67eb9b759f8296ecb3d33ac9b001685577e",
+    "carry-summary-float.csv": "87b98388e8c90489d1e87dd9937701ae61cfe8c8bf553b99dc9546e389d95c78"
+  },
+  "highcolor_probe": {
+    "entry": "sixel_dither_new(-1), sixel_dither_set_diffusion_type(method), sixel_encode(RGB888)",
+    "width": 512,
+    "height": 512,
+    "gray_levels": [
+      64,
+      67,
+      80,
+      83,
+      96,
+      99,
+      112,
+      115,
+      128,
+      131,
+      144,
+      147,
+      160,
+      163,
+      176,
+      179,
+      192
+    ],
+    "samples": 272,
+    "cli_control": "-I resolves diffuse=none; 2064 CLI no-diffusion samples are retained outside this corpus",
+    "source_sha256": "05c0c884e71baa62959c4ff82d34e04bcf3014c3dd15a8295ce6670da352e67d"
+  },
+  "performance_inputs": {
+    "1920x1080.png": "291fa31b4add052ad3c3593a134f29b7f2f7cb8ab20c2b1b346716268cec598f",
+    "3840x2160.png": "f713350f5d5c07d226cacd3db8a2c17af6cf281ca8041388fa1263e5cd63a6f1"
+  }
+}

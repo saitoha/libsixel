@@ -81,6 +81,103 @@ At an image boundary, libsixel omits out-of-range taps instead of renormalizing
 the remaining weights. Consequently, the stated coefficient sum describes an
 interior pixel, not an edge pixel.
 
+## Byte spatial diffusion
+
+FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes and Sierra keep the source byte image immutable. Each application owns an int32 ring of the current row and one or two future rows. Carry units are 1/16 for FS, 1/8 for Atkinson, 1/48 for Jarvis--Judice--Ninke, 1/42 for Stucki, 1/32 for Burkes and Sierra 3, 1/4 for Sierra 1, and 1/16 for Sierra 2. Perturbed FS uses 1/(16×256). Burkes doubles its displayed numerator and denominator to use the 1/32 storage unit.
+
+Each incoming tap adds the integer residual times its numerator without division or saturation. Integer sums are independent of contribution order as long as dependency scheduling and race-free ownership are preserved. A ring is allocated once per band; allocation failure returns `SIXEL_BAD_ALLOCATION`, with no alternate rendering fallback.
+
+Before lookup, a correction whose RGB Euclidean length is strictly below `deadzone` is discarded. The unit is one byte RGB level; `-d fs:deadzone=5` and `-d fs:D5` are equivalent. The default is 5, 0 disables it, and nonnegative finite decimal values are accepted. `SIXEL_DITHER_DEADZONE` supplies the environment default; explicit CLI suboptions win. The suboption belongs to `auto` and these spatial families. `auto` receives the same default after resolving to FS or Atkinson. Float32 keeps its existing behavior without a deadzone; no float default changes with this setting.
+
+The [clamp policy](../clamp-policy.md) then limits the combined correction once per pixel. Default `auto` selects `soft:threshold=1.01`: the largest common RGB scale puts the candidate inside [-2.55,257.55], preserving correction direction before rounding. A correction already inside the bounds has scale 1 without a boundary-ratio division. Candidates round to the nearest integer with exact half ties to even, symmetrically for positive and negative values. Lookup receives a 0–255 projection; diffusion uses the rounded candidate before projection minus the selected palette color. `hard` clips channels independently before rounding. `none` permits accumulated error to grow; int32 overflow returns `SIXEL_BAD_INPUT` instead of wrapping.
+
+Default soft clamping bounds the residual by 258 levels. Fixed incoming numerator sums are at most 48. Perturbed FS can receive independently varied weights totaling at most 28×256, giving a carry bound of 1,849,344. Even the largest allowed soft threshold (16) stays below int32 capacity. Arithmetic checks use int64 intermediates because `none` has no bounded-feedback guarantee.
+
+Serpentine rows mirror horizontal offsets using absolute row parity. A transparent destination absorbs incoming error without lookup or propagation; a stencil may still jump across that destination. A retained 6delta pixel uses the rounded carry candidate minus its retained display color when `error=diffuse`; `error=skip` stops its residual. Lookup and keep decisions receive the byte projection. Each band starts with zero carry, processes its supplied overlap rows to warm up, and notifies the pipeline only for owned output rows. Downstream encoding consumes indices and palette entries; it does not require mutated source pixels.
+
+Deadzone suppression trades fine-scale integration accuracy for less flat-field grain and smaller streams. A threshold of 5 is an explicit default, not a guarantee that all images or metrics improve. Atkinson distributes only 6/8 of its residual, so its inherent tone bias cannot be removed merely by making rounding symmetric. The unit-sum kernels' tone preservation and Atkinson's attenuation must be evaluated separately.
+
+### Integer carry measurements
+
+The 2026-10-20 gamma RGB comparison uses baseline `bcec0359b` and the carry implementation through `306219591`, with the scoped deadzone registry correction recorded by source hash in [run metadata](measurements/carry-run.json). Both are Meson release builds on an Apple M3 Max (14 cores), macOS 27.0.1. Preflight confirms `work=rgb888` and `lookup/vptree.8bit`; the separate float experiment confirms `work=rgb-f32` and `lookup/vptree.float32`. These are CPU, off-screen measurements.
+
+The quality corpus contains `photo-001` through `photo-010` and `chart-001` through `chart-010` at 640×480, plus the supplied 1920×1080 `photo-001-fhd` and `photo-011-fhd` rasters, all identified by SHA-256. Commands use `-=1 -Goff --precision=8bit -Xgamma -Wgamma -Ugamma -d METHOD -p COLORS`. The same baseline `sixel2png` and `lsqa` decode and score both versions. MS-SSIM at approximately 64 ppd uses 2×2 gamma RGB box means, rounded to 8-bit samples before scoring. Flat grain is the mean output luma standard deviation over 8×8 tiles whose reference standard deviation is below 1, using byte-domain luma coefficients 0.2126, 0.7152 and 0.0722; images without such tiles are omitted for that metric rather than counted as zero.
+
+Each table cell gives before → after and improved/equal/worse image counts. Higher MS-SSIM is better; lower S-CIELAB is better. All 22 images are equally weighted. [Per-image results](measurements/carry-quality-main.csv) retain all eight metrics; [class summaries](measurements/carry-summary-main.csv) separate photographs and charts, including ΔE00 mean/maximum, flat grain, byte counts, and valid sample counts.
+
+| Kernel | Colors | MS-SSIM 32 | MS-SSIM ~64 | S-CIELAB 60 | S-CIELAB 30 | Bytes |
+| --- | --- | --- | --- | --- | --- | --- |
+| fs | 16 | 0.97332 → 0.97464 (12/0/10) | 0.99294 → 0.99346 (14/0/8) | 2.88791 → 2.59185 (20/0/2) | 3.31532 → 3.09568 (20/0/2) | -1.4% |
+| fs | 256 | 0.99728 → 0.99693 (2/6/14) | 0.99912 → 0.99899 (2/6/14) | 0.69012 → 0.61977 (13/6/3) | 0.84378 → 0.82653 (10/6/6) | -4.3% |
+| atkinson | 16 | 0.97153 → 0.97301 (15/0/7) | 0.98816 → 0.99041 (21/0/1) | 3.11825 → 2.95165 (22/0/0) | 3.61775 → 3.48211 (22/0/0) | +5.0% |
+| atkinson | 256 | 0.99713 → 0.99713 (3/9/10) | 0.99885 → 0.99886 (9/9/4) | 0.74444 → 0.74096 (10/7/5) | 0.93088 → 0.92812 (9/7/6) | -0.0% |
+| JaJuNi | 16 | 0.96587 → 0.96858 (16/0/6) | 0.99013 → 0.99081 (13/0/9) | 2.82809 → 2.77396 (14/0/8) | 3.48246 → 3.41415 (14/0/8) | +0.8% |
+| JaJuNi | 256 | 0.99683 → 0.99685 (9/7/6) | 0.99896 → 0.99887 (2/7/13) | 0.61667 → 0.69073 (1/6/15) | 0.83352 → 0.89871 (1/6/15) | -2.4% |
+| stucki | 16 | 0.97425 → 0.97095 (0/0/22) | 0.99248 → 0.99151 (5/0/17) | 2.79299 → 2.74557 (17/0/5) | 3.31846 → 3.32997 (13/0/9) | -2.6% |
+| stucki | 256 | 0.99729 → 0.99689 (1/7/14) | 0.99904 → 0.99889 (1/7/14) | 0.65427 → 0.68451 (2/6/14) | 0.83736 → 0.89107 (1/6/15) | -3.7% |
+| burkes | 16 | 0.97169 → 0.97264 (12/0/10) | 0.99175 → 0.99233 (14/0/8) | 3.19416 → 2.66889 (20/0/2) | 3.61194 → 3.22525 (20/0/2) | -2.1% |
+| burkes | 256 | 0.99722 → 0.99690 (2/7/13) | 0.99902 → 0.99892 (2/6/14) | 0.76619 → 0.65890 (14/6/2) | 0.91705 → 0.86693 (11/6/5) | -4.2% |
+| Sierra 1 | 16 | 0.97033 → 0.97406 (15/0/7) | 0.99250 → 0.99352 (15/0/7) | 2.87145 → 2.57663 (20/0/2) | 3.32968 → 3.09302 (20/0/2) | -1.4% |
+| Sierra 1 | 256 | 0.99697 → 0.99690 (4/6/12) | 0.99910 → 0.99900 (4/6/12) | 0.72938 → 0.60793 (15/6/1) | 0.87634 → 0.81585 (13/6/3) | -4.6% |
+| Sierra 2 | 16 | 0.97329 → 0.97057 (7/0/15) | 0.99100 → 0.99181 (15/0/7) | 2.96698 → 2.68746 (22/0/0) | 3.50336 → 3.29247 (21/0/1) | +2.7% |
+| Sierra 2 | 256 | 0.99720 → 0.99686 (1/7/14) | 0.99894 → 0.99891 (0/8/14) | 0.69558 → 0.66254 (13/6/3) | 0.88364 → 0.87277 (11/6/5) | -1.6% |
+| Sierra 3 | 16 | 0.96626 → 0.96917 (16/0/6) | 0.99023 → 0.99103 (14/0/8) | 2.83595 → 2.75166 (15/0/7) | 3.47836 → 3.38557 (15/0/7) | +0.9% |
+| Sierra 3 | 256 | 0.99678 → 0.99686 (13/6/3) | 0.99895 → 0.99888 (2/7/13) | 0.62310 → 0.68574 (2/6/14) | 0.83882 → 0.89420 (2/6/14) | -2.2% |
+
+The coefficient corrections and carry feedback improve tone conservation but do not uniformly improve structural scores. The largest MS-SSIM 32 loss is `photo-001-fhd`, Sierra 2, 16 colors: 0.987604 → 0.967475. Other material losses include `photo-008`, Sierra 2 (0.964660 → 0.950836), and `photo-008`, Stucki (0.962016 → 0.952096). Stucki at 16 colors loses MS-SSIM 32 on all 22 images. In `photo-001-fhd`, Sierra 2 raises flat grain from 2.414 to 6.163 while lowering S-CIELAB 60 from 2.882 to 2.558. These are measured costs, not a basis for lowering quality test thresholds. No single Sierra variant is a universal winner.
+
+The fixed-palette probe uses 512×512 flat fields, palette levels 51 and 204, serpentine scan, and gray levels 64 through 192 in steps of 16. Values below are maximum absolute mean bias in byte levels; [all gray results](measurements/carry-gray-bias.csv) retain the signs and individual tones.
+
+| Kernel | Byte maximum absolute bias | Float32 maximum absolute bias |
+| --- | --- | --- |
+| fs | 3.7297 → 0.1265 | 0.1043 → 0.1043 |
+| atkinson | 15.8187 → 13.0000 | 13.0000 → 13.0000 |
+| JaJuNi | 1.0483 → 0.2085 | 0.2056 → 0.2056 |
+| stucki | 8.7345 → 0.1953 | 7.9927 → 0.1910 |
+| burkes | 6.4483 → 0.1605 | 0.1541 → 0.1541 |
+| Sierra 1 | 2.4398 → 0.0938 | 0.0996 → 0.0996 |
+| Sierra 2 | 15.8420 → 0.1884 | 15.3628 → 0.1624 |
+| Sierra 3 | 0.6813 → 0.1971 | 0.1922 → 0.1922 |
+| lso2 | 13.0000 → 13.0000 | 13.0000 → 13.0000 |
+
+Atkinson retains its intentional 6/8 attenuation; its absolute bias is not a rounding-only defect. LSO2 retains its error-dependent attenuation and per-tap byte update, and is unchanged here. The [high-color probe](measurements/carry-highcolor-bias.csv) uses 17 gray levels (64, 67, 80, 83, 96, 99, 112, 115, 128, 131, 144, 147, 160, 163, 176, 179, 192) through the low-level API with the encoder's native dynamic 15-bit palette. The CLI `-I` disables palette-space diffusion, so the kernel probe explicitly sets the low-level diffusion method. It cannot be interpreted as the same fixed 51/204 palette experiment. SIXEL palette serialization also contributes to its decoded mean bias. The observed ranges below show a high-color Sierra 2 bias increase after its coefficient correction; the byte carry implementation does not apply to this low-level path.
+
+| Kernel | Before bias range | After bias range |
+| --- | --- | --- |
+| fs | -1.0000 to +1.0000 | -1.0000 to +1.0000 |
+| atkinson | -1.0000 to +1.0000 | -1.0000 to +1.0000 |
+| jajuni | -1.0000 to +1.0000 | -1.0000 to +1.0000 |
+| stucki | -1.0000 to +1.0000 | -1.0000 to +1.0000 |
+| burkes | -1.0000 to +1.0000 | -1.0000 to +1.0000 |
+| Sierra 1 | -1.0000 to +3.4927 | -1.0000 to +3.4927 |
+| Sierra 2 | -1.0000 to +1.0000 | -1.0000 to +3.2558 |
+| Sierra 3 | -1.0000 to +2.1758 | -1.0000 to +2.1758 |
+
+The [deadzone sweep](measurements/carry-quality-sweep.csv) evaluates 3, 4, 5 and 6 for FS and Stucki on the same corpus. Smaller values favor spatial color integration; larger values reduce flat grain and bytes. Neither kernel shows a universal optimum across these metrics. Five remains a common compromise, with per-image and per-color-count results available for choosing another value explicitly.
+
+The [float experiment](measurements/carry-quality-float.csv) compares correction deadzones 0 and 5 in an isolated gamma RGB float build; [its summaries](measurements/carry-summary-float.csv) include every metric and improved/equal/worse counts. Five lowers mean grain and bytes but increases mean S-CIELAB at both palette sizes for all eight kernels. It is not a shipped float option or a change to the float default.
+
+Speed uses centered resize/crop versions of `photo/original/photo-001.jpg` at 1920×1080 and 3840×2160, 16/256 colors, and `-=1`/`-=8`. Each condition has one excluded warmup and five alternating baseline/carry samples. No builds or tests run during measurement. Total time includes startup and JSONL tracing; the dither stage is the wall-clock window from earliest dither-worker start to latest finish. Reported minima for stage and total are independent minima. The host's recorded one-minute load ranges from 2.83 to 5.03 on 14 cores; this is not an isolated-machine claim.
+
+The table gives the range of after/before ratios across those eight conditions; values above 1 mean slower. [All condition summaries](measurements/carry-speed-summary.csv), [individual timing samples](measurements/carry-timings.csv), and [distinct lookup colors](measurements/carry-lookup-colors.csv) are retained. Distinct RGB24 colors are counted by a separately instrumented bitset run; its timing is excluded.
+
+| Kernel | Dither time ratio | Total time ratio |
+| --- | --- | --- |
+| fs | 1.30–2.20× | 1.11–1.82× |
+| atkinson | 1.33–2.93× | 1.11–2.18× |
+| JaJuNi | 1.20–1.94× | 1.09–1.71× |
+| stucki | 1.33–2.13× | 1.13–1.82× |
+| burkes | 1.27–2.15× | 1.10–1.80× |
+| Sierra 1 | 1.33–2.29× | 1.12–1.84× |
+| Sierra 2 | 1.30–2.20× | 1.11–1.84× |
+| Sierra 3 | 1.24–2.23× | 1.10–1.89× |
+
+Every measured condition is slower in this implementation. The common candidate path adds vector-norm evaluation, soft-bound checks, symmetric rounding, and checked wide scatter arithmetic. Distinct lookup color counts alone do not explain the differences: they decrease in some conditions while time still rises. This supports arithmetic/control overhead as an additional cost, but is not a profiler attribution. The measurements establish the fidelity/quality tradeoff and a remaining optimization opportunity; they do not establish a speed improvement.
+
+### Historical measurement boundary
+
+The spatial spectra, one-image tables and figures elsewhere on this page were recorded before integer carry diffusion and the canonical Stucki/Two-row Sierra coefficients. They describe that recorded implementation and are historical measurements, not a ranking of the current kernels. Their original command and fixture provenance remains with the artifacts. Current carry measurements are identified separately by revision and input set.
+
 ## `auto`: palette-size selection
 
 ```text
@@ -125,7 +222,7 @@ The byte and float CPU paths map complete rows through the lookup policy's [bulk
 This policy has no dither dependency between pixels, introduces no dither
 state, and adds only `Theta(P)` traversal work around the palette queries. It
 is useful for already-indexed artwork, exact palette experiments, and the
-control arm of a dither comparison. In the current static-image benchmark it
+control arm of a dither comparison. In the recorded historical static-image benchmark it
 is also the smallest encoded stream at every measured `K`, because it tends to
 preserve longer runs of the same palette index. Its lack of error shaping can,
 however, expose contouring in smooth gradients.
@@ -359,7 +456,7 @@ and six-position stencil are libsixel-specific; `lso2` is not an alias for
 either published algorithm. It defaults to serpentine scan, unlike the other
 spatial policies.
 
-`lso2` has the highest MS-SSIM at both endpoints of the current sweep. That
+`lso2` has the highest MS-SSIM at both endpoints of the recorded historical sweep. That
 quality comes with a size and CPU cost: 1.994x the `none` bytes and 1.13x the
 latency at `K=8`, then 1.321x and 1.07x at `K=256`.
 
@@ -416,7 +513,7 @@ coordinate-derived threshold, but it generates that threshold arithmetically
 instead of reading a Bayer matrix.
 
 The policy is `Theta(P)`, positionally reproducible, and nearly baseline in
-CPU time. It is not necessarily cheap to transmit: in the current sweep it
+CPU time. It is not necessarily cheap to transmit: in the recorded historical sweep it
 emits 1.174x the `none` size at `K=8` and the largest `K=256` stream, 1.360x,
 despite taking only 1.03x the baseline time at both endpoints.
 
@@ -478,7 +575,7 @@ as recorded in [`bluenoise_64x64.h`](../../../../src/bluenoise_64x64.h). Static
 `bluenoise` itself is a two-dimensional tiled policy, not the temporal `stbn`
 policy described below.
 
-In the current static sweep, `bluenoise` improves MS-SSIM over `none` at every
+In the recorded historical static sweep, `bluenoise` improves MS-SSIM over `none` at every
 measured `K`, takes 1.03x and 1.05x the baseline time at the endpoints, and
 has the smallest size overhead through `K=64`: 1.032x at `K=8`. At `K=256`
 its size is 1.045x the no-dither stream, while Atkinson is smaller at 1.013x.
@@ -665,6 +762,8 @@ and shell TAP conventions.
 
 ## Measured spatial error spectra
 
+These spectra use the historical coefficients and byte feedback implementation. They have not been regenerated for integer carry or canonical Stucki/Sierra 2, so they do not rank the current spatial kernels.
+
 ### What the figures measure
 
 The following figures isolate the spatial arrangement of luma error on flat
@@ -808,6 +907,8 @@ plots, CSV values, metadata, and prose together before committing regenerated
 results.
 
 ## Measured static-image quality, size, and speed
+
+These figures and tables are historical, before integer carry and canonical Stucki/Sierra 2 coefficients. See [integer carry measurements](#integer-carry-measurements) for the separately recorded current implementation.
 
 ### Questions and scope
 
@@ -1250,3 +1351,31 @@ These tests cover opaque three-channel CPU candidates and the selected native fl
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | DNONE-01 | Bulk and generic rows agree in byte and float modes, retain work-buffer and notification behavior, and honor transparent, clipped and 6delta pixels. | [tests/processing/lookup/0017_lookup_none_batch_fences.c](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.c), [tests/processing/lookup/0017_lookup_none_batch_fences.t](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.t) |
+
+### Byte carry numeric contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| BC-01 | Kernel coefficients. | [tests/processing/dither/carry/0001_carry_kernel_coefficients.t](../../../../tests/processing/dither/carry/0001_carry_kernel_coefficients.t) |
+| BC-02 | Deadzone below. | [tests/processing/dither/carry/0002_carry_deadzone_below.t](../../../../tests/processing/dither/carry/0002_carry_deadzone_below.t) |
+| BC-03 | Deadzone boundary. | [tests/processing/dither/carry/0003_carry_deadzone_boundary.t](../../../../tests/processing/dither/carry/0003_carry_deadzone_boundary.t) |
+| BC-04 | Deadzone disabled. | [tests/processing/dither/carry/0004_carry_deadzone_disabled.t](../../../../tests/processing/dither/carry/0004_carry_deadzone_disabled.t) |
+| BC-05 | Soft direction. | [tests/processing/dither/carry/0005_carry_soft_direction.t](../../../../tests/processing/dither/carry/0005_carry_soft_direction.t) |
+| BC-06 | Soft inside. | [tests/processing/dither/carry/0006_carry_soft_inside.t](../../../../tests/processing/dither/carry/0006_carry_soft_inside.t) |
+| BC-07 | Hard channels. | [tests/processing/dither/carry/0007_carry_hard_channels.t](../../../../tests/processing/dither/carry/0007_carry_hard_channels.t) |
+| BC-08 | None extended. | [tests/processing/dither/carry/0008_carry_none_extended.t](../../../../tests/processing/dither/carry/0008_carry_none_extended.t) |
+| BC-09 | Signed conservation. | [tests/processing/dither/carry/0009_carry_signed_conservation.t](../../../../tests/processing/dither/carry/0009_carry_signed_conservation.t) |
+| BC-10 | Symmetric rounding. | [tests/processing/dither/carry/0010_carry_symmetric_rounding.t](../../../../tests/processing/dither/carry/0010_carry_symmetric_rounding.t) |
+| BC-11 | Gray fs. | [tests/processing/dither/carry/0011_carry_gray_fs.t](../../../../tests/processing/dither/carry/0011_carry_gray_fs.t) |
+| BC-12 | Atkinson complementary-tone symmetry; 6/8 attenuation remains. | [tests/processing/dither/carry/0012_carry_gray_atkinson_symmetry.t](../../../../tests/processing/dither/carry/0012_carry_gray_atkinson_symmetry.t) |
+| BC-13 | Gray jajuni. | [tests/processing/dither/carry/0013_carry_gray_jajuni.t](../../../../tests/processing/dither/carry/0013_carry_gray_jajuni.t) |
+| BC-14 | Gray stucki. | [tests/processing/dither/carry/0014_carry_gray_stucki.t](../../../../tests/processing/dither/carry/0014_carry_gray_stucki.t) |
+| BC-15 | Gray burkes. | [tests/processing/dither/carry/0015_carry_gray_burkes.t](../../../../tests/processing/dither/carry/0015_carry_gray_burkes.t) |
+| BC-16 | Gray sierra1. | [tests/processing/dither/carry/0016_carry_gray_sierra1.t](../../../../tests/processing/dither/carry/0016_carry_gray_sierra1.t) |
+| BC-17 | Gray sierra2. | [tests/processing/dither/carry/0017_carry_gray_sierra2.t](../../../../tests/processing/dither/carry/0017_carry_gray_sierra2.t) |
+| BC-18 | Gray sierra3. | [tests/processing/dither/carry/0018_carry_gray_sierra3.t](../../../../tests/processing/dither/carry/0018_carry_gray_sierra3.t) |
+| BC-19 | Deadzone CLI, compact spelling and environment produce identical output; explicit CLI wins. | [tests/cli/options/regression/0188_diffusion_deadzone_image_regression.t](../../../../tests/cli/options/regression/0188_diffusion_deadzone_image_regression.t) |
+| BC-20 | All spatial option scopes accept decimals, reject invalid values and reset defaults. | [tests/processing/dither/carry/0019_carry_option_scope.t](../../../../tests/processing/dither/carry/0019_carry_option_scope.t) |
+| BC-21 | Carry allocation failure returns an error before output or source changes. | [tests/processing/dither/carry/0020_carry_allocation_failure.t](../../../../tests/processing/dither/carry/0020_carry_allocation_failure.t) |
+| BC-22 | Retained feedback with incoming carry (keep_early_incoming). | [tests/processing/dither/carry/0021_carry_keep_early_incoming.t](../../../../tests/processing/dither/carry/0021_carry_keep_early_incoming.t) |
+| BC-23 | Retained feedback with incoming carry (keep_lookup_incoming). | [tests/processing/dither/carry/0022_carry_keep_lookup_incoming.t](../../../../tests/processing/dither/carry/0022_carry_keep_lookup_incoming.t) |

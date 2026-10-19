@@ -143,11 +143,11 @@ am__v_P_1 = :
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 = 
+am__v_GEN_1 =
 AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
-am__v_at_1 = 
+am__v_at_1 =
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -1187,6 +1187,17 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/encoder/palette-application/dithering/perturb/rapsd.png \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-delta-e00.png \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-ms-ssim.png \
+	docs/encoder/palette-application/dithering/measurements/carry-gray-bias.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-highcolor-bias.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-lookup-colors.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-quality-float.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-quality-main.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-quality-sweep.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-run.json \
+	docs/encoder/palette-application/dithering/measurements/carry-speed-summary.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-summary-float.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-summary-main.csv \
+	docs/encoder/palette-application/dithering/measurements/carry-timings.csv \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-quality.csv \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-run.json \
 	docs/encoder/palette-application/dithering/measurements/dither-policy-size.csv \
@@ -1651,7 +1662,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	$(AM_V_at)rm -f stamp-h1
 	$(AM_V_GEN)cd $(top_builddir) && $(SHELL) ./config.status config.h
-$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
+$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	$(AM_V_GEN)($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	$(AM_V_at)rm -f stamp-h1
 	$(AM_V_at)touch $@

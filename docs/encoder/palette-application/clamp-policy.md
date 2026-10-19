@@ -1,6 +1,6 @@
 # Dither clamp policy
 
-`-0` / `--clamp-policy` controls float error-diffusion feedback during palette application. It exists for float working coordinates, which can leave the byte cube with negative or over-range components; byte diffusion has no clamp policy. It does not change loader samples, CMS, resizing, clustering, or color-space conversion. See [working color space](working-colorspace/README.md) for the coordinate system in which diffusion runs and [loader precision](../../loader/precision-policy.md) for source preservation.
+`-0` / `--clamp-policy` controls byte and float spatial error-diffusion feedback during palette application. Byte carry candidates and float working coordinates can leave the byte cube with negative or over-range components. It does not change loader samples, CMS, resizing, clustering, or color-space conversion. See [working color space](working-colorspace/README.md) for the coordinate system in which diffusion runs and [loader precision](../../loader/precision-policy.md) for source preservation.
 
 ## Options
 
@@ -33,7 +33,9 @@ A bound on corrected coordinates differs from a fixed cap on correction magnitud
 
 The policy applies to FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes, the Sierra variants, LSO2, and the interframe policy's corrected working samples. Positional noise and no-dither paths do not propagate quantization residuals, so this policy does not apply to them. [Positional candidate precision](dithering/README.md#positional-candidate-precision) defines their float bias and byte saturation boundaries. LSO2's existing lightness-only diffusion in Lab-family spaces is unchanged. Its correction has the form `(delta_L, 0, 0)`, so only L can constrain the soft scale factor; unchanged source chroma cannot suppress lightness compensation even outside nominal chroma bounds. No extra L weighting is needed. RGB working spaces still diffuse all three components. LSO2's error-dependent coefficient table continues to control both spatial distribution and total propagated error separately from this limiter.
 
-The policy only governs diffusion that already runs in float coordinates: a float source, a non-gamma working space, an authoritative float palette, or an explicit float precision request selects that path. The clamp policy never selects it. Byte diffusion keeps its per-tap rounding and saturation for every policy, so `-0` has no effect there and `--precision=8bit` keeps byte diffusion byte-wide. Byte and float arithmetic are not promised to produce identical indexes. The [byte-application test](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) traps the float promotion allocation for every diffusion kernel and policy, and [`staticcheck-dither-clamp-float-only`](../../../tests/_static/sh/staticcheck-dither-clamp-float-only.sh) keeps byte kernels and the palette-application planner from reading the policy.
+Byte FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes and Sierra use integer carry rows. The limiter runs once on the combined correction before candidate rounding and byte lookup projection. The propagated residual uses the rounded candidate before projection. `none` can accumulate error indefinitely for colors outside the palette hull; exceeding int32 carry capacity returns an error. Byte LSO2, high-color and interframe/STBN retain their separate arithmetic. Float diffusion retains its existing limiter and defaults.
+
+A float source, a non-gamma working space, an authoritative float palette, or an explicit float precision request selects float work. The clamp policy never selects arithmetic precision. Byte and float arithmetic are not promised to produce identical indexes. The [byte-application test](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) traps float promotion allocations, and the [planner check](../../../tests/_static/sh/staticcheck-dither-clamp-precision.sh) prevents the palette-application planner from using the clamp setting to select precision.
 
 On the selected Display P3 and ordinary sRGB float paths, sources can hold extended coordinates outside the sRGB cube and the residual is computed against the unrounded working palette; the limiter bounds only the feedback and keeps those original coordinates, while `-0none` propagates the unrestricted residual. See [Output color space](../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
@@ -43,7 +45,7 @@ Each hard/soft float diffusion request owns an immutable source snapshot. Unlimi
 
 ### Snapshot storage and process memory
 
-For an RGB float request covering `W` by `H` pixels, hard and soft each allocate one `W * H * 3 * sizeof(float)` snapshot. With binary32 components this is 12 bytes per pixel. The snapshot preserves the original coordinates exactly and owns independent storage; allocation failure is reported and does not select another policy. Finishing a failed or already finished snapshot does not free source pixels. The original source is needed by hard as well as soft because both expand their bounds to contain extended source coordinates. Byte diffusion has no clamp policy and no snapshot.
+For an RGB float request covering `W` by `H` pixels, hard and soft each allocate one `W * H * 3 * sizeof(float)` snapshot. With binary32 components this is 12 bytes per pixel. The snapshot preserves the original coordinates exactly and owns independent storage; allocation failure is reported and does not select another policy. Finishing a failed or already finished snapshot does not free source pixels. The original source is needed by hard as well as soft because both expand their bounds to contain extended source coordinates. Byte carry diffusion limits feedback without a source snapshot.
 
 | Full-image RGB request | Hard or soft snapshot | None snapshot |
 | --- | ---: | ---: |
@@ -51,7 +53,7 @@ For an RGB float request covering `W` by `H` pixels, hard and soft each allocate
 | 1920 × 1080 | 23.730 MiB | 0 |
 | 3840 × 2160 | 94.922 MiB | 0 |
 
-These are derived allocation sizes, not measured whole-process peak RSS. Input decoding, format conversion, working copies, palette construction, output indexes, and queues can coexist or peak at other times. Consequently, subtracting two process RSS peaks does not directly measure the snapshot. A parallel request uses its effective work-band height including warm-up rows; sum the sizes of simultaneously active snapshots rather than multiplying the full-image size by the requested worker count. [Work-band geometry](../../threading/overview.md#work-band-seams-and-image-quality) defines that execution boundary. Keep format and concurrency fixed when comparing hard, soft and none; the policies differ only on float paths.
+These are derived allocation sizes, not measured whole-process peak RSS. Input decoding, format conversion, working copies, palette construction, output indexes, and queues can coexist or peak at other times. Consequently, subtracting two process RSS peaks does not directly measure the snapshot. A parallel request uses its effective work-band height including warm-up rows; sum the sizes of simultaneously active snapshots rather than multiplying the full-image size by the requested worker count. [Work-band geometry](../../threading/overview.md#work-band-seams-and-image-quality) defines that execution boundary. Keep format and concurrency fixed when comparing hard, soft and none; these snapshot sizes apply only to float paths. Byte diffusion uses the carry rows described in the [dithering reference](dithering/README.md#byte-spatial-diffusion), with no source snapshot.
 
 ## Quality and threshold selection
 
@@ -116,7 +118,7 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DC-49 | None allocates no source snapshot. | [tests/processing/dither/clamp/0049_none_no_snapshot.t](../../../tests/processing/dither/clamp/0049_none_no_snapshot.t) |
 | DC-50 | Snapshot allocation failure permits safe finish and a successful retry. | [tests/processing/dither/clamp/0050_snapshot_failure.t](../../../tests/processing/dither/clamp/0050_snapshot_failure.t) |
 | DC-51 | No clamp policy promotes byte diffusion to float arithmetic, for any error-diffusion kernel. | [tests/processing/precision/0016_clamp_keeps_byte_application.t](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) |
-| DC-52 | Byte dither kernels and the palette-application planner do not read the clamp policy. | [tests/_static/sh/staticcheck-dither-clamp-float-only.sh](../../../tests/_static/sh/staticcheck-dither-clamp-float-only.sh) |
+| DC-52 | The palette-application planner does not use the clamp policy to select arithmetic precision. | [tests/_static/sh/staticcheck-dither-clamp-precision.sh](../../../tests/_static/sh/staticcheck-dither-clamp-precision.sh) |
 
 ### Quality regression tests
 
