@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Prepare independent loader references at the requested encoder dimensions.
+"""Prepare fixed loader references at the requested encoder dimensions.
 
 The matching tests resize decoded source samples before palette construction.
-References are resized offline from their existing external-renderer oracles,
-never from the encoder output being tested. Integer nearest replication makes
-coordinate alignment explicit without adding smoothing to the comparison.
+References are resized offline from the manifest's checked-in sources, never
+from output produced during the test. Most sources are external-renderer
+oracles; TIFF grayscale SIXEL sources are libsixel baselines, validated against
+the original TIFF byte samples after WhiteIsZero inversion. Those references
+establish output regression parity, not an independent loader oracle. Integer
+nearest replication makes coordinate alignment explicit without smoothing.
 """
 import argparse
 import json
