@@ -1861,12 +1861,9 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     dither->pipeline_image_height = height;
 
     if (logger != NULL) {
-        /*
-         * Record the thread split and band geometry before spawning workers.
-         * This clarifies why only a subset of hardware threads might appear
-         * in the log when the encoder side is clamped to keep the pipeline
-         * draining.
-         */
+        /* Mark row-pipeline setup before spawning workers. Resolved counts
+         * and geometry belong to the post-encode dither_contract trace;
+         * this JSONL logger records structural event fields only. */
         sixel_timeline_logger_logf(logger,
                           "controller",
                           "pipeline",
@@ -4760,19 +4757,7 @@ sixel_encode_dither(
                               "controller",
                               "pipeline",
                               "configure",
-                              -1,
-                              -1,
-                              0,
-                              height,
-                              0,
-                              height,
-                              dither->pipeline_last_mode ==
-                                  SIXEL_DITHER_ENCODE_STAGED
-                                  ? "staged path dither=%d encode=%d"
-                                  : "serial path threads=1 "
-                                    "dither=%d encode=%d",
-                              dither->pipeline_last_dither_threads,
-                              dither->pipeline_last_encode_threads);
+                              -1);
         }
     }
 
