@@ -28,15 +28,15 @@ typedef struct spatial_method {
 
 /* Only the immediate right tap contributes on a two-pixel row. LSO2's
  * 1/8 error selects coefficient row 32: right 794, denominator 3004.
- * Stucki and Sierra-2 use the documented libsixel variants (8/48 and 1/8).
+ * Stucki and Two-row Sierra use canonical first taps (8/42 and 4/16).
  * These literals are the expected contracts, not imported kernel tables. */
 static spatial_method_t const spatial_methods[] = {
     { "atkinson", sixel_dither_policy_atkinson_float32_new, 1.0 / 8.0 },
     { "jajuni", sixel_dither_policy_jajuni_float32_new, 7.0 / 48.0 },
-    { "stucki", sixel_dither_policy_stucki_float32_new, 8.0 / 48.0 },
+    { "stucki", sixel_dither_policy_stucki_float32_new, 8.0 / 42.0 },
     { "burkes", sixel_dither_policy_burkes_float32_new, 8.0 / 32.0 },
     { "sierra1", sixel_dither_policy_sierra1_float32_new, 2.0 / 4.0 },
-    { "sierra2", sixel_dither_policy_sierra2_float32_new, 1.0 / 8.0 },
+    { "sierra2", sixel_dither_policy_sierra2_float32_new, 4.0 / 16.0 },
     { "sierra3", sixel_dither_policy_sierra3_float32_new, 5.0 / 32.0 },
     { "lso2", sixel_dither_policy_lso2_float32_new, 794.0 / 3004.0 },
     { "fs", sixel_dither_policy_fs_float32_new, 7.0 / 16.0 },

@@ -584,6 +584,28 @@ int test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv);
 int test_filter_0012_filter_encode_6delta_plane(int argc, char **argv);
 int test_filter_0013_filter_encode_6delta_keycolor(int argc, char **argv);
 int test_filter_0014_filter_sample_solid(int argc, char **argv);
+int test_carry_0001(int argc, char **argv);
+int test_carry_0002(int argc, char **argv);
+int test_carry_0003(int argc, char **argv);
+int test_carry_0004(int argc, char **argv);
+int test_carry_0005(int argc, char **argv);
+int test_carry_0006(int argc, char **argv);
+int test_carry_0007(int argc, char **argv);
+int test_carry_0008(int argc, char **argv);
+int test_carry_0009(int argc, char **argv);
+int test_carry_0010(int argc, char **argv);
+int test_carry_0011(int argc, char **argv);
+int test_carry_0012(int argc, char **argv);
+int test_carry_0013(int argc, char **argv);
+int test_carry_0014(int argc, char **argv);
+int test_carry_0015(int argc, char **argv);
+int test_carry_0016(int argc, char **argv);
+int test_carry_0017(int argc, char **argv);
+int test_carry_0018(int argc, char **argv);
+int test_carry_0019(int argc, char **argv);
+int test_carry_0021(int argc, char **argv);
+int test_carry_0022(int argc, char **argv);
+int test_carry_0020(int argc, char **argv);
 int test_clamp_0001(int argc, char **argv);
 int test_clamp_0002(int argc, char **argv);
 int test_clamp_0003(int argc, char **argv);
@@ -4032,6 +4054,28 @@ static test_entry_t const test_entries[] = {
     { "perturb/0018_perturb_keep_lookup", test_perturb_0018_keep_lookup },
     { "perturb/0001_perturb_weights", test_perturb_0001_weights },
     { "perturb/0002_perturb_api", test_perturb_0002_api },
+    { "dither/carry/0001_carry_kernel_coefficients", test_carry_0001 },
+    { "dither/carry/0002_carry_deadzone_below", test_carry_0002 },
+    { "dither/carry/0003_carry_deadzone_boundary", test_carry_0003 },
+    { "dither/carry/0004_carry_deadzone_disabled", test_carry_0004 },
+    { "dither/carry/0005_carry_soft_direction", test_carry_0005 },
+    { "dither/carry/0006_carry_soft_inside", test_carry_0006 },
+    { "dither/carry/0007_carry_hard_channels", test_carry_0007 },
+    { "dither/carry/0008_carry_none_extended", test_carry_0008 },
+    { "dither/carry/0009_carry_signed_conservation", test_carry_0009 },
+    { "dither/carry/0010_carry_symmetric_rounding", test_carry_0010 },
+    { "dither/carry/0011_carry_gray_fs", test_carry_0011 },
+    { "dither/carry/0012_carry_gray_atkinson_symmetry", test_carry_0012 },
+    { "dither/carry/0013_carry_gray_jajuni", test_carry_0013 },
+    { "dither/carry/0014_carry_gray_stucki", test_carry_0014 },
+    { "dither/carry/0015_carry_gray_burkes", test_carry_0015 },
+    { "dither/carry/0016_carry_gray_sierra1", test_carry_0016 },
+    { "dither/carry/0017_carry_gray_sierra2", test_carry_0017 },
+    { "dither/carry/0018_carry_gray_sierra3", test_carry_0018 },
+    { "dither/carry/0019_carry_option_scope", test_carry_0019 },
+    { "dither/carry/0021_carry_keep_early_incoming", test_carry_0021 },
+    { "dither/carry/0022_carry_keep_lookup_incoming", test_carry_0022 },
+    { "dither/carry/0020_carry_allocation_failure", test_carry_0020 },
     { "dither/clamp/0001_soft_vector", test_clamp_0001 },
     { "dither/clamp/0002_auto_soft", test_clamp_0002 },
     { "dither/clamp/0003_hard_channels", test_clamp_0003 },

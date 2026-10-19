@@ -1432,6 +1432,30 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0014_filter_sample_solid.c \
 	processing/dither/positional/0048_positional_8bit_no_diffuse_gpu_6delta.c \
 	processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c \
+	processing/dither/carry/0001_carry_kernel_coefficients.c \
+	processing/dither/carry/0002_carry_deadzone_below.c \
+	processing/dither/carry/0003_carry_deadzone_boundary.c \
+	processing/dither/carry/0004_carry_deadzone_disabled.c \
+	processing/dither/carry/0005_carry_soft_direction.c \
+	processing/dither/carry/0006_carry_soft_inside.c \
+	processing/dither/carry/0007_carry_hard_channels.c \
+	processing/dither/carry/0008_carry_none_extended.c \
+	processing/dither/carry/0009_carry_signed_conservation.c \
+	processing/dither/carry/0010_carry_symmetric_rounding.c \
+	processing/dither/carry/0011_carry_gray_fs.c \
+	processing/dither/carry/0012_carry_gray_atkinson_symmetry.c \
+	processing/dither/carry/0013_carry_gray_jajuni.c \
+	processing/dither/carry/0014_carry_gray_stucki.c \
+	processing/dither/carry/0015_carry_gray_burkes.c \
+	processing/dither/carry/0016_carry_gray_sierra1.c \
+	processing/dither/carry/0017_carry_gray_sierra2.c \
+	processing/dither/carry/0018_carry_gray_sierra3.c \
+	processing/dither/carry/0021_carry_keep_early_incoming.c \
+	processing/dither/carry/0022_carry_keep_lookup_incoming.c \
+	processing/dither/carry/carry_test_common.c \
+	processing/dither/carry/carry_test_common.h \
+	processing/dither/carry/0019_carry_option_scope.c \
+	processing/dither/carry/0020_carry_allocation_failure.c \
 	processing/dither/clamp/0001_soft_vector.c \
 	processing/dither/clamp/0002_auto_soft.c \
 	processing/dither/clamp/0003_hard_channels.c \
@@ -5205,6 +5229,29 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0014_filter_sample_solid.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/positional/test_runner-0048_positional_8bit_no_diffuse_gpu_6delta.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/bluenoise/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0001_carry_kernel_coefficients.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0002_carry_deadzone_below.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0003_carry_deadzone_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0004_carry_deadzone_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0005_carry_soft_direction.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0006_carry_soft_inside.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0007_carry_hard_channels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0008_carry_none_extended.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0009_carry_signed_conservation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0010_carry_symmetric_rounding.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0011_carry_gray_fs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0013_carry_gray_jajuni.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0014_carry_gray_stucki.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0015_carry_gray_burkes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0016_carry_gray_sierra1.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0017_carry_gray_sierra2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0018_carry_gray_sierra3.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0021_carry_keep_early_incoming.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-carry_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0019_carry_option_scope.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/carry/test_runner-0020_carry_allocation_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0001_soft_vector.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0002_auto_soft.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/clamp/test_runner-0003_hard_channels.$(OBJEXT) \
@@ -7724,11 +7771,11 @@ am__v_P_1 = :
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 = 
+am__v_GEN_1 =
 AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
-am__v_at_1 = 
+am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
@@ -9709,6 +9756,29 @@ am__depfiles_remade =  \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
 	processing/dither/$(DEPDIR)/test_runner-positional_test_common.Po \
 	processing/dither/bluenoise/$(DEPDIR)/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Po \
+	processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0001_soft_vector.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0002_auto_soft.Po \
 	processing/dither/clamp/$(DEPDIR)/test_runner-0003_hard_channels.Po \
@@ -11488,7 +11558,7 @@ LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CC = $(am__v_CC_@AM_V@)
 am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
 am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 = 
+am__v_CC_1 =
 CCLD = $(CC)
 LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -11496,7 +11566,7 @@ LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 = 
+am__v_CCLD_1 =
 SOURCES = $(libfloatlookuptests_la_SOURCES) $(test_runner_SOURCES) \
 	$(nodist_test_runner_SOURCES)
 DIST_SOURCES = $(am__libfloatlookuptests_la_SOURCES_DIST) \
@@ -13414,6 +13484,29 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_FILTER_ENCODE_6DELTA_PLANE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_FILTER_ENCODE_6DELTA_KEYCOLOR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_FILTER_SAMPLE_SOLID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_CARRY_KEEP_EARLY_INCOMING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_CARRY_KEEP_LOOKUP_INCOMING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CARRY_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CARRY_KERNEL_COEFFICIENTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_CARRY_DEADZONE_BELOW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_CARRY_DEADZONE_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_CARRY_DEADZONE_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_CARRY_SOFT_DIRECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_CARRY_SOFT_INSIDE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_CARRY_HARD_CHANNELS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_CARRY_NONE_EXTENDED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_CARRY_SIGNED_CONSERVATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_CARRY_SYMMETRIC_ROUNDING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_CARRY_GRAY_FS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_CARRY_GRAY_ATKINSON_SYMMETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_CARRY_GRAY_JAJUNI \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_CARRY_GRAY_STUCKI \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_CARRY_GRAY_BURKES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_CARRY_GRAY_SIERRA1 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_CARRY_GRAY_SIERRA2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_CARRY_GRAY_SIERRA3 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_CARRY_OPTION_SCOPE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_CARRY_ALLOCATION_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SOFT_VECTOR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_AUTO_SOFT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_HARD_CHANNELS \
@@ -15919,7 +16012,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 # libsixel amalgamation already contains lookup-policy objects.
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
-@WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
+@WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE =
 @WANT_AMALGAMATED_TOOLS_FALSE@noinst_LTLIBRARIES = libfloatlookuptests.la
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_SOURCES = \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0018_lookup_float_batch_exact.c \
@@ -17237,6 +17330,30 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0014_filter_sample_solid.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/positional/0048_positional_8bit_no_diffuse_gpu_6delta.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0001_carry_kernel_coefficients.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0002_carry_deadzone_below.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0003_carry_deadzone_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0004_carry_deadzone_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0005_carry_soft_direction.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0006_carry_soft_inside.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0007_carry_hard_channels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0008_carry_none_extended.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0009_carry_signed_conservation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0010_carry_symmetric_rounding.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0011_carry_gray_fs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0012_carry_gray_atkinson_symmetry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0013_carry_gray_jajuni.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0014_carry_gray_stucki.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0015_carry_gray_burkes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0016_carry_gray_sierra1.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0017_carry_gray_sierra2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0018_carry_gray_sierra3.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0021_carry_keep_early_incoming.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0022_carry_keep_lookup_incoming.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/carry_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/carry_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0019_carry_option_scope.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/carry/0020_carry_allocation_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0001_soft_vector.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0002_auto_soft.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/clamp/0003_hard_channels.c \
@@ -19773,7 +19890,7 @@ AM_TEST_TIMEOUT = 90
 AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
 # LOG_COMPILE; the drivers consume timeout hints themselves.
-AM_LOG_FLAGS = 
+AM_LOG_FLAGS =
 @OPENVMS_GNV_FALSE@sixel_clean_batch_size = $(if $(filter darwin% linux% freebsd% netbsd% openbsd% dragonfly% solaris% illumos% haiku% aix%,$(host_os)),128,16)
 
 # Automake otherwise emits one rm recipe per dependency file.  Expand its
@@ -19846,7 +19963,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-frombmp-chunk-view-bind.sh \
 	_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 	_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
-	_static/sh/staticcheck-dither-clamp-float-only.sh \
+	_static/sh/staticcheck-dither-clamp-precision.sh \
 	_static/sh/staticcheck-factory-classid-registry-sync.sh \
 	_static/sh/staticcheck-serviceid-registry-sync.sh \
 	_static/sh/staticcheck-timeline-logging-boundary.sh \
@@ -23947,6 +24064,81 @@ processing/dither/bluenoise/$(DEPDIR)/$(am__dirstamp):
 processing/dither/bluenoise/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.$(OBJEXT):  \
 	processing/dither/bluenoise/$(am__dirstamp) \
 	processing/dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither/carry
+	@: >>processing/dither/carry/$(am__dirstamp)
+processing/dither/carry/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither/carry/$(DEPDIR)
+	@: >>processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0001_carry_kernel_coefficients.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0002_carry_deadzone_below.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0003_carry_deadzone_boundary.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0004_carry_deadzone_disabled.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0005_carry_soft_direction.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0006_carry_soft_inside.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0007_carry_hard_channels.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0008_carry_none_extended.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0009_carry_signed_conservation.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0010_carry_symmetric_rounding.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0011_carry_gray_fs.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0013_carry_gray_jajuni.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0014_carry_gray_stucki.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0015_carry_gray_burkes.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0016_carry_gray_sierra1.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0017_carry_gray_sierra2.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0018_carry_gray_sierra3.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0021_carry_keep_early_incoming.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-carry_test_common.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0019_carry_option_scope.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+processing/dither/carry/test_runner-0020_carry_allocation_failure.$(OBJEXT):  \
+	processing/dither/carry/$(am__dirstamp) \
+	processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
 processing/dither/clamp/$(am__dirstamp):
 	@$(MKDIR_P) processing/dither/clamp
 	@: >>processing/dither/clamp/$(am__dirstamp)
@@ -31969,6 +32161,7 @@ mostlyclean-compile:
 	-rm -f processing/delta-residual/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/dither/bluenoise/*.$(OBJEXT)
+	-rm -f processing/dither/carry/*.$(OBJEXT)
 	-rm -f processing/dither/clamp/*.$(OBJEXT)
 	-rm -f processing/dither/interframe/*.$(OBJEXT)
 	-rm -f processing/dither/perturb/*.$(OBJEXT)
@@ -34024,6 +34217,29 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-positional_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/bluenoise/$(DEPDIR)/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0001_soft_vector.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0002_auto_soft.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/clamp/$(DEPDIR)/test_runner-0003_hard_channels.Po@am__quote@ # am--include-marker
@@ -53755,6 +53971,328 @@ processing/dither/bluenoise/test_runner-0052_positional_8bit_bluenoise_gpu_force
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c' object='processing/dither/bluenoise/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/bluenoise/test_runner-0052_positional_8bit_bluenoise_gpu_force_keep_offset.obj `if test -f 'processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c'; then $(CYGPATH_W) 'processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c'; fi`
+
+processing/dither/carry/test_runner-0001_carry_kernel_coefficients.o: processing/dither/carry/0001_carry_kernel_coefficients.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0001_carry_kernel_coefficients.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Tpo -c -o processing/dither/carry/test_runner-0001_carry_kernel_coefficients.o `test -f 'processing/dither/carry/0001_carry_kernel_coefficients.c' || echo '$(srcdir)/'`processing/dither/carry/0001_carry_kernel_coefficients.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0001_carry_kernel_coefficients.c' object='processing/dither/carry/test_runner-0001_carry_kernel_coefficients.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0001_carry_kernel_coefficients.o `test -f 'processing/dither/carry/0001_carry_kernel_coefficients.c' || echo '$(srcdir)/'`processing/dither/carry/0001_carry_kernel_coefficients.c
+
+processing/dither/carry/test_runner-0001_carry_kernel_coefficients.obj: processing/dither/carry/0001_carry_kernel_coefficients.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0001_carry_kernel_coefficients.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Tpo -c -o processing/dither/carry/test_runner-0001_carry_kernel_coefficients.obj `if test -f 'processing/dither/carry/0001_carry_kernel_coefficients.c'; then $(CYGPATH_W) 'processing/dither/carry/0001_carry_kernel_coefficients.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0001_carry_kernel_coefficients.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0001_carry_kernel_coefficients.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0001_carry_kernel_coefficients.c' object='processing/dither/carry/test_runner-0001_carry_kernel_coefficients.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0001_carry_kernel_coefficients.obj `if test -f 'processing/dither/carry/0001_carry_kernel_coefficients.c'; then $(CYGPATH_W) 'processing/dither/carry/0001_carry_kernel_coefficients.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0001_carry_kernel_coefficients.c'; fi`
+
+processing/dither/carry/test_runner-0002_carry_deadzone_below.o: processing/dither/carry/0002_carry_deadzone_below.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0002_carry_deadzone_below.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Tpo -c -o processing/dither/carry/test_runner-0002_carry_deadzone_below.o `test -f 'processing/dither/carry/0002_carry_deadzone_below.c' || echo '$(srcdir)/'`processing/dither/carry/0002_carry_deadzone_below.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0002_carry_deadzone_below.c' object='processing/dither/carry/test_runner-0002_carry_deadzone_below.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0002_carry_deadzone_below.o `test -f 'processing/dither/carry/0002_carry_deadzone_below.c' || echo '$(srcdir)/'`processing/dither/carry/0002_carry_deadzone_below.c
+
+processing/dither/carry/test_runner-0002_carry_deadzone_below.obj: processing/dither/carry/0002_carry_deadzone_below.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0002_carry_deadzone_below.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Tpo -c -o processing/dither/carry/test_runner-0002_carry_deadzone_below.obj `if test -f 'processing/dither/carry/0002_carry_deadzone_below.c'; then $(CYGPATH_W) 'processing/dither/carry/0002_carry_deadzone_below.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0002_carry_deadzone_below.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0002_carry_deadzone_below.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0002_carry_deadzone_below.c' object='processing/dither/carry/test_runner-0002_carry_deadzone_below.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0002_carry_deadzone_below.obj `if test -f 'processing/dither/carry/0002_carry_deadzone_below.c'; then $(CYGPATH_W) 'processing/dither/carry/0002_carry_deadzone_below.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0002_carry_deadzone_below.c'; fi`
+
+processing/dither/carry/test_runner-0003_carry_deadzone_boundary.o: processing/dither/carry/0003_carry_deadzone_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0003_carry_deadzone_boundary.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Tpo -c -o processing/dither/carry/test_runner-0003_carry_deadzone_boundary.o `test -f 'processing/dither/carry/0003_carry_deadzone_boundary.c' || echo '$(srcdir)/'`processing/dither/carry/0003_carry_deadzone_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0003_carry_deadzone_boundary.c' object='processing/dither/carry/test_runner-0003_carry_deadzone_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0003_carry_deadzone_boundary.o `test -f 'processing/dither/carry/0003_carry_deadzone_boundary.c' || echo '$(srcdir)/'`processing/dither/carry/0003_carry_deadzone_boundary.c
+
+processing/dither/carry/test_runner-0003_carry_deadzone_boundary.obj: processing/dither/carry/0003_carry_deadzone_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0003_carry_deadzone_boundary.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Tpo -c -o processing/dither/carry/test_runner-0003_carry_deadzone_boundary.obj `if test -f 'processing/dither/carry/0003_carry_deadzone_boundary.c'; then $(CYGPATH_W) 'processing/dither/carry/0003_carry_deadzone_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0003_carry_deadzone_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0003_carry_deadzone_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0003_carry_deadzone_boundary.c' object='processing/dither/carry/test_runner-0003_carry_deadzone_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0003_carry_deadzone_boundary.obj `if test -f 'processing/dither/carry/0003_carry_deadzone_boundary.c'; then $(CYGPATH_W) 'processing/dither/carry/0003_carry_deadzone_boundary.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0003_carry_deadzone_boundary.c'; fi`
+
+processing/dither/carry/test_runner-0004_carry_deadzone_disabled.o: processing/dither/carry/0004_carry_deadzone_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0004_carry_deadzone_disabled.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Tpo -c -o processing/dither/carry/test_runner-0004_carry_deadzone_disabled.o `test -f 'processing/dither/carry/0004_carry_deadzone_disabled.c' || echo '$(srcdir)/'`processing/dither/carry/0004_carry_deadzone_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0004_carry_deadzone_disabled.c' object='processing/dither/carry/test_runner-0004_carry_deadzone_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0004_carry_deadzone_disabled.o `test -f 'processing/dither/carry/0004_carry_deadzone_disabled.c' || echo '$(srcdir)/'`processing/dither/carry/0004_carry_deadzone_disabled.c
+
+processing/dither/carry/test_runner-0004_carry_deadzone_disabled.obj: processing/dither/carry/0004_carry_deadzone_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0004_carry_deadzone_disabled.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Tpo -c -o processing/dither/carry/test_runner-0004_carry_deadzone_disabled.obj `if test -f 'processing/dither/carry/0004_carry_deadzone_disabled.c'; then $(CYGPATH_W) 'processing/dither/carry/0004_carry_deadzone_disabled.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0004_carry_deadzone_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0004_carry_deadzone_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0004_carry_deadzone_disabled.c' object='processing/dither/carry/test_runner-0004_carry_deadzone_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0004_carry_deadzone_disabled.obj `if test -f 'processing/dither/carry/0004_carry_deadzone_disabled.c'; then $(CYGPATH_W) 'processing/dither/carry/0004_carry_deadzone_disabled.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0004_carry_deadzone_disabled.c'; fi`
+
+processing/dither/carry/test_runner-0005_carry_soft_direction.o: processing/dither/carry/0005_carry_soft_direction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0005_carry_soft_direction.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Tpo -c -o processing/dither/carry/test_runner-0005_carry_soft_direction.o `test -f 'processing/dither/carry/0005_carry_soft_direction.c' || echo '$(srcdir)/'`processing/dither/carry/0005_carry_soft_direction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0005_carry_soft_direction.c' object='processing/dither/carry/test_runner-0005_carry_soft_direction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0005_carry_soft_direction.o `test -f 'processing/dither/carry/0005_carry_soft_direction.c' || echo '$(srcdir)/'`processing/dither/carry/0005_carry_soft_direction.c
+
+processing/dither/carry/test_runner-0005_carry_soft_direction.obj: processing/dither/carry/0005_carry_soft_direction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0005_carry_soft_direction.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Tpo -c -o processing/dither/carry/test_runner-0005_carry_soft_direction.obj `if test -f 'processing/dither/carry/0005_carry_soft_direction.c'; then $(CYGPATH_W) 'processing/dither/carry/0005_carry_soft_direction.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0005_carry_soft_direction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0005_carry_soft_direction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0005_carry_soft_direction.c' object='processing/dither/carry/test_runner-0005_carry_soft_direction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0005_carry_soft_direction.obj `if test -f 'processing/dither/carry/0005_carry_soft_direction.c'; then $(CYGPATH_W) 'processing/dither/carry/0005_carry_soft_direction.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0005_carry_soft_direction.c'; fi`
+
+processing/dither/carry/test_runner-0006_carry_soft_inside.o: processing/dither/carry/0006_carry_soft_inside.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0006_carry_soft_inside.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Tpo -c -o processing/dither/carry/test_runner-0006_carry_soft_inside.o `test -f 'processing/dither/carry/0006_carry_soft_inside.c' || echo '$(srcdir)/'`processing/dither/carry/0006_carry_soft_inside.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0006_carry_soft_inside.c' object='processing/dither/carry/test_runner-0006_carry_soft_inside.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0006_carry_soft_inside.o `test -f 'processing/dither/carry/0006_carry_soft_inside.c' || echo '$(srcdir)/'`processing/dither/carry/0006_carry_soft_inside.c
+
+processing/dither/carry/test_runner-0006_carry_soft_inside.obj: processing/dither/carry/0006_carry_soft_inside.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0006_carry_soft_inside.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Tpo -c -o processing/dither/carry/test_runner-0006_carry_soft_inside.obj `if test -f 'processing/dither/carry/0006_carry_soft_inside.c'; then $(CYGPATH_W) 'processing/dither/carry/0006_carry_soft_inside.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0006_carry_soft_inside.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0006_carry_soft_inside.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0006_carry_soft_inside.c' object='processing/dither/carry/test_runner-0006_carry_soft_inside.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0006_carry_soft_inside.obj `if test -f 'processing/dither/carry/0006_carry_soft_inside.c'; then $(CYGPATH_W) 'processing/dither/carry/0006_carry_soft_inside.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0006_carry_soft_inside.c'; fi`
+
+processing/dither/carry/test_runner-0007_carry_hard_channels.o: processing/dither/carry/0007_carry_hard_channels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0007_carry_hard_channels.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Tpo -c -o processing/dither/carry/test_runner-0007_carry_hard_channels.o `test -f 'processing/dither/carry/0007_carry_hard_channels.c' || echo '$(srcdir)/'`processing/dither/carry/0007_carry_hard_channels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0007_carry_hard_channels.c' object='processing/dither/carry/test_runner-0007_carry_hard_channels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0007_carry_hard_channels.o `test -f 'processing/dither/carry/0007_carry_hard_channels.c' || echo '$(srcdir)/'`processing/dither/carry/0007_carry_hard_channels.c
+
+processing/dither/carry/test_runner-0007_carry_hard_channels.obj: processing/dither/carry/0007_carry_hard_channels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0007_carry_hard_channels.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Tpo -c -o processing/dither/carry/test_runner-0007_carry_hard_channels.obj `if test -f 'processing/dither/carry/0007_carry_hard_channels.c'; then $(CYGPATH_W) 'processing/dither/carry/0007_carry_hard_channels.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0007_carry_hard_channels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0007_carry_hard_channels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0007_carry_hard_channels.c' object='processing/dither/carry/test_runner-0007_carry_hard_channels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0007_carry_hard_channels.obj `if test -f 'processing/dither/carry/0007_carry_hard_channels.c'; then $(CYGPATH_W) 'processing/dither/carry/0007_carry_hard_channels.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0007_carry_hard_channels.c'; fi`
+
+processing/dither/carry/test_runner-0008_carry_none_extended.o: processing/dither/carry/0008_carry_none_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0008_carry_none_extended.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Tpo -c -o processing/dither/carry/test_runner-0008_carry_none_extended.o `test -f 'processing/dither/carry/0008_carry_none_extended.c' || echo '$(srcdir)/'`processing/dither/carry/0008_carry_none_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0008_carry_none_extended.c' object='processing/dither/carry/test_runner-0008_carry_none_extended.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0008_carry_none_extended.o `test -f 'processing/dither/carry/0008_carry_none_extended.c' || echo '$(srcdir)/'`processing/dither/carry/0008_carry_none_extended.c
+
+processing/dither/carry/test_runner-0008_carry_none_extended.obj: processing/dither/carry/0008_carry_none_extended.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0008_carry_none_extended.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Tpo -c -o processing/dither/carry/test_runner-0008_carry_none_extended.obj `if test -f 'processing/dither/carry/0008_carry_none_extended.c'; then $(CYGPATH_W) 'processing/dither/carry/0008_carry_none_extended.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0008_carry_none_extended.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0008_carry_none_extended.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0008_carry_none_extended.c' object='processing/dither/carry/test_runner-0008_carry_none_extended.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0008_carry_none_extended.obj `if test -f 'processing/dither/carry/0008_carry_none_extended.c'; then $(CYGPATH_W) 'processing/dither/carry/0008_carry_none_extended.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0008_carry_none_extended.c'; fi`
+
+processing/dither/carry/test_runner-0009_carry_signed_conservation.o: processing/dither/carry/0009_carry_signed_conservation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0009_carry_signed_conservation.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Tpo -c -o processing/dither/carry/test_runner-0009_carry_signed_conservation.o `test -f 'processing/dither/carry/0009_carry_signed_conservation.c' || echo '$(srcdir)/'`processing/dither/carry/0009_carry_signed_conservation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0009_carry_signed_conservation.c' object='processing/dither/carry/test_runner-0009_carry_signed_conservation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0009_carry_signed_conservation.o `test -f 'processing/dither/carry/0009_carry_signed_conservation.c' || echo '$(srcdir)/'`processing/dither/carry/0009_carry_signed_conservation.c
+
+processing/dither/carry/test_runner-0009_carry_signed_conservation.obj: processing/dither/carry/0009_carry_signed_conservation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0009_carry_signed_conservation.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Tpo -c -o processing/dither/carry/test_runner-0009_carry_signed_conservation.obj `if test -f 'processing/dither/carry/0009_carry_signed_conservation.c'; then $(CYGPATH_W) 'processing/dither/carry/0009_carry_signed_conservation.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0009_carry_signed_conservation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0009_carry_signed_conservation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0009_carry_signed_conservation.c' object='processing/dither/carry/test_runner-0009_carry_signed_conservation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0009_carry_signed_conservation.obj `if test -f 'processing/dither/carry/0009_carry_signed_conservation.c'; then $(CYGPATH_W) 'processing/dither/carry/0009_carry_signed_conservation.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0009_carry_signed_conservation.c'; fi`
+
+processing/dither/carry/test_runner-0010_carry_symmetric_rounding.o: processing/dither/carry/0010_carry_symmetric_rounding.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0010_carry_symmetric_rounding.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Tpo -c -o processing/dither/carry/test_runner-0010_carry_symmetric_rounding.o `test -f 'processing/dither/carry/0010_carry_symmetric_rounding.c' || echo '$(srcdir)/'`processing/dither/carry/0010_carry_symmetric_rounding.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0010_carry_symmetric_rounding.c' object='processing/dither/carry/test_runner-0010_carry_symmetric_rounding.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0010_carry_symmetric_rounding.o `test -f 'processing/dither/carry/0010_carry_symmetric_rounding.c' || echo '$(srcdir)/'`processing/dither/carry/0010_carry_symmetric_rounding.c
+
+processing/dither/carry/test_runner-0010_carry_symmetric_rounding.obj: processing/dither/carry/0010_carry_symmetric_rounding.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0010_carry_symmetric_rounding.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Tpo -c -o processing/dither/carry/test_runner-0010_carry_symmetric_rounding.obj `if test -f 'processing/dither/carry/0010_carry_symmetric_rounding.c'; then $(CYGPATH_W) 'processing/dither/carry/0010_carry_symmetric_rounding.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0010_carry_symmetric_rounding.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0010_carry_symmetric_rounding.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0010_carry_symmetric_rounding.c' object='processing/dither/carry/test_runner-0010_carry_symmetric_rounding.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0010_carry_symmetric_rounding.obj `if test -f 'processing/dither/carry/0010_carry_symmetric_rounding.c'; then $(CYGPATH_W) 'processing/dither/carry/0010_carry_symmetric_rounding.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0010_carry_symmetric_rounding.c'; fi`
+
+processing/dither/carry/test_runner-0011_carry_gray_fs.o: processing/dither/carry/0011_carry_gray_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0011_carry_gray_fs.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Tpo -c -o processing/dither/carry/test_runner-0011_carry_gray_fs.o `test -f 'processing/dither/carry/0011_carry_gray_fs.c' || echo '$(srcdir)/'`processing/dither/carry/0011_carry_gray_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0011_carry_gray_fs.c' object='processing/dither/carry/test_runner-0011_carry_gray_fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0011_carry_gray_fs.o `test -f 'processing/dither/carry/0011_carry_gray_fs.c' || echo '$(srcdir)/'`processing/dither/carry/0011_carry_gray_fs.c
+
+processing/dither/carry/test_runner-0011_carry_gray_fs.obj: processing/dither/carry/0011_carry_gray_fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0011_carry_gray_fs.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Tpo -c -o processing/dither/carry/test_runner-0011_carry_gray_fs.obj `if test -f 'processing/dither/carry/0011_carry_gray_fs.c'; then $(CYGPATH_W) 'processing/dither/carry/0011_carry_gray_fs.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0011_carry_gray_fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0011_carry_gray_fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0011_carry_gray_fs.c' object='processing/dither/carry/test_runner-0011_carry_gray_fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0011_carry_gray_fs.obj `if test -f 'processing/dither/carry/0011_carry_gray_fs.c'; then $(CYGPATH_W) 'processing/dither/carry/0011_carry_gray_fs.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0011_carry_gray_fs.c'; fi`
+
+processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.o: processing/dither/carry/0012_carry_gray_atkinson_symmetry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Tpo -c -o processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.o `test -f 'processing/dither/carry/0012_carry_gray_atkinson_symmetry.c' || echo '$(srcdir)/'`processing/dither/carry/0012_carry_gray_atkinson_symmetry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0012_carry_gray_atkinson_symmetry.c' object='processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.o `test -f 'processing/dither/carry/0012_carry_gray_atkinson_symmetry.c' || echo '$(srcdir)/'`processing/dither/carry/0012_carry_gray_atkinson_symmetry.c
+
+processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.obj: processing/dither/carry/0012_carry_gray_atkinson_symmetry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Tpo -c -o processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.obj `if test -f 'processing/dither/carry/0012_carry_gray_atkinson_symmetry.c'; then $(CYGPATH_W) 'processing/dither/carry/0012_carry_gray_atkinson_symmetry.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0012_carry_gray_atkinson_symmetry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0012_carry_gray_atkinson_symmetry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0012_carry_gray_atkinson_symmetry.c' object='processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0012_carry_gray_atkinson_symmetry.obj `if test -f 'processing/dither/carry/0012_carry_gray_atkinson_symmetry.c'; then $(CYGPATH_W) 'processing/dither/carry/0012_carry_gray_atkinson_symmetry.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0012_carry_gray_atkinson_symmetry.c'; fi`
+
+processing/dither/carry/test_runner-0013_carry_gray_jajuni.o: processing/dither/carry/0013_carry_gray_jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0013_carry_gray_jajuni.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Tpo -c -o processing/dither/carry/test_runner-0013_carry_gray_jajuni.o `test -f 'processing/dither/carry/0013_carry_gray_jajuni.c' || echo '$(srcdir)/'`processing/dither/carry/0013_carry_gray_jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0013_carry_gray_jajuni.c' object='processing/dither/carry/test_runner-0013_carry_gray_jajuni.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0013_carry_gray_jajuni.o `test -f 'processing/dither/carry/0013_carry_gray_jajuni.c' || echo '$(srcdir)/'`processing/dither/carry/0013_carry_gray_jajuni.c
+
+processing/dither/carry/test_runner-0013_carry_gray_jajuni.obj: processing/dither/carry/0013_carry_gray_jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0013_carry_gray_jajuni.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Tpo -c -o processing/dither/carry/test_runner-0013_carry_gray_jajuni.obj `if test -f 'processing/dither/carry/0013_carry_gray_jajuni.c'; then $(CYGPATH_W) 'processing/dither/carry/0013_carry_gray_jajuni.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0013_carry_gray_jajuni.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0013_carry_gray_jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0013_carry_gray_jajuni.c' object='processing/dither/carry/test_runner-0013_carry_gray_jajuni.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0013_carry_gray_jajuni.obj `if test -f 'processing/dither/carry/0013_carry_gray_jajuni.c'; then $(CYGPATH_W) 'processing/dither/carry/0013_carry_gray_jajuni.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0013_carry_gray_jajuni.c'; fi`
+
+processing/dither/carry/test_runner-0014_carry_gray_stucki.o: processing/dither/carry/0014_carry_gray_stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0014_carry_gray_stucki.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Tpo -c -o processing/dither/carry/test_runner-0014_carry_gray_stucki.o `test -f 'processing/dither/carry/0014_carry_gray_stucki.c' || echo '$(srcdir)/'`processing/dither/carry/0014_carry_gray_stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0014_carry_gray_stucki.c' object='processing/dither/carry/test_runner-0014_carry_gray_stucki.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0014_carry_gray_stucki.o `test -f 'processing/dither/carry/0014_carry_gray_stucki.c' || echo '$(srcdir)/'`processing/dither/carry/0014_carry_gray_stucki.c
+
+processing/dither/carry/test_runner-0014_carry_gray_stucki.obj: processing/dither/carry/0014_carry_gray_stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0014_carry_gray_stucki.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Tpo -c -o processing/dither/carry/test_runner-0014_carry_gray_stucki.obj `if test -f 'processing/dither/carry/0014_carry_gray_stucki.c'; then $(CYGPATH_W) 'processing/dither/carry/0014_carry_gray_stucki.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0014_carry_gray_stucki.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0014_carry_gray_stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0014_carry_gray_stucki.c' object='processing/dither/carry/test_runner-0014_carry_gray_stucki.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0014_carry_gray_stucki.obj `if test -f 'processing/dither/carry/0014_carry_gray_stucki.c'; then $(CYGPATH_W) 'processing/dither/carry/0014_carry_gray_stucki.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0014_carry_gray_stucki.c'; fi`
+
+processing/dither/carry/test_runner-0015_carry_gray_burkes.o: processing/dither/carry/0015_carry_gray_burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0015_carry_gray_burkes.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Tpo -c -o processing/dither/carry/test_runner-0015_carry_gray_burkes.o `test -f 'processing/dither/carry/0015_carry_gray_burkes.c' || echo '$(srcdir)/'`processing/dither/carry/0015_carry_gray_burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0015_carry_gray_burkes.c' object='processing/dither/carry/test_runner-0015_carry_gray_burkes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0015_carry_gray_burkes.o `test -f 'processing/dither/carry/0015_carry_gray_burkes.c' || echo '$(srcdir)/'`processing/dither/carry/0015_carry_gray_burkes.c
+
+processing/dither/carry/test_runner-0015_carry_gray_burkes.obj: processing/dither/carry/0015_carry_gray_burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0015_carry_gray_burkes.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Tpo -c -o processing/dither/carry/test_runner-0015_carry_gray_burkes.obj `if test -f 'processing/dither/carry/0015_carry_gray_burkes.c'; then $(CYGPATH_W) 'processing/dither/carry/0015_carry_gray_burkes.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0015_carry_gray_burkes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0015_carry_gray_burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0015_carry_gray_burkes.c' object='processing/dither/carry/test_runner-0015_carry_gray_burkes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0015_carry_gray_burkes.obj `if test -f 'processing/dither/carry/0015_carry_gray_burkes.c'; then $(CYGPATH_W) 'processing/dither/carry/0015_carry_gray_burkes.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0015_carry_gray_burkes.c'; fi`
+
+processing/dither/carry/test_runner-0016_carry_gray_sierra1.o: processing/dither/carry/0016_carry_gray_sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0016_carry_gray_sierra1.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Tpo -c -o processing/dither/carry/test_runner-0016_carry_gray_sierra1.o `test -f 'processing/dither/carry/0016_carry_gray_sierra1.c' || echo '$(srcdir)/'`processing/dither/carry/0016_carry_gray_sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0016_carry_gray_sierra1.c' object='processing/dither/carry/test_runner-0016_carry_gray_sierra1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0016_carry_gray_sierra1.o `test -f 'processing/dither/carry/0016_carry_gray_sierra1.c' || echo '$(srcdir)/'`processing/dither/carry/0016_carry_gray_sierra1.c
+
+processing/dither/carry/test_runner-0016_carry_gray_sierra1.obj: processing/dither/carry/0016_carry_gray_sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0016_carry_gray_sierra1.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Tpo -c -o processing/dither/carry/test_runner-0016_carry_gray_sierra1.obj `if test -f 'processing/dither/carry/0016_carry_gray_sierra1.c'; then $(CYGPATH_W) 'processing/dither/carry/0016_carry_gray_sierra1.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0016_carry_gray_sierra1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0016_carry_gray_sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0016_carry_gray_sierra1.c' object='processing/dither/carry/test_runner-0016_carry_gray_sierra1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0016_carry_gray_sierra1.obj `if test -f 'processing/dither/carry/0016_carry_gray_sierra1.c'; then $(CYGPATH_W) 'processing/dither/carry/0016_carry_gray_sierra1.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0016_carry_gray_sierra1.c'; fi`
+
+processing/dither/carry/test_runner-0017_carry_gray_sierra2.o: processing/dither/carry/0017_carry_gray_sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0017_carry_gray_sierra2.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Tpo -c -o processing/dither/carry/test_runner-0017_carry_gray_sierra2.o `test -f 'processing/dither/carry/0017_carry_gray_sierra2.c' || echo '$(srcdir)/'`processing/dither/carry/0017_carry_gray_sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0017_carry_gray_sierra2.c' object='processing/dither/carry/test_runner-0017_carry_gray_sierra2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0017_carry_gray_sierra2.o `test -f 'processing/dither/carry/0017_carry_gray_sierra2.c' || echo '$(srcdir)/'`processing/dither/carry/0017_carry_gray_sierra2.c
+
+processing/dither/carry/test_runner-0017_carry_gray_sierra2.obj: processing/dither/carry/0017_carry_gray_sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0017_carry_gray_sierra2.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Tpo -c -o processing/dither/carry/test_runner-0017_carry_gray_sierra2.obj `if test -f 'processing/dither/carry/0017_carry_gray_sierra2.c'; then $(CYGPATH_W) 'processing/dither/carry/0017_carry_gray_sierra2.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0017_carry_gray_sierra2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0017_carry_gray_sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0017_carry_gray_sierra2.c' object='processing/dither/carry/test_runner-0017_carry_gray_sierra2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0017_carry_gray_sierra2.obj `if test -f 'processing/dither/carry/0017_carry_gray_sierra2.c'; then $(CYGPATH_W) 'processing/dither/carry/0017_carry_gray_sierra2.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0017_carry_gray_sierra2.c'; fi`
+
+processing/dither/carry/test_runner-0018_carry_gray_sierra3.o: processing/dither/carry/0018_carry_gray_sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0018_carry_gray_sierra3.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Tpo -c -o processing/dither/carry/test_runner-0018_carry_gray_sierra3.o `test -f 'processing/dither/carry/0018_carry_gray_sierra3.c' || echo '$(srcdir)/'`processing/dither/carry/0018_carry_gray_sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0018_carry_gray_sierra3.c' object='processing/dither/carry/test_runner-0018_carry_gray_sierra3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0018_carry_gray_sierra3.o `test -f 'processing/dither/carry/0018_carry_gray_sierra3.c' || echo '$(srcdir)/'`processing/dither/carry/0018_carry_gray_sierra3.c
+
+processing/dither/carry/test_runner-0018_carry_gray_sierra3.obj: processing/dither/carry/0018_carry_gray_sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0018_carry_gray_sierra3.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Tpo -c -o processing/dither/carry/test_runner-0018_carry_gray_sierra3.obj `if test -f 'processing/dither/carry/0018_carry_gray_sierra3.c'; then $(CYGPATH_W) 'processing/dither/carry/0018_carry_gray_sierra3.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0018_carry_gray_sierra3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0018_carry_gray_sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0018_carry_gray_sierra3.c' object='processing/dither/carry/test_runner-0018_carry_gray_sierra3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0018_carry_gray_sierra3.obj `if test -f 'processing/dither/carry/0018_carry_gray_sierra3.c'; then $(CYGPATH_W) 'processing/dither/carry/0018_carry_gray_sierra3.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0018_carry_gray_sierra3.c'; fi`
+
+processing/dither/carry/test_runner-0021_carry_keep_early_incoming.o: processing/dither/carry/0021_carry_keep_early_incoming.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0021_carry_keep_early_incoming.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Tpo -c -o processing/dither/carry/test_runner-0021_carry_keep_early_incoming.o `test -f 'processing/dither/carry/0021_carry_keep_early_incoming.c' || echo '$(srcdir)/'`processing/dither/carry/0021_carry_keep_early_incoming.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0021_carry_keep_early_incoming.c' object='processing/dither/carry/test_runner-0021_carry_keep_early_incoming.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0021_carry_keep_early_incoming.o `test -f 'processing/dither/carry/0021_carry_keep_early_incoming.c' || echo '$(srcdir)/'`processing/dither/carry/0021_carry_keep_early_incoming.c
+
+processing/dither/carry/test_runner-0021_carry_keep_early_incoming.obj: processing/dither/carry/0021_carry_keep_early_incoming.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0021_carry_keep_early_incoming.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Tpo -c -o processing/dither/carry/test_runner-0021_carry_keep_early_incoming.obj `if test -f 'processing/dither/carry/0021_carry_keep_early_incoming.c'; then $(CYGPATH_W) 'processing/dither/carry/0021_carry_keep_early_incoming.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0021_carry_keep_early_incoming.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0021_carry_keep_early_incoming.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0021_carry_keep_early_incoming.c' object='processing/dither/carry/test_runner-0021_carry_keep_early_incoming.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0021_carry_keep_early_incoming.obj `if test -f 'processing/dither/carry/0021_carry_keep_early_incoming.c'; then $(CYGPATH_W) 'processing/dither/carry/0021_carry_keep_early_incoming.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0021_carry_keep_early_incoming.c'; fi`
+
+processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.o: processing/dither/carry/0022_carry_keep_lookup_incoming.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Tpo -c -o processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.o `test -f 'processing/dither/carry/0022_carry_keep_lookup_incoming.c' || echo '$(srcdir)/'`processing/dither/carry/0022_carry_keep_lookup_incoming.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0022_carry_keep_lookup_incoming.c' object='processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.o `test -f 'processing/dither/carry/0022_carry_keep_lookup_incoming.c' || echo '$(srcdir)/'`processing/dither/carry/0022_carry_keep_lookup_incoming.c
+
+processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.obj: processing/dither/carry/0022_carry_keep_lookup_incoming.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Tpo -c -o processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.obj `if test -f 'processing/dither/carry/0022_carry_keep_lookup_incoming.c'; then $(CYGPATH_W) 'processing/dither/carry/0022_carry_keep_lookup_incoming.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0022_carry_keep_lookup_incoming.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0022_carry_keep_lookup_incoming.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0022_carry_keep_lookup_incoming.c' object='processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0022_carry_keep_lookup_incoming.obj `if test -f 'processing/dither/carry/0022_carry_keep_lookup_incoming.c'; then $(CYGPATH_W) 'processing/dither/carry/0022_carry_keep_lookup_incoming.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0022_carry_keep_lookup_incoming.c'; fi`
+
+processing/dither/carry/test_runner-carry_test_common.o: processing/dither/carry/carry_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-carry_test_common.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Tpo -c -o processing/dither/carry/test_runner-carry_test_common.o `test -f 'processing/dither/carry/carry_test_common.c' || echo '$(srcdir)/'`processing/dither/carry/carry_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Tpo processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/carry_test_common.c' object='processing/dither/carry/test_runner-carry_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-carry_test_common.o `test -f 'processing/dither/carry/carry_test_common.c' || echo '$(srcdir)/'`processing/dither/carry/carry_test_common.c
+
+processing/dither/carry/test_runner-carry_test_common.obj: processing/dither/carry/carry_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-carry_test_common.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Tpo -c -o processing/dither/carry/test_runner-carry_test_common.obj `if test -f 'processing/dither/carry/carry_test_common.c'; then $(CYGPATH_W) 'processing/dither/carry/carry_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/carry_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Tpo processing/dither/carry/$(DEPDIR)/test_runner-carry_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/carry_test_common.c' object='processing/dither/carry/test_runner-carry_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-carry_test_common.obj `if test -f 'processing/dither/carry/carry_test_common.c'; then $(CYGPATH_W) 'processing/dither/carry/carry_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/carry_test_common.c'; fi`
+
+processing/dither/carry/test_runner-0019_carry_option_scope.o: processing/dither/carry/0019_carry_option_scope.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0019_carry_option_scope.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Tpo -c -o processing/dither/carry/test_runner-0019_carry_option_scope.o `test -f 'processing/dither/carry/0019_carry_option_scope.c' || echo '$(srcdir)/'`processing/dither/carry/0019_carry_option_scope.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0019_carry_option_scope.c' object='processing/dither/carry/test_runner-0019_carry_option_scope.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0019_carry_option_scope.o `test -f 'processing/dither/carry/0019_carry_option_scope.c' || echo '$(srcdir)/'`processing/dither/carry/0019_carry_option_scope.c
+
+processing/dither/carry/test_runner-0019_carry_option_scope.obj: processing/dither/carry/0019_carry_option_scope.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0019_carry_option_scope.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Tpo -c -o processing/dither/carry/test_runner-0019_carry_option_scope.obj `if test -f 'processing/dither/carry/0019_carry_option_scope.c'; then $(CYGPATH_W) 'processing/dither/carry/0019_carry_option_scope.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0019_carry_option_scope.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0019_carry_option_scope.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0019_carry_option_scope.c' object='processing/dither/carry/test_runner-0019_carry_option_scope.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0019_carry_option_scope.obj `if test -f 'processing/dither/carry/0019_carry_option_scope.c'; then $(CYGPATH_W) 'processing/dither/carry/0019_carry_option_scope.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0019_carry_option_scope.c'; fi`
+
+processing/dither/carry/test_runner-0020_carry_allocation_failure.o: processing/dither/carry/0020_carry_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0020_carry_allocation_failure.o -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Tpo -c -o processing/dither/carry/test_runner-0020_carry_allocation_failure.o `test -f 'processing/dither/carry/0020_carry_allocation_failure.c' || echo '$(srcdir)/'`processing/dither/carry/0020_carry_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0020_carry_allocation_failure.c' object='processing/dither/carry/test_runner-0020_carry_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0020_carry_allocation_failure.o `test -f 'processing/dither/carry/0020_carry_allocation_failure.c' || echo '$(srcdir)/'`processing/dither/carry/0020_carry_allocation_failure.c
+
+processing/dither/carry/test_runner-0020_carry_allocation_failure.obj: processing/dither/carry/0020_carry_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/carry/test_runner-0020_carry_allocation_failure.obj -MD -MP -MF processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Tpo -c -o processing/dither/carry/test_runner-0020_carry_allocation_failure.obj `if test -f 'processing/dither/carry/0020_carry_allocation_failure.c'; then $(CYGPATH_W) 'processing/dither/carry/0020_carry_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0020_carry_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Tpo processing/dither/carry/$(DEPDIR)/test_runner-0020_carry_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/carry/0020_carry_allocation_failure.c' object='processing/dither/carry/test_runner-0020_carry_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/carry/test_runner-0020_carry_allocation_failure.obj `if test -f 'processing/dither/carry/0020_carry_allocation_failure.c'; then $(CYGPATH_W) 'processing/dither/carry/0020_carry_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/carry/0020_carry_allocation_failure.c'; fi`
 
 processing/dither/clamp/test_runner-0001_soft_vector.o: processing/dither/clamp/0001_soft_vector.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/clamp/test_runner-0001_soft_vector.o -MD -MP -MF processing/dither/clamp/$(DEPDIR)/test_runner-0001_soft_vector.Tpo -c -o processing/dither/clamp/test_runner-0001_soft_vector.o `test -f 'processing/dither/clamp/0001_soft_vector.c' || echo '$(srcdir)/'`processing/dither/clamp/0001_soft_vector.c
@@ -88682,6 +89220,8 @@ distclean-generic:
 	-$(am__rm_f) processing/dither/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/bluenoise/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/bluenoise/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/carry/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/carry/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/clamp/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/clamp/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/interframe/$(DEPDIR)/$(am__dirstamp)
@@ -88992,7 +89532,7 @@ staticcheck-loader-cms-boundary \
 	staticcheck-frombmp-chunk-view-bind \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
-	staticcheck-dither-clamp-float-only \
+	staticcheck-dither-clamp-precision \
 	staticcheck-factory-classid-registry-sync \
 	staticcheck-serviceid-registry-sync \
 	staticcheck-timeline-logging-boundary \
@@ -89069,7 +89609,7 @@ staticcheck-chunk-source-path-format-guard \
 staticcheck-frombmp-chunk-view-bind \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
-staticcheck-dither-clamp-float-only \
+staticcheck-dither-clamp-precision \
 staticcheck-factory-classid-registry-sync \
 staticcheck-serviceid-registry-sync \
 staticcheck-timeline-logging-boundary \
@@ -89428,14 +89968,14 @@ staticcheck-lookup-policy-no-backend-includes:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
 		"$(abs_top_srcdir)"
 
-staticcheck-dither-clamp-float-only:
+staticcheck-dither-clamp-precision:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-dither-clamp-float-only" \
-		--log-file staticcheck-dither-clamp-float-only.log \
-		--trs-file staticcheck-dither-clamp-float-only.trs \
+	$(T_LOG_DRIVER) --test-name "staticcheck-dither-clamp-precision" \
+		--log-file staticcheck-dither-clamp-precision.log \
+		--trs-file staticcheck-dither-clamp-precision.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-clamp-float-only.sh" \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-clamp-precision.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-factory-classid-registry-sync:

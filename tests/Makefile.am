@@ -1457,6 +1457,29 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0012_FILTER_ENCODE_6DELTA_PLANE \
     -DBUILD_TEST_0013_FILTER_ENCODE_6DELTA_KEYCOLOR \
     -DBUILD_TEST_0014_FILTER_SAMPLE_SOLID \
+    -DBUILD_TEST_0021_CARRY_KEEP_EARLY_INCOMING \
+    -DBUILD_TEST_0022_CARRY_KEEP_LOOKUP_INCOMING \
+    -DBUILD_CARRY_TEST_COMMON \
+    -DBUILD_TEST_0001_CARRY_KERNEL_COEFFICIENTS \
+    -DBUILD_TEST_0002_CARRY_DEADZONE_BELOW \
+    -DBUILD_TEST_0003_CARRY_DEADZONE_BOUNDARY \
+    -DBUILD_TEST_0004_CARRY_DEADZONE_DISABLED \
+    -DBUILD_TEST_0005_CARRY_SOFT_DIRECTION \
+    -DBUILD_TEST_0006_CARRY_SOFT_INSIDE \
+    -DBUILD_TEST_0007_CARRY_HARD_CHANNELS \
+    -DBUILD_TEST_0008_CARRY_NONE_EXTENDED \
+    -DBUILD_TEST_0009_CARRY_SIGNED_CONSERVATION \
+    -DBUILD_TEST_0010_CARRY_SYMMETRIC_ROUNDING \
+    -DBUILD_TEST_0011_CARRY_GRAY_FS \
+    -DBUILD_TEST_0012_CARRY_GRAY_ATKINSON_SYMMETRY \
+    -DBUILD_TEST_0013_CARRY_GRAY_JAJUNI \
+    -DBUILD_TEST_0014_CARRY_GRAY_STUCKI \
+    -DBUILD_TEST_0015_CARRY_GRAY_BURKES \
+    -DBUILD_TEST_0016_CARRY_GRAY_SIERRA1 \
+    -DBUILD_TEST_0017_CARRY_GRAY_SIERRA2 \
+    -DBUILD_TEST_0018_CARRY_GRAY_SIERRA3 \
+    -DBUILD_TEST_0019_CARRY_OPTION_SCOPE \
+    -DBUILD_TEST_0020_CARRY_ALLOCATION_FAILURE \
     -DBUILD_TEST_0001_SOFT_VECTOR \
     -DBUILD_TEST_0002_AUTO_SOFT \
     -DBUILD_TEST_0003_HARD_CHANNELS \
@@ -5249,6 +5272,30 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0014_filter_sample_solid.c \
     processing/dither/positional/0048_positional_8bit_no_diffuse_gpu_6delta.c \
     processing/dither/bluenoise/0052_positional_8bit_bluenoise_gpu_force_keep_offset.c \
+    processing/dither/carry/0001_carry_kernel_coefficients.c \
+    processing/dither/carry/0002_carry_deadzone_below.c \
+    processing/dither/carry/0003_carry_deadzone_boundary.c \
+    processing/dither/carry/0004_carry_deadzone_disabled.c \
+    processing/dither/carry/0005_carry_soft_direction.c \
+    processing/dither/carry/0006_carry_soft_inside.c \
+    processing/dither/carry/0007_carry_hard_channels.c \
+    processing/dither/carry/0008_carry_none_extended.c \
+    processing/dither/carry/0009_carry_signed_conservation.c \
+    processing/dither/carry/0010_carry_symmetric_rounding.c \
+    processing/dither/carry/0011_carry_gray_fs.c \
+    processing/dither/carry/0012_carry_gray_atkinson_symmetry.c \
+    processing/dither/carry/0013_carry_gray_jajuni.c \
+    processing/dither/carry/0014_carry_gray_stucki.c \
+    processing/dither/carry/0015_carry_gray_burkes.c \
+    processing/dither/carry/0016_carry_gray_sierra1.c \
+    processing/dither/carry/0017_carry_gray_sierra2.c \
+    processing/dither/carry/0018_carry_gray_sierra3.c \
+    processing/dither/carry/0021_carry_keep_early_incoming.c \
+    processing/dither/carry/0022_carry_keep_lookup_incoming.c \
+    processing/dither/carry/carry_test_common.c \
+    processing/dither/carry/carry_test_common.h \
+    processing/dither/carry/0019_carry_option_scope.c \
+    processing/dither/carry/0020_carry_allocation_failure.c \
     processing/dither/clamp/0001_soft_vector.c \
     processing/dither/clamp/0002_auto_soft.c \
     processing/dither/clamp/0003_hard_channels.c \
@@ -7854,7 +7901,7 @@ staticcheck-loader-cms-boundary \
 	staticcheck-frombmp-chunk-view-bind \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
-	staticcheck-dither-clamp-float-only \
+	staticcheck-dither-clamp-precision \
 	staticcheck-factory-classid-registry-sync \
 	staticcheck-serviceid-registry-sync \
 	staticcheck-timeline-logging-boundary \
@@ -7931,7 +7978,7 @@ staticcheck-chunk-source-path-format-guard \
 staticcheck-frombmp-chunk-view-bind \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
-staticcheck-dither-clamp-float-only \
+staticcheck-dither-clamp-precision \
 staticcheck-factory-classid-registry-sync \
 staticcheck-serviceid-registry-sync \
 staticcheck-timeline-logging-boundary \
@@ -8291,14 +8338,14 @@ staticcheck-lookup-policy-no-backend-includes:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
 		"$(abs_top_srcdir)"
 
-staticcheck-dither-clamp-float-only:
+staticcheck-dither-clamp-precision:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-dither-clamp-float-only" \
-		--log-file staticcheck-dither-clamp-float-only.log \
-		--trs-file staticcheck-dither-clamp-float-only.trs \
+	$(T_LOG_DRIVER) --test-name "staticcheck-dither-clamp-precision" \
+		--log-file staticcheck-dither-clamp-precision.log \
+		--trs-file staticcheck-dither-clamp-precision.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-clamp-float-only.sh" \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-clamp-precision.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-factory-classid-registry-sync:
@@ -9681,7 +9728,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
 		_static/sh/staticcheck-frombmp-chunk-view-bind.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
-		_static/sh/staticcheck-dither-clamp-float-only.sh \
+		_static/sh/staticcheck-dither-clamp-precision.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
 		_static/sh/staticcheck-serviceid-registry-sync.sh \
 		_static/sh/staticcheck-timeline-logging-boundary.sh \
