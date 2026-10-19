@@ -162,7 +162,7 @@ libfloatlookup_la_OBJECTS = $(am_libfloatlookup_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-am__v_lt_1 =
+am__v_lt_1 = 
 libfloatlookup_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libfloatlookup_la_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -270,7 +270,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-x-dither.h \
 	$(srcdir)/dither-policy-bluenoise.h \
 	$(srcdir)/dither-policy-interframe.h $(srcdir)/dither-clamp.c \
-	$(srcdir)/dither-clamp.h $(srcdir)/dither-common-pipeline.c \
+	$(srcdir)/dither-carry.c $(srcdir)/dither-clamp.h \
+	$(srcdir)/dither-carry.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
 	$(srcdir)/gpu-dequant.h $(srcdir)/delta-residual.c \
 	$(srcdir)/delta-residual.h $(srcdir)/gpu-palette.c \
@@ -456,6 +457,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-interframe.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-lso2.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-clamp.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-carry.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-delta-residual.lo \
@@ -599,6 +601,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-decoder-parallel.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
 	./$(DEPDIR)/libsixel_la-delta-residual.Plo \
+	./$(DEPDIR)/libsixel_la-dither-carry.Plo \
 	./$(DEPDIR)/libsixel_la-dither-clamp.Plo \
 	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo \
@@ -1232,7 +1235,9 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-bluenoise.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-interframe.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-clamp.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-carry.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-clamp.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-carry.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.c \
@@ -1660,7 +1665,7 @@ clean-noinstLTLIBRARIES:
 	echo rm -f $${locs}; \
 	$(am__rm_f) $${locs}
 
-libfloatlookup.la: $(libfloatlookup_la_OBJECTS) $(libfloatlookup_la_DEPENDENCIES) $(EXTRA_libfloatlookup_la_DEPENDENCIES)
+libfloatlookup.la: $(libfloatlookup_la_OBJECTS) $(libfloatlookup_la_DEPENDENCIES) $(EXTRA_libfloatlookup_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libfloatlookup_la_LINK) $(am_libfloatlookup_la_rpath) $(libfloatlookup_la_OBJECTS) $(libfloatlookup_la_LIBADD) $(LIBS)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
@@ -1700,6 +1705,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-delta-residual.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-carry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-clamp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo@am__quote@ # am--include-marker
@@ -2365,6 +2371,13 @@ libsixel_la-dither-clamp.lo: dither-clamp.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-clamp.c' object='libsixel_la-dither-clamp.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-clamp.lo `test -f 'dither-clamp.c' || echo '$(srcdir)/'`dither-clamp.c
+
+libsixel_la-dither-carry.lo: dither-carry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-carry.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-carry.Tpo -c -o libsixel_la-dither-carry.lo `test -f 'dither-carry.c' || echo '$(srcdir)/'`dither-carry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-carry.Tpo $(DEPDIR)/libsixel_la-dither-carry.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-carry.c' object='libsixel_la-dither-carry.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-carry.lo `test -f 'dither-carry.c' || echo '$(srcdir)/'`dither-carry.c
 
 libsixel_la-dither-common-pipeline.lo: dither-common-pipeline.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-common-pipeline.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-common-pipeline.Tpo -c -o libsixel_la-dither-common-pipeline.lo `test -f 'dither-common-pipeline.c' || echo '$(srcdir)/'`dither-common-pipeline.c
@@ -3309,6 +3322,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo
@@ -3525,6 +3539,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-delta-residual.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-carry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-clamp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-method.Plo
