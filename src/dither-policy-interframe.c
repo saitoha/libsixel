@@ -1562,9 +1562,9 @@ interframe_diffuse_stucki(unsigned char *data, int width, int height,
                int x, int y, int depth, int error, int direction)
 {
     /* Stucki's Method
-     *                  curr    8/48    4/48
-     *  2/48    4/48    8/48    4/48    2/48
-     *  1/48    2/48    4/48    2/48    1/48
+     *                  curr    8/42    4/42
+     *  2/42    4/42    8/42    4/42    2/42
+     *  1/42    2/42    4/42    2/42    1/42
      */
     int pos;
     int sign;
@@ -1576,7 +1576,7 @@ interframe_diffuse_stucki(unsigned char *data, int width, int height,
     static const int row1_den[] = { 24, 12, 6, 12, 24 };
     static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
     static const int row2_num[] = { 1, 1, 1, 1, 1 };
-    static const int row2_den[] = { 48, 24, 12, 24, 48 };
+    static const int row2_den[] = { 42, 24, 12, 24, 42 };
     int i;
 
     pos = y * width + x;
@@ -2334,7 +2334,7 @@ interframe_diffuse_stucki_float(float *data,
     static const int row1_den[] = { 24, 12, 6, 12, 24 };
     static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
     static const int row2_num[] = { 1, 1, 1, 1, 1 };
-    static const int row2_den[] = { 48, 24, 12, 24, 48 };
+    static const int row2_den[] = { 42, 24, 12, 24, 42 };
     int pos;
 
     pos = y * width + x;

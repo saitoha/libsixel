@@ -224,30 +224,21 @@ On the measured fixture, `jajuni` is among the slower fixed policies at `K=8`
 lower MS-SSIM than `none`. These are fixture-specific results, but they rule
 out the assumption that a wider unit-sum kernel is automatically superior.
 
-## `stucki`: attenuated wide diffusion
+## `stucki`: wide diffusion
 
 ```text
 img2sixel -d stucki ...
 
              *  8  4
        2  4  8  4  2
-       1  2  4  2  1    / 48 in libsixel
+       1  2  4  2  1    / 42
 ```
 
-The current libsixel policy updates the same 12 positions as
-Jarvis--Judice--Ninke, with larger weight near the current column. Its
-numerators sum to 42 while libsixel divides by 48, so it propagates `7/8` of
-the interior residual. This is a material implementation detail: references
-often print the Stucki matrix with denominator 42, but changing libsixel to
-that normalized form would change output and is outside this document's
-scope.
+Stucki updates the same 12 positions as Jarvis--Judice--Ninke, with larger weight near the current column. The numerators sum to the denominator 42, so an interior pixel distributes the full residual. Byte, float, interframe/STBN, and high-color implementations share these coefficients.
 
 Peter Stucki described the underlying approach in the 1981 IBM research
 report [*MECCA: A Multiple-Error Correction Computation Algorithm for Bi-Level
 Image Hardcopy Reproduction*](https://dominoweb.draco.res.ibm.com/1319c04d395da62c85257568004f2ab3.html).
-For reproducibility, treat
-[`dither-policy-stucki.c`](../../../../src/dither-policy-stucki.c), rather than a
-generic Stucki diagram, as the definition of `-d stucki`.
 
 Stucki has 12 fixed taps and a two-row forward reach, so its asymptotic work
 is `Theta(P)` but its constant and band-boundary dependency are relatively
