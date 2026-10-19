@@ -313,7 +313,6 @@ sixel_encode_body_ormode_band_offset(sixel_index_t const *pixels,
                                      int offset_top,
                                      sixel_output_t *output);
 
-#if SIXEL_ENABLE_THREADS
 static void
 sixel_timeline_logger_prepare_default(sixel_allocator_t *allocator,
                                       sixel_timeline_logger_t **logger)
@@ -325,7 +324,6 @@ sixel_timeline_logger_prepare_default(sixel_allocator_t *allocator,
     *logger = NULL;
     (void)sixel_timeline_logger_prepare_env(allocator, logger);
 }
-#endif
 
 static void
 sixel_parallel_dither_configure(int height,
@@ -1929,6 +1927,9 @@ sixel_encode_body_pipeline(unsigned char *pixels,
         sixel_timeline_logger_prepare_default(allocator, &logger);
         owns_logger = logger != NULL ? 1 : 0;
     }
+    /* The local logger remains valid until the entire pipeline is drained. */
+    sixel_timeline_logger_logf(logger,
+        "controller", "encode", "body_start", -1);
     notifier.context = &ctx;
     notifier.logger = logger;
     notifier.band_height = 6;
@@ -2057,6 +2058,8 @@ cleanup:
         }
     }
     sixel_parallel_context_cleanup(&ctx);
+    sixel_timeline_logger_logf(logger,
+        "controller", "encode", "body_finish", -1);
     if (owns_logger) {
         sixel_timeline_logger_unref(logger);
     }
@@ -2154,6 +2157,9 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
         sixel_timeline_logger_prepare_default(allocator, &logger);
         owns_logger = logger != NULL ? 1 : 0;
     }
+    /* The local logger remains valid until the entire pipeline is drained. */
+    sixel_timeline_logger_logf(logger,
+        "controller", "encode", "body_start", -1);
     notifier.context = &ctx;
     notifier.logger = logger;
     notifier.band_height = 6;
@@ -2274,6 +2280,8 @@ cleanup:
         }
     }
     sixel_parallel_context_cleanup(&ctx);
+    sixel_timeline_logger_logf(logger,
+        "controller", "encode", "body_finish", -1);
     if (owns_logger) {
         sixel_timeline_logger_unref(logger);
     }
@@ -4572,10 +4580,8 @@ sixel_encode_dither(
     sixel_parallel_dither_config_t dither_parallel;
     sixel_palette_entries_view_t palette_view;
     sixel_palette_float32_entries_view_t palette_float_view;
-#if SIXEL_ENABLE_THREADS
     sixel_timeline_logger_t *serial_logger;
     int logger_owned = 0;
-#endif  /* SIXEL_ENABLE_THREADS */
     sixel_timeline_logger_t *logger = NULL;
     SIXELSTATUS close_status;
     int image_started;
@@ -4615,9 +4621,7 @@ sixel_encode_dither(
     dither->pipeline_last_dither_threads = 0;
     dither->pipeline_last_encode_threads = 0;
 
-#if SIXEL_ENABLE_THREADS
     serial_logger = NULL;
-#endif  /* SIXEL_ENABLE_THREADS */
     close_status = SIXEL_FALSE;
     image_started = 0;
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -4886,7 +4890,7 @@ sixel_encode_dither(
         }
     }
 
-#if SIXEL_ENABLE_THREADS
+    /* Keep serial body intervals available in builds without worker pools. */
     if (!pipeline_active) {
         logger = dither->pipeline_logger;
         if (logger == NULL) {
@@ -4914,7 +4918,6 @@ sixel_encode_dither(
                               "serial path threads=1");
         }
     }
-#endif
 
     if (output != NULL) {
         palette_source_colorspace = output->source_colorspace;
@@ -5115,6 +5118,12 @@ sixel_encode_dither(
     }
     image_started = 1;
 
+    /* The pipeline owns its envelope and logger inside the body helper.
+     * Serial application has already released its borrowed logger hint. */
+    if (!pipeline_active) {
+        sixel_timeline_logger_logf(logger,
+            "controller", "encode", "body_start", -1);
+    }
     if (pipeline_active) {
         if (output->ormode) {
             status = sixel_encode_body_ormode_pipeline(pixels,
@@ -5162,6 +5171,10 @@ sixel_encode_dither(
                                        NULL);
     }
 
+    if (!pipeline_active) {
+        sixel_timeline_logger_logf(logger,
+            "controller", "encode", "body_finish", -1);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -5186,12 +5199,10 @@ end:
         close_status = sixel_output_end_image(output);
         (void)close_status;
     }
-#if SIXEL_ENABLE_THREADS
     if (logger_owned) {
         dither->pipeline_logger = NULL;
         sixel_timeline_logger_unref(serial_logger);
     }
-#endif
     if (palette_entries != NULL) {
         sixel_allocator_free(dither->allocator, palette_entries);
     }

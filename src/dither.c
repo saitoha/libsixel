@@ -118,11 +118,9 @@ sixel_dither_interframe_finish_apply(sixel_dither_t *dither,
 static void
 sixel_dither_cleanup_apply_hints(sixel_dither_t *dither);
 
-#if SIXEL_ENABLE_THREADS
 static int
 sixel_dither_logger_set_frame_context(sixel_timeline_logger_t *logger,
                                       sixel_dither_t const *dither);
-#endif  /* SIXEL_ENABLE_THREADS */
 
 
 /*
@@ -317,7 +315,6 @@ sixel_dither_promote_palette_rgb888_to_float32(
     return status;
 }
 
-#if SIXEL_ENABLE_THREADS
 static int
 sixel_dither_logger_set_frame_context(sixel_timeline_logger_t *logger,
                                       sixel_dither_t const *dither)
@@ -334,7 +331,6 @@ sixel_dither_logger_set_frame_context(sixel_timeline_logger_t *logger,
                                    dither->frame_context.multiframe);
     return 1;
 }
-#endif  /* SIXEL_ENABLE_THREADS */
 
 /*
  * Determine whether the selected diffusion method can reuse the float32
@@ -4282,6 +4278,7 @@ sixel_dither_apply_palette_with_mode(
     int parallel_threads = 1;
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_timeline_logger_t *logger = NULL;
+    int logger_owned = 0;
     int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
     int needs_size_reset = 0;
     int pipeline_depth = 0;
@@ -4396,6 +4393,22 @@ sixel_dither_apply_palette_with_mode(
     parallel_threads = dither->pipeline_dither_threads;
 #endif  /* SIXEL_ENABLE_THREADS */
     logger = dither->pipeline_logger;
+    if (logger == NULL) {
+        /* Serial palette application can precede encoder pipeline setup.
+         * Open its timeline here so one/two-thread runs are measurable too. */
+        sixel_timeline_logger_prepare_env(dither->allocator, &logger);
+        if (logger != NULL) {
+            logger_owned = 1;
+            dither->pipeline_logger = logger;
+        }
+    }
+    if (logger != NULL) {
+        sixel_dither_logger_set_frame_context(logger, dither);
+        /* This common envelope includes preparation and all worker lanes.
+         * Worker spans alone omit the single dither lane in a pipeline. */
+        sixel_timeline_logger_logf(logger, "controller", "dither",
+            "apply_start", -1);
+    }
 
     /*
      * Resolve shared-instance flags on the caller thread before workers start
@@ -5072,6 +5085,15 @@ end:
          */
         if (transparent_mask != NULL && transparent_mask_owned != 0) {
             sixel_allocator_free(dither->allocator, transparent_mask);
+        }
+        if (logger != NULL) {
+            sixel_timeline_logger_logf(logger, "controller", "dither",
+                "apply_finish", -1);
+        }
+        if (logger_owned) {
+            dither->pipeline_logger = NULL;
+            sixel_timeline_logger_clear_frame_context(logger);
+            sixel_timeline_logger_unref(logger);
         }
         sixel_dither_cleanup_apply_hints(dither);
         sixel_dither_unref(dither);

@@ -1274,6 +1274,7 @@ int test_precision_0018(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_chunk_cancel_callback(int argc, char **argv);
 int test_timeline_0008_timeline_parallel_sample(int argc, char **argv);
+int test_timeline_0009_timeline_apply_interval(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
@@ -5143,6 +5144,8 @@ static test_entry_t const test_entries[] = {
       test_timeline_0006_timeline_encode_frame_session },
     { "timeline/0008_timeline_parallel_sample",
       test_timeline_0008_timeline_parallel_sample },
+    { "timeline/0009_timeline_apply_interval",
+      test_timeline_0009_timeline_apply_interval },
     { "timeline/0007_timeline_sample_interval",
       test_timeline_0007_timeline_sample_interval },
     { "platform/path/0001_path_to_libc_runtime",

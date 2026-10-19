@@ -1956,6 +1956,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0006_TIMELINE_ENCODE_FRAME_SESSION \
     -DBUILD_TEST_0007_TIMELINE_SAMPLE_INTERVAL \
     -DBUILD_TEST_0008_TIMELINE_PARALLEL_SAMPLE \
+    -DBUILD_TEST_0009_TIMELINE_APPLY_INTERVAL \
     -DBUILD_TEST_0001_PATH_TO_LIBC_RUNTIME \
     -DBUILD_TEST_0001_THREADPOOL_SERVICE \
     -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
@@ -5439,6 +5440,7 @@ test_runner_SOURCES = test_runner.c \
     processing/timeline/0006_timeline_encode_frame_session.c \
     processing/timeline/0007_timeline_sample_interval.c \
     processing/timeline/0008_timeline_parallel_sample.c \
+    processing/timeline/0009_timeline_apply_interval.c \
     platform/path/0001_path_to_libc_runtime.c \
     processing/threadpool/0001_threadpool_service.c \
     processing/threadpool/0002_thread_default_counts.c \
