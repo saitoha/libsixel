@@ -51,20 +51,33 @@ Within the existing `filter/worker` sample-start/sample-finish envelope, each pa
 
 ## Dither/encode budget policy
 
-Verbose `workers: total/main/palette` describes the earlier palette/preprocessing overlap. The subsequent `pipeline` summary uses the full `total` budget after palette collection, including the initial dither/encode split and its band height. Queue depth is three times the initial encode count, capped by the number of six-row bands. These diagnostic values do not configure the runtime pipeline; the encoder resolves the same policy separately.
+Verbose `workers: total/main/palette` describes the earlier palette/preprocessing overlap. Dither and encoding receive the full `total` budget after palette collection. The shared allocator in [src/planner.c](../../src/planner.c) is called by both the early planner and [src/encoder-core-encode.c](../../src/encoder-core-encode.c). The verbose `pipeline` summary is labeled `resolution=pre-palette-estimate`: it uses requested palette and diffusion settings. Execution resolves the allocation again from the completed palette and effective diffusion method, which can become `none` when all original colors fit. `SIXEL_TRACE_TOPIC=dither_contract` reports that resolved allocation, including `allocation_mode`, worker reservations and band geometry.
 
-For a CPU palette-application path with `N > 1`, the planner starts with
+The allocator distinguishes three execution modes. In `serial` mode, one caller applies the palette before encoding uses its available budget. In `pipeline` mode, dither and encode reservations coexist and their sum is bounded by the total budget. In `staged` mode, parallel work bands finish and every dither worker joins before encoding takes its own reservation. Equal full-budget D and E counts in staged mode therefore describe successive phases. Ordered writer and controller threads remain outside these work-slot counts, as described in the [threading overview](overview.md#worker-budget-is-not-a-process-thread-limit).
 
-```text
-D0 = ceil(0.7 N)
-E0 = N - D0
-```
+For CPU spatial diffusion and positional dither with budgets two through four, the automatic mode is staged: `D = N` followed by `E = N`. There is no simultaneous row pipeline during these phases. A budget of one remains serial. Effective `none`, frame-global or unknown policies, and budgets above four retain the split starting at `D0 = ceil(0.7 N)` and `E0 = N - D0`, with at least two encode slots when `N > 2`. A one-slot encode side selects serial application followed by full-budget encoding. The low-budget rule avoids leaving most of the encode reservation waiting for rows; the cutoff retains row overlap at larger budgets instead of assuming that staged execution always wins. No additional pixel-count or requested-color-count threshold is introduced. The table applies when band application is eligible: indexed inputs that bypass application, a raster with at most one six-row output band, and OR-mode output with transparent offsets retain their existing direct paths. PCC, TinyCC and builds without threading retain their existing application restrictions.
 
-and clamps the active pipeline to retain at least two encode workers when
-`N > 2`. The remaining workers are assigned to dither. Explicit dither thread
-limits can override the automatic split. GPU palette application is different:
-the GPU produces the complete index plane, so all CPU workers are placed on
-the encode side after the command buffer becomes visible.
+| Budget | Spatial diffusion / positional dither | Effective `none` |
+| ---: | --- | --- |
+| 1 | Serial D1, then E1 | Serial D1, then E1 |
+| 2 | Staged D2, then E2 | Serial D1, then E2 |
+| 3 | Staged D3, then E3 | Pipeline D1 + E2 |
+| 4 | Staged D4, then E4 | Pipeline D2 + E2 |
+| 5 | Pipeline D3 + E2 | Pipeline D3 + E2 |
+| 6 | Pipeline D4 + E2 | Pipeline D4 + E2 |
+| 8 | Pipeline D6 + E2 | Pipeline D6 + E2 |
+| 10 | Pipeline D7 + E3 | Pipeline D7 + E3 |
+| 14 | Pipeline D10 + E4 | Pipeline D10 + E4 |
+
+Explicit `threads_max` disables automatic staging and retains the existing minimum encoder reservations. CLI-bound `threads_max`, `band_width` and `band_overwrap` take precedence over their registered environment controls, which take precedence over defaults. Geometry overrides alone do not disable staging; a work-band count can differ from its worker reservation. Default band height is the image height divided by D, rounded upward and aligned to six rows. Spatial diffusion retains six warm-up rows when the completed palette has at most 32 colors, capped at half a band, and zero above 32 colors. Stateless `none`, A/X positional dither and blue noise use zero automatic overlap. Explicit overlap, including zero, remains meaningful for every method. A GPU application claim reserves no CPU dither slots and assigns the full CPU budget to encode with six-row geometry. The earlier palette/preprocessing overlap is independent of this allocation.
+
+Changing the dither reservation changes the independent error histories and can change decoded pixels even at the same total budget. Staging preserves the existing band algorithm; it does not promise serial-equivalent diffusion. The [band-seam quality guidance](measurement.md#band-seam-quality-protocol) describes the required comparison. Stateless methods retain exact pixels across these automatic geometry choices.
+
+Queue depth is three times the initial encode reservation, capped by the number of six-row bands. A row pipeline grows its encode pool only after palette application returns and its dither workers have joined. A staged path creates its encode pool after that same join boundary. Neither path requires scheduler fairness or guarantees that every reserved worker executes a job.
+
+### Historical allocation measurements
+
+The allocation table and chart below retain the 2026-09-06 measurement at revision `0d8c1807eeccf109afd7c8de63ff038919fcb61b`, recorded in [threading-run.json](measurements/threading-run.json). They describe that revision's policies and diagnostic fields. The encoder timing curves on this page likewise describe their recorded historical configurations, not the current allocator.
 
 The measured automatic allocation for `N = 1..12` is shown below. These runs
 use `img2sixel` to resize the controlled 900 by 675 source to a 1920 by 1080
@@ -85,12 +98,7 @@ processed raster before encoding:
 | 11 | 8 | 3 | Parallel dither and encode |
 | 12 | 9 | 3 | Parallel dither and encode |
 
-The two-worker exception is important. Although the planner reports `1 + 1`,
-the runtime requires more than one encode worker before enabling row-by-row
-dither/encode overlap. The first actual overlap is therefore at three workers,
-not two. A true parallel dither pool starts at four workers; at three workers,
-the single dither budget is consumed by the producer executing palette
-application.
+In this historical measurement, the two-worker planner reported `1 + 1`, but runtime applied the palette serially and then used two encode workers. Actual dither/encode overlap began at three workers, with the caller acting as the single dither producer. A parallel dither pool began at four workers. The current allocator reports the resolved mode directly; the historical table must not be used to infer its low-budget staged rule.
 
 ![Measured encoder thread budget](measurements/thread-budget.png)
 
@@ -174,7 +182,7 @@ operation; the short worker intervals at its end are the six-row jobs.
 decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
 back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
-At four workers, two dither work bands overlap two initial encode workers. The
+In the retained historical four-worker run, two dither work bands overlap two initial encode workers. The
 solid dither spans are work-band lifetimes; the thin encode marks are many
 short six-row jobs. The frame-level interval and writer appear in addition to
 the configured worker budget.
@@ -213,7 +221,7 @@ palette size is neither automatic nor varied in this chart. Here `256` is the
 requested palette size, not a measurement of the number of distinct entries
 that survived palette construction. The allocation chart and the two-, four-,
 and eight-worker timelines above use the same fixed request. At 256 requested
-colors the current automatic dither work-band overlap is zero, so these results
+colors the measured automatic dither work-band overlap was zero, so these results
 do not characterize the lower-color overlap path.
 
 Each point is the median of nine instrumented runs after two warm-ups. The
@@ -379,5 +387,10 @@ Record all such settings when comparing results.
 | TE-18 | An explicit dither cap keeps the existing minimum encode reservation and takes precedence over automatic staged selection. Explicit band height is rounded, explicit zero overlap remains zero, and overlap is capped at half a work band. | [tests/planner/allocation/0002_allocation_controls.t](../../tests/planner/allocation/0002_allocation_controls.t) |
 | TE-19 | A GPU application claim reserves no CPU dither workers and keeps the entire CPU budget for encode with six-row geometry, independently of CPU dither controls. | [tests/planner/allocation/0003_allocation_gpu.t](../../tests/planner/allocation/0003_allocation_gpu.t) |
 | TE-20 | Interframe and unknown application policies retain the existing overlap reservation rather than selecting independent staged work bands. | [tests/planner/allocation/0004_allocation_serial_policy.t](../../tests/planner/allocation/0004_allocation_serial_policy.t) |
+| TE-21 | Staged low budgets and higher-budget pipelines execute their expected work bands within the total occupied-callback budget; staged encoding begins after application has joined, including explicit geometry with more jobs than slots. | [tests/planner/allocation/0005_allocation_runtime_phases.t](../../tests/planner/allocation/0005_allocation_runtime_phases.t) |
+| TE-22 | A requested FS method that resolves to none after exact-fit palette construction keeps the baseline reservation and zero overlap at every tested budget. | [tests/planner/allocation/0006_allocation_effective_none.t](../../tests/planner/allocation/0006_allocation_effective_none.t) |
+| TE-23 | CLI dither cap and geometry override conflicting environment settings before automatic allocation is selected. | [tests/planner/allocation/0007_allocation_override_precedence.t](../../tests/planner/allocation/0007_allocation_override_precedence.t) |
+| TE-24 | None, A/X positional dither and blue noise preserve decoded pixels at one and four slots, in byte and CIELAB float paths, with zero automatic overlap or explicit six-row overlap. | [tests/planner/allocation/0008_allocation_stateless_overlap.t](../../tests/planner/allocation/0008_allocation_stateless_overlap.t) |
+| TE-25 | Automatic staging applies only to supported spatial methods at budgets two through four, including the five-slot exclusion; stateless and low/high-color diffusion geometry remain distinct. | [tests/planner/allocation/0009_allocation_automatic_policy.t](../../tests/planner/allocation/0009_allocation_automatic_policy.t) |
 
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/processing/colorspace/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.

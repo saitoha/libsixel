@@ -64,11 +64,7 @@ source pixels
              ordered writer -> SIXEL byte stream
 ```
 
-Work-band height is at least six and is rounded upward to a multiple of six.
-That alignment lets the palette-application producer release complete SIXEL
-bands without requiring the encoder to merge partial six-row states. Queue
-depth normally starts at three times the configured worker budget and is
-capped by the number of SIXEL bands.
+Work-band height is at least six and is rounded upward to a multiple of six. That alignment lets the palette-application producer release complete SIXEL bands without requiring the encoder to merge partial six-row states. Queue depth starts at three times the initial encode reservation, capped by the number of SIXEL bands. The [dither/encode budget policy](encoder.md#ditherencode-budget-policy) defines how the shared allocator assigns successive full-budget phases to spatial methods at budgets two through four and retains overlapping phases at higher budgets and distinguishes an early estimate from the resolved runtime allocation.
 
 The encode jobs do not alter pixels. Given the same indexed image and palette,
 dividing the SIXEL byte generation into six-row jobs does not by itself reduce
@@ -101,11 +97,7 @@ warm-up begins without all history that reached `y0 - overlap` in a full-frame
 scan. With zero overlap, every work band starts with a fresh local diffusion
 state.
 
-The current automatic overlap is six rows when the requested palette has at
-most 32 colors and zero rows above 32 colors. Explicit diffusion suboptions
-can override work-band height and overlap. The implementation currently names
-the overlap suboption `band_overwrap`; retain that spelling when reproducing a
-configuration.
+The [allocator geometry policy](encoder.md#ditherencode-budget-policy) chooses overlap from the effective method and completed palette. Spatial diffusion uses a low-color warm-up; stateless methods need none. Explicit diffusion suboptions can override work-band height and overlap. The overlap suboption is spelled `band_overwrap`; retain that spelling when reproducing a configuration.
 
 Consequently, a parallel error-diffusion encode can differ slightly from a
 one-worker encode even when palette construction, lookup, and all other
@@ -174,7 +166,7 @@ publication boundary.
 
 ## Owning implementation
 
-- `src/planner.c` predicts the encoder budget split and work-band geometry.
+- `src/planner.c` owns the shared allocation calculation and the early estimate of the encoder budget split and work-band geometry.
 - `src/dither.c` applies palettes to independent work bands and discards
   warm-up output.
 - `src/encoder-core-encode.c` pipelines palette application, six-row encode
