@@ -213,49 +213,100 @@ sixel_carry_round(int32_t numerator, int denominator)
  * Keep the reference evaluation order, including channel-by-channel scale
  * reductions: algebraically equivalent rearrangements can change a tie.
  */
-static void
-sixel_carry_clipped_rgb(sixel_carry_bounds_t const *bounds,
-                        unsigned char const *source, int32_t const *carry,
-                        int denominator, int32_t *candidate,
-                        unsigned char *pixel)
-{
-    double scale;
-    double delta;
-    double value;
-    double lower;
-    double fraction;
-    double margin;
-    int n;
-    int32_t rounded;
+#define SIXEL_CARRY_CLIPPED(NAME, DEN) \
+static void \
+sixel_carry_clipped_##NAME(sixel_carry_bounds_t const *bounds, \
+                        unsigned char const *source, int32_t const *carry, \
+                        int denominator, int32_t *candidate, \
+                        unsigned char *pixel) \
+{ \
+    double scale; \
+    double delta; \
+    double value; \
+    double lower; \
+    double fraction; \
+    double margin; \
+    int n; \
+    int32_t rounded; \
+ \
+    (void)denominator; \
+    scale = 1.0; \
+    margin = bounds->margin; \
+    if (bounds->policy != SIXEL_DITHER_CLAMP_HARD) { \
+        for (n = 0; n < 3; ++n) { \
+            delta = carry[n]; \
+            if (delta * scale < (-margin - source[n]) * (DEN)) { \
+                scale = (-margin - source[n]) * (DEN) / delta; \
+            } else if (delta * scale > \
+                       (255.0 + margin - source[n]) * (DEN)) { \
+                scale = (255.0 + margin - source[n]) * (DEN) / delta; \
+            } \
+        } \
+    } \
+    for (n = 0; n < 3; ++n) { \
+        value = source[n] + (double)carry[n] * scale / (DEN); \
+        if (bounds->policy == SIXEL_DITHER_CLAMP_HARD) { \
+            if (value < 0.0) value = 0.0; \
+            if (value > 255.0) value = 255.0; \
+        } \
+        lower = floor(value); \
+        rounded = (int32_t)lower; \
+        fraction = value - lower; \
+        if (fraction > 0.5 || (fraction == 0.5 && rounded % 2 != 0)) { \
+            ++rounded; \
+        } \
+        candidate[n] = rounded; \
+        pixel[n] = (unsigned char)(rounded < 0 ? 0 : \
+                                   rounded > 255 ? 255 : rounded); \
+    } \
+} \
 
-    scale = 1.0;
-    margin = bounds->margin;
-    if (bounds->policy != SIXEL_DITHER_CLAMP_HARD) {
-        for (n = 0; n < 3; ++n) {
-            delta = carry[n];
-            if (delta * scale < (-margin - source[n]) * denominator) {
-                scale = (-margin - source[n]) * denominator / delta;
-            } else if (delta * scale >
-                       (255.0 + margin - source[n]) * denominator) {
-                scale = (255.0 + margin - source[n]) * denominator / delta;
-            }
-        }
-    }
-    for (n = 0; n < 3; ++n) {
-        value = source[n] + (double)carry[n] * scale / denominator;
-        if (bounds->policy == SIXEL_DITHER_CLAMP_HARD) {
-            if (value < 0.0) value = 0.0;
-            if (value > 255.0) value = 255.0;
-        }
-        lower = floor(value);
-        rounded = (int32_t)lower;
-        fraction = value - lower;
-        if (fraction > 0.5 || (fraction == 0.5 && rounded % 2 != 0)) {
-            ++rounded;
-        }
-        candidate[n] = rounded;
-        pixel[n] = (unsigned char)(rounded < 0 ? 0 :
-                                   rounded > 255 ? 255 : rounded);
+SIXEL_CARRY_CLIPPED(fallback, denominator)
+SIXEL_CARRY_CLIPPED(4, 4)
+SIXEL_CARRY_CLIPPED(8, 8)
+SIXEL_CARRY_CLIPPED(16, 16)
+SIXEL_CARRY_CLIPPED(32, 32)
+SIXEL_CARRY_CLIPPED(42, 42)
+SIXEL_CARRY_CLIPPED(48, 48)
+SIXEL_CARRY_CLIPPED(4096, 4096)
+
+#undef SIXEL_CARRY_CLIPPED
+
+/* Route the public numeric entry point through the same constant-denominator
+ * clipping helpers used by production, so boundary tests cover those bodies.
+ */
+static void
+sixel_carry_clipped_denominator(sixel_carry_bounds_t const *bounds,
+                                unsigned char const *source,
+                                int32_t const *carry, int denominator,
+                                int32_t *candidate, unsigned char *pixel)
+{
+    switch (denominator) {
+    case 4:
+        sixel_carry_clipped_4(bounds, source, carry, 4, candidate, pixel);
+        break;
+    case 8:
+        sixel_carry_clipped_8(bounds, source, carry, 8, candidate, pixel);
+        break;
+    case 16:
+        sixel_carry_clipped_16(bounds, source, carry, 16, candidate, pixel);
+        break;
+    case 32:
+        sixel_carry_clipped_32(bounds, source, carry, 32, candidate, pixel);
+        break;
+    case 42:
+        sixel_carry_clipped_42(bounds, source, carry, 42, candidate, pixel);
+        break;
+    case 48:
+        sixel_carry_clipped_48(bounds, source, carry, 48, candidate, pixel);
+        break;
+    case 4096:
+        sixel_carry_clipped_4096(bounds, source, carry, 4096, candidate, pixel);
+        break;
+    default:
+        sixel_carry_clipped_fallback(bounds, source, carry, denominator,
+                                     candidate, pixel);
+        break;
     }
 }
 
@@ -276,7 +327,7 @@ sixel_carry_clipped_rgb(sixel_carry_bounds_t const *bounds,
                 carry[1] > bounds->upper[source[1]] || \
                 carry[2] < bounds->lower[source[2]] || \
                 carry[2] > bounds->upper[source[2]]) { \
-            sixel_carry_clipped_rgb(bounds, source, carry, DEN, \
+            sixel_carry_clipped_##DEN(bounds, source, carry, DEN, \
                                      candidate, pixel); \
         } else { \
             for (n = 0; n < 3; ++n) { \
