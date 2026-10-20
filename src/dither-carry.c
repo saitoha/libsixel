@@ -34,10 +34,10 @@
 #include "dither.h"
 #include "dither-common-pipeline.h"
 
-/* The integer norm proof requires binary double with at least 53 bits.
+/* The integer deadzone proof requires binary double with at least 53 bits.
  * Excess evaluation precision can keep the reference radius product wider
  * than a stored double, changing strict deadzone boundaries. Preserve the
- * original arithmetic on such targets instead of silently rounding R early.
+ * original deadzone expression there, without changing the integer limiter.
  */
 #if FLT_RADIX == 2 && DBL_MANT_DIG >= 53 && defined(FLT_EVAL_METHOD) && \
     (FLT_EVAL_METHOD == 0 || FLT_EVAL_METHOD == 1)
@@ -87,16 +87,14 @@ sixel_dither_carry_kernel(int method)
 }
 
 static SIXELSTATUS
-sixel_carry_candidate_reference(unsigned char const *source,
+sixel_carry_candidate_none(unsigned char const *source,
                             int32_t const *carry, int depth, int denominator,
-                            int policy, double threshold, double deadzone,
+                            double deadzone,
                             int32_t *candidate, unsigned char *lookup)
 {
     double norm;
     double radius;
     double scale;
-    double margin;
-    double delta;
     double value;
     double lower;
     double fraction;
@@ -113,28 +111,8 @@ sixel_carry_candidate_reference(unsigned char const *source,
      */
     radius = (deadzone > 1.0e10 ? 1.0e10 : deadzone) * denominator;
     scale = norm < radius * radius ? 0.0 : 1.0;
-    margin = (threshold - 1.0) * 255.0;
-    if (scale != 0.0 && policy != SIXEL_DITHER_CLAMP_NONE
-            && policy != SIXEL_DITHER_CLAMP_HARD) {
-        /* Compare in carry units; divide only if a boundary is crossed.
-         * One common scale preserves the RGB correction direction.
-         */
-        for (n = 0; n < depth; ++n) {
-            delta = carry[n];
-            if (delta * scale < (-margin - source[n]) * denominator) {
-                scale = (-margin - source[n]) * denominator / delta;
-            } else if (delta * scale >
-                       (255.0 + margin - source[n]) * denominator) {
-                scale = (255.0 + margin - source[n]) * denominator / delta;
-            }
-        }
-    }
     for (n = 0; n < depth; ++n) {
         value = source[n] + (double)carry[n] * scale / denominator;
-        if (policy == SIXEL_DITHER_CLAMP_HARD) {
-            if (value < 0.0) value = 0.0;
-            if (value > 255.0) value = 255.0;
-        }
         /* Nearest integer, exact half ties to even, independent of the
          * floating-point rounding mode. This is symmetric for both signs;
          * unlike adding 0.5 then truncating it does not favor positive error.
@@ -306,91 +284,25 @@ sixel_carry_soft(sixel_carry_bounds_t const *bounds,
     }
 }
 
-/* Soft uses exact rational arithmetic; HARD still uses its reference here. */
-#define SIXEL_CARRY_CLIPPED(NAME, DEN) \
-static void \
-sixel_carry_clipped_##NAME(sixel_carry_bounds_t const *bounds, \
-                        unsigned char const *source, int32_t const *carry, \
-                        int denominator, int32_t *candidate, \
-                        unsigned char *pixel) \
-{ \
-    double scale; \
-    double value; \
-    double lower; \
-    double fraction; \
-    int n; \
-    int32_t rounded; \
- \
-    (void)denominator; \
-    scale = 1.0; \
-    if (bounds->policy != SIXEL_DITHER_CLAMP_HARD) { \
-        sixel_carry_soft(bounds, source, carry, 3, DEN, candidate, pixel); \
-        return; \
-    } \
-    for (n = 0; n < 3; ++n) { \
-        value = source[n] + (double)carry[n] * scale / (DEN); \
-        if (bounds->policy == SIXEL_DITHER_CLAMP_HARD) { \
-            if (value < 0.0) value = 0.0; \
-            if (value > 255.0) value = 255.0; \
-        } \
-        lower = floor(value); \
-        rounded = (int32_t)lower; \
-        fraction = value - lower; \
-        if (fraction > 0.5 || (fraction == 0.5 && rounded % 2 != 0)) { \
-            ++rounded; \
-        } \
-        candidate[n] = rounded; \
-        pixel[n] = (unsigned char)(rounded < 0 ? 0 : \
-                                   rounded > 255 ? 255 : rounded); \
-    } \
-} \
-
-SIXEL_CARRY_CLIPPED(fallback, denominator)
-SIXEL_CARRY_CLIPPED(4, 4)
-SIXEL_CARRY_CLIPPED(8, 8)
-SIXEL_CARRY_CLIPPED(16, 16)
-SIXEL_CARRY_CLIPPED(32, 32)
-SIXEL_CARRY_CLIPPED(42, 42)
-SIXEL_CARRY_CLIPPED(48, 48)
-SIXEL_CARRY_CLIPPED(4096, 4096)
-
-#undef SIXEL_CARRY_CLIPPED
-
-/* Route the public numeric entry point through the same constant-denominator
- * clipping helpers used by production, so boundary tests cover those bodies.
+/* HARD clips the numerator before rounding. Integer half ties match the
+ * reference double path: power-of-two division is exact, and non-half fixed
+ * denominator values are at least 1/48 from a half, far above double error.
+ * int64 also protects arbitrary int32 numeric callers before clipping.
  */
 static void
-sixel_carry_clipped_denominator(sixel_carry_bounds_t const *bounds,
-                                unsigned char const *source,
-                                int32_t const *carry, int denominator,
-                                int32_t *candidate, unsigned char *pixel)
+sixel_carry_hard(unsigned char const *source, int32_t const *carry,
+                 int depth, int denominator, int32_t *candidate,
+                 unsigned char *pixel)
 {
-    switch (denominator) {
-    case 4:
-        sixel_carry_clipped_4(bounds, source, carry, 4, candidate, pixel);
-        break;
-    case 8:
-        sixel_carry_clipped_8(bounds, source, carry, 8, candidate, pixel);
-        break;
-    case 16:
-        sixel_carry_clipped_16(bounds, source, carry, 16, candidate, pixel);
-        break;
-    case 32:
-        sixel_carry_clipped_32(bounds, source, carry, 32, candidate, pixel);
-        break;
-    case 42:
-        sixel_carry_clipped_42(bounds, source, carry, 42, candidate, pixel);
-        break;
-    case 48:
-        sixel_carry_clipped_48(bounds, source, carry, 48, candidate, pixel);
-        break;
-    case 4096:
-        sixel_carry_clipped_4096(bounds, source, carry, 4096, candidate, pixel);
-        break;
-    default:
-        sixel_carry_clipped_fallback(bounds, source, carry, denominator,
-                                     candidate, pixel);
-        break;
+    int64_t value;
+    int n;
+
+    for (n = 0; n < depth; ++n) {
+        value = (int64_t)source[n] * denominator + carry[n];
+        if (value < 0) value = 0;
+        if (value > 255 * denominator) value = 255 * denominator;
+        candidate[n] = pixel[n] = (unsigned char)
+            sixel_carry_round((int32_t)value, denominator);
     }
 }
 
@@ -405,15 +317,23 @@ sixel_carry_clipped_denominator(sixel_carry_bounds_t const *bounds,
         if (SIXEL_CARRY_DOUBLE_EVAL ? norm <= bounds->deadzone_limit : \
                 sixel_carry_discard(carry, 3, DEN, bounds->deadzone)) { \
             for (n = 0; n < 3; ++n) candidate[n] = pixel[n] = source[n]; \
-        } else if (bounds->policy == SIXEL_DITHER_CLAMP_HARD || \
+        } else if (bounds->policy == SIXEL_DITHER_CLAMP_HARD) { \
+            for (n = 0; n < 3; ++n) { \
+                rounded = source[n] * (DEN) + carry[n]; \
+                if (rounded < 0) rounded = 0; \
+                if (rounded > 255 * (DEN)) rounded = 255 * (DEN); \
+                candidate[n] = pixel[n] = (unsigned char) \
+                    sixel_carry_round(rounded, DEN); \
+            } \
+        } else if ( \
                 carry[0] < bounds->lower[source[0]] || \
                 carry[0] > bounds->upper[source[0]] || \
                 carry[1] < bounds->lower[source[1]] || \
                 carry[1] > bounds->upper[source[1]] || \
                 carry[2] < bounds->lower[source[2]] || \
                 carry[2] > bounds->upper[source[2]]) { \
-            sixel_carry_clipped_##DEN(bounds, source, carry, DEN, \
-                                     candidate, pixel); \
+            sixel_carry_soft(bounds, source, carry, 3, DEN, \
+                             candidate, pixel); \
         } else { \
             for (n = 0; n < 3; ++n) { \
                 rounded = sixel_carry_round(source[n] * (DEN) + carry[n], \
@@ -466,8 +386,7 @@ sixel_dither_carry_candidate(unsigned char const *source,
             return SIXEL_OK;
         }
     }
-    if (policy != SIXEL_DITHER_CLAMP_HARD &&
-            policy != SIXEL_DITHER_CLAMP_NONE) {
+    if (policy != SIXEL_DITHER_CLAMP_NONE) {
         if (denominator <= 0 || denominator > 4096 ||
                 !(threshold >= 1.0 && threshold <= 16.0)) {
             return SIXEL_BAD_INPUT;
@@ -475,14 +394,17 @@ sixel_dither_carry_candidate(unsigned char const *source,
         sixel_carry_prepare(&bounds, denominator, policy, threshold, deadzone);
         if (sixel_carry_discard(carry, depth, denominator, deadzone)) {
             for (n = 0; n < depth; ++n) candidate[n] = lookup[n] = source[n];
+        } else if (policy == SIXEL_DITHER_CLAMP_HARD) {
+            sixel_carry_hard(source, carry, depth, denominator,
+                             candidate, lookup);
         } else {
             sixel_carry_soft(&bounds, source, carry, depth, denominator,
                              candidate, lookup);
         }
         return SIXEL_OK;
     }
-    return sixel_carry_candidate_reference(source, carry, depth, denominator,
-        policy, threshold, deadzone, candidate, lookup);
+    return sixel_carry_candidate_none(source, carry, depth, denominator,
+        deadzone, candidate, lookup);
 }
 
 
@@ -937,24 +859,25 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
                 }
                 continue;
             }
-            if (dither->clamp_policy != SIXEL_DITHER_CLAMP_NONE &&
-                    dither->clamp_policy != SIXEL_DITHER_CLAMP_HARD) {
+            if (dither->clamp_policy != SIXEL_DITHER_CLAMP_NONE) {
                 if (sixel_carry_discard(current, depth, denominator,
                                         bounds.deadzone)) {
                     for (n = 0; n < depth; ++n) {
                         candidate[n] = pixel[n] =
                             request->data[position * depth + n];
                     }
+                } else if (dither->clamp_policy == SIXEL_DITHER_CLAMP_HARD) {
+                    sixel_carry_hard(request->data + position * depth,
+                        current, depth, denominator, candidate, pixel);
                 } else {
                     sixel_carry_soft(&bounds, request->data + position * depth,
                         current, depth, denominator, candidate, pixel);
                 }
                 status = SIXEL_OK;
             } else {
-                status = sixel_carry_candidate_reference(
+                status = sixel_carry_candidate_none(
                     request->data + position * depth, current, depth,
-                    denominator, dither->clamp_policy,
-                    dither->clamp_threshold, dither->diffusion_deadzone,
+                    denominator, dither->diffusion_deadzone,
                     candidate, pixel);
             }
             if (SIXEL_FAILED(status)) goto end;
