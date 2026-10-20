@@ -19,6 +19,18 @@
 
 ## Numeric contract
 
+### Byte carry arithmetic
+
+The eight byte carry kernels use denominator D (4096 for perturbed FS), source components s in 0–255 and integer carries c in units of 1/D. Once per band, compute `(T - 1) * 255 * D` in double and round to the nearest integer M, with exact half ties to even. For each source component, the inclusive carry bounds are `L = -M - s*D` and `U = (255-s)*D + M`. Thus headroom is quantized in carry units; default T=1.01 has slightly different coordinate bounds for different denominators.
+
+After the deadzone decision, soft leaves an in-bound correction unchanged. For each component outside its bounds, form the exact ratio b/c using the crossed bound b. Normalize both signs to make the denominator positive, compare ratios by int64 cross multiplication, and select the smallest ratio. Equal ratios retain the first component and give identical rational candidates. Apply that one ratio to every component: the candidate is `(s*D*c_k + c*b_k)/(D*c_k)`, with signs normalized to a positive denominator. Integer quotient and remainder round this rational to the nearest integer, with half ties to even. No floating-point arithmetic is used to select the scale or round the soft candidate. The correction direction is preserved before rounding, with at most half a level of component rounding error.
+
+Lookup receives the rounded candidate projected to 0–255; diffusion propagates the rounded candidate before projection minus the selected palette color. Transparent pixels and retained 6delta colors follow the [byte diffusion contract](dithering/README.md#byte-spatial-diffusion). The float definition below does not quantize headroom and does not promise identical output to byte arithmetic. The deadzone comparison remains a separate operation; excess-precision targets retain its original double expression rather than changing its strict boundary.
+
+At T=16 and D<=4096, the absolute carry boundary is at most 16*255*4096. Rounded residuals are bounded by 4080, and perturbed FS has incoming coefficient sum at most 7168, hence each carry and partial sum is bounded by 29,245,440. Ratio products and candidate numerators fit int64: `abs(N) <= (255*4096 + 16*255*4096)*29,245,440 < 2^49`, and `Q < 2^37`. The implementation also supports arbitrary int32 numeric-test carries without overflowing these products.
+
+### Float working arithmetic
+
 Let `s` be the original working-space source vector, `e` the accumulated correction, and `u = s + e` the candidate passed to nearest-palette lookup. Each channel has nominal working-coordinate limits `a` and `b`. The bounds are expanded to include the original source: `lo = min(a, s)` and `hi = max(b, s)`.
 
 For `soft`, expand both ends by `(threshold - 1) * (b - a)`. Choose the largest common factor `r` in `[0, 1]` such that every channel of `s + r * e` fits those bounds. Scaling with one factor preserves the direction of the correction in the working coordinates. For `hard`, limit each candidate channel independently to `[lo, hi]`.
