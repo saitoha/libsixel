@@ -7,7 +7,6 @@
 #include "carry_speed_common.h"
 #include "src/dither.h"
 #include "src/lookup-policy.h"
-#include "src/dither-common-pipeline.h"
 
 /* Frozen double candidate from 1516ae5db. This oracle deliberately uses no
  * production rounding or deadzone helpers: these tests enforce compatibility
@@ -393,9 +392,10 @@ carry_speed_apply_reference(sixel_dither_policy_apply_request_t const *request,
         }
         memset(rows + (size_t)(y % kernel->rows) * stride, 0,
                stride * sizeof(*rows));
-        if (absolute_y >= request->output_start) {
-            sixel_dither_pipeline_row_notify(dither, absolute_y);
-        }
+        /* Row notifications are disabled in this candidate/index fixture.
+         * The caller asserts that no index buffer, logger or hook is active;
+         * producer notification ordering has separate pipeline coverage.
+         */
     }
 end:
     sixel_allocator_free(dither->allocator, rows);
@@ -520,6 +520,12 @@ carry_speed_stencil(void)
                                            SIXEL_6DELTA_ERROR_DIFFUSE);
                             dither[side]->pipeline_6delta_enabled =
                                 !!(mode & 8);
+                            if (dither[side]->pipeline_index_buffer != NULL ||
+                                    dither[side]->pipeline_logger != NULL ||
+                                    dither[side]->pipeline_row_callback
+                                        != NULL) {
+                                goto end;
+                            }
                             status[side] = side == 0 ?
                                 carry_speed_apply_reference(&request,
                                                              methods[m]) :
