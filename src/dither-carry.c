@@ -73,8 +73,8 @@ sixel_dither_carry_kernel(int method)
     }
 }
 
-SIXELSTATUS
-sixel_dither_carry_candidate(unsigned char const *source,
+static SIXELSTATUS
+sixel_carry_candidate_reference(unsigned char const *source,
                             int32_t const *carry, int depth, int denominator,
                             int policy, double threshold, double deadzone,
                             int32_t *candidate, unsigned char *lookup)
@@ -142,6 +142,143 @@ sixel_dither_carry_candidate(unsigned char const *source,
     return SIXEL_OK;
 }
 
+/* Bounded RGB feedback never exceeds 4080 * 7168 per component, including
+ * independently perturbed FS taps. Its three squared components sum to less
+ * than 2^53: both the reference double norm and this int64 norm are exact.
+ * NONE and other depths retain the checked reference path.
+ */
+typedef struct sixel_carry_bounds {
+    int64_t deadzone_limit;
+    int32_t lower[256];
+    int32_t upper[256];
+    double threshold;
+    double deadzone;
+    int policy;
+} sixel_carry_bounds_t;
+
+static void
+sixel_carry_prepare(sixel_carry_bounds_t *bounds, int denominator,
+                    int policy, double threshold, double deadzone)
+{
+    double radius;
+    double squared;
+    double margin;
+    int n;
+
+    radius = (deadzone > 1.0e10 ? 1.0e10 : deadzone) * denominator;
+    squared = radius * radius;
+    /* For an exactly represented integer norm, norm < R iff norm <= ceil(R)-1.
+     * Saturating above the reachable domain also avoids an out-of-range cast.
+     * R=0 gives -1, so a disabled deadzone does not discard even zero carry.
+     */
+    bounds->deadzone_limit = squared >= 0x1p53 ? INT64_C(9007199254740992)
+        : (int64_t)ceil(squared) - 1;
+    margin = (threshold - 1.0) * 255.0;
+    for (n = 0; n < 256; ++n) {
+        /* Preserve the reference's operation order before converting bounds.
+         * ceil(lower) <= carry <= floor(upper) is precisely its scale=1 case.
+         */
+        bounds->lower[n] = (int32_t)ceil((-margin - n) * denominator);
+        bounds->upper[n] = (int32_t)floor((255.0 + margin - n) * denominator);
+    }
+    bounds->threshold = threshold;
+    bounds->deadzone = deadzone;
+    bounds->policy = policy;
+}
+
+static inline int32_t
+sixel_carry_round(int32_t numerator, int denominator)
+{
+    uint32_t magnitude;
+    uint32_t quotient;
+    uint32_t remainder;
+
+    /* Work on an unsigned magnitude, avoiding implementation-defined signed
+     * right shifts. Constant power-of-two denominators become shifts/masks;
+     * 42 and 48 become compiler-generated constant divisions. Exact halves
+     * round to even for either sign. The bounded numerator cannot be INT_MIN.
+     * Non-half fractions are at least 1/48 from a half for fixed kernels;
+     * double division/addition error is much smaller. Binary denominators
+     * are exact, including perturbed FS (4096).
+     */
+    magnitude = (uint32_t)(numerator < 0 ? -numerator : numerator);
+    quotient = magnitude / (unsigned int)denominator;
+    remainder = magnitude % (unsigned int)denominator;
+    quotient += remainder * 2 > (unsigned int)denominator ||
+        (remainder * 2 == (unsigned int)denominator && (quotient & 1));
+    return numerator < 0 ? -(int32_t)quotient : (int32_t)quotient;
+}
+
+static inline void
+sixel_carry_candidate_rgb(sixel_carry_bounds_t const *bounds,
+                          unsigned char const *source,
+                          int32_t const *carry, int denominator,
+                          int32_t *candidate, unsigned char *pixel)
+{
+    int64_t norm;
+    int n;
+    int32_t rounded;
+
+    norm = (int64_t)carry[0] * carry[0] + (int64_t)carry[1] * carry[1]
+        + (int64_t)carry[2] * carry[2];
+    if (norm <= bounds->deadzone_limit) {
+        for (n = 0; n < 3; ++n) candidate[n] = pixel[n] = source[n];
+        return;
+    }
+    if (bounds->policy == SIXEL_DITHER_CLAMP_HARD ||
+            carry[0] < bounds->lower[source[0]] ||
+            carry[0] > bounds->upper[source[0]] ||
+            carry[1] < bounds->lower[source[1]] ||
+            carry[1] > bounds->upper[source[1]] ||
+            carry[2] < bounds->lower[source[2]] ||
+            carry[2] > bounds->upper[source[2]]) {
+        /* Only a clipped vector needs the original common-scale double
+         * arithmetic. Bounded candidates cannot fail the int32 range check.
+         */
+        (void)sixel_carry_candidate_reference(source, carry, 3, denominator,
+            bounds->policy, bounds->threshold, 0.0, candidate, pixel);
+        return;
+    }
+    for (n = 0; n < 3; ++n) {
+        rounded = sixel_carry_round(source[n] * denominator + carry[n],
+                                    denominator);
+        candidate[n] = rounded;
+        pixel[n] = (unsigned char)(rounded < 0 ? 0 :
+                                   rounded > 255 ? 255 : rounded);
+    }
+}
+
+SIXELSTATUS
+sixel_dither_carry_candidate(unsigned char const *source,
+                            int32_t const *carry, int depth, int denominator,
+                            int policy, double threshold, double deadzone,
+                            int32_t *candidate, unsigned char *lookup)
+{
+    sixel_carry_bounds_t bounds;
+    int n;
+
+    /* This entry point also serves numeric callers with arbitrary carries.
+     * The production RGB loop proves this bound inductively and prepares
+     * its state once per band instead of testing it for every candidate.
+     */
+    if (depth == 3 && policy != SIXEL_DITHER_CLAMP_NONE &&
+            threshold >= 1.0 && threshold <= 16.0 &&
+            denominator > 0 && denominator <= 4096) {
+        for (n = 0; n < 3; ++n) {
+            if (carry[n] < -29245440 || carry[n] > 29245440) break;
+        }
+        if (n == 3) {
+            sixel_carry_prepare(&bounds, denominator, policy, threshold,
+                                 deadzone);
+            sixel_carry_candidate_rgb(&bounds, source, carry, denominator,
+                                      candidate, lookup);
+            return SIXEL_OK;
+        }
+    }
+    return sixel_carry_candidate_reference(source, carry, depth, denominator,
+        policy, threshold, deadzone, candidate, lookup);
+}
+
 SIXELSTATUS
 sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
                         int method)
@@ -150,6 +287,8 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
     sixel_dither_t *dither;
     sixel_lookup_policy_interface_t const *lookup;
     sixel_dither_perturb_t perturb;
+    sixel_carry_bounds_t bounds;
+    int bounded;
     int32_t *rows;
     int32_t *current;
     int32_t *destination;
@@ -216,6 +355,11 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
                               dither->diffusion_perturb_seed);
     perturb.enabled = perturb.enabled && method == SIXEL_DIFFUSE_FS;
     denominator = perturb.enabled ? 16 << 8 : kernel->denominator;
+    bounded = depth == 3 && dither->clamp_policy != SIXEL_DITHER_CLAMP_NONE;
+    if (bounded) {
+        sixel_carry_prepare(&bounds, denominator, dither->clamp_policy,
+            dither->clamp_threshold, dither->diffusion_deadzone);
+    }
     hint = -1;
     status = SIXEL_OK;
     for (y = 0; y < request->height; ++y) {
@@ -246,12 +390,18 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
                 }
                 continue;
             }
-            status = sixel_dither_carry_candidate(
-                request->data + position * depth, current, depth, denominator,
-                dither->clamp_policy, dither->clamp_threshold,
-                dither->diffusion_deadzone,
-                candidate, pixel);
-            if (SIXEL_FAILED(status)) goto end;
+            if (bounded) {
+                sixel_carry_candidate_rgb(&bounds,
+                    request->data + position * 3, current, denominator,
+                    candidate, pixel);
+            } else {
+                status = sixel_carry_candidate_reference(
+                    request->data + position * depth, current, depth,
+                    denominator, dither->clamp_policy,
+                    dither->clamp_threshold, dither->diffusion_deadzone,
+                    candidate, pixel);
+                if (SIXEL_FAILED(status)) goto end;
+            }
             retained = NULL;
             keycolor = -1;
             keep = 0;
