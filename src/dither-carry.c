@@ -249,8 +249,10 @@ sixel_carry_soft(sixel_carry_bounds_t const *bounds,
     uint64_t remainder;
     int32_t rounded;
     int n;
+    int limiting;
 
     best_b = best_c = 1;
+    limiting = depth;
     for (n = 0; n < depth; ++n) {
         c = carry[n];
         if (c < bounds->lower[source[n]]) {
@@ -268,10 +270,24 @@ sixel_carry_soft(sixel_carry_bounds_t const *bounds,
         if (b * best_c < best_b * c) {
             best_b = b;
             best_c = c;
+            limiting = n;
         }
     }
     q = denominator * best_c;
     for (n = 0; n < depth; ++n) {
+        /* The limiting component is exactly its crossed boundary. Its
+         * denominator is the kernel constant, not D*carry, saving one wide
+         * division and preserving the exact rational result on ratio ties.
+         */
+        if (n == limiting) {
+            rounded = source[n] * denominator +
+                (int32_t)(carry[n] < 0 ? -best_b : best_b);
+            rounded = sixel_carry_round(rounded, denominator);
+            candidate[n] = rounded;
+            pixel[n] = (unsigned char)(rounded < 0 ? 0 :
+                                       rounded > 255 ? 255 : rounded);
+            continue;
+        }
         numerator = (uint64_t)((source[n] + 4096) * q + carry[n] * best_b);
         quotient = numerator / (uint64_t)q;
         remainder = numerator - quotient * (uint64_t)q;
