@@ -1,5 +1,7 @@
 # Windows Imaging Component loader
 
+For the optional SIXEL codec installed for Windows applications, see the [WIC codec companion](../programs/wic-codec.md). This input loader does not install or register that codec.
+
 The `wic` loader uses Windows Imaging Component to read an image container and return one selected frame. Available formats depend on installed WIC codecs. The adapter's normalization and frame-selection behavior are narrower than the complete feature set of those codecs.
 
 ```sh

@@ -2126,6 +2126,13 @@ AC_ARG_ENABLE([quicklook-extension],
               [],
               [enable_quicklook_extension=no])
 
+AC_ARG_WITH([quicklook-package-version],
+            [AS_HELP_STRING([--with-quicklook-package-version=M.m.p],
+                            [Quick Look distribution build (default: 1.0.0)])],
+            [QUICKLOOK_PACKAGE_VERSION=$withval],
+            [QUICKLOOK_PACKAGE_VERSION=1.0.0])
+AC_SUBST(QUICKLOOK_PACKAGE_VERSION)
+
 AC_ARG_ENABLE([quicklook-preview],
               [AS_HELP_STRING([--enable-quicklook-preview],
                               [use macOS Quick Look for preview extraction
@@ -2305,13 +2312,13 @@ AC_ARG_ENABLE([xsave-probe],
 
 AC_ARG_ENABLE([wiccodec],
               [AS_HELP_STRING([--enable-wiccodec],
-                              [build WIC codec DLL (default: auto)])],
+                              [build WIC codec DLL and installer (default: no)])],
               [],
-              [])
+              [enable_wiccodec=no])
 
 AC_ARG_ENABLE([register-dll],
               [AS_HELP_STRING([--enable-register-dll],
-                              [register WIC codec DLL during install (default: no, admin rights required)])],
+                              [deprecated; WIC installation uses an installer (default: no)])],
               [enable_register_dll=$enableval],
               [enable_register_dll=no])
 
@@ -3260,6 +3267,47 @@ if test x$ac_cv_header_windows_h = xyes; then
               [Define to 1 if Win32 process APIs are available.])
 fi
 
+# The opt-in timer needs monotonic time and nonblocking process supervision.
+# Probe the full primitive set; unsupported hosts keep the legacy timeout CLI.
+sixel_child_time_save_LIBS="$LIBS"
+LIBS="$CLOCK_GETTIME_LIBS $LIBS"
+AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#if defined(__COSMOPOLITAN__) || defined(__EMSCRIPTEN__) || \
+    defined(__wasm__) || defined(__CYGWIN__)
+#error The timing supervisor requires a native POSIX process executable.
+#endif
+#define _POSIX_C_SOURCE 200809L
+#include <unistd.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <time.h>
+int main(void) {
+  struct timespec t;
+  struct pollfd p;
+  struct sigaction a;
+  sigset_t s;
+  siginfo_t info;
+  int f[2];
+  sigemptyset(&s);
+  sigaction(SIGCHLD, &a, 0);
+  sigprocmask(SIG_BLOCK, &s, 0);
+  pipe(f);
+  fcntl(f[0], F_SETFL, O_NONBLOCK);
+  poll(&p, 0, 0);
+  setsid();
+  setpgid(0, 0);
+  kill(0, 0);
+  waitpid(-1, 0, WNOHANG);
+  waitid(P_PID, 1, &info, WEXITED | WNOWAIT | WNOHANG);
+  fork();
+  return clock_gettime(CLOCK_MONOTONIC, &t);
+}
+]])], [AC_DEFINE([HAVE_LSO_CHILD_TIME], [1],
+  [Define if complete-command POSIX timing primitives are available.])])
+LIBS="$sixel_child_time_save_LIBS"
+
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [
                    #ifdef HAVE_SIGNAL_H
@@ -3770,6 +3818,10 @@ message_quicklook_extension=no
 case $host_os in
   darwin*)
     if test x$enable_quicklook_extension != xno; then
+        AS_IF([! "$SHELL" "$srcdir/quicklook-extension/check-package-tools.sh"             "$QUICKLOOK_PACKAGE_VERSION" "$PACKAGE_VERSION"],
+            [AC_MSG_ERROR([Quick Look package prerequisites are not satisfied])])
+        AS_IF([test -n "$SIXEL_SHEBANG_FILE"],
+              [AC_MSG_ERROR([Quick Look bundles require native Mach-O executables; --with-shebang-file is incompatible])])
         quicklook_os_version_ok=yes
         quicklook_os_reason="requires macOS 10.15 or newer"
         macos_product_version=""
@@ -5161,6 +5213,7 @@ if test "x$enable_simd" = xyes; then
     fi
 fi
 
+have_wiccodec=no
 if test "x${enable_wiccodec}" = xno; then
     message_wiccodec=no
 else
@@ -5175,7 +5228,10 @@ else
                     -lgdi32"
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -luuid"
+                # MinGW's uuid archive contains static GUID definitions, not
+                # DLL imports. Bypass libtool's import-library check so it
+                # does not silently replace the codec DLL with a static module.
+                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -Wl,-luuid"
             fi
             AC_CHECK_HEADER([wincodecsdk.h],
                             [],
@@ -5193,7 +5249,7 @@ else
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32 -luuid"
+                        -loleaut32 -lgdi32 -Wl,-luuid"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
@@ -5203,7 +5259,7 @@ else
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32 -luuid"
+                        -loleaut32 -lgdi32 -Wl,-luuid"
                 fi
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -5224,7 +5280,7 @@ else
             WICCODEC_CFLAGS="$ADDED_CFLAGS"
             WICCODEC_LIBS="$ADDED_LIBS"
             CFLAGS=$CFLAGS_BACKUP
-            LIBS=$CFLAGS_LIBS
+            LIBS=$LIBS_BACKUP
         fi
         if test "x${have_wiccodec}" = xyes; then
             AC_DEFINE([HAVE_WICCODEC], [1],  [define 1 if wic codec support is enabled])
@@ -5232,7 +5288,7 @@ else
         ;;
       *)
         if test "x${enable_wiccodec}" = xyes; then
-            AC_MSG_ERROR([--enable-wiccodec option is available only MinGW target])
+            AC_MSG_ERROR([--enable-wiccodec is available only for native Windows targets])
         fi
         message_wiccodec=no
         have_wiccodec=no
@@ -5242,16 +5298,47 @@ fi
 if test "x${enable_wiccodec}" = xyes -a "x${have_wiccodec}" != xyes; then
     AC_MSG_ERROR([required WIC headers or libraries are not available])
 fi
+# MSI authoring uses only Windows components. Unix cross builds produce the
+# DLL; run wic/installer.ps1 on Windows to finish the distribution package.
+have_wic_msi=no
+WICCODEC_LDFLAGS=
+if test "x$have_wiccodec" = xyes; then
+    case "$build_os" in
+      mingw*|msys*|cygwin*|msvc*)
+        AC_PATH_PROG([WIC_POWERSHELL], [powershell.exe])
+        if test -z "$WIC_POWERSHELL"; then
+            AC_MSG_ERROR([Windows PowerShell (powershell.exe) is required to generate the WIC MSI])
+        fi
+        "$WIC_POWERSHELL" -NoProfile -NonInteractive -Command \
+            'try { $null = New-Object -ComObject WindowsInstaller.Installer; $null = Get-Command makecab.exe -ErrorAction Stop; exit 0 } catch { exit 1 }' ||
+            AC_MSG_ERROR([Windows Installer automation and makecab.exe must be available])
+        have_wic_msi=yes
+        ;;
+      *)
+        AC_MSG_NOTICE([WIC cross build: DLL only; run wic/installer.ps1 on Windows to generate the MSI])
+        ;;
+    esac
+    if test "x$enable_shared" = xno; then
+        AC_MSG_ERROR([WIC codec requires shared library support])
+    fi
+    # The codec is loaded by Explorer, outside the build toolchain's PATH.
+    if test "x$using_cl" = xyes; then
+        WICCODEC_CFLAGS="$WICCODEC_CFLAGS /MT"
+    elif test "x$GCC" = xyes; then
+        WICCODEC_LDFLAGS="-static-libgcc -Wl,-Bstatic"
+    fi
+fi
 AC_SUBST(WICCODEC_CFLAGS)
 AC_SUBST(WICCODEC_LIBS)
+AC_SUBST(WICCODEC_LDFLAGS)
+AM_CONDITIONAL([HAVE_WIC_MSI], [test x$have_wic_msi = xyes])
 
 if test x$enable_register_dll = xyes; then
     if test "x${have_wiccodec}" != xyes; then
         AC_MSG_ERROR([--enable-register-dll requires WIC codec support])
     fi
+    AC_MSG_WARN([--enable-register-dll is obsolete; the WIC installer always handles registration])
 fi
-
-AM_CONDITIONAL([REGISTER_DLL], [test x$enable_register_dll = xyes])
 
 have_python=no
 if test x$enable_python != xno; then
@@ -5858,7 +5945,7 @@ AS_IF([test x$have_quicklook_extension = xyes], [
 AC_OUTPUT_PARALLEL
 
 if test x$have_wiccodec = xyes; then
-    message_register_dll=$enable_register_dll
+    message_register_dll="installer"
 else
     message_register_dll=no
 fi

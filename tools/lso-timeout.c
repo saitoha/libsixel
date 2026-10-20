@@ -11,7 +11,11 @@
 # define _POSIX_C_SOURCE 200809L
 #endif
 
-#include "config.h"
+#if defined(LSO_TIMEOUT_NATIVE)
+# include "lso-timeout-native.h"
+#else
+# include "config.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -366,6 +370,8 @@ wait_with_timeout_win(HANDLE child, double deadline, double kill_deadline)
 }
 #endif  /* defined(LSO_HAVE_WINDOWS_TIMEOUT) */
 
+#include "lso-child-time.h"
+
 int
 main(int argc, char **argv)
 {
@@ -381,6 +387,10 @@ main(int argc, char **argv)
   double kill_deadline;
   HANDLE child;
 #endif
+
+  if (argc > 1 && strcmp(argv[1], "--record-child-time") == 0) {
+    return lso_child_time(argc, argv);
+  }
 
   timeout_seconds = -1.0;
   kill_delay = 10.0;

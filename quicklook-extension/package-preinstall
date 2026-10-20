@@ -1,0 +1,5 @@
+#!/bin/sh
+# Installer invokes this before changing payload. User activation is separate.
+set -eu
+exec "${0%/*}/sixel-quicklook-package" begin-install "${3:?missing target volume}" \
+    "${0%/*}/payload-manifest.json"

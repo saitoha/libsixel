@@ -92,7 +92,9 @@ build_triplet = @build@
 host_triplet = @host@
 @OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
 check_PROGRAMS = test_runner$(EXEEXT)
-@AMALGAMATION_NEEDS_OBJC_TRUE@am__append_1 = -x objective-c
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_1 = HAVE_QUICKLOOK_EXTENSION=1; export HAVE_QUICKLOOK_EXTENSION;
+@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@am__append_2 = HAVE_QUICKLOOK_EXTENSION=0; export HAVE_QUICKLOOK_EXTENSION;
+@AMALGAMATION_NEEDS_OBJC_TRUE@am__append_3 = -x objective-c
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -11697,52 +11699,6 @@ am__list_recheck_tests = $(AWK) '{ \
   close ($$0 ".trs"); \
   close ($$0 ".log"); \
 }'
-# A command that, given a newline-separated list of test names on the
-# standard input, create the global log from their .trs and .log files.
-am__create_global_log = $(AWK) ' \
-function fatal(msg) \
-{ \
-  print "fatal: making $@: " msg | "cat >&2"; \
-  exit 1; \
-} \
-function rst_section(header) \
-{ \
-  print header; \
-  len = length(header); \
-  for (i = 1; i <= len; i = i + 1) \
-    printf "="; \
-  printf "\n\n"; \
-} \
-{ \
-  copy_in_global_log = 1; \
-  global_test_result = "RUN"; \
-  while ((rc = (getline line < ($$0 ".trs"))) != 0) \
-    { \
-      if (rc < 0) \
-         fatal("failed to read from " $$0 ".trs"); \
-      if (line ~ /$(am__global_test_result_rx)/) \
-        { \
-          sub("$(am__global_test_result_rx)", "", line); \
-          sub("[ 	]*$$", "", line); \
-          global_test_result = line; \
-        } \
-      else if (line ~ /$(am__copy_in_global_log_rx)[nN][oO]/) \
-        copy_in_global_log = 0; \
-    }; \
-  if (copy_in_global_log) \
-    { \
-      rst_section(global_test_result ": " $$0); \
-      while ((rc = (getline line < ($$0 ".log"))) != 0) \
-      { \
-        if (rc < 0) \
-          fatal("failed to read from " $$0 ".log"); \
-        print line; \
-      }; \
-      printf "\n"; \
-    }; \
-  close ($$0 ".trs"); \
-  close ($$0 ".log"); \
-}'
 # Restructured Text title.
 am__rst_title = { sed 's/.*/   &   /;h;s/./=/g;p;x;s/ *$$//;p;g' && echo; }
 # Solaris 10 'make', and several other traditional 'make' implementations,
@@ -11978,6 +11934,7 @@ PYTHON_STATICCHECK = @PYTHON_STATICCHECK@
 PYTHON_VERSION = @PYTHON_VERSION@
 QUICKLOOK_CFLAGS = @QUICKLOOK_CFLAGS@
 QUICKLOOK_LIBS = @QUICKLOOK_LIBS@
+QUICKLOOK_PACKAGE_VERSION = @QUICKLOOK_PACKAGE_VERSION@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
@@ -12017,9 +11974,11 @@ THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
+WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
 WIC_CFLAGS = @WIC_CFLAGS@
 WIC_LIBS = @WIC_LIBS@
+WIC_POWERSHELL = @WIC_POWERSHELL@
 WINHTTP_CFLAGS = @WINHTTP_CFLAGS@
 WINHTTP_LIBS = @WINHTTP_LIBS@
 abs_builddir = @abs_builddir@
@@ -12122,20 +12081,25 @@ HELPER_FILES = \
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
+
 # Keep executable suffix in sync with the configured target so TAP
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; \
 	TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR; \
 	TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR; \
-	SIXEL_BIN_EXT='@EXEEXT@'; export SIXEL_BIN_EXT; \
-	SIXEL_TSAN_BUILD='@SIXEL_TSAN_BUILD@'; export \
-	SIXEL_TSAN_BUILD; SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
-	export SIXEL_MSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; \
-	export CROSS_COMPILING; \
-	SIXEL_INSTALLCHECK='$(SIXEL_INSTALLCHECK)'; export \
-	SIXEL_INSTALLCHECK; ENABLE_PYTHON='@ENABLE_PYTHON@'; export \
-	ENABLE_PYTHON; ENABLE_RUBY='@ENABLE_RUBY@'; export \
+	$(am__append_1) $(am__append_2) \
+	QUICKLOOK_PLIST_DIR='$(abs_top_builddir)/quicklook-extension/generated-resources'; \
+	export QUICKLOOK_PLIST_DIR; \
+	QUICKLOOK_PACKAGE_VERSION='@QUICKLOOK_PACKAGE_VERSION@'; \
+	export QUICKLOOK_PACKAGE_VERSION; SIXEL_BIN_EXT='@EXEEXT@'; \
+	export SIXEL_BIN_EXT; SIXEL_TSAN_BUILD='@SIXEL_TSAN_BUILD@'; \
+	export SIXEL_TSAN_BUILD; \
+	SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; export \
+	SIXEL_MSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; export \
+	CROSS_COMPILING; SIXEL_INSTALLCHECK='$(SIXEL_INSTALLCHECK)'; \
+	export SIXEL_INSTALLCHECK; ENABLE_PYTHON='@ENABLE_PYTHON@'; \
+	export ENABLE_PYTHON; ENABLE_RUBY='@ENABLE_RUBY@'; export \
 	ENABLE_RUBY; ENABLE_PERL='@ENABLE_PERL@'; export ENABLE_PERL; \
 	ENABLE_PHP='@ENABLE_PHP@'; export ENABLE_PHP; \
 	SIXEL_CONFIGURED_RUBY='@RUBY@'; export SIXEL_CONFIGURED_RUBY; \
@@ -12207,7 +12171,7 @@ TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
 TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL) \
-	$(am__append_1)
+	$(am__append_3)
 TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
 TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
@@ -19925,6 +19889,12 @@ LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
+# Retain timings for passing and skipped tests as well as failure details.
+am__create_global_log = $(AWK) \
+    -v quiet="$(SIXEL_TEST_TIME_DEFER)" \
+    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+    -f "$(top_srcdir)/build-aux/test-suite-report.awk"
+
 
 # Default to soft errors so the harness continues after individual failures.
 DISABLE_HARD_ERRORS = yes
@@ -19949,9 +19919,13 @@ sixel_clean_copy_batch_size = $(if $(filter 128,$(sixel_clean_batch_size)),32,16
 # Distribute fixture trees as directories so DISTFILES remains short and
 # distdir does not hit shell ARG_MAX limits on some platforms.
 TEST_DATA_DIRS = data
+
+# Timing exceptions are checked against completed test runs.
 EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	writer/png/redefine.six loader/libpng/chrm_trace_control.sh \
-	meson.build docs/consistency/0004_envvars_vs_help.t \
+	meson.build meson-python-tap-wrapper.sh \
+	meson-tap-exitcode-wrapper.sh \
+	docs/consistency/0004_envvars_vs_help.t \
 	loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t \
 	loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t \
 	quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t \
@@ -20078,7 +20052,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/edge-reference.py \
 	data/color-numeric/edge-reference.h \
 	data/color-numeric/ray-reference.py \
-	data/color-numeric/ray-reference.h
+	data/color-numeric/ray-reference.h test-time-allowlist.tsv
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -90831,9 +90805,11 @@ sixel-check-test-tools:
 
 # Run the regular TAP suite against installed commands.
 # installcheck expects `make install` to have completed first.
+# Use the make variable for the guard and absolute installed command paths:
+# neither make expansion nor an unrelated PATH copy may silently skip coverage.
 installcheck-local:
 	@set -eu; \
-	if test "${SIXEL_INSTALLCHECK-0}" != "1"; then \
+	if test "$(SIXEL_INSTALLCHECK)" != "1"; then \
 	    echo "installcheck: skipping tests/installcheck-local (driver inactive)"; \
 	    exit 0; \
 	fi; \
@@ -90868,9 +90844,9 @@ installcheck-local:
 	export SIXEL_RUNTIME=''; \
 	export SIXEL_INSTALLCHECK=1; \
 	export SIXEL_INSTALL_LIBDIR="$$install_libdir"; \
-	export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH='img2sixel@EXEEXT@'; \
-	export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH='sixel2png@EXEEXT@'; \
-	export SIXEL_INSTALLCHECK_LSQA_PATH='lsqa@EXEEXT@'; \
+	export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH="$$install_bindir/img2sixel@EXEEXT@"; \
+	export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH="$$install_bindir/sixel2png@EXEEXT@"; \
+	export SIXEL_INSTALLCHECK_LSQA_PATH="$$install_bindir/lsqa@EXEEXT@"; \
 	export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH='test_runner@EXEEXT@'; \
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS \
 	    SIXEL_INSTALLCHECK=1 \
@@ -91114,6 +91090,12 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	  echo "XPASS: $$xpass"; \
 	  echo "ERROR: $$error"; \
 	} >> "$$testsuite_tmp"; \
+	while IFS= read -r trs_path; do \
+	    printf '%s\n' "$${trs_path%.trs}"; \
+	done < "$$trs_manifest" | $(AWK) -v times_only=1 \
+	    -v quiet="$(SIXEL_TEST_TIME_DEFER)" \
+	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" >> "$$testsuite_tmp" || exit $$?; \
 	mv "$$testsuite_tmp" "$(TEST_SUITE_LOG)"; \
 	echo "================================================================"; \
 	echo "Testsuite summary$(AM_TESTSUITE_SUMMARY_HEADER)"; \

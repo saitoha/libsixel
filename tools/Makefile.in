@@ -129,7 +129,7 @@ am__v_lt_1 =
 jpegref_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(jpegref_CFLAGS) \
 	$(CFLAGS) $(jpegref_LDFLAGS) $(LDFLAGS) -o $@
-am__lso_timeout_SOURCES_DIST = lso-timeout.c
+am__lso_timeout_SOURCES_DIST = lso-timeout.c lso-child-time.h
 @BUILD_LSO_TIMEOUT_TRUE@am_lso_timeout_OBJECTS =  \
 @BUILD_LSO_TIMEOUT_TRUE@	lso_timeout-lso-timeout.$(OBJEXT)
 lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
@@ -382,6 +382,7 @@ PYTHON_STATICCHECK = @PYTHON_STATICCHECK@
 PYTHON_VERSION = @PYTHON_VERSION@
 QUICKLOOK_CFLAGS = @QUICKLOOK_CFLAGS@
 QUICKLOOK_LIBS = @QUICKLOOK_LIBS@
+QUICKLOOK_PACKAGE_VERSION = @QUICKLOOK_PACKAGE_VERSION@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
@@ -421,9 +422,11 @@ THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
+WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
 WIC_CFLAGS = @WIC_CFLAGS@
 WIC_LIBS = @WIC_LIBS@
+WIC_POWERSHELL = @WIC_POWERSHELL@
 WINHTTP_CFLAGS = @WINHTTP_CFLAGS@
 WINHTTP_LIBS = @WINHTTP_LIBS@
 abs_builddir = @abs_builddir@
@@ -495,6 +498,8 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 bin_SCRIPTS = libsixel-config $(am__append_1)
 EXTRA_DIST = libsixel-config.in \
+             gen_completion_embed.py \
+             check_test_times.py \
              reproduce_progressive_study.py \
              check_tap_executable.py \
              verify_color_oracles.py \
@@ -549,6 +554,8 @@ EXTRA_DIST = libsixel-config.in \
 	             gen-amalgamation.sh \
 	             timer.c \
              lso-timeout.c \
+             lso-child-time.h \
+             child-time/meson.build \
              jpegref.c \
              ls-action-summarize \
              ls-summarize \
@@ -638,7 +645,7 @@ lso_timer_CFLAGS = $(AM_CFLAGS)
 # tries to run the first object file as a command.  Spell out the
 # default for the other branch.
 @OPENVMS_GNV_TRUE@lso_timer_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
-@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_SOURCES = lso-timeout.c
+@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_SOURCES = lso-timeout.c lso-child-time.h
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_CFLAGS = $(AM_CFLAGS)
 @BUILD_LSO_TIMEOUT_TRUE@@OPENVMS_GNV_FALSE@lso_timeout_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \

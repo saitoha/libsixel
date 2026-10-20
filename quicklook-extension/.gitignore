@@ -1,5 +1,6 @@
 # Ignore generated Quick Look build artifacts
-products/
+products/*
+!products/meson.build
 generated-resources/
 module-cache/
 Resources/
@@ -15,3 +16,7 @@ register_sixel_preview
 # Local build artifacts
 .libs/
 libsixelquicklookcore.a
+
+package/*
+!package/meson.build
+sixel-quicklook-package

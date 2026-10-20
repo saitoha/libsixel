@@ -135,6 +135,10 @@ libsixel is consumed through several surfaces:
 A change is incomplete if only one exposed surface learns about a new public
 constant, option, source file, or lifecycle contract.
 
+### Companion programs
+
+The optional [macOS Quick Look extension](programs/quicklook-extension.md) and [Windows WIC codec](programs/wic-codec.md) expose SIXEL to operating-system imaging clients. Their own references define deployment and COM contracts; the [companion test inventory](testing/companion-programs-coverage.md) separates structural, installed-runtime and manual UI evidence.
+
 ## Repository map
 
 - `src/` contains core encoding, decoding, loading, quantization, palette, and

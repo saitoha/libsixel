@@ -74,6 +74,9 @@ base_env_settings = [
   ['ARTIFACT_ROOT', artifact_root],
   ['TOP_SRCDIR', meson.project_source_root()],
   ['TOP_BUILDDIR', meson.project_build_root()],
+  ['HAVE_QUICKLOOK_EXTENSION', have_quicklook_extension ? '1' : '0'],
+  ['QUICKLOOK_PACKAGE_VERSION', quicklook_package_version],
+  ['QUICKLOOK_PLIST_DIR', meson.project_build_root() / 'quicklook-extension'],
   ['MESON_SOURCE_ROOT', meson.project_source_root()],
   ['MESON_BUILD_ROOT', meson.project_build_root()],
   ['CROSS_COMPILING', cross_compiling],
@@ -186,6 +189,7 @@ endforeach
 
 # Collect test runner sources under tests/ dynamically so additions/removals
 # do not require manual Meson updates.
+# The installed-WIC probe is a standalone Windows executable owned by wic/.
 test_runner_tests_sources_text = run_command(
   sh,
   '-c',
@@ -197,7 +201,8 @@ test_runner_tests_sources_text = run_command(
   '-prune -o -type f \\( -name "*.c" -o -name "*.h" \\) ' +
   '! -name "*.inc.c" ' +
   '! -name "0018_lookup_float_batch_exact.c" ' +
-  '! -name "0019_lookup_float_simd_distance.c" -print | ' +
+  '! -name "0019_lookup_float_simd_distance.c" ' +
+  '! -path "./extension/wic-installed/*.c" -print | ' +
   'LC_ALL=C sort | sed "s|^\\./||"',
   'meson-test-runner-sources',
   meson.current_source_dir(),
@@ -248,6 +253,9 @@ test_runner_exe = executable('test_runner', test_runner_sources,
   install: false)
 
 test_deps = [test_runner_exe, lsqa_bin] + img2sixel_deps + sixel2png_deps
+if have_quicklook_extension
+  test_deps += [quicklook_bundles, register_tool, quicklook_package]
+endif
 if not get_option('python').disabled()
   test_deps += [python_wheel_target]
 endif
@@ -360,7 +368,17 @@ foreach t : tests
     test_args = [tap_exitcode_wrapper_file] + test_args
     test_protocol = 'exitcode'
   endif
-  test(t, sh,
+  test_executable = sh
+  if have_child_time_executor
+    # Wrap the entire command; zero retains Meson timeout/multiplier control.
+    test_env.set('LSO_CHILD_TIME', '1')
+    test_args = ['--record-child-time', t, '0', '--',
+                 sh] + test_args
+    test_executable = child_time_executor
+  else
+    test_env.set('LSO_CHILD_TIME', child_time_fallback)
+  endif
+  test(t, test_executable,
     args: test_args,
     depends: test_deps,
     protocol: test_protocol,
@@ -375,8 +393,8 @@ add_test_setup('ci',
   is_default: share_test_env,
   timeout_multiplier: 1)
 
-# installcheck runs the same TAP suite but resolves command paths from PATH
-# so callers can validate installed binaries instead of build-tree wrappers.
+# installcheck runs the same TAP suite. The top-level run target supplies
+# exact installed command paths and the corresponding runtime search paths.
 installcheck_env = setup_env
 installcheck_env.set('SIXEL_INSTALLCHECK', '1')
 installcheck_env.set('SIXEL_RUNTIME', '')

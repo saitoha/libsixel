@@ -45,8 +45,8 @@ extension_objc_args = common_objc_args + ['-fapplication-extension']
 # |  Quick Look core aggregation                 |
 # +----------------------------------------------+
 # Keep the standalone decoder dependencies aligned with the Autotools
-# archive. The registry owns thread parsing while compat_stub.c supplies
-# the portability helpers used by both components.
+# archive. The CPU detector gates decoder SIMD, the registry owns thread
+# parsing, and compat_stub.c supplies their portability helpers.
 
 srcs = files(
   'Sources/SixelQuickLookStub.c',
@@ -54,6 +54,7 @@ srcs = files(
   '../src/allocator.c',
   '../src/fromsixel.c',
   '../src/colorspace-hls.c',
+  '../src/cpu.c',
   '../src/timer.c',
   '../src/timeline-logger.c',
   '../src/timeline-writer.c',
@@ -91,14 +92,6 @@ preview = executable(
   link_with: quicklook_core,
   dependencies: quicklook_extension_frameworks,
   install: false)
-if shebang_enabled
-  shebang_targets += [custom_target('SixelPreview_shebang',
-    input: preview,
-    output: 'SixelPreview.shebang.stamp',
-    command: [shebang_helper, shebang_file, '@INPUT@'],
-    depend_files: shebang_file,
-    build_by_default: true)]
-endif
 
 thumbnail = executable(
   'SixelThumbnail',
@@ -113,14 +106,6 @@ thumbnail = executable(
   link_with: quicklook_core,
   dependencies: quicklook_extension_frameworks,
   install: false)
-if shebang_enabled
-  shebang_targets += [custom_target('SixelThumbnail_shebang',
-    input: thumbnail,
-    output: 'SixelThumbnail.shebang.stamp',
-    command: [shebang_helper, shebang_file, '@INPUT@'],
-    depend_files: shebang_file,
-    build_by_default: true)]
-endif
 
 host = executable(
   'SixelQuickLookHost',
@@ -129,14 +114,6 @@ host = executable(
   objc_args: common_objc_args,
   dependencies: quicklook_extension_frameworks,
   install: false)
-if shebang_enabled
-  shebang_targets += [custom_target('SixelQuickLookHost_shebang',
-    input: host,
-    output: 'SixelQuickLookHost.shebang.stamp',
-    command: [shebang_helper, shebang_file, '@INPUT@'],
-    depend_files: shebang_file,
-    build_by_default: true)]
-endif
 
 bridge = executable(
   'SixelPreviewBridge',
@@ -150,14 +127,6 @@ bridge = executable(
   link_with: quicklook_core,
   dependencies: quicklook_extension_frameworks,
   install: false)
-if shebang_enabled
-  shebang_targets += [custom_target('SixelPreviewBridge_shebang',
-    input: bridge,
-    output: 'SixelPreviewBridge.shebang.stamp',
-    command: [shebang_helper, shebang_file, '@INPUT@'],
-    depend_files: shebang_file,
-    build_by_default: true)]
-endif
 
 register_tool = executable(
   'register_sixel_preview',
@@ -165,38 +134,34 @@ register_tool = executable(
   include_directories: common_includes,
   objc_args: common_objc_args,
   dependencies: quicklook_extension_register_frameworks,
-  install: true,
-  install_dir: join_paths(get_option('libexecdir'), 'libsixel'))
-if shebang_enabled
-  shebang_targets += [custom_target('register_sixel_preview_shebang',
-    input: register_tool,
-    output: 'register_sixel_preview.shebang.stamp',
-    command: [shebang_helper, shebang_file, '@INPUT@'],
-    depend_files: shebang_file,
-    build_by_default: true)]
-endif
+  install: false)
 
-install_subdir('products/SixelQuickLookHost.app',
-  install_dir: join_paths(get_option('libexecdir'), 'libsixel'),
-  install_mode: 'rwxr-xr-x')
-install_subdir('products/SixelPreviewBridge.app',
-  install_dir: join_paths(get_option('libexecdir'), 'libsixel'),
-  install_mode: 'rwxr-xr-x')
+package_tool = executable('sixel-quicklook-package',
+  'Sources/SixelPackageTool.m', 'Sources/SixelPackageChecks.h',
+  objc_args: common_objc_args,
+  dependencies: dependency('appleframeworks', modules: ['Foundation', 'Security']),
+  install: false)
+
+# The producer owns both generated directories and their installation inputs.
+# The input list is also the boundary for subsequent payload signing.
+subdir('products')
+alias_target('quicklook-extension-bundles', quicklook_bundles, register_tool)
+subdir('package')
 
 quicklook_installer = find_program(join_paths(meson.project_source_root(), 'tools', 'quicklook-extension.bash'))
 
-run_target(
-  'install-quicklook-extension',
-  command: [quicklook_installer, 'install',
-            '--products-dir', products_dir,
-            '--register-tool', register_tool.full_path()],
-  depends: [register_tool])
-
-run_target(
-  'uninstall-quicklook-extension',
-  command: [quicklook_installer, 'uninstall',
-            '--products-dir', products_dir,
-            '--register-tool', register_tool.full_path()],
-  depends: [register_tool])
+quicklook_manage_args = [
+  '--package-dir', meson.current_build_dir() / 'package',
+  '--tool', package_tool.full_path(),
+  '--datadir', get_option('prefix') / get_option('datadir')]
+# Meson does not run custom install scripts for --dry-run by default.
+meson.add_install_script(quicklook_installer, 'install', quicklook_manage_args)
+run_target('install-quicklook-extension',
+  command: [quicklook_installer, 'install', quicklook_manage_args],
+  depends: [quicklook_package])
+run_target('uninstall-quicklook-extension',
+  command: [quicklook_installer, 'uninstall', quicklook_manage_args])
+run_target('installcheck-quicklook',
+  command: [quicklook_installer, 'installcheck', quicklook_manage_args])
 
 # vim: set et ts=2:

@@ -1566,8 +1566,11 @@ elif wiccodec_opt.enabled()
   error('WIC codec support is only available on Windows')
 endif
 
-if get_option('register_dll') and not have_wiccodec
-  error('register_dll option requires WIC codec support')
+if get_option('register_dll')
+  if not have_wiccodec
+    error('register_dll option requires WIC codec support')
+  endif
+  warning('register_dll is obsolete; the WIC installer always handles registration')
 endif
 
 winhttp_opt = get_option('winhttp')
@@ -1721,8 +1724,14 @@ elif quicklook_preview_opt.enabled()
 endif
 
 quicklook_ext_opt = get_option('quicklook_extension')
+quicklook_package_version = get_option('quicklook_package_version')
 if host_system == 'darwin'
   if not quicklook_ext_opt.disabled()
+    run_command(find_program('sh'), files('quicklook-extension/check-package-tools.sh'),
+      quicklook_package_version, meson.project_version(), check: true)
+    if shebang_enabled
+      error('Quick Look bundles require native Mach-O executables; shebang_file is incompatible')
+    endif
     quicklook_ext_dep = dependency('appleframeworks',
       modules: ['Foundation', \
                 'AppKit', \
@@ -2537,7 +2546,12 @@ if amalgamated_sources_enabled
   subdir('amalgamation')
 endif
 
+# Register the build-side executor before any Meson test producers.
+subdir('tools/child-time')
+
 lsqa_bin = disabler()
+wic_installcheck_command = []
+wic_installcheck_deps = []
 
 if have_wiccodec
   subdir('wic')
@@ -2614,6 +2628,14 @@ if get_option('tests')
   subdir('tests')
 endif
 
+# Extension observation must also precede the generic installed CLI checks.
+# Neither this command nor the Quick Look run target rebuilds or installs it.
+extension_installcheck_command = wic_installcheck_command
+if have_quicklook_extension
+  extension_installcheck_command = [quicklook_installer, 'installcheck',
+                                    quicklook_manage_args]
+endif
+
 run_target('installcheck',
   command: [sh, '-c', '''
 set -eu
@@ -2628,6 +2650,7 @@ host_system="$7"
 cross="$8"
 tests_enabled="$9"
 bin_ext="${10}"
+shift 10
 
 if test "$cross" = "yes"; then
   echo "installcheck: skipped for cross builds"
@@ -2637,6 +2660,11 @@ fi
 if test "$tests_enabled" != "yes"; then
   echo "installcheck: skipped because tests are disabled"
   exit 0
+fi
+
+# Extension installation has its own contract, independent of CLI selection.
+if test "$#" -gt 0; then
+  "$@"
 fi
 
 case "$bindir" in
@@ -2690,9 +2718,10 @@ export SIXEL_INSTALLCHECK=1
 export SIXEL_INSTALL_BINDIR="$install_bindir"
 export SIXEL_INSTALL_LIBEXECDIR="$install_libexecdir"
 export SIXEL_INSTALL_LIBDIR="$install_libdir"
-export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH="img2sixel${bin_ext}"
-export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH="sixel2png${bin_ext}"
-export SIXEL_INSTALLCHECK_LSQA_PATH="lsqa${bin_ext}"
+# An absent installed command must not fall back to a build or system copy.
+export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH="$install_bindir/img2sixel${bin_ext}"
+export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH="$install_bindir/sixel2png${bin_ext}"
+export SIXEL_INSTALLCHECK_LSQA_PATH="$install_bindir/lsqa${bin_ext}"
 export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH="test_runner${bin_ext}"
 
 if test -n "${SIXEL_INSTALLCHECK_TESTS-}"; then
@@ -2714,7 +2743,8 @@ fi
             meson.is_cross_build() ? 'yes' : 'no',
             get_option('tests') ? 'yes' : 'no',
             (host_machine.system() == 'windows' or
-             host_machine.system() == 'cygwin') ? '.exe' : ''])
+             host_machine.system() == 'cygwin') ? '.exe' : ''] + extension_installcheck_command,
+  depends: wic_installcheck_deps)
 
 if fuzz_enabled
   subdir('fuzz')

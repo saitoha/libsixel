@@ -29,6 +29,20 @@ families for:
 This workflow is the main evidence that a source change is broadly compatible.
 Do not treat one passing job as a substitute for the required job families.
 
+### WIC installer validation
+
+The `extension-wic-msys2` jobs explicitly enable the [WIC codec](../programs/wic-codec.md) for Autotools and Meson on native Windows MinGW. Their existing `check_target` matrix field selects `make -C wic check-installation` or `meson compile -C builddir check-wic-installation`. The build targets own sequential execution even when the outer build is parallel; the shared CI action has no WIC-specific parameter, individual test names or expected test counts. Ordinary jobs retain the default-disabled extension.
+
+| Phase | Responsibility and boundary |
+| --- | --- |
+| `make check` / Meson extension suite | Inspect the generated MSI and payload; exercise registration capture in a private per-process registry override. Do not install a system codec. MSI table assertions do not establish executed repair, upgrade, downgrade or uninstall behavior. |
+| `make install` / `meson install` | Copy and launch the MSI, obtaining elevation or using an already elevated unattended environment. Windows Installer owns deployed files/registration. DESTDIR only stages files and skips system installation. |
+| `make installcheck` / `installcheck-wic` | Verify the exact installed MSI product, payload hash, declared registry values, WIC discovery/pixel output and COM unload contracts. Never install or repair; fail when the exact product is absent. DESTDIR or SIXEL_INSTALLCHECK_DESTDIR reports a whole-suite system-codec skip. |
+
+The explicit lifecycle targets reject staging variables, then run package checks, install and installed-codec checks in that order. They deliberately change the machine's installed codec; use disposable runners or preserve and restore pre-existing registrations/files around external validation. They do not automatically uninstall the product at the end. The [companion inventory](../testing/companion-programs-coverage.md) owns the complete numbered observations and limitations. One literal WIC decode is not proof of Explorer display, and unload eligibility is not a general memory-leak test.
+
+Tests retain one result per numbered file while sharing PowerShell/COM setup and native process startup. Every lifetime request still measures its own COM setup, DLL load, fixture, observation and cleanup. The [timing policy](../testing/guide.md#test-timing) owns measurement boundaries, exact-name approved exceptions, log locations and post-run advisory reporting. Meson's lifecycle target aggregates completed package JSON and installed TAP timings; Autotools keeps separate package and installcheck reports. These jobs preserve their test logs; a skipped installation path does not validate a system codec.
+
 ### Experimental configurations
 
 `.github/workflows/experimental.yml` exercises less conventional Windows build

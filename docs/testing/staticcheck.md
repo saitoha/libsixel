@@ -108,6 +108,8 @@ Source-only TAP contracts that also run in the ordinary test harness declare `# 
 
 A staticcheck should fail with enough normalized evidence to locate the divergent representation. It must not silently rewrite committed outputs: automatic correction can be a separate developer command, but the verification target remains read-only with respect to tracked repository state.
 
+Both documentation reciprocal checks scan PowerShell `.ps1` comments as well as the existing source languages. The [traceability policy](../AGENTS.md#documentation-to-test-traceability) defines the supported nonrecursive inventory patterns, including `????_*.ps1` for numbered cases beside shared helpers, and the requirements when adding another language. Invalid marker syntax, missing/extra files, duplicate inventory entries and one-sided references are errors. Source descriptions and evidence claims still need semantic review.
+
 The documentation-link check also validates the [generated PNG CMS matrix](../loader/png-color-metadata.md#maintaining-the-tables) against its input chunks, committed reference bytes, test ownership, and recorded quality floors. Adding or remapping a matrix test requires reviewing and regenerating that shared table.
 
 ## Test coverage

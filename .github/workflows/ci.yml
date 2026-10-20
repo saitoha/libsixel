@@ -2441,6 +2441,54 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
+  extension-wic-msys2:
+    needs: [smoke]
+    name: ${{ matrix.label }}
+    runs-on: windows-latest
+    env:
+      SIXEL_WIC_MSI_QUIET: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-msys2-mingw64-wic-installcheck
+            buildtool: autotools
+            msystem: MINGW64
+            exec_type: msys2
+            setup_options: >-
+              --enable-wiccodec
+              --prefix="$PWD/_install"
+            check_target: -C wic check-installation
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+          - label: Meson-msys2-ucrt64-static-wic-installcheck
+            buildtool: meson
+            msystem: UCRT64
+            exec_type: msys2
+            setup_options: >-
+              -Dwiccodec=enabled
+              --default-library=static
+              --prefix="$(cygpath -am "$PWD/_install")"
+            check_target: compile check-wic-installation
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-meson
+    steps:
+      - name: Configure git EOL
+        shell: bash
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
   core-autotools-msys2-variants:
     needs: [smoke]
     name: ${{ matrix.label }}

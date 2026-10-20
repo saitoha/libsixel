@@ -360,6 +360,9 @@
 /* Define to 1 if you have the `longjmp' function. */
 #undef HAVE_LONGJMP
 
+/* Define if complete-command POSIX timing primitives are available. */
+#undef HAVE_LSO_CHILD_TIME
+
 /* Define to 1 if your system has a GNU libc compatible 'malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC

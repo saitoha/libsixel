@@ -18,6 +18,8 @@ noinst_PROGRAMS += lso-timeout
 endif
 
 EXTRA_DIST = libsixel-config.in \
+             gen_completion_embed.py \
+             check_test_times.py \
              reproduce_progressive_study.py \
              check_tap_executable.py \
              verify_color_oracles.py \
@@ -72,6 +74,8 @@ EXTRA_DIST = libsixel-config.in \
 	             gen-amalgamation.sh \
 	             timer.c \
              lso-timeout.c \
+             lso-child-time.h \
+             child-time/meson.build \
              jpegref.c \
              ls-action-summarize \
              ls-summarize \
@@ -169,7 +173,7 @@ lso_timer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(CFLAGS) $(lso_timer_LDFLAGS) $(LDFLAGS) -o $@
 endif
 if BUILD_LSO_TIMEOUT
-lso_timeout_SOURCES = lso-timeout.c
+lso_timeout_SOURCES = lso-timeout.c lso-child-time.h
 lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timeout_CFLAGS = $(AM_CFLAGS)
 if OPENVMS_GNV

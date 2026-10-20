@@ -86,12 +86,14 @@ The coverage inventory must follow these rules:
 - Describe terminal-dependent, platform-dependent, or otherwise manual observations explicitly instead of presenting them as automated coverage.
 - Audit defaults, accepted and rejected values, precedence, fallback, cross-option interaction, and repeated or multi-input state where those dimensions are part of the contract.
 
+PowerShell tests use `# Policy:` and `# Test-plan:` comments, just like shell tests, within the first 20 lines. Both reciprocal checks scan `.ps1` sources. When adding another test language, extend source discovery and validate its actual comment syntax in both checks before registering its suite; for example, C# uses `//` while VBScript needs apostrophe comments. Do not register nonexistent suites.
+
 The [`staticcheck-doc-test-links`](../tests/_static/sh/staticcheck-doc-test-links.sh) check enforces both directions: every document link must name an existing test that links back, and every `Policy: docs/...` test reference must be present in the named document. Update the document and its owning tests in the same change; a one-sided update is a static-check failure.
 
 An exhaustive test-plan inventory serves a different purpose from a behavioral coverage table. Use it when every test in a suite should remain discoverable from documentation, including malformed-input variants, resource boundaries, fault-localization probes, and supplementary smoke tests that do not each define a public guarantee.
 
 - Put the exhaustive inventory in a dedicated testing document instead of expanding a user-facing policy document into a test ledger.
-- Delimit the inventory with `<!-- test-plan: tests/path/*.t -->` and `<!-- test-plan-end -->`. The glob names the complete, nonrecursive set owned by that inventory.
+- Delimit the inventory with `<!-- test-plan: tests/path/*.t -->` and `<!-- test-plan-end -->`. The glob names the complete, nonrecursive set owned by that inventory. The supported basename forms are `*.EXT` and `????_*.EXT`; the latter selects numbered cases while excluding harness/helper files in the same directory, as in `tests/extension/wic-installer/????_*.ps1`. Unsupported marker syntax is an error.
 - Link every matched test exactly once inside the delimited inventory, using its repository-relative `tests/...` path as the Markdown label.
 - Add one reciprocal `Test-plan: docs/...` source comment within the first 20 lines of every matched test. A test that directly owns a public behavioral contract carries both `Policy:` and `Test-plan:`; the latter does not replace the former.
 - Keep the observation in the test filename and opening comment aligned with the inventory description. The inventory should explain why the cases are grouped, while the test remains the authoritative detail for its fixture and assertion.

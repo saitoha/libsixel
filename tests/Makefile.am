@@ -61,6 +61,14 @@ AM_TESTS_ENVIRONMENT += CKSUM='$(CKSUM)'; export CKSUM;
 export CKSUM
 AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
 AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
+if HAVE_APPLE_QUICKLOOK_EXTENSION
+AM_TESTS_ENVIRONMENT += HAVE_QUICKLOOK_EXTENSION=1; export HAVE_QUICKLOOK_EXTENSION;
+else
+AM_TESTS_ENVIRONMENT += HAVE_QUICKLOOK_EXTENSION=0; export HAVE_QUICKLOOK_EXTENSION;
+endif
+AM_TESTS_ENVIRONMENT += QUICKLOOK_PLIST_DIR='$(abs_top_builddir)/quicklook-extension/generated-resources'; export QUICKLOOK_PLIST_DIR;
+AM_TESTS_ENVIRONMENT += QUICKLOOK_PACKAGE_VERSION='@QUICKLOOK_PACKAGE_VERSION@'; export QUICKLOOK_PACKAGE_VERSION;
+
 # Keep executable suffix in sync with the configured target so TAP
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT += SIXEL_BIN_EXT='@EXEEXT@'; export SIXEL_BIN_EXT;
@@ -7877,6 +7885,11 @@ LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
+# Retain timings for passing and skipped tests as well as failure details.
+am__create_global_log = $(AWK) \
+    -v quiet="$(SIXEL_TEST_TIME_DEFER)" \
+    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+    -f "$(top_srcdir)/build-aux/test-suite-report.awk"
 
 # Default to soft errors so the harness continues after individual failures.
 DISABLE_HARD_ERRORS = yes
@@ -9039,9 +9052,11 @@ endif
 
 # Run the regular TAP suite against installed commands.
 # installcheck expects `make install` to have completed first.
+# Use the make variable for the guard and absolute installed command paths:
+# neither make expansion nor an unrelated PATH copy may silently skip coverage.
 installcheck-local:
 	@set -eu; \
-	if test "${SIXEL_INSTALLCHECK-0}" != "1"; then \
+	if test "$(SIXEL_INSTALLCHECK)" != "1"; then \
 	    echo "installcheck: skipping tests/installcheck-local (driver inactive)"; \
 	    exit 0; \
 	fi; \
@@ -9076,9 +9091,9 @@ installcheck-local:
 	export SIXEL_RUNTIME=''; \
 	export SIXEL_INSTALLCHECK=1; \
 	export SIXEL_INSTALL_LIBDIR="$$install_libdir"; \
-	export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH='img2sixel@EXEEXT@'; \
-	export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH='sixel2png@EXEEXT@'; \
-	export SIXEL_INSTALLCHECK_LSQA_PATH='lsqa@EXEEXT@'; \
+	export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH="$$install_bindir/img2sixel@EXEEXT@"; \
+	export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH="$$install_bindir/sixel2png@EXEEXT@"; \
+	export SIXEL_INSTALLCHECK_LSQA_PATH="$$install_bindir/lsqa@EXEEXT@"; \
 	export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH='test_runner@EXEEXT@'; \
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS \
 	    SIXEL_INSTALLCHECK=1 \
@@ -9322,6 +9337,12 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	  echo "XPASS: $$xpass"; \
 	  echo "ERROR: $$error"; \
 	} >> "$$testsuite_tmp"; \
+	while IFS= read -r trs_path; do \
+	    printf '%s\n' "$${trs_path%.trs}"; \
+	done < "$$trs_manifest" | $(AWK) -v times_only=1 \
+	    -v quiet="$(SIXEL_TEST_TIME_DEFER)" \
+	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" >> "$$testsuite_tmp" || exit $$?; \
 	mv "$$testsuite_tmp" "$(TEST_SUITE_LOG)"; \
 	echo "================================================================"; \
 	echo "Testsuite summary$(AM_TESTSUITE_SUMMARY_HEADER)"; \
@@ -9690,6 +9711,8 @@ TEST_DATA_DIRS = data
 EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.six \
     loader/libpng/chrm_trace_control.sh \
     meson.build \
+    meson-python-tap-wrapper.sh \
+    meson-tap-exitcode-wrapper.sh \
     docs/consistency/0004_envvars_vs_help.t \
     loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t \
     loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t \
@@ -9910,3 +9933,6 @@ EXTRA_DIST += data/color-numeric/edge-reference.py \
 
 EXTRA_DIST += data/color-numeric/ray-reference.py \
     data/color-numeric/ray-reference.h
+
+# Timing exceptions are checked against completed test runs.
+EXTRA_DIST += test-time-allowlist.tsv

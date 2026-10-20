@@ -1,0 +1,109 @@
+Root	Key	Name	Value
+0	.six		sixelfile
+0	.six	ContentType	image/x-sixel
+0	.six	PerceivedType	image
+0	.six	OpenWithProgids	sixelfile
+0	.six	OpenWithList	PhotoViewer.dll
+0	.six\ShellEx\ContextMenuHandlers\ShellImagePreview		{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}
+0	.six\ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}		{C7657C4A-9F68-40fa-A4DF-96BC08EB3551}
+0	SystemFileAssociations\.six	OpenWithList	PhotoViewer.dll
+0	SystemFileAssociations\.six\ShellEx\ContextMenuHandlers\ShellImagePreview		{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}
+0	SystemFileAssociations\.six\ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}		{C7657C4A-9F68-40fa-A4DF-96BC08EB3551}
+2	Software\Microsoft\Windows\CurrentVersion\Explorer\KindMap	.six	Picture
+0	.sixel		sixelfile
+0	.sixel	ContentType	image/x-sixel
+0	.sixel	PerceivedType	image
+0	.sixel	OpenWithProgids	sixelfile
+0	.sixel	OpenWithList	PhotoViewer.dll
+0	.sixel\ShellEx\ContextMenuHandlers\ShellImagePreview		{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}
+0	SystemFileAssociations\.sixel	OpenWithList	PhotoViewer.dll
+0	SystemFileAssociations\.sixel\ShellEx\ContextMenuHandlers\ShellImagePreview		{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}
+0	SystemFileAssociations\.sixel\ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}		{C7657C4A-9F68-40fa-A4DF-96BC08EB3551}
+2	Software\Microsoft\Windows\CurrentVersion\Explorer\KindMap	.sixel	Picture
+0	sixelfile		SIXEL image format
+0	sixelfile\shell\open	MuiVerb	@%PROGRAMFILES%\Windows Photo Viewer\PhotoViewer.dll,-3043
+0	sixelfile\shell\open\command		%SystemRoot%\System32\rundll32.exe "%ProgramFiles%\Windows Photo Viewer\PhotoViewer.dll", ImageView_Fullscreen %1
+0	sixelfile\shell\open\DropTarget	Clsid	{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}
+0	sixelfile\shell\printto\command		%SystemRoot%\System32\rundll32.exe "%SystemRoot%\System32\shimgvw.dll", ImageView_PrintTo /pt "%1" "%2" "%3" "%4"
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}		WIC SIXEL Decoder
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	FriendlyName	WIC SIXEL Decoder
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Description	Decoder for DEC SIXEL graphics
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Author	Hayaki Saito
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	CLSID	{15B9B4DA-B155-4977-8571-CF005884BCB9}
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	VendorGUID	{0B0A6D1E-0C4F-42E9-BA37-1FF5636E9A55}
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	ContainerFormat	{5B2053A9-7A2E-4E0E-9D4C-96532364401A}
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	FileExtensions	.six;.sixel
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	MimeTypes	image/x-sixel
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Version	1.0.0.1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Date	2014-02-20
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SpecVersion	1.0.0.0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	ColorManagementVersion	1.0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsAnimation	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsChromakey	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsLossless	#1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsMultiframe	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	ArbitrationPriority	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Capabilities	#9
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\InprocServer32		[#CodecDll]
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\InprocServer32	ThreadingModel	Both
+0	CLSID\{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}		libsixel decoder automation
+0	CLSID\{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}	ProgID	Libsixel.Decoder.1
+0	CLSID\{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}	VersionIndependentProgID	Libsixel.Decoder
+0	CLSID\{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}	InprocServer32	[#CodecDll]
+0	CLSID\{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}	ThreadingModel	Both
+0	Libsixel.Decoder.1		libsixel decoder automation
+0	Libsixel.Decoder.1	CLSID	{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}
+0	Libsixel.Decoder		libsixel decoder automation
+0	Libsixel.Decoder	CLSID	{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}
+0	Libsixel.Decoder	CurVer	Libsixel.Decoder.1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Formats\{6FDDC324-4E03-4BFE-B185-3D77768DC904}		[WIC_EMPTY]
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Formats\{6FDDC324-4E03-4BFE-B185-3D77768DC90F}		[WIC_EMPTY]
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\0	Position	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\0	Length	#1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\0	Pattern	#x1B
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\0	Mask	#xFF
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\1	Position	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\1	Length	#1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\1	Pattern	#x90
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\1	Mask	#xFF
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\2	Position	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\2	Length	#1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\2	Pattern	#x9B
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\2	Mask	#xFF
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\3	Position	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\3	Length	#1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\3	Pattern	#x9D
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\3	Mask	#xFF
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\4	Position	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\4	Length	#1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\4	Pattern	#x9E
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\4	Mask	#xFF
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\5	Position	#0
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\5	Length	#1
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\5	Pattern	#x9F
+0	CLSID\{15B9B4DA-B155-4977-8571-CF005884BCB9}\Patterns\5	Mask	#xFF
+0	CLSID\{7ED96837-96F0-4812-B211-F13C24117ED3}\Instance\{15B9B4DA-B155-4977-8571-CF005884BCB9}	CLSID	{15B9B4DA-B155-4977-8571-CF005884BCB9}
+0	CLSID\{7ED96837-96F0-4812-B211-F13C24117ED3}\Instance\{15B9B4DA-B155-4977-8571-CF005884BCB9}	FriendlyName	WIC SIXEL Decoder
+2	Software\Microsoft\Windows Imaging Component\Extensions\.six	CLSID	{15B9B4DA-B155-4977-8571-CF005884BCB9}
+2	Software\Microsoft\Windows Imaging Component\Extensions\.six	ContainerFormat	{5B2053A9-7A2E-4E0E-9D4C-96532364401A}
+2	Software\Microsoft\Windows Imaging Component\Extensions\.sixel	CLSID	{15B9B4DA-B155-4977-8571-CF005884BCB9}
+2	Software\Microsoft\Windows Imaging Component\Extensions\.sixel	ContainerFormat	{5B2053A9-7A2E-4E0E-9D4C-96532364401A}
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}		WIC SIXEL Decoder
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	FriendlyName	WIC SIXEL Decoder
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Description	Decoder for DEC SIXEL graphics
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Author	Hayaki Saito
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	CLSID	{15B9B4DA-B155-4977-8571-CF005884BCB9}
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	VendorGUID	{0B0A6D1E-0C4F-42E9-BA37-1FF5636E9A55}
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	ContainerFormat	{5B2053A9-7A2E-4E0E-9D4C-96532364401A}
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	FileExtensions	.six
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	MimeTypes	image/x-sixel
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Version	1.0.0.1
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Date	2014-02-20
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SpecVersion	1.0.0.0
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	ColorManagementVersion	1.0
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsAnimation	#0
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsChromakey	#0
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsLossless	#1
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	SupportsMultiframe	#0
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	ArbitrationPriority	#0
+2	Software\Microsoft\Windows Imaging Component\Decoders\{15B9B4DA-B155-4977-8571-CF005884BCB9}	Capabilities	#9

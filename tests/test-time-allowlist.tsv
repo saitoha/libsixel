@@ -1,0 +1,2 @@
+test	limit_ms	reason	approval
+extension/wic-installed/0005_factory_held.ps1	60	First PowerShell-to-native lifetime request includes initial function and method binding, IPC, and COM/DLL setup inside the per-test wall timer; measured 24.515-39.314 ms after removing avoidable dispatch overhead.	User approved 60 ms for this test on 2026-10-17 (T01/R02)

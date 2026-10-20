@@ -1,0 +1,5 @@
+#!/bin/sh
+# Release the package lock; managed callers retain their outer guard.
+set -eu
+exec "${0%/*}/sixel-quicklook-package" end-install "${3:?missing target volume}" \
+    "${0%/*}/payload-manifest.json"

@@ -47,7 +47,7 @@ find "$docs_root" -type f -name '*.md' -exec \
         active = 0
         active_doc = substr(FILENAME, length(src_root) + 1)
     }
-    /^<!-- test-plan: tests\/[A-Za-z0-9_.\/-]+\/\*\.[A-Za-z0-9]+ -->$/ {
+    /^<!-- test-plan: tests\/[A-Za-z0-9_.\/-]+\/(\?\?\?\?_)?\*\.[A-Za-z0-9]+ -->$/ {
         if (active != 0) {
             print active_doc ": nested test-plan marker" >> errors
             next
@@ -62,6 +62,10 @@ find "$docs_root" -type f -name '*.md' -exec \
         seen[key] = 1
         print key >> plan_specs
         active = 1
+        next
+    }
+    /^<!-- test-plan:/ {
+        print active_doc ": unsupported test-plan marker: " $0 >> errors
         next
     }
     $0 == "<!-- test-plan-end -->" {
@@ -158,7 +162,7 @@ LC_ALL=C sort -u "$doc_pairs" > "$doc_pairs_unique"
 find "$tests_root" -type f \
     \( -name '*.t' -o -name '*.c' -o -name '*.sh' -o \
        -name '*.py' -o -name '*.rb' -o -name '*.pl' -o \
-       -name '*.php' \) \
+       -name '*.php' -o -name '*.ps1' \) \
     -exec awk -v src_root="$src_root/" -v test_links="$test_links" \
     -v errors="$errors" '
     {
@@ -167,7 +171,9 @@ find "$tests_root" -type f \
         while (match(line,
                      /Test-plan:[[:space:]]+docs\/[A-Za-z0-9_.\/-]+\.md/)) {
             if (FNR > 20 ||
-                line !~ /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Test-plan:/) {
+                line !~ /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Test-plan:/ ||
+                (test_path ~ /\.ps1$/ &&
+                 line !~ /^[[:space:]]*#[[:space:]]*Test-plan:/)) {
                 print test_path ": Test-plan reference must be a source " \
                     "comment within the first 20 lines" >> errors
             }

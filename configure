@@ -785,10 +785,12 @@ PYTHON_PREFIX
 PYTHON_PLATFORM
 PYTHON_VERSION
 PYTHON
-REGISTER_DLL_FALSE
-REGISTER_DLL_TRUE
+HAVE_WIC_MSI_FALSE
+HAVE_WIC_MSI_TRUE
+WICCODEC_LDFLAGS
 WICCODEC_LIBS
 WICCODEC_CFLAGS
+WIC_POWERSHELL
 LIBS_PRIVATE
 REQUIRES_PRIVATE
 WIC_LIBS
@@ -874,6 +876,7 @@ COND_DEBUG_TRUE
 zshcompletiondir
 bashcompletiondir
 pkgconfigdir
+QUICKLOOK_PACKAGE_VERSION
 WANT_THUMBNAILER_FALSE
 WANT_THUMBNAILER_TRUE
 THREAD_LIBS
@@ -1105,6 +1108,7 @@ with_coregraphics
 with_metal
 enable_appkit
 enable_quicklook_extension
+with_quicklook_package_version
 enable_quicklook_preview
 with_libcurl
 with_libfetch
@@ -1896,9 +1900,9 @@ Optional Features:
   --enable-simd           enable SS2 and NEON (default: auto)
   --enable-xsave-probe    control _xgetbv probing for AVX detection (default:
                           auto)
-  --enable-wiccodec       build WIC codec DLL (default: auto)
-  --enable-register-dll   register WIC codec DLL during install (default: no,
-                          admin rights required)
+  --enable-wiccodec       build WIC codec DLL and installer (default: no)
+  --enable-register-dll   deprecated; WIC installation uses an installer
+                          (default: no)
   --enable-python         Python wheel package (default: no)
   --enable-ruby           Ruby interface (default: no)
   --enable-perl           Perl interface (default: no)
@@ -1936,6 +1940,8 @@ Optional Packages:
   --with-coregraphics     whether to build with CoreGraphics (default: auto)
   --with-metal            whether to build with Metal GPU palette apply
                           (default: auto)
+  --with-quicklook-package-version=M.m.p
+                          Quick Look distribution build (default: 1.0.0)
   --with-libcurl          whether to build with libcurl (default: auto)
   --with-libfetch         whether to build with libfetch (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
@@ -18340,6 +18346,18 @@ esac
 fi
 
 
+
+# Check whether --with-quicklook-package-version was given.
+if test ${with_quicklook_package_version+y}
+then :
+  withval=$with_quicklook_package_version; QUICKLOOK_PACKAGE_VERSION=$withval
+else case e in #(
+  e) QUICKLOOK_PACKAGE_VERSION=1.0.0 ;;
+esac
+fi
+
+
+
 # Check whether --enable-quicklook-preview was given.
 if test ${enable_quicklook_preview+y}
 then :
@@ -18623,6 +18641,9 @@ fi
 if test ${enable_wiccodec+y}
 then :
   enableval=$enable_wiccodec;
+else case e in #(
+  e) enable_wiccodec=no ;;
+esac
 fi
 
 
@@ -22621,6 +22642,57 @@ printf "%s\n" "#define HAVE_WINDOWS_PROC 1" >>confdefs.h
 
 fi
 
+# The opt-in timer needs monotonic time and nonblocking process supervision.
+# Probe the full primitive set; unsupported hosts keep the legacy timeout CLI.
+sixel_child_time_save_LIBS="$LIBS"
+LIBS="$CLOCK_GETTIME_LIBS $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if defined(__COSMOPOLITAN__) || defined(__EMSCRIPTEN__) || \
+    defined(__wasm__) || defined(__CYGWIN__)
+#error The timing supervisor requires a native POSIX process executable.
+#endif
+#define _POSIX_C_SOURCE 200809L
+#include <unistd.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <time.h>
+int main(void) {
+  struct timespec t;
+  struct pollfd p;
+  struct sigaction a;
+  sigset_t s;
+  siginfo_t info;
+  int f[2];
+  sigemptyset(&s);
+  sigaction(SIGCHLD, &a, 0);
+  sigprocmask(SIG_BLOCK, &s, 0);
+  pipe(f);
+  fcntl(f[0], F_SETFL, O_NONBLOCK);
+  poll(&p, 0, 0);
+  setsid();
+  setpgid(0, 0);
+  kill(0, 0);
+  waitpid(-1, 0, WNOHANG);
+  waitid(P_PID, 1, &info, WEXITED | WNOWAIT | WNOHANG);
+  fork();
+  return clock_gettime(CLOCK_MONOTONIC, &t);
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+printf "%s\n" "#define HAVE_LSO_CHILD_TIME 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS="$sixel_child_time_save_LIBS"
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CC options needed to detect all undeclared functions" >&5
 printf %s "checking for $CC options needed to detect all undeclared functions... " >&6; }
 if test ${ac_cv_c_undeclared_builtin_options+y}
@@ -24090,6 +24162,14 @@ message_quicklook_extension=no
 case $host_os in
   darwin*)
     if test x$enable_quicklook_extension != xno; then
+        if ! "$SHELL" "$srcdir/quicklook-extension/check-package-tools.sh"             "$QUICKLOOK_PACKAGE_VERSION" "$PACKAGE_VERSION"
+then :
+  as_fn_error $? "Quick Look package prerequisites are not satisfied" "$LINENO" 5
+fi
+        if test -n "$SIXEL_SHEBANG_FILE"
+then :
+  as_fn_error $? "Quick Look bundles require native Mach-O executables; --with-shebang-file is incompatible" "$LINENO" 5
+fi
         quicklook_os_version_ok=yes
         quicklook_os_reason="requires macOS 10.15 or newer"
         macos_product_version=""
@@ -28361,6 +28441,7 @@ if test "x$enable_simd" = xyes; then
     fi
 fi
 
+have_wiccodec=no
 if test "x${enable_wiccodec}" = xno; then
     message_wiccodec=no
 else
@@ -28375,7 +28456,10 @@ else
                     -lgdi32"
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -luuid"
+                # MinGW's uuid archive contains static GUID definitions, not
+                # DLL imports. Bypass libtool's import-library check so it
+                # does not silently replace the codec DLL with a static module.
+                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -Wl,-luuid"
             fi
             ac_fn_c_check_header_compile "$LINENO" "wincodecsdk.h" "ac_cv_header_wincodecsdk_h" "$ac_includes_default"
 if test "x$ac_cv_header_wincodecsdk_h" = xyes
@@ -28400,7 +28484,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32 -luuid"
+                        -loleaut32 -lgdi32 -Wl,-luuid"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
@@ -28410,7 +28494,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32 -luuid"
+                        -loleaut32 -lgdi32 -Wl,-luuid"
                 fi
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
@@ -28651,7 +28735,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
             WICCODEC_CFLAGS="$ADDED_CFLAGS"
             WICCODEC_LIBS="$ADDED_LIBS"
             CFLAGS=$CFLAGS_BACKUP
-            LIBS=$CFLAGS_LIBS
+            LIBS=$LIBS_BACKUP
         fi
         if test "x${have_wiccodec}" = xyes; then
 
@@ -28661,7 +28745,7 @@ printf "%s\n" "#define HAVE_WICCODEC 1" >>confdefs.h
         ;;
       *)
         if test "x${enable_wiccodec}" = xyes; then
-            as_fn_error $? "--enable-wiccodec option is available only MinGW target" "$LINENO" 5
+            as_fn_error $? "--enable-wiccodec is available only for native Windows targets" "$LINENO" 5
         fi
         message_wiccodec=no
         have_wiccodec=no
@@ -28671,23 +28755,101 @@ fi
 if test "x${enable_wiccodec}" = xyes -a "x${have_wiccodec}" != xyes; then
     as_fn_error $? "required WIC headers or libraries are not available" "$LINENO" 5
 fi
+# MSI authoring uses only Windows components. Unix cross builds produce the
+# DLL; run wic/installer.ps1 on Windows to finish the distribution package.
+have_wic_msi=no
+WICCODEC_LDFLAGS=
+if test "x$have_wiccodec" = xyes; then
+    case "$build_os" in
+      mingw*|msys*|cygwin*|msvc*)
+        # Extract the first word of "powershell.exe", so it can be a program name with args.
+set dummy powershell.exe; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_WIC_POWERSHELL+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $WIC_POWERSHELL in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_WIC_POWERSHELL="$WIC_POWERSHELL" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_WIC_POWERSHELL="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
 
+  ;;
+esac ;;
+esac
+fi
+WIC_POWERSHELL=$ac_cv_path_WIC_POWERSHELL
+if test -n "$WIC_POWERSHELL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $WIC_POWERSHELL" >&5
+printf "%s\n" "$WIC_POWERSHELL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+        if test -z "$WIC_POWERSHELL"; then
+            as_fn_error $? "Windows PowerShell (powershell.exe) is required to generate the WIC MSI" "$LINENO" 5
+        fi
+        "$WIC_POWERSHELL" -NoProfile -NonInteractive -Command \
+            'try { $null = New-Object -ComObject WindowsInstaller.Installer; $null = Get-Command makecab.exe -ErrorAction Stop; exit 0 } catch { exit 1 }' ||
+            as_fn_error $? "Windows Installer automation and makecab.exe must be available" "$LINENO" 5
+        have_wic_msi=yes
+        ;;
+      *)
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WIC cross build: DLL only; run wic/installer.ps1 on Windows to generate the MSI" >&5
+printf "%s\n" "$as_me: WIC cross build: DLL only; run wic/installer.ps1 on Windows to generate the MSI" >&6;}
+        ;;
+    esac
+    if test "x$enable_shared" = xno; then
+        as_fn_error $? "WIC codec requires shared library support" "$LINENO" 5
+    fi
+    # The codec is loaded by Explorer, outside the build toolchain's PATH.
+    if test "x$using_cl" = xyes; then
+        WICCODEC_CFLAGS="$WICCODEC_CFLAGS /MT"
+    elif test "x$GCC" = xyes; then
+        WICCODEC_LDFLAGS="-static-libgcc -Wl,-Bstatic"
+    fi
+fi
+
+
+
+ if test x$have_wic_msi = xyes; then
+  HAVE_WIC_MSI_TRUE=
+  HAVE_WIC_MSI_FALSE='#'
+else
+  HAVE_WIC_MSI_TRUE='#'
+  HAVE_WIC_MSI_FALSE=
+fi
 
 
 if test x$enable_register_dll = xyes; then
     if test "x${have_wiccodec}" != xyes; then
         as_fn_error $? "--enable-register-dll requires WIC codec support" "$LINENO" 5
     fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: --enable-register-dll is obsolete; the WIC installer always handles registration" >&5
+printf "%s\n" "$as_me: WARNING: --enable-register-dll is obsolete; the WIC installer always handles registration" >&2;}
 fi
-
- if test x$enable_register_dll = xyes; then
-  REGISTER_DLL_TRUE=
-  REGISTER_DLL_FALSE='#'
-else
-  REGISTER_DLL_TRUE='#'
-  REGISTER_DLL_FALSE=
-fi
-
 
 have_python=no
 if test x$enable_python != xno; then
@@ -34360,8 +34522,8 @@ if test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE}" && test -z "${HAVE_APPLE_QUI
   as_fn_error $? "conditional \"HAVE_APPLE_QUICKLOOK_EXTENSION\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${REGISTER_DLL_TRUE}" && test -z "${REGISTER_DLL_FALSE}"; then
-  as_fn_error $? "conditional \"REGISTER_DLL\" was never defined.
+if test -z "${HAVE_WIC_MSI_TRUE}" && test -z "${HAVE_WIC_MSI_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_WIC_MSI\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_RUBY_TRUE}" && test -z "${HAVE_RUBY_FALSE}"; then
@@ -36880,7 +37042,7 @@ fi
 
 
 if test x$have_wiccodec = xyes; then
-    message_register_dll=$enable_register_dll
+    message_register_dll="installer"
 else
     message_register_dll=no
 fi

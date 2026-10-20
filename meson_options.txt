@@ -39,8 +39,8 @@ option('appkit', type: 'feature', value: 'enabled',
 option('quicklook_preview', type: 'feature', value: 'auto', description: 'Use macOS Quick Look for preview extraction')
 option('quicklook_extension', type: 'feature', value: 'disabled', description: 'Build macOS Quick Look extension bundle')
 option('wic', type: 'feature', value: 'auto', description: 'Use Windows Imaging Component')
-option('wiccodec', type: 'feature', value: 'auto', description: 'Build WIC codec DLL')
-option('register_dll', type: 'boolean', value: false, description: 'Register WIC codec DLL during installation')
+option('wiccodec', type: 'feature', value: 'disabled', description: 'Build WIC codec DLL and installer')
+option('register_dll', type: 'boolean', value: false, description: 'Deprecated: WIC installation uses an installer')
 option('winhttp', type: 'feature', value: 'auto', description: 'Use WinHTTP library')
 option('winpthread', type: 'feature', value: 'disabled', description: 'Link with winpthread')
 option('threads', type: 'feature', value: 'auto', description: 'Enable internal threadpool support')
@@ -98,3 +98,6 @@ option('emscripten_wasm_bigint', type: 'boolean', value: false,
 option('emscripten_assertions', type: 'boolean', value: true,
        description: 'Keep ASSERTIONS enabled for emscripten builds')
 # vim: set et ts=2:
+
+option('quicklook_package_version', type: 'string', value: '1.0.0',
+       description: 'Quick Look distribution build number (M.m.p)')

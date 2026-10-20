@@ -128,7 +128,7 @@ done < "$doc_links"
 find "$tests_root" -type f \
     \( -name '*.t' -o -name '*.c' -o -name '*.sh' -o \
        -name '*.py' -o -name '*.rb' -o -name '*.pl' -o \
-       -name '*.php' \) \
+       -name '*.php' -o -name '*.ps1' \) \
     -exec awk -v src_root="$src_root/" -v test_links="$test_links" \
     -v errors="$errors" '
     {
@@ -137,7 +137,9 @@ find "$tests_root" -type f \
         while (match(line,
                      /Policy:[[:space:]]+docs\/[A-Za-z0-9_.\/-]+\.md/)) {
             if (FNR > 20 ||
-                line !~ /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Policy:/) {
+                line !~ /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Policy:/ ||
+                (test_path ~ /\.ps1$/ &&
+                 line !~ /^[[:space:]]*#[[:space:]]*Policy:/)) {
                 print test_path ": Policy reference must be a source " \
                     "comment within the first 20 lines" >> errors
             }

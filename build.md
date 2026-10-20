@@ -122,7 +122,8 @@ or provide the desired directory path explicitly.
 | `--disable-img2sixel` | disabled (builds by default) | Skip building the `img2sixel` CLI tool. |
 | `--disable-sixel2png` | disabled (builds by default) | Skip building the `sixel2png` CLI tool. |
 | `--enable-abort-trace` | `auto` | Enable abort stack trace support for CLI tools (unsupported on Emscripten and Windows targets). |
-| `--enable-quicklook-extension` | disabled | Build the macOS Quick Look extension bundle (requires macOS ≥ 10.15). |
+| `--enable-quicklook-extension` | disabled | Build the macOS Quick Look bundles and development Installer package (requires macOS ≥ 10.15; distribution minimum follows the compiled code). |
+| `--with-quicklook-package-version=M.m.p` | `1.0.0` | Set the numeric Installer distribution version independently of the upstream source version. |
 | `--enable-quicklook-preview` | `auto` | Use macOS Quick Look to render previews for non-image inputs. |
 | `--disable-appkit` | enabled | Build the macOS clipboard backend without AppKit (default uses AppKit when available). |
 | `--enable-thumbnailer-command` | `auto` | Enable the FreeDesktop.org thumbnailer command bridge used by GNOME, Cinnamon, MATE, and Xfce (via Tumbler) as well as other desktops that honour `.thumbnailer` definitions. |
@@ -149,8 +150,8 @@ or provide the desired directory path explicitly.
 | `--with-bashcompletiondir[=DIR]` | `no` (disabled) | Install the bash completion script (`auto` selects the system default path). |
 | `--with-zshcompletiondir[=DIR]` | `no` (disabled) | Install the zsh completion script (`auto` selects the system default path). |
 | `--enable-simd` / `--disable-simd` | `auto` | Control SSE2/NEON SIMD acceleration detection; `auto` enables when supported. |
-| `--enable-wiccodec` / `--disable-wiccodec` | `auto` | Build the Windows WIC codec DLL. |
-| `--enable-register-dll` | `no` | Call `regsvr32` during `make install` to register the WIC codec DLL (requires admin rights). |
+| `--enable-wiccodec` / `--disable-wiccodec` | `no` | Build the Windows WIC codec DLL and MSI installer (MSI generation requires Windows). |
+| `--enable-register-dll` | `no` | Deprecated compatibility option; the WIC installer always handles registration. |
 | `--enable-python` | `no` | Build and install the Python bindings. |
 | `--enable-ruby` | `no` | Build and install the Ruby bindings. |
 | `--enable-perl` | `no` | Enable the Perl binding compatibility checks used by build scripts. |
@@ -190,27 +191,11 @@ in Meson to turn this behavior off.
 
 #### macOS Quick Look extension
 
-The Quick Look extension is disabled by default. To build and install it, ensure you are running on macOS 10.15 or later and pass `--enable-quicklook-extension`. After `make install`, the script `tools/quicklook-extension.bash` is called automatically to register the Preview and Thumbnail extensions for the current user, unless `DESTDIR` is set. This option is independent of the Quick Look input loader controlled by `--enable-quicklook-preview`. To unregister the extensions, run:
-
-```sh
-tools/quicklook-extension.bash uninstall \
-    --products-dir quicklook-extension/products \
-    --register-tool quicklook-extension/register_sixel_preview
-```
+The optional extension defaults to disabled. See the [Quick Look companion reference](docs/programs/quicklook-extension.md) for `--enable-quicklook-extension`, bundle assembly, development Installer package generation, and the separate legacy per-user installation hooks. Normal enabled builds generate the package without installing or registering it. The extension is independent of the Quick Look input loader.
 
 #### Windows WIC codec (Autotools)
 
-When building with Autotools under MSYS2 or Cygwin, you can enable the WIC
-codec by configuring with `--enable-wiccodec`.  If `--register-dll` is specified,
-`make install` calls `regsvr32` to register `libwicsixel.dll`.  To unregister
-later:
-
-```sh
-make uninstall
-```
-
-The uninstall target invokes `regsvr32 /u` automatically when the DLL was
-registered during install.
+Enable with `./configure --enable-wiccodec`, then build with `make`. See the [WIC companion reference](docs/programs/wic-codec.md#build-dependencies-and-deployment) for Windows MSI prerequisites, installation/elevation, static payload dependencies, DESTDIR staging, Unix cross-build kits and Windows Installer maintenance. `--enable-register-dll` is obsolete; MSI owns registration. The [CI lifecycle](docs/ci/design.md#wic-installer-validation) defines package checks, installation and installed-codec checks in order. General build requirements remain in this guide.
 
 ### Static analyzer builds (Autotools)
 
@@ -332,11 +317,12 @@ meson setup builddir
 | `-Dcoregraphics=` | feature, `auto` | Use the CoreGraphics framework on macOS. |
 | `-Dmetal=` | feature, `auto` | Use the Metal framework for macOS GPU helpers. |
 | `-Dappkit=` | feature, `enabled` | Control AppKit clipboard backend support on macOS. |
-| `-Dquicklook_extension=` | feature, `disabled` | Build the macOS Quick Look extension bundle. |
+| `-Dquicklook_extension=` | feature, `disabled` | Build the macOS Quick Look bundles and development Installer package. |
+| `-Dquicklook_package_version=` | string, `1.0.0` | Set the numeric Installer distribution version independently of the upstream source version. |
 | `-Dquicklook_preview=` | feature, `auto` | Use macOS Quick Look to render previews for non-image inputs. |
 | `-Dwic=` | feature, `auto` | Use Windows Imaging Component (WIC) libraries. |
-| `-Dwiccodec=` | feature, `auto` | Build the Windows WIC codec DLL. |
-| `-Dregister_dll=` | boolean, `false` | Register the WIC codec DLL during `meson install` (requires admin rights). |
+| `-Dwiccodec=` | feature, `disabled` | Build the Windows WIC codec DLL and MSI installer (MSI generation requires Windows). |
+| `-Dregister_dll=` | boolean, `false` | Deprecated compatibility option; the WIC installer always handles registration. |
 | `-Dwinhttp=` | feature, `auto` | Use WinHTTP on Windows for network operations. |
 | `-Dwinpthread=` | feature, `disabled` | Link against `libwinpthread`. |
 | `-Dthreads=` | feature, `auto` | Control internal threadpool support. |
@@ -439,30 +425,11 @@ tools/check_makefile_recipes.sh path/to/Makefile.am
 
 ### macOS Quick Look (Meson)
 
-The Quick Look extension is disabled by default; enable it with `-Dquicklook_extension=enabled`. This option is independent of the Quick Look input loader controlled by `-Dquicklook_preview`. `meson install` places the app bundles under `libexecdir/libsixel`; use `ninja -C builddir install-quicklook-extension` to install and register the extensions for the current user. To unregister later, invoke the run target:
-
-```sh
-ninja -C builddir uninstall-quicklook-extension
-```
+The opt-in is `meson setup builddir -Dquicklook_extension=enabled`. Normal `meson compile` builds the bundles and `quicklook-extension/package/SixelQuickLook.pkg`. Read the [Meson build boundary](docs/programs/quicklook-extension.md#meson-build-boundary) for the distinction between package generation and installation. `quicklook_preview` controls the independent input loader.
 
 ### Windows WIC codec (Meson)
 
-Enable the codec via
-
-```sh
-meson setup builddir -Dwiccodec=enabled -Dregister_dll=true …
-```
-
-When `register_dll` is true, `meson install` runs `regsvr32 /s` on the installed
-`libwicsixel.dll` (skipping registration when installing into a `DESTDIR`). Unregister the installed DLL while it still exists, then remove the installed files:
-
-```sh
-regsvr32 /u /s "$PREFIX\lib\libsixel\libwicsixel.dll"
-ninja -C builddir uninstall  # removes files after deregistration
-```
-
-Note: Meson does not currently run unregister commands during `ninja uninstall`,
-so deregistration must be performed manually or through a custom script.
+Use `meson setup builddir -Dwiccodec=enabled` and `meson compile -C builddir`. The [WIC companion reference](docs/programs/wic-codec.md#build-dependencies-and-deployment) owns deployment instructions shared with Autotools. With tests enabled, `meson compile -C builddir installcheck-wic` verifies an existing installation; `check-wic-installation` explicitly performs the ordered package-check/install/installcheck lifecycle described in [CI design](docs/ci/design.md#wic-installer-validation).
 
 ## Platform-specific notes
 

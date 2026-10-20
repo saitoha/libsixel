@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -95,6 +96,8 @@ host_triplet = @host@
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/threadpool.c \
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/threadpool.h
 
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@check_PROGRAMS = wic-installed-decode$(EXEEXT) \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	wic-installed-lifetime$(EXEEXT)
 subdir = wic
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -112,6 +115,123 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+LTLIBRARIES = $(noinst_LTLIBRARIES)
+am__DEPENDENCIES_1 =
+am__libwicsixel_la_SOURCES_DIST = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
+	$(srcdir)/wic_stub.h $(top_srcdir)/src/fromsixel.c \
+	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/cpu.c \
+	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/timer.c \
+	$(top_srcdir)/src/timeline-logger.c \
+	$(top_srcdir)/src/timeline-writer.c $(top_srcdir)/src/status.c \
+	$(top_srcdir)/src/probe.c $(top_srcdir)/src/compat_stub.c \
+	$(top_srcdir)/src/path.c $(top_srcdir)/src/threading.c \
+	$(top_srcdir)/src/options-registry.c \
+	$(top_srcdir)/src/decoder-parallel.c \
+	$(top_srcdir)/src/threading.h $(top_srcdir)/src/threadpool.c \
+	$(top_srcdir)/src/threadpool.h
+am__dirstamp = $(am__leading_dot)dirstamp
+@SIXEL_ENABLE_THREADS_TRUE@am__objects_1 = $(top_builddir)/src/libwicsixel_la-decoder-parallel.lo \
+@SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libwicsixel_la-threadpool.lo
+am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
+	libwicsixel_la-wic_stub.lo \
+	$(top_builddir)/src/libwicsixel_la-fromsixel.lo \
+	$(top_builddir)/src/libwicsixel_la-colorspace-hls.lo \
+	$(top_builddir)/src/libwicsixel_la-cpu.lo \
+	$(top_builddir)/src/libwicsixel_la-allocator.lo \
+	$(top_builddir)/src/libwicsixel_la-timer.lo \
+	$(top_builddir)/src/libwicsixel_la-timeline-logger.lo \
+	$(top_builddir)/src/libwicsixel_la-timeline-writer.lo \
+	$(top_builddir)/src/libwicsixel_la-status.lo \
+	$(top_builddir)/src/libwicsixel_la-probe.lo \
+	$(top_builddir)/src/libwicsixel_la-compat_stub.lo \
+	$(top_builddir)/src/libwicsixel_la-path.lo \
+	$(top_builddir)/src/libwicsixel_la-threading.lo \
+	$(top_builddir)/src/libwicsixel_la-options-registry.lo \
+	$(am__objects_1)
+libwicsixel_la_OBJECTS = $(am_libwicsixel_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+libwicsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libwicsixel_la_CFLAGS) $(CFLAGS) $(libwicsixel_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am__wic_installed_decode_SOURCES_DIST = $(top_srcdir)/tests/extension/wic-installed/decode-red-pixel.c
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@am_wic_installed_decode_OBJECTS = $(top_builddir)/tests/extension/wic-installed/decode-red-pixel.$(OBJEXT)
+wic_installed_decode_OBJECTS = $(am_wic_installed_decode_OBJECTS)
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@wic_installed_decode_DEPENDENCIES =  \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	$(am__DEPENDENCIES_1)
+am__wic_installed_lifetime_SOURCES_DIST =  \
+	$(top_srcdir)/tests/extension/wic-installed/lifetime-probe.c
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@am_wic_installed_lifetime_OBJECTS = $(top_builddir)/tests/extension/wic-installed/lifetime-probe.$(OBJEXT)
+wic_installed_lifetime_OBJECTS = $(am_wic_installed_lifetime_OBJECTS)
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@wic_installed_lifetime_DEPENDENCIES =  \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	$(am__DEPENDENCIES_1)
+AM_V_P = $(am__v_P_@AM_V@)
+am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
+am__v_P_0 = false
+am__v_P_1 = :
+AM_V_GEN = $(am__v_GEN_@AM_V@)
+am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
+am__v_GEN_0 = @echo "  GEN     " $@;
+am__v_GEN_1 = 
+AM_V_at = $(am__v_at_@AM_V@)
+am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
+am__v_at_0 = @
+am__v_at_1 = 
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
+am__maybe_remake_depfiles = depfiles
+am__depfiles_remade =  \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-path.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-probe.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threading.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo \
+	$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/decode-red-pixel.Po \
+	$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/lifetime-probe.Po \
+	./$(DEPDIR)/libwicsixel_la-wic.Plo \
+	./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
+am__mv = mv -f
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_@AM_V@)
+am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
+am__v_CC_0 = @echo "  CC      " $@;
+am__v_CC_1 = 
+CCLD = $(CC)
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+am__v_CCLD_0 = @echo "  CCLD    " $@;
+am__v_CCLD_1 = 
+SOURCES = $(libwicsixel_la_SOURCES) $(wic_installed_decode_SOURCES) \
+	$(wic_installed_lifetime_SOURCES)
+DIST_SOURCES = $(am__libwicsixel_la_SOURCES_DIST) \
+	$(am__wic_installed_decode_SOURCES_DIST) \
+	$(am__wic_installed_lifetime_SOURCES_DIST)
+am__can_run_installinfo = \
+  case $$AM_UPDATE_INFO_DIR in \
+    n|no|NO) false;; \
+    *) (install-info --version) >/dev/null 2>&1;; \
+  esac
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -138,105 +258,10 @@ am__uninstall_files_from_dir = { \
   || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
        $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
   }
-am__installdirs = "$(DESTDIR)$(pkglibdir)"
-LTLIBRARIES = $(pkglib_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-libwicsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am__libwicsixel_la_SOURCES_DIST = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
-	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
-	$(top_builddir)/src/allocator.c $(top_builddir)/src/timer.c \
-	$(top_builddir)/src/timeline-logger.c \
-	$(top_builddir)/src/timeline-writer.c \
-	$(top_builddir)/src/status.c $(top_builddir)/src/probe.c \
-	$(top_builddir)/src/compat_stub.c $(top_builddir)/src/path.c \
-	$(top_builddir)/src/threading.c \
-	$(top_builddir)/src/options-registry.c \
-	$(top_srcdir)/src/decoder-parallel.c \
-	$(top_srcdir)/src/threading.h $(top_srcdir)/src/threadpool.c \
-	$(top_srcdir)/src/threadpool.h
-am__dirstamp = $(am__leading_dot)dirstamp
-@SIXEL_ENABLE_THREADS_TRUE@am__objects_1 = $(top_builddir)/src/libwicsixel_la-decoder-parallel.lo \
-@SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libwicsixel_la-threadpool.lo
-am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
-	libwicsixel_la-wic_stub.lo \
-	$(top_builddir)/src/libwicsixel_la-fromsixel.lo \
-	$(top_builddir)/src/libwicsixel_la-allocator.lo \
-	$(top_builddir)/src/libwicsixel_la-timer.lo \
-	$(top_builddir)/src/libwicsixel_la-timeline-logger.lo \
-	$(top_builddir)/src/libwicsixel_la-timeline-writer.lo \
-	$(top_builddir)/src/libwicsixel_la-status.lo \
-	$(top_builddir)/src/libwicsixel_la-probe.lo \
-	$(top_builddir)/src/libwicsixel_la-compat_stub.lo \
-	$(top_builddir)/src/libwicsixel_la-path.lo \
-	$(top_builddir)/src/libwicsixel_la-threading.lo \
-	$(top_builddir)/src/libwicsixel_la-options-registry.lo \
-	$(am__objects_1)
-libwicsixel_la_OBJECTS = $(am_libwicsixel_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-libwicsixel_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(libwicsixel_la_CFLAGS) $(CFLAGS) $(libwicsixel_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
-AM_V_P = $(am__v_P_@AM_V@)
-am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
-am__v_P_0 = false
-am__v_P_1 = :
-AM_V_GEN = $(am__v_GEN_@AM_V@)
-am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
-am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 = 
-AM_V_at = $(am__v_at_@AM_V@)
-am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
-am__v_at_0 = @
-am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
-am__maybe_remake_depfiles = depfiles
-am__depfiles_remade =  \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-path.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-probe.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threading.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo \
-	./$(DEPDIR)/libwicsixel_la-wic.Plo \
-	./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
-am__mv = mv -f
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
-AM_V_CC = $(am__v_CC_@AM_V@)
-am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
-am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 = 
-CCLD = $(CC)
-LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-AM_V_CCLD = $(am__v_CCLD_@AM_V@)
-am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
-am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 = 
-SOURCES = $(libwicsixel_la_SOURCES)
-DIST_SOURCES = $(am__libwicsixel_la_SOURCES_DIST)
-am__can_run_installinfo = \
-  case $$AM_UPDATE_INFO_DIR in \
-    n|no|NO) false;; \
-    *) (install-info --version) >/dev/null 2>&1;; \
-  esac
+am__installdirs = "$(DESTDIR)$(wicinstallerdir)" \
+	"$(DESTDIR)$(wicpackagedir)" "$(DESTDIR)$(wicpackagedir)"
+DATA = $(nodist_wicinstaller_DATA) $(nodist_wicpackage_DATA) \
+	$(wicpackage_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -279,6 +304,10 @@ BASH = @BASH@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+
+# Automake appends CFLAGS after target flags; remove dynamic CRT switches so
+# the codec's /MT setting cannot be overridden by the ordinary library build.
+@USING_CL_TRUE@CFLAGS = $(filter-out /MD /MDd -MD -MDd,@CFLAGS@)
 CKSUM = @CKSUM@
 CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
 CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
@@ -395,6 +424,7 @@ PYTHON_STATICCHECK = @PYTHON_STATICCHECK@
 PYTHON_VERSION = @PYTHON_VERSION@
 QUICKLOOK_CFLAGS = @QUICKLOOK_CFLAGS@
 QUICKLOOK_LIBS = @QUICKLOOK_LIBS@
+QUICKLOOK_PACKAGE_VERSION = @QUICKLOOK_PACKAGE_VERSION@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
@@ -434,9 +464,11 @@ THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
+WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
 WIC_CFLAGS = @WIC_CFLAGS@
 WIC_LIBS = @WIC_LIBS@
+WIC_POWERSHELL = @WIC_POWERSHELL@
 WINHTTP_CFLAGS = @WINHTTP_CFLAGS@
 WINHTTP_LIBS = @WINHTTP_LIBS@
 abs_builddir = @abs_builddir@
@@ -504,17 +536,21 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-CLEANFILES = *.o *.obj
-pkglib_LTLIBRARIES = libwicsixel.la
+CLEANFILES = *.o *.obj $(wic_installer) wic-msi.log wic-msi.trs \
+    wic-installed.log wic-installed.trs test-suite.log installcheck-suite.log
+
+
+# Only the installer owns the deployed DLL and COM registration.
+noinst_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
-	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
-	$(top_builddir)/src/allocator.c $(top_builddir)/src/timer.c \
-	$(top_builddir)/src/timeline-logger.c \
-	$(top_builddir)/src/timeline-writer.c \
-	$(top_builddir)/src/status.c $(top_builddir)/src/probe.c \
-	$(top_builddir)/src/compat_stub.c $(top_builddir)/src/path.c \
-	$(top_builddir)/src/threading.c \
-	$(top_builddir)/src/options-registry.c $(am__append_1)
+	$(srcdir)/wic_stub.h $(top_srcdir)/src/fromsixel.c \
+	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/cpu.c \
+	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/timer.c \
+	$(top_srcdir)/src/timeline-logger.c \
+	$(top_srcdir)/src/timeline-writer.c $(top_srcdir)/src/status.c \
+	$(top_srcdir)/src/probe.c $(top_srcdir)/src/compat_stub.c \
+	$(top_srcdir)/src/path.c $(top_srcdir)/src/threading.c \
+	$(top_srcdir)/src/options-registry.c $(am__append_1)
 libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
                           -I$(top_builddir)/include/ \
                           -I$(top_srcdir)/include/ \
@@ -527,9 +563,101 @@ libwicsixel_la_CFLAGS = $(CFLAGS) \
                         $(AM_CFLAGS) \
                         $(WICCODEC_CFLAGS)
 
-libwicsixel_la_LDFLAGS = -no-undefined -module -avoid-version
+
+# -rpath asks libtool to build a DLL even though it is not installed by libtool.
+libwicsixel_la_LDFLAGS = -no-undefined -module -avoid-version \
+                         -rpath $(pkglibdir) $(WICCODEC_LDFLAGS) \
+                         -export-symbols $(srcdir)/wicsixel.def
+
 libwicsixel_la_LIBADD = $(WICCODEC_LIBS)
-REGSVR32 = "$(shell cygpath $(SYSTEMROOT)/System32/regsvr32.exe)"
+libwicsixel_la_DEPENDENCIES = $(srcdir)/wicsixel.def
+wic_installer = libsixel-wic.msi
+wicinstallerdir = $(datadir)/libsixel/installers
+wic_msi_tests = \
+    0001_per_machine.ps1 \
+    0002_embedded_cabinet_reference.ps1 \
+    0003_embedded_cabinet_stream.ps1 \
+    0004_payload_file_size.ps1 \
+    0005_upgrade_transaction.ps1 \
+    0006_downgrade_detection.ps1 \
+    0007_same_version_replacement.ps1 \
+    0008_com_registration_path.ps1 \
+    0009_component_architecture.ps1 \
+    0010_no_self_registration.ps1 \
+    0011_no_custom_actions.ps1 \
+    0012_destdir_skips_install.ps1 \
+    0013_registration.ps1 \
+    0014_dependencies.ps1
+
+wic_installed_tests = \
+    0001_product_installed.ps1 \
+    0002_installed_payload.ps1 \
+    0003_installed_registration.ps1 \
+    0004_decode_red_pixel.ps1 \
+    0005_factory_held.ps1 \
+    0006_factory_released.ps1 \
+    0007_automation_factory_held.ps1 \
+    0008_automation_factory_released.ps1 \
+    0009_decoder_held.ps1 \
+    0010_decoder_released.ps1 \
+    0011_automation_held.ps1 \
+    0012_automation_released.ps1 \
+    0013_frame_held.ps1 \
+    0014_frame_released.ps1 \
+    0015_thumbnail_held.ps1 \
+    0016_thumbnail_released.ps1 \
+    0017_transform_held.ps1 \
+    0018_transform_released.ps1 \
+    0019_decoder_reader_held.ps1 \
+    0020_decoder_reader_released.ps1 \
+    0021_frame_reader_held.ps1 \
+    0022_frame_reader_released.ps1 \
+    0023_writer_held.ps1 \
+    0024_writer_released.ps1 \
+    0025_enumerator_held.ps1 \
+    0026_enumerator_released.ps1 \
+    0027_clone_held.ps1 \
+    0028_clone_released.ps1 \
+    0029_factory_unsupported_iid.ps1 \
+    0030_decoder_unsupported_iid.ps1 \
+    0031_automation_unsupported_iid.ps1 \
+    0032_factory_allocation_1_rollback.ps1 \
+    0033_decoder_allocation_1_rollback.ps1 \
+    0034_automation_allocation_1_rollback.ps1 \
+    0035_frame_allocation_1_rollback.ps1 \
+    0036_frame_allocation_2_rollback.ps1 \
+    0037_frame_allocation_3_rollback.ps1 \
+    0038_thumbnail_allocation_1_rollback.ps1 \
+    0039_thumbnail_allocation_2_rollback.ps1 \
+    0040_thumbnail_allocation_3_rollback.ps1 \
+    0041_decoder_reader_allocation_1_rollback.ps1 \
+    0042_enumerator_allocation_1_rollback.ps1 \
+    0043_clone_allocation_1_rollback.ps1 \
+    0044_server_lock_held.ps1 \
+    0045_concurrent_objects_held.ps1 \
+    0046_server_lock_released.ps1 \
+    0047_concurrent_objects_released.ps1
+
+EXTRA_DIST = installer.ps1 registry.tsv powershell.sh wicsixel.def \
+    $(top_srcdir)/tests/extension/wic-installer/msi-query.ps1 \
+    $(top_srcdir)/tests/extension/wic-installer/registration-capture.ps1 \
+    $(top_srcdir)/tests/extension/wic-installer/run-tests.ps1 \
+    $(addprefix $(top_srcdir)/tests/extension/wic-installer/,$(wic_msi_tests)) \
+    $(addprefix $(top_srcdir)/tests/extension/wic-installed/,$(wic_installed_tests))
+
+@HAVE_WIC_MSI_TRUE@nodist_wicinstaller_DATA = $(wic_installer)
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@wic_installed_decode_SOURCES = \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@    $(top_srcdir)/tests/extension/wic-installed/decode-red-pixel.c
+
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@wic_installed_decode_LDADD = $(WICCODEC_LIBS)
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@wic_installed_lifetime_SOURCES = \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@    $(top_srcdir)/tests/extension/wic-installed/lifetime-probe.c
+
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@wic_installed_lifetime_LDADD = $(WICCODEC_LIBS)
+# A Unix cross build stages a packaging kit, not a system-installed codec.
+@HAVE_WIC_MSI_FALSE@wicpackagedir = $(wicinstallerdir)/wic-package
+@HAVE_WIC_MSI_FALSE@nodist_wicpackage_DATA = .libs/libwicsixel.dll
+@HAVE_WIC_MSI_FALSE@wicpackage_DATA = installer.ps1 registry.tsv $(top_srcdir)/LICENSE
 all: all-am
 
 .SUFFIXES:
@@ -565,33 +693,13 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-install-pkglibLTLIBRARIES: $(pkglib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	@list='$(pkglib_LTLIBRARIES)'; test -n "$(pkglibdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(pkglibdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(pkglibdir)" || exit 1; \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(pkglibdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(pkglibdir)"; \
-	}
+clean-checkPROGRAMS:
+	$(am__rm_f) $(check_PROGRAMS)
+	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
 
-uninstall-pkglibLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(pkglib_LTLIBRARIES)'; test -n "$(pkglibdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(pkglibdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(pkglibdir)/$$f"; \
-	done
-
-clean-pkglibLTLIBRARIES:
-	-$(am__rm_f) $(pkglib_LTLIBRARIES)
-	@list='$(pkglib_LTLIBRARIES)'; \
+clean-noinstLTLIBRARIES:
+	-$(am__rm_f) $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
 	locs=`for p in $$list; do echo $$p; done | \
 	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
 	      sort -u`; \
@@ -604,6 +712,12 @@ $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/src/$(DEPDIR)
 	@: >>$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libwicsixel_la-fromsixel.lo:  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libwicsixel_la-colorspace-hls.lo:  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libwicsixel_la-cpu.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libwicsixel_la-allocator.lo:  \
@@ -644,18 +758,41 @@ $(top_builddir)/src/libwicsixel_la-threadpool.lo:  \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 
 libwicsixel.la: $(libwicsixel_la_OBJECTS) $(libwicsixel_la_DEPENDENCIES) $(EXTRA_libwicsixel_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libwicsixel_la_LINK) -rpath $(pkglibdir) $(libwicsixel_la_OBJECTS) $(libwicsixel_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libwicsixel_la_LINK)  $(libwicsixel_la_OBJECTS) $(libwicsixel_la_LIBADD) $(LIBS)
+$(top_builddir)/tests/extension/wic-installed/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/tests/extension/wic-installed
+	@: >>$(top_builddir)/tests/extension/wic-installed/$(am__dirstamp)
+$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/tests/extension/wic-installed/$(DEPDIR)
+	@: >>$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/extension/wic-installed/decode-red-pixel.$(OBJEXT):  \
+	$(top_builddir)/tests/extension/wic-installed/$(am__dirstamp) \
+	$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/$(am__dirstamp)
+
+wic-installed-decode$(EXEEXT): $(wic_installed_decode_OBJECTS) $(wic_installed_decode_DEPENDENCIES) $(EXTRA_wic_installed_decode_DEPENDENCIES)
+	@rm -f wic-installed-decode$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(wic_installed_decode_OBJECTS) $(wic_installed_decode_LDADD) $(LIBS)
+$(top_builddir)/tests/extension/wic-installed/lifetime-probe.$(OBJEXT):  \
+	$(top_builddir)/tests/extension/wic-installed/$(am__dirstamp) \
+	$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/$(am__dirstamp)
+
+wic-installed-lifetime$(EXEEXT): $(wic_installed_lifetime_OBJECTS) $(wic_installed_lifetime_DEPENDENCIES) $(EXTRA_wic_installed_lifetime_DEPENDENCIES)
+	@rm -f wic-installed-lifetime$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(wic_installed_lifetime_OBJECTS) $(wic_installed_lifetime_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 	-rm -f $(top_builddir)/src/*.lo
+	-rm -f $(top_builddir)/tests/extension/wic-installed/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo@am__quote@ # am--include-marker
@@ -667,6 +804,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/decode-red-pixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/lifetime-probe.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic_stub.Plo@am__quote@ # am--include-marker
 
@@ -718,6 +857,20 @@ $(top_builddir)/src/libwicsixel_la-fromsixel.lo: $(top_builddir)/src/fromsixel.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/fromsixel.c' object='$(top_builddir)/src/libwicsixel_la-fromsixel.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-fromsixel.lo `test -f '$(top_builddir)/src/fromsixel.c' || echo '$(srcdir)/'`$(top_builddir)/src/fromsixel.c
+
+$(top_builddir)/src/libwicsixel_la-colorspace-hls.lo: $(top_builddir)/src/colorspace-hls.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-colorspace-hls.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Tpo -c -o $(top_builddir)/src/libwicsixel_la-colorspace-hls.lo `test -f '$(top_builddir)/src/colorspace-hls.c' || echo '$(srcdir)/'`$(top_builddir)/src/colorspace-hls.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/colorspace-hls.c' object='$(top_builddir)/src/libwicsixel_la-colorspace-hls.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-colorspace-hls.lo `test -f '$(top_builddir)/src/colorspace-hls.c' || echo '$(srcdir)/'`$(top_builddir)/src/colorspace-hls.c
+
+$(top_builddir)/src/libwicsixel_la-cpu.lo: $(top_builddir)/src/cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-cpu.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Tpo -c -o $(top_builddir)/src/libwicsixel_la-cpu.lo `test -f '$(top_builddir)/src/cpu.c' || echo '$(srcdir)/'`$(top_builddir)/src/cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/cpu.c' object='$(top_builddir)/src/libwicsixel_la-cpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-cpu.lo `test -f '$(top_builddir)/src/cpu.c' || echo '$(srcdir)/'`$(top_builddir)/src/cpu.c
 
 $(top_builddir)/src/libwicsixel_la-allocator.lo: $(top_builddir)/src/allocator.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-allocator.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Tpo -c -o $(top_builddir)/src/libwicsixel_la-allocator.lo `test -f '$(top_builddir)/src/allocator.c' || echo '$(srcdir)/'`$(top_builddir)/src/allocator.c
@@ -809,6 +962,69 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf $(top_builddir)/src/.libs $(top_builddir)/src/_libs
 	-rm -rf .libs _libs
+install-nodist_wicinstallerDATA: $(nodist_wicinstaller_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_wicinstaller_DATA)'; test -n "$(wicinstallerdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(wicinstallerdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(wicinstallerdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(wicinstallerdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(wicinstallerdir)" || exit $$?; \
+	done
+
+uninstall-nodist_wicinstallerDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_wicinstaller_DATA)'; test -n "$(wicinstallerdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(wicinstallerdir)'; $(am__uninstall_files_from_dir)
+install-nodist_wicpackageDATA: $(nodist_wicpackage_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_wicpackage_DATA)'; test -n "$(wicpackagedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(wicpackagedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(wicpackagedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(wicpackagedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(wicpackagedir)" || exit $$?; \
+	done
+
+uninstall-nodist_wicpackageDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_wicpackage_DATA)'; test -n "$(wicpackagedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(wicpackagedir)'; $(am__uninstall_files_from_dir)
+install-wicpackageDATA: $(wicpackage_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(wicpackage_DATA)'; test -n "$(wicpackagedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(wicpackagedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(wicpackagedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(wicpackagedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(wicpackagedir)" || exit $$?; \
+	done
+
+uninstall-wicpackageDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(wicpackage_DATA)'; test -n "$(wicpackagedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(wicpackagedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -895,11 +1111,15 @@ distdir-am: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+@COND_TESTS_FALSE@check-local:
+@HAVE_WIC_MSI_FALSE@check-local:
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(pkglibdir)"; do \
+	for dir in "$(DESTDIR)$(wicinstallerdir)" "$(DESTDIR)$(wicpackagedir)" "$(DESTDIR)$(wicpackagedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -931,18 +1151,24 @@ distclean-generic:
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
 	-$(am__rm_f) $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/src/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/tests/extension/wic-installed/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+@COND_TESTS_FALSE@installcheck-local:
+@HAVE_WIC_MSI_FALSE@installcheck-local:
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-pkglibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo
@@ -954,6 +1180,8 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
+	-rm -f $(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/decode-red-pixel.Po
+	-rm -f $(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/lifetime-probe.Po
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
 	-rm -f Makefile
@@ -972,15 +1200,16 @@ info: info-am
 
 info-am:
 
-install-data-am:
-
+install-data-am: install-nodist_wicinstallerDATA \
+	install-nodist_wicpackageDATA install-wicpackageDATA
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-pkglibLTLIBRARIES
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+install-exec-am:
+
 install-html: install-html-am
 
 install-html-am:
@@ -999,11 +1228,13 @@ install-ps: install-ps-am
 
 install-ps-am:
 
-installcheck-am:
+installcheck-am: installcheck-local
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-colorspace-hls.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-cpu.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-options-registry.Plo
@@ -1015,6 +1246,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
+	-rm -f $(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/decode-red-pixel.Po
+	-rm -f $(top_builddir)/tests/extension/wic-installed/$(DEPDIR)/lifetime-probe.Po
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
 	-rm -f Makefile
@@ -1033,46 +1266,106 @@ ps: ps-am
 
 ps-am:
 
-@REGISTER_DLL_FALSE@uninstall-am: uninstall-pkglibLTLIBRARIES
+uninstall-am: uninstall-nodist_wicinstallerDATA \
+	uninstall-nodist_wicpackageDATA uninstall-wicpackageDATA
 
-.MAKE: install-am install-exec-am install-strip
+.MAKE: check-am install-am install-data-am install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
-	clean-generic clean-libtool clean-pkglibLTLIBRARIES \
-	cscopelist-am ctags ctags-am distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-exec-hook install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-pkglibLTLIBRARIES \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am \
-	uninstall-pkglibLTLIBRARIES
+.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am \
+	check-local clean clean-checkPROGRAMS clean-generic \
+	clean-libtool clean-noinstLTLIBRARIES cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-data-hook install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man \
+	install-nodist_wicinstallerDATA install-nodist_wicpackageDATA \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip install-wicpackageDATA installcheck \
+	installcheck-am installcheck-local installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-nodist_wicinstallerDATA \
+	uninstall-nodist_wicpackageDATA uninstall-wicpackageDATA
 
 .PRECIOUS: Makefile
 
 
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
-@REGISTER_DLL_TRUE@install-exec-hook:
-@REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
-@REGISTER_DLL_TRUE@	    $(REGSVR32) -s \
-@REGISTER_DLL_TRUE@	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
-@REGISTER_DLL_FALSE@install-exec-hook:
+@HAVE_WIC_MSI_TRUE@$(wic_installer): libwicsixel.la $(srcdir)/installer.ps1 \
+@HAVE_WIC_MSI_TRUE@                 $(srcdir)/registry.tsv $(top_srcdir)/LICENSE
+@HAVE_WIC_MSI_TRUE@	$(AM_V_GEN)$(SHELL) "$(srcdir)/powershell.sh" "$(WIC_POWERSHELL)" \
+@HAVE_WIC_MSI_TRUE@	    "$(srcdir)/installer.ps1" -Dll .libs/libwicsixel.dll \
+@HAVE_WIC_MSI_TRUE@	    -Version "$(PACKAGE_VERSION)" -License "$(top_srcdir)/LICENSE" \
+@HAVE_WIC_MSI_TRUE@	    -Output "$@"
 
-@REGISTER_DLL_TRUE@.PHONY: preuninstall
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
-@REGISTER_DLL_TRUE@uninstall-am: preuninstall
-@REGISTER_DLL_TRUE@	$(MAKE) uninstall-pkglibLTLIBRARIES
+# DESTDIR takes precedence even when staging on a Windows build machine.
+@HAVE_WIC_MSI_TRUE@install-data-hook:
+@HAVE_WIC_MSI_TRUE@	@if test -n "$(DESTDIR)"; then \
+@HAVE_WIC_MSI_TRUE@	    echo "WIC installer staged; installation skipped (DESTDIR)."; \
+@HAVE_WIC_MSI_TRUE@	else \
+@HAVE_WIC_MSI_TRUE@	    $(SHELL) "$(srcdir)/powershell.sh" "$(WIC_POWERSHELL)" \
+@HAVE_WIC_MSI_TRUE@	        "$(srcdir)/installer.ps1" -Action Install \
+@HAVE_WIC_MSI_TRUE@	        -Output "$(wicinstallerdir)/$(wic_installer)"; \
+@HAVE_WIC_MSI_TRUE@	fi
 
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
-@REGISTER_DLL_TRUE@preuninstall:
-@REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
-@REGISTER_DLL_TRUE@	    $(REGSVR32) -u -s \
-@REGISTER_DLL_TRUE@	    "$(shell cygpath -w $(DESTDIR)$(pkglibdir)/libwicsixel.dll)"
+# Keep the installation lifecycle ordered even when the caller uses make -j.
+# This explicit target installs the codec; ordinary check never installs it.
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@.PHONY: check-installation
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@check-installation:
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	@test -z "$(DESTDIR)$${SIXEL_INSTALLCHECK_DESTDIR-}" || { \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    echo "check-installation requires a system install, not DESTDIR." >&2; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    exit 1; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	}
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	$(MAKE) $(AM_MAKEFLAGS) check
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	$(MAKE) $(AM_MAKEFLAGS) install
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	$(MAKE) $(AM_MAKEFLAGS) installcheck
+
+# Test files stay atomic; one TAP runner shares Windows/PowerShell startup.
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@WIC_MSI_TEST ?= *
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@check-local: $(wic_installer)
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	@status=0; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	TOP_SRCDIR="$(abs_top_srcdir)" TOP_BUILDDIR="$(abs_top_builddir)" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    LSO_TAP_TIMER_BIN="$(abs_top_builddir)/tools/lso-timer" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    $(SHELL) "$(top_builddir)/build-aux/lso-tap-driver.sh" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    --test-name wic-msi --log-file wic-msi.log --trs-file wic-msi.trs \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    --enable-hard-errors yes -- $(SHELL) "$(srcdir)/powershell.sh" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    "$(WIC_POWERSHELL)" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    "$(top_srcdir)/tests/extension/wic-installer/run-tests.ps1" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -Dll .libs/libwicsixel.dll -Package "$(wic_installer)" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -Test "$(WIC_MSI_TEST)" || status=$$?; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	printf '%s\n' wic-msi | $(AWK) \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -v quiet="$(SIXEL_TEST_TIME_DEFER)" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" > test-suite.log || exit $$?; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	exit $$status
+
+# Installation is an explicit prerequisite supplied by the caller, never an
+# action of the test. Query the exact MSI and discover its DLL through WIC.
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@installcheck-local: $(wic_installer) wic-installed-decode$(EXEEXT) \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@                    wic-installed-lifetime$(EXEEXT)
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	@status=0; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	TOP_SRCDIR="$(abs_top_srcdir)" TOP_BUILDDIR="$(abs_top_builddir)" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    LSO_TAP_TIMER_BIN="$(abs_top_builddir)/tools/lso-timer" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    $(SHELL) "$(top_builddir)/build-aux/lso-tap-driver.sh" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    --test-name wic-installed --log-file wic-installed.log \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    --trs-file wic-installed.trs --enable-hard-errors yes -- \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    $(SHELL) "$(srcdir)/powershell.sh" "$(WIC_POWERSHELL)" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    "$(top_srcdir)/tests/extension/wic-installer/run-tests.ps1" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -Mode Installed -Dll .libs/libwicsixel.dll \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -Package "$(wic_installer)" -Probe ./wic-installed-decode$(EXEEXT) \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -LifetimeProbe ./wic-installed-lifetime$(EXEEXT) \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -Test "$(WIC_MSI_TEST)" || status=$$?; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	printf '%s\n' wic-installed | $(AWK) \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	    > installcheck-suite.log || exit $$?; \
+@COND_TESTS_TRUE@@HAVE_WIC_MSI_TRUE@	exit $$status
+@HAVE_WIC_MSI_FALSE@.libs/libwicsixel.dll: libwicsixel.la
+@HAVE_WIC_MSI_FALSE@	@test -f "$@"
+@HAVE_WIC_MSI_FALSE@install-data-hook:
+@HAVE_WIC_MSI_FALSE@	@echo "WIC packaging kit copied; run installer.ps1 on Windows to generate the MSI."
 
 # config.status removes dependency includes before invoking am--depfiles.
 # Bootstrap the same inventory in small shell batches instead of running

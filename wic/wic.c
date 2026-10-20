@@ -52,6 +52,20 @@
 
 extern IMAGE_DOS_HEADER __ImageBase;
 
+/* One module reference per live COM identity, plus one per server lock.
+ * Shared interfaces (frame/transform and metadata reader/writer) share one
+ * identity. Independent children and enum clones each own a reference even
+ * after their parents are released. Private metadata is owned only by these
+ * counted objects; system COM objects do not execute codec vtables.
+ *
+ * Publish a reference only after construction succeeds, before returning an
+ * interface or calling QueryInterface. Drop it after final resource cleanup.
+ * Failed QueryInterface then balances through the ordinary final Release.
+ * Use a single interlocked counter for objects and locks so unload observes
+ * one atomic snapshot, including when different threads transfer ownership.
+ */
+static LONG g_moduleReferences = 0;
+
 /* CLSID */
 static const CLSID CLSID_SixelDecoder = {
     /* 15b9b4da-b155-4977-8571-cf005884bcb9 */
@@ -586,6 +600,7 @@ SixelMetadataEnumString_Create(
     enumerator->ref = 1;
     enumerator->index = index;
 
+    InterlockedIncrement(&g_moduleReferences);
     *ppEnum = (IEnumString*)enumerator;
 
     return S_OK;
@@ -999,6 +1014,7 @@ SixelDispatchDecoder_Release(ISixelDecoder *iface)
             ITypeInfo_Release(decoder->typeinfo);
         }
         CoTaskMemFree(decoder);
+        InterlockedDecrement(&g_moduleReferences);
     }
 
     return count;
@@ -1167,6 +1183,7 @@ SixelDispatchDecoder_CreateInstance(ISixelDecoder **iface)
     }
 
     decoder->dispatcher = (IDispatch*)dispatcher;
+    InterlockedIncrement(&g_moduleReferences);
     *iface = (ISixelDecoder*)decoder;
 
     return S_OK;
@@ -1236,6 +1253,7 @@ SixelMetadataEnumString_Release(
     ref = InterlockedDecrement(&enumerator->ref);
     if (ref == 0) {
         CoTaskMemFree(enumerator);
+        InterlockedDecrement(&g_moduleReferences);
     }
 
     return (ULONG)ref;
@@ -1555,6 +1573,7 @@ SixelMetadataQueryReader_Release(
             SixelMetadata_Release(query->metadata);
         }
         CoTaskMemFree(query);
+        InterlockedDecrement(&g_moduleReferences);
     }
 
     return (ULONG)ref;
@@ -1916,6 +1935,7 @@ SixelMetadataQuery_Create(
         }
     }
 
+    InterlockedIncrement(&g_moduleReferences);
     *ppReader = (IWICMetadataQueryReader*)query;
 
     return S_OK;
@@ -2018,6 +2038,7 @@ SixelFrame_Release(
             SixelMetadata_Release(f->metadata);
         }
         CoTaskMemFree(f);
+        InterlockedDecrement(&g_moduleReferences);
     }
 
     return n;
@@ -2715,6 +2736,7 @@ SixelDecoder_Release(IWICBitmapDecoder* iface)
             SixelMetadata_Release(decoder->metadata);
         }
         CoTaskMemFree(decoder);
+        InterlockedDecrement(&g_moduleReferences);
     }
     return n;
 }
@@ -3281,6 +3303,7 @@ SixelDecoder_GetThumbnail(
         SixelMetadata_AddRef(frame->metadata);
     }
 
+    InterlockedIncrement(&g_moduleReferences);
     *ppIThumbnail = (IWICBitmapSource*)frame;
 
     return S_OK;
@@ -3383,6 +3406,7 @@ SixelDecoder_GetFrame(
     if (frame->metadata) {
         SixelMetadata_AddRef(frame->metadata);
     }
+    InterlockedIncrement(&g_moduleReferences);
     *ppIBitmapFrame = (IWICBitmapFrameDecode *)frame;
 
     return S_OK;
@@ -3413,8 +3437,6 @@ typedef struct {
     LONG ref;
     BOOL automation;
 } SixelFactory;
-
-static LONG g_serverLocks = 0;
 
 static HRESULT STDMETHODCALLTYPE
 SixelFactory_QueryInterface(
@@ -3467,6 +3489,7 @@ SixelFactory_Release(
     n = (ULONG)InterlockedDecrement(&factory->ref);
     if (n == 0) {
         CoTaskMemFree(factory);
+        InterlockedDecrement(&g_moduleReferences);
     }
 
     return n;
@@ -3515,6 +3538,7 @@ SixelFactory_CreateInstance(
         decoder->ncolors = 0;
         decoder->metadata = NULL;
 
+        InterlockedIncrement(&g_moduleReferences);
         hr = IUnknown_QueryInterface((IWICBitmapDecoder*)decoder, riid, ppv);
         SixelDecoder_Release((IWICBitmapDecoder*)decoder);
     }
@@ -3531,9 +3555,9 @@ SixelFactory_LockServer(
     (void) factory;
 
     if (fLock) {
-        InterlockedIncrement(&g_serverLocks);
+        InterlockedIncrement(&g_moduleReferences);
     } else {
-        InterlockedDecrement(&g_serverLocks);
+        InterlockedDecrement(&g_moduleReferences);
     }
 
     return S_OK;
@@ -3673,7 +3697,8 @@ RegisterBinaryValue(
 }
 
 
-/* DLL exports */
+/* DLL exports. Keep registration values in sync with registry.tsv; the MSI
+ * uses declarative registry rows instead of running self-registration. */
 STDAPI
 DllRegisterServer(void)
 {
@@ -4397,6 +4422,7 @@ DllGetClassObject(
         factory->ref = 1;
         factory->automation = IsEqualCLSID(rclsid,
                                            &CLSID_SixelDecoderDispatch);
+        InterlockedIncrement(&g_moduleReferences);
         hr = IUnknown_QueryInterface((IClassFactory*)factory, riid, ppv);
         SixelFactory_Release((IClassFactory*)factory);
 
@@ -4414,7 +4440,8 @@ __declspec(dllexport)
 STDAPI
 DllCanUnloadNow(void)
 {
-    return g_serverLocks == 0 ? S_OK: S_FALSE;
+    return InterlockedCompareExchange(&g_moduleReferences, 0, 0) == 0
+        ? S_OK : S_FALSE;
 }
 
 BOOL WINAPI

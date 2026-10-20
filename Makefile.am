@@ -48,6 +48,23 @@ export CKSUM
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = tools/generate_output_icc_fixtures.py \
+    assessment/meson.build \
+    converters/meson.build \
+    examples/meson.build \
+    fuzz/meson.build \
+    gdk-pixbuf-loader/meson.build \
+    images/meson.build \
+    include/meson.build \
+    meson.build \
+    meson_options.txt \
+    php/meson.build \
+    python/meson.build \
+    ruby/lib/libsixel/meson.build \
+    src/meson.build \
+    tools/meson.build \
+    wic/meson.build \
+    fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c \
+    fuzz/fuzz-img2sixel-cli-numeric-afl-persistent.c \
     tests/data/color-numeric/relative-paired-lut.icc \
     tests/data/color-numeric/black-offset.icc \
     tests/data/color-numeric/icc-output.h \
@@ -68,6 +85,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	m4/ax_count_cpus.m4 \
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in \
+	build-aux/test-suite-report.awk \
 	build-aux/read-check-test-list.sh \
 	build-aux/cli-color-tty-probe.c \
 	build-aux/resolve-binding-test-common.sh \
@@ -863,6 +881,9 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/quality/visual-perception/figures/viewing-geometry.svg \
 	docs/quality/visual-perception/figures/weber-demo.svg \
 	docs/testing/builtin-loader-coverage.md \
+	docs/programs/quicklook-extension.md \
+	docs/programs/wic-codec.md \
+	docs/testing/companion-programs-coverage.md \
 	docs/testing/guide.md \
 	docs/testing/staticcheck.md \
 	docs/testing/png-chrm-boundaries.md \
@@ -1062,6 +1083,7 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 
 
 .PHONY: docs install-quicklook-extension uninstall-quicklook-extension \
+	installcheck-quicklook \
 	fuzz-cli-img2sixel fuzz-cli-img2sixel-parser \
 	fuzz-cli-img2sixel-boundary fuzz-cli-img2sixel-pathenv \
 	fuzz-cli-img2sixel-numeric fuzz-cli-img2sixel-all \
@@ -1200,6 +1222,10 @@ FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 install-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
 	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
+
+installcheck-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension installcheck-quicklook
+	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look installcheck: SKIP disabled"
 
 uninstall-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
@@ -1559,6 +1585,34 @@ all-am: phase2-all
 
 check-am: prepare-amalgamation-check
 	@:
+
+# Automake's check-recursive prerequisite finishes before this recipe runs.
+# Keep reporting after real tests, rather than adding timing tests to the suite.
+check:
+	$(MAKE) $(AM_MAKEFLAGS) testtimecheck
+
+# Subdirectory reports retain the table; this outer check prints one summary.
+# A failing subdirectory still prints its warnings before make stops.
+export SIXEL_TEST_TIME_DEFER = $(if $(filter check,$(MAKECMDGOALS)),1,0)
+if HAVE_WIC_MSI
+wic_test_time_log = $(builddir)/wic/test-suite.log
+else
+wic_test_time_log =
+endif
+.PHONY: testtimecheck
+testtimecheck:
+if COND_TESTS
+	@set -- "$(builddir)/tests/test-suite.log"; \
+	if test -n "$(wic_test_time_log)"; then \
+	    set -- "$$@" "$(wic_test_time_log)"; \
+	fi; \
+	$(AWK) -v from_report=1 \
+	    -v allowlist="$(srcdir)/tests/test-time-allowlist.tsv" \
+	    -f "$(srcdir)/build-aux/test-suite-report.awk" "$$@"
+else
+	@echo "Test timing: tests are disabled."
+endif
+
 
 staticcheck:
 	$(MAKE) -C tests $(AM_MAKEFLAGS) staticcheck

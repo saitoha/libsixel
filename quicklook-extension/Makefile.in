@@ -101,8 +101,8 @@ host_triplet = @host@
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	SixelThumbnail$(EXEEXT) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	SixelQuickLookHost$(EXEEXT) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	SixelPreviewBridge$(EXEEXT) \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	register_sixel_preview$(EXEEXT)
-@WITH_SHEBANG_FILE_TRUE@am__append_2 = $(SIXEL_SHEBANG_STAMP)
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	register_sixel_preview$(EXEEXT) \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	sixel-quicklook-package$(EXEEXT)
 subdir = quicklook-extension
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -132,8 +132,8 @@ libsixelquicklookcore_a_LIBADD =
 am__libsixelquicklookcore_a_SOURCES_DIST =  \
 	Sources/SixelQuickLookStub.c $(top_srcdir)/src/status.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
-	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/timer.c \
-	$(top_srcdir)/src/timeline-logger.c \
+	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/cpu.c \
+	$(top_srcdir)/src/timer.c $(top_srcdir)/src/timeline-logger.c \
 	$(top_srcdir)/src/timeline-writer.c \
 	$(top_srcdir)/src/compat_stub.c \
 	$(top_srcdir)/src/options-registry.c \
@@ -149,6 +149,7 @@ am_libsixelquicklookcore_a_OBJECTS =  \
 	$(top_builddir)/src/libsixelquicklookcore_a-allocator.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.$(OBJEXT) \
+	$(top_builddir)/src/libsixelquicklookcore_a-cpu.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-timer.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-timeline-logger.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-timeline-writer.$(OBJEXT) \
@@ -218,6 +219,16 @@ register_sixel_preview_LINK = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(OBJCLD) \
 	$(register_sixel_preview_OBJCFLAGS) $(OBJCFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
+am__sixel_quicklook_package_SOURCES_DIST = Sources/SixelPackageTool.m \
+	Sources/SixelInstall.h Sources/SixelPackageChecks.h
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am_sixel_quicklook_package_OBJECTS = Sources/sixel_quicklook_package-SixelPackageTool.$(OBJEXT)
+sixel_quicklook_package_OBJECTS =  \
+	$(am_sixel_quicklook_package_OBJECTS)
+sixel_quicklook_package_LDADD = $(LDADD)
+sixel_quicklook_package_LINK = $(LIBTOOL) $(AM_V_lt) \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(OBJCLD) \
+	$(sixel_quicklook_package_OBJCFLAGS) $(OBJCFLAGS) \
+	$(sixel_quicklook_package_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -236,6 +247,7 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po \
+	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-options-registry.Po \
@@ -256,7 +268,8 @@ am__depfiles_remade = $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allo
 	Sources/$(DEPDIR)/SixelThumbnail-SixelQuickLookShared.Po \
 	Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po \
 	Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po \
-	Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
+	Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po \
+	Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -296,13 +309,15 @@ am__v_OBJCLD_0 = @echo "  OBJCLD  " $@;
 am__v_OBJCLD_1 = 
 SOURCES = $(libsixelquicklookcore_a_SOURCES) $(SixelPreview_SOURCES) \
 	$(SixelPreviewBridge_SOURCES) $(SixelQuickLookHost_SOURCES) \
-	$(SixelThumbnail_SOURCES) $(register_sixel_preview_SOURCES)
+	$(SixelThumbnail_SOURCES) $(register_sixel_preview_SOURCES) \
+	$(sixel_quicklook_package_SOURCES)
 DIST_SOURCES = $(am__libsixelquicklookcore_a_SOURCES_DIST) \
 	$(am__SixelPreview_SOURCES_DIST) \
 	$(am__SixelPreviewBridge_SOURCES_DIST) \
 	$(am__SixelQuickLookHost_SOURCES_DIST) \
 	$(am__SixelThumbnail_SOURCES_DIST) \
-	$(am__register_sixel_preview_SOURCES_DIST)
+	$(am__register_sixel_preview_SOURCES_DIST) \
+	$(am__sixel_quicklook_package_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -472,6 +487,7 @@ PYTHON_STATICCHECK = @PYTHON_STATICCHECK@
 PYTHON_VERSION = @PYTHON_VERSION@
 QUICKLOOK_CFLAGS = @QUICKLOOK_CFLAGS@
 QUICKLOOK_LIBS = @QUICKLOOK_LIBS@
+QUICKLOOK_PACKAGE_VERSION = @QUICKLOOK_PACKAGE_VERSION@
 RANLIB = @RANLIB@
 REQUIRES_PRIVATE = @REQUIRES_PRIVATE@
 RUBY = @RUBY@
@@ -497,7 +513,7 @@ SIXEL_MSAN_BUILD = @SIXEL_MSAN_BUILD@
 SIXEL_MSVC_CC = @SIXEL_MSVC_CC@
 SIXEL_SCAN_BUILD = @SIXEL_SCAN_BUILD@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
-SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
+SIXEL_SHEBANG_HELPER = @SIXEL_SHEBANG_HELPER@
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
 SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
@@ -511,9 +527,11 @@ THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
+WICCODEC_LDFLAGS = @WICCODEC_LDFLAGS@
 WICCODEC_LIBS = @WICCODEC_LIBS@
 WIC_CFLAGS = @WIC_CFLAGS@
 WIC_LIBS = @WIC_LIBS@
+WIC_POWERSHELL = @WIC_POWERSHELL@
 WINHTTP_CFLAGS = @WINHTTP_CFLAGS@
 WINHTTP_LIBS = @WINHTTP_LIBS@
 abs_builddir = @abs_builddir@
@@ -621,7 +639,14 @@ EXTRA_DIST = \
     Resources/Preview-Info.plist.in \
     Resources/Thumbnail-Info.plist.in \
     Resources/Bridge-Info.plist.in \
-    Resources/QuickLookExtension.entitlements
+    Resources/QuickLookExtension.entitlements \
+    assemble-bundles.sh \
+    check-package-tools.sh \
+    package-preinstall \
+    package-postinstall \
+    meson.build \
+    products/meson.build \
+    package/meson.build
 
 noinst_LIBRARIES = libsixelquicklookcore.a
 
@@ -632,12 +657,13 @@ noinst_LIBRARIES = libsixelquicklookcore.a
 # layer as the main library.  By keeping the
 # archive self-contained we avoid undefined
 # references when the Objective-C targets link it.
+# Include CPU detection for the decoder SIMD runtime policy.
 #
 libsixelquicklookcore_a_SOURCES = Sources/SixelQuickLookStub.c \
 	$(top_srcdir)/src/status.c $(top_srcdir)/src/allocator.c \
 	$(top_srcdir)/src/fromsixel.c \
-	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/timer.c \
-	$(top_srcdir)/src/timeline-logger.c \
+	$(top_srcdir)/src/colorspace-hls.c $(top_srcdir)/src/cpu.c \
+	$(top_srcdir)/src/timer.c $(top_srcdir)/src/timeline-logger.c \
 	$(top_srcdir)/src/timeline-writer.c \
 	$(top_srcdir)/src/compat_stub.c \
 	$(top_srcdir)/src/options-registry.c \
@@ -682,6 +708,11 @@ libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@register_sixel_preview_CPPFLAGS = $(AM_CPPFLAGS)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@register_sixel_preview_OBJCFLAGS = $(AM_OBJCFLAGS)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@register_sixel_preview_LDADD = @APPLE_QUICKLOOK_REGISTER_LIBS@
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@sixel_quicklook_package_SOURCES = Sources/SixelPackageTool.m Sources/SixelInstall.h \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    Sources/SixelPackageChecks.h
+
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@sixel_quicklook_package_OBJCFLAGS = $(AM_OBJCFLAGS)
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@sixel_quicklook_package_LDFLAGS = $(AM_LDFLAGS) -framework Foundation -framework Security
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@PRODUCTS_DIR = $(builddir)/products
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@HOST_APP = $(PRODUCTS_DIR)/SixelQuickLookHost.app
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@PREVIEW_APPEX = $(HOST_APP)/Contents/PlugIns/SixelPreview.appex
@@ -690,9 +721,14 @@ libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@plist_templates = Host-Info.plist Preview-Info.plist Thumbnail-Info.plist Bridge-Info.plist
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@GENERATED_RESOURCES_DIR = $(builddir)/generated-resources
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@plist_outputs = $(addprefix $(GENERATED_RESOURCES_DIR)/,$(plist_templates))
-CLEANFILES = bundle-stamp $(am__append_2)
-@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(noinst_PROGRAMS)
-@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = quicklook-shebang.stamp
+
+# Both standard and explicit entry points use the same finished package.
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@quicklook_manage = $(SHELL) "$(install_quicklook_script)"
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@quicklook_manage_args = --package-dir "$(abs_builddir)/package" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    --tool "$(abs_builddir)/sixel-quicklook-package" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    --datadir "$(datadir)" --destdir "$(DESTDIR)"
+
+CLEANFILES = bundle-stamp
 all: all-am
 
 .SUFFIXES:
@@ -758,6 +794,9 @@ $(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libsixelquicklookcore_a-cpu.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libsixelquicklookcore_a-timer.$(OBJEXT):  \
@@ -839,6 +878,12 @@ $(top_builddir)/tools/register_sixel_preview-register_sixel_preview.$(OBJEXT):  
 register_sixel_preview$(EXEEXT): $(register_sixel_preview_OBJECTS) $(register_sixel_preview_DEPENDENCIES) $(EXTRA_register_sixel_preview_DEPENDENCIES) 
 	@rm -f register_sixel_preview$(EXEEXT)
 	$(AM_V_OBJCLD)$(register_sixel_preview_LINK) $(register_sixel_preview_OBJECTS) $(register_sixel_preview_LDADD) $(LIBS)
+Sources/sixel_quicklook_package-SixelPackageTool.$(OBJEXT):  \
+	Sources/$(am__dirstamp) Sources/$(DEPDIR)/$(am__dirstamp)
+
+sixel-quicklook-package$(EXEEXT): $(sixel_quicklook_package_OBJECTS) $(sixel_quicklook_package_DEPENDENCIES) $(EXTRA_sixel_quicklook_package_DEPENDENCIES)
+	@rm -f sixel-quicklook-package$(EXEEXT)
+	$(AM_V_OBJCLD)$(sixel_quicklook_package_LINK) $(sixel_quicklook_package_OBJECTS) $(sixel_quicklook_package_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -852,6 +897,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-options-registry.Po@am__quote@ # am--include-marker
@@ -873,6 +919,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -971,6 +1018,20 @@ $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj: $(top_builddir)/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/colorspace-hls.c' object='$(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-colorspace-hls.obj `if test -f '$(top_builddir)/src/colorspace-hls.c'; then $(CYGPATH_W) '$(top_builddir)/src/colorspace-hls.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/colorspace-hls.c'; fi`
+
+$(top_builddir)/src/libsixelquicklookcore_a-cpu.o: $(top_builddir)/src/cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-cpu.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-cpu.o `test -f '$(top_builddir)/src/cpu.c' || echo '$(srcdir)/'`$(top_builddir)/src/cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/cpu.c' object='$(top_builddir)/src/libsixelquicklookcore_a-cpu.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-cpu.o `test -f '$(top_builddir)/src/cpu.c' || echo '$(srcdir)/'`$(top_builddir)/src/cpu.c
+
+$(top_builddir)/src/libsixelquicklookcore_a-cpu.obj: $(top_builddir)/src/cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-cpu.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-cpu.obj `if test -f '$(top_builddir)/src/cpu.c'; then $(CYGPATH_W) '$(top_builddir)/src/cpu.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/cpu.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/cpu.c' object='$(top_builddir)/src/libsixelquicklookcore_a-cpu.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-cpu.obj `if test -f '$(top_builddir)/src/cpu.c'; then $(CYGPATH_W) '$(top_builddir)/src/cpu.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/cpu.c'; fi`
 
 $(top_builddir)/src/libsixelquicklookcore_a-timer.o: $(top_builddir)/src/timer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-timer.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-timer.o `test -f '$(top_builddir)/src/timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/timer.c
@@ -1262,6 +1323,20 @@ $(top_builddir)/tools/register_sixel_preview-register_sixel_preview.obj: $(top_b
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(register_sixel_preview_CPPFLAGS) $(CPPFLAGS) $(register_sixel_preview_OBJCFLAGS) $(OBJCFLAGS) -c -o $(top_builddir)/tools/register_sixel_preview-register_sixel_preview.obj `if test -f '$(top_builddir)/tools/register_sixel_preview.m'; then $(CYGPATH_W) '$(top_builddir)/tools/register_sixel_preview.m'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tools/register_sixel_preview.m'; fi`
 
+Sources/sixel_quicklook_package-SixelPackageTool.o: Sources/SixelPackageTool.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel_quicklook_package_OBJCFLAGS) $(OBJCFLAGS) -MT Sources/sixel_quicklook_package-SixelPackageTool.o -MD -MP -MF Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Tpo -c -o Sources/sixel_quicklook_package-SixelPackageTool.o `test -f 'Sources/SixelPackageTool.m' || echo '$(srcdir)/'`Sources/SixelPackageTool.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Tpo Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Po
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='Sources/SixelPackageTool.m' object='Sources/sixel_quicklook_package-SixelPackageTool.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel_quicklook_package_OBJCFLAGS) $(OBJCFLAGS) -c -o Sources/sixel_quicklook_package-SixelPackageTool.o `test -f 'Sources/SixelPackageTool.m' || echo '$(srcdir)/'`Sources/SixelPackageTool.m
+
+Sources/sixel_quicklook_package-SixelPackageTool.obj: Sources/SixelPackageTool.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel_quicklook_package_OBJCFLAGS) $(OBJCFLAGS) -MT Sources/sixel_quicklook_package-SixelPackageTool.obj -MD -MP -MF Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Tpo -c -o Sources/sixel_quicklook_package-SixelPackageTool.obj `if test -f 'Sources/SixelPackageTool.m'; then $(CYGPATH_W) 'Sources/SixelPackageTool.m'; else $(CYGPATH_W) '$(srcdir)/Sources/SixelPackageTool.m'; fi`
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Tpo Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Po
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='Sources/SixelPackageTool.m' object='Sources/sixel_quicklook_package-SixelPackageTool.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(sixel_quicklook_package_OBJCFLAGS) $(OBJCFLAGS) -c -o Sources/sixel_quicklook_package-SixelPackageTool.obj `if test -f 'Sources/SixelPackageTool.m'; then $(CYGPATH_W) 'Sources/SixelPackageTool.m'; else $(CYGPATH_W) '$(srcdir)/Sources/SixelPackageTool.m'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1394,6 +1469,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@installcheck-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-local \
@@ -1403,6 +1479,7 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-options-registry.Po
@@ -1424,6 +1501,7 @@ distclean: distclean-am
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po
 	-rm -f Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
+	-rm -f Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1466,12 +1544,13 @@ install-ps: install-ps-am
 
 install-ps-am:
 
-installcheck-am:
+installcheck-am: installcheck-local
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-colorspace-hls.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-cpu.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-options-registry.Po
@@ -1493,6 +1572,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailMain.Po
 	-rm -f Sources/$(DEPDIR)/SixelThumbnail-SixelThumbnailProvider.Po
 	-rm -f Sources/$(DEPDIR)/libsixelquicklookcore_a-SixelQuickLookStub.Po
+	-rm -f Sources/$(DEPDIR)/sixel_quicklook_package-SixelPackageTool.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1523,97 +1603,76 @@ uninstall-am: uninstall-local
 	install-exec-am install-exec-local install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-local
+	install-strip installcheck installcheck-am installcheck-local \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-local
 
 .PRECIOUS: Makefile
 
 
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@bundle-stamp: $(plist_outputs) SixelPreview SixelThumbnail SixelQuickLookHost SixelPreviewBridge
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	@$(MKDIR_P) $(HOST_APP)/Contents/MacOS $(HOST_APP)/Contents/Resources $(HOST_APP)/Contents/PlugIns
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	@$(MKDIR_P) $(PREVIEW_APPEX)/Contents/MacOS $(PREVIEW_APPEX)/Contents/Resources
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	@$(MKDIR_P) $(THUMB_APPEX)/Contents/MacOS $(THUMB_APPEX)/Contents/Resources
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	@$(MKDIR_P) $(BRIDGE_APP)/Contents/MacOS $(BRIDGE_APP)/Contents/Resources
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_PROGRAM) SixelQuickLookHost $(HOST_APP)/Contents/MacOS/SixelQuickLookHost
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_PROGRAM) SixelPreview $(PREVIEW_APPEX)/Contents/MacOS/SixelPreview
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_PROGRAM) SixelThumbnail $(THUMB_APPEX)/Contents/MacOS/SixelThumbnail
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_PROGRAM) SixelPreviewBridge $(BRIDGE_APP)/Contents/MacOS/SixelPreviewBridge
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_DATA) $(GENERATED_RESOURCES_DIR)/Host-Info.plist $(HOST_APP)/Contents/Info.plist
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_DATA) $(GENERATED_RESOURCES_DIR)/Preview-Info.plist $(PREVIEW_APPEX)/Contents/Info.plist
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_DATA) $(GENERATED_RESOURCES_DIR)/Thumbnail-Info.plist $(THUMB_APPEX)/Contents/Info.plist
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_DATA) $(GENERATED_RESOURCES_DIR)/Bridge-Info.plist $(BRIDGE_APP)/Contents/Info.plist
+# Support direct subdirectory builds after a template edit, not only the
+# top-level config.status rules generated by Automake.
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(GENERATED_RESOURCES_DIR)/%-Info.plist: $(srcdir)/Resources/%-Info.plist.in $(top_builddir)/config.status
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	cd $(top_builddir) && $(SHELL) ./config.status \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    quicklook-extension/generated-resources/$*-Info.plist
+
+# All binary transformations must finish before assembly. These are native
+# Mach-O bundles: a script prefix is not a supported executable format.
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@bundle-stamp: $(plist_outputs) SixelPreview SixelThumbnail SixelQuickLookHost SixelPreviewBridge $(srcdir)/assemble-bundles.sh
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(SHELL) $(srcdir)/assemble-bundles.sh "$(HOST_APP)" "$(BRIDGE_APP)" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    SixelQuickLookHost SixelPreview SixelThumbnail SixelPreviewBridge \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    $(GENERATED_RESOURCES_DIR)/Host-Info.plist \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    $(GENERATED_RESOURCES_DIR)/Preview-Info.plist \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    $(GENERATED_RESOURCES_DIR)/Thumbnail-Info.plist \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    $(GENERATED_RESOURCES_DIR)/Bridge-Info.plist
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	@touch $@
 
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@all-local: bundle-stamp
+# Package a separate copy so the assembly byte comparisons remain meaningful.
+# The package is published last, after signing and archive verification.
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@package/SixelQuickLook.pkg: bundle-stamp register_sixel_preview sixel-quicklook-package $(srcdir)/package-preinstall $(srcdir)/package-postinstall $(srcdir)/Resources/QuickLookExtension.entitlements Makefile
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	./sixel-quicklook-package build "$(abs_builddir)/package" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    "$(abs_builddir)/$(HOST_APP)" "$(abs_builddir)/$(BRIDGE_APP)" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    "$(abs_builddir)/register_sixel_preview" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    "$(abs_builddir)/sixel-quicklook-package" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    "$(abs_srcdir)/Resources/QuickLookExtension.entitlements" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    "$(PACKAGE_VERSION)" "$(QUICKLOOK_PACKAGE_VERSION)" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    "$(abs_srcdir)/package-preinstall" \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    "$(abs_srcdir)/package-postinstall"
 
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@install-exec-local: bundle-stamp register_sixel_preview
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(MKDIR_P) $(DESTDIR)$(libexecdir)/libsixel
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -rf $(DESTDIR)$(libexecdir)/libsixel/SixelQuickLookHost.app
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	cp -R $(HOST_APP) $(DESTDIR)$(libexecdir)/libsixel/
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -rf $(DESTDIR)$(libexecdir)/libsixel/SixelPreviewBridge.app
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	cp -R $(BRIDGE_APP) $(DESTDIR)$(libexecdir)/libsixel/
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(INSTALL_PROGRAM) register_sixel_preview $(DESTDIR)$(libexecdir)/libsixel/register_sixel_preview
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	@if test -z "$(DESTDIR)"; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	  quicklook_user=$${SUDO_USER:-$${LOGNAME:-$${USER}}}; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	  if test -n "$$quicklook_user"; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    cmd="$(install_quicklook_script) install --products-dir $(abs_builddir)/products --register-tool $(abs_builddir)/register_sixel_preview"; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    if test "$$quicklook_user" = "$${USER}"; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	      $$cmd; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    elif command -v sudo >/dev/null 2>&1; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	      sudo -u "$$quicklook_user" $$cmd; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    else \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	      echo "warning: sudo not found; skipping Quick Look user install for $$quicklook_user" >&2; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    fi; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	  fi; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	else \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	  echo "Skipping Quick Look user install because DESTDIR is set"; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	fi
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@all-local: bundle-stamp package/SixelQuickLook.pkg
 
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@.PHONY: install-quicklook-extension uninstall-quicklook-extension
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@install-exec-local: install-quicklook-extension
 
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@install-quicklook-extension: bundle-stamp register_sixel_preview
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(AM_V_at)$(install_quicklook_script) install --products-dir $(abs_builddir)/products --register-tool $(abs_builddir)/register_sixel_preview
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@.PHONY: install-quicklook-extension uninstall-quicklook-extension \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@    installcheck-quicklook
 
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@install-quicklook-extension: package/SixelQuickLook.pkg
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(quicklook_manage) install $(quicklook_manage_args)
+
+# User deactivation is explicit. Set QUICKLOOK_UNINSTALL_FLAGS only after
+# restoring every affected user's choices; root never edits their settings.
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@uninstall-quicklook-extension:
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(AM_V_at)$(install_quicklook_script) uninstall --products-dir $(abs_builddir)/products --register-tool $(abs_builddir)/register_sixel_preview
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(quicklook_manage) uninstall $(quicklook_manage_args) $(QUICKLOOK_UNINSTALL_FLAGS)
 
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@uninstall-local:
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -rf $(DESTDIR)$(libexecdir)/libsixel/SixelQuickLookHost.app
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -rf $(DESTDIR)$(libexecdir)/libsixel/SixelPreviewBridge.app
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -f $(DESTDIR)$(libexecdir)/libsixel/register_sixel_preview
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	@if test -z "$(DESTDIR)"; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	  quicklook_user=$${SUDO_USER:-$${LOGNAME:-$${USER}}}; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	  if test -n "$$quicklook_user"; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    cmd="$(install_quicklook_script) uninstall --products-dir $(abs_builddir)/products --register-tool $(abs_builddir)/register_sixel_preview"; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    if test "$$quicklook_user" = "$${USER}"; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	      $$cmd; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    elif command -v sudo >/dev/null 2>&1; then \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	      sudo -u "$$quicklook_user" $$cmd; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    else \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	      echo "warning: sudo not found; skipping Quick Look user uninstall for $$quicklook_user" >&2; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    fi; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	  fi; \
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	fi
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@uninstall-local: uninstall-quicklook-extension
+
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@installcheck-local: installcheck-quicklook
+
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@installcheck-quicklook:
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	$(quicklook_manage) installcheck $(quicklook_manage_args)
 
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@clean-local:
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -rf $(PRODUCTS_DIR) $(MODULE_CACHE_DIR) bundle-stamp
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -rf $(HOST_APP) $(BRIDGE_APP) $(MODULE_CACHE_DIR) bundle-stamp $(builddir)/package/work
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	rm -f $(builddir)/package/SixelQuickLook.pkg \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    $(builddir)/package/payload-manifest.json \
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	    $(builddir)/package/package-evidence.json
 
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@all-local:
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@install-exec-local:
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@uninstall-local:
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@clean-local:
-
-@WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
-@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
-@WITH_SHEBANG_FILE_TRUE@		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
-@WITH_SHEBANG_FILE_TRUE@			$(SIXEL_SHEBANG_TARGETS); \
-@WITH_SHEBANG_FILE_TRUE@	fi
-@WITH_SHEBANG_FILE_TRUE@	@touch $@
-
-@WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
 
 # config.status removes dependency includes before invoking am--depfiles.
 # Bootstrap the same inventory in small shell batches instead of running

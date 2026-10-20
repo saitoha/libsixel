@@ -147,3 +147,7 @@ build system:
 
 Do not add a platform to these tables from an ad hoc successful build. Add a
 maintained CI job first, then assign the tier from the system that owns it.
+
+## Optional OS extensions
+
+The platform matrix describes core/toolchain support. The opt-in [Quick Look extension](programs/quicklook-extension.md) and [WIC codec](programs/wic-codec.md) have additional framework, packaging, architecture and deployment boundaries documented by their owners. Core-library support does not establish Finder/Explorer integration or every extension build/install path.

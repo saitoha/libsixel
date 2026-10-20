@@ -1,5 +1,7 @@
 # Quick Look preview loader
 
+For the optional SIXEL providers installed into macOS, see the [Quick Look extension](../programs/quicklook-extension.md). This input loader does not install those bundles.
+
 The `quicklook` loader asks the macOS preview infrastructure for a representative raster image. It can be useful for documents and media that the ordinary image decoders cannot read, but a preview is not a lossless decode of the original document or an enumeration of its pages or animation frames.
 
 ```sh

@@ -38,6 +38,11 @@ Supported platforms and command-line behavior that needs no background in color 
 - [Choice prefix-matching policy](cli/prefix-matching.md) defines exact and unique-prefix resolution, ambiguity, CLI/environment vocabulary separation, and compatibility constraints.
 - [CLI correction-suggestion policy](cli/correction-suggestions.md) defines ambiguous-prefix, fuzzy-name, and nearby-path guidance, including defaults, ranking, diagnostics, performance, and privacy boundaries.
 
+### Companion programs and OS extensions
+
+- [SIXEL Quick Look extension](programs/quicklook-extension.md) explains macOS bundles, opt-in builds, user registration and deployment limits.
+- [SIXEL WIC codec](programs/wic-codec.md) explains Windows MSI deployment, WIC and Automation entry points, and COM ownership.
+
 ## Concepts and theory
 
 The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, how pixels and precision are stored, how displays turn them into light, and how images are drawn with a limited palette.
@@ -204,6 +209,7 @@ Building, testing, and maintaining libsixel and its documentation.
 ### Testing
 
 - [Testing guide](testing/guide.md) owns general assertion and evidence rules, test organization, shell TAP rules, registration, portability, and required validation.
+- [Companion-program test inventory](testing/companion-programs-coverage.md) maps every numbered WIC observation to its prerequisites, assertions and evidence limits.
 - [Staticcheck](testing/staticcheck.md) defines libsixel's repository-wide invariant-verification target, its broader-than-lint scope, IDL and cross-surface checks, test meta-checks, CLI synchronization role, and extension workflow.
 - [Builtin loader coverage inventory](testing/builtin-loader-coverage.md) maps every builtin-loader shell test to its primary format, observation, and traceability role while keeping pipeline landmarks distinct from the exhaustive regression suite.
 - [Mapfile parser coverage inventory](testing/mapfile-parser-coverage.md) maps every structured-palette parser and writer test to its exact observation while keeping behavioral contracts distinct from defensive and supplementary coverage.

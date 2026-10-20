@@ -681,7 +681,11 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
   -v color_tests="$color_tests" \
   -v expect_failure="$expect_failure" \
   -v hard_errors="$hard_errors" \
-  'BEGIN{
+  '/^# test-time: / {
+     sub(/\r$/, "", $0)
+     printf(":subtest-time: %s\n", substr($0, 14)) > "'"$trs_file"'"
+   }
+   BEGIN{
      plan=0; saw_plan=0; saw_tap=0;
      pass=0; fail=0; skip=0; xfail=0; xpass=0; error=0;
      tc=0;
@@ -796,6 +800,8 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
 
      printf(":global-test-result: %s\n", global) > "'"$trs_file"'"
      printf(":recheck: %s\n", recheck) > "'"$trs_file"'"
+     printf(":duration-ms: %.3f\n", (time_end - time_begin) * 1000) > "'"$trs_file"'"
+     printf(":test-name: %s\n", test_name) > "'"$trs_file"'"
      printf(":copy-in-global-log: %s\n", copy) > "'"$trs_file"'"
      sgr["FAIL"]  = "\033[0;31m"
      sgr["ERROR"] = "\033[1;31m"
@@ -838,6 +844,12 @@ else
 ${line}
 __line__
         case "$col1" in
+            '#')
+                case "$line" in
+                    '# test-time: '*)
+                        echo ":subtest-time: ${line#\# test-time: }" >&2 ;;
+                esac
+                ;;
             1..*)
                 saw_tap=1
                 test "$col2" = '#' && test "$col3" = SKIP && {
@@ -968,6 +980,8 @@ __line__
     {
         echo ":global-test-result: $global"
         echo ":recheck: $recheck"
+        echo ":duration-ms: $duration_ms"
+        echo ":test-name: $test_name"
         echo ":copy-in-global-log: $copy"
     } >&2
     printf "%s%-5s\033[m \033[1m%.03f\033[ms %s\n" "$sgr" "$global" "$duration" "$test_name"
