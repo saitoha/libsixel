@@ -151,8 +151,7 @@ typedef struct sixel_carry_bounds {
     int64_t deadzone_limit;
     int32_t lower[256];
     int32_t upper[256];
-    double threshold;
-    double deadzone;
+    double margin;
     int policy;
 } sixel_carry_bounds_t;
 
@@ -181,8 +180,7 @@ sixel_carry_prepare(sixel_carry_bounds_t *bounds, int denominator,
         bounds->lower[n] = (int32_t)ceil((-margin - n) * denominator);
         bounds->upper[n] = (int32_t)floor((255.0 + margin - n) * denominator);
     }
-    bounds->threshold = threshold;
-    bounds->deadzone = deadzone;
+    bounds->margin = margin;
     bounds->policy = policy;
 }
 
@@ -193,21 +191,103 @@ sixel_carry_round(int32_t numerator, int denominator)
     uint32_t quotient;
     uint32_t remainder;
 
-    /* Work on an unsigned magnitude, avoiding implementation-defined signed
-     * right shifts. Constant power-of-two denominators become shifts/masks;
-     * 42 and 48 become compiler-generated constant divisions. Exact halves
-     * round to even for either sign. The bounded numerator cannot be INT_MIN.
+    /* The scale=1 soft interval lies inside [-3825,4080]. Translate by
+     * the even integer 4096 before dividing: this makes every numerator
+     * positive, preserves half-tie parity, and avoids signed division or
+     * implementation-defined negative shifts. The largest translated value
+     * is 8176*4096, well inside int32. Power-of-two denominators become
+     * shifts/masks; 42 and 48 use compiler-generated constant division.
      * Non-half fractions are at least 1/48 from a half for fixed kernels;
      * double division/addition error is much smaller. Binary denominators
      * are exact, including perturbed FS (4096).
      */
-    magnitude = (uint32_t)(numerator < 0 ? -numerator : numerator);
+    magnitude = (uint32_t)(numerator + 4096 * denominator);
     quotient = magnitude / (unsigned int)denominator;
     remainder = magnitude % (unsigned int)denominator;
     quotient += remainder * 2 > (unsigned int)denominator ||
         (remainder * 2 == (unsigned int)denominator && (quotient & 1));
-    return numerator < 0 ? -(int32_t)quotient : (int32_t)quotient;
+    return (int32_t)quotient - 4096;
 }
+
+/* Only vectors crossing a soft boundary (and HARD) use double arithmetic.
+ * Keep the reference evaluation order, including channel-by-channel scale
+ * reductions: algebraically equivalent rearrangements can change a tie.
+ */
+static void
+sixel_carry_clipped_rgb(sixel_carry_bounds_t const *bounds,
+                        unsigned char const *source, int32_t const *carry,
+                        int denominator, int32_t *candidate,
+                        unsigned char *pixel)
+{
+    double scale;
+    double delta;
+    double value;
+    double lower;
+    double fraction;
+    double margin;
+    int n;
+    int32_t rounded;
+
+    scale = 1.0;
+    margin = bounds->margin;
+    if (bounds->policy != SIXEL_DITHER_CLAMP_HARD) {
+        for (n = 0; n < 3; ++n) {
+            delta = carry[n];
+            if (delta * scale < (-margin - source[n]) * denominator) {
+                scale = (-margin - source[n]) * denominator / delta;
+            } else if (delta * scale >
+                       (255.0 + margin - source[n]) * denominator) {
+                scale = (255.0 + margin - source[n]) * denominator / delta;
+            }
+        }
+    }
+    for (n = 0; n < 3; ++n) {
+        value = source[n] + (double)carry[n] * scale / denominator;
+        if (bounds->policy == SIXEL_DITHER_CLAMP_HARD) {
+            if (value < 0.0) value = 0.0;
+            if (value > 255.0) value = 255.0;
+        }
+        lower = floor(value);
+        rounded = (int32_t)lower;
+        fraction = value - lower;
+        if (fraction > 0.5 || (fraction == 0.5 && rounded % 2 != 0)) {
+            ++rounded;
+        }
+        candidate[n] = rounded;
+        pixel[n] = (unsigned char)(rounded < 0 ? 0 :
+                                   rounded > 255 ? 255 : rounded);
+    }
+}
+
+/* Expand the common case in each scan loop. A C99 inline hint alone permits
+ * the compiler to outline this repeated body, losing constant denominators.
+ * Locals belong to the enclosing function; no compiler extension is needed.
+ */
+#define SIXEL_CARRY_CANDIDATE(DEN) \
+    do { \
+        norm = (int64_t)carry[0] * carry[0] + \
+            (int64_t)carry[1] * carry[1] + (int64_t)carry[2] * carry[2]; \
+        if (norm <= bounds->deadzone_limit) { \
+            for (n = 0; n < 3; ++n) candidate[n] = pixel[n] = source[n]; \
+        } else if (bounds->policy == SIXEL_DITHER_CLAMP_HARD || \
+                carry[0] < bounds->lower[source[0]] || \
+                carry[0] > bounds->upper[source[0]] || \
+                carry[1] < bounds->lower[source[1]] || \
+                carry[1] > bounds->upper[source[1]] || \
+                carry[2] < bounds->lower[source[2]] || \
+                carry[2] > bounds->upper[source[2]]) { \
+            sixel_carry_clipped_rgb(bounds, source, carry, DEN, \
+                                     candidate, pixel); \
+        } else { \
+            for (n = 0; n < 3; ++n) { \
+                rounded = sixel_carry_round(source[n] * (DEN) + carry[n], \
+                                            DEN); \
+                candidate[n] = rounded; \
+                pixel[n] = (unsigned char)(rounded < 0 ? 0 : \
+                                           rounded > 255 ? 255 : rounded); \
+            } \
+        } \
+    } while (0)
 
 static inline void
 sixel_carry_candidate_rgb(sixel_carry_bounds_t const *bounds,
@@ -219,33 +299,7 @@ sixel_carry_candidate_rgb(sixel_carry_bounds_t const *bounds,
     int n;
     int32_t rounded;
 
-    norm = (int64_t)carry[0] * carry[0] + (int64_t)carry[1] * carry[1]
-        + (int64_t)carry[2] * carry[2];
-    if (norm <= bounds->deadzone_limit) {
-        for (n = 0; n < 3; ++n) candidate[n] = pixel[n] = source[n];
-        return;
-    }
-    if (bounds->policy == SIXEL_DITHER_CLAMP_HARD ||
-            carry[0] < bounds->lower[source[0]] ||
-            carry[0] > bounds->upper[source[0]] ||
-            carry[1] < bounds->lower[source[1]] ||
-            carry[1] > bounds->upper[source[1]] ||
-            carry[2] < bounds->lower[source[2]] ||
-            carry[2] > bounds->upper[source[2]]) {
-        /* Only a clipped vector needs the original common-scale double
-         * arithmetic. Bounded candidates cannot fail the int32 range check.
-         */
-        (void)sixel_carry_candidate_reference(source, carry, 3, denominator,
-            bounds->policy, bounds->threshold, 0.0, candidate, pixel);
-        return;
-    }
-    for (n = 0; n < 3; ++n) {
-        rounded = sixel_carry_round(source[n] * denominator + carry[n],
-                                    denominator);
-        candidate[n] = rounded;
-        pixel[n] = (unsigned char)(rounded < 0 ? 0 :
-                                   rounded > 255 ? 255 : rounded);
-    }
+    SIXEL_CARRY_CANDIDATE(denominator);
 }
 
 SIXELSTATUS
@@ -277,6 +331,341 @@ sixel_dither_carry_candidate(unsigned char const *source,
     }
     return sixel_carry_candidate_reference(source, carry, depth, denominator,
         policy, threshold, deadzone, candidate, lookup);
+}
+
+
+/* Compile-time stencils share the scan/keep contract but never read the tap
+ * table in a pixel loop. Three spans separate both narrow edges from the
+ * interior; an interior scatter has no horizontal bound test. Rotating row
+ * pointers replace all ring-buffer modulo operations. The generic checked
+ * implementation below remains authoritative for NONE and non-RGB depths.
+ */
+#define SIXEL_CARRY_TAP(DX, DY, WEIGHT, EDGE) \
+    do { \
+        nx = x + direction * (DX); \
+        if ((DY) < remaining && (!(EDGE) || (nx >= 0 && nx < width))) { \
+            destination = ring[DY] + (size_t)nx * 3; \
+            destination[0] += error0 * (WEIGHT); \
+            destination[1] += error1 * (WEIGHT); \
+            destination[2] += error2 * (WEIGHT); \
+        } \
+    } while (0); \
+
+#define SIXEL_CARRY_FS(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 7, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 3, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 5, EDGE) \
+    SIXEL_CARRY_TAP(1, 1, 1, EDGE) \
+
+#define SIXEL_CARRY_ATKINSON(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 1, EDGE) \
+    SIXEL_CARRY_TAP(2, 0, 1, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 1, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 1, EDGE) \
+    SIXEL_CARRY_TAP(1, 1, 1, EDGE) \
+    SIXEL_CARRY_TAP(0, 2, 1, EDGE) \
+
+#define SIXEL_CARRY_JAJUNI(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 7, EDGE) \
+    SIXEL_CARRY_TAP(2, 0, 5, EDGE) \
+    SIXEL_CARRY_TAP(-2, 1, 3, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 5, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 7, EDGE) \
+    SIXEL_CARRY_TAP(1, 1, 5, EDGE) \
+    SIXEL_CARRY_TAP(2, 1, 3, EDGE) \
+    SIXEL_CARRY_TAP(-2, 2, 1, EDGE) \
+    SIXEL_CARRY_TAP(-1, 2, 3, EDGE) \
+    SIXEL_CARRY_TAP(0, 2, 5, EDGE) \
+    SIXEL_CARRY_TAP(1, 2, 3, EDGE) \
+    SIXEL_CARRY_TAP(2, 2, 1, EDGE) \
+
+#define SIXEL_CARRY_STUCKI(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 8, EDGE) \
+    SIXEL_CARRY_TAP(2, 0, 4, EDGE) \
+    SIXEL_CARRY_TAP(-2, 1, 2, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 4, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 8, EDGE) \
+    SIXEL_CARRY_TAP(1, 1, 4, EDGE) \
+    SIXEL_CARRY_TAP(2, 1, 2, EDGE) \
+    SIXEL_CARRY_TAP(-2, 2, 1, EDGE) \
+    SIXEL_CARRY_TAP(-1, 2, 2, EDGE) \
+    SIXEL_CARRY_TAP(0, 2, 4, EDGE) \
+    SIXEL_CARRY_TAP(1, 2, 2, EDGE) \
+    SIXEL_CARRY_TAP(2, 2, 1, EDGE) \
+
+#define SIXEL_CARRY_BURKES(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 8, EDGE) \
+    SIXEL_CARRY_TAP(2, 0, 4, EDGE) \
+    SIXEL_CARRY_TAP(-2, 1, 2, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 4, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 8, EDGE) \
+    SIXEL_CARRY_TAP(1, 1, 4, EDGE) \
+    SIXEL_CARRY_TAP(2, 1, 2, EDGE) \
+
+#define SIXEL_CARRY_SIERRA1(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 2, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 1, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 1, EDGE) \
+
+#define SIXEL_CARRY_SIERRA2(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 4, EDGE) \
+    SIXEL_CARRY_TAP(2, 0, 3, EDGE) \
+    SIXEL_CARRY_TAP(-2, 1, 1, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 2, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 3, EDGE) \
+    SIXEL_CARRY_TAP(1, 1, 2, EDGE) \
+    SIXEL_CARRY_TAP(2, 1, 1, EDGE) \
+
+#define SIXEL_CARRY_SIERRA3(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, 5, EDGE) \
+    SIXEL_CARRY_TAP(2, 0, 3, EDGE) \
+    SIXEL_CARRY_TAP(-2, 1, 2, EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, 4, EDGE) \
+    SIXEL_CARRY_TAP(0, 1, 5, EDGE) \
+    SIXEL_CARRY_TAP(1, 1, 4, EDGE) \
+    SIXEL_CARRY_TAP(2, 1, 2, EDGE) \
+    SIXEL_CARRY_TAP(-1, 2, 2, EDGE) \
+    SIXEL_CARRY_TAP(0, 2, 3, EDGE) \
+    SIXEL_CARRY_TAP(1, 2, 2, EDGE) \
+
+#define SIXEL_CARRY_PERTURB(EDGE) \
+    SIXEL_CARRY_TAP(1, 0, weights[0], EDGE) \
+    SIXEL_CARRY_TAP(-1, 1, weights[1], EDGE) \
+    SIXEL_CARRY_TAP(0, 1, weights[2], EDGE) \
+    SIXEL_CARRY_TAP(1, 1, weights[3], EDGE) \
+
+#define SIXEL_CARRY_SPAN(DEN, TAPS, MASK, PERTURB, EDGE, END) \
+    for (; x != (END); x += direction) { \
+        position = (size_t)y * width + x; \
+        absolute_index = absolute_y < 0 ? 0 : \
+            (size_t)absolute_y * width + x; \
+        if ((MASK) && absolute_y >= 0 && \
+                absolute_index < dither->pipeline_transparent_mask_size && \
+                dither->pipeline_transparent_mask[absolute_index]) { \
+            if (record) request->result[position] = (sixel_index_t) \
+                dither->pipeline_transparent_keycolor; \
+            continue; \
+        } \
+        source = request->data + position * 3; \
+        carry = ring[0] + (size_t)x * 3; \
+        SIXEL_CARRY_CANDIDATE(DEN); \
+        retained = NULL; \
+        keycolor = -1; \
+        keep = 0; \
+        if (delta) { \
+            keep = sixel_dither_pipeline_6delta_try_keep_rgb888(dither, \
+                absolute_index, x, absolute_y, pixel, record, \
+                &retained, &keycolor); \
+        } \
+        index = keycolor; \
+        if (!keep) { \
+            index = lookup->vtbl->map_pixel_hint(lookup, pixel, hint); \
+            if (index < 0 || index >= SIXEL_PALETTE_MAX) { \
+                return SIXEL_BAD_INPUT; \
+            } \
+            hint = index; \
+            if (delta) { \
+                keep = sixel_dither_pipeline_6delta_try_keep_after_lookup( \
+                    dither, absolute_index, x, absolute_y, pixel, \
+                    request->palette + (size_t)index * 3, index, \
+                    record, &retained, &keycolor); \
+            } \
+        } \
+        if (record) request->result[position] = (sixel_index_t) \
+            (keep ? keycolor : index); \
+        if (keep && !diffuse) continue; \
+        target = keep ? retained : request->palette + (size_t)index * 3; \
+        error0 = candidate[0] - target[0]; \
+        error1 = candidate[1] - target[1]; \
+        error2 = candidate[2] - target[2]; \
+        if (PERTURB) { \
+            sixel_dither_perturb_weights(perturb, x, absolute_y, weights); \
+        } \
+        TAPS(EDGE) \
+    } \
+
+/* The largest soft threshold gives |error| <= 4080. Fixed incoming
+ * weights sum to at most 48; independently perturbed FS weights to at most
+ * 7168. Every partial sum is bounded by 4080*7168=29245440, including negative
+ * contributions. Products and int32 additions therefore cannot overflow.
+ * The RGB norm is <= 3*29245440^2 < 2^53. HARD has the tighter error bound 255.
+ */
+#define SIXEL_CARRY_DEFINE(NAME, DEN, ROWS, TAPS, MASK, PERTURB) \
+static SIXELSTATUS \
+sixel_carry_rgb_##NAME(sixel_dither_policy_apply_request_t const *request, \
+                       int32_t *rows, sixel_carry_bounds_t const *bounds, \
+                       sixel_dither_perturb_t const *perturb) \
+{ \
+    sixel_dither_t *dither; \
+    sixel_lookup_policy_interface_t const *lookup; \
+    int32_t *ring[3]; \
+    int32_t const *carry; \
+    unsigned char const *source; \
+    int64_t norm; \
+    int n; \
+    int32_t rounded; \
+    int32_t *recycle; \
+    int32_t *destination; \
+    int32_t candidate[3]; \
+    unsigned char pixel[3]; \
+    unsigned char const *target; \
+    unsigned char const *retained; \
+    size_t stride; \
+    size_t position; \
+    size_t absolute_index; \
+    int width; \
+    int y; \
+    int x; \
+    int nx; \
+    int absolute_y; \
+    int remaining; \
+    int direction; \
+    int stop; \
+    int left; \
+    int right; \
+    int record; \
+    int delta; \
+    int diffuse; \
+    int hint; \
+    int index; \
+    int keycolor; \
+    int keep; \
+    int weights[4]; \
+    int32_t error0; \
+    int32_t error1; \
+    int32_t error2; \
+ \
+    dither = request->dither; \
+    lookup = request->lookup_policy; \
+    width = request->width; \
+    stride = (size_t)width * 3; \
+    ring[0] = rows; \
+    ring[1] = rows + stride; \
+    ring[2] = (ROWS) == 3 ? rows + stride * 2 : NULL; \
+    diffuse = sixel_dither_pipeline_6delta_error_mode(dither) \
+        == SIXEL_6DELTA_ERROR_DIFFUSE; \
+    hint = -1; \
+    for (y = 0; y < request->height; ++y) { \
+        absolute_y = request->band_origin + y; \
+        remaining = request->height - y; \
+        record = absolute_y >= request->output_start; \
+        delta = dither->pipeline_6delta_enabled && absolute_y >= 0; \
+        direction = request->method_for_scan == SIXEL_SCAN_SERPENTINE \
+            && (absolute_y & 1) ? -1 : 1; \
+        x = direction > 0 ? 0 : width - 1; \
+        stop = direction > 0 ? width : -1; \
+        left = width < 4 ? stop : direction > 0 ? 2 : width - 3; \
+        right = width < 4 ? stop : direction > 0 ? width - 2 : 1; \
+        SIXEL_CARRY_SPAN(DEN, TAPS, MASK, PERTURB, 1, left) \
+        SIXEL_CARRY_SPAN(DEN, TAPS, MASK, PERTURB, 0, right) \
+        SIXEL_CARRY_SPAN(DEN, TAPS, MASK, PERTURB, 1, stop) \
+        memset(ring[0], 0, stride * sizeof(*rows)); \
+        recycle = ring[0]; \
+        ring[0] = ring[1]; \
+        if ((ROWS) == 3) ring[1] = ring[2]; \
+        ring[(ROWS) - 1] = recycle; \
+        if (record) sixel_dither_pipeline_row_notify(dither, absolute_y); \
+    } \
+    return SIXEL_OK; \
+} \
+
+SIXEL_CARRY_DEFINE(fs_0, 16, 2,
+    SIXEL_CARRY_FS, 0, 0)
+SIXEL_CARRY_DEFINE(fs_1, 16, 2,
+    SIXEL_CARRY_FS, 1, 0)
+SIXEL_CARRY_DEFINE(atkinson_0, 8, 3,
+    SIXEL_CARRY_ATKINSON, 0, 0)
+SIXEL_CARRY_DEFINE(atkinson_1, 8, 3,
+    SIXEL_CARRY_ATKINSON, 1, 0)
+SIXEL_CARRY_DEFINE(jajuni_0, 48, 3,
+    SIXEL_CARRY_JAJUNI, 0, 0)
+SIXEL_CARRY_DEFINE(jajuni_1, 48, 3,
+    SIXEL_CARRY_JAJUNI, 1, 0)
+SIXEL_CARRY_DEFINE(stucki_0, 42, 3,
+    SIXEL_CARRY_STUCKI, 0, 0)
+SIXEL_CARRY_DEFINE(stucki_1, 42, 3,
+    SIXEL_CARRY_STUCKI, 1, 0)
+SIXEL_CARRY_DEFINE(burkes_0, 32, 2,
+    SIXEL_CARRY_BURKES, 0, 0)
+SIXEL_CARRY_DEFINE(burkes_1, 32, 2,
+    SIXEL_CARRY_BURKES, 1, 0)
+SIXEL_CARRY_DEFINE(sierra1_0, 4, 2,
+    SIXEL_CARRY_SIERRA1, 0, 0)
+SIXEL_CARRY_DEFINE(sierra1_1, 4, 2,
+    SIXEL_CARRY_SIERRA1, 1, 0)
+SIXEL_CARRY_DEFINE(sierra2_0, 16, 2,
+    SIXEL_CARRY_SIERRA2, 0, 0)
+SIXEL_CARRY_DEFINE(sierra2_1, 16, 2,
+    SIXEL_CARRY_SIERRA2, 1, 0)
+SIXEL_CARRY_DEFINE(sierra3_0, 32, 3,
+    SIXEL_CARRY_SIERRA3, 0, 0)
+SIXEL_CARRY_DEFINE(sierra3_1, 32, 3,
+    SIXEL_CARRY_SIERRA3, 1, 0)
+SIXEL_CARRY_DEFINE(perturb_0, 4096, 2,
+    SIXEL_CARRY_PERTURB, 0, 1)
+SIXEL_CARRY_DEFINE(perturb_1, 4096, 2,
+    SIXEL_CARRY_PERTURB, 1, 1)
+
+#undef SIXEL_CARRY_CANDIDATE
+#undef SIXEL_CARRY_DEFINE
+#undef SIXEL_CARRY_SPAN
+#undef SIXEL_CARRY_TAP
+#undef SIXEL_CARRY_FS
+#undef SIXEL_CARRY_ATKINSON
+#undef SIXEL_CARRY_JAJUNI
+#undef SIXEL_CARRY_STUCKI
+#undef SIXEL_CARRY_BURKES
+#undef SIXEL_CARRY_SIERRA1
+#undef SIXEL_CARRY_SIERRA2
+#undef SIXEL_CARRY_SIERRA3
+#undef SIXEL_CARRY_PERTURB
+
+static SIXELSTATUS
+sixel_carry_rgb_dispatch(sixel_dither_policy_apply_request_t const *request,
+                         int method, int32_t *rows,
+                         sixel_carry_bounds_t const *bounds,
+                         sixel_dither_perturb_t const *perturb)
+{
+    sixel_dither_t *dither;
+    int mask;
+
+    dither = request->dither;
+    mask = dither->pipeline_transparent_mask != NULL &&
+        dither->pipeline_transparent_keycolor >= 0 &&
+        dither->pipeline_transparent_keycolor < SIXEL_PALETTE_MAX;
+    if (perturb->enabled) {
+        return mask
+            ? sixel_carry_rgb_perturb_1(request, rows, bounds, perturb)
+            : sixel_carry_rgb_perturb_0(request, rows, bounds, perturb);
+    }
+    switch (method) {
+    case SIXEL_DIFFUSE_FS:
+        return mask ? sixel_carry_rgb_fs_1(request, rows, bounds, perturb)
+                    : sixel_carry_rgb_fs_0(request, rows, bounds, perturb);
+    case SIXEL_DIFFUSE_ATKINSON:
+        return mask
+            ? sixel_carry_rgb_atkinson_1(request, rows, bounds, perturb)
+            : sixel_carry_rgb_atkinson_0(request, rows, bounds, perturb);
+    case SIXEL_DIFFUSE_JAJUNI:
+        return mask ? sixel_carry_rgb_jajuni_1(request, rows, bounds, perturb)
+                    : sixel_carry_rgb_jajuni_0(request, rows, bounds, perturb);
+    case SIXEL_DIFFUSE_STUCKI:
+        return mask ? sixel_carry_rgb_stucki_1(request, rows, bounds, perturb)
+                    : sixel_carry_rgb_stucki_0(request, rows, bounds, perturb);
+    case SIXEL_DIFFUSE_BURKES:
+        return mask ? sixel_carry_rgb_burkes_1(request, rows, bounds, perturb)
+                    : sixel_carry_rgb_burkes_0(request, rows, bounds, perturb);
+    case SIXEL_DIFFUSE_SIERRA1:
+        return mask ? sixel_carry_rgb_sierra1_1(request, rows, bounds, perturb)
+                    : sixel_carry_rgb_sierra1_0(request, rows, bounds, perturb);
+    case SIXEL_DIFFUSE_SIERRA2:
+        return mask ? sixel_carry_rgb_sierra2_1(request, rows, bounds, perturb)
+                    : sixel_carry_rgb_sierra2_0(request, rows, bounds, perturb);
+    case SIXEL_DIFFUSE_SIERRA3:
+        return mask ? sixel_carry_rgb_sierra3_1(request, rows, bounds, perturb)
+                    : sixel_carry_rgb_sierra3_0(request, rows, bounds, perturb);
+    default: return SIXEL_BAD_ARGUMENT;
+    }
 }
 
 SIXELSTATUS
@@ -359,6 +748,9 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
     if (bounded) {
         sixel_carry_prepare(&bounds, denominator, dither->clamp_policy,
             dither->clamp_threshold, dither->diffusion_deadzone);
+        status = sixel_carry_rgb_dispatch(request, method, rows, &bounds,
+                                          &perturb);
+        goto end;
     }
     hint = -1;
     status = SIXEL_OK;
@@ -390,18 +782,12 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
                 }
                 continue;
             }
-            if (bounded) {
-                sixel_carry_candidate_rgb(&bounds,
-                    request->data + position * 3, current, denominator,
-                    candidate, pixel);
-            } else {
-                status = sixel_carry_candidate_reference(
-                    request->data + position * depth, current, depth,
-                    denominator, dither->clamp_policy,
-                    dither->clamp_threshold, dither->diffusion_deadzone,
-                    candidate, pixel);
-                if (SIXEL_FAILED(status)) goto end;
-            }
+            status = sixel_carry_candidate_reference(
+                request->data + position * depth, current, depth,
+                denominator, dither->clamp_policy,
+                dither->clamp_threshold, dither->diffusion_deadzone,
+                candidate, pixel);
+            if (SIXEL_FAILED(status)) goto end;
             retained = NULL;
             keycolor = -1;
             keep = 0;
