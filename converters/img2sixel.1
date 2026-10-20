@@ -1696,8 +1696,9 @@ see docs/encoder/output/terminal-macros.md in the source distribution.
 .TP 5
 .B SIXEL_DIAG_MODE
 .br
-select human or code diagnostics. Set to "code" to emit stable LSX*
-diagnostic headers. The \fB\-x MODE\fP option takes precedence.
+select human or code diagnostics. The default "human" omits the LSXCLI1
+option-parse header. Set to "code" to emit it for scripts and tests.
+The \fB\-x MODE\fP option takes precedence.
 .TP 5
 .B SIXEL_DIAG_MODE_QUIET
 .br

@@ -1377,7 +1377,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DIAG_MODE",
         "choose machine-readable diagnostics mode.\n"
-        "Set to 'code' to emit stable LSX* diagnostic headers.\n"
+        "Default 'human' omits the LSXCLI1 option-parse header.\n"
+        "Set to 'code' to emit it for scripts and tests.\n"
         "The -x MODE value takes precedence."
     },
     {
@@ -3433,6 +3434,15 @@ img2sixel_emit_option_parse_diagnostic(int status, char const *detail_source)
 {
     char const *code_name;
     int detail_code;
+
+    /*
+     * Human diagnostics already describe the failure.  Keep the machine
+     * header opt-in, including getopt failures before encoder setup, using
+     * the same environment/CLI policy as the rest of option reporting.
+     */
+    if (!img2sixel_diag_mode_is_code()) {
+        return;
+    }
 
     code_name = "ERROR";
     detail_code = 0;

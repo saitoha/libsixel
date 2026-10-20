@@ -35,10 +35,12 @@ img2sixel -v -x human:trace_topic=runtime_contract,loader,encode_handoff \
     -S -o /dev/null image.png 2>diagnostics.txt
 
 # Request code-oriented reporting for a reproducible invalid argument.
-img2sixel -x code -p invalid image.png
+SIXEL_DIAG_MODE=code img2sixel -p invalid image.png
 ```
 
-For option parsing, `img2sixel` can emit an `LSXCLI1|phase=option_parse|rc=...|code=...` record. The `rc` field is a library status, not necessarily the process exit code. On the ordinary non-OpenVMS CLI path, `img2sixel` maps success to 0, generic runtime failure to 1, invalid arguments to 2, and clipboard failure to 3. OpenVMS uses its platform condition mapping. Other executables' exit mappings must be checked independently. Scripts should check process status and parse only the record families they explicitly support.
+For option parsing, `img2sixel` emits an `LSXCLI1|phase=option_parse|rc=...|code=...` record only in code mode. The default human mode omits this machine header while preserving the ordinary error message and failure exit status. Set `SIXEL_DIAG_MODE=code` to enable the header for scripts and tests, including missing option arguments such as `img2sixel -d`. An explicitly parsed `-x code` or `-x human` overrides the environment. Other `LSX*` trace families are selected separately through their trace topics; code mode does not enable those topics.
+
+The `rc` field is a library status, not necessarily the process exit code. On the ordinary non-OpenVMS CLI path, `img2sixel` maps success to 0, generic runtime failure to 1, invalid arguments to 2, and clipboard failure to 3. OpenVMS uses its platform condition mapping. Other executables' exit mappings must be checked independently. Scripts should check process status and parse only the record families they explicitly support.
 
 ## Recording and reading a timeline
 
@@ -78,6 +80,12 @@ Use `-S` or bounded playback when recording animations. An infinite loop produce
 | DG-08 | Timeline logger/writer ownership, initialization, and native-producer/shell-verifier boundaries remain componentized. | [tests/_static/sh/staticcheck-timeline-logging-boundary.sh](../../tests/_static/sh/staticcheck-timeline-logging-boundary.sh) |
 
 | DG-09 | One palette-application interval and one encode-body interval belong to each public encode-frame call at budgets 1, 2, and 4; application stays on the controlling thread and both intervals stay inside its session. | [tests/processing/timeline/0009_timeline_apply_interval.t](../../tests/processing/timeline/0009_timeline_apply_interval.t) |
+
+| DG-10 | Missing argument keeps human diagnostics by default. | [tests/diagnostics/cli/0001_option_parse_default_human.t](../../tests/diagnostics/cli/0001_option_parse_default_human.t) |
+| DG-11 | Environment enables the missing argument machine header. | [tests/diagnostics/cli/0002_option_parse_environment_code.t](../../tests/diagnostics/cli/0002_option_parse_environment_code.t) |
+| DG-12 | Invalid option value keeps human diagnostics by default. | [tests/diagnostics/cli/0003_option_value_default_human.t](../../tests/diagnostics/cli/0003_option_value_default_human.t) |
+| DG-13 | Explicit human mode overrides code environment. | [tests/diagnostics/cli/0004_option_parse_human_override.t](../../tests/diagnostics/cli/0004_option_parse_human_override.t) |
+| DG-14 | Explicit code mode overrides human environment. | [tests/diagnostics/cli/0005_option_parse_code_override.t](../../tests/diagnostics/cli/0005_option_parse_code_override.t) |
 
 ### Coverage boundary
 

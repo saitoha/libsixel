@@ -10,7 +10,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 status=0
-result=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Ud </dev/null 2>&1) || status=$?
+result=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_DIAG_MODE=code -Ud </dev/null 2>&1) || status=$?
 test "${status}" != 0 || {
     echo "not ok 1 - ambiguous output name succeeded"
     exit 0
