@@ -26,12 +26,25 @@
 #include "config.h"
 #endif
 
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <string.h>
 #include "dither-carry.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
+
+/* The integer norm proof requires binary double with at least 53 bits.
+ * Excess evaluation precision can keep the reference radius product wider
+ * than a stored double, changing strict deadzone boundaries. Preserve the
+ * original arithmetic on such targets instead of silently rounding R early.
+ */
+#if FLT_RADIX == 2 && DBL_MANT_DIG >= 53 && defined(FLT_EVAL_METHOD) && \
+    (FLT_EVAL_METHOD == 0 || FLT_EVAL_METHOD == 1)
+#define SIXEL_CARRY_DOUBLE_EVAL 1
+#else
+#define SIXEL_CARRY_DOUBLE_EVAL 0
+#endif
 
 /* Integer numerators preserve all tap contributions until the destination
  * pixel is visited. Addition order cannot change a carry sum: there is no
@@ -366,7 +379,8 @@ sixel_dither_carry_candidate(unsigned char const *source,
      * The production RGB loop proves this bound inductively and prepares
      * its state once per band instead of testing it for every candidate.
      */
-    if (depth == 3 && policy != SIXEL_DITHER_CLAMP_NONE &&
+    if (SIXEL_CARRY_DOUBLE_EVAL && depth == 3 &&
+            policy != SIXEL_DITHER_CLAMP_NONE &&
             threshold >= 1.0 && threshold <= 16.0 &&
             denominator > 0 && denominator <= 4096) {
         for (n = 0; n < 3; ++n) {
@@ -795,7 +809,8 @@ sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
                               dither->diffusion_perturb_seed);
     perturb.enabled = perturb.enabled && method == SIXEL_DIFFUSE_FS;
     denominator = perturb.enabled ? 16 << 8 : kernel->denominator;
-    bounded = depth == 3 && dither->clamp_policy != SIXEL_DITHER_CLAMP_NONE;
+    bounded = SIXEL_CARRY_DOUBLE_EVAL && depth == 3 &&
+        dither->clamp_policy != SIXEL_DITHER_CLAMP_NONE;
     if (bounded) {
         sixel_carry_prepare(&bounds, denominator, dither->clamp_policy,
             dither->clamp_threshold, dither->diffusion_deadzone);
