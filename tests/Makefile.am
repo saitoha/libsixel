@@ -1480,6 +1480,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0018_CARRY_GRAY_SIERRA3 \
     -DBUILD_TEST_0019_CARRY_OPTION_SCOPE \
     -DBUILD_TEST_0020_CARRY_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0023_CARRY_ROUNDING_REFERENCE \
+    -DBUILD_TEST_0024_CARRY_BOUNDS_REFERENCE \
+    -DBUILD_TEST_0025_CARRY_STENCIL_REFERENCE \
     -DBUILD_TEST_0001_SOFT_VECTOR \
     -DBUILD_TEST_0002_AUTO_SOFT \
     -DBUILD_TEST_0003_HARD_CHANNELS \
@@ -5296,6 +5299,11 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/carry/carry_test_common.h \
     processing/dither/carry/0019_carry_option_scope.c \
     processing/dither/carry/0020_carry_allocation_failure.c \
+    processing/dither/carry/0023_carry_rounding_reference.c \
+    processing/dither/carry/0024_carry_bounds_reference.c \
+    processing/dither/carry/carry_speed_common.c \
+    processing/dither/carry/carry_speed_common.h \
+    processing/dither/carry/0025_carry_stencil_reference.c \
     processing/dither/clamp/0001_soft_vector.c \
     processing/dither/clamp/0002_auto_soft.c \
     processing/dither/clamp/0003_hard_channels.c \
