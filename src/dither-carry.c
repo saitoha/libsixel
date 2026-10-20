@@ -140,8 +140,9 @@ sixel_carry_candidate_none(unsigned char const *source,
  */
 typedef struct sixel_carry_bounds {
     int64_t deadzone_limit;
-    int32_t lower[256];
-    int32_t upper[256];
+    int32_t lower;
+    int32_t upper;
+    uint32_t span;
     double deadzone;
     int policy;
 } sixel_carry_bounds_t;
@@ -155,7 +156,6 @@ sixel_carry_prepare(sixel_carry_bounds_t *bounds, int denominator,
     double margin;
     double fraction;
     int32_t rounded;
-    int n;
 
     radius = (deadzone > 1.0e10 ? 1.0e10 : deadzone) * denominator;
     squared = radius * radius;
@@ -173,10 +173,9 @@ sixel_carry_prepare(sixel_carry_bounds_t *bounds, int denominator,
     rounded = (int32_t)margin;
     fraction = margin - rounded;
     rounded += fraction > 0.5 || (fraction == 0.5 && (rounded & 1));
-    for (n = 0; n < 256; ++n) {
-        bounds->lower[n] = -rounded - n * denominator;
-        bounds->upper[n] = (255 - n) * denominator + rounded;
-    }
+    bounds->lower = -rounded;
+    bounds->upper = 255 * denominator + rounded;
+    bounds->span = (uint32_t)(bounds->upper - bounds->lower);
     bounds->deadzone = deadzone;
     bounds->policy = policy;
 }
@@ -244,6 +243,7 @@ sixel_carry_soft(sixel_carry_bounds_t const *bounds,
     int64_t b;
     int64_t c;
     int64_t q;
+    int64_t value;
     uint64_t numerator;
     uint64_t quotient;
     uint64_t remainder;
@@ -255,11 +255,12 @@ sixel_carry_soft(sixel_carry_bounds_t const *bounds,
     limiting = depth;
     for (n = 0; n < depth; ++n) {
         c = carry[n];
-        if (c < bounds->lower[source[n]]) {
-            b = -(int64_t)bounds->lower[source[n]];
+        value = c + source[n] * denominator;
+        if (value < bounds->lower) {
+            b = (int64_t)source[n] * denominator - bounds->lower;
             c = -c;
-        } else if (c > bounds->upper[source[n]]) {
-            b = bounds->upper[source[n]];
+        } else if (value > bounds->upper) {
+            b = bounds->upper - (int64_t)source[n] * denominator;
         } else {
             continue;
         }
@@ -322,8 +323,12 @@ sixel_carry_hard(unsigned char const *source, int32_t const *carry,
     }
 }
 
-/* Expand the common case in each scan loop. A C99 inline hint alone permits
- * the compiler to outline this repeated body, losing constant denominators.
+/* Expand the common case in each scan loop. The integer contract gives
+ * every component the same absolute numerator interval [-M,255*D+M].
+ * Form source*D+carry once, reuse it for rounding, and test the interval
+ * with unsigned subtraction. Below-lower values wrap above the span;
+ * bounded numerators and differences are far inside int32. This removes
+ * source-indexed tables and their six loads from the hot RGB pixel path.
  * Locals belong to the enclosing function; no compiler extension is needed.
  */
 #define SIXEL_CARRY_CANDIDATE(DEN) \
@@ -333,30 +338,34 @@ sixel_carry_hard(unsigned char const *source, int32_t const *carry,
         if (SIXEL_CARRY_DOUBLE_EVAL ? norm <= bounds->deadzone_limit : \
                 sixel_carry_discard(carry, 3, DEN, bounds->deadzone)) { \
             for (n = 0; n < 3; ++n) candidate[n] = pixel[n] = source[n]; \
-        } else if (bounds->policy == SIXEL_DITHER_CLAMP_HARD) { \
-            for (n = 0; n < 3; ++n) { \
-                rounded = source[n] * (DEN) + carry[n]; \
-                if (rounded < 0) rounded = 0; \
-                if (rounded > 255 * (DEN)) rounded = 255 * (DEN); \
-                candidate[n] = pixel[n] = (unsigned char) \
-                    sixel_carry_round(rounded, DEN); \
-            } \
-        } else if ( \
-                carry[0] < bounds->lower[source[0]] || \
-                carry[0] > bounds->upper[source[0]] || \
-                carry[1] < bounds->lower[source[1]] || \
-                carry[1] > bounds->upper[source[1]] || \
-                carry[2] < bounds->lower[source[2]] || \
-                carry[2] > bounds->upper[source[2]]) { \
-            sixel_carry_soft(bounds, source, carry, 3, DEN, \
-                             candidate, pixel); \
         } else { \
             for (n = 0; n < 3; ++n) { \
-                rounded = sixel_carry_round(source[n] * (DEN) + carry[n], \
-                                            DEN); \
-                candidate[n] = rounded; \
-                pixel[n] = (unsigned char)(rounded < 0 ? 0 : \
-                                           rounded > 255 ? 255 : rounded); \
+                candidate[n] = source[n] * (DEN) + carry[n]; \
+            } \
+            if (bounds->policy == SIXEL_DITHER_CLAMP_HARD) { \
+                for (n = 0; n < 3; ++n) { \
+                    rounded = candidate[n]; \
+                    if (rounded < 0) rounded = 0; \
+                    if (rounded > 255 * (DEN)) rounded = 255 * (DEN); \
+                    candidate[n] = pixel[n] = (unsigned char) \
+                        sixel_carry_round(rounded, DEN); \
+                } \
+            } else if ( \
+                    (uint32_t)candidate[0] - \
+                        (uint32_t)bounds->lower > bounds->span || \
+                    (uint32_t)candidate[1] - \
+                        (uint32_t)bounds->lower > bounds->span || \
+                    (uint32_t)candidate[2] - \
+                        (uint32_t)bounds->lower > bounds->span) { \
+                sixel_carry_soft(bounds, source, carry, 3, DEN, \
+                                 candidate, pixel); \
+            } else { \
+                for (n = 0; n < 3; ++n) { \
+                    rounded = sixel_carry_round(candidate[n], DEN); \
+                    candidate[n] = rounded; \
+                    pixel[n] = (unsigned char)(rounded < 0 ? 0 : \
+                                               rounded > 255 ? 255 : rounded); \
+                } \
             } \
         } \
     } while (0)
