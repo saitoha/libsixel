@@ -1460,6 +1460,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_CARRY_KEEP_EARLY_INCOMING \
     -DBUILD_TEST_0022_CARRY_KEEP_LOOKUP_INCOMING \
     -DBUILD_CARRY_TEST_COMMON \
+    -DBUILD_TEST_CARRY_0026 \
+    -DBUILD_TEST_CARRY_0027 \
+    -DBUILD_TEST_CARRY_0028 \
+    -DBUILD_TEST_CARRY_0029 \
     -DBUILD_CARRY_SPEED_COMMON \
     -DBUILD_TEST_0001_CARRY_KERNEL_COEFFICIENTS \
     -DBUILD_TEST_0002_CARRY_DEADZONE_BELOW \
@@ -5300,11 +5304,15 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/carry/carry_test_common.h \
     processing/dither/carry/0019_carry_option_scope.c \
     processing/dither/carry/0020_carry_allocation_failure.c \
-    processing/dither/carry/0023_carry_rounding_reference.c \
-    processing/dither/carry/0024_carry_bounds_reference.c \
+    processing/dither/carry/0023_carry_rational_rounding.c \
+    processing/dither/carry/0024_carry_rational_bounds.c \
+    processing/dither/carry/0026_carry_hard_double.c \
+    processing/dither/carry/0027_carry_soft_direction.c \
+    processing/dither/carry/0028_carry_soft_boundary.c \
+    processing/dither/carry/0029_carry_soft_tied_ratios.c \
     processing/dither/carry/carry_speed_common.c \
     processing/dither/carry/carry_speed_common.h \
-    processing/dither/carry/0025_carry_stencil_reference.c \
+    processing/dither/carry/0025_carry_rational_stencil.c \
     processing/dither/clamp/0001_soft_vector.c \
     processing/dither/clamp/0002_auto_soft.c \
     processing/dither/clamp/0003_hard_channels.c \

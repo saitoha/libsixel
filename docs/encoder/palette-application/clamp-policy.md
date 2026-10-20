@@ -134,6 +134,14 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DC-51 | No clamp policy promotes byte diffusion to float arithmetic, for any error-diffusion kernel. | [tests/processing/precision/0016_clamp_keeps_byte_application.t](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) |
 | DC-52 | The palette-application planner does not use the clamp policy to select arithmetic precision. | [tests/_static/sh/staticcheck-dither-clamp-precision.sh](../../../tests/_static/sh/staticcheck-dither-clamp-precision.sh) |
 
+| DC-53 | Byte rational rounding covers all supported denominators and half ties. | [tests/processing/dither/carry/0023_carry_rational_rounding.t](../../../tests/processing/dither/carry/0023_carry_rational_rounding.t) |
+| DC-54 | Byte integer headroom and deadzone boundaries follow the numeric contract. | [tests/processing/dither/carry/0024_carry_rational_bounds.t](../../../tests/processing/dither/carry/0024_carry_rational_bounds.t) |
+| DC-55 | Specialized and generic byte scans preserve candidate, mask and keep semantics. | [tests/processing/dither/carry/0025_carry_rational_stencil.t](../../../tests/processing/dither/carry/0025_carry_rational_stencil.t) |
+| DC-56 | Hard candidates match the frozen double reference. | [tests/processing/dither/carry/0026_carry_hard_double.t](../../../tests/processing/dither/carry/0026_carry_hard_double.t) |
+| DC-57 | Rational soft scaling preserves correction direction within rounding. | [tests/processing/dither/carry/0027_carry_soft_direction.t](../../../tests/processing/dither/carry/0027_carry_soft_direction.t) |
+| DC-58 | The limiting component reaches its rounded integer boundary. | [tests/processing/dither/carry/0028_carry_soft_boundary.t](../../../tests/processing/dither/carry/0028_carry_soft_boundary.t) |
+| DC-59 | Equal positive and negative ratios preserve nearest-even half ties. | [tests/processing/dither/carry/0029_carry_soft_tied_ratios.t](../../../tests/processing/dither/carry/0029_carry_soft_tied_ratios.t) |
+
 ### Quality regression tests
 
 | ID | Contract | Owning test |

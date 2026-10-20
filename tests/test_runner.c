@@ -609,6 +609,10 @@ int test_carry_0020(int argc, char **argv);
 int test_carry_0023(int argc, char **argv);
 int test_carry_0024(int argc, char **argv);
 int test_carry_0025(int argc, char **argv);
+int test_carry_0026(int argc, char **argv);
+int test_carry_0027(int argc, char **argv);
+int test_carry_0028(int argc, char **argv);
+int test_carry_0029(int argc, char **argv);
 int test_clamp_0001(int argc, char **argv);
 int test_clamp_0002(int argc, char **argv);
 int test_clamp_0003(int argc, char **argv);
@@ -4079,9 +4083,13 @@ static test_entry_t const test_entries[] = {
     { "dither/carry/0021_carry_keep_early_incoming", test_carry_0021 },
     { "dither/carry/0022_carry_keep_lookup_incoming", test_carry_0022 },
     { "dither/carry/0020_carry_allocation_failure", test_carry_0020 },
-    { "dither/carry/0023_carry_rounding_reference", test_carry_0023 },
-    { "dither/carry/0024_carry_bounds_reference", test_carry_0024 },
-    { "dither/carry/0025_carry_stencil_reference", test_carry_0025 },
+    { "dither/carry/0023_carry_rational_rounding", test_carry_0023 },
+    { "dither/carry/0024_carry_rational_bounds", test_carry_0024 },
+    { "dither/carry/0025_carry_rational_stencil", test_carry_0025 },
+    { "dither/carry/0026_carry_hard_double", test_carry_0026 },
+    { "dither/carry/0027_carry_soft_direction", test_carry_0027 },
+    { "dither/carry/0028_carry_soft_boundary", test_carry_0028 },
+    { "dither/carry/0029_carry_soft_tied_ratios", test_carry_0029 },
     { "dither/clamp/0001_soft_vector", test_clamp_0001 },
     { "dither/clamp/0002_auto_soft", test_clamp_0002 },
     { "dither/clamp/0003_hard_channels", test_clamp_0003 },

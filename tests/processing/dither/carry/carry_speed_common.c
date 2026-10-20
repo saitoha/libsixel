@@ -8,9 +8,93 @@
 #include "src/dither.h"
 #include "src/lookup-policy.h"
 
-/* Frozen double candidate from 1516ae5db. This oracle deliberately uses no
- * production rounding or deadzone helpers: these tests enforce compatibility
- * with that arithmetic, rather than comparing two copies of the fast path.
+/* An independent rational oracle: choose a limiting fraction in carry
+ * units, then binary-search the two neighboring integers. It neither uses
+ * production tables nor its unsigned-offset quotient/remainder algorithm.
+ */
+static int32_t
+carry_exact_round(int64_t numerator, int64_t denominator)
+{
+    int low;
+    int high;
+    int middle;
+    int64_t distance;
+
+    low = -4096;
+    high = 8192;
+    while (high - low > 1) {
+        middle = low + (high - low) / 2;
+        if ((int64_t)middle * denominator <= numerator) low = middle;
+        else high = middle;
+    }
+    distance = 2 * (numerator - (int64_t)low * denominator);
+    return low + (distance > denominator ||
+                  (distance == denominator && low % 2 != 0));
+}
+
+static void
+carry_exact_ratio(unsigned char const *source, int32_t const *carry,
+                  int depth, int denominator, double threshold,
+                  int64_t *top, int64_t *bottom, int *limiting)
+{
+    double margin;
+    double base;
+    int64_t headroom;
+    int64_t bound;
+    int64_t correction;
+    int n;
+
+    margin = (threshold - 1.0) * 255.0 * denominator;
+    base = floor(margin);
+    headroom = (int64_t)base;
+    if (margin - base > 0.5 ||
+            (margin - base == 0.5 && headroom % 2 != 0)) ++headroom;
+    *top = *bottom = 1;
+    *limiting = -1;
+    for (n = 0; n < depth; ++n) {
+        correction = carry[n];
+        bound = correction < 0 ? headroom + source[n] * denominator
+            : headroom + (255 - source[n]) * denominator;
+        if (correction < 0) correction = -correction;
+        if (correction > bound && bound * *bottom < *top * correction) {
+            *top = bound;
+            *bottom = correction;
+            *limiting = n;
+        }
+    }
+}
+
+static SIXELSTATUS
+carry_exact_candidate(unsigned char const *source, int32_t const *carry,
+                      int depth, int denominator, double threshold,
+                      double deadzone, int32_t *candidate,
+                      unsigned char *lookup)
+{
+    int64_t top;
+    int64_t bottom;
+    int64_t q;
+    double norm;
+    double radius;
+    int limiting;
+    int n;
+
+    norm = 0;
+    for (n = 0; n < depth; ++n) norm += (double)carry[n] * carry[n];
+    radius = (deadzone > 1e10 ? 1e10 : deadzone) * denominator;
+    carry_exact_ratio(source, carry, depth, denominator, threshold,
+                      &top, &bottom, &limiting);
+    if (norm < radius * radius) top = 0;
+    q = bottom * denominator;
+    for (n = 0; n < depth; ++n) {
+        candidate[n] = carry_exact_round(source[n] * q + carry[n] * top, q);
+        lookup[n] = (unsigned char)(candidate[n] < 0 ? 0 :
+                                    candidate[n] > 255 ? 255 : candidate[n]);
+    }
+    return SIXEL_OK;
+}
+
+/* Frozen 1516ae5db double reference for HARD/NONE compatibility. SOFT uses
+ * the independent exact oracle above; scan/scatter semantics stay frozen.
  */
 static SIXELSTATUS
 carry_speed_reference(unsigned char const *source,
@@ -29,6 +113,11 @@ carry_speed_reference(unsigned char const *source,
     int n;
     int32_t rounded;
 
+    if (policy != SIXEL_DITHER_CLAMP_HARD &&
+            policy != SIXEL_DITHER_CLAMP_NONE) {
+        return carry_exact_candidate(source, carry, depth, denominator,
+                                      threshold, deadzone, candidate, lookup);
+    }
     norm = 0.0;
     for (n = 0; n < depth; ++n) {
         norm += (double)carry[n] * (double)carry[n];
@@ -154,9 +243,9 @@ carry_speed_numeric(int boundary)
              * bound, including limits adjacent to a nonbinary threshold.
              */
             for (i = 0; i < 256; ++i) {
-                for (k = 0; k < 4; ++k) {
+                for (k = 0; k < 5; ++k) {
                     threshold = k == 0 ? 1.0 : k == 1 ? 1.01 :
-                        k == 2 ? 16.0 : nextafter(1.01, 0.0);
+                        k == 2 ? 16.0 : k == 3 ? 1.125 : nextafter(1.01, 0.0);
                     margin = (threshold - 1.0) * 255.0;
                     for (sign = -1; sign <= 1; sign += 2) {
                         for (j = -1; j <= 1; ++j) {
@@ -551,4 +640,107 @@ end:
     sixel_dither_unref(dither[0]);
     sixel_dither_unref(dither[1]);
     return ok ? 0 : 1;
+}
+
+/* Separate observations exercise the same exact data with different checks:
+ * 0 = hard double compatibility; 1 = direction; 2 = limiting boundary;
+ * 3 = tied ratios and positive/negative nearest-even half candidates.
+ */
+int
+carry_speed_contract(int observation)
+{
+    static int const denominators[] = {4,8,16,32,42,48,4096};
+    unsigned char source[4];
+    unsigned char pixel[4];
+    unsigned char expected_pixel[4];
+    int32_t carry[4];
+    int32_t actual[4];
+    int32_t expected[4];
+    int64_t top;
+    int64_t bottom;
+    int64_t q;
+    int64_t error;
+    uint32_t random;
+    double threshold;
+    double margin;
+    int32_t m;
+    int limiting;
+    int policy;
+    int depth;
+    int d;
+    int den;
+    int i;
+    int n;
+
+    random = 7193u;
+    policy = observation == 0 ? SIXEL_DITHER_CLAMP_HARD :
+        SIXEL_DITHER_CLAMP_SOFT;
+    for (d = 0; d < 7; ++d) {
+        den = denominators[d];
+        for (depth = 1; depth <= 4; ++depth) {
+            for (i = 0; i < 2000; ++i) {
+                threshold = i & 1 ? 1.01 : 16.0;
+                for (n = 0; n < depth; ++n) {
+                    random = random * 1664525u + 1013904223u;
+                    source[n] = (unsigned char)(random >> 24);
+                    carry[n] = (int32_t)(random % 58490881u) - 29245440;
+                    if (i % 4 == 0) carry[n] =
+                        (i - 1000 - source[n]) * den + den / 2;
+                    if (i % 4 == 1) carry[n] = n & 1 ?
+                        INT32_MIN + i : INT32_MAX - i;
+                }
+                if (observation == 3) {
+                    /* Opposite boundaries tie at exactly 1/2. Two other
+                     * components land at 127.5 and -0.5, testing parity.
+                     * Permute the tied components to exercise both signs.
+                     */
+                    margin = (threshold - 1.0) * 255.0 * den;
+                    m = (int32_t)floor(margin);
+                    m += margin - m > 0.5 ||
+                        (margin - m == 0.5 && m % 2 != 0);
+                    source[0] = i & 2 ? 255 : 0;
+                    source[1] = 255 - source[0];
+                    carry[0] = source[0] ? 2 * m : -2 * m;
+                    carry[1] = -carry[0];
+                    source[2] = 127;
+                    source[3] = 0;
+                    carry[2] = den;
+                    carry[3] = -den;
+                }
+                if (SIXEL_FAILED(sixel_dither_carry_candidate(source, carry,
+                        depth, den, policy, threshold, 0, actual, pixel))) {
+                    return 1;
+                }
+                if (SIXEL_FAILED(carry_speed_reference(source, carry, depth,
+                        den, policy, threshold, 0, expected, expected_pixel))) {
+                    return 1;
+                }
+                for (n = 0; n < depth; ++n) {
+                    if (actual[n] != expected[n] ||
+                            pixel[n] != expected_pixel[n]) return 1;
+                }
+                if (observation == 0) continue;
+                carry_exact_ratio(source, carry, depth, den, threshold,
+                                  &top, &bottom, &limiting);
+                q = den * bottom;
+                if (observation == 1) {
+                    for (n = 0; n < depth; ++n) {
+                        error = (actual[n] - source[n]) * q - carry[n] * top;
+                        if (error < 0) error = -error;
+                        if (2 * error > q) return 1;
+                    }
+                }
+                if (observation == 2 && limiting >= 0) {
+                    n = limiting;
+                    /* The chosen component reaches its crossed boundary;
+                     * divide only its boundary fraction for this check.
+                     */
+                    error = carry[n] < 0 ? -top : top;
+                    if (actual[n] != carry_exact_round(
+                            source[n] * (int64_t)den + error, den)) return 1;
+                }
+            }
+        }
+    }
+    return 0;
 }
