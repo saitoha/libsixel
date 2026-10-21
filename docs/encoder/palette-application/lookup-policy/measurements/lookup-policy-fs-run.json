@@ -2,18 +2,18 @@
   "build": {
     "cc": "gcc",
     "cflags": "-O3 -std=c99",
-    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
-    "configure_arguments": "--without-libcurl --with-png --without-jpeg --without-librsvg --without-tiff --without-webp --without-coregraphics --without-lcms2 --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin",
+    "configure_arguments": "--with-png --with-lcms2 --without-libcurl --disable-quicklook-extension CFLAGS=-O3 BASH=/bin/sh",
     "cppflags": " -D_DARWIN_C_SOURCE=1",
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-09-06T09:07:58.194246+00:00",
+  "generated_at_utc": "2026-10-21T16:33:04.674874+00:00",
   "host": {
-    "matplotlib": "3.11.1",
-    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "matplotlib": "3.11.2",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
     "processor": "arm",
-    "python": "3.13.13"
+    "python": "3.14.5"
   },
   "input": {
     "path": "images/snake.png",
@@ -22,19 +22,39 @@
   "programs": {
     "img2sixel": {
       "launcher": "converters/img2sixel",
-      "launcher_sha256": "81fac0dc19d0996f1ffd007d0459b85d60eec87e652eb60a6112207944a549b1",
+      "launcher_sha256": "bd39f2f5f08b41f8ea6b3edc87916e34994f8a47cb4ea39373122a0fc5c2db22",
       "payload": "converters/.libs/img2sixel",
-      "payload_sha256": "91dc0de349557a87ef13b78131edbc668ac296c45e2cb77a564662b8ad75b0e0"
+      "payload_sha256": "8c2273605c4912c925cdec976beae8503ce0244fc9959fd90385244fba117c5c"
     },
     "lsqa": {
       "launcher": "assessment/lsqa",
-      "launcher_sha256": "627520e43037f0c928dfe10802e97d1d26ac32cac6befec76603db9f897a714c",
+      "launcher_sha256": "7761da11f57552443e72c699566028c885a7fd1471d5772fde96e26f8571aa8a",
       "payload": "assessment/.libs/lsqa",
-      "payload_sha256": "fb02799c5a41364c6d2984af9e97c48bbb696e48d039daa8fc72c32b249bb087"
+      "payload_sha256": "852c6db24314dbbab0a66c94a07f19846841bdb00a55513640256d6ab97d8a95"
     }
   },
   "protocol": {
     "diffusion": "fs",
+    "lookup_class_probes": [
+      {
+        "classes": {
+          "5bit": "lookup/5bit.float32",
+          "6bit": "lookup/6bit.float32",
+          "certlut": "lookup/certlut.float32",
+          "delaunay": "lookup/delaunay.float32",
+          "eytzinger": "lookup/eytzinger.float32",
+          "fhedt": "lookup/fhedt.float32",
+          "mahalanobis": "lookup/mahalanobis.float32",
+          "none": "lookup/none.float32",
+          "rbc": "lookup/rbc.float32",
+          "vptree": "lookup/vptree.float32"
+        },
+        "colors": 256,
+        "diffusion": "fs",
+        "quantizer": "kmeans",
+        "work_format": "rgb888"
+      }
+    ],
     "policies": [
       "none",
       "5bit",
@@ -44,9 +64,12 @@
       "fhedt",
       "vptree",
       "rbc",
-      "mahalanobis"
+      "mahalanobis",
+      "delaunay"
     ],
     "policy_order_rotated_each_round": true,
+    "precision": "8bit",
+    "required_work_format": "rgb888",
     "sixel_environment_removed": true,
     "speed_colors": [
       8,
@@ -61,7 +84,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "f2c138d8f6aa0a90c89d019f85eaf9bb3efa5edb",
+    "revision": "5b1da5b55c55fb450bd4548a87579140bae893b8",
     "tracked_worktree_state_at_start": "clean"
   }
 }

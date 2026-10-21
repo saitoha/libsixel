@@ -1,5 +1,5 @@
 #!/bin/sh
-# Measure the end-to-end quality effect of 8-bit lookup policies.
+# Measure the end-to-end quality effect of lookup policies at controlled source precision.
 
 set -eu
 
@@ -59,7 +59,7 @@ plot_quality_curve \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
     --output-csv "${output_dir}/lookup-policy-color-error.csv" \
     --output-plot "${output_dir}/lookup-policy-color-error.png" \
-    --title "Current Heckbert compatibility comparison on ${input_name}"
+    --title "Heckbert color error (byte lookup) on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
@@ -67,7 +67,7 @@ plot_quality_curve \
     --metrics MS-SSIM \
     --output-csv "${output_dir}/lookup-policy-ms-ssim.csv" \
     --output-plot "${output_dir}/lookup-policy-ms-ssim.png" \
-    --title "Current Heckbert compatibility MS-SSIM on ${input_name}"
+    --title "Heckbert MS-SSIM (byte lookup) on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
@@ -75,7 +75,7 @@ plot_quality_curve \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
     --output-csv "${output_dir}/lookup-policy-kmeans-color-error.csv" \
     --output-plot "${output_dir}/lookup-policy-kmeans-color-error.png" \
-    --title "K-means lookup-policy color error on ${input_name}"
+    --title "K-means color error (native-float lookup) on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
@@ -83,7 +83,7 @@ plot_quality_curve \
     --metrics MS-SSIM \
     --output-csv "${output_dir}/lookup-policy-kmeans-ms-ssim.csv" \
     --output-plot "${output_dir}/lookup-policy-kmeans-ms-ssim.png" \
-    --title "K-means lookup-policy MS-SSIM on ${input_name}"
+    --title "K-means MS-SSIM (native-float lookup) on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
@@ -91,7 +91,7 @@ plot_quality_curve \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
     --output-csv "${output_dir}/lookup-policy-kmeans-fs-color-error.csv" \
     --output-plot "${output_dir}/lookup-policy-kmeans-fs-color-error.png" \
-    --title "K-means lookup-policy color error with FS on ${input_name}"
+    --title "K-means color error with FS (native-float lookup) on ${input_name}"
 
 plot_quality_curve \
     8,16,32,64,128,256 \
@@ -99,7 +99,7 @@ plot_quality_curve \
     --metrics MS-SSIM \
     --output-csv "${output_dir}/lookup-policy-kmeans-fs-ms-ssim.csv" \
     --output-plot "${output_dir}/lookup-policy-kmeans-fs-ms-ssim.png" \
-    --title "K-means lookup-policy MS-SSIM with FS on ${input_name}"
+    --title "K-means MS-SSIM with FS (native-float lookup) on ${input_name}"
 
 plot_quality_curve \
     128,144,160,176,192,208,224,240,256 \
@@ -107,7 +107,7 @@ plot_quality_curve \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
     --output-csv "${output_dir}/lookup-policy-kmeans-high-k.csv" \
     --output-plot "${output_dir}/lookup-policy-kmeans-high-k.png" \
-    --title "K-means lookup-policy color error, K=128–256, on ${input_name}"
+    --title "K-means native-float lookup, K=128–256, on ${input_name}"
 
 plot_quality_curve \
     128,144,160,176,192,208,224,240,256 \
@@ -115,4 +115,4 @@ plot_quality_curve \
     --metrics 'Δ E00_mean,Δ Chroma_mean' \
     --output-csv "${output_dir}/lookup-policy-heckbert-high-k.csv" \
     --output-plot "${output_dir}/lookup-policy-heckbert-high-k.png" \
-    --title "Heckbert palette-geometry sensitivity, K=128–256, on ${input_name}"
+    --title "Heckbert byte lookup, K=128–256, on ${input_name}"

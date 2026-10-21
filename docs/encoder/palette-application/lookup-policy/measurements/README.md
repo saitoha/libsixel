@@ -11,20 +11,22 @@ The historical RGB555 path reduces each byte-valued color axis from 256 values t
 3. What end-to-end speed does each policy deliver under the same modern CLI configuration?
 4. Does sharing the `5bit`, `6bit`, or `certlut` instance between workers materially change end-to-end latency?
 5. What latency change does the Metal PaletteApply path produce for its supported `none` and `eytzinger` policies?
-6. How do the nine policies change when Floyd--Steinberg error diffusion is enabled instead of disabling dithering?
+6. How do the ten policies change when Floyd--Steinberg error diffusion is enabled instead of disabling dithering?
 7. How does `delaunay` compare with `vptree`, `5bit`, and `6bit` across byte and native-float lookup, three images, and both diffusion settings?
 
-The nine-policy measurements answer the first six questions for one fixture. The separate Delaunay comparison answers the seventh for three fixtures. Neither establishes a universal ranking of lookup policies.
+The ten-policy sweeps answer questions one, two, three, and six for one fixture. Separate shared-instance and Metal studies answer questions four and five; the four-policy Delaunay study answers question seven for three fixtures. These studies have different revisions and protocols and do not establish a universal ranking.
 
 Unless a subsection explicitly says otherwise, every quality and speed result below uses `--diffusion=none`. This isolates palette construction and lookup more clearly by removing spatial error feedback. It is not representative of the default experience when a user enables dithering; the dedicated Floyd--Steinberg control below measures that case separately.
 
-The nine-policy curves labeled 8-bit resolve to `work=rgb888`. This is part of the protocol because the same lookup-policy name selects different backends and cost structures on `rgb-f32`. The Delaunay comparison records the selected `lookup/POLICY.8bit` or `lookup/POLICY.float32` class for each case; `--precision=8bit` alone does not establish lookup representation when CMS promotes an input. The matched `K=64` comparison is in [Encoder Working Precision](../../../precision/README.md#lookup-policies); it complements, rather than replaces, the palette-size sweeps below.
+The ten-policy sweeps resolve to planner `work=rgb888`, but their actual lookup classes differ: controlled OKLab K-means uses `lookup/POLICY.float32`, while Heckbert uses `lookup/POLICY.8bit`. The retained native palette explains this distinction; [Encoder Working Precision](../../../precision/README.md#requested-precision-and-effective-format) owns that contract. Neither the planner field nor `--precision=8bit` alone establishes the lookup representation. The separate Delaunay study also records the actual consumer classes.
 
 ## Conditions
 
-The nine-policy no-diffusion and Floyd--Steinberg curves, shared-instance curves, and Metal curves were measured on 2026-09-06 from clean Autotools builds of revision `f2c138d8f` on macOS 26.5.1 arm64. The input was [`images/snake.png`](../../../../../images/snake.png). The broad curves use `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128 through 256. The Delaunay study has its own source snapshot, conditions, and figures below; its times must not be spliced into these older curves.
+The ten-policy quality and single-thread speed sweeps were measured on 2026-10-22 JST from tracked-clean revision `5b1da5b55c55fb450bd4548a87579140bae893b8`. The host was an Apple M3 Max with 36 GiB RAM, macOS 27.0.1 arm64, and Apple Clang 21.0.0. Autotools used `CFLAGS=-O3`, libpng, and LCMS2; the manifests retain the complete configuration and executable hashes. The input was [`images/snake.png`](../../../../../images/snake.png), at 600 by 450 pixels. The broad curves use `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128 through 256.
 
-The controlled K-means quality and speed comparisons use this normal CLI path:
+The shared-instance and Metal artifacts retain their 2026-09-06 revision `f2c138d8f` and macOS 26.5.1 conditions. Their sections describe the historical evidence and its limits. The four-policy Delaunay study has its own snapshot and protocol below. Compare times within each study; do not splice their samples into the ten-policy curves.
+
+The controlled K-means quality and speed comparisons use this normal CLI path, with `SIXEL_LOADER_CMS_ENGINE=none` in the cleaned environment:
 
 ```text
 img2sixel \
@@ -84,13 +86,17 @@ img2sixel \
   images/snake.png
 ```
 
-`lsqa` compares each SIXEL stream with the original image and reports its existing `Δ E00_mean`, `Δ Chroma_mean`, and MS-SSIM metrics. Encoder input is pinned to the `libpng` loader, and the runner removes inherited `SIXEL_*` variables from both programs. The K-means seed is explicitly one. The baseline disables diffusion so propagated error does not obscure the palette and lookup effects; the control changes only that option to `fs`. One worker exercises the serial lazy-cache behavior of `5bit` and `6bit`.
+`lsqa` compares each SIXEL stream with the original image and reports its existing `Δ E00_mean`, `Δ Chroma_mean`, and MS-SSIM metrics. The runner removes inherited `SIXEL_*` variables from both programs, then sets `SIXEL_LOADER_CMS_ENGINE=none` for both. Encoder input is pinned to `libpng`; assessment settings stay identical across policies. The K-means seed is one, and the diffusion control changes only `none` to `fs`.
+
+Untimed probes at `K = 256` check all ten consumer classes for K-means with both diffusion settings and for Heckbert without diffusion. The manifests retain these probes. In this build, the K-means `5bit` and `6bit` measurements exercise their native-float exhaustive fallbacks; only the Heckbert quality curves exercise their byte-addressed caches. `-Wgamma` selects gamma-RGB application coordinates without forcing a byte palette.
 
 ## Results
 
 ### Controlled K-means result
 
-![Mean Delta E00 and mean absolute CIELAB chroma error for the controlled K-means lookup-policy comparison](lookup-policy-kmeans-color-error.png)
+The color-error curves below overlap for nine policies, including `delaunay`; the table distinguishes those equal measurements from the small `fhedt` difference.
+
+![Mean Delta E00 and mean absolute CIELAB chroma error for controlled K-means with native-float lookup](lookup-policy-kmeans-color-error.png)
 
 Lower values are better on both panels. The complete measurements are in [`lookup-policy-kmeans-color-error.csv`](lookup-policy-kmeans-color-error.csv). The corresponding spatially pooled view is [MS-SSIM](lookup-policy-kmeans-ms-ssim.png), with values in [`lookup-policy-kmeans-ms-ssim.csv`](lookup-policy-kmeans-ms-ssim.csv).
 
@@ -98,115 +104,117 @@ At `K = 256`, the measured values are:
 
 | Policy | Mean Delta E00 | Mean absolute chroma error | MS-SSIM |
 | --- | ---: | ---: | ---: |
-| `none` | 1.904815 | 1.540278 | 0.989294 |
-| `5bit` | 2.305358 | 1.876720 | 0.981868 |
-| `6bit` | 2.028380 | 1.625482 | 0.987094 |
-| `certlut` | 1.904373 | 1.544062 | 0.989328 |
-| `eytzinger` | 2.186592 | 1.943040 | 0.989361 |
-| `fhedt` | 2.003165 | 1.646098 | 0.988420 |
-| `vptree` | 1.905966 | 1.541044 | 0.989289 |
-| `rbc` | 1.904815 | 1.540278 | 0.989294 |
-| `mahalanobis` | 1.904815 | 1.540278 | 0.989294 |
+| `none` | 1.803334 | 1.491011 | 0.991444 |
+| `5bit` | 1.803334 | 1.491011 | 0.991444 |
+| `6bit` | 1.803334 | 1.491011 | 0.991444 |
+| `certlut` | 1.803334 | 1.491011 | 0.991444 |
+| `eytzinger` | 1.803334 | 1.491011 | 0.991444 |
+| `fhedt` | 1.811546 | 1.499045 | 0.991376 |
+| `vptree` | 1.803334 | 1.491011 | 0.991444 |
+| `rbc` | 1.803334 | 1.491011 | 0.991444 |
+| `mahalanobis` | 1.803334 | 1.491011 | 0.991444 |
+| `delaunay` | 1.803334 | 1.491011 | 0.991444 |
 
-`-Qkmeans:Gw` selects K-means with Ward final merging, while `-Xoklab` places its clustering objective in OKLab. `-Wgamma` keeps palette application in byte-valued gamma RGB so this figure does not mix in a working-colorspace comparison. K-means still finds a local solution rather than a guaranteed global optimum.
+`-Qkmeans:Gw` selects K-means with Ward final merging, while `-Xoklab` places its clustering objective in OKLab. K-means still finds a local solution rather than a guaranteed global optimum. Its retained float palette makes this a native-float lookup comparison even though the input and planner work format are RGB888.
 
-The measured `6bit` result is coarser than `none`, as its bucket memoization permits, but it is materially closer than `5bit`. On this fixture at `K = 256`, its mean Delta E00 is 6.5 percent above `none`, while `5bit` is 21.0 percent above `none`. This supports RGB666 as a substantially better approximation than RGB555, but still does not make it output-equivalent to direct lookup.
-
-`certlut`, `vptree`, `rbc`, and `mahalanobis` remain at or very near the direct result on this fixture. Their mean Delta E00 values span 1.904373 through 1.905966, with end-to-end medians from 85.4 through 114.6 ms. `fhedt` is faster at 82.3 ms but reaches 2.003165 mean Delta E00; Eytzinger is similarly fast at 83.1 ms but reaches 2.186592. The result exposes several distinct quality/speed tradeoffs rather than one uniformly best accelerated policy.
+Across the broad sweep, the nine non-`fhedt` policies have identical reported six-decimal color errors and MS-SSIM. In particular, this experiment does not show the RGB555/RGB666 bucket approximation: `5bit` and `6bit` use their float fallbacks. `fhedt` has a small error difference at `K = 256`. Equal aggregate metrics alone do not establish byte-identical outputs or a general exactness guarantee; the [policy reference](../README.md#contract) owns those guarantees.
 
 This section has no fixed-palette comparison. Such a comparison must apply each explicit lookup policy to the supplied `-m` palette, which the CLI does, and has not been measured.
 
 ### Legacy RGB555 context in current Heckbert mode
 
-The current Heckbert comparison is retained because it exposes the palette construction coupling associated with preserving the legacy RGB555 path. It is not a reconstruction of a historical user choice: through the 1.8.7 era, the RGB555 route was fixed and users could not select a lookup policy.
+The Heckbert comparison exposes the palette construction coupling associated with preserving the legacy RGB555 path. It is not a reconstruction of a historical user choice: through the 1.8.7 era, the RGB555 route was fixed and users could not select a lookup policy. These curves exercise byte lookup and show differences absent from the native-float K-means curves.
 
 ![Mean Delta E00 and mean absolute CIELAB chroma error when each lookup policy also selects Heckbert histogram resolution](lookup-policy-color-error.png)
 
-At `K = 8`, `none` reported mean absolute chroma error 8.435487, while `5bit`, `6bit`, `certlut`, `eytzinger`, and `vptree` reported 14.914233, 16.088598, 16.104532, 16.587467, and 16.105232 respectively. The later `fhedt`, `rbc`, and `mahalanobis` policies reported 15.895770, 16.106705, and 16.106705.
+At `K = 8`, `none` reports mean absolute chroma error 6.840117, compared with 6.469421 for `5bit`, 6.690632 for `6bit`, and 6.677878 for both `vptree` and `delaunay`. The values and command templates are in [`lookup-policy-color-error.csv`](lookup-policy-color-error.csv).
 
-The current compatibility mapping is in [`histogram_control_make_for_policy`](../../../../../src/palette-heckbert.c#L403). The Heckbert builder uses eight bits per channel for `none`, five for `5bit`, and six for the other policies in this comparison. The non-`5bit` branches are modern comparison points, not modes that the old CLI exposed. Their histograms change the box boundaries, weighted medians, and representative colors before palette application begins. Inspection of the decoded `K = 8` outputs found that the most frequently selected `none` entry was muted brown RGB `(125, 92, 87)`, with CIELAB chroma about 15.1. The six-bit palette instead most frequently selected olive RGB `(130, 128, 38)`, with chroma about 47.9. Large low- and medium-chroma regions of this particular image were therefore oversaturated by the six-bit palette.
+The [Heckbert histogram compatibility mapping](../README.md#precedence-and-interactions) changes palette construction before lookup begins. Its effect and byte lookup approximation are therefore combined in these curves. A lower perceptual error for another policy does not imply a more exact search over the same palette.
 
-The explanation is fixture-specific: `none` happened to receive a palette whose chroma distribution better matched this image. It is not evidence that an exhaustive RGB lookup intrinsically minimizes CIELAB chroma error.
-
-The companion spatially pooled measurement for this current comparison is:
+The companion MS-SSIM figure shows a different aspect of the same outputs; higher values are better.
 
 ![MS-SSIM for the current Heckbert compatibility comparison](lookup-policy-ms-ssim.png)
 
-At `K = 256`, `5bit` reaches 0.973219 while `none` reaches 0.986088. The underlying values are in [`lookup-policy-ms-ssim.csv`](lookup-policy-ms-ssim.csv).
+At `K = 256`, `5bit` reaches 0.983335, `none` reaches 0.992192, and `delaunay` reaches 0.992580. The underlying values are in [`lookup-policy-ms-ssim.csv`](lookup-policy-ms-ssim.csv).
 
 ### Controlled K-means high-palette-size detail
 
-![Focused mean Delta E00 and mean absolute CIELAB chroma error for the controlled K-means comparison from K 128 through 256](lookup-policy-kmeans-high-k.png)
+The focused figure enlarges the 128--256 region under the same native-float K-means condition; the nine non-`fhedt` curves remain coincident at the reported precision.
+
+![Focused mean Delta E00 and mean absolute CIELAB chroma error for controlled K-means from K 128 through 256](lookup-policy-kmeans-high-k.png)
 
 The focused source data are in [`lookup-policy-kmeans-high-k.csv`](lookup-policy-kmeans-high-k.csv). At `K = 256`, the measured values are:
 
 | Policy | Mean Delta E00 | Mean absolute chroma error |
 | --- | ---: | ---: |
-| `none` | 1.904815 | 1.540278 |
-| `5bit` | 2.305358 | 1.876720 |
-| `6bit` | 2.028380 | 1.625482 |
-| `certlut` | 1.904373 | 1.544062 |
-| `eytzinger` | 2.186592 | 1.943040 |
-| `fhedt` | 2.003165 | 1.646098 |
-| `vptree` | 1.905966 | 1.541044 |
-| `rbc` | 1.904815 | 1.540278 |
-| `mahalanobis` | 1.904815 | 1.540278 |
+| `none` | 1.803334 | 1.491011 |
+| `5bit` | 1.803334 | 1.491011 |
+| `6bit` | 1.803334 | 1.491011 |
+| `certlut` | 1.803334 | 1.491011 |
+| `eytzinger` | 1.803334 | 1.491011 |
+| `fhedt` | 1.811546 | 1.499045 |
+| `vptree` | 1.803334 | 1.491011 |
+| `rbc` | 1.803334 | 1.491011 |
+| `mahalanobis` | 1.803334 | 1.491011 |
+| `delaunay` | 1.803334 | 1.491011 |
 
-This focused figure uses the same `-Qkmeans:Gw -Xoklab -Wgamma` condition as the broad controlled comparison. It therefore enlarges the 128--256 region without introducing the policy-dependent Heckbert histogram resolution. `certlut`, `vptree`, `rbc`, and `mahalanobis` stay near the direct result in this range, while the separate speed figure shows the lower latency and larger error of `fhedt` and `eytzinger`.
+The matching broad and focused endpoints provide a consistency check on the repeated quality runs. The separate speed figure distinguishes their end-to-end cost; overlapping quality curves do not imply equal runtime.
 
 ### Palette-geometry sensitivity under Heckbert
 
-![Focused mean Delta E00 and mean absolute CIELAB chroma error for the Heckbert palette-geometry sensitivity comparison from K 128 through 256](lookup-policy-heckbert-high-k.png)
+The Heckbert high-`K` figure shows larger policy differences. Comparing it with K-means changes both palette construction and lookup representation, so the difference cannot be assigned solely to palette geometry.
+
+![Focused mean Delta E00 and mean absolute CIELAB chroma error for the Heckbert comparison from K 128 through 256](lookup-policy-heckbert-high-k.png)
 
 The focused source data are in [`lookup-policy-heckbert-high-k.csv`](lookup-policy-heckbert-high-k.csv). At `K = 256`, the measured values are:
 
 | Policy | Mean Delta E00 | Mean absolute chroma error |
 | --- | ---: | ---: |
-| `none` | 2.447771 | 1.842988 |
-| `5bit` | 3.155706 | 2.269776 |
-| `6bit` | 2.596776 | 1.859324 |
-| `certlut` | 2.403138 | 1.749753 |
-| `eytzinger` | 3.032645 | 2.461793 |
-| `fhedt` | 2.475566 | 1.747344 |
-| `vptree` | 2.400774 | 1.748358 |
-| `rbc` | 2.402073 | 1.756719 |
-| `mahalanobis` | 2.402073 | 1.756719 |
+| `none` | 1.788589 | 1.325273 |
+| `5bit` | 2.140509 | 1.720508 |
+| `6bit` | 1.915410 | 1.421429 |
+| `certlut` | 1.836495 | 1.337875 |
+| `eytzinger` | 2.068099 | 1.675120 |
+| `fhedt` | 1.965712 | 1.434240 |
+| `vptree` | 1.836473 | 1.341678 |
+| `rbc` | 1.836473 | 1.341678 |
+| `mahalanobis` | 1.836473 | 1.341678 |
+| `delaunay` | 1.836473 | 1.341678 |
 
 #### Why some Heckbert configurations beat `none`
 
-Several non-`none` configurations score better than `none` in this end-to-end Heckbert measurement. At `K = 256`, `vptree`, `rbc`, `mahalanobis`, and `certlut` report mean Delta E00 values from 2.400774 to 2.403138, below `none` at 2.447771. For mean chroma error, `fhedt`, `vptree`, `certlut`, `rbc`, and `mahalanobis` are also below `none`.
+The ordering depends on palette size and metric. At `K = 8`, `5bit` has lower mean Delta E00 than `none` (6.512108 versus 6.562847). At `K = 256`, `none` has the lowest mean Delta E00 in this comparison, but Eytzinger has higher MS-SSIM (0.992792 versus 0.992192). No policy leads every metric at every palette size.
 
-This result does not mean that a non-`none` lookup is more exact than an exhaustive scan over the same palette. In the current Heckbert compatibility path, `none` constructs its palette from a `256^3` histogram, whereas these listed policy configurations use a `64^3` histogram. Their palettes have already diverged before lookup begins. In addition, `none` minimizes squared distance in stored gamma-RGB coordinates, while the plotted metrics are Delta E00 and CIELAB chroma error. Exactness for the lookup metric therefore does not guarantee the lowest value for either plotted perceptual metric.
+The histogram mapping changes Heckbert's splits and representative colors. Moreover, the lookup metric differs from Delta E00, chroma error, and MS-SSIM. These results cannot establish that a coarser histogram inherently improves perceptual quality, or that another policy is more exact than an exhaustive scan. A fixed-palette component benchmark is needed to isolate lookup error.
 
-The important observation is that finer histogram resolution plus exhaustive RGB lookup does not monotonically improve end-to-end perceptual error. The coarser histogram may act as a useful regularizer for this fixture by changing Heckbert's splits and representative colors, but this graph does not isolate or prove that mechanism. A fixed-palette component benchmark is required to compare lookup error independently of palette construction.
-
-Palette quality and lookup indexability are separate properties. In a `K = 256` diagnostic, `eytzinger` and `vptree` emitted identical palette definitions within each quantizer, yet their output quality depended strongly on the palette geometry. Under controlled K-means their mean Delta E00 values are 2.186592 and 1.905966, a difference of 0.280626. Under Heckbert they are 3.032645 and 2.400774, a difference of 0.631871. The Heckbert palette is not simply worse: with `vptree` it scores better than the K-means palette on this fixture.
-
-The 8-bit `eytzinger` policy projects colors with `r + g + b` and examines a fixed window of at most six palette entries on each side of the insertion position. A palette whose nearest-neighbor geometry is poorly preserved by that projection exposes the approximation. `vptree` instead uses metric branch-and-bound tests and retains its nearest-distance guarantee. This pair of figures therefore demonstrates why lookup policies should be evaluated with more than one palette geometry. It does not establish that either quantizer is generally easier or harder to search from this single image.
+At `K = 256`, `eytzinger` and `vptree` have mean Delta E00 values of 2.068099 and 1.836473 under Heckbert, whereas both reach 1.803334 under K-means. [Eytzinger's byte and float search methods](../eytzinger.md#guarantee) differ, so this pair is not a controlled test of geometry alone. It motivates evaluating multiple palettes while keeping the lookup representation fixed. The present single-image study does not establish a generally easier quantizer to search.
 
 ### End-to-end speed
 
-![Median end-to-end runtime for each lookup policy](lookup-policy-speed.png)
+The speed figure compares native-float K-means lookup, including palette construction and SIXEL encoding. Delaunay and VP-tree have nearly equal medians at `K = 256`.
 
-The figure reports median elapsed time; lower is better. Each point is the median of nine fresh processes after two warm-up runs, and the error bars show the interquartile range. The source data and complete command template are in [`lookup-policy-speed.csv`](lookup-policy-speed.csv).
+![Median end-to-end runtime for each lookup policy with native-float K-means](lookup-policy-speed.png)
+
+Each point is the median of nine fresh processes after two warm-up rounds; policy order rotates each round, and error bars show the interquartile range. Lower is better. The source data and complete command template are in [`lookup-policy-speed.csv`](lookup-policy-speed.csv).
 
 At `K = 256`, the result is:
 
 | Policy | Median time | Speedup over `none` |
 | --- | ---: | ---: |
-| `none` | 128.3 ms | 1.00x |
-| `5bit` | 70.3 ms | 1.83x |
-| `6bit` | 72.0 ms | 1.78x |
-| `certlut` | 85.4 ms | 1.50x |
-| `eytzinger` | 83.1 ms | 1.54x |
-| `fhedt` | 82.3 ms | 1.56x |
-| `vptree` | 88.1 ms | 1.46x |
-| `rbc` | 114.6 ms | 1.12x |
-| `mahalanobis` | 113.4 ms | 1.13x |
+| `none` | 119.2 ms | 1.00x |
+| `5bit` | 127.9 ms | 0.93x |
+| `6bit` | 128.4 ms | 0.93x |
+| `certlut` | 100.4 ms | 1.19x |
+| `eytzinger` | 74.6 ms | 1.60x |
+| `fhedt` | 70.8 ms | 1.68x |
+| `vptree` | 65.9 ms | 1.81x |
+| `rbc` | 99.5 ms | 1.20x |
+| `mahalanobis` | 128.0 ms | 0.93x |
+| `delaunay` | 65.9 ms | 1.81x |
 
-This confirms a real speed/accuracy tradeoff between `6bit` and `none` on the fixture. It does not show that `6bit` is the best current default: both the exactness properties and the measured runtime of the other accelerated policies must be considered. Dense `5bit` and `6bit` tables also pay fixed initialization and cold-bucket costs, so their relative position changes with `K`, image size, cache reuse, and traversal order.
+Delaunay and VP-tree each take about 65.9 ms, compared with 119.2 ms for `none`; their interquartile ranges overlap. Native-float `5bit` and `6bit` take about 128 ms and do not show a byte-cache speed advantage. Their byte performance belongs to the separate representation-controlled Delaunay study below.
 
-The true 8-bit result changes the shape seen in the earlier float-promoted run. From `K = 16` through `K = 256`, `fhedt` rises from 55.6 ms to 82.3 ms, while the dense `5bit` and `6bit` paths rise from about 49.6 ms to 70.3 and 72.0 ms. Fhedt remains relatively shallow and close to Eytzinger, but it no longer outruns the byte-addressed tables at high `K`. The figure is an end-to-end measurement, so a component benchmark is still required to assign the difference solely to lookup.
+In this run, `fhedt` takes 70.8 ms while VP-tree and Delaunay are faster and match the direct quality scores. This does not establish a portable ranking. Preparation, queries, palette construction, loading, and SIXEL output all contribute to elapsed time; a component benchmark is needed to assign the differences to a particular stage.
 
 ### Shared-instance performance
 
@@ -251,45 +259,49 @@ At `K = 256`, CPU and Metal output was byte-identical within each policy. The ma
 
 ### Floyd--Steinberg control
 
+This control repeats the broad native-float K-means comparison with only diffusion changed from `none` to `fs`. The figure shows coincident color-error curves for nine policies, including Delaunay.
+
 ![Mean Delta E00 and mean absolute CIELAB chroma error with Floyd--Steinberg diffusion](lookup-policy-kmeans-fs-color-error.png)
 
-This control repeats the broad controlled K-means comparison with only the diffusion setting changed from `none` to `fs`. The complete color-error values are in [`lookup-policy-kmeans-fs-color-error.csv`](lookup-policy-kmeans-fs-color-error.csv). The corresponding spatially pooled view is [MS-SSIM](lookup-policy-kmeans-fs-ms-ssim.png), with values in [`lookup-policy-kmeans-fs-ms-ssim.csv`](lookup-policy-kmeans-fs-ms-ssim.csv).
+The complete color-error values are in [`lookup-policy-kmeans-fs-color-error.csv`](lookup-policy-kmeans-fs-color-error.csv). The corresponding spatially pooled view is [MS-SSIM](lookup-policy-kmeans-fs-ms-ssim.png), with values in [`lookup-policy-kmeans-fs-ms-ssim.csv`](lookup-policy-kmeans-fs-ms-ssim.csv).
 
 At `K = 256`, changing only `--diffusion=none` to `--diffusion=fs` produced:
 
 | Policy | Mean Delta E00 (`none` -> `fs`) | Mean absolute chroma error (`none` -> `fs`) | MS-SSIM (`none` -> `fs`) |
 | --- | ---: | ---: | ---: |
-| `none` | 1.904815 -> 2.162113 | 1.540278 -> 1.833049 | 0.989294 -> 0.992358 |
-| `5bit` | 2.305358 -> 2.448471 | 1.876720 -> 2.062422 | 0.981868 -> 0.989076 |
-| `6bit` | 2.028380 -> 2.238910 | 1.625482 -> 1.902066 | 0.987094 -> 0.991549 |
-| `certlut` | 1.904373 -> 2.160246 | 1.544062 -> 1.831859 | 0.989328 -> 0.992399 |
-| `eytzinger` | 2.186592 -> 2.473524 | 1.943040 -> 2.309031 | 0.989361 -> 0.992292 |
-| `fhedt` | 2.003165 -> 2.250221 | 1.646098 -> 1.895945 | 0.988420 -> 0.991588 |
-| `vptree` | 1.905966 -> 2.161557 | 1.541044 -> 1.832612 | 0.989289 -> 0.992368 |
-| `rbc` | 1.904815 -> 2.162113 | 1.540278 -> 1.833049 | 0.989294 -> 0.992358 |
-| `mahalanobis` | 1.904815 -> 2.162113 | 1.540278 -> 1.833049 | 0.989294 -> 0.992358 |
+| `none` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `5bit` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `6bit` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `certlut` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `eytzinger` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `fhedt` | 1.811546 -> 2.267398 | 1.499045 -> 1.963902 | 0.991376 -> 0.992180 |
+| `vptree` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `rbc` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `mahalanobis` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
+| `delaunay` | 1.803334 -> 2.255713 | 1.491011 -> 1.961572 | 0.991444 -> 0.992427 |
 
-Mean per-pixel Delta E00 and chroma error increased for every policy. That is not a contradiction: Floyd--Steinberg redistributes quantization error spatially rather than minimizing the independent error of each pixel. MS-SSIM increased for every policy in this true 8-bit run, especially for `5bit`. Similar six-decimal aggregate values for several policies do not by themselves establish byte-identical or pixel-identical output.
+Mean per-pixel Delta E00 and chroma error increase for every policy, while MS-SSIM improves. Floyd--Steinberg redistributes quantization error spatially rather than minimizing each pixel's independent error. Similar six-decimal aggregate values do not by themselves establish identical outputs.
+
+The speed figure measures the full command with diffusion enabled; the following table compares the medians within the same ten-policy study.
 
 ![Median end-to-end runtime for each lookup policy with Floyd--Steinberg diffusion](lookup-policy-fs-speed.png)
 
-The timing data are in [`lookup-policy-fs-speed.csv`](lookup-policy-fs-speed.csv).
-
-At `K = 256`, the timing comparison is:
+The timing data are in [`lookup-policy-fs-speed.csv`](lookup-policy-fs-speed.csv). At `K = 256`, the comparison is:
 
 | Policy | No-diffusion median | FS median | FS median change |
 | --- | ---: | ---: | ---: |
-| `none` | 128.3 ms | 131.6 ms | +2.6% |
-| `5bit` | 70.3 ms | 75.9 ms | +8.0% |
-| `6bit` | 72.0 ms | 80.9 ms | +12.3% |
-| `certlut` | 85.4 ms | 108.0 ms | +26.6% |
-| `eytzinger` | 83.1 ms | 89.8 ms | +8.1% |
-| `fhedt` | 82.3 ms | 87.2 ms | +6.0% |
-| `vptree` | 88.1 ms | 103.5 ms | +17.5% |
-| `rbc` | 114.6 ms | 119.3 ms | +4.0% |
-| `mahalanobis` | 113.4 ms | 119.3 ms | +5.3% |
+| `none` | 119.2 ms | 125.2 ms | +5.1% |
+| `5bit` | 127.9 ms | 137.4 ms | +7.4% |
+| `6bit` | 128.4 ms | 137.3 ms | +7.0% |
+| `certlut` | 100.4 ms | 132.4 ms | +31.9% |
+| `eytzinger` | 74.6 ms | 89.2 ms | +19.5% |
+| `fhedt` | 70.8 ms | 90.3 ms | +27.4% |
+| `vptree` | 65.9 ms | 81.7 ms | +24.0% |
+| `rbc` | 99.5 ms | 110.5 ms | +11.0% |
+| `mahalanobis` | 128.0 ms | 136.4 ms | +6.5% |
+| `delaunay` | 65.9 ms | 80.2 ms | +21.8% |
 
-These are end-to-end results: they include diffusion arithmetic and every policy-dependent change to the error propagated into later pixels. They do not isolate nearest-neighbor query cost, and they must not be compared with the no-diffusion curves as though diffusion were a constant additive overhead. The dither-adjusted color stream can also change lookup-cache locality and the work performed by SIXEL encoding. In this run that effect is most visible for `certlut`, `vptree`, and `6bit`; the table does not by itself assign the timing change to one component.
+Delaunay takes 80.2 ms and VP-tree 81.7 ms at this point, with matching reported quality scores. These results include diffusion arithmetic, changed query colors, and SIXEL encoding. They do not isolate nearest-neighbor query cost or establish a constant additive diffusion overhead. The median increase is largest for `certlut` in this run, but the table cannot attribute it to one component.
 
 ### Delaunay: byte and native-float comparison
 
@@ -318,12 +330,13 @@ Delaunay has lower aggregate elapsed time with Floyd--Steinberg in this run, whi
 
 Variation is material at several points. For example, byte `egret` without diffusion at `K = 256` takes `80.58 ± 28.51 ms` for `5bit`, with a `71.41 ms` median and one `133.02 ms` sample; byte `snake` without diffusion at `K = 128` takes `74.10 ± 7.76 ms` for Delaunay. Every sample is retained, including these slow observations. Seven sequential samples and a fixed policy order do not establish statistical significance or a stable universal ranking.
 
-The separate output probes produced byte-identical SIXEL for Delaunay and VP-tree in all 48 matched cases. This establishes equality for these fixtures and commands, including diffusion; it does not replace the [native-coordinate correctness tests](../delaunay.md#test-coverage). This study does not add perceptual quality scores, multithreaded or shared-instance results, or measurements of the float SIMD build.
+The separate output probes produced byte-identical SIXEL for Delaunay and VP-tree in all 48 matched cases. This establishes equality for these fixtures and commands, including diffusion; it does not replace the [native-coordinate correctness tests](../delaunay.md#test-coverage). This four-policy study does not add perceptual quality scores, multithreaded or shared-instance results, or measurements of the float SIMD build. The ten-policy quality sweeps above include Delaunay under their own common protocol; their CMS and palette conditions differ from this study.
 
 ## Interpretation
 
-- The nine-policy quality study uses one natural image, and the Delaunay timing study adds a second photo and one screenshot. Neither characterizes every color distribution. Add gradients, saturated synthetic colors, alpha cases, and a broader image set before using the result to change a default.
+- The ten-policy quality study uses one natural image, and the separate four-policy Delaunay timing study adds a second photo and one screenshot. Neither characterizes every color distribution. Add gradients, saturated synthetic colors, alpha cases, and a broader image set before using the result to change a default.
 - Mean Delta E00 includes lightness, chroma, and hue contributions but hides worst-case pixels. Mean chroma error omits hue and lightness.
+- The native-float K-means and byte Heckbert curves differ in both palette construction and lookup representation; they do not isolate representation or geometry alone.
 - The quality test does not measure memory use, output size, or palette-index stability. Those require separate curves.
 - The speed curve is end-to-end single-image latency, not an isolated lookup microbenchmark. Loader, palette construction, and SIXEL encoding add common work, while policy-dependent preparation remains part of the measurement.
 - The Floyd--Steinberg control demonstrates one diffusion method. It does not predict ordered, arithmetic, or other error-diffusion methods.
@@ -338,7 +351,9 @@ Configure an Autotools build with libpng and the assessment tools, install Pytho
 tools/reproduce_lookup_policy_measurements.sh
 ```
 
-This one command rebuilds `img2sixel` and `lsqa`, regenerates all eight quality sweeps and both speed sweeps, writes the plots, and records provenance in [`lookup-policy-run.json`](lookup-policy-run.json) and [`lookup-policy-fs-run.json`](lookup-policy-fs-run.json), and validates the complete Cartesian set of nine policies and configured palette sizes. It refuses tracked source changes so the recorded Git revision identifies the implementation that produced the results. Untracked files do not affect this check.
+This one command rebuilds `img2sixel` and `lsqa`, regenerates all eight quality sweeps and both speed sweeps, writes the plots, records provenance in [`lookup-policy-run.json`](lookup-policy-run.json) and [`lookup-policy-fs-run.json`](lookup-policy-fs-run.json), and validates the complete Cartesian set of ten policies and configured palette sizes: 540 quality points and 120 speed points. It refuses tracked source changes so the recorded Git revision identifies the implementation that produced the results. Untracked files do not affect this check.
+
+Before timing, the speed runner probes all ten policies at the largest requested palette size. It requires native-float K-means consumers for that diffusion setting and additionally byte Heckbert consumers for the no-diffusion quality path. The manifests record the actual classes as well as `work=rgb888`; the validator rejects a missing or mismatched class record. These probes are untimed.
 
 The driver uses [`tools/plot_quality_curve.py`](../../../../../tools/plot_quality_curve.py) for command execution, `lsqa` parsing, CSV output, and plotting. The default input is `images/snake.png`; the default performance budget is two warm-up rounds followed by nine measured rounds. `BUILD_DIR`, `PYTHON`, `MAKE`, `IMG2SIXEL_PATH`, `LSQA_PATH`, `LOOKUP_POLICY_WARMUPS`, and `LOOKUP_POLICY_RUNS` are explicit overrides. Supplying an output directory and input as the first two arguments supports exploratory runs without changing the checked-in artifacts.
 
@@ -350,7 +365,7 @@ PYTHON=.venv/bin/python tools/reproduce_lookup_policy_acceleration.sh
 
 The Python override is only an example; use an interpreter with Matplotlib. The runner rebuilds the project, measures both fixed matrices, forces Metal, checks CPU/Metal output equivalence, checks the required `S0`/`S1` output relation, writes [`lookup-policy-acceleration-run.json`](lookup-policy-acceleration-run.json), and invokes the common artifact validator. The default shared-instance thread limit is eight and can be changed with `LOOKUP_POLICY_SHARED_THREADS`; such a run is a different protocol and should not overwrite the checked-in results without updating their interpretation.
 
-The Delaunay study uses a separate runner because its fixture set, representations, and seven-sample protocol differ from the nine-policy study. Configure and finish an Autotools build with libpng and LCMS2 in an out-of-tree directory, using `CFLAGS=-O3` to match the recorded build. Install Hyperfine, ImageMagick, and Python Matplotlib, and run the following from a clean source checkout containing Delaunay; `BUILD_DIR` must identify that checkout's completed build. Keep raw logs outside the source checkout, and run without other build or test jobs:
+The Delaunay study uses a separate runner because its fixture set, representations, and seven-sample protocol differ from the ten-policy study. Configure and finish an Autotools build with libpng and LCMS2 in an out-of-tree directory, using `CFLAGS=-O3` to match the recorded build. Install Hyperfine, ImageMagick, and Python Matplotlib, and run the following from a clean source checkout containing Delaunay; `BUILD_DIR` must identify that checkout's completed build. Keep raw logs outside the source checkout, and run without other build or test jobs:
 
 ```sh
 python3 tools/plot_lookup_policy_delaunay.py measure \

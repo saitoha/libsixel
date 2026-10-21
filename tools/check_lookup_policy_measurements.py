@@ -203,6 +203,21 @@ def validate_metadata(path: Path) -> Dict[str, object]:
         fail(f"incomplete measurement metadata: {path}")
     if protocol.get("sixel_environment_removed") is not True:
         fail("measurement metadata does not confirm SIXEL_* isolation")
+    quantizers = ("kmeans", "heckbert") if protocol.get("diffusion") == "none" else ("kmeans",)
+    probes = protocol.get("lookup_class_probes")
+    if not isinstance(probes, list) or len(probes) != len(quantizers):
+        fail(f"missing lookup-class probes in {path}")
+    for probe, quantizer in zip(probes, quantizers):
+        representation = "float32" if quantizer == "kmeans" else "8bit"
+        expected = {policy: f"lookup/{policy}.{representation}" for policy in POLICIES}
+        if not isinstance(probe, dict) or (
+            probe.get("quantizer") != quantizer
+            or probe.get("diffusion") != protocol.get("diffusion")
+            or probe.get("colors") != 256
+            or probe.get("work_format") != "rgb888"
+            or probe.get("classes") != expected
+        ):
+            fail(f"unexpected lookup-class probe in {path}")
     if source.get("tracked_worktree_state_at_start") != "clean":
         fail("checked-in measurements must originate from a clean worktree")
     for name in ("img2sixel", "lsqa"):

@@ -1,6 +1,6 @@
 # Lookup policy: `delaunay`
 
-This page describes `--lookup-policy=delaunay` for CLI users and library contributors. The [lookup policy reference](README.md) owns the shared interface, metric and guarantee terminology. The [measurement companion](measurements/README.md#delaunay-byte-and-native-float-comparison) compares byte and native-float end-to-end latency with `vptree`, `5bit`, and `6bit`. `auto` continues to select `vptree`.
+This page describes `--lookup-policy=delaunay` for CLI users and library contributors. The [lookup policy reference](README.md) owns the shared interface, metric and guarantee terminology. The [measurement companion](measurements/README.md) includes ten-policy quality and speed sweeps plus a separate byte and native-float latency comparison with `vptree`, `5bit`, and `6bit`. `auto` continues to select `vptree`.
 
 ## Purpose and intuition
 

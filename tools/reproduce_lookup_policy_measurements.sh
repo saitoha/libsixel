@@ -71,7 +71,7 @@ PYTHON=${PYTHON} \
     --output-csv "${output_dir}/lookup-policy-fs-speed.csv" \
     --output-plot "${output_dir}/lookup-policy-fs-speed.png" \
     --output-metadata "${output_dir}/lookup-policy-fs-run.json" \
-    --title "End-to-end lookup-policy runtime with FS on ${input_image##*/}"
+    --title "K-means runtime with FS (native-float lookup) on ${input_image##*/}"
 
 "${PYTHON}" "${TOP_SRCDIR}/tools/check_lookup_policy_measurements.py" \
     "${output_dir}"

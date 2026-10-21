@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """Measure and plot end-to-end img2sixel lookup-policy runtime.
 
-The benchmark deliberately uses the normal palette-generation path.  A fixed
-palette loaded with ``-m`` currently disables optimized lookup, so it cannot
-distinguish the accelerated policies from ``none`` through the CLI.
+The benchmark uses the normal palette-generation path, including its cost.
+The controlled OKLab K-means palette retains native float coordinates even
+with rgb888 input.  Fixed-palette lookup is a separate benchmark.
 """
 
 from __future__ import annotations
@@ -180,10 +180,13 @@ def run_once(command: Sequence[str], env: Dict[str, str]) -> float:
 def require_work_format(command: Sequence[str],
                         env: Dict[str, str],
                         expected: str,
-                        input_data: bytes | None = None) -> str:
-    """Run a planner probe and require one effective working format."""
+                        input_data: bytes | None = None,
+                        expected_lookup: str | None = None) -> str:
+    """Check planner precision and, when requested, the actual consumer."""
     trace_env = env.copy()
-    trace_env["SIXEL_TRACE_TOPIC"] = "palette_contract"
+    trace_env["SIXEL_TRACE_TOPIC"] = (
+        "lookup_contract" if expected_lookup is not None else "palette_contract"
+    )
     diagnostic_command = list(command[:-1]) + ["-v", command[-1]]
     proc = subprocess.run(
         diagnostic_command,
@@ -208,7 +211,60 @@ def require_work_format(command: Sequence[str],
             "Working-format preflight observed an unexpected format: "
             f"expected {expected}, observed {formats}"
         )
+    if expected_lookup is not None:
+        classes = re.findall(
+            r"LSXLUT2\|phase=palette-apply\|selected=([^|\s]+)",
+            diagnostic,
+        )
+        if not classes or set(classes) != {expected_lookup}:
+            raise RuntimeError(
+                "Lookup-class preflight observed an unexpected consumer: "
+                f"expected {expected_lookup}, observed {classes}"
+            )
     return formats[0]
+
+
+def probe_lookup_classes(img2sixel: str,
+                         input_image: Path,
+                         colors: int,
+                         policies: Sequence[str],
+                         diffusion: str,
+                         env: Dict[str, str]) -> List[Dict[str, object]]:
+    """Record untimed consumer checks for the corresponding quality paths."""
+    probes = []
+    quantizers = ("kmeans", "heckbert") if diffusion == "none" else ("kmeans",)
+    for quantizer in quantizers:
+        classes = {}
+        for policy in policies:
+            command = make_command(
+                img2sixel, input_image, colors, policy, diffusion,
+            )
+            representation = "float32"
+            if quantizer == "heckbert":
+                # Match the quality wrapper's byte-palette configuration.
+                command.remove("-Xoklab")
+                command.remove("-Wgamma")
+                command[command.index("--quantize-model=kmeans:seed=1")] = (
+                    "--quantize-model=heckbert"
+                )
+                command[command.index("--merge-policy=ward")] = (
+                    "--merge-policy=none"
+                )
+                command.insert(1, "--cover-policy=off")
+                representation = "8bit"
+            selected = f"lookup/{policy}.{representation}"
+            require_work_format(
+                command, env, "rgb888", expected_lookup=selected,
+            )
+            classes[policy] = selected
+        probes.append({
+            "quantizer": quantizer,
+            "diffusion": diffusion,
+            "colors": colors,
+            "work_format": "rgb888",
+            "classes": classes,
+        })
+    return probes
 
 
 def measure(img2sixel: str,
@@ -471,7 +527,8 @@ def write_metadata(path: Path,
                    runs: int,
                    revision: str,
                    source_state: str,
-                   clean_sixel_environment: bool) -> None:
+                   clean_sixel_environment: bool,
+                   lookup_class_probes: Sequence[Dict[str, object]]) -> None:
     """Write common provenance for the quality and performance artifacts."""
     programs = {"img2sixel": program_record(img2sixel, source_root)}
     if lsqa is not None:
@@ -507,6 +564,7 @@ def write_metadata(path: Path,
             "speed_runs": runs,
             "policy_order_rotated_each_round": True,
             "sixel_environment_removed": clean_sixel_environment,
+            "lookup_class_probes": list(lookup_class_probes),
         },
     }
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -554,16 +612,8 @@ def main() -> int:
 
     img2sixel = resolve_img2sixel(args.img2sixel, source_root)
     command_env = make_command_environment(args.clean_sixel_environment)
-    require_work_format(
-        make_command(
-            img2sixel,
-            input_image,
-            colors[0],
-            policies[0],
-            args.diffusion,
-        ),
-        command_env,
-        "rgb888",
+    lookup_class_probes = probe_lookup_classes(
+        img2sixel, input_image, colors[-1], policies, args.diffusion, command_env,
     )
     rows = measure(
         img2sixel,
@@ -579,7 +629,7 @@ def main() -> int:
     )
     write_csv(args.output_csv, rows)
     title = args.title or (
-        f"End-to-end lookup-policy runtime on {input_image.name}"
+        f"K-means runtime (native-float lookup) on {input_image.name}"
     )
     plot(args.output_plot, rows, colors, policies, title, args.runs)
     if args.output_metadata is not None:
@@ -604,6 +654,7 @@ def main() -> int:
             args.revision,
             args.source_state,
             args.clean_sixel_environment,
+            lookup_class_probes,
         )
     return 0
 
