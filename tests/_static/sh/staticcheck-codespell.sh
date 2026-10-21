@@ -73,15 +73,6 @@ find src \
     | LC_ALL=C sort > "$tmpfile"
 
 total=$(wc -l < "$tmpfile" | awk '{print $1}')
-jobs=${STATICCHECK_JOBS:-}
-if test -z "$jobs"; then
-    jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '4')
-fi
-case "$jobs" in
-    ''|*[!0-9]*|0)
-        jobs=1
-        ;;
-esac
 progress_is_tty=0
 test -t 1 && progress_is_tty=1
 
@@ -108,13 +99,13 @@ mkfifo "$result_fifo"
 done_count=0
 ok_count=0
 failed_count=0
-xargs_status=0
+scheduler_status=0
 
 export CODESPELL_BIN="$codespell_bin"
 export CODESPELL_LOG_DIR="$tmpdir"
 # shellcheck disable=SC2016
 # Amortize Python startup and dictionary loading across bounded batches.
-xargs -0 -n 64 -P "$jobs" sh -c '
+sh "$src_root/tests/_static/sh/run-check-batches.sh" 64 "$queue_file" sh -c '
     item_id=$$
     log_path="${CODESPELL_LOG_DIR}/${item_id}.log"
     # "doub"/"alis" are PSD descriptor types; "Alph" is a PSB section key.
@@ -123,7 +114,7 @@ xargs -0 -n 64 -P "$jobs" sh -c '
     else
         printf "NG\t%s\t%s\n" "$item_id" "$#"
     fi
-' sh < "$queue_file" > "$result_fifo" &
+' sh > "$result_fifo" &
 worker_pid=$!
 unset CODESPELL_BIN CODESPELL_LOG_DIR
 
@@ -146,16 +137,16 @@ while IFS="$tab_char" read -r result id item_count; do
     fi
 done < "$result_fifo"
 
-wait "$worker_pid" || xargs_status=$?
+wait "$worker_pid" || scheduler_status=$?
 if test "$progress_is_tty" -eq 1; then
     printf '\n'
 fi
 
-case "$xargs_status" in
+case "$scheduler_status" in
     0|123)
         ;;
     *)
-        emit_note "codespell: xargs failed with status $xargs_status"
+        emit_note "codespell: batch scheduler failed with status $scheduler_status"
         failed_count=$((failed_count + 1))
         ;;
 esac

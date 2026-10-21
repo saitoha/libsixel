@@ -41,15 +41,6 @@ trap cleanup EXIT HUP INT TERM
 
 find "${repo_root}/tests" -type f -name '*.t' | LC_ALL=C sort > "$tmpfile"
 total=$(wc -l < "$tmpfile" | awk '{print $1}')
-jobs=${STATICCHECK_JOBS:-}
-if test -z "$jobs"; then
-    jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '4')
-fi
-case "$jobs" in
-    ''|*[!0-9]*|0)
-        jobs=1
-        ;;
-esac
 
 echo "Running ShellCheck for tests/*.t"
 ARTIFACT_LOCAL_DIR=${ARTIFACT_LOCAL_DIR:-"${repo_root}/tests/_artifacts"}
@@ -77,7 +68,7 @@ else
     done_count=0
     ok_count=0
     failed_count=0
-    xargs_status=0
+    scheduler_status=0
 
     export SHELLCHECK_CMD_INNER="$shellcheck_cmd"
     export REPO_ROOT_INNER="$repo_root"
@@ -87,7 +78,7 @@ else
     # A failing batch retains all diagnostics, including filenames; every
     # nonzero tool status remains a failure, even without diagnostic output.
     # shellcheck disable=SC2016
-    xargs -0 -n 64 -P "$jobs" sh -c '
+    sh "$repo_root/tests/_static/sh/run-check-batches.sh" 64 "$queue_file" sh -c '
         item_id=$$
         log_path="${SHELLCHECK_LOG_DIR}/${item_id}.log"
         if "$SHELLCHECK_CMD_INNER" -x -P "${REPO_ROOT_INNER}" "$@" >"$log_path" 2>&1; then
@@ -95,7 +86,7 @@ else
         else
             printf "NG\t%s\t%s\n" "$item_id" "$#"
         fi
-    ' sh < "$queue_file" > "$result_fifo" &
+    ' sh > "$result_fifo" &
     worker_pid=$!
     unset SHELLCHECK_CMD_INNER REPO_ROOT_INNER SHELLCHECK_LOG_DIR
 
@@ -118,16 +109,16 @@ else
         fi
     done < "$result_fifo"
 
-    wait "$worker_pid" || xargs_status=$?
+    wait "$worker_pid" || scheduler_status=$?
     if test "$progress_is_tty" -eq 1; then
         printf '\n'
     fi
 
-    case "$xargs_status" in
+    case "$scheduler_status" in
         0|123)
             ;;
         *)
-            echo "ERROR: xargs failed while running shellcheck (status=$xargs_status)"
+            echo "ERROR: batch scheduler failed while running shellcheck (status=$scheduler_status)"
             failed=1
             ;;
     esac

@@ -20,7 +20,7 @@ test -n "$src_root" || {
 test -n "$build_root" || build_root="$src_root"
 
 # Workers share only immutable inventory and uniquely numbered result paths.
-# The parent alone owns cleanup, after xargs has reaped every worker.
+# The parent alone owns cleanup, after Make has reaped every worker.
 tmpdir=${9:-}
 worker_index=${10:-}
 if test -z "$tmpdir"; then
@@ -153,6 +153,10 @@ select_case() {
     case_kind=$1
     shift
     index=$((index + 1))
+    if test -z "$worker_index"; then
+        printf '%s %s\n' "$index" "$1" >> "$tmpdir/registrations"
+        return 0
+    fi
     test "$index" = "$worker_index" || return 0
     index=$((index - 1))
     case_status=0
@@ -767,7 +771,7 @@ run_source_contract "staticcheck-psd-deferred-stroke-adjust" || fail_and_exit $?
 run_source_contract "staticcheck-kcenter-auto-perceptual-preference" || fail_and_exit $?
 
 # Dispatch all registered cases, then replay complete logs in registry order.
-# Worker failures are data, not xargs failures: an early failed case must not
+# Worker failures are data, not scheduler failures: an early failed case must not
 # prevent another scheduled case from being accounted for in the summary.
 test -z "$worker_index" || {
     echo "FAIL staticcheck worker did not find registration $worker_index"
@@ -777,33 +781,22 @@ test "$index" -eq "$total" || {
     echo "FAIL staticcheck registration count differs from declared total"
     exit 1
 }
-jobs=${STATICCHECK_JOBS:-}
-if test -z "$jobs"; then
-    jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '4')
-    case "$jobs" in ''|*[!0-9]*|0) jobs=1 ;; esac
-    test "$jobs" -le 8 || jobs=8
-fi
-case "$jobs" in ''|*[!0-9]*) jobs=1 ;; esac
-test "$jobs" -gt 0 2>/dev/null || jobs=1
-# Some legacy hosts have xargs but no parallel option. Preserve full serial
-# verification there rather than introducing a new mandatory tool feature.
-set --
-if xargs -P 1 sh -c ':' sh </dev/null >/dev/null 2>&1; then
-    set -- -P "$jobs"
-else
-    jobs=1
-fi
 STATICCHECK_TOTAL=$total
 STATICCHECK_OUTPUT_DIR=$tmpdir
-# Lint tools must retain their bounded internal parallelism: ShellCheck
-# dominates CPU time even after startup and shared parsing are amortized.
-STATICCHECK_JOBS=$jobs
-export STATICCHECK_TOTAL STATICCHECK_OUTPUT_DIR STATICCHECK_JOBS
-awk -v total="$total" 'BEGIN { for (i = 1; i <= total; i++) print i }' \
-    > "$tmpdir/queue"
-xargs_status=0
+export STATICCHECK_TOTAL STATICCHECK_OUTPUT_DIR
+# Start the long lint batches early so other checks can share their slots.
+# Completion order never changes the canonical reporting order below.
+awk '
+    $2 == "staticcheck-shellcheck" || $2 == "staticcheck-codespell" {
+        printf "%d%c", $1, 0
+        next
+    }
+    { pending[++count]=$1 }
+    END { for (i=1; i<=count; i++) printf "%d%c", pending[i], 0 }
+' "$tmpdir/registrations" > "$tmpdir/queue"
+scheduler_status=0
 # shellcheck disable=SC2016
-xargs -n 1 "$@" sh -c '
+sh "$src_root/tests/_static/sh/run-check-batches.sh" 1 "$tmpdir/queue" sh -c '
     for item_index do :; done
     item_log="$STATICCHECK_OUTPUT_DIR/$item_index.worker.log"
     item_status=0
@@ -812,9 +805,9 @@ xargs -n 1 "$@" sh -c '
 ' sh "$0" "$src_root" "$build_root" "$actionlint_bin" \
     "$shellcheck_driver" "$shellcheck_bin" "$codespell_bin" \
     "$python_bin" "$have_tree_sitter_c" "$tmpdir" \
-    < "$tmpdir/queue" &
+    &
 suite_pid=$!
-wait "$suite_pid" || xargs_status=$?
+wait "$suite_pid" || scheduler_status=$?
 suite_pid=
 
 index=0
@@ -839,4 +832,4 @@ while test "$index" -lt "$total"; do
 done
 printf 'staticcheck summary: total=%d pass=%d skip=%d fail=%d\n' \
     "$index" "$pass_count" "$skip_count" "$fail_count"
-test "$xargs_status" -eq 0 && test "$fail_count" -eq 0
+test "$scheduler_status" -eq 0 && test "$fail_count" -eq 0

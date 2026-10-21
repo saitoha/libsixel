@@ -8061,7 +8061,8 @@ staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
 
 staticcheck: staticcheck-clean
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	+@$(SHELL) "$(top_srcdir)/tests/_static/sh/run-check-batches.sh" \
+	--make-command '$(MAKE)' env TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	"$(SHELL)" "$(top_srcdir)/tests/_static/sh/staticcheck-suite.sh" \
 		"$(abs_top_srcdir)" \
@@ -8130,7 +8131,8 @@ staticcheck-actionlint:
 		"$(abs_top_srcdir)" "$(ACTIONLINT)"
 
 staticcheck-shellcheck:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	+@$(SHELL) "$(top_srcdir)/tests/_static/sh/run-check-batches.sh" \
+	--make-command '$(MAKE)' env TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	$(T_LOG_DRIVER) --test-name "staticcheck-shellcheck" \
 		--log-file staticcheck-shellcheck.log \
@@ -8141,7 +8143,8 @@ staticcheck-shellcheck:
 		"$(abs_top_srcdir)" "$(SHELLCHECK)"
 
 staticcheck-codespell:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	+@$(SHELL) "$(top_srcdir)/tests/_static/sh/run-check-batches.sh" \
+	--make-command '$(MAKE)' env TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	$(T_LOG_DRIVER) --test-name "staticcheck-codespell" \
 		--log-file staticcheck-codespell.log \
@@ -9642,6 +9645,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_bmp.inc.c \
     _static/sh/prepare-psb-large-fixtures.sh \
+    _static/sh/run-check-batches.sh \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-suite.sh \
     _static/sh/staticcheck-actionlint.sh \
