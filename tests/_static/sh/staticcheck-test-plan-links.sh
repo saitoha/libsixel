@@ -18,7 +18,6 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 docs_root="$src_root/docs"
-tests_root="$src_root/tests"
 plan_specs="$tmpdir/plan-specs"
 expected_pairs="$tmpdir/expected-pairs"
 doc_links="$tmpdir/doc-links"
@@ -167,33 +166,15 @@ while IFS='|' read -r doc_rel test_rel; do
 done < "$duplicates"
 LC_ALL=C sort -u "$doc_pairs" > "$doc_pairs_unique"
 
-find "$tests_root" -type f \
-    \( -name '*.t' -o -name '*.c' -o -name '*.sh' -o \
-       -name '*.py' -o -name '*.rb' -o -name '*.pl' -o \
-       -name '*.php' -o -name '*.ps1' \) \
-    -exec awk -v src_root="$src_root/" -v test_links="$test_links" \
-    -v errors="$errors" '
-    {
-        test_path = substr(FILENAME, length(src_root) + 1)
-        line = $0
-        while (match(line,
-                     /Test-plan:[[:space:]]+docs\/[A-Za-z0-9_.\/-]+\.md/)) {
-            if (FNR > 20 ||
-                line !~ /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Test-plan:/ ||
-                (test_path ~ /\.ps1$/ &&
-                 line !~ /^[[:space:]]*#[[:space:]]*Test-plan:/)) {
-                print test_path ": Test-plan reference must be a source " \
-                    "comment within the first 20 lines" >> errors
-            }
-            plan = substr(line, RSTART, RLENGTH)
-            sub(/^Test-plan:[[:space:]]+/, "", plan)
-            print plan "|" test_path >> test_links
-            line = substr(line, RSTART + RLENGTH)
-        }
-    }
-' {} +
-
-LC_ALL=C sort "$test_links" -o "$test_links"
+# Never sort the shared inventory in place: other workers may still read it.
+reference_dir=${SIXEL_STATICCHECK_REFERENCE_DIR:-}
+if test -z "$reference_dir"; then
+    reference_dir=$tmpdir
+    sh "$src_root/tests/_static/sh/collect-source-references.sh" \
+        "$src_root" "$reference_dir" test-plan
+fi
+cat "$reference_dir/test-plan-errors" >> "$errors"
+LC_ALL=C sort "$reference_dir/test-plan-links" > "$test_links"
 uniq -d "$test_links" > "$duplicates"
 while IFS='|' read -r doc_rel test_rel; do
     test -n "$doc_rel" || continue

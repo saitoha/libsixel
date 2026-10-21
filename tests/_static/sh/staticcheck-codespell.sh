@@ -90,8 +90,8 @@ failed_list="$tmpdir/failed.list"
 tab_char=$(printf '\t')
 while IFS= read -r file_path; do
     test -n "$file_path" || continue
-    printf '%s\0' "$file_path" >> "$queue_file"
-done < "$tmpfile"
+    printf '%s\0' "$file_path"
+done < "$tmpfile" > "$queue_file"
 
 mkfifo "$result_fifo"
 : > "$failed_list"

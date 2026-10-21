@@ -746,6 +746,18 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-source-reference-controls',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-source-reference-controls.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-c-header-modeline-controls',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-c-header-modeline-controls.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-actionlint',
     [meson.current_source_dir() / '_static/sh/staticcheck-actionlint.sh',
       meson.project_source_root(),

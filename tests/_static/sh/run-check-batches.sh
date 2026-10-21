@@ -65,7 +65,17 @@ trap 'exit 1' HUP INT TERM
     printf 'exec '
     for argument do
         printf "'"
-        printf '%s' "$argument" | sed "s/'/'\\\\''/g"
+        # Quote literal apostrophes with parameter expansion and printf only;
+        # invoking sed once per argument would add processes to every batch.
+        while :; do
+            case "$argument" in
+                *"'"*)
+                    printf '%s%s' "${argument%%"'"*}" "'\\''"
+                    argument=${argument#*"'"}
+                    ;;
+                *) printf '%s' "$argument"; break ;;
+            esac
+        done
         printf "' "
     done
     printf '"$@"\n'
@@ -81,8 +91,8 @@ printf '.PHONY: all\nall:\n' > "$tmpdir/Makefile"
 xargs -0 -n "$batch_size" sh -c '
     printf "%s\000" "$@" > "$SIXEL_STATICCHECK_QUEUE_DIR/$$.args"
     printf ".PHONY: batch-%s\nall: batch-%s\nbatch-%s:\n\t+@xargs -0 sh \"\$\$SIXEL_STATICCHECK_QUEUE_DIR/command.sh\" < \"\$\$SIXEL_STATICCHECK_QUEUE_DIR/%s.args\"\n" \
-        "$$" "$$" "$$" "$$" >> "$SIXEL_STATICCHECK_QUEUE_DIR/Makefile"
-' sh < "$queue"
+        "$$" "$$" "$$" "$$"
+' sh < "$queue" >> "$tmpdir/Makefile"
 
 status=0
 "$SIXEL_STATICCHECK_MAKE" --no-print-directory -s -k \

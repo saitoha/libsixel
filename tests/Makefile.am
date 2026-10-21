@@ -7906,6 +7906,8 @@ AM_LOG_FLAGS =
 	staticcheck-suboption-image-coverage \
 	staticcheck-tap-dispatch \
 	staticcheck-suite-workers \
+	staticcheck-source-reference-controls \
+	staticcheck-c-header-modeline-controls \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
@@ -7986,6 +7988,8 @@ staticcheck-staticcheck-suite-sync \
 staticcheck-suboption-image-coverage \
 staticcheck-tap-dispatch \
 staticcheck-suite-workers \
+staticcheck-source-reference-controls \
+staticcheck-c-header-modeline-controls \
 staticcheck-actionlint \
 staticcheck-shellcheck \
 staticcheck-codespell \
@@ -8107,6 +8111,26 @@ staticcheck-suite-workers:
 		--trs-file staticcheck-suite-workers.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-suite-workers.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-source-reference-controls:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-source-reference-controls" \
+		--log-file staticcheck-source-reference-controls.log \
+		--trs-file staticcheck-source-reference-controls.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-source-reference-controls.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-c-header-modeline-controls:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-c-header-modeline-controls" \
+		--log-file staticcheck-c-header-modeline-controls.log \
+		--trs-file staticcheck-c-header-modeline-controls.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-c-header-modeline-controls.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-suboption-image-coverage:
@@ -9645,6 +9669,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_bmp.inc.c \
     _static/sh/prepare-psb-large-fixtures.sh \
+    _static/sh/collect-source-references.sh \
     _static/sh/run-check-batches.sh \
     _static/sh/shellcheck.sh \
     _static/sh/staticcheck-suite.sh \
@@ -9717,6 +9742,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-suboption-image-coverage.sh \
     _static/sh/staticcheck-tap-dispatch.sh \
     _static/sh/staticcheck-suite-workers.sh \
+    _static/sh/staticcheck-source-reference-controls.sh \
+    _static/sh/staticcheck-c-header-modeline-controls.sh \
     _static/sh/staticcheck-suboption-registry.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
@@ -9751,6 +9778,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-test-plan-links.sh \
     _static/sh/tap-case.sh \
     _static/awk/tap-status.awk \
+    _static/awk/source-references.awk \
     _static/awk/suboption-image-coverage.awk \
     _static/awk/docs-github-math.awk \
     _static/awk/doc-types-inventory.awk \

@@ -19,7 +19,6 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 docs_root="$src_root/docs"
-tests_root="$src_root/tests"
 doc_links="$tmpdir/doc-links"
 test_links="$tmpdir/test-links"
 doc_pairs="$tmpdir/doc-pairs"
@@ -133,31 +132,16 @@ while IFS='|' read -r doc_rel test_rel target; do
     }
 done < "$doc_links"
 
-find "$tests_root" -type f \
-    \( -name '*.t' -o -name '*.c' -o -name '*.sh' -o \
-       -name '*.py' -o -name '*.rb' -o -name '*.pl' -o \
-       -name '*.php' -o -name '*.ps1' \) \
-    -exec awk -v src_root="$src_root/" -v test_links="$test_links" \
-    -v errors="$errors" '
-    {
-        test_path = substr(FILENAME, length(src_root) + 1)
-        line = $0
-        while (match(line,
-                     /Policy:[[:space:]]+docs\/[A-Za-z0-9_.\/-]+\.md/)) {
-            if (FNR > 20 ||
-                line !~ /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Policy:/ ||
-                (test_path ~ /\.ps1$/ &&
-                 line !~ /^[[:space:]]*#[[:space:]]*Policy:/)) {
-                print test_path ": Policy reference must be a source " \
-                    "comment within the first 20 lines" >> errors
-            }
-            policy = substr(line, RSTART, RLENGTH)
-            sub(/^Policy:[[:space:]]+/, "", policy)
-            print policy "|" test_path >> test_links
-            line = substr(line, RSTART + RLENGTH)
-        }
-    }
-' {} +
+# Suite workers share immutable reference outputs. A focused invocation builds
+# its own scoped inventory through the same scanner, with identical rules.
+reference_dir=${SIXEL_STATICCHECK_REFERENCE_DIR:-}
+if test -z "$reference_dir"; then
+    reference_dir=$tmpdir
+    sh "$src_root/tests/_static/sh/collect-source-references.sh" \
+        "$src_root" "$reference_dir" policy
+fi
+test_links=$reference_dir/policy-links
+cat "$reference_dir/policy-errors" >> "$errors"
 
 awk -F '|' '{ print $1 "|" $2 }' "$doc_links" | sort -u > "$doc_pairs"
 sort -u "$test_links" > "$test_pairs"

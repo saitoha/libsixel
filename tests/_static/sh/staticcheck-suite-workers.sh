@@ -10,6 +10,8 @@ tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-suite-workers-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 mkdir -p "$tmpdir/root/tests/_static/sh" "$tmpdir/root/tests/_static/awk"
 cp "$src_root/tests/_static/sh/run-check-batches.sh" "$tmpdir/root/tests/_static/sh/"
+cp "$src_root/tests/_static/sh/collect-source-references.sh" "$tmpdir/root/tests/_static/sh/"
+cp "$src_root/tests/_static/awk/source-references.awk" "$tmpdir/root/tests/_static/awk/"
 cp "$src_root/tests/_static/sh/tap-case.sh" "$tmpdir/root/tests/_static/sh/"
 cp "$src_root/tests/_static/awk/tap-status.awk" "$tmpdir/root/tests/_static/awk/"
 
@@ -20,7 +22,8 @@ awk '/^run_case_tap "staticcheck-/ { exit } { print }' \
 cat >> "$tmpdir/suite.sh" <<'CASES'
 run_case_tap "staticcheck-control-pass" sh -c 'printf "1..1\nok 1\n"'
 run_case_tap "staticcheck-control-skip" sh -c 'printf "1..0 # SKIP absent\n"'
-run_case_plain "staticcheck-codespell" printf '%s\n' 'argument with spaces'
+run_case_plain "staticcheck-codespell" printf '%s\n' 'argument with spaces' "quote'quote" '$literal' '' 'two
+lines'
 run_case_skip "staticcheck-control-absent" 'tool unavailable'
 run_case_tap "staticcheck-control-bad-tap" sh -c 'printf "1..1\n"'
 run_case_plain "staticcheck-control-child-failure" sh -c 'echo sentinel >&2; exit 9'

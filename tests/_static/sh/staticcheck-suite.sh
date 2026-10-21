@@ -45,15 +45,10 @@ export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 # Source-only TAP contracts retain ordinary test-harness coverage. Discover
 # their stable roles once; the registrations below require exactly one owner.
 if test -z "$worker_index"; then
-find "$src_root/tests" -type f -name '*.t' -exec awk '
-/^# Staticcheck: / {
-    if (FNR > 20 || NF != 3 || $3 !~ /^staticcheck-[a-z0-9-]+$/) {
-        print FILENAME ": invalid Staticcheck registration" > "/dev/stderr"
-        exit 1
-    }
-    print $3 "|" FILENAME
-}
-' {} + > "$tmpdir/source-contracts"
+    sh "$src_root/tests/_static/sh/collect-source-references.sh" \
+        "$src_root" "$tmpdir"
+    SIXEL_STATICCHECK_REFERENCE_DIR=$tmpdir
+    export SIXEL_STATICCHECK_REFERENCE_DIR
 fi
 
 run_source_contract() {
@@ -341,6 +336,14 @@ run_case_tap "staticcheck-tap-dispatch" \
 
 run_case_tap "staticcheck-suite-workers" \
     "$src_root/tests/_static/sh/staticcheck-suite-workers.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-source-reference-controls" \
+    "$src_root/tests/_static/sh/staticcheck-source-reference-controls.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-c-header-modeline-controls" \
+    "$src_root/tests/_static/sh/staticcheck-c-header-modeline-controls.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-suboption-image-coverage" \

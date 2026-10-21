@@ -59,8 +59,8 @@ else
     tab_char=$(printf '\t')
     while IFS= read -r test_file; do
         test -n "${test_file}" || continue
-        printf '%s\0' "$test_file" >> "$queue_file"
-    done < "$tmpfile"
+        printf '%s\0' "$test_file"
+    done < "$tmpfile" > "$queue_file"
 
     mkfifo "$result_fifo"
     : > "$failed_list"
