@@ -2,6 +2,7 @@ path	kind	key	limit
 *	document	*	800
 *	section	*	300
 *	paragraph	*	200
+*	index-entry	*	60
 docs/concepts/pixelformat-precision/README.md	paragraph	*	220
 docs/encoder/output/delta-encoding.md	section	Test coverage	317
 docs/encoder/output/output-colorspace.md	document	*	1138

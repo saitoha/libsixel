@@ -30,7 +30,8 @@ test -f "$src_root/$limits" || {
 # Run from the source root so that reported paths are repository-relative.
 # Document paths contain no white space; the EXTRA_DIST check relies on that too.
 # shellcheck disable=SC2046
-(cd "$src_root" && "${AWK:-awk}" -F '\t' -f "$checker" "$limits" \
+(cd "$src_root" && "${AWK:-awk}" -F '\t' -v index_path=docs/README.md \
+    -f "$checker" "$limits" \
     $(cat "$tmpdir/documents")) > "$tmpdir/errors" || true
 
 test ! -s "$tmpdir/errors" || {

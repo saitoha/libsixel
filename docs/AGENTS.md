@@ -85,10 +85,11 @@ The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-li
 | `document` | One Markdown file | Non-blank source lines, including code, math, and tables |
 | `section` | One `##` heading and everything up to the next `##` heading, including subsections | Non-blank source lines |
 | `paragraph` | One prose source line: a paragraph, a list item, or a quote | Words; code, math, tables, headings, comments, and image lines are not paragraphs |
+| `index-entry` | One list item of the [documentation index](README.md) | Words, as for a paragraph; the index entry also counts as a paragraph |
 
 The defaults are deliberately loose. They catch material that has clearly outgrown its unit; whether a unit is too long for its siblings or its reader is judged in review under [P5 and P11 of the manifesto](documentation/manifesto.md#principles). Because Markdown prose is not hard-wrapped, a paragraph's length is measured in words rather than lines.
 
-A row naming a specific document is an exception. It applies to the whole document, to one `##` section identified by its exact heading text, or to every paragraph of the document, and it records the measured value exactly. An exception can only shrink: the check fails when a measured value exceeds its exception, when the exception is higher than the measured value, or when the measured value is back within the default and the row should be removed. Adding an exception or raising any limit requires maintainer approval as a Class D change in the [documentation workflow](documentation/workflow.md); lowering or removing an exception as material is split needs no separate approval.
+A row naming a specific document is an exception. It applies to the whole document, to one `##` section identified by its exact heading text, to every paragraph of the document, or to every entry of the index, and it records the measured value exactly. An exception can only shrink: the check fails when a measured value exceeds its exception, when the exception is higher than the measured value, or when the measured value is back within the default and the row should be removed. Adding an exception or raising any limit requires maintainer approval as a Class D change in the [documentation workflow](documentation/workflow.md); lowering or removing an exception as material is split needs no separate approval.
 
 To bring a unit within its limit, split it along the lines the manifesto describes, for example by moving variants, measurements, or a test ledger into companion documents, rather than by merging paragraphs, removing headings, or otherwise defeating the measurement.
 
@@ -121,7 +122,7 @@ Keep each directory's internal layout consistent with its subject. A document wi
 | DG-03 | Marked test-plan inventories contain every scoped test exactly once and every listed test links back without using `Policy:` for non-contract coverage. | [tests/_static/sh/staticcheck-test-plan-links.sh](../tests/_static/sh/staticcheck-test-plan-links.sh) |
 | DG-04 | The document-type inventory lists every Markdown document under `docs/` exactly once with a known type and audience. | [tests/_static/sh/staticcheck-doc-types-inventory.sh](../tests/_static/sh/staticcheck-doc-types-inventory.sh) |
 | DG-05 | Every file under `docs/` is listed in `EXTRA_DIST`, and every listed `docs/` path exists. | [tests/_static/sh/staticcheck-docs-dist-sync.sh](../tests/_static/sh/staticcheck-docs-dist-sync.sh) |
-| DG-06 | Documents, `##` sections, and paragraphs stay within the default length limits or their exact, shrink-only exceptions. | [tests/_static/sh/staticcheck-docs-length-limits.sh](../tests/_static/sh/staticcheck-docs-length-limits.sh) |
+| DG-06 | Documents, `##` sections, paragraphs, and index entries stay within the default length limits or their exact, shrink-only exceptions. | [tests/_static/sh/staticcheck-docs-length-limits.sh](../tests/_static/sh/staticcheck-docs-length-limits.sh) |
 
 ### Coverage boundary
 

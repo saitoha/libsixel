@@ -5,11 +5,13 @@
 # a level-2 heading including its subsections, and a paragraph is one prose
 # source line (paragraph, list item or quote) measured in words.  Fenced
 # code, display math, tables, headings, comments and image lines count
-# toward document and section lines but are not paragraphs.
+# toward document and section lines but are not paragraphs.  An index entry
+# is one list item of the documentation index named by index_path, measured
+# in words like a paragraph.
 #
 # A row whose path is "*" sets the default limit of its kind.  Any other row
 # is an exception that raises the limit for one document, one section of a
-# document, or every paragraph of a document.  An exception records the
+# document, every paragraph of a document, or every entry of the index.  An exception records the
 # measured value exactly and may only exist while that value exceeds the
 # default, so an oversized document can shrink but never grow back.
 
@@ -53,7 +55,8 @@ FILENAME == limits_file {
         report(limits_file ":" FNR ": expected path, kind, key and a positive limit")
         next
     }
-    if ($2 != "document" && $2 != "section" && $2 != "paragraph") {
+    if ($2 != "document" && $2 != "section" && $2 != "paragraph" && \
+        $2 != "index-entry") {
         report(limits_file ":" FNR ": unknown kind " $2)
         next
     }
@@ -107,6 +110,17 @@ FNR == 1 {
                 report(FILENAME ":" FNR ": paragraph has " words \
                     " words (limit " paragraph_limit ")")
             }
+            if (FILENAME == index_path && \
+                text ~ /^[ \t]*([-*+]|[0-9]+[.)])[ \t]/) {
+                entry_limit = limit_for(FILENAME, "index-entry", "*")
+                if (words > entry_words[FILENAME]) {
+                    entry_words[FILENAME] = words
+                }
+                if (words > entry_limit) {
+                    report(FILENAME ":" FNR ": index entry has " words \
+                        " words (limit " entry_limit ")")
+                }
+            }
         }
     }
     lines++
@@ -143,6 +157,8 @@ END {
             value = document_lines[part[1]]
         } else if (part[2] == "paragraph") {
             value = paragraph_words[part[1]]
+        } else if (part[2] == "index-entry") {
+            value = entry_words[part[1]]
         } else if ((part[1] SUBSEP part[3]) in sections) {
             value = section_max[part[1], part[3]]
         } else {
