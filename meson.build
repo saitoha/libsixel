@@ -2632,9 +2632,49 @@ endif
 # Extension observation must also precede the generic installed CLI checks.
 # Neither this command nor the Quick Look run target rebuilds or installs it.
 extension_installcheck_command = wic_installcheck_command
-if have_quicklook_extension
-  extension_installcheck_command = [quicklook_installer, 'installcheck',
-                                    quicklook_manage_args]
+# Keep extension observation independent of generic CLI selection. Its log
+# base is separate so the later generic suite cannot replace its evidence.
+if get_option('tests')
+  run_target('register-quicklook-extension', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'activate',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('set-default-quicklook-extension', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'set-default',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('deactivate-quicklook-extension', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'deactivate',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('archive-quicklook-copy', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'archive-copy',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('remove-quicklook-copy', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'remove-copy',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('restore-quicklook-copy', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'restore-copy',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('migration-activate-quicklook', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'migration-activate',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('migration-prepare-quicklook', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'migration-prepare',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('migration-restore-quicklook', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'migration-restore',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('migration-verify-quicklook', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'migration-verify',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('remove-quicklook-users', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'remove-users',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('check-quicklook-installation', command: [sh,
+    meson.current_source_dir() / 'tools/quicklook-user.sh', 'lifecycle',
+    meson.current_build_dir() / 'quicklook-extension/package', package_tool])
+  run_target('installcheck-quicklook', command: [meson_prog, 'test', '-C',
+    meson.project_build_root(), '--no-rebuild', '--setup', 'installcheck',
+    '--logbase', 'quicklook-installed',
+    '--suite', 'quicklook-installed', '--print-errorlogs'])
 endif
 
 run_target('installcheck',
@@ -2666,6 +2706,24 @@ fi
 # Extension installation has its own contract, independent of CLI selection.
 if test "$#" -gt 0; then
   "$@"
+fi
+"$meson_bin" test -C "$build_root" --no-rebuild --setup installcheck --suite quicklook-installed --logbase quicklook-installed --print-errorlogs
+
+# Meson rejects explicitly named tests excluded by --no-suite. Remove the
+# already-observed names before passing the remaining CLI selectors through.
+set --
+if test -n "${SIXEL_INSTALLCHECK_TESTS-}"; then
+  set -f
+  for selected_test in $SIXEL_INSTALLCHECK_TESTS; do
+    case "$selected_test" in
+      extension/quicklook-installed/*|*:extension/quicklook-installed/*) ;;
+      *) set -- "$@" "$selected_test" ;;
+    esac
+  done
+  if test "$#" -eq 0; then
+    echo "installcheck: no generic observations selected"
+    exit 0
+  fi
 fi
 
 case "$bindir" in
@@ -2726,11 +2784,9 @@ export SIXEL_INSTALLCHECK_LSQA_PATH="$install_bindir/lsqa${bin_ext}"
 export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH="test_runner${bin_ext}"
 
 if test -n "${SIXEL_INSTALLCHECK_TESTS-}"; then
-  # Allow callers to run a focused subset while keeping installcheck defaults.
-  # shellcheck disable=SC2086
-  "$meson_bin" test -C "$build_root" --no-rebuild --suite tap --print-errorlogs --setup installcheck $SIXEL_INSTALLCHECK_TESTS
+  "$meson_bin" test -C "$build_root" --no-rebuild --suite tap --no-suite quicklook-installed --print-errorlogs --setup installcheck "$@"
 else
-  "$meson_bin" test -C "$build_root" --no-rebuild --suite tap --print-errorlogs --setup installcheck
+  "$meson_bin" test -C "$build_root" --no-rebuild --suite tap --no-suite quicklook-installed --print-errorlogs --setup installcheck
 fi
 ''',
             'meson-installcheck',

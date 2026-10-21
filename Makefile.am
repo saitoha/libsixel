@@ -47,7 +47,7 @@ DIST_SUBDIRS = \
 export CKSUM
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = tools/generate_output_icc_fixtures.py \
+EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
     assessment/meson.build \
     converters/meson.build \
     examples/meson.build \
@@ -1140,7 +1140,7 @@ else
 	@echo "PHP bindings are not enabled; skipping PHP tests"
 endif
 
-installcheck-local:
+installcheck-local: installcheck-quicklook
 	@set -eu; \
 	if test '@cross_compiling@' = 'yes'; then \
 		echo "installcheck: skipped for cross-compiling builds"; \
@@ -1247,7 +1247,7 @@ install-quicklook-extension:
 
 installcheck-quicklook:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension installcheck-quicklook
-	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look installcheck: SKIP disabled"
+	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@case '@host_os@' in darwin*) echo "Quick Look installcheck: SKIP disabled" ;; *) echo "Quick Look installcheck: SKIP unsupported platform" ;; esac
 
 uninstall-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
@@ -1620,6 +1620,9 @@ endif
 testtimecheck:
 if COND_TESTS
 	@set -- "$(builddir)/tests/test-suite.log"; \
+	if test -f "$(builddir)/quicklook-extension/installcheck/quicklook-installcheck.log"; then \
+	    set -- "$$@" "$(builddir)/quicklook-extension/installcheck/quicklook-installcheck.log"; \
+	fi; \
 	if test -n "$(wic_test_time_log)"; then \
 	    set -- "$$@" "$(wic_test_time_log)"; \
 	fi; \
@@ -1664,3 +1667,52 @@ dist-windows: dist-zip
 	done; \
 	mv -v @PACKAGE_NAME@-@PACKAGE_VERSION@.zip \
 	  @PACKAGE_NAME@-@PACKAGE_VERSION@-$$host_triplet.zip
+
+# Explicit Quick Look user/lifecycle commands are opt-in operations.
+.PHONY: register-quicklook-extension set-default-quicklook-extension deactivate-quicklook-extension archive-quicklook-copy remove-quicklook-copy restore-quicklook-copy remove-quicklook-users check-quicklook-installation
+register-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension register-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+set-default-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension set-default-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+deactivate-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension deactivate-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+archive-quicklook-copy:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension archive-quicklook-copy
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+remove-quicklook-copy:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension remove-quicklook-copy
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+restore-quicklook-copy:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension restore-quicklook-copy
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+remove-quicklook-users:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension remove-quicklook-users
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+check-quicklook-installation:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension check-quicklook-installation
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+# Explicit no-setter migration phases reuse the common user entry.
+
+.PHONY: migration-activate-quicklook
+migration-activate-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-activate-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+.PHONY: migration-prepare-quicklook
+migration-prepare-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-prepare-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+.PHONY: migration-restore-quicklook
+migration-restore-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-restore-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+.PHONY: migration-verify-quicklook
+migration-verify-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-verify-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2

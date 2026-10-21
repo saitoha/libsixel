@@ -143,11 +143,11 @@ am__v_P_1 = :
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 =
+am__v_GEN_1 = 
 AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
-am__v_at_1 =
+am__v_at_1 = 
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -563,7 +563,7 @@ DIST_SUBDIRS = \
 
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = tools/generate_output_icc_fixtures.py \
+EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
     assessment/meson.build \
     converters/meson.build \
     examples/meson.build \
@@ -1663,7 +1663,7 @@ PHASE2_ALL_TARGETS = all-converters-objs all-assessment-objs all-tools \
 PHASE3_ALL_TARGETS = all-converters all-assessment all-tools \
 	all-python $(am__append_10) $(am__append_12) $(am__append_14) \
 	$(am__append_16) $(am__append_18)
-@HAVE_WIC_MSI_FALSE@wic_test_time_log =
+@HAVE_WIC_MSI_FALSE@wic_test_time_log = 
 @HAVE_WIC_MSI_TRUE@wic_test_time_log = $(builddir)/wic/test-suite.log
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -1710,7 +1710,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	$(AM_V_at)rm -f stamp-h1
 	$(AM_V_GEN)cd $(top_builddir) && $(SHELL) ./config.status config.h
-$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
+$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
 	$(AM_V_GEN)($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	$(AM_V_at)rm -f stamp-h1
 	$(AM_V_at)touch $@
@@ -2253,7 +2253,7 @@ check-php:
 @HAVE_PHP_TRUE@	$(MAKE) -C tests check-php
 @HAVE_PHP_FALSE@	@echo "PHP bindings are not enabled; skipping PHP tests"
 
-installcheck-local:
+installcheck-local: installcheck-quicklook
 	@set -eu; \
 	if test '@cross_compiling@' = 'yes'; then \
 		echo "installcheck: skipped for cross-compiling builds"; \
@@ -2317,7 +2317,7 @@ install-quicklook-extension:
 
 installcheck-quicklook:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension installcheck-quicklook
-	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look installcheck: SKIP disabled"
+	@@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@case '@host_os@' in darwin*) echo "Quick Look installcheck: SKIP disabled" ;; *) echo "Quick Look installcheck: SKIP unsupported platform" ;; esac
 
 uninstall-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
@@ -2638,6 +2638,9 @@ export SIXEL_TEST_TIME_DEFER = $(if $(filter check,$(MAKECMDGOALS)),1,0)
 .PHONY: testtimecheck
 testtimecheck:
 @COND_TESTS_TRUE@	@set -- "$(builddir)/tests/test-suite.log"; \
+@COND_TESTS_TRUE@	if test -f "$(builddir)/quicklook-extension/installcheck/quicklook-installcheck.log"; then \
+@COND_TESTS_TRUE@	    set -- "$$@" "$(builddir)/quicklook-extension/installcheck/quicklook-installcheck.log"; \
+@COND_TESTS_TRUE@	fi; \
 @COND_TESTS_TRUE@	if test -n "$(wic_test_time_log)"; then \
 @COND_TESTS_TRUE@	    set -- "$$@" "$(wic_test_time_log)"; \
 @COND_TESTS_TRUE@	fi; \
@@ -2679,6 +2682,55 @@ dist-windows: dist-zip
 	done; \
 	mv -v @PACKAGE_NAME@-@PACKAGE_VERSION@.zip \
 	  @PACKAGE_NAME@-@PACKAGE_VERSION@-$$host_triplet.zip
+
+# Explicit Quick Look user/lifecycle commands are opt-in operations.
+.PHONY: register-quicklook-extension set-default-quicklook-extension deactivate-quicklook-extension archive-quicklook-copy remove-quicklook-copy restore-quicklook-copy remove-quicklook-users check-quicklook-installation
+register-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension register-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+set-default-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension set-default-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+deactivate-quicklook-extension:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension deactivate-quicklook-extension
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+archive-quicklook-copy:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension archive-quicklook-copy
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+remove-quicklook-copy:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension remove-quicklook-copy
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+restore-quicklook-copy:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension restore-quicklook-copy
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+remove-quicklook-users:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension remove-quicklook-users
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+check-quicklook-installation:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension check-quicklook-installation
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+# Explicit no-setter migration phases reuse the common user entry.
+
+.PHONY: migration-activate-quicklook
+migration-activate-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-activate-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+.PHONY: migration-prepare-quicklook
+migration-prepare-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-prepare-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+.PHONY: migration-restore-quicklook
+migration-restore-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-restore-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+.PHONY: migration-verify-quicklook
+migration-verify-quicklook:
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-verify-quicklook
+	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

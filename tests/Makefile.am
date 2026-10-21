@@ -66,6 +66,7 @@ AM_TESTS_ENVIRONMENT += HAVE_QUICKLOOK_EXTENSION=1; export HAVE_QUICKLOOK_EXTENS
 else
 AM_TESTS_ENVIRONMENT += HAVE_QUICKLOOK_EXTENSION=0; export HAVE_QUICKLOOK_EXTENSION;
 endif
+AM_TESTS_ENVIRONMENT += QUICKLOOK_HOST_SYSTEM='@host_os@'; export QUICKLOOK_HOST_SYSTEM;
 AM_TESTS_ENVIRONMENT += QUICKLOOK_PLIST_DIR='$(abs_top_builddir)/quicklook-extension/generated-resources'; export QUICKLOOK_PLIST_DIR;
 AM_TESTS_ENVIRONMENT += QUICKLOOK_PACKAGE_VERSION='@QUICKLOOK_PACKAGE_VERSION@'; export QUICKLOOK_PACKAGE_VERSION;
 
@@ -9140,6 +9141,41 @@ sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
 endif
 
+# Installed extension observations need no converters, test runner or fixture
+# producer. Reuse the ordinary TAP driver and timing reader, but request only
+# these logs; do not call the build-oriented check-TESTS preparation target.
+# This numbered source inventory is also registered by the common test scan.
+# CLI TESTS overrides must neither narrow it nor select make's default goal.
+override quicklook_installed_tests := $(patsubst $(srcdir)/%,%,$(wildcard $(srcdir)/extension/quicklook-installed/????_*.t))
+quicklook_installed_reportdir = $(top_builddir)/quicklook-extension/installcheck
+.PHONY: installcheck-quicklook
+installcheck-quicklook:
+	@set -eu; \
+	test -n "$(quicklook_installed_tests)" || { \
+	    echo "error: Quick Look installed inventory is empty" >&2; exit 1; \
+	}; \
+	for test_path in $(quicklook_installed_tests); do \
+	    rm -f "$${test_path%.t}.log" "$${test_path%.t}.trs"; \
+	done
+	$(MAKE) $(AM_MAKEFLAGS) SIXEL_INSTALLCHECK=1 \
+	    $(quicklook_installed_tests:.t=.log)
+	@set -eu; \
+	printf '%s\n' $(quicklook_installed_tests:.t=.trs) > .quicklook-trs.list; \
+	$(AWK) -v suite=1 -v builddir="$(abs_builddir)" \
+	    -v suite_title="Quick Look installed observations" \
+	    -v counts_file=".quicklook-counts" \
+	    -v failures_file=".quicklook-failures" \
+	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" \
+	    .quicklook-trs.list > quicklook-installcheck.log; \
+	mkdir -p "$(quicklook_installed_reportdir)"; \
+	cp $(quicklook_installed_tests:.t=.log) \
+	    $(quicklook_installed_tests:.t=.trs) quicklook-installcheck.log \
+	    "$(quicklook_installed_reportdir)/"; \
+	read -r all pass skip xfail fail xpass error < .quicklook-counts; \
+	echo "Quick Look installcheck: $$all total $$pass PASS $$skip SKIP $$fail FAIL $$error ERROR"; \
+	test "$$fail:$$xpass:$$error" = "0:0:0"
+
 # Run the regular TAP suite against installed commands.
 # installcheck expects `make install` to have completed first.
 # Use the make variable for the guard and absolute installed command paths:
@@ -9149,6 +9185,9 @@ installcheck-local:
 	if test "$(SIXEL_INSTALLCHECK)" != "1"; then \
 	    echo "installcheck: skipping tests/installcheck-local (driver inactive)"; \
 	    exit 0; \
+	fi; \
+	if test -z "$(filter-out extension/quicklook-installed/%,$(TESTS))"; then \
+	    echo "installcheck: no generic observations selected"; exit 0; \
 	fi; \
 	install_bindir='$(SIXEL_INSTALL_BINDIR)'; \
 	install_libdir='$(SIXEL_INSTALL_LIBDIR)'; \
@@ -9186,6 +9225,7 @@ installcheck-local:
 	export SIXEL_INSTALLCHECK_LSQA_PATH="$$install_bindir/lsqa@EXEEXT@"; \
 	export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH='test_runner@EXEEXT@'; \
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS \
+	    TESTS='$(filter-out extension/quicklook-installed/%,$(TESTS))' \
 	    SIXEL_INSTALLCHECK=1 \
 	    SIXEL_RUNTIME=''
 
@@ -9947,3 +9987,25 @@ EXTRA_DIST += data/color-numeric/ray-reference.py \
 
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
+
+EXTRA_DIST += extension/quicklook-lifecycle/private-user.h \
+    extension/quicklook-lifecycle/private-mutations.h \
+    extension/quicklook-lifecycle/private-driver.m \
+    extension/quicklook-lifecycle/private-os.m \
+    extension/quicklook-lifecycle/audit.m \
+    extension/quicklook-lifecycle/prepare-controls.py \
+    extension/quicklook-lifecycle/prepare-guards.py \
+    extension/quicklook-lifecycle/guard-installer.py \
+    extension/quicklook-lifecycle/guard-pkgutil.py \
+    extension/quicklook-lifecycle/guard_probe.py
+
+EXTRA_DIST += extension/quicklook-lifecycle/prepare-order.py \
+    extension/quicklook-lifecycle/lifecycle-stage.py
+EXTRA_DIST += extension/quicklook-lifecycle/prepare-transitions.py
+
+EXTRA_DIST += extension/quicklook-lifecycle/prepare-migration.py
+
+EXTRA_DIST += extension/quicklook-render/specimen.six \
+    extension/quicklook-render/reference/Preview.png \
+    extension/quicklook-render/wrong-color/Preview.png \
+    extension/quicklook-render/wrong-size.png

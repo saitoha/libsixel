@@ -74,6 +74,7 @@ base_env_settings = [
   ['ARTIFACT_ROOT', artifact_root],
   ['TOP_SRCDIR', meson.project_source_root()],
   ['TOP_BUILDDIR', meson.project_build_root()],
+  ['QUICKLOOK_HOST_SYSTEM', host_machine.system()],
   ['HAVE_QUICKLOOK_EXTENSION', have_quicklook_extension ? '1' : '0'],
   ['QUICKLOOK_PACKAGE_VERSION', quicklook_package_version],
   ['QUICKLOOK_PLIST_DIR', meson.project_build_root() / 'quicklook-extension'],
@@ -391,7 +392,8 @@ foreach t : tests
     env: test_env,
     should_fail: test_should_fail,
     timeout: test_timeout,
-    suite: ['tap'])
+    suite: t.startswith('extension/quicklook-installed/') ?
+      ['tap', 'quicklook-installed'] : ['tap'])
 endforeach
 
 add_test_setup('ci',

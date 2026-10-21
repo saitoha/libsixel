@@ -256,3 +256,159 @@ Prepare staging once through each native build's normal install entry with an ab
 <!-- test-plan-end -->
 
 For operation-level controls, use private roots and a separately compiled test executable whose Installer/receipt/root/UID boundaries are substituted at compile time. The distributed executable accepts no runtime override for those boundaries. Record each substitution and verify arguments, original error status, managed exclusion through child exit and final receipt validation, standalone success without manual completion, lock contention/stale refusal, complete payload/receipt ownership, removal, shared-parent preservation and stage tampering refusal. Substitute-command success is not real Installer evidence. Compile, build, staging and restoration are shared operations, with all first and repeated normal harness samples retained under the [timing policy](guide.md#test-timing). Check dry-run and the actual nonroot refusal on the real host without elevating or installing. Real successful install/receipt transitions and general-user launch/activation require a managed machine and restoration plan; they remain separate lifecycle evidence.
+
+## Quick Look installed observations
+
+The build-tree observer consumes independent distribution expectations. These are real installed checks when explicitly selected through installcheck; normal check skips them. An absent enabled installation fails. A missing explicit user context skips only user observations and does not establish activation. Private roots and substituted OS queries are validation controls, not real Installer or GUI proof.
+
+<!-- test-plan: tests/extension/quicklook-installed/????_*.t -->
+
+The installed stage is independent of CLI selection, runs once, and uses already-built observers. No-context user cases are zero-plan SKIP in both drivers; supplied invalid contexts fail.
+
+| Test | Observation |
+| --- | --- |
+| [tests/extension/quicklook-installed/0001_receipt_identity.t](../../tests/extension/quicklook-installed/0001_receipt_identity.t) | Exact package receipt exists. |
+| [tests/extension/quicklook-installed/0002_receipt_version.t](../../tests/extension/quicklook-installed/0002_receipt_version.t) | Receipt version matches distribution. |
+| [tests/extension/quicklook-installed/0003_receipt_location.t](../../tests/extension/quicklook-installed/0003_receipt_location.t) | Receipt system location matches. |
+| [tests/extension/quicklook-installed/0004_path_host.t](../../tests/extension/quicklook-installed/0004_path_host.t) | Installed bundle path exists host. |
+| [tests/extension/quicklook-installed/0005_path_bridge.t](../../tests/extension/quicklook-installed/0005_path_bridge.t) | Installed bundle path exists bridge. |
+| [tests/extension/quicklook-installed/0006_path_preview.t](../../tests/extension/quicklook-installed/0006_path_preview.t) | Installed bundle path exists preview. |
+| [tests/extension/quicklook-installed/0007_path_thumbnail.t](../../tests/extension/quicklook-installed/0007_path_thumbnail.t) | Installed bundle path exists thumbnail. |
+| [tests/extension/quicklook-installed/0008_payload_host.t](../../tests/extension/quicklook-installed/0008_payload_host.t) | Installed tree matches distribution host. |
+| [tests/extension/quicklook-installed/0009_payload_bridge.t](../../tests/extension/quicklook-installed/0009_payload_bridge.t) | Installed tree matches distribution bridge. |
+| [tests/extension/quicklook-installed/0010_payload_preview.t](../../tests/extension/quicklook-installed/0010_payload_preview.t) | Installed tree matches distribution preview. |
+| [tests/extension/quicklook-installed/0011_payload_thumbnail.t](../../tests/extension/quicklook-installed/0011_payload_thumbnail.t) | Installed tree matches distribution thumbnail. |
+| [tests/extension/quicklook-installed/0012_payload_support.t](../../tests/extension/quicklook-installed/0012_payload_support.t) | Installed tree matches distribution support. |
+| [tests/extension/quicklook-installed/0013_signature_host.t](../../tests/extension/quicklook-installed/0013_signature_host.t) | Installed code signature matches distribution host. |
+| [tests/extension/quicklook-installed/0014_signature_bridge.t](../../tests/extension/quicklook-installed/0014_signature_bridge.t) | Installed code signature matches distribution bridge. |
+| [tests/extension/quicklook-installed/0015_signature_preview.t](../../tests/extension/quicklook-installed/0015_signature_preview.t) | Installed code signature matches distribution preview. |
+| [tests/extension/quicklook-installed/0016_signature_thumbnail.t](../../tests/extension/quicklook-installed/0016_signature_thumbnail.t) | Installed code signature matches distribution thumbnail. |
+| [tests/extension/quicklook-installed/0017_signature_registration_helper.t](../../tests/extension/quicklook-installed/0017_signature_registration_helper.t) | Installed code signature matches distribution registration-helper. |
+| [tests/extension/quicklook-installed/0018_signature_management_helper.t](../../tests/extension/quicklook-installed/0018_signature_management_helper.t) | Installed code signature matches distribution management-helper. |
+| [tests/extension/quicklook-installed/0019_manifest_bytes.t](../../tests/extension/quicklook-installed/0019_manifest_bytes.t) | Installed manifest bytes and attributes match. |
+| [tests/extension/quicklook-installed/0020_session_identity.t](../../tests/extension/quicklook-installed/0020_session_identity.t) | Explicit user and GUI session match. |
+| [tests/extension/quicklook-installed/0021_ls_host.t](../../tests/extension/quicklook-installed/0021_ls_host.t) | Launch Services installed instance matches host. |
+| [tests/extension/quicklook-installed/0022_ls_bridge.t](../../tests/extension/quicklook-installed/0022_ls_bridge.t) | Launch Services installed instance matches bridge. |
+| [tests/extension/quicklook-installed/0023_plugin_preview.t](../../tests/extension/quicklook-installed/0023_plugin_preview.t) | PlugInKit installed instance matches preview. |
+| [tests/extension/quicklook-installed/0024_plugin_thumbnail.t](../../tests/extension/quicklook-installed/0024_plugin_thumbnail.t) | PlugInKit installed instance matches thumbnail. |
+| [tests/extension/quicklook-installed/0025_duplicates_host.t](../../tests/extension/quicklook-installed/0025_duplicates_host.t) | Registration has exactly one instance host. |
+| [tests/extension/quicklook-installed/0026_duplicates_bridge.t](../../tests/extension/quicklook-installed/0026_duplicates_bridge.t) | Registration has exactly one instance bridge. |
+| [tests/extension/quicklook-installed/0027_duplicates_preview.t](../../tests/extension/quicklook-installed/0027_duplicates_preview.t) | Registration has exactly one instance preview. |
+| [tests/extension/quicklook-installed/0028_duplicates_thumbnail.t](../../tests/extension/quicklook-installed/0028_duplicates_thumbnail.t) | Registration has exactly one instance thumbnail. |
+| [tests/extension/quicklook-installed/0029_election_preview.t](../../tests/extension/quicklook-installed/0029_election_preview.t) | Election current value matches journal owned value preview. |
+| [tests/extension/quicklook-installed/0030_election_thumbnail.t](../../tests/extension/quicklook-installed/0030_election_thumbnail.t) | Election current value matches journal owned value thumbnail. |
+| [tests/extension/quicklook-installed/0031_default_six.t](../../tests/extension/quicklook-installed/0031_default_six.t) | Default current value matches journal owned value six. |
+| [tests/extension/quicklook-installed/0032_default_sixel.t](../../tests/extension/quicklook-installed/0032_default_sixel.t) | Default current value matches journal owned value sixel. |
+
+<!-- test-plan-end -->
+
+## Quick Look private lifecycle observations
+
+Shared preparation and mutations are explicit and timed. These tests read independent live residual state or preserved process-boundary evidence, and do not execute real Installer or user operations. Missing prepared fixtures are SKIP, not proof of state transitions.
+
+<!-- test-plan: tests/extension/quicklook-lifecycle/????_*.t -->
+
+| Test | Observation |
+| --- | --- |
+| [tests/extension/quicklook-lifecycle/0001_activation_preserves_default.t](../../tests/extension/quicklook-lifecycle/0001_activation_preserves_default.t) | Activation preserves default. |
+| [tests/extension/quicklook-lifecycle/0002_default_identity.t](../../tests/extension/quicklook-lifecycle/0002_default_identity.t) | Default identity. |
+| [tests/extension/quicklook-lifecycle/0003_default_restored.t](../../tests/extension/quicklook-lifecycle/0003_default_restored.t) | Default restored. |
+| [tests/extension/quicklook-lifecycle/0004_providers_removed.t](../../tests/extension/quicklook-lifecycle/0004_providers_removed.t) | Providers removed. |
+| [tests/extension/quicklook-lifecycle/0005_journal_deactivated.t](../../tests/extension/quicklook-lifecycle/0005_journal_deactivated.t) | Journal deactivated. |
+| [tests/extension/quicklook-lifecycle/0006_wrong_user_refused.t](../../tests/extension/quicklook-lifecycle/0006_wrong_user_refused.t) | Wrong user refused. |
+| [tests/extension/quicklook-lifecycle/0007_nongui_refused.t](../../tests/extension/quicklook-lifecycle/0007_nongui_refused.t) | Nongui refused. |
+| [tests/extension/quicklook-lifecycle/0008_duplicate_refused.t](../../tests/extension/quicklook-lifecycle/0008_duplicate_refused.t) | Duplicate refused. |
+| [tests/extension/quicklook-lifecycle/0009_changed_payload_refused.t](../../tests/extension/quicklook-lifecycle/0009_changed_payload_refused.t) | Changed payload refused. |
+| [tests/extension/quicklook-lifecycle/0010_register_error_preserved.t](../../tests/extension/quicklook-lifecycle/0010_register_error_preserved.t) | Register error preserved. |
+| [tests/extension/quicklook-lifecycle/0011_provider_error_preserved.t](../../tests/extension/quicklook-lifecycle/0011_provider_error_preserved.t) | Provider error preserved. |
+| [tests/extension/quicklook-lifecycle/0012_default_error_preserved.t](../../tests/extension/quicklook-lifecycle/0012_default_error_preserved.t) | Default error preserved. |
+| [tests/extension/quicklook-lifecycle/0013_default_readback_refused.t](../../tests/extension/quicklook-lifecycle/0013_default_readback_refused.t) | Default readback refused. |
+| [tests/extension/quicklook-lifecycle/0014_missing_original_refused.t](../../tests/extension/quicklook-lifecycle/0014_missing_original_refused.t) | Missing original refused. |
+| [tests/extension/quicklook-lifecycle/0015_later_choice_preserved.t](../../tests/extension/quicklook-lifecycle/0015_later_choice_preserved.t) | Later choice preserved. |
+| [tests/extension/quicklook-lifecycle/0016_changed_provider_preserved.t](../../tests/extension/quicklook-lifecycle/0016_changed_provider_preserved.t) | Changed provider preserved. |
+| [tests/extension/quicklook-lifecycle/0017_pending_journal_refused.t](../../tests/extension/quicklook-lifecycle/0017_pending_journal_refused.t) | Pending journal refused. |
+| [tests/extension/quicklook-lifecycle/0018_guard_before_receipt_uninstall.t](../../tests/extension/quicklook-lifecycle/0018_guard_before_receipt_uninstall.t) | Uninstall refused at before receipt. |
+| [tests/extension/quicklook-lifecycle/0019_guard_before_child_return_uninstall.t](../../tests/extension/quicklook-lifecycle/0019_guard_before_child_return_uninstall.t) | Uninstall refused at before child return. |
+| [tests/extension/quicklook-lifecycle/0020_guard_final_validation_uninstall.t](../../tests/extension/quicklook-lifecycle/0020_guard_final_validation_uninstall.t) | Uninstall refused at final validation. |
+| [tests/extension/quicklook-lifecycle/0021_standalone_completion.t](../../tests/extension/quicklook-lifecycle/0021_standalone_completion.t) | Standalone completion. |
+| [tests/extension/quicklook-lifecycle/0022_legacy_restore_record.t](../../tests/extension/quicklook-lifecycle/0022_legacy_restore_record.t) | Legacy restore record. |
+| [tests/extension/quicklook-lifecycle/0023_legacy_foreign_preserved.t](../../tests/extension/quicklook-lifecycle/0023_legacy_foreign_preserved.t) | Legacy foreign preserved. |
+| [tests/extension/quicklook-lifecycle/0024_legacy_occupied_preserved.t](../../tests/extension/quicklook-lifecycle/0024_legacy_occupied_preserved.t) | Legacy occupied preserved. |
+| [tests/extension/quicklook-lifecycle/0025_lifecycle_order.t](../../tests/extension/quicklook-lifecycle/0025_lifecycle_order.t) | Lifecycle order. |
+| [tests/extension/quicklook-lifecycle/0026_lifecycle_errors_separate.t](../../tests/extension/quicklook-lifecycle/0026_lifecycle_errors_separate.t) | Lifecycle errors separate. |
+| [tests/extension/quicklook-lifecycle/0027_lifecycle_install_failure.t](../../tests/extension/quicklook-lifecycle/0027_lifecycle_install_failure.t) | Lifecycle install failure. |
+| [tests/extension/quicklook-lifecycle/0028_reactivation_preserves_default.t](../../tests/extension/quicklook-lifecycle/0028_reactivation_preserves_default.t) | Reactivation preserves later default choice and prior ownership. |
+| [tests/extension/quicklook-lifecycle/0029_reactivation_preserves_provider.t](../../tests/extension/quicklook-lifecycle/0029_reactivation_preserves_provider.t) | Reactivation preserves later provider choice and prior ownership. |
+| [tests/extension/quicklook-lifecycle/0030_command_status_preserved.t](../../tests/extension/quicklook-lifecycle/0030_command_status_preserved.t) | Ordinary command failure and successful cleanup retain the original status. |
+| [tests/extension/quicklook-lifecycle/0031_command_status_after_record_failure.t](../../tests/extension/quicklook-lifecycle/0031_command_status_after_record_failure.t) | Command failure survives completion-journal failure; cleanup remains unattempted. |
+
+| [tests/extension/quicklook-lifecycle/0032_legacy_restore_types.t](../../tests/extension/quicklook-lifecycle/0032_legacy_restore_types.t) | Restored legacy types match original evidence. |
+| [tests/extension/quicklook-lifecycle/0033_legacy_restore_bytes.t](../../tests/extension/quicklook-lifecycle/0033_legacy_restore_bytes.t) | Restored legacy bytes match original evidence. |
+| [tests/extension/quicklook-lifecycle/0034_legacy_restore_modes.t](../../tests/extension/quicklook-lifecycle/0034_legacy_restore_modes.t) | Restored legacy modes match original evidence. |
+| [tests/extension/quicklook-lifecycle/0035_legacy_restore_xattrs.t](../../tests/extension/quicklook-lifecycle/0035_legacy_restore_xattrs.t) | Restored legacy xattrs match original evidence. |
+| [tests/extension/quicklook-lifecycle/0036_legacy_restore_signature.t](../../tests/extension/quicklook-lifecycle/0036_legacy_restore_signature.t) | Restored legacy signature match original evidence. |
+| [tests/extension/quicklook-lifecycle/0037_guard_before_receipt_install.t](../../tests/extension/quicklook-lifecycle/0037_guard_before_receipt_install.t) | Install refused at before receipt. |
+| [tests/extension/quicklook-lifecycle/0038_guard_before_receipt_installcheck.t](../../tests/extension/quicklook-lifecycle/0038_guard_before_receipt_installcheck.t) | Installcheck refused at before receipt. |
+| [tests/extension/quicklook-lifecycle/0039_guard_before_child_return_install.t](../../tests/extension/quicklook-lifecycle/0039_guard_before_child_return_install.t) | Install refused at before child return. |
+| [tests/extension/quicklook-lifecycle/0040_guard_before_child_return_installcheck.t](../../tests/extension/quicklook-lifecycle/0040_guard_before_child_return_installcheck.t) | Installcheck refused at before child return. |
+| [tests/extension/quicklook-lifecycle/0041_guard_final_validation_install.t](../../tests/extension/quicklook-lifecycle/0041_guard_final_validation_install.t) | Install refused at final validation. |
+| [tests/extension/quicklook-lifecycle/0042_guard_final_validation_installcheck.t](../../tests/extension/quicklook-lifecycle/0042_guard_final_validation_installcheck.t) | Installcheck refused at final validation. |
+| [tests/extension/quicklook-lifecycle/0043_guard_before_receipt_managed_lock.t](../../tests/extension/quicklook-lifecycle/0043_guard_before_receipt_managed_lock.t) | Guard managed-lock invariant at before receipt. |
+| [tests/extension/quicklook-lifecycle/0044_guard_before_child_return_managed_lock.t](../../tests/extension/quicklook-lifecycle/0044_guard_before_child_return_managed_lock.t) | Guard managed-lock invariant at before child return. |
+| [tests/extension/quicklook-lifecycle/0045_guard_final_validation_managed_lock.t](../../tests/extension/quicklook-lifecycle/0045_guard_final_validation_managed_lock.t) | Guard managed-lock invariant at final validation. |
+| [tests/extension/quicklook-lifecycle/0046_guard_before_receipt_package_lock.t](../../tests/extension/quicklook-lifecycle/0046_guard_before_receipt_package_lock.t) | Guard package-lock invariant at before receipt. |
+| [tests/extension/quicklook-lifecycle/0047_guard_before_child_return_package_lock.t](../../tests/extension/quicklook-lifecycle/0047_guard_before_child_return_package_lock.t) | Guard package-lock invariant at before child return. |
+| [tests/extension/quicklook-lifecycle/0048_guard_final_validation_package_lock.t](../../tests/extension/quicklook-lifecycle/0048_guard_final_validation_package_lock.t) | Guard package-lock invariant at final validation. |
+| [tests/extension/quicklook-lifecycle/0049_guard_before_receipt_host.t](../../tests/extension/quicklook-lifecycle/0049_guard_before_receipt_host.t) | Guard host invariant at before receipt. |
+| [tests/extension/quicklook-lifecycle/0050_guard_before_child_return_host.t](../../tests/extension/quicklook-lifecycle/0050_guard_before_child_return_host.t) | Guard host invariant at before child return. |
+| [tests/extension/quicklook-lifecycle/0051_guard_final_validation_host.t](../../tests/extension/quicklook-lifecycle/0051_guard_final_validation_host.t) | Guard host invariant at final validation. |
+| [tests/extension/quicklook-lifecycle/0052_guard_before_receipt_bridge.t](../../tests/extension/quicklook-lifecycle/0052_guard_before_receipt_bridge.t) | Guard bridge invariant at before receipt. |
+| [tests/extension/quicklook-lifecycle/0053_guard_before_child_return_bridge.t](../../tests/extension/quicklook-lifecycle/0053_guard_before_child_return_bridge.t) | Guard bridge invariant at before child return. |
+| [tests/extension/quicklook-lifecycle/0054_guard_final_validation_bridge.t](../../tests/extension/quicklook-lifecycle/0054_guard_final_validation_bridge.t) | Guard bridge invariant at final validation. |
+| [tests/extension/quicklook-lifecycle/0055_guard_before_receipt_support.t](../../tests/extension/quicklook-lifecycle/0055_guard_before_receipt_support.t) | Guard support invariant at before receipt. |
+| [tests/extension/quicklook-lifecycle/0056_guard_before_child_return_support.t](../../tests/extension/quicklook-lifecycle/0056_guard_before_child_return_support.t) | Guard support invariant at before child return. |
+| [tests/extension/quicklook-lifecycle/0057_guard_final_validation_support.t](../../tests/extension/quicklook-lifecycle/0057_guard_final_validation_support.t) | Guard support invariant at final validation. |
+| [tests/extension/quicklook-lifecycle/0058_guard_before_receipt_receipt.t](../../tests/extension/quicklook-lifecycle/0058_guard_before_receipt_receipt.t) | Guard receipt invariant at before receipt. |
+| [tests/extension/quicklook-lifecycle/0059_guard_before_child_return_receipt.t](../../tests/extension/quicklook-lifecycle/0059_guard_before_child_return_receipt.t) | Guard receipt invariant at before child return. |
+| [tests/extension/quicklook-lifecycle/0060_guard_final_validation_receipt.t](../../tests/extension/quicklook-lifecycle/0060_guard_final_validation_receipt.t) | Guard receipt invariant at final validation. |
+| [tests/extension/quicklook-lifecycle/0061_standalone_host_absent.t](../../tests/extension/quicklook-lifecycle/0061_standalone_host_absent.t) | Standalone host absent after removal. |
+| [tests/extension/quicklook-lifecycle/0062_standalone_bridge_absent.t](../../tests/extension/quicklook-lifecycle/0062_standalone_bridge_absent.t) | Standalone bridge absent after removal. |
+| [tests/extension/quicklook-lifecycle/0063_standalone_support_absent.t](../../tests/extension/quicklook-lifecycle/0063_standalone_support_absent.t) | Standalone support absent after removal. |
+| [tests/extension/quicklook-lifecycle/0064_standalone_receipt_absent.t](../../tests/extension/quicklook-lifecycle/0064_standalone_receipt_absent.t) | Standalone receipt absent after removal. |
+| [tests/extension/quicklook-lifecycle/0065_standalone_managed_lock_absent.t](../../tests/extension/quicklook-lifecycle/0065_standalone_managed_lock_absent.t) | Standalone managed lock absent after removal. |
+| [tests/extension/quicklook-lifecycle/0066_standalone_package_lock_absent.t](../../tests/extension/quicklook-lifecycle/0066_standalone_package_lock_absent.t) | Standalone package lock absent after removal. |
+| [tests/extension/quicklook-lifecycle/0067_unchanged_activation_retry.t](../../tests/extension/quicklook-lifecycle/0067_unchanged_activation_retry.t) | Unchanged activation retry preserves the observed journal and makes no new user calls. |
+| [tests/extension/quicklook-lifecycle/0068_migration_host_identity.t](../../tests/extension/quicklook-lifecycle/0068_migration_host_identity.t) | Restored legacy Host matches its original artifact identity. |
+| [tests/extension/quicklook-lifecycle/0069_migration_bridge_identity.t](../../tests/extension/quicklook-lifecycle/0069_migration_bridge_identity.t) | Restored legacy Bridge matches its original artifact identity. |
+| [tests/extension/quicklook-lifecycle/0070_migration_host_absent.t](../../tests/extension/quicklook-lifecycle/0070_migration_host_absent.t) | Migration removes the owned system host root. |
+| [tests/extension/quicklook-lifecycle/0071_migration_bridge_absent.t](../../tests/extension/quicklook-lifecycle/0071_migration_bridge_absent.t) | Migration removes the owned system bridge root. |
+| [tests/extension/quicklook-lifecycle/0072_migration_support_absent.t](../../tests/extension/quicklook-lifecycle/0072_migration_support_absent.t) | Migration removes the owned system support root. |
+| [tests/extension/quicklook-lifecycle/0073_migration_receipt_absent.t](../../tests/extension/quicklook-lifecycle/0073_migration_receipt_absent.t) | Migration removes the exact system receipt. |
+| [tests/extension/quicklook-lifecycle/0074_migration_preview_restored.t](../../tests/extension/quicklook-lifecycle/0074_migration_preview_restored.t) | Migration observes the original preview instance and election. |
+| [tests/extension/quicklook-lifecycle/0075_migration_thumbnail_restored.t](../../tests/extension/quicklook-lifecycle/0075_migration_thumbnail_restored.t) | Migration observes the original thumbnail instance and election. |
+| [tests/extension/quicklook-lifecycle/0076_migration_six_default.t](../../tests/extension/quicklook-lifecycle/0076_migration_six_default.t) | Migration observes the original six default without a setter. |
+| [tests/extension/quicklook-lifecycle/0077_migration_sixel_default.t](../../tests/extension/quicklook-lifecycle/0077_migration_sixel_default.t) | Migration observes the original sixel default without a setter. |
+| [tests/extension/quicklook-lifecycle/0078_migration_final_record.t](../../tests/extension/quicklook-lifecycle/0078_migration_final_record.t) | Migration distinguishes observed restoration from removal readiness. |
+| [tests/extension/quicklook-lifecycle/0079_migration_later_default.t](../../tests/extension/quicklook-lifecycle/0079_migration_later_default.t) | Later default choice stops migration preparation. |
+| [tests/extension/quicklook-lifecycle/0080_migration_later_provider.t](../../tests/extension/quicklook-lifecycle/0080_migration_later_provider.t) | Later provider choice stops migration preparation. |
+| [tests/extension/quicklook-lifecycle/0081_migration_wrong_archive.t](../../tests/extension/quicklook-lifecycle/0081_migration_wrong_archive.t) | Changed archive refuses migration activation. |
+| [tests/extension/quicklook-lifecycle/0082_migration_occupied.t](../../tests/extension/quicklook-lifecycle/0082_migration_occupied.t) | Occupied original path refuses migration restoration. |
+| [tests/extension/quicklook-lifecycle/0083_migration_wrong_session.t](../../tests/extension/quicklook-lifecycle/0083_migration_wrong_session.t) | Wrong GUI session refuses migration activation. |
+| [tests/extension/quicklook-lifecycle/0084_migration_unresolved_default.t](../../tests/extension/quicklook-lifecycle/0084_migration_unresolved_default.t) | Unresolved original default remains pending and nonzero. |
+| [tests/extension/quicklook-lifecycle/0085_archive_roundtrip_required.t](../../tests/extension/quicklook-lifecycle/0085_archive_roundtrip_required.t) | Failed archive verification cannot authorize original copy deletion. |
+<!-- test-plan-end -->
+
+## Quick Look rendering diagnostic readers
+
+These offline observations validate independent literal 16x12 red/blue PNG content and narrow rejection controls. They exercise the same output readers used after explicit OS generation, without invoking Quick Look, changing a cache or proving provider selection. Live preview and thumbnail remain separate manual observations with the attribution limits documented in the [extension policy](../programs/quicklook-extension.md#explicit-rendering-diagnostics).
+
+<!-- test-plan: tests/extension/quicklook-render/*.t -->
+
+| Test | Observation |
+| --- | --- |
+| [tests/extension/quicklook-render/0001_preview_reference.t](../../tests/extension/quicklook-render/0001_preview_reference.t) | Preview output content matches independent dimensions and colors. |
+| [tests/extension/quicklook-render/0002_thumbnail_reference.t](../../tests/extension/quicklook-render/0002_thumbnail_reference.t) | Thumbnail content matches independent dimensions and colors. |
+| [tests/extension/quicklook-render/0003_preview_changed_color.t](../../tests/extension/quicklook-render/0003_preview_changed_color.t) | Preview output rejects changed pixels. |
+| [tests/extension/quicklook-render/0004_thumbnail_changed_dimensions.t](../../tests/extension/quicklook-render/0004_thumbnail_changed_dimensions.t) | Thumbnail output rejects changed dimensions. |
+
+<!-- test-plan-end -->

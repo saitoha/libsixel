@@ -130,7 +130,7 @@ libfloatlookuptests_la_OBJECTS = $(am_libfloatlookuptests_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-am__v_lt_1 =
+am__v_lt_1 = 
 libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libfloatlookuptests_la_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
@@ -7800,11 +7800,11 @@ am__v_P_1 = :
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 =
+am__v_GEN_1 = 
 AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
-am__v_at_1 =
+am__v_at_1 = 
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
@@ -11600,7 +11600,7 @@ LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CC = $(am__v_CC_@AM_V@)
 am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
 am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 =
+am__v_CC_1 = 
 CCLD = $(CC)
 LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -11608,7 +11608,7 @@ LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 =
+am__v_CCLD_1 = 
 SOURCES = $(libfloatlookuptests_la_SOURCES) $(test_runner_SOURCES) \
 	$(nodist_test_runner_SOURCES)
 DIST_SOURCES = $(am__libfloatlookuptests_la_SOURCES_DIST) \
@@ -12105,6 +12105,8 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR; \
 	TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR; \
 	$(am__append_1) $(am__append_2) \
+	QUICKLOOK_HOST_SYSTEM='@host_os@'; export \
+	QUICKLOOK_HOST_SYSTEM; \
 	QUICKLOOK_PLIST_DIR='$(abs_top_builddir)/quicklook-extension/generated-resources'; \
 	export QUICKLOOK_PLIST_DIR; \
 	QUICKLOOK_PACKAGE_VERSION='@QUICKLOOK_PACKAGE_VERSION@'; \
@@ -16030,7 +16032,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 # libsixel amalgamation already contains lookup-policy objects.
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
-@WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE =
+@WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 @WANT_AMALGAMATED_TOOLS_FALSE@noinst_LTLIBRARIES = libfloatlookuptests.la
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_SOURCES = \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0018_lookup_float_batch_exact.c \
@@ -19928,7 +19930,8 @@ AM_TEST_TIMEOUT = 90
 AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
 # LOG_COMPILE; the drivers consume timeout hints themselves.
-AM_LOG_FLAGS =
+AM_LOG_FLAGS = 
+quicklook_installed_reportdir = $(top_builddir)/quicklook-extension/installcheck
 @OPENVMS_GNV_FALSE@sixel_clean_batch_size = $(if $(filter darwin% linux% freebsd% netbsd% openbsd% dragonfly% solaris% illumos% haiku% aix%,$(host_os)),128,16)
 
 # Automake otherwise emits one rm recipe per dependency file.  Expand its
@@ -20093,7 +20096,25 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/edge-reference.py \
 	data/color-numeric/edge-reference.h \
 	data/color-numeric/ray-reference.py \
-	data/color-numeric/ray-reference.h test-time-allowlist.tsv
+	data/color-numeric/ray-reference.h test-time-allowlist.tsv \
+	extension/quicklook-lifecycle/private-user.h \
+	extension/quicklook-lifecycle/private-mutations.h \
+	extension/quicklook-lifecycle/private-driver.m \
+	extension/quicklook-lifecycle/private-os.m \
+	extension/quicklook-lifecycle/audit.m \
+	extension/quicklook-lifecycle/prepare-controls.py \
+	extension/quicklook-lifecycle/prepare-guards.py \
+	extension/quicklook-lifecycle/guard-installer.py \
+	extension/quicklook-lifecycle/guard-pkgutil.py \
+	extension/quicklook-lifecycle/guard_probe.py \
+	extension/quicklook-lifecycle/prepare-order.py \
+	extension/quicklook-lifecycle/lifecycle-stage.py \
+	extension/quicklook-lifecycle/prepare-transitions.py \
+	extension/quicklook-lifecycle/prepare-migration.py \
+	extension/quicklook-render/specimen.six \
+	extension/quicklook-render/reference/Preview.png \
+	extension/quicklook-render/wrong-color/Preview.png \
+	extension/quicklook-render/wrong-size.png
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -20171,7 +20192,7 @@ processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo:  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 
-libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES)
+libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
 quant/palette/delta_native/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/delta_native
@@ -90997,6 +91018,40 @@ sixel-check-test-tools:
 @OPENVMS_GNV_FALSE@sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 @OPENVMS_GNV_FALSE@	@:
 
+# Installed extension observations need no converters, test runner or fixture
+# producer. Reuse the ordinary TAP driver and timing reader, but request only
+# these logs; do not call the build-oriented check-TESTS preparation target.
+# This numbered source inventory is also registered by the common test scan.
+# CLI TESTS overrides must neither narrow it nor select make's default goal.
+override quicklook_installed_tests := $(patsubst $(srcdir)/%,%,$(wildcard $(srcdir)/extension/quicklook-installed/????_*.t))
+.PHONY: installcheck-quicklook
+installcheck-quicklook:
+	@set -eu; \
+	test -n "$(quicklook_installed_tests)" || { \
+	    echo "error: Quick Look installed inventory is empty" >&2; exit 1; \
+	}; \
+	for test_path in $(quicklook_installed_tests); do \
+	    rm -f "$${test_path%.t}.log" "$${test_path%.t}.trs"; \
+	done
+	$(MAKE) $(AM_MAKEFLAGS) SIXEL_INSTALLCHECK=1 \
+	    $(quicklook_installed_tests:.t=.log)
+	@set -eu; \
+	printf '%s\n' $(quicklook_installed_tests:.t=.trs) > .quicklook-trs.list; \
+	$(AWK) -v suite=1 -v builddir="$(abs_builddir)" \
+	    -v suite_title="Quick Look installed observations" \
+	    -v counts_file=".quicklook-counts" \
+	    -v failures_file=".quicklook-failures" \
+	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
+	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" \
+	    .quicklook-trs.list > quicklook-installcheck.log; \
+	mkdir -p "$(quicklook_installed_reportdir)"; \
+	cp $(quicklook_installed_tests:.t=.log) \
+	    $(quicklook_installed_tests:.t=.trs) quicklook-installcheck.log \
+	    "$(quicklook_installed_reportdir)/"; \
+	read -r all pass skip xfail fail xpass error < .quicklook-counts; \
+	echo "Quick Look installcheck: $$all total $$pass PASS $$skip SKIP $$fail FAIL $$error ERROR"; \
+	test "$$fail:$$xpass:$$error" = "0:0:0"
+
 # Run the regular TAP suite against installed commands.
 # installcheck expects `make install` to have completed first.
 # Use the make variable for the guard and absolute installed command paths:
@@ -91006,6 +91061,9 @@ installcheck-local:
 	if test "$(SIXEL_INSTALLCHECK)" != "1"; then \
 	    echo "installcheck: skipping tests/installcheck-local (driver inactive)"; \
 	    exit 0; \
+	fi; \
+	if test -z "$(filter-out extension/quicklook-installed/%,$(TESTS))"; then \
+	    echo "installcheck: no generic observations selected"; exit 0; \
 	fi; \
 	install_bindir='$(SIXEL_INSTALL_BINDIR)'; \
 	install_libdir='$(SIXEL_INSTALL_LIBDIR)'; \
@@ -91043,6 +91101,7 @@ installcheck-local:
 	export SIXEL_INSTALLCHECK_LSQA_PATH="$$install_bindir/lsqa@EXEEXT@"; \
 	export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH='test_runner@EXEEXT@'; \
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS \
+	    TESTS='$(filter-out extension/quicklook-installed/%,$(TESTS))' \
 	    SIXEL_INSTALLCHECK=1 \
 	    SIXEL_RUNTIME=''
 

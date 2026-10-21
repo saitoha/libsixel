@@ -141,9 +141,29 @@ register_sixel_preview_OBJCFLAGS = $(AM_OBJCFLAGS)
 register_sixel_preview_LDADD = @APPLE_QUICKLOOK_REGISTER_LIBS@
 
 sixel_quicklook_package_SOURCES = Sources/SixelPackageTool.m Sources/SixelInstall.h \
-    Sources/SixelPackageChecks.h
+    Sources/SixelPackageChecks.h Sources/SixelInstalledChecks.h Sources/SixelUser.h Sources/SixelLifecycle.h Sources/SixelLegacy.h
 sixel_quicklook_package_OBJCFLAGS = $(AM_OBJCFLAGS)
-sixel_quicklook_package_LDFLAGS = $(AM_LDFLAGS) -framework Foundation -framework Security
+sixel_quicklook_package_LDFLAGS = $(AM_LDFLAGS) -framework Foundation -framework Security -framework CoreServices -framework SystemConfiguration -framework AppKit -weak_framework UniformTypeIdentifiers
+
+# Explicit diagnostics are build-tree tools, outside the signed payload.
+noinst_PROGRAMS += sixel-quicklook-render
+sixel_quicklook_render_SOURCES = Sources/SixelRenderProbe.m
+sixel_quicklook_render_OBJCFLAGS = $(AM_OBJCFLAGS)
+sixel_quicklook_render_LDFLAGS = -framework Foundation -framework CoreGraphics -framework ImageIO -framework QuickLookThumbnailing
+
+# Private lifecycle executables never enter the signed package payload.
+noinst_PROGRAMS += sixel-quicklook-lifecycle-driver sixel-quicklook-lifecycle-os \
+    sixel-quicklook-lifecycle-audit
+sixel_quicklook_lifecycle_driver_SOURCES = $(top_srcdir)/tests/extension/quicklook-lifecycle/private-driver.m
+sixel_quicklook_lifecycle_driver_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/tests/extension/quicklook-lifecycle
+sixel_quicklook_lifecycle_driver_OBJCFLAGS = $(AM_OBJCFLAGS)
+sixel_quicklook_lifecycle_driver_LDFLAGS = $(sixel_quicklook_package_LDFLAGS)
+sixel_quicklook_lifecycle_os_SOURCES = $(top_srcdir)/tests/extension/quicklook-lifecycle/private-os.m
+sixel_quicklook_lifecycle_os_OBJCFLAGS = $(AM_OBJCFLAGS)
+sixel_quicklook_lifecycle_os_LDFLAGS = -framework Foundation
+sixel_quicklook_lifecycle_audit_SOURCES = $(top_srcdir)/tests/extension/quicklook-lifecycle/audit.m
+sixel_quicklook_lifecycle_audit_OBJCFLAGS = $(AM_OBJCFLAGS)
+sixel_quicklook_lifecycle_audit_LDFLAGS = -framework Foundation -framework Security
 
 PRODUCTS_DIR = $(builddir)/products
 HOST_APP = $(PRODUCTS_DIR)/SixelQuickLookHost.app
@@ -207,12 +227,42 @@ uninstall-quicklook-extension:
 
 uninstall-local: uninstall-quicklook-extension
 
-installcheck-local: installcheck-quicklook
+# The top-level driver owns the independent extension stage before CLI tests.
+# Recursive subdirectory installcheck must not run that stage a second time.
+installcheck-local:
 
 installcheck-quicklook:
-	$(quicklook_manage) installcheck $(quicklook_manage_args)
+	$(MAKE) -C $(top_builddir)/tests installcheck-quicklook
+
+# Explicit operations use already-built tools; never infer a GUI user.
+.PHONY: register-quicklook-extension set-default-quicklook-extension deactivate-quicklook-extension archive-quicklook-copy remove-quicklook-copy restore-quicklook-copy remove-quicklook-users check-quicklook-installation
+register-quicklook-extension:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" activate \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+set-default-quicklook-extension:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" set-default \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+deactivate-quicklook-extension:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" deactivate \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+archive-quicklook-copy:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" archive-copy \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+remove-quicklook-copy:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" remove-copy \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+restore-quicklook-copy:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" restore-copy \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+remove-quicklook-users:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" remove-users \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+check-quicklook-installation:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" lifecycle \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
 
 clean-local:
+	rm -rf "$(builddir)/installcheck"
 	rm -rf $(HOST_APP) $(BRIDGE_APP) $(MODULE_CACHE_DIR) bundle-stamp $(builddir)/package/work
 	rm -f $(builddir)/package/SixelQuickLook.pkg \
 	    $(builddir)/package/payload-manifest.json \
@@ -230,3 +280,25 @@ endif
 CLEANFILES = bundle-stamp
 
 include $(top_srcdir)/build-aux/dependency-bootstrap.am
+
+# Explicit no-setter migration phases reuse the common user entry.
+
+.PHONY: migration-activate-quicklook
+migration-activate-quicklook:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" migration-activate \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+
+.PHONY: migration-prepare-quicklook
+migration-prepare-quicklook:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" migration-prepare \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+
+.PHONY: migration-restore-quicklook
+migration-restore-quicklook:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" migration-restore \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"
+
+.PHONY: migration-verify-quicklook
+migration-verify-quicklook:
+	$(SHELL) "$(top_srcdir)/tools/quicklook-user.sh" migration-verify \
+	    "$(abs_builddir)/package" "$(abs_builddir)/sixel-quicklook-package"

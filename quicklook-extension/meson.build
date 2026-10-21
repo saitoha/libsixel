@@ -138,8 +138,12 @@ register_tool = executable(
 
 package_tool = executable('sixel-quicklook-package',
   'Sources/SixelPackageTool.m', 'Sources/SixelPackageChecks.h',
+  'Sources/SixelInstalledChecks.h', 'Sources/SixelUser.h',
+  'Sources/SixelLifecycle.h', 'Sources/SixelLegacy.h',
   objc_args: common_objc_args,
-  dependencies: dependency('appleframeworks', modules: ['Foundation', 'Security']),
+  dependencies: dependency('appleframeworks', modules: ['Foundation', 'Security',
+    'CoreServices', 'SystemConfiguration', 'AppKit']),
+  link_args: ['-weak_framework', 'UniformTypeIdentifiers'],
   install: false)
 
 # The producer owns both generated directories and their installation inputs.
@@ -161,7 +165,29 @@ run_target('install-quicklook-extension',
   depends: [quicklook_package])
 run_target('uninstall-quicklook-extension',
   command: [quicklook_installer, 'uninstall', quicklook_manage_args])
-run_target('installcheck-quicklook',
-  command: [quicklook_installer, 'installcheck', quicklook_manage_args])
+
 
 # vim: set et ts=2:
+
+# Private helpers share product code only at the controlled OS boundary.
+lifecycle_driver = executable('sixel-quicklook-lifecycle-driver',
+  '../tests/extension/quicklook-lifecycle/private-driver.m',
+  include_directories: include_directories('../tests/extension/quicklook-lifecycle'),
+  objc_args: common_objc_args,
+  dependencies: dependency('appleframeworks', modules: ['Foundation', 'Security',
+    'CoreServices', 'SystemConfiguration', 'AppKit']),
+  link_args: ['-weak_framework', 'UniformTypeIdentifiers'], install: false)
+lifecycle_os = executable('sixel-quicklook-lifecycle-os',
+  '../tests/extension/quicklook-lifecycle/private-os.m',
+  objc_args: common_objc_args, dependencies: dependency('appleframeworks',
+    modules: ['Foundation']), install: false)
+lifecycle_audit = executable('sixel-quicklook-lifecycle-audit',
+  '../tests/extension/quicklook-lifecycle/audit.m',
+  objc_args: common_objc_args, dependencies: dependency('appleframeworks',
+    modules: ['Foundation', 'Security']), install: false)
+
+# Explicit rendering diagnostics never run during build or installcheck.
+render_probe = executable('sixel-quicklook-render',
+  'Sources/SixelRenderProbe.m', objc_args: common_objc_args,
+  dependencies: dependency('appleframeworks', modules: ['Foundation',
+    'CoreGraphics', 'ImageIO', 'QuickLookThumbnailing']), install: false)

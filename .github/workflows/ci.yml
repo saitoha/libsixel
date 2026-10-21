@@ -2441,6 +2441,47 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
 
+  extension-quicklook-macos:
+    needs: [smoke]
+    name: ${{ matrix.label }}
+    # This intentionally installs a system package. Never use a persistent
+    # self-hosted runner here; the plan refuses pre-existing project state.
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-macos-quicklook-installcheck
+            buildtool: autotools
+            exec_type: bash
+            setup_options: --enable-quicklook-extension
+            check_target: check-quicklook-installation
+          - label: Meson-macos-quicklook-installcheck
+            buildtool: meson
+            exec_type: bash
+            extra_packages: meson
+            setup_options: -Dquicklook_extension=enabled
+            check_target: compile check-quicklook-installation
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Prepare explicit system-only lifecycle
+        shell: bash
+        env:
+          BUILD_SYSTEM: ${{ matrix.buildtool }}
+        run: |
+          set -eu
+          build="$PWD"
+          if test "$BUILD_SYSTEM" = meson; then build="$PWD/builddir"; fi
+          python3 tools/quicklook-ci.py plan "$BUILD_SYSTEM" "$build" \
+            "$PWD/_artifacts/quicklook-ci"
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   extension-wic-msys2:
     needs: [smoke]
     name: ${{ matrix.label }}

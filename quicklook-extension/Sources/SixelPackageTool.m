@@ -1,8 +1,18 @@
 /* Build, inspect and explicitly manage the fixed Quick Look package. */
 #import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#endif
 #import <Security/Security.h>
+#import <Security/AuthSession.h>
+#import <CoreServices/CoreServices.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 #import <CommonCrypto/CommonDigest.h>
 #include <sys/stat.h>
+#include <sys/file.h>
+#include <sys/xattr.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
@@ -256,7 +266,7 @@ check_ancestors(NSString *root, NSString *relative)
 }
 
 static NSArray *
-payload_entries(NSString *root)
+payload_entries_for_roots(NSString *root, NSArray *roots)
 {
     NSFileManager *fm;
     NSMutableArray *paths;
@@ -271,7 +281,7 @@ payload_entries(NSString *root)
     fm = [NSFileManager defaultManager];
     paths = [NSMutableArray array];
     entries = [NSMutableArray array];
-    for (owned in owned_roots()) {
+    for (owned in roots) {
         check_ancestors(root, owned);
         path = [root stringByAppendingPathComponent:owned];
         require([fm fileExistsAtPath:path], @"Missing owned payload tree");
@@ -322,6 +332,12 @@ payload_entries(NSString *root)
         [entries addObject:entry];
     }
     return entries;
+}
+
+static NSArray *
+payload_entries(NSString *root)
+{
+    return payload_entries_for_roots(root, owned_roots());
 }
 
 static void
@@ -591,6 +607,10 @@ preflight(NSString *target, NSString *incoming_path)
 }
 
 #include "SixelInstall.h"
+#include "SixelInstalledChecks.h"
+#include "SixelUser.h"
+#include "SixelLegacy.h"
+#include "SixelLifecycle.h"
 
 static NSDictionary *
 component(NSString *path)
@@ -1078,7 +1098,21 @@ main(int argc, const char *argv[])
             require(args.count >= 2, @"Expected build, verify, signature, "
                 @"check-state or preflight command");
             command = args[1];
-            if ([command isEqual:@"manage"] && args.count == 7) {
+            if ([command isEqual:@"migration"] && args.count == 6) {
+                result = legacy_migration(args[2], args[3], args[4], args[5]);
+            } else if ([command isEqual:@"legacy"] && args.count == 6) {
+                result = legacy_operation(args[2], args[3], args[4], args[5]);
+            } else if ([command isEqual:@"remove-users"] && args.count == 4) {
+                result = remove_for_users(args[2], args[3]);
+            } else if ([command isEqual:@"lifecycle"] && args.count == 4) {
+                result = run_lifecycle(args[2], args[3]);
+            } else if ([command isEqual:@"user"] && args.count == 6) {
+                result = user_operation(args[2], args[3], args[4], args[5]);
+            } else if ([command isEqual:@"installed"] && args.count == 5) {
+                result = observe_installed(args[2], args[3], args[4]);
+            } else if ([command isEqual:@"user-state"] && args.count == 2) {
+                print_observation(user_state());
+            } else if ([command isEqual:@"manage"] && args.count == 7) {
                 result = manage_package(args[2], args[3], args[4],
                                         args[5], [args[6] isEqual:@"yes"]);
             } else if ([command isEqual:@"begin-install"] && args.count == 4) {
