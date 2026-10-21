@@ -1,6 +1,19 @@
 # Documentation Index
 
-This directory contains the durable libsixel documentation that users and contributors should be able to discover from the repository. The index is arranged in parts that follow a reader from an overview of the project, through its concepts and quality model, to the implementation and its maintenance. Each part groups related subject directories into chapters, so a chapter can collect documents from more than one directory.
+This index lists every libsixel document, grouped into parts that run from an overview of the project through concepts, quality, and implementation to maintenance. Each entry says in one sentence what the document covers; the document itself opens with its full scope.
+
+## Start here
+
+| If you want to | Start with |
+| --- | --- |
+| Find out what libsixel is and what it can do | [Functional overview](overview.md) |
+| Understand the SIXEL format | [SIXEL format overview](sixel-format/README.md) |
+| Display or convert images with `img2sixel` and `sixel2png` | [Command-line options at a glance](cli/options.md) |
+| Improve output quality | [Why quantization quality needs color, display, and vision knowledge](concepts/quality-optimization.md), then [Encoding pipeline](encoder/pipeline/README.md) |
+| Use the library from C | [Functional overview](overview.md), then [Encoding pipeline](encoder/pipeline/README.md) and [Decoding pipeline](decoder/pipeline/README.md) |
+| Learn how a SIXEL codec works by writing one | [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) |
+| Build libsixel on your platform | [Build, runtime, and platform support](platform-support.md) |
+| Contribute code or documentation | [Testing guide](testing/guide.md), [Staticcheck](testing/staticcheck.md), and [Documentation workflow](documentation/workflow.md) |
 
 ## Introduction
 
@@ -8,81 +21,81 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 
 ### Project
 
-- [Functional overview](overview.md) describes the product capabilities, major components, data flow, and architectural boundaries.
-- [Project history and lineage](project-history.md) explains how libsixel was derived from kmiya's `sixel`, how the project developed, and how community contributions shaped it.
+- [Functional overview](overview.md) describes libsixel's capabilities, components, data flow, and architectural boundaries.
+- [Project history and lineage](project-history.md) explains how libsixel grew from kmiya's `sixel` and how contributions shaped it.
 
 ### SIXEL format
 
 - [SIXEL format overview](sixel-format/README.md) is a practical guide to the DEC SIXEL wire format, its control functions, rendering model, and interoperability limits.
-- [Terminal graphics history](sixel-format/terminal-graphics-history/README.md) surveys the two lineages of terminal pictures, with a timeline: pixel and drawing protocols from Tektronix vector terminals and videotex, including its links to JPEG and facsimile coding, to DEC's raster terminals and modern image protocols; and pictures made of characters, from teletext and videotex mosaics to AAlib, libcaca, chafa, and the Unicode mosaic and Braille characters.
-- [SIXEL specification status and interpretation layers](sixel-format/specification-layers.md) explains what ECMA-48 and DEC's device manuals define, SIXEL's de facto history as a `.six` image file, the formal, emulation, and modern-interpretation layers that determine implementation behavior, and libsixel's position on them.
-- [SIXEL patents and royalties](sixel-format/patents-and-royalties.md) summarizes the public evidence that implementing SIXEL requires no license or royalty: disclosure dates, patent terms, the path of DEC's rights, and four decades of open implementations.
-- [SIXEL codec comparison](sixel-format/comparison/README.md) compares quality, encoding and decoding latency, 7-bit transport size, thread budgets, image-size scaling, per-stage encoding time, and repeated generations with JPEG, GIF, PNG, QOI, WebP, AVIF, and HEIC.
+- [Terminal graphics history](sixel-format/terminal-graphics-history/README.md) surveys how terminals have drawn pictures, from vector and raster protocols to images made of characters.
+- [SIXEL specification status and interpretation layers](sixel-format/specification-layers.md) explains what the standards and DEC manuals define, how implementations interpret the rest, and where libsixel stands.
+- [SIXEL patents and royalties](sixel-format/patents-and-royalties.md) summarizes the public evidence that implementing SIXEL requires no license or royalty.
+- [SIXEL codec comparison](sixel-format/comparison/README.md) compares SIXEL's quality, speed, and size with JPEG, GIF, PNG, QOI, WebP, AVIF, and HEIC.
 
 ### SIXEL codec tutorial
 
-- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated, beginner-friendly course in which you write a PNM-to-SIXEL encoder and a SIXEL-to-PNM decoder as command-line programs: drawing SIXEL by hand, a complete codec of about thirty lines per direction, kmiya's node scheduling, six pixels in one 64-bit word, SIMD, and threads, with exercises, byte-identical output checks and measurements at every step.
+- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated course in which you write a SIXEL encoder and decoder, from a thirty-line codec to SIMD and threads.
 
 ## Using libsixel
 
-Supported platforms and command-line behavior that needs no background in color or encoding. Options that control encoding, such as quantization, dithering, lookup, and color spaces, are documented with their pipeline stage under Implementation, after the concepts they rely on.
+Supported platforms and command-line behavior that need no background in color or encoding; encoding options are documented with their pipeline stage under Implementation.
 
 ### Platform support
 
-- [Build, runtime, and platform support](platform-support.md) defines the build requirements, runtime assumptions, CI-backed support tiers, and the OS, architecture, compiler, and build-system matrix.
+- [Build, runtime, and platform support](platform-support.md) defines build requirements, runtime assumptions, CI-backed support tiers, and the platform matrix.
 
 ### Command-line basics
 
-- [Command-line options at a glance](cli/options.md) lists every `img2sixel` and `sixel2png` option by purpose with a one-line summary, marks which options need background in color or encoding, and links each one to its detailed explanation.
-- [Clipboard input and output](cli/clipboard.md) explains `-y`, pseudo targets, system/file backends, platform payloads, and headless workflows.
-- [Choice prefix-matching policy](cli/prefix-matching.md) defines exact and unique-prefix resolution, ambiguity, CLI/environment vocabulary separation, and compatibility constraints.
-- [CLI correction-suggestion policy](cli/correction-suggestions.md) defines ambiguous-prefix, fuzzy-name, and nearby-path guidance, including defaults, ranking, diagnostics, performance, and privacy boundaries.
+- [Command-line options at a glance](cli/options.md) lists every `img2sixel` and `sixel2png` option with a one-line summary and a link to its explanation.
+- [Clipboard input and output](cli/clipboard.md) explains `-y`, its targets and backends, and headless workflows.
+- [Choice prefix-matching policy](cli/prefix-matching.md) defines how abbreviated option values are resolved and when they are ambiguous.
+- [CLI correction-suggestion policy](cli/correction-suggestions.md) defines the suggestions offered for ambiguous or misspelled values and paths.
 
 ### Companion programs and OS extensions
 
-- [SIXEL Quick Look extension](programs/quicklook-extension.md) explains macOS bundles, opt-in builds, user registration and deployment limits.
-- [SIXEL WIC codec](programs/wic-codec.md) explains Windows MSI deployment, WIC and Automation entry points, and COM ownership.
+- [SIXEL Quick Look extension](programs/quicklook-extension.md) explains the macOS Quick Look bundles, their builds, registration, and limits.
+- [SIXEL WIC codec](programs/wic-codec.md) explains the Windows WIC codec, its MSI deployment, entry points, and COM ownership.
 
 ## Concepts and theory
 
-The foundations the rest of the documentation builds on, in reading order: how vision works, how colors are represented as numbers, how color differences are judged, how pixels and precision are stored, how displays turn them into light, and how images are drawn with a limited palette.
+The foundations the rest of the documentation builds on, in reading order from vision and color through pixels and displays to palettes and dithering.
 
 ### Why these concepts matter
 
-- [Why quantization quality needs color, display, and vision knowledge](concepts/quality-optimization.md) explains why tuning quantization and dithering progresses from visual inspection through measurement and combined metrics to a perceptual definition of quality, why error is moved rather than removed, and what color spaces, displays, and visual physiology each contribute to resolving trade-offs.
+- [Why quantization quality needs color, display, and vision knowledge](concepts/quality-optimization.md) explains why judging and improving quantization requires knowing how color, displays, and vision work.
 
 ### Visual perception
 
-- [Visual perception for image quality](quality/visual-perception/README.md) explains the sensory physiology behind the metrics: perceptual quality, photoreceptors and opponent channels, light and chromatic adaptation including display filters and dark rooms, contrast sensitivity, viewing geometry, and the visibility of noise and chroma detail.
-- [Character cell perception](quality/character-cell-perception/README.md) treats images drawn with characters as a display device: where the cell grid falls on the contrast sensitivity curves, research on coarse mosaics, why viewers judge cells by their neighbors rather than by the original, how AAlib, libcaca and chafa handle dithering, and how much color precision and how many simultaneous colors character cells need.
+- [Visual perception for image quality](quality/visual-perception/README.md) explains the physiology of vision that image-quality metrics rely on.
+- [Character cell perception](quality/character-cell-perception/README.md) treats images drawn with characters as a display device and asks how much color and detail cells need.
 
 ### Color spaces
 
-- [Color spaces](concepts/colorspace/README.md) explains what numbers, layouts, color spaces and profiles each mean, primaries, white points and transfer functions, gamma encoding and linear light, linear RGB and XYZ as conversion hubs, out-of-gamut and imaginary colors, and why mixing needs linear light.
-- [Transfer functions and gamma](concepts/colorspace/transfer-functions.md) shows why images are gamma-encoded, what 8 bits can and cannot do, the sRGB, power-law and broadcast curves and where they came from, the OETF, EOTF and OOTF, the many meanings of "gamma", and when arithmetic needs linear light.
-- [Primaries and white points](concepts/colorspace/primaries-and-white-points.md) explains chromaticity diagrams, the gamuts of NTSC, SMPTE-C, sRGB, Adobe RGB, Display P3, BT.2020 and ProPhoto RGB, the white points D65, D50, C, DCI and E, and how primaries and a white point determine the RGB-to-XYZ matrix.
-- [Color management basics](concepts/color-management/README.md) explains why images carry color profiles, what an ICC profile contains, the profile connection space, chromatic adaptation between D50 and D65, rendering intents, and where color management happens in libsixel.
-- [Gamut mapping](concepts/gamut-mapping/README.md) follows a P3 orange through conversion and replacement, compares clipping, Local MINDE, EdgeSeeker and Ray Trace with measured figures, and locates mapping within sampling, palette construction, dithering and RGB101 output.
+- [Color spaces](concepts/colorspace/README.md) explains what color numbers mean, how color spaces are defined and converted, and why mixing needs linear light.
+- [Transfer functions and gamma](concepts/colorspace/transfer-functions.md) explains why images are gamma-encoded, the common transfer curves, and when arithmetic needs linear light.
+- [Primaries and white points](concepts/colorspace/primaries-and-white-points.md) explains chromaticity diagrams, common gamuts and white points, and how they determine RGB-to-XYZ conversion.
+- [Color management basics](concepts/color-management/README.md) explains ICC profiles, chromatic adaptation, rendering intents, and where libsixel manages color.
+- [Gamut mapping](concepts/gamut-mapping/README.md) illustrates how out-of-gamut colors are brought into range and compares the mapping methods libsixel offers.
 
 ### Color difference
 
-- [Color difference and color reproduction](quality/color-difference.md) compares color-difference formulas, explains per-pixel, regional, global, and multiscale measures of color reproduction, why small palettes shift color, and which tolerance grades to target for output that does not look wrong.
-- [DIN99d and color difference](concepts/din99d/README.md) illustrates perceptual nearest-color selection, the corrected XYZ transform, common coordinate normalization, and measured palette tradeoffs.
+- [Color difference and color reproduction](quality/color-difference.md) compares color-difference formulas and measures and explains why small palettes shift color.
+- [DIN99d and color difference](concepts/din99d/README.md) illustrates perceptual nearest-color selection in DIN99d and its measured palette trade-offs.
 
 ### Pixel representation and precision
 
-- [Pixel formats and alpha representation](concepts/pixelformat.md) separates input memory layouts, frame storage, alpha-zero metadata, and what can be represented in a SIXEL stream.
-- [Pixel-format precision](concepts/pixelformat-precision/README.md) explains the `RGB888` and typed float32 storage contracts, implicit promotion by resize, CMS, and color-space conversion, memory cost, and measured resize quality.
+- [Pixel formats and alpha representation](concepts/pixelformat.md) separates input memory layouts, frame storage, alpha metadata, and what a SIXEL stream can represent.
+- [Pixel-format precision](concepts/pixelformat-precision/README.md) explains byte and float32 storage, when processing promotes precision, and what it costs.
 
 ### Display technologies
 
-- [Display technologies](concepts/displays/README.md) follows displays from halftone printing, color film and slides through cathode-ray tubes, plasma, LCD with Mini LED local dimming, OLED, microLED and projectors to electronic paper, and compares emissive, transmissive and reflective light, subtractive, spatial and temporal color mixing, pixels per degree from the CRT era through the 2000s step back to Retina displays, why electronic paper makes small palettes and dithering important again, and an outlook on density, the effective density of terminal images, and what density does and does not change for dithering.
+- [Display technologies](concepts/displays/README.md) follows displays from print and film to OLED and electronic paper and explains what pixel density means for dithering.
 
 ### Palettes and dithering
 
-- [Palettes](concepts/palettes/README.md) explains indexed-color images and color lookup tables, the history of palettes from early frame buffers, PC graphics, the VT340 and GIF to the web-safe palette, texture compression and xterm 256 colors, fixed, adaptive and local palettes, palette size, today's applications, and how palettes work in SIXEL.
-- [Palette clustering](concepts/clustering/README.md) explains how a palette is chosen for an image: colors as points, Voronoi regions and total error, why the optimum is hard to find, median cut, octree, k-means, k-medoids, k-center, Ward merging and neural methods, and the roles of color space, pixel weighting and important rare colors.
-- [Dithering](concepts/dithering/README.md) explains why few-color images need dithering, how random, ordered, error-diffusion and blue-noise methods work, where each puts its error, why error belongs at fine scales, color and linear-light averaging, structure-preserving dithering, how to choose a default when the viewer's pixel size is unknown, and what dithering costs in SIXEL.
+- [Palettes](concepts/palettes/README.md) explains indexed-color images, the history and kinds of palettes, and how palettes work in SIXEL.
+- [Palette clustering](concepts/clustering/README.md) explains how a palette is chosen for an image and compares the main clustering methods.
+- [Dithering](concepts/dithering/README.md) explains why few-color images need dithering, how the main method families work, and what dithering costs in SIXEL.
 
 ## Quality and measurement
 
@@ -90,15 +103,15 @@ How output quality is measured and accepted, building on the concepts above.
 
 ### Metrics
 
-- [Image-quality metrics](quality/metrics.md) defines each `lsqa` metric with its origin, mathematical definition, and implementation differences, and explains multiscale evaluation, dither noise spectra, structure-preserving dithering, how to combine metrics for dithered output, and the current emphasis on luminance.
-- [Video evaluation workflow](quality/video-workflow.md) walks through capturing an animation, supplying source and display timelines, and interpreting quality, persistence, bytes and playback cost.
-- [Video evaluation](quality/video-evaluation.md) describes frame and clock alignment, packet availability timelines, quality and byte reports, S-CIELAB error maps, and screen-coordinate residual persistence.
-- [Color-aware quality evaluation](quality/color-evaluation.md) defines independent input color interpretation, current-coordinate measurement, XYZ D50 color differences, fixed regional means, comparison signals, and the pending PNG integration boundary.
+- [Image-quality metrics](quality/metrics.md) defines each `lsqa` metric and explains how to combine metrics for dithered output.
+- [Video evaluation workflow](quality/video-workflow.md) walks through capturing an animation and interpreting its quality, persistence, size, and playback cost.
+- [Video evaluation](quality/video-evaluation.md) describes how frames and clocks are aligned and how video quality, size, and residual persistence are reported.
+- [Color-aware quality evaluation](quality/color-evaluation.md) defines how `lsqa` interprets input colors and measures color differences.
 
 ### Measurement practice
 
-- [Quality measurement policy](quality/measurement-policy.md) defines perceptual metrics, fixtures, thresholds, baselines, and performance comparisons.
-- [Palette gradient analysis](quality/palette-gradient-analysis.md) provides a local command to select a source-image gradient and inspect its quantized output through RGB scatter plots, exact Voronoi slices, actual pixel profiles and reusable source selections.
+- [Quality measurement policy](quality/measurement-policy.md) defines the metrics, fixtures, thresholds, baselines, and performance comparisons used to accept changes.
+- [Palette gradient analysis](quality/palette-gradient-analysis.md) provides a local tool to inspect how a source gradient is quantized.
 
 ## Implementation
 
@@ -106,97 +119,95 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 
 ### Encoder architecture
 
-- [Encoding pipeline](encoder/pipeline/README.md) connects loading, palette construction, palette application, SIXEL byte generation, and their composed cost model.
-- [Encoder execution map](encoder/execution-map/README.md) expands the implementation path through loader fallback, preprocessing, scheduler overlap, quantizer-specific work, lookup and dither application, and palette serialization.
-- [Color-space handling](encoder/colorspace-handling/README.md) describes the implicit conversions in loading, resize and composition, the `-X`, `-W`, and `-U` boundaries, lazy conversion and how to inspect the effective path, loader CMS engines and settings, extended-coordinate preservation, common configurations, and common mistakes.
-- [Encoder working precision](encoder/precision/README.md) explains the cross-cutting `--precision` axis, effective 8-bit and float32 paths, and the shared quality, speed, and size comparison across processing policies.
+- [Encoding pipeline](encoder/pipeline/README.md) connects loading, palette construction, palette application, and SIXEL output, with their composed cost.
+- [Encoder execution map](encoder/execution-map/README.md) traces the implementation path through each encoder stage and its scheduling.
+- [Color-space handling](encoder/colorspace-handling/README.md) describes every implicit and explicit color conversion in the encoder and how to inspect the effective path.
+- [Encoder working precision](encoder/precision/README.md) explains the `--precision` axis and compares quality, speed, and size across processing policies.
 
 ### Image loading
 
-- [Image loader architecture](loader/README.md) explains the compiled loader registry, `-L` chain construction, predicate and fallback control flow, typed frame outputs, backend inventory, and quality/security tradeoffs.
-- [Patent and license status of processing algorithms](misc/algorithm-patents.md) records what is known about patents and code licenses for the color, palette, lookup, dithering, SIXEL encoding and decoding, and dequantization methods, including open questions.
-- [Patent status of loader formats](loader/patents.md) records what is known about patents on each builtin decoder, external codec library, and platform framework path, including why the builtin loader has no WebP decoder.
-- [Loader precision, gamut, and fast paths](loader/precision-policy.md): backend representation, color/alpha preservation, byte eligibility, and validation requirements.
-- [Loader Color Management](loader/color-management/README.md) defines the backend integration policy, lists current CMS and precision boundaries by loader/format, and compares engines, unsupported profiles, fallback, rendering intents, quality, and speed/memory tradeoffs. Its [ColorSync dark-tone comparison](loader/color-management/README.md#colorsync-pure-gamma-curves-and-dark-tones) plots the pure-gamma representation difference and explains the compatibility setting.
-- [Builtin CMS specification and architecture](loader/builtin-cms.md) explains the implemented ICC subset, profile and transform ownership, numerical behavior, safety boundaries, and coverage limits.
-- [Builtin image loader](loader/builtin.md) documents the in-tree format families, precision and colorspace goals, security model, and the extraction history from the original stb_image integration.
-- [Builtin format components](loader/builtin/README.md) indexes one implementation reference per builtin format family, with exact variants, metadata and extension handling, output representation, history, and explicit exclusions.
-- [Builtin PNG source precision](loader/builtin/png-source-precision.md) describes original samples, selected CMS execution, atomic image/background fallback, and independent numeric tests.
-- [libpng image loader](loader/libpng.md) separates desired PNG/APNG behavior from current implementation gaps, then documents format support, precision, CMS, alpha/background handling, animation, and test coverage.
-- [libtiff format and color-management support](loader/libtiff.md#format-and-color-management-support) tabulates implemented decode and CMS paths, original Lab/CMYK integration, precision limits, and missing or unverified TIFF variants.
-- [PNG color metadata and ColorSync compatibility](loader/png-color-metadata.md): shared grayscale/indexed/RGB reference matrix and source-selection policy.
-- [Alpha policy](loader/alpha-policy/README.md) defines loader-side background composition, alpha-zero preservation, SIXEL `P2` requests, terminal-specific rendering, and the loader/encoder ownership boundary.
-- [Background policy](loader/background-policy.md) defines how builtin PNG, APNG, and GIF loaders choose between file and external backgrounds, including option precedence, colorspace, and OSC 11 interaction.
-- [Network access](loader/network-access.md) explains img2sixel's libcurl, libfetch, WinHTTP, and Emscripten bindings, build-dependent URL schemes and TLS support, backend selection, and the behavior and risks of `-k` certificate-verification bypass.
-- Codec adapters: [libjpeg](loader/libjpeg.md), [libwebp](loader/libwebp.md), [libtiff](loader/libtiff.md), and [librsvg](loader/librsvg.md) describe accepted routes, precision, metadata, animation/rasterization boundaries, and backend-specific controls.
-- Framework adapters: [WIC](loader/wic.md), [CoreGraphics/ImageIO](loader/coregraphics.md), [GdkPixbuf](loader/gdk-pixbuf2.md), and [GD](loader/gd.md) distinguish host/library capabilities from libsixel integration and fallback behavior.
-- Preview adapters: [Quick Look](loader/quicklook.md) and [Freedesktop thumbnailers](loader/gnome-thumbnailer.md) explain provider discovery, raster resolution, external execution, and metadata boundaries.
-- [CoreGraphics PNG source precision](loader/coregraphics.md#png-source-precision): original samples, native color definitions, alpha, and failure boundaries.
+- [Image loader architecture](loader/README.md) explains the loader registry, `-L` chains, fallback, typed frame outputs, and backend trade-offs.
+- [Patent and license status of processing algorithms](misc/algorithm-patents.md) records what is known about patents and licenses for libsixel's processing methods.
+- [Patent status of loader formats](loader/patents.md) records what is known about patents on each decoder and codec path.
+- [Loader precision, gamut, and fast paths](loader/precision-policy.md) defines how loaders preserve precision, color, and alpha and when byte fast paths apply.
+- [Loader color management](loader/color-management/README.md) defines how loaders apply color management and compares engines, fallbacks, quality, and cost.
+- [Builtin CMS specification and architecture](loader/builtin-cms.md) explains the ICC subset the builtin CMS implements and its numerical and safety boundaries.
+- [Builtin image loader](loader/builtin.md) documents the in-tree format families, their goals and security model, and their history.
+- [Builtin format components](loader/builtin/README.md) indexes one implementation reference per builtin format family.
+- [Builtin PNG source precision](loader/builtin/png-source-precision.md) describes how the builtin PNG decoder preserves original samples and falls back.
+- [libpng image loader](loader/libpng.md) documents PNG and APNG support through libpng and its current gaps.
+- [PNG color metadata and ColorSync compatibility](loader/png-color-metadata.md) defines how PNG color metadata is selected across loaders.
+- [Alpha policy](loader/alpha-policy/README.md) defines background composition, alpha-zero preservation, SIXEL `P2` requests, and the loader/encoder boundary.
+- [Background policy](loader/background-policy.md) defines how loaders choose between file and external backgrounds.
+- [Network access](loader/network-access.md) explains URL input, its backends and TLS support, and the risks of `-k`.
+- Codec adapters: [libjpeg](loader/libjpeg.md), [libwebp](loader/libwebp.md), [libtiff](loader/libtiff.md), and [librsvg](loader/librsvg.md) describe each library's routes, precision, metadata, and controls.
+- Framework adapters: [WIC](loader/wic.md), [CoreGraphics/ImageIO](loader/coregraphics.md), [GdkPixbuf](loader/gdk-pixbuf2.md), and [GD](loader/gd.md) separate host capabilities from libsixel's integration.
+- Preview adapters: [Quick Look](loader/quicklook.md) and [Freedesktop thumbnailers](loader/gnome-thumbnailer.md) explain provider discovery, rasterization, and metadata boundaries.
 
 ### Preprocessing
 
-- [Crop and resize](encoder/preprocessing/crop-resize/README.md) defines geometry syntax, crop/resize ordering, resize colorspace and precision policy, its SIMD relationship, measured quality, speed, size, transparency, and public frame helpers.
-- [Resampling](encoder/preprocessing/resampling/README.md) details resize coordinate mapping, discrete response, moiré, edge normalization, separable passes, threading, SIMD dispatch, visual comparisons, and measured quality, speed, and size. Its [theory and history](encoder/preprocessing/resampling/theory-history.md), [compact methods](encoder/preprocessing/resampling/compact-kernels.md), and [wide-support methods](encoder/preprocessing/resampling/wide-kernels.md) chapters derive the kernels and document each selectable method individually.
+- [Crop and resize](encoder/preprocessing/crop-resize/README.md) defines geometry syntax, crop and resize order, and resize color space and precision.
+- [Resampling](encoder/preprocessing/resampling/README.md) explains resize kernels and their quality, speed, and size, with one chapter per selectable method.
 
 ### Palette construction
 
-- [Palette construction pipeline](encoder/palette-construction/pipeline/README.md) defines the sampling, palette-space, binning, and quantization boundaries, joint automatic policy resolution, typed artifacts, and migration waves.
-- [Palette quantization](encoder/palette-construction/quantization/README.md) explains `-Q`, palette solver objectives, asymptotic costs, and the boundary between palette generation and use.
-- [GPU K-means](encoder/palette-construction/gpu-kmeans.md) describes the explicit Metal backend, CPU fallback, weighted Lloyd iteration, numeric limits and execution evidence.
-- [Palette clustering color space](encoder/palette-construction/clustering-colorspace/README.md) explains `-X`, its coordinate geometry and normalization, option interactions, and measured quality, speed, and size tradeoffs.
-- [Final palette merge policy](encoder/palette-construction/merge-policy/README.md) explains `-F`, Ward oversplit-and-reduce processing, optional Lloyd polishing, measured quality, speed, size, palette geometry, and flat-patch reachability.
-- [Palette cover policy](encoder/palette-construction/cover-policy/README.md) explains `-a` / `--cover-policy`, post-quantizer gamut reachability repair, soft and hard anchor selection, the links among gamut mapping, Neugebauer printing, and error-diffusion stability, and a three-layer measurement model.
-- [Palette snap policy](encoder/palette-construction/snap-policy/README.md) explains how `-_` / `--snap-policy` enables and configures the 101 reversible SIXEL tone levels, working-space target selection, timing, and approach rate.
-- [Built-in palettes and monochrome output](encoder/palette-construction/fixed-palettes.md) explains `-b`, `-e`, `-i`, palette families, foreground-mask output, construction bypass, and downstream controls.
-- [External palette input and output](encoder/palette-construction/external-palettes.md) explains `-m` and `-M`, palette-generation and reuse workflows, format origins, application compatibility, format detection, and fixed-palette policy interactions.
+- [Palette construction pipeline](encoder/palette-construction/pipeline/README.md) defines the stages that build a palette and how their automatic policies are resolved.
+- [Palette quantization](encoder/palette-construction/quantization/README.md) explains `-Q` and the objectives and costs of each palette solver.
+- [GPU K-means](encoder/palette-construction/gpu-kmeans.md) describes the Metal K-means backend, its CPU fallback, and its limits.
+- [Palette clustering color space](encoder/palette-construction/clustering-colorspace/README.md) explains `-X` and its measured quality, speed, and size trade-offs.
+- [Final palette merge policy](encoder/palette-construction/merge-policy/README.md) explains `-F`, Ward reduction, optional Lloyd polishing, and their measured trade-offs.
+- [Palette cover policy](encoder/palette-construction/cover-policy/README.md) explains `-a` and how it repairs palette coverage of the source gamut.
+- [Palette snap policy](encoder/palette-construction/snap-policy/README.md) explains `-_` and how it moves palette colors onto SIXEL's 101 reversible tone levels.
+- [Built-in palettes and monochrome output](encoder/palette-construction/fixed-palettes.md) explains `-b`, `-e`, and `-i` and the built-in palette families.
+- [External palette input and output](encoder/palette-construction/external-palettes.md) explains `-m` and `-M` and the palette file formats they read and write.
 
 ### Palette application
 
-- [Palette working color space](encoder/palette-application/working-colorspace/README.md) explains `-W`, its palette-application geometry, lookup and dither interactions, precision requirements, and measured quality, speed, and size tradeoffs.
-- [Lookup policy](encoder/palette-application/lookup-policy/README.md) defines the `-~` / `--lookup-policy` interface provided by `img2sixel`, its mathematical basis, exactness guarantees, and preparation/query costs. It contains one detailed chapter per policy and a measured Delta E, chroma, MS-SSIM, and runtime comparison across palette sizes.
-- [Dithering](encoder/palette-application/dithering/README.md) explains `-d`, error shaping, scan order, temporal behavior, per-pixel cost, and its interaction with lookup. The [FS coefficient perturbation measurements](encoder/palette-application/dithering/perturb/README.md) document the optional texture adjustment with RAPSD, flat-field and photographic comparisons, strength and seed controls, and reproducible measurement conditions.
-- [Dither clamp policy](encoder/palette-application/clamp-policy.md) defines `-0` / `--clamp-policy`, extended-source preservation, signed feedback headroom, and quality tradeoffs.
+- [Palette working color space](encoder/palette-application/working-colorspace/README.md) explains `-W` and how it affects lookup, dithering, and measured trade-offs.
+- [Lookup policy](encoder/palette-application/lookup-policy/README.md) explains `-~`, the exactness and cost of each nearest-color policy, and their measured comparison.
+- [Dithering](encoder/palette-application/dithering/README.md) explains `-d`, each error-diffusion and positional method, and their cost and measured quality.
+- [Dither clamp policy](encoder/palette-application/clamp-policy.md) explains `-0` and how extended source values and diffusion feedback are clamped.
 
 ### SIXEL output
 
-- [Encoding policy](encoder/output/encode-policy/README.md) explains `-E`, six-row mask serialization, size-policy overpainting, and measured quality, speed, and stream-size behavior.
-- [Output color space](encoder/output/output-colorspace.md) explains `-U`, gamma/linear/SMPTE-C output, the selected CPU float Display P3 path, receiver interpretation, percentage rounding, fixed-palette and `-M` interactions, high-color destination conversion including its P3, packed-alpha and separated-mask scope, and test coverage.
-- [Output gamut mapping](encoder/output/gamut-mapping.md) specifies `-U` gamut policies, numeric contracts, supported destination profiles, implementation entry points and test coverage; the [illustrated introduction](concepts/gamut-mapping/README.md) explains their purpose and visual effects.
-- [Delta encoding (6delta)](encoder/output/delta-encoding.md) explains `--update-policy`, retained display colors, threshold and palette comparisons, partial-update APIs, bounded progressive repair, invalidation, CPU/GPU scope, and test coverage.
-- [OR-mode output](encoder/output/or-mode/README.md) explains `-O`, index-bit composition, `P2=5`, palette-zero and transparency semantics, receiver compatibility, and regression coverage. Its [scaling and decoding study](encoder/output/or-mode/scaling.md) compares palette budgets, encoder/decoder thread budgets, and in-process versus PNG-inclusive decoding. [OR mode on the X68030 console](encoder/output/or-mode/x68k.md) explains the planar-VRAM hardware and kernel receiver the dialect was designed for, models its historical speed advantage, and records how the receiver's band buffer reached libsixel's decoder ten years later.
-- [High-color output](encoder/output/high-color/README.md) explains `-I`, paint-time palette-register semantics, 15bit keys versus actual RGB counts, current parallelism limits, and the required band reset design. Its [measurement reference](encoder/output/high-color/measurement.md) compares 256-color output, artifacts and banding, histograms, quality, API speed, and stream size.
-- [DRCS-SIXEL output](encoder/output/drcs.md) explains `-@` / `--drcs`, separate glyph-definition and display-character streams, mapping revisions, cell geometry, receiver requirements, reuse, and current implementation defects.
-- [Terminal macros](encoder/output/terminal-macros.md) explains `-u` and `-n`, DECDMAC definitions and DECINVM playback, preloading, transfer cost, receiver state, and exact static-image and animation regression coverage.
+- [Encoding policy](encoder/output/encode-policy/README.md) explains `-E` and how six-row masks are serialized, with measured trade-offs.
+- [Output color space](encoder/output/output-colorspace.md) explains `-U`, the output color spaces, and how receivers interpret palette values.
+- [Output gamut mapping](encoder/output/gamut-mapping.md) specifies the `-U` gamut policies and their numeric contracts.
+- [Delta encoding (6delta)](encoder/output/delta-encoding.md) explains `--update-policy` and how frames are updated incrementally.
+- [OR-mode output](encoder/output/or-mode/README.md) explains `-O`, index-bit composition, receiver compatibility, and the X68030 console it was designed for.
+- [High-color output](encoder/output/high-color/README.md) explains `-I`, how high-color streams use palette registers, and their measured cost.
+- [DRCS-SIXEL output](encoder/output/drcs.md) explains `-@` and how images are sent as downloadable character glyphs.
+- [Terminal macros](encoder/output/terminal-macros.md) explains `-u` and `-n` and how macro definitions and playback reduce transfer.
 
 ### Decoding
 
-- [Decoding pipeline](decoder/pipeline/README.md) follows SIXEL wire bytes through parser and paint state, raster policy, indexed and direct representations, optional reconstruction and resize, parallel fallback, and PNG output, with a reciprocal coverage audit.
-- [Multi-pass still-image decoding](decoder/multi-pass.md) documents explicit `-M 6delta-progressive` input selection, shared ordered composition, final-image assessment in `lsqa`, and PNG output in `sixel2png`.
-- [Dequantization](decoder/dequantization/README.md) explains Kornelski's palette and gradient inference, libsixel's mixing ratios, reconstruction controls, alpha and palette-history boundaries, CPU/GPU execution, and test coverage.
+- [Decoding pipeline](decoder/pipeline/README.md) follows SIXEL bytes through parsing, painting, optional reconstruction, and PNG output.
+- [Multi-pass still-image decoding](decoder/multi-pass.md) documents how progressive multi-pass streams are composed into one image.
+- [Dequantization](decoder/dequantization/README.md) explains how palette and gradient inference reconstructs smoother images from SIXEL.
 
 ### Image writing
 
-- [PNG writer](writers/png/README.md) defines the libpng and builtin writer backends, indexed and direct 8-bit output, and the post-SIXEL PNG snapshot path used by `img2sixel`.
+- [PNG writer](writers/png/README.md) defines the PNG writer backends, their output formats, and the PNG snapshot path in `img2sixel`.
 
 ### Animation, threading, and runtime execution
 
-- [Animation playback](encoder/animation.md) explains `-l`, `-S`, `-T`, and `-g`, loader/format support, GdkPixbuf loop-count limitations, timing and composition, and interactions with macros, alpha, delta output, and temporal dithering.
-- [Threading documentation](threading/README.md) indexes the execution model, band encoding and decoding, encoder and decoder budgets, animation, timeline interpretation, and reproducible measurements.
-- [Threading overview](threading/overview.md) defines SIXEL bands, palette-application work bands, decoder byte spans, ordered publication, and the small quality differences that work-band seam policy can introduce.
-- [Runtime execution policy](cli/runtime-policy.md) explains `-j`, SIMD ceilings, scheduling thresholds, resize precision, process scope, and encoder/decoder differences.
+- [Animation playback](encoder/animation.md) explains `-l`, `-S`, `-T`, and `-g` and how animation interacts with other output features.
+- [Threading documentation](threading/README.md) indexes the threading model, band encoding and decoding, budgets, and measurements.
+- [Threading overview](threading/overview.md) defines bands, work bands, ordered publication, and their effect on output.
+- [Runtime execution policy](cli/runtime-policy.md) explains `-j`, SIMD ceilings, scheduling thresholds, and encoder and decoder differences.
 
 ### Diagnostics
 
-- [Diagnostics and logs](cli/diagnostics.md) explains `-x`, `-J`, `-v`, code reporting, trace topics, and timeline capture and interpretation.
-- [CLI abort trace diagnostics](cli/abort-trace/README.md) defines the CLI-layer ownership, current converter consumers, non-consuming `lsqa` boundary, controls, platform behavior, representative output, reliability, performance, output-quality boundary, and test coverage of the `SIGABRT` stack trace.
+- [Diagnostics and logs](cli/diagnostics.md) explains `-x`, `-J`, and `-v`, trace topics, and timeline capture.
+- [CLI abort trace diagnostics](cli/abort-trace/README.md) defines the stack trace printed when a converter aborts.
 
 ## Terminal protocol proposals
 
-Receiver-independent proposals for terminal behavior beyond SIXEL. They assume the color concepts and output behavior described above.
+Receiver-independent proposals for terminal behavior beyond SIXEL, building on the color concepts and output behavior above.
 
 ### Color management
 
-- [Terminal graphics color management proposal](protocols/graphics-color-management.md) defines receiver-independent color policy, device-input RGB discovery, simple RGB and ICC descriptions, filter-status queries, and the proposed application negotiation flow.
+- [Terminal graphics color management proposal](protocols/graphics-color-management.md) proposes how applications and terminals can agree on graphics color interpretation.
 
 ## Development and maintenance
 
@@ -204,35 +215,35 @@ Building, testing, and maintaining libsixel and its documentation.
 
 ### Build system
 
-- [Build system architecture](build/README.md) explains why Autotools + Libtool and Meson remain complementary, why generated build files are committed for repository users, configure and build orchestration, `m4/` macros, `build-aux/` toolchain adapters, the custom test harness and command-length limits, and Meson adoption and remaining differences.
+- [Build system architecture](build/README.md) explains why Autotools and Meson are both maintained and how configuration, macros, and the test harness are organized.
 
 ### Testing
 
-- [Testing guide](testing/guide.md) owns general assertion and evidence rules, test organization, shell TAP rules, registration, portability, and required validation.
-- [Companion-program test inventory](testing/companion-programs-coverage.md) maps every numbered WIC observation to its prerequisites, assertions and evidence limits.
-- [Staticcheck](testing/staticcheck.md) defines libsixel's repository-wide invariant-verification target, its broader-than-lint scope, IDL and cross-surface checks, test meta-checks, CLI synchronization role, and extension workflow.
-- [Builtin loader coverage inventory](testing/builtin-loader-coverage.md) maps every builtin-loader shell test to its primary format, observation, and traceability role while keeping pipeline landmarks distinct from the exhaustive regression suite.
-- [Mapfile parser coverage inventory](testing/mapfile-parser-coverage.md) maps every structured-palette parser and writer test to its exact observation while keeping behavioral contracts distinct from defensive and supplementary coverage.
-- [Resampling regression coverage](testing/resampling-coverage.md) inventories exact precision, SIMD, thread, discrete-stencil, frequency, isotropy, and moiré regression probes and their numeric tolerance table.
-- [libpng cHRM boundary test plan](testing/png-chrm-boundaries.md) inventories integer-grid, exact-collinear fallback, signed-primary acceptance, original-sample, background, and CMS control observations.
-- [PNG cHRM arithmetic test plan](testing/png-chrm-arithmetic.md) separates mode selection, exact rounding, ordinary double budgets, target definition, white adaptation, and terminal availability errors.
+- [Testing guide](testing/guide.md) owns the general rules for test evidence, organization, registration, portability, and validation.
+- [Staticcheck](testing/staticcheck.md) defines the repository-wide invariant checks and how to extend them.
+- [Companion-program test inventory](testing/companion-programs-coverage.md) maps every numbered WIC test to its assertions and evidence limits.
+- [Builtin loader coverage inventory](testing/builtin-loader-coverage.md) maps every builtin-loader test to its format and observation.
+- [Mapfile parser coverage inventory](testing/mapfile-parser-coverage.md) maps every palette file parser and writer test to its observation.
+- [Resampling regression coverage](testing/resampling-coverage.md) inventories the resampling regression probes and their numeric tolerances.
+- [libpng cHRM boundary test plan](testing/png-chrm-boundaries.md) inventories the libpng cHRM boundary observations.
+- [PNG cHRM arithmetic test plan](testing/png-chrm-arithmetic.md) separates the cHRM arithmetic tests by what each one verifies.
 
 ### Continuous integration
 
-- [CI architecture and design](ci/design.md) describes GitHub Actions, @saitoha's local desktop CI, matrix design, and failure triage.
+- [CI architecture and design](ci/design.md) describes the GitHub Actions and local CI, matrix design, and failure triage.
 
 ### Command-line implementation policy
 
 - [CLI design policy](cli/design-policy.md) defines option design, compatibility, parsing, diagnostics, and documentation synchronization.
-- [Converter suboption architecture](cli/suboptions.md) defines structured option grammar, typed registry metadata, consumer scopes, environment-variable parity, precedence, and implementation flow.
+- [Converter suboption architecture](cli/suboptions.md) defines structured option grammar, the option registry, precedence, and environment-variable parity.
 
 ### Platform compatibility
 
-- [Platform compatibility ledger](misc/platforms/README.md) indexes the maintained OpenVMS, Windows runtime, Emscripten, Cosmopolitan, macOS, POSIX libc, Haiku, and Solaris compatibility contracts and their reciprocal static checks.
+- [Platform compatibility ledger](misc/platforms/README.md) indexes the per-platform compatibility contracts and their static checks.
 
 ### Documentation
 
 - [Documentation manifesto](documentation/manifesto.md) states the design principles that keep the documentation one coherent work.
 - [Documentation workflow](documentation/workflow.md) defines how a documentation change is classified, proposed, reviewed, and accepted.
-- [Documentation instructions](AGENTS.md) define document scope, organization, policy ownership, reference-based reuse, and document/test traceability.
+- [Documentation instructions](AGENTS.md) define document scope, organization, policy ownership, length limits, and document/test traceability.
 - [Building the documentation site](documentation/site-build.md) explains how to build the searchable HTML site locally.
