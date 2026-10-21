@@ -346,6 +346,10 @@ run_case_tap "staticcheck-c-header-modeline-controls" \
     "$src_root/tests/_static/sh/staticcheck-c-header-modeline-controls.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-c-source-batch-controls" \
+    "$src_root/tests/_static/sh/staticcheck-c-source-batch-controls.sh" \
+    "$src_root"
+
 run_case_tap "staticcheck-suboption-image-coverage" \
     "$src_root/tests/_static/sh/staticcheck-suboption-image-coverage.sh" \
     "$src_root" || fail_and_exit $?

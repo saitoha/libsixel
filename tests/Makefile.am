@@ -7908,6 +7908,7 @@ AM_LOG_FLAGS =
 	staticcheck-suite-workers \
 	staticcheck-source-reference-controls \
 	staticcheck-c-header-modeline-controls \
+	staticcheck-c-source-batch-controls \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
@@ -7990,6 +7991,7 @@ staticcheck-tap-dispatch \
 staticcheck-suite-workers \
 staticcheck-source-reference-controls \
 staticcheck-c-header-modeline-controls \
+staticcheck-c-source-batch-controls \
 staticcheck-actionlint \
 staticcheck-shellcheck \
 staticcheck-codespell \
@@ -8131,6 +8133,16 @@ staticcheck-c-header-modeline-controls:
 		--trs-file staticcheck-c-header-modeline-controls.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-c-header-modeline-controls.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-c-source-batch-controls:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-c-source-batch-controls" \
+		--log-file staticcheck-c-source-batch-controls.log \
+		--trs-file staticcheck-c-source-batch-controls.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-c-source-batch-controls.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-suboption-image-coverage:
@@ -9744,6 +9756,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-suite-workers.sh \
     _static/sh/staticcheck-source-reference-controls.sh \
     _static/sh/staticcheck-c-header-modeline-controls.sh \
+    _static/sh/staticcheck-c-source-batch-controls.sh \
     _static/sh/staticcheck-suboption-registry.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \

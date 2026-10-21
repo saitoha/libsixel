@@ -758,6 +758,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-c-source-batch-controls',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-c-source-batch-controls.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-actionlint',
     [meson.current_source_dir() / '_static/sh/staticcheck-actionlint.sh',
       meson.project_source_root(),

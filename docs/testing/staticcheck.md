@@ -135,6 +135,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 
 | SC-10 | Shared and focused source-reference scans preserve source identities, full-file placement checks, language-specific comment rules, role-registration scope and records across batches. | [tests/_static/sh/staticcheck-source-reference-controls.sh](../../tests/_static/sh/staticcheck-source-reference-controls.sh) |
 | SC-11 | Header/modeline scanning preserves the 120-line SPDX, 160-line license and final 40-line modeline windows, checks Git-file worktrees and rejects failed inventories. | [tests/_static/sh/staticcheck-c-header-modeline-controls.sh](../../tests/_static/sh/staticcheck-c-header-modeline-controls.sh) |
+| SC-12 | Identifier-length and SIZE_MAX checks use one awk process per check while retaining per-file duplicate suppression, line numbers, provider state, empty/deleted-file handling and include-fragment exclusions. Git-file worktrees receive the same checks; inventory and source-read failures cannot become successful skips. | [tests/_static/sh/staticcheck-c-source-batch-controls.sh](../../tests/_static/sh/staticcheck-c-source-batch-controls.sh) |
 
 ### Coverage boundary
 

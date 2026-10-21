@@ -9,7 +9,8 @@ src_root=$1
 
 cd "$src_root"
 
-if test ! -d .git || ! command -v git >/dev/null 2>&1; then
+if { test ! -d .git && test ! -f .git; } ||
+        ! command -v git >/dev/null 2>&1; then
     echo "ok 1 # SKIP git metadata not available"
     exit 0
 fi
@@ -26,57 +27,59 @@ git -c core.quotepath=false ls-files -- \
     'include/*.h' \
     'include/*.h.in' \
     'tests/**/*.c' \
-    'tests/**/*.h' > "$tmpfile" || true
+    'tests/**/*.h' > "$tmpfile" || {
+    echo "not ok 1 - failed to inventory tracked C/C header files"
+    exit 1
+}
 
 if test ! -s "$tmpfile"; then
     echo "ok 1 # SKIP no tracked C/C header files"
     exit 0
 fi
 
-failed=0
+# Keep the deleted-file filter in shell builtins. Passing paths on stdin
+# avoids ARG_MAX and starts only one awk, including in Git-file worktrees.
 while IFS= read -r path; do
     test -n "$path" || continue
     test -f "$path" || continue
-
-    if ! awk '
-    BEGIN {
-        FS = "[^A-Za-z0-9_]+"
-        limit = 63
-        file_failed = 0
-    }
-    {
-        for (i = 1; i <= NF; ++i) {
-            token = $i
-            if (token !~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
-                continue
-            }
-            if (length(token) <= limit) {
-                continue
-            }
-            if (token in seen) {
+    printf '%s\n' "$path"
+done < "$tmpfile" | awk '
+BEGIN { limit = 63 }
+{
+    path = $0
+    number = 0
+    # An identifier is reported once per file, never once per entire batch.
+    # Explicit getline also handles empty files without carrying line state.
+    delete seen
+    while ((status = (getline line < path)) > 0) {
+        number++
+        # A short line cannot contain an over-limit token. Check token length
+        # before its identifier grammar for the same reason.
+        if (length(line) <= limit) continue
+        count = split(line, fields, /[^A-Za-z0-9_]+/)
+        for (i = 1; i <= count; ++i) {
+            token = fields[i]
+            if (length(token) <= limit ||
+                    token !~ /^[A-Za-z_][A-Za-z0-9_]*$/ || token in seen) {
                 continue
             }
             seen[token] = 1
-            file_failed = 1
+            failed = 1
             printf("# %s:%d: identifier exceeds %d significant chars: %s (len=%d)\n",
-                   FILENAME,
-                   NR,
-                   limit,
-                   token,
-                   length(token))
+                   path, number, limit, token, length(token))
         }
     }
-    END {
-        exit file_failed ? 1 : 0
+    close(path)
+    if (status < 0) {
+        print "# " path ": unable to read tracked source"
+        failed = 1
     }
-    ' "$path"; then
-        failed=1
-    fi
-done < "$tmpfile"
-
-if test "$failed" -ne 0; then
-    echo "not ok 1 - C identifiers stay within C99 significant-length limit"
-    exit 1
-fi
-
-echo "ok 1 - C identifiers stay within C99 significant-length limit"
+}
+END {
+    if (failed) {
+        print "not ok 1 - C identifiers stay within C99 significant-length limit"
+    } else {
+        print "ok 1 - C identifiers stay within C99 significant-length limit"
+    }
+    exit failed ? 1 : 0
+}'
