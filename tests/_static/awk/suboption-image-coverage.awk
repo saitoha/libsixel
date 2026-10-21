@@ -204,6 +204,32 @@ BEGIN {
     failed = 0
     registry_rows = 0
     test_rows = 0
+    # Environment values preserve literal backslashes in shell-source edits;
+    # awk -v assignments would interpret them as escape sequences.
+    mutation_needle = ENVIRON["SIXEL_IMAGE_MUTATION_NEEDLE"]
+    mutation_replacement = ENVIRON["SIXEL_IMAGE_MUTATION_REPLACEMENT"]
+    # Check argument identities as well as parsed records: an extra empty
+    # input has no records and would otherwise escape the scope check below.
+    if (focused_test != "") {
+        for (input_index = 1; input_index < ARGC; input_index++) {
+            input_path = ARGV[input_index]
+            if (input_path != registry_file &&
+                    input_path != completion_registry_file &&
+                    input_path != focused_test) {
+                fail("unexpected input in focused image inspection: " input_path)
+            }
+        }
+    }
+}
+FILENAME == focused_test && mutation_needle != "" {
+    # Apply the control's first literal match per line before any evidence
+    # rule sees it. No mutated source file or separate generator is needed.
+    mutation_offset = index($0, mutation_needle)
+    if (mutation_offset) {
+        $0 = substr($0, 1, mutation_offset - 1) mutation_replacement \
+            substr($0, mutation_offset + length(mutation_needle))
+        mutation_matched = 1
+    }
 }
 FILENAME == registry_file || FILENAME == completion_registry_file {
     if ($0 ~ /(g_suboptions|g_img2sixel_completion_policy_keys)\[\][[:space:]]*=[[:space:]]*\{/) {
@@ -568,7 +594,24 @@ FILENAME != registry_file {
     }
 }
 END {
+    # A stale mutation is a broken control, not a successful negative case.
+    # Keep status 2 distinct from an ordinary evidence rejection (status 1).
+    if (mutation_needle != "" && !mutation_matched) {
+        print "# image-evidence mutation did not match: " focused_test
+        exit 2
+    }
+    # Mutation controls first validate the complete corpus, then check one
+    # changed body in isolation. Only whole-corpus completeness is omitted in
+    # this mode; registry membership and every per-file assertion still run.
+    # Require exactly the requested file so an empty or misrouted input cannot
+    # pass merely because there was nothing to inspect.
+    if (focused_test != "" && !(focused_test in regression_test)) {
+        fail("focused image regression test was not read: " focused_test)
+    }
     for (file in regression_test) {
+        if (focused_test != "" && file != focused_test) {
+            fail("unexpected input in focused image inspection: " file)
+        }
         if (top_level_test[file]) {
             if (test_key[file] != "") {
                 fail(file " mixes top-level and suboption markers")
@@ -580,7 +623,7 @@ END {
         }
     }
     for (key in expected) {
-        if (!covered[key]) {
+        if (focused_test == "" && !covered[key]) {
             fail("missing image regression test for " key)
         }
     }
@@ -855,7 +898,11 @@ END {
             fail(file " does not force both quantization paths")
         }
     }
-    if (registry_rows != test_rows) {
+    if (focused_test != "") {
+        if (test_rows != 1 || test_key[focused_test] == "") {
+            fail("focused image inspection requires one registry row")
+        }
+    } else if (registry_rows != test_rows) {
         fail("registry/image test count mismatch: " registry_rows "/" \
              test_rows)
     }

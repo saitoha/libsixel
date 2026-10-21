@@ -16,6 +16,11 @@ regression_dir="$src_root/tests/cli/options/regression"
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-image-coverage-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
+# The positive control checks global completeness once. Mutations change only
+# a test body, so unrelated tests cannot affect their per-file verdicts. Keep
+# each mutation in a fresh awk process, with the real registries, to avoid
+# leaking parsed flags or assertion counts from the unmodified fixture.
+checked_fixtures='|'
 for sample in baseline assignment binding base consumer-event consumer-engine \
         consumer-result comparison image-reference legacy-assignment \
         legacy-binding legacy-consumer perceptual-pair perceptual-status \
@@ -25,8 +30,8 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         presentation-environment presentation-seconds value-nonempty; do
     fixture="$regression_dir/0085_loader_libpng_cms_engine_image_regression.t"
     expected=fail
-    needle=__unchanged_positive_control__
-    replacement=__unused__
+    needle=
+    replacement=
     case "$sample" in
         baseline) expected=pass ;;
         assignment) needle='stored=1|binding='; replacement='stored=0|binding=' ;;
@@ -82,35 +87,93 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         echo "# missing checker fixture: $fixture"
         exit 1
     }
-    PATTERN_NEEDLE="$needle" PATTERN_REPLACEMENT="$replacement" awk '
-    BEGIN { needle = ENVIRON["PATTERN_NEEDLE"]; replacement = ENVIRON["PATTERN_REPLACEMENT"] }
-    {
-        offset = index($0, needle)
-        if (offset) {
-            $0 = substr($0, 1, offset - 1) replacement \
-                substr($0, offset + length(needle))
-        }
-        print
-    }
-    ' "$fixture" > "$tmpdir/changed.t"
+    # Every distinct fixture must also pass the focused path unchanged. This
+    # prevents an always-failing focused mode from satisfying negative cases.
+    case "$checked_fixtures" in
+        *"|$fixture|"*) ;;
+        *)
+            awk -v registry_file="$registry_file" \
+                -v completion_registry_file="$completion_file" \
+                -v focused_test="$fixture" \
+                -f "$src_root/tests/_static/awk/suboption-image-coverage.awk" \
+                "$registry_file" "$completion_file" "$fixture" || {
+                echo 'not ok 1 - unchanged image fixture passes focused inspection'
+                exit 0
+            }
+            checked_fixtures="$checked_fixtures$fixture|"
+            ;;
+    esac
     set -- "$registry_file" "$completion_file"
-    for input in "$regression_dir"/*.t; do
-        case "$input" in
-            "$fixture") set -- "$@" "$tmpdir/changed.t" ;;
-            *) set -- "$@" "$input" ;;
-        esac
-    done
-    if awk -v registry_file="$registry_file" \
+    focused_test="$fixture"
+    case "$sample" in
+        baseline)
+            focused_test=
+            set -- "$@" "$regression_dir"/*.t
+            ;;
+        *) set -- "$@" "$fixture" ;;
+    esac
+    status=0
+    SIXEL_IMAGE_MUTATION_NEEDLE="$needle" \
+        SIXEL_IMAGE_MUTATION_REPLACEMENT="$replacement" \
+        awk -v registry_file="$registry_file" \
             -v completion_registry_file="$completion_file" \
+            -v focused_test="$focused_test" \
             -f "$src_root/tests/_static/awk/suboption-image-coverage.awk" \
-            "$@" > "$tmpdir/diagnostics"; then
-        actual=pass
-    else
-        actual=fail
-    fi
+            "$@" > "$tmpdir/diagnostics" || status=$?
+    case "$status" in
+        0) actual=pass ;;
+        1) actual=fail ;;
+        *)
+            echo 'not ok 1 - image-evidence mutation executes successfully'
+            printf '# case %s exited with status %s\n' "$sample" "$status"
+            cat "$tmpdir/diagnostics"
+            exit 0
+            ;;
+    esac
     test "$actual" = "$expected" || {
         echo 'not ok 1 - registry image evidence controls'
         printf '# case %s expected %s, got %s\n' "$sample" "$expected" "$actual"
+        cat "$tmpdir/diagnostics"
+        exit 0
+    }
+done
+
+# Focused inspection must reject missing, empty and extra inputs rather than
+# treating an incomplete invocation as a passing positive control.
+for scope in empty missing extra extra-empty unmatched; do
+    focused_test="$fixture"
+    needle=
+    expected_status=1
+    set -- "$registry_file" "$completion_file" "$fixture"
+    case "$scope" in
+        empty)
+            : > "$tmpdir/changed.t"
+            focused_test="$tmpdir/changed.t"
+            set -- "$registry_file" "$completion_file" "$focused_test"
+            ;;
+        missing) focused_test="$tmpdir/missing.t" ;;
+        extra)
+            set -- "$@" \
+                "$regression_dir/0085_loader_libpng_cms_engine_image_regression.t"
+            ;;
+        extra-empty) set -- "$@" "$tmpdir/changed.t" ;;
+        unmatched)
+            needle=__missing_image_evidence_mutation__
+            expected_status=2
+            ;;
+    esac
+    status=0
+    SIXEL_IMAGE_MUTATION_NEEDLE="$needle" \
+        SIXEL_IMAGE_MUTATION_REPLACEMENT='' \
+        awk -v registry_file="$registry_file" \
+            -v completion_registry_file="$completion_file" \
+            -v focused_test="$focused_test" \
+            -f "$src_root/tests/_static/awk/suboption-image-coverage.awk" \
+            "$@" > "$tmpdir/diagnostics" || status=$?
+    test "$status" -eq "$expected_status" || {
+        echo 'not ok 1 - focused image inspection rejects incomplete scope'
+        printf '# case %s expected status %s, got %s\n' \
+            "$scope" "$expected_status" "$status"
         cat "$tmpdir/diagnostics"
         exit 0
     }
