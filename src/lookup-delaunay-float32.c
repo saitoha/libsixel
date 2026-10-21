@@ -596,6 +596,146 @@ sixel_lookup_delaunay_float32_workspace_size(
 }
 
 
+#if SIXEL_DLF_SIMD
+/* Each lane is an independent query. The build gate guarantees separate
+ * multiply/add in both scalar and SIMD code. Keep channel order, double
+ * intermediates and lowest-index ties; never fuse or reassociate terms. */
+static sixel_delaunay_distance2_t
+sixel_delaunay_float_query_distance2(
+    sixel_lookup_delaunay_float32_t const *graph,
+    sixel_delaunay_distance2_t r,
+    sixel_delaunay_distance2_t g,
+    sixel_delaunay_distance2_t b, int index)
+{
+    double const *p;
+    sixel_delaunay_distance2_t d, sum;
+
+    p = graph->points + index * 3;
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+    sum = vdupq_n_f64(0.0);
+    d = vsubq_f64(r, vdupq_n_f64(p[0]));
+    sum = vaddq_f64(sum, vmulq_n_f64(vmulq_f64(d, d),
+                                        graph->weights_wide[0]));
+    d = vsubq_f64(g, vdupq_n_f64(p[1]));
+    sum = vaddq_f64(sum, vmulq_n_f64(vmulq_f64(d, d),
+                                        graph->weights_wide[1]));
+    d = vsubq_f64(b, vdupq_n_f64(p[2]));
+    return vaddq_f64(sum, vmulq_n_f64(vmulq_f64(d, d),
+                                        graph->weights_wide[2]));
+#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+    sum = _mm_setzero_pd();
+    d = _mm_sub_pd(r, _mm_set1_pd(p[0]));
+    sum = _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(d, d),
+                                   _mm_set1_pd(graph->weights_wide[0])));
+    d = _mm_sub_pd(g, _mm_set1_pd(p[1]));
+    sum = _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(d, d),
+                                   _mm_set1_pd(graph->weights_wide[1])));
+    d = _mm_sub_pd(b, _mm_set1_pd(p[2]));
+    return _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(d, d),
+                                    _mm_set1_pd(graph->weights_wide[2])));
+#else
+    sum = wasm_f64x2_splat(0.0);
+    d = wasm_f64x2_sub(r, wasm_f64x2_splat(p[0]));
+    sum = wasm_f64x2_add(sum, wasm_f64x2_mul(wasm_f64x2_mul(d, d),
+                                wasm_f64x2_splat(graph->weights_wide[0])));
+    d = wasm_f64x2_sub(g, wasm_f64x2_splat(p[1]));
+    sum = wasm_f64x2_add(sum, wasm_f64x2_mul(wasm_f64x2_mul(d, d),
+                                wasm_f64x2_splat(graph->weights_wide[1])));
+    d = wasm_f64x2_sub(b, wasm_f64x2_splat(p[2]));
+    return wasm_f64x2_add(sum, wasm_f64x2_mul(wasm_f64x2_mul(d, d),
+                                wasm_f64x2_splat(graph->weights_wide[2])));
+#endif
+}
+
+/* C99 cannot add const through a pointer to an array. The caller owns
+ * this mutable batch, but the SIMD search only reads its samples. */
+static void
+sixel_lookup_delaunay_float32_map_cold8(
+    sixel_lookup_delaunay_float32_t const *graph,
+    float pixels[8][3], int *indexes)
+{
+    double channels[3][8];
+    double out[8];
+    sixel_delaunay_distance2_t r[4], g[4], b[4], best[4], idx[4];
+    sixel_delaunay_distance2_t distance, index;
+    int i, j, c;
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+    uint64x2_t mask;
+#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+    __m128d mask;
+#else
+    v128_t mask;
+#endif
+
+    for (j = 0; j < 8; ++j) {
+        for (c = 0; c < 3; ++c) {
+            channels[c][j] = pixels[j][c];
+        }
+    }
+    for (j = 0; j < 4; ++j) {
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+        r[j] = vld1q_f64(channels[0] + j * 2);
+        g[j] = vld1q_f64(channels[1] + j * 2);
+        b[j] = vld1q_f64(channels[2] + j * 2);
+        best[j] = vdupq_n_f64(DBL_MAX);
+        idx[j] = vdupq_n_f64(0.0);
+#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+        r[j] = _mm_loadu_pd(channels[0] + j * 2);
+        g[j] = _mm_loadu_pd(channels[1] + j * 2);
+        b[j] = _mm_loadu_pd(channels[2] + j * 2);
+        best[j] = _mm_set1_pd(DBL_MAX);
+        idx[j] = _mm_setzero_pd();
+#else
+        r[j] = wasm_v128_load(channels[0] + j * 2);
+        g[j] = wasm_v128_load(channels[1] + j * 2);
+        b[j] = wasm_v128_load(channels[2] + j * 2);
+        best[j] = wasm_f64x2_splat(DBL_MAX);
+        idx[j] = wasm_f64x2_splat(0.0);
+#endif
+    }
+    for (i = 0; i < graph->count; ++i) {
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+        index = vdupq_n_f64((double)graph->uindex[i]);
+#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+        index = _mm_set1_pd((double)graph->uindex[i]);
+#else
+        index = wasm_f64x2_splat((double)graph->uindex[i]);
+#endif
+        for (j = 0; j < 4; ++j) {
+            distance = sixel_delaunay_float_query_distance2(
+                graph, r[j], g[j], b[j], i);
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+            mask = vcltq_f64(distance, best[j]);
+            best[j] = vbslq_f64(mask, distance, best[j]);
+            idx[j] = vbslq_f64(mask, index, idx[j]);
+#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+            mask = _mm_cmplt_pd(distance, best[j]);
+            best[j] = _mm_or_pd(_mm_and_pd(mask, distance),
+                                _mm_andnot_pd(mask, best[j]));
+            idx[j] = _mm_or_pd(_mm_and_pd(mask, index),
+                               _mm_andnot_pd(mask, idx[j]));
+#else
+            mask = wasm_f64x2_lt(distance, best[j]);
+            best[j] = wasm_v128_bitselect(distance, best[j], mask);
+            idx[j] = wasm_v128_bitselect(index, idx[j], mask);
+#endif
+        }
+    }
+    for (j = 0; j < 4; ++j) {
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
+        vst1q_f64(out + j * 2, idx[j]);
+#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+        _mm_storeu_pd(out + j * 2, idx[j]);
+#else
+        wasm_v128_store(out + j * 2, idx[j]);
+#endif
+    }
+    for (j = 0; j < 8; ++j) {
+        indexes[j] = (int)out[j];
+    }
+}
+#endif
+
 void
 sixel_lookup_delaunay_float32_map_pixels(
     sixel_lookup_delaunay_float32_t const *graph,
@@ -604,40 +744,94 @@ sixel_lookup_delaunay_float32_map_pixels(
 {
     sixel_delaunay_float_workspace_t *scratch;
     sixel_delaunay_float_memo_entry_t *entry;
-    uint32_t key[3], previous[3];
+    uint32_t key[3];
     float sample[3];
+    float previous[3];
     int hint, finite, have_previous;
     size_t i;
+#if SIXEL_DLF_SIMD
+    float cold[8][3];
+    sixel_index_t *dest[8];
+    int indexes[8];
+    unsigned int slots[8];
+    int pending, j;
+#endif
 
-    scratch = graph != NULL && graph->ncolors <= 256 ? workspace : NULL;
+    scratch = (sixel_delaunay_float_workspace_t *)workspace;
+    if (graph == NULL || graph->ncolors > 256) {
+        scratch = NULL;
+    }
     hint = -1;
     have_previous = 0;
+#if SIXEL_DLF_SIMD
+    pending = 0;
+#endif
     for (i = 0; i < count; ++i) {
         memcpy(sample, pixels, sizeof(sample));
         finite = sixel_delaunay_float_memo_key(sample, key);
         entry = scratch != NULL && finite
             ? &scratch->memo[sixel_delaunay_float_memo_slot(key)] : NULL;
-        if (!(have_previous && memcmp(previous, key, sizeof(key)) == 0)) {
-            if (entry != NULL && entry->index_plus_one != 0
-                    && memcmp(entry->key, key, sizeof(key)) == 0) {
-                hint = (int)entry->index_plus_one - 1;
-            } else {
+        if (have_previous && memcmp(previous, sample, sizeof(sample)) == 0) {
+            *result = (sixel_index_t)hint;
+        } else if (entry != NULL && entry->index_plus_one != 0
+                && memcmp(entry->key, key, sizeof(key)) == 0) {
+            hint = (int)entry->index_plus_one - 1;
+            *result = (sixel_index_t)hint;
+            memcpy(previous, sample, sizeof(sample));
+            have_previous = 1;
+        } else {
+#if SIXEL_DLF_SIMD
+            /* A full double scan wins for small palettes. With more than
+             * 64 entries, spatial hints can walk fewer neighbor distances;
+             * keep that search while still memoizing complete float keys. */
+            if (entry != NULL && graph->bounded && graph->ncolors <= 64) {
+                memcpy(cold[pending], sample, sizeof(sample));
+                slots[pending] = sixel_delaunay_float_memo_slot(key);
+                dest[pending++] = result;
+                /* Unresolved samples cannot seed the adjacent-repeat hint. */
+                have_previous = 0;
+                if (pending == 8) {
+                    sixel_lookup_delaunay_float32_map_cold8(graph, cold,
+                                                          indexes);
+                    for (j = 0; j < 8; ++j) {
+                        *dest[j] = (sixel_index_t)indexes[j];
+                        entry = &scratch->memo[slots[j]];
+                        memcpy(entry->key, cold[j], sizeof(entry->key));
+                        entry->index_plus_one = (unsigned int)indexes[j] + 1;
+                    }
+                    pending = 0;
+                    hint = indexes[7];
+                    memcpy(previous, sample, sizeof(sample));
+                    have_previous = 1;
+                }
+            } else
+#endif
+            {
                 hint = sixel_lookup_delaunay_float32_map(graph, sample,
-                                                        finite ? hint : -1);
+                                                      finite ? hint : -1);
+                *result = (sixel_index_t)hint;
                 if (entry != NULL) {
                     memcpy(entry->key, key, sizeof(key));
                     entry->index_plus_one = (unsigned int)hint + 1;
                 }
+                memcpy(previous, sample, sizeof(sample));
+                have_previous = finite;
             }
-            memcpy(previous, key, sizeof(key));
-            have_previous = finite;
         }
-        *result = (sixel_index_t)hint;
         if (i + 1 < count) {
             pixels += pixel_stride;
             result += result_stride;
         }
     }
+#if SIXEL_DLF_SIMD
+    for (j = 0; j < pending; ++j) {
+        hint = sixel_lookup_delaunay_float32_map(graph, cold[j], hint);
+        *dest[j] = (sixel_index_t)hint;
+        entry = &scratch->memo[slots[j]];
+        memcpy(entry->key, cold[j], sizeof(entry->key));
+        entry->index_plus_one = (unsigned int)hint + 1;
+    }
+#endif
 }
 
 /* emacs Local Variables:      */

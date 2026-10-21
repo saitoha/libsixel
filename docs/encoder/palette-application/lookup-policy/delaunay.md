@@ -35,7 +35,9 @@ For at most 256 byte representatives, SIMD compares packed keys `(distance << 8)
 
 Float SIMD follows the [isolated noncontracting build gate](vptree.md#float-bulk-lookup). Every channel subtracts in double, squares, multiplies by the widened weight and accumulates in channel order. Split builds apply the gate to both float kernels; amalgamation retains native scalar arithmetic. WebAssembly SIMD additionally requires `-msimd128`; an explicit `-ffp-contract=off` establishes the float gate for that target.
 
-The byte memo holds `2^18` relaxed atomic words with a complete RGB key and an 8-bit original index. The all-ones sentinel cannot cache white mapped to index 255. Float bulk calls optionally use a zeroed caller-owned table of 32,768 complete 96-bit keys. Positive and negative zero have distinct keys; nonfinite samples bypass the memo. Missing scratch changes only performance. Rows propagate the previous result as a hint, skip adjacent identical keys and support negative byte strides without constructing a pointer before the buffer.
+The byte memo holds `2^18` relaxed atomic words with a complete RGB key and an 8-bit original index. The all-ones sentinel cannot cache white mapped to index 255. Float bulk calls optionally use a zeroed caller-owned table of 32,768 complete 96-bit keys. Positive and negative zero have distinct keys; nonfinite samples bypass the memo. Missing scratch changes only performance. Rows propagate the previous result as a hint, skip resolved adjacent identical keys and support negative byte strides without constructing a pointer before the buffer.
+
+In the non-diffusion bulk path, eight independent cache misses share an exhaustive SIMD scan over first-occurrence representatives. Byte lookup batches palettes of at most 256 entries; eligible float SIMD batches finite queries for valid positive metrics and palettes of at most 64 entries. Larger float palettes keep graph walks after cache misses. Pending outputs never supply a repeat hint, and an incomplete batch uses ordinary point lookup.
 
 ## Guarantee
 
@@ -45,7 +47,7 @@ The byte memo holds `2^18` relaxed atomic words with a complete RGB key and an 8
 
 For `U` distinct colors, graph construction sorts `U` lists with radix passes and clips candidate cells. Construction and temporary storage require at least quadratic pair work and space; clipping may dominate preparation. Degenerate or poorly conditioned palettes can produce a dense graph. The seed table adds `512U` distance evaluations. Persistent adjacency storage is proportional to the padded directed edge count, plus the palette maps and optional 1 MiB byte memo.
 
-A query evaluates the neighbor blocks inside its current distance bound and may visit multiple colors. Sparse adjacency and coherent hints often reduce work, but no constant-time or logarithmic worst-case promise is made. Float queries outside the box scan all representatives. A bulk float workspace occupies 512 KiB per caller when the palette has at most 256 entries.
+A query evaluates the neighbor blocks inside its current distance bound and may visit multiple colors. Sparse adjacency and coherent hints often reduce work, but no constant-time or logarithmic worst-case promise is made. Float queries outside the box scan all representatives. A bulk float workspace occupies 512 KiB per caller when the palette has at most 256 entries. A full cold batch scans `U` representatives for eight queries; warm keys avoid that scan. Its crossover with graph walking depends on palette size, spatial coherence and cache misses.
 
 ## Implementation map
 
@@ -74,14 +76,15 @@ The common builder is [`lookup-delaunay-graph.c`](../../../../src/lookup-delauna
 | DL-13 | A 300-color palette uses separate distance and ID comparisons without truncating indices. | [tests/processing/lookup/0033_delaunay_byte_large.t](../../../../tests/processing/lookup/0033_delaunay_byte_large.t) |
 | DL-20 | Exhaustive RGB keys, stale hints and scalar/SIMD walks match a palette-order integer oracle. | [tests/processing/lookup/0021_delaunay_byte_exact.c](../../../../tests/processing/lookup/0021_delaunay_byte_exact.c) |
 | DL-21 | Native float indices match an independent double oracle for duplicates, almost-coincident sites, grids, extended, extreme and nonfinite queries. | [tests/processing/lookup/0030_delaunay_float_exact.c](../../../../tests/processing/lookup/0030_delaunay_float_exact.c) |
-| DL-22 | Every tested double SIMD lane matches scalar distance bits; builds without the gate check the scalar formula. | [tests/processing/lookup/0031_delaunay_float_distance.c](../../../../tests/processing/lookup/0031_delaunay_float_distance.c) |
-| DL-23 | Float bulk memoization preserves complete keys, collisions, signed zero, reverse rows, all short tails, absent scratch and palettes over 256 entries. | [tests/processing/lookup/0032_delaunay_float_bulk.c](../../../../tests/processing/lookup/0032_delaunay_float_bulk.c) |
+| DL-22 | Neighbor and cold-query double SIMD lanes match scalar distance bits; builds without the gate check the scalar formula. | [tests/processing/lookup/0031_delaunay_float_distance.c](../../../../tests/processing/lookup/0031_delaunay_float_distance.c) |
+| DL-23 | Float cold batches and memoization preserve complete keys, collisions, signed zero, duplicate ties, reverse rows, all short tails, absent scratch and palettes across the 64- and 256-entry boundaries. | [tests/processing/lookup/0032_delaunay_float_bulk.c](../../../../tests/processing/lookup/0032_delaunay_float_bulk.c) |
 | DL-24 | Both representations preserve ordered scalar semantics in forward and reverse bulk rows. | [tests/processing/lookup/0015_lookup_batch_contract.c](../../../../tests/processing/lookup/0015_lookup_batch_contract.c) |
 | DL-25 | Gamma sRGB palettes select the float consumer and preserve native palette coordinates. | [tests/quant/palette/lookup_float/0070_delaunay_gamma_srgb.t](../../../../tests/quant/palette/lookup_float/0070_delaunay_gamma_srgb.t) |
 | DL-26 | Gamma Display-P3 palettes select the float consumer and preserve native palette coordinates. | [tests/quant/palette/lookup_float/0071_delaunay_gamma_p3.t](../../../../tests/quant/palette/lookup_float/0071_delaunay_gamma_p3.t) |
 | DL-27 | Byte-only palettes select the byte consumer. | [tests/quant/palette/lookup_float/0072_delaunay_byte_eligibility.t](../../../../tests/quant/palette/lookup_float/0072_delaunay_byte_eligibility.t) |
 | DL-28 | Private worker bands preserve the independently encoded band output. | [tests/quant/palette/lookup_float/0073_delaunay_bands_private.t](../../../../tests/quant/palette/lookup_float/0073_delaunay_bands_private.t) |
 | DL-29 | Requesting shared bands preserves the VP-tree-compatible private-policy behavior and band output. | [tests/quant/palette/lookup_float/0074_delaunay_bands_shared.t](../../../../tests/quant/palette/lookup_float/0074_delaunay_bands_shared.t) |
+| DL-30 | Byte cold batches and warm rows match an independent integer oracle across duplicate ties, full-key collisions, the white/index-255 sentinel, reverse padded strides and short tails. | [tests/processing/lookup/0034_delaunay_byte_bulk.c](../../../../tests/processing/lookup/0034_delaunay_byte_bulk.c), [tests/processing/lookup/0034_delaunay_byte_bulk.t](../../../../tests/processing/lookup/0034_delaunay_byte_bulk.t) |
 
 ### Coverage boundary
 

@@ -2053,6 +2053,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0030_DELAUNAY_FLOAT_EXACT \
     -DBUILD_TEST_0031_DELAUNAY_FLOAT_DISTANCE \
     -DBUILD_TEST_0032_DELAUNAY_FLOAT_BULK \
+    -DBUILD_TEST_0034_DELAUNAY_BYTE_BULK \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -5622,6 +5623,7 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0017_lookup_none_batch_fences.c \
     processing/lookup/0020_lookup_float_workspace_failure.c \
     processing/lookup/0021_delaunay_byte_exact.c \
+    processing/lookup/0034_delaunay_byte_bulk.c \
     processing/dither/0001_dither_policy.c \
     processing/dither/perturb/0018_perturb_keep_lookup.c \
     processing/dither/perturb/0017_perturb_keep_early.c \

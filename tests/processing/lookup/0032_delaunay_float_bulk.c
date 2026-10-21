@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  * Policy: docs/encoder/palette-application/lookup-policy/delaunay.md
- * Full-key memo collisions, missing scratch, signed zero and reversed tails.
+ * Cold SIMD batches, full-key collisions, scratch fallback and reversed tails.
  */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -27,7 +27,8 @@ test_lookup_0032_delaunay_float_bulk(int argc, char **argv)
     sixel_index_t actual[257], expected[257];
     uint32_t key[3];
     unsigned int slot, collision;
-    int i, c, n, count, reverse, pass, start, stride, rc;
+    int sizes[] = { 16, 64, 65, 256, 257 };
+    int i, c, n, size, count, reverse, pass, start, stride, rc;
 
     (void)argc;
     (void)argv;
@@ -52,6 +53,13 @@ test_lookup_0032_delaunay_float_bulk(int argc, char **argv)
             memcpy(pixels[i], pixels[i - 1], sizeof(pixels[i]));
         }
     }
+    /* Duplicate representatives and an exact midpoint test original-index
+     * ties inside a full SIMD scan as well as the graph-walk tail. */
+    memset(palette, 0, 9 * sizeof(*palette));
+    palette[3] = 2.0f / 256.0f;
+    pixels[6][0] = 1.0f / 256.0f;
+    pixels[6][1] = pixels[6][2] = 0.0f;
+    fprintf(stderr, "delaunay float cold8 SIMD=%d\n", SIXEL_DLF_SIMD);
     pixels[0][0] = 0.0f;
     pixels[1][0] = -0.0f;
     pixels[2][0] = NAN;
@@ -69,7 +77,8 @@ test_lookup_0032_delaunay_float_bulk(int argc, char **argv)
     if (collision == 1000000U) {
         goto cleanup;
     }
-    for (n = 256; n <= 257; ++n) {
+    for (size = 0; size < 5; ++size) {
+        n = sizes[size];
         if (SIXEL_FAILED(test_dl32_configure(graph, palette, n, 3, weights))) {
             goto cleanup;
         }
@@ -91,7 +100,8 @@ test_lookup_0032_delaunay_float_bulk(int argc, char **argv)
                         (unsigned char const *)pixels[start], (size_t)count,
                         stride * (int)sizeof(pixels[0]), actual + start,
                         stride, pass == 2 ? NULL : scratch);
-                    if (memcmp(actual, expected, (size_t)count) != 0) {
+                    if (memcmp(actual, expected,
+                               (size_t)count * sizeof(*actual)) != 0) {
                         fprintf(stderr, "bulk n=%d count=%d reverse=%d\n",
                                 n, count, reverse);
                         goto cleanup;
