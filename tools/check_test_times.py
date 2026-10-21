@@ -150,7 +150,6 @@ def read_meson(text, evidence_errors=None, fallbacks=None):
 
 
 DEFAULT_LIMIT_MS = 30.0
-MAXIMUM_LIMIT_MS = 100.0
 
 
 def read_allowlist(text):
@@ -174,8 +173,8 @@ def read_allowlist(text):
         if not re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", row["limit_ms"] or ""):
             raise ValueError("invalid allowlist limit: " + name)
         limit = milliseconds(row["limit_ms"])
-        if not DEFAULT_LIMIT_MS < limit <= MAXIMUM_LIMIT_MS:
-            raise ValueError("allowlist limit must be above 30 and at most 100 ms: " + name)
+        if not DEFAULT_LIMIT_MS < limit:
+            raise ValueError("allowlist limit must be above 30 ms: " + name)
         limits[name] = limit
     return limits
 
@@ -209,6 +208,13 @@ def main(argv=None):
     except (OSError, ValueError, KeyError, TypeError) as error:
         print("testtimecheck: {}".format(error), file=sys.stderr)
         return 2
+    # Keep accepted exceptions visible so a whitelist never hides their cost.
+    allowed = [record for record in records if record.name in limits
+               and record.milliseconds <= limits[record.name]]
+    for record in allowed:
+        print("ALLOW {:.3f} ms (limit {:.3f}): {} [{}; boundary={}]".format(
+            record.milliseconds, limits[record.name], record.name,
+            record.result, record.boundary))
     slow = over_budget(records, limits)
     for record in slow:
         print("SLOW {:.3f} ms (limit {:.3f}): {} [{}; boundary={}; native={}]".format(
@@ -219,7 +225,7 @@ def main(argv=None):
                    record.context for record in slow)
     print("Slow tests: {}; slow setup/batch processes: {}.".format(len(slow) - contexts, contexts))
     print("Checked {} recorded timings; {} exceed their budget "
-          "(default 30 ms, approved exceptions at most 100 ms).".format(
+          "(default 30 ms, explicit per-test exception budgets).".format(
               len(records), len(slow)))
     for boundary in sorted({record.boundary for record in records}):
         print("Boundary {}: {} recorded; {} over budget (non-additive).".format(

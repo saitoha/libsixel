@@ -1586,13 +1586,8 @@ all-am: phase2-all
 check-am: prepare-amalgamation-check
 	@:
 
-# Automake's check-recursive prerequisite finishes before this recipe runs.
-# Keep reporting after real tests, rather than adding timing tests to the suite.
-check:
-	$(MAKE) $(AM_MAKEFLAGS) testtimecheck
-
-# Subdirectory reports retain the table; this outer check prints one summary.
-# A failing subdirectory still prints its warnings before make stops.
+# Normal check records timings without invoking the manual testtimecheck target.
+# Subdirectory reports retain the table; failures still print diagnostics.
 export SIXEL_TEST_TIME_DEFER = $(if $(filter check,$(MAKECMDGOALS)),1,0)
 if HAVE_WIC_MSI
 wic_test_time_log = $(builddir)/wic/test-suite.log

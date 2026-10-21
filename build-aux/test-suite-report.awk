@@ -19,6 +19,9 @@ function add_timing(name, duration, result,    limit, row) {
                                     duration, limit, name, result)
         if (result == "SETUP" || result == "BATCH") slow_context++
         else slow_tests++
+    } else if (name in limits) {
+        allowed[++allowed_count] = sprintf("ALLOW %.3f ms (limit %.3f): %s [%s]",
+            duration, limit, name, result)
     }
 }
 BEGIN {
@@ -35,7 +38,8 @@ BEGIN {
                 index(name, "*") || index(name, "?") ||
                 index(name, "[") || index(name, "]") || name in limits ||
                 field[2] !~ /^[0-9]+([.][0-9]+)?$/ ||
-                field[2] + 0 <= 30 || field[2] + 0 > 100 ||
+                field[2] + 0 <= 30 ||
+                sprintf("%g", field[2] + 0) ~ /[Ii][Nn][Ff]|[Nn][Aa][Nn]/ ||
                 field[3] !~ /[^ \t]/ || field[4] !~ /[^ \t]/)
                 fatal("invalid allowlist entry: " line)
             limits[name] = field[2] + 0
@@ -106,11 +110,16 @@ END {
         for (i = 1; i <= count; i++) print timings[i]
         print ""
     }
-    summary = sprintf("Slow tests: %d; slow setup/batch processes: %d (default 30 ms; approved exceptions at most 100 ms).",
+    summary = sprintf("Slow tests: %d; slow setup/batch processes: %d (default 30 ms; explicit per-test exception budgets).",
                       slow_tests, slow_context)
     print summary
     if (!from_report && (!quiet || functional_failure))
         print summary > "/dev/stderr"
+    for (i = 1; i <= allowed_count; i++) {
+        print allowed[i]
+        if (!from_report && (!quiet || functional_failure))
+            print allowed[i] > "/dev/stderr"
+    }
     for (i = 1; i <= slow_count; i++) {
         print slow[i]
         if (!from_report && (!quiet || functional_failure))

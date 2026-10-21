@@ -195,7 +195,40 @@ Documentation links are part of test registration. Follow the [documentation-to-
 
 ## Test timing
 
-Keep each test within the recommended 30 ms of wall time. A slower test may use an explicitly approved, exact-name entry in [`tests/test-time-allowlist.tsv`](../../tests/test-time-allowlist.tsv), with its limit, reason and user approval reference. An exception must be above 30 ms and at most 100 ms; wildcards, missing approval and limits above 100 ms are rejected. Do not automatically populate the allowlist from slow results or move necessary work outside the timer to meet a budget. The checker validates the approval field's presence; review must verify the user's actual approval.
+### Performance budgets
+
+The recommended budget is 30 ms of wall time per observation, including process startup. Performance is part of test design and review, even when functional assertions pass. The timing report is advisory and does not turn a functional pass into a failure.
+
+| Recorded wall time | Review action |
+| --- | --- |
+| At most 30 ms | Within the default budget; keep checking the same measurement boundary. |
+| More than 30 ms and less than 100 ms | Investigate repeated setup, process launches, text scanning, fixture size and unused computations. Prioritize frequent patterns by their aggregate suite cost as well as each test's duration. |
+| At least 100 ms | Prioritize diagnosis. Optimize unnecessary work before considering a reasoned exception for the work the assertion actually requires. |
+
+Neither 100 ms nor a category's historical runtime is an automatic allowance. A test may remain over budget while its cause is unresolved; keep that observation visible as `SLOW`. A measured skip is not evidence that the feature's real execution path meets its budget.
+
+### Optimization workflow
+
+1. Start from completed real-test reports and identify exact test names, verdicts and measured durations. Preserve a full-suite report before running a focused selection: a subdirectory or selected run can replace logs, and its results do not establish whole-suite coverage.
+2. Separate the cost of shell/process startup, fixture preparation, backend initialization, the operation under test, assertions, diagnostics, waits and cleanup. Measure the suspected stage before attributing a delay to an algorithm, filesystem or device. Read the test's owning contract and implementation comments before changing the boundary.
+3. Remove redundant work while preserving the observable contract. If the implementation itself is slow, optimize it and retain the independent reference, exact-output requirements, tolerances, tie rules and fallback behavior that apply to that operation. Sharing immutable preparation within one test is valid only if the required independent object/cache identities, cold and warm observations, ownership and lifetime checks still run.
+4. Compare the original and optimized versions in a quiet environment with the same fixtures, build flags, enabled backends, executable and shared-library paths, thread settings and output capture. Avoid concurrent builds or test suites during measurement. Retain process-first-use costs, take repeated samples, and report the first sample, range and a representative summary such as the median; do not select only the fastest run. Alternate versions when comparing them so machine drift does not consistently favor one side.
+5. Verify the behavior and the timing separately. Run ShellCheck on modified shell tests and the applicable static and functional suites. When changing trace, ordering or availability assertions, use missing, duplicated, reordered and failing controls to check that the optimization still detects the intended defect. Finish with the normal full-suite entry point. When creating or updating tests, run `make testtimecheck` manually after those tests have completed; retain the raw report and describe any measurements not available in that build.
+
+Do not move required preparation or warmup outside the timer, substitute a warmed long-lived process for an independently started test, divide a shared batch time into invented per-test measurements, or rewrite historical timing records. Component profiles explain the outer wall time; they do not replace it. Do not reduce safety timeouts, worker counts, frame counts, query coverage or output checks merely to meet the target when those values make the tested branch or failure observable.
+
+### Preserve coverage while reducing cost
+
+| Source of unnecessary cost | Valid optimization and required evidence |
+| --- | --- |
+| Unused quality metrics | Select only the metric actually asserted, for example `lsqa -m MS-SSIM -b MS-SSIM:0.98`. Keep default-metric/JSON coverage on the default path, and retain every metric that the test actually checks. Fixture dimensions, thresholds and degraded controls follow the [image-quality policy](../quality/measurement-policy.md). |
+| Oversized or repeatedly generated fixtures | Use a small checked-in fixture that still reaches the same format, precision, quantization, worker-admission and compositing branches. Preserve non-identity comparisons and distinct source/reference data where required. A flattened PSD cannot stand in for layered effects, and an image below a parallel-admission threshold cannot prove worker behavior. |
+| Duplicate backend preparation | Initialize a capability prerequisite and the real observation in the same process when the test interface supports it. Reuse only state whose independence is not itself under test; keep real dispatch and failure assertions. See [GPU initialization and execution](#gpu-initialization-and-execution). |
+| Animation playback waits | Disable pacing only when asserting decoded/encoded content, frame selection or option routing. Preserve timing and scheduling behavior in tests that own those contracts. |
+| Long trace suffix extraction | Match ordered markers directly with `case` instead of repeatedly slicing prefixes. Count a stream in one pass when its event/line contract permits that. Preserve missing-event, duplicate-event and ordering rejection; follow [flat control flow](#flat-control-flow) and its static-check boundary. |
+| Process, file and log traffic | Follow [process and file cost](#process-and-file-cost). Capture only asserted output, suppress irrelevant output and avoid duplicated helpers. Required setup and useful failure diagnostics remain inside the measured interval. |
+
+Removing an assertion, lowering a quality floor, replacing a reference with output from the optimized path, broadening a skip, changing the required backend or moving a slow observation out of the normal suite is not a test performance optimization.
 
 ### GPU initialization and execution
 
@@ -204,6 +237,16 @@ A small GPU test can be dominated by host-side device discovery, command-queue c
 GPU palette C tests can use `test_runner --require-gpu-palette <test>` to check backend availability and execute the observation in one process. Exit 77 means the backend is unavailable; wrappers translate it to a TAP skip and propagate every other nonzero result as failure. Device and pipeline initialization stay inside the measured test interval. The real test must still dispatch GPU work and check its result; the prerequisite alone is not execution evidence. CLI tests that assert successful GPU execution and its backend trace may defer a separate availability probe until that assertion fails. Probe exit 77 permits a skip; an available backend must preserve the original conversion or trace failure. This keeps unavailable-device classification without initializing a second successful process.
 
 Keep process-first-use initialization in the timed observation. Do not prewarm a device outside the measurement or merge independent test files merely to amortize startup and hide their cost. After redundant initialization is removed, record the remaining required startup or synchronization cost as such; do not label all GPU tests unoptimizable or grant a category-wide exception.
+
+### Reasoned timing exceptions
+
+An explicitly approved exception belongs in [`tests/test-time-allowlist.tsv`](../../tests/test-time-allowlist.tsv). Each row contains an exact test name, a finite `limit_ms` above 30 ms, a concrete `reason`, and the user's `approval` reference. Wildcards, duplicates, empty reasons and missing approvals are rejected. The checker validates the approval field's presence; review must verify the user's actual authorization.
+
+Before adding or increasing a limit, identify the remaining stage that consumes time, the changes already considered or made, and the specific assertion lost by further reduction. Record measurement conditions, date and observed first/repeated costs in the reason, together with a bounded limit that accommodates justified variation. A required timeout, exhaustive reference computation or real native initialization can justify an exception after measurement; the subsystem name or a single slow sample cannot. Limits above 100 ms require the same diagnosis and a specific explanation of why that much work remains necessary.
+
+Accepted entries remain visible as `ALLOW` with their measured duration and limit. Regressions above the approved limit remain `SLOW`. Do not populate the whitelist automatically from a slow-test list, use it to hide transient host load, or enlarge a limit merely because one run exceeded it. Reassess entries whenever their test or implementation changes: remove obsolete exceptions and tighten limits when the remaining required cost falls. An exception records a current, reviewable constraint; it is not a claim that future optimization is impossible.
+
+The timing whitelist is separate from [pattern-matching exceptions](#flat-control-flow). Permission to exceed a runtime budget does not waive shell syntax, assertion or measurement-boundary requirements.
 
 ### Measurement boundaries and logs
 
@@ -229,16 +272,16 @@ For WIC, shared setup includes script/fixture preparation, MSI/COM queries and n
 
 | Execution | Recorded evidence and reporting entry |
 | --- | --- |
-| Autotools `make check` | `.log` retains TAP/diagnostics and `.trs` retains result/timing metadata. `tests/test-suite.log` lists every completed measurement, including passes/skips. The WIC package batch uses `wic/wic-msi.log`, `wic/wic-msi.trs` and `wic/test-suite.log`. Top-level `check` calls `testtimecheck` after recursive test execution. |
+| Autotools `make check` | `.log` retains TAP/diagnostics and `.trs` retains result/timing metadata. `tests/test-suite.log` lists every completed measurement, including passes/skips. The WIC package batch uses `wic/wic-msi.log`, `wic/wic-msi.trs` and `wic/test-suite.log`. Top-level `check` records timings but does not invoke `testtimecheck`. |
 | Autotools installed-codec check | `make -C wic installcheck` writes `wic/wic-installed.log`, `wic/wic-installed.trs` and `wic/installcheck-suite.log`; the ordered lifecycle target runs package checks, install and installcheck sequentially. |
 | Meson TAP/package tests | `meson test -C builddir` (or a suite/selection) retains native outer seconds, verdict and output in `meson-logs/testlog.json`. The post-run reader reports registered child evidence when supported, explicit outer-only fallback otherwise, and unchanged nested batch/setup records. |
 | Meson installed-codec check | `meson compile -C builddir installcheck-wic` writes TAP and per-file/setup times to `wic/installcheck.log`. `check-wic-installation` subsequently passes this log and `meson-logs/testlog.json` to `tools/check_test_times.py`; a direct installcheck run can be checked with the same reader. That standalone log has no separately measured enclosing process duration, so it must not be represented as having one. |
 
 ### Post-run interpretation
 
-Normal `make check` remains advisory for timing: it prints the number and list of over-budget tests without changing functional pass/fail status. Slow setup/batch processes have a separate count and remain visible. Host load and parallel execution can increase wall time; use a quiet, comparable environment and a small focused selection when considering an exception. Preserve the first-call cost and report repeated samples, rather than choosing only the fastest run.
+Run `make testtimecheck` manually when creating or updating tests, after executing the affected tests. It is not an automatic post-step of `make check` and is not required for routine runs that do not create or update tests. Normal top-level `make check` retains timing data in its reports without printing a separate timing summary on success; failure diagnostics may still include timing warnings. The manual check is advisory: it prints the number and list of over-budget tests without changing functional pass/fail status. Slow setup/batch processes have a separate count and remain visible. Host load and parallel execution can increase wall time; use a quiet, comparable environment and a small focused selection when considering an exception. Preserve the first-call cost and report repeated samples, rather than choosing only the fastest run.
 
-The timing meta-check reads completed real-test results and does not register extra runtime cases. `make testtimecheck` alone rechecks existing reports. Subdirectory checks report their own selection; a partial run cannot establish whole-suite coverage. [`build-aux/test-suite-report.awk`](../../build-aux/test-suite-report.awk) reads Automake records/reports; [`tools/check_test_times.py`](../../tools/check_test_times.py) reads reports, batch TAP logs and Meson JSON Lines, using the same allowlist.
+The timing meta-check reads completed real-test results and does not register extra runtime cases. `make testtimecheck` only rechecks existing reports; it does not execute tests, so refresh the affected results before the manual check. Subdirectory checks report their own selection; a partial run cannot establish whole-suite coverage. [`build-aux/test-suite-report.awk`](../../build-aux/test-suite-report.awk) reads Automake records/reports; [`tools/check_test_times.py`](../../tools/check_test_times.py) reads reports, batch TAP logs and Meson JSON Lines, using the same allowlist.
 
 Time overruns are advisory. Missing/unreadable reports, missing non-skip durations, invalid durations or malformed allowlist records are evidence errors, not slow-test exceptions. The Python reader also rejects a supplied log with no measured records and nonfinite/negative measurements. Neither reader infers every intended observation from a partial log or proves that reported timing surrounds the required work; source review and comparison with actual TAP results remain necessary. Validation uses completed run logs and their measured selections; it does not rely on a separate boundary-value runtime self-test suite. Changes to the executor also require bounded process-semantic controls for exit-zero TAP failure, abnormal exit, delayed descendant output, early stream closure, timeout/backpressure, broken output, outer termination, setup/clock errors, argv/environment preservation, and the declared platform/fallback behavior. These controls do not replace normal-entry measurements or turn historical slow samples into passes.
 
