@@ -17,7 +17,7 @@ A document's kind is its shape. Its [Diátaxis type](../AGENTS.md#document-type-
 | [Measurement](#measurement) | The evidence behind one topic's measured claims | reference | [High-color measurement reference](../encoder/output/high-color/measurement.md) |
 | [Test inventory](#test-inventory) | Every test of one suite and what each one observes | reference | [Mapfile parser coverage inventory](../testing/mapfile-parser-coverage.md) |
 
-A variant, a measurement, or a test inventory is usually a companion of a topic rather than a topic of its own. The figure shows how companions sit beside the document they support:
+A variant, a measurement, or a test inventory is usually a companion of a topic rather than a topic of its own. The topic's own coverage ledger is not a companion: it stays in the `## Test coverage` section at the end of the topic. The figure shows how companions sit beside the document they support:
 
 ```mermaid
 flowchart TD
@@ -54,7 +54,7 @@ The last sections of a document, when present, appear in this order and under th
 | --- | --- | --- |
 | `## Implementation map` | optional | Links to the owning source files, functions, and build switches, with one line each on what they do |
 | `## Reproduction` | optional | How to regenerate the document's figures and measurements: commands, inputs, and generator scripts |
-| `## Test coverage` | when enforced | The coverage inventory defined in the [documentation-to-test traceability rules](../AGENTS.md#documentation-to-test-traceability) |
+| `## Test coverage` | when enforced | The coverage inventory defined in the [documentation-to-test traceability rules](../AGENTS.md#documentation-to-test-traceability); only `## References` may follow it |
 | `## References` | optional | External sources: specifications, papers, and other implementations |
 
 ### Retired heading names

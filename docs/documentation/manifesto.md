@@ -13,7 +13,7 @@ Documentation grows one change at a time, and each change is usually written to 
 | P1 | One work, not a collection | Every document has a nameable place in a single structure. |
 | P2 | One concern, one owner | Each fact is stated once; everything else links to it. |
 | P3 | Readers arrive with a purpose | One primary purpose and audience per document. |
-| P4 | Depth is layered and opt-in | Short layers on top, details one layer below. |
+| P4 | Depth is layered and opt-in | Short layers on top, details after or below the contract. |
 | P5 | Siblings have comparable granularity | Position predicts scope. |
 | P6 | Contracts first, evidence beneath | Measurements and ledgers support, never define. |
 | P7 | Consistency is maintained deliberately | Conflicts are reconciled in the owner. |
@@ -38,7 +38,7 @@ A reader comes to learn (tutorial), to accomplish a task (how-to), to look somet
 
 ### P4. Depth is layered and opt-in
 
-The documentation is read from the top down: the index points to chapters, chapter entries point to topics, and a topic points to its details. Each layer stays short enough to scan and says only enough for the reader to choose where to go next. Details that only some readers need, such as per-variant descriptions, measurement evidence, derivations, and test ledgers, live one layer below the contract they support and are linked from it.
+The documentation is read from the top down: the index points to chapters, chapter entries point to topics, and a topic points to its details. Each layer stays short enough to scan and says only enough for the reader to choose where to go next. Within a topic, details that only some readers need come after the contract they support, so that a reader who stops once the question is answered has read everything they need. Material that serves a different reader or is maintained on its own, such as per-variant descriptions, measurement evidence with its figures, and exhaustive test inventories, moves one layer down into a companion linked from the topic. A coverage ledger that maps the topic's own contracts to tests stays at the end of the topic: readers who do not need it skip it, and moving it elsewhere would not make the contract easier to read.
 
 ```mermaid
 flowchart TD
@@ -46,7 +46,8 @@ flowchart TD
     C --> T["Topic: contract and explanation"]
     T --> V["Variants and derivations"]
     T --> E["Measurements and reproduction"]
-    T --> L["Test coverage ledger"]
+    T --> N["Exhaustive test inventories"]
+    T -.->|"end of the same page"| L["Test coverage ledger"]
 ```
 
 ### P5. Siblings have comparable granularity
@@ -85,6 +86,6 @@ Words alone are a poor medium for structure, flow, geometry, and comparison, so 
 - Every document opens by saying who it is for, what it covers, and where neighboring material lives.
 - A paragraph that a reader has to reread to follow, or a concept that needs a mental picture the text does not draw, is a defect to fix like a wrong value: split the sentences, add an example, or add the figure or table.
 - Documents of the same kind share a skeleton, so a reader who has read one policy page knows where to look in the next. The [document kinds](document-kinds.md) reference defines those skeletons.
-- A topic with substantial evidence or test inventories is a directory whose `README.md` holds the contract and whose companions hold the rest.
+- A topic with companions is a directory whose `README.md` holds the contract. Companions hold material for a different reader or with its own maintenance, such as variants, measurements with figures, and exhaustive test inventories; the topic's coverage ledger stays at the end of its `README.md`.
 - Loose numeric limits on the length of documents, sections, and paragraphs are enforced mechanically, so that clear overgrowth never reaches review; whether a unit is the right size for its place and its reader is judged by people.
 - Structural changes, such as new documents, new chapters, splits, merges, and moves, are proposed and reviewed before the prose is written, as described in the [documentation workflow](workflow.md).
