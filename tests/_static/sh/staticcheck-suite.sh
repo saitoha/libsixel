@@ -516,6 +516,10 @@ run_case_tap "staticcheck-test-runner-amalgamation-defines-sync" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-suite-report" \
+    "$src_root/tests/_static/sh/staticcheck-test-suite-report.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-log-cleanup" \
     "$src_root/tests/_static/sh/staticcheck-test-log-cleanup.sh" \
     "$src_root" || fail_and_exit $?

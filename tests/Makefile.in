@@ -19986,6 +19986,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-timeline-logging-boundary.sh \
 	_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
+	_static/sh/staticcheck-test-suite-report.sh \
 	_static/sh/staticcheck-test-log-cleanup.sh \
 	_static/sh/staticcheck-test-runner-link.sh \
 	_static/python/test_runner_link.py \
@@ -90988,8 +90989,9 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	mkdir -p "$(ARTIFACT_ROOT)"; \
 	trs_manifest="$(builddir)/.check-test-trs.list"; \
 	failed_manifest="$(builddir)/.check-test-failures.list"; \
+	counts_manifest="$(builddir)/.check-test-counts"; \
 	testsuite_tmp="$(TEST_SUITE_LOG).tmp"; \
-	for file in "$$trs_manifest" "$$failed_manifest" "$$testsuite_tmp"; do \
+	for file in "$$trs_manifest" "$$failed_manifest" "$$counts_manifest" "$$testsuite_tmp"; do \
 	    while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
 	done; \
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
@@ -90998,89 +91000,16 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	    $$perl_make_arg \
 	    $$php_make_arg || exit $$?; \
 	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
-	all=0; \
-	pass=0; \
-	fail=0; \
-	skip=0; \
-	xfail=0; \
-	xpass=0; \
-	error=0; \
-	{ \
-	  echo "$(PACKAGE_STRING): $(subdir)/$(TEST_SUITE_LOG)"; \
-	  echo; \
-	} > "$$testsuite_tmp"; \
-	while IFS= read -r trs_path; do \
-	    test -n "$$trs_path" || continue; \
-	    log_path="$${trs_path%.trs}.log"; \
-	    rel_name="$${trs_path#$(abs_builddir)/}"; \
-	    rel_name="$${rel_name%.trs}"; \
-	    global_result=RUN; \
-	    copy_in_global_log=yes; \
-	    if test ! -r "$$trs_path"; then \
-	        error=$$((error + 1)); \
-	        printf '%s\n' "ERROR: $$rel_name (missing .trs)" >> "$$failed_manifest"; \
-	        printf '%s\n' "ERROR: missing $$trs_path" >> "$$testsuite_tmp"; \
-	        continue; \
-	    fi; \
-	    while IFS= read -r trs_line || test -n "$$trs_line"; do \
-	        case "$$trs_line" in \
-	            :test-result:*) \
-	                all=$$((all + 1)); \
-	                set -- $${trs_line#*:test-result:}; \
-	                case "$${1-}" in \
-	                    PASS) pass=$$((pass + 1)) ;; \
-	                    FAIL) fail=$$((fail + 1)) ;; \
-	                    SKIP) skip=$$((skip + 1)) ;; \
-	                    XFAIL) xfail=$$((xfail + 1)) ;; \
-	                    XPASS) xpass=$$((xpass + 1)) ;; \
-	                    ERROR) error=$$((error + 1)) ;; \
-	                esac \
-	                ;; \
-	            :global-test-result:*) \
-	                set -- $${trs_line#*:global-test-result:}; \
-	                global_result=$${1-RUN} \
-	                ;; \
-	            :copy-in-global-log:*) \
-	                set -- $${trs_line#*:copy-in-global-log:}; \
-	                case "$${1-}" in \
-	                    [Nn][Oo]) copy_in_global_log=no ;; \
-	                esac \
-	                ;; \
-	        esac; \
-	    done < "$$trs_path"; \
-	    case "$$global_result" in \
-	        FAIL|XPASS|ERROR) \
-	            printf '%s\n' "$$global_result: $$rel_name" >> "$$failed_manifest" \
-	            ;; \
-	    esac; \
-	    if test "$$copy_in_global_log" = yes; then \
-	        { \
-	            printf '%s\n' "$$global_result: $$rel_name"; \
-	            if test -r "$$log_path"; then \
-	                cat "$$log_path"; \
-	            else \
-	                printf '%s\n' "missing log file: $$log_path"; \
-	                error=$$((error + 1)); \
-	            fi; \
-	            echo; \
-	        } >> "$$testsuite_tmp"; \
-	    fi; \
-	done < "$$trs_manifest"; \
-	{ \
-	  echo "TOTAL: $$all"; \
-	  echo "PASS: $$pass"; \
-	  echo "SKIP: $$skip"; \
-	  echo "XFAIL: $$xfail"; \
-	  echo "FAIL: $$fail"; \
-	  echo "XPASS: $$xpass"; \
-	  echo "ERROR: $$error"; \
-	} >> "$$testsuite_tmp"; \
-	while IFS= read -r trs_path; do \
-	    printf '%s\n' "$${trs_path%.trs}"; \
-	done < "$$trs_manifest" | $(AWK) -v times_only=1 \
+	$(AWK) -v suite=1 \
+	    -v suite_title="$(PACKAGE_STRING): $(subdir)/$(TEST_SUITE_LOG)" \
+	    -v builddir="$(abs_builddir)" \
+	    -v counts_file="$$counts_manifest" \
+	    -v failures_file="$$failed_manifest" \
 	    -v quiet="$(SIXEL_TEST_TIME_DEFER)" \
 	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
-	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" >> "$$testsuite_tmp" || exit $$?; \
+	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" \
+	    "$$trs_manifest" > "$$testsuite_tmp" || exit $$?; \
+	read -r all pass skip xfail fail xpass error < "$$counts_manifest" || exit $$?; \
 	mv "$$testsuite_tmp" "$(TEST_SUITE_LOG)"; \
 	echo "================================================================"; \
 	echo "Testsuite summary$(AM_TESTSUITE_SUMMARY_HEADER)"; \
@@ -91100,12 +91029,12 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	if test $$((fail + xpass + error)) -ne 0; then \
 	    test x"$$VERBOSE" = x || cat "$(TEST_SUITE_LOG)"; \
 	    echo "See $(subdir)/$(TEST_SUITE_LOG) for debugging."; \
-	    for file in "$$trs_manifest" "$$failed_manifest"; do \
+	    for file in "$$trs_manifest" "$$failed_manifest" "$$counts_manifest"; do \
 	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
 	    done; \
 	    exit 1; \
 	fi; \
-	for file in "$$trs_manifest" "$$failed_manifest"; do \
+	for file in "$$trs_manifest" "$$failed_manifest" "$$counts_manifest"; do \
 	    while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
 	done; \
 	exit 0

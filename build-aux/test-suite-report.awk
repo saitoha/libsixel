@@ -4,6 +4,30 @@ function fatal(message) {
     failed = 1
     exit 1
 }
+# Only generated integer counts cross back into the shell. Do not emit shell
+# source containing test names or diagnostics from the result files.
+function first_word(value,    words) {
+    split(value, words, " ")
+    return words[1]
+}
+function shell_quote(value) {
+    gsub(/'/, "'\\''", value)
+    return "'" value "'"
+}
+function append_suite_log(path,    status, line) {
+    # getline cannot preserve an absent final newline portably. Probe for
+    # readability, then let cat copy diagnostic bytes exactly as before.
+    # Only logs explicitly marked for inclusion launch a subprocess.
+    status = getline line < path
+    close(path)
+    if (status < 0) {
+        print "missing log file: " path
+        outcomes["ERROR"]++
+    } else if (system("cat " shell_quote(path)) != 0) {
+        fatal("cannot copy " path)
+    }
+    print ""
+}
 function add_timing(name, duration, result,    limit, row) {
     if (duration == "unmeasured" && result != "SKIP")
         fatal("missing duration: " name)
@@ -25,6 +49,10 @@ function add_timing(name, duration, result,    limit, row) {
     }
 }
 BEGIN {
+    if (suite) {
+        print suite_title
+        print ""
+    }
     if (allowlist != "") {
         status = getline line < allowlist
         sub(/\r$/, "", line)
@@ -61,6 +89,14 @@ BEGIN {
     }
     base = $0
     sub(/\r$/, "", base)
+    if (suite) {
+        if (base == "") next
+        sub(/[.]trs$/, "", base)
+        relative_name = base
+        if (index(relative_name, builddir "/") == 1)
+            relative_name = substr(relative_name, length(builddir) + 2)
+        global_result = "RUN"
+    }
     result = "RUN"
     duration = "unmeasured"
     name = base
@@ -68,6 +104,23 @@ BEGIN {
     batch = 0
     while ((status = getline line < (base ".trs")) > 0) {
         sub(/\r$/, "", line)
+        if (suite && line ~ /^:test-result:/) {
+            value = line
+            sub(/^:test-result:/, "", value)
+            outcomes[first_word(value)]++
+            total++
+        }
+        if (suite && line ~ /^:global-test-result:/) {
+            value = line
+            sub(/^:global-test-result:/, "", value)
+            global_result = first_word(value)
+            if (global_result == "") global_result = "RUN"
+        }
+        if (suite && line ~ /^:copy-in-global-log:/) {
+            value = line
+            sub(/^:copy-in-global-log:/, "", value)
+            if (tolower(first_word(value)) == "no") copy_log = 0
+        }
         if (line ~ /^:global-test-result: /) {
             result = substr(line, 22)
             if (result == "FAIL" || result == "ERROR" || result == "XPASS")
@@ -82,14 +135,22 @@ BEGIN {
             sub(/^[^ ]+ ms [^ ]+ /, "", value)
             add_timing(value, field[1], field[3])
             batch = 1
-        } else if (line ~ /^:copy-in-global-log: [nN][oO]/) {
+        } else if (!suite && line ~ /^:copy-in-global-log: [nN][oO]/) {
             copy_log = 0
         }
     }
     if (status < 0) fatal("cannot read " base ".trs")
     close(base ".trs")
     add_timing(name, duration, batch ? "BATCH" : result)
-    if (copy_log && !times_only) {
+    if (suite) {
+        if (global_result == "FAIL" || global_result == "XPASS" ||
+            global_result == "ERROR")
+            print global_result ": " relative_name >> failures_file
+        if (copy_log) {
+            print global_result ": " relative_name
+            append_suite_log(base ".log")
+        }
+    } else if (copy_log && !times_only) {
         header = result ": " base
         print header
         for (i = 0; i < length(header); i++) printf "="
@@ -103,6 +164,21 @@ BEGIN {
 END {
     if (failed) exit 1
     if (from_report && count == 0) fatal("no recorded test durations")
+    if (suite) {
+        # Keep the report footer and shell handoff in their established order.
+        print "TOTAL: " (total + 0)
+        print "PASS: " (outcomes["PASS"] + 0)
+        print "SKIP: " (outcomes["SKIP"] + 0)
+        print "XFAIL: " (outcomes["XFAIL"] + 0)
+        print "FAIL: " (outcomes["FAIL"] + 0)
+        print "XPASS: " (outcomes["XPASS"] + 0)
+        print "ERROR: " (outcomes["ERROR"] + 0)
+        printf "%d %d %d %d %d %d %d\n", total, outcomes["PASS"], \
+            outcomes["SKIP"], outcomes["XFAIL"], outcomes["FAIL"], \
+            outcomes["XPASS"], outcomes["ERROR"] > counts_file
+        if (close(counts_file) != 0) fatal("cannot write " counts_file)
+        close(failures_file)
+    }
     if (!from_report) {
         print "Test durations (wall time, including process startup)"
         print "===================================================="

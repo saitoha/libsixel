@@ -27,7 +27,7 @@ The current [tests/Makefile.am](../../tests/Makefile.am) overrides Automake's `c
 2. Remove old runtime `.log` and `.trs` outputs without expanding the complete test list into one command.
 3. Resolve tool paths, export configured feature macros once, prepare binding environments, and detect the relevant runtime.
 4. Invoke the short `sixel-check-test-logs` target, which requests the individual test logs through make dependencies on ordinary platforms.
-5. Discover the resulting `.trs` files, read them line by line, aggregate the outcome counts, and write `test-suite.log` and a failed-test list.
+5. Discover and sort the resulting `.trs` paths, then run one awk process that reads each result file once to aggregate outcome counts, timing records and requested diagnostics into `test-suite.log` and a failed-test list.
 
 On ordinary platforms, the essential dependency relationship is:
 
@@ -105,6 +105,8 @@ The assertion protocol is TAP. A normal shell test declares one observation with
 
 The `.trs` collector counts `PASS`, `SKIP`, `XFAIL`, `FAIL`, `XPASS`, and `ERROR`. It uses the per-file global result and copy flag when assembling diagnostics. `FAIL`, `XPASS`, or `ERROR` makes the suite fail; an expected failure does not. Failure to launch a TAP producer or a timeout is an infrastructure observation, distinct from a normal `not ok` assertion.
 
+[`test-suite-report.awk`](../../build-aux/test-suite-report.awk) reads each `.trs` once in suite mode. It counts every `:test-result:` record, independently of the file's global result, while collecting duration and batch timing records from the same stream. Only explicitly requested diagnostic logs use `cat`, preserving their bytes and final-newline behavior. A missing requested log adds an `ERROR`; unreadable result metadata or invalid required timing aborts report publication. The shell receives seven generated integer counts through a small temporary file and retains ownership of the final console summary and suite exit status; test names and log contents are never evaluated as shell source. The existing standalone report and manual `testtimecheck` modes remain available. [tests/_static/sh/staticcheck-test-suite-report.sh](../../tests/_static/sh/staticcheck-test-suite-report.sh) covers these boundaries, including mixed results, CRLF, batch timings, unmeasured skips and empty selections.
+
 Meson normally parses the same TAP producers directly. Its expected-failure adapter and different log format are described in the [Meson chapter](meson.md#test-registration-and-execution).
 
 ## What happened when the suite passed 2,000 tests?
@@ -138,7 +140,7 @@ Before the manifest-based collector, the project's `check-TESTS` recipe expanded
 | Recursive test launch | Passing every `.log` target on the recursive make command line. | `sixel-check-test-logs` is a single command argument; the full list remains make prerequisites on ordinary platforms. |
 | Test-runner link | Expanding thousands of object paths into the shell's single `-c` argument. | `build-aux/test-runner-link.am` writes `test_runner.objects` in batches; a successful configure link probe enables compiler `@file` input, otherwise the shell expands separate object arguments. OpenVMS retains its native linker rule. |
 | Dependency bootstrap | Starting a directory-creation command and a shell for each missing dependency file during `config.status`. | All dependency-tracking directories include `build-aux/dependency-bootstrap.am`; its `am--depfiles` rule initializes Automake's exact inventory in small shell batches, creating directories only when missing and preserving existing dependency contents and timestamps. Automake's individual rules remain available for files removed after configuration. |
-| Suite aggregation | Expanding every result path into a generated shell recipe or utility argument list. | `find` plus a sorted `.trs` manifest, then shell `read` loops and small per-file operations in `check-TESTS`. |
+| Suite aggregation | Expanding every result path into a generated shell recipe or utility argument list. | `find` plus a sorted `.trs` manifest, then one invocation of `test-suite-report.awk` in suite mode; paths remain outside the command argument list. |
 | Cleanup | One oversized `rm` command, or thousands of processes removing individual test outputs. | `mostlyclean-generic` uses `find -exec ... +` for logs; `clean-local` removes existing test copies in small batches; `distclean` and `maintainer-clean` batch Automake's exact dependency-file inventory. Suite setup batches runtime reports through `clean-test-logs.sh`, preserving staticcheck reports and the OpenVMS version-removal loop. |
 | Test-script distribution | Expanding `$(TESTS)` through `EXTRA_DIST` into a very large `distdir` shell command. | A `dist-hook` streams discovered paths and copies scripts individually. |
 | Fixture distribution | Listing every fixture separately in `DISTFILES`. | `TEST_DATA_DIRS = data` distributes the fixture tree as a directory. |
@@ -208,3 +210,4 @@ This is a declaration audit, not a complete shell interpreter or proof of option
 | TH-01 | Object-list generation, compiler response-file linking and fallback recipes stay bounded, preserve argument order, support dry runs and incremental reuse, and propagate a list-read failure. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
 | TH-02 | Statically named external commands have corresponding configure discovery declarations. | [tests/_static/sh/staticcheck-command-dependencies.sh](../../tests/_static/sh/staticcheck-command-dependencies.sh) |
 | TH-03 | Runtime-report cleanup batches removals, preserves other file owners, propagates POSIX discovery/removal failures and retains repeated version removal on the OpenVMS path. | [tests/_static/sh/staticcheck-test-log-cleanup.sh](../../tests/_static/sh/staticcheck-test-log-cleanup.sh) |
+| TH-04 | Single-pass suite aggregation preserves per-observation totals, global failure selection, timing records and diagnostic bytes; incomplete metadata cannot publish a successful report. | [tests/_static/sh/staticcheck-test-suite-report.sh](../../tests/_static/sh/staticcheck-test-suite-report.sh) |
