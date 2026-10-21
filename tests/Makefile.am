@@ -7909,6 +7909,7 @@ AM_LOG_FLAGS =
 	staticcheck-source-reference-controls \
 	staticcheck-c-header-modeline-controls \
 	staticcheck-c-source-batch-controls \
+	staticcheck-shellcheck-cache-controls \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
@@ -7992,6 +7993,7 @@ staticcheck-suite-workers \
 staticcheck-source-reference-controls \
 staticcheck-c-header-modeline-controls \
 staticcheck-c-source-batch-controls \
+staticcheck-shellcheck-cache-controls \
 staticcheck-actionlint \
 staticcheck-shellcheck \
 staticcheck-codespell \
@@ -8080,10 +8082,14 @@ staticcheck: staticcheck-clean
 		"$(PYTHON_STATICCHECK)" \
 		"$(HAVE_TREE_SITTER_C)"
 
-.PHONY: staticcheck-clean
+.PHONY: staticcheck-clean staticcheck-cache-clean
 
 staticcheck-clean:
 	@$(am__rm_f) staticcheck-*.log staticcheck-*.trs
+
+# Successful per-file lint results survive ordinary report cleanup.
+staticcheck-cache-clean:
+	@rm -rf "$(top_builddir)/.staticcheck-cache"
 
 staticcheck-staticcheck-suite-sync:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -8143,6 +8149,16 @@ staticcheck-c-source-batch-controls:
 		--trs-file staticcheck-c-source-batch-controls.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-c-source-batch-controls.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-shellcheck-cache-controls:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-shellcheck-cache-controls" \
+		--log-file staticcheck-shellcheck-cache-controls.log \
+		--trs-file staticcheck-shellcheck-cache-controls.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-shellcheck-cache-controls.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-suboption-image-coverage:
@@ -9699,6 +9715,9 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
     _static/sh/staticcheck-binding-constants-sync.sh \
     _static/sh/staticcheck-shellcheck.sh \
+    _static/sh/prepare-shellcheck-cache.sh \
+    _static/sh/run-shellcheck-batch.sh \
+    _static/sh/staticcheck-shellcheck-cache-controls.sh \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-c-ast.sh \

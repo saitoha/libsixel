@@ -33,11 +33,15 @@ fi
 
 tmpfile=$(mktemp "${TMPDIR:-/tmp}/libsixel-shellcheck-files-XXXXXX")
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-shellcheck-run-XXXXXX")
+worker_pid=
+# shellcheck disable=SC2329
 cleanup() {
+    test -z "$worker_pid" || wait "$worker_pid" || :
     rm -f "$tmpfile"
     rm -rf "$tmpdir"
 }
-trap cleanup EXIT HUP INT TERM
+trap cleanup EXIT
+trap 'exit 1' HUP INT TERM
 
 find "${repo_root}/tests" -type f -name '*.t' | LC_ALL=C sort > "$tmpfile"
 total=$(wc -l < "$tmpfile" | awk '{print $1}')
@@ -50,43 +54,38 @@ progress_is_tty=0
 test -t 1 && progress_is_tty=1
 
 failed=0
+sh "$script_dir/prepare-shellcheck-cache.sh" "$repo_root" "$tmpfile" "$tmpdir"
+IFS= read -r cache_hits < "$tmpdir/cache-hits"
+IFS= read -r SHELLCHECK_CACHE_ROOT < "$tmpdir/cache-root" || SHELLCHECK_CACHE_ROOT=
 if test "$total" -eq 0; then
     echo "[shellcheck] no test files found"
+elif test "$cache_hits" -eq "$total"; then
+    printf '[shellcheck] summary: checked=0 cached=%d total=%d failed_batches=0\n' \
+        "$cache_hits" "$total"
 else
     queue_file="$tmpdir/queue.bin"
+    test -z "$SHELLCHECK_CACHE_ROOT" || mkdir -p "$SHELLCHECK_CACHE_ROOT"
     result_fifo="$tmpdir/result.fifo"
     failed_list="$tmpdir/failed.list"
     tab_char=$(printf '\t')
-    while IFS= read -r test_file; do
-        test -n "${test_file}" || continue
-        printf '%s\0' "$test_file" >> "$queue_file"
-    done < "$tmpfile"
-
     mkfifo "$result_fifo"
     : > "$failed_list"
 
-    done_count=0
-    ok_count=0
+    done_count=$cache_hits
+    ok_count=$cache_hits
     failed_count=0
     scheduler_status=0
 
     export SHELLCHECK_CMD_INNER="$shellcheck_cmd"
     export REPO_ROOT_INNER="$repo_root"
     export SHELLCHECK_LOG_DIR="$tmpdir"
+    export SHELLCHECK_CACHE_ROOT
     # Each invocation checks a bounded batch. This amortizes process startup
     # and shared source parsing without exceeding command-line/memory limits.
     # A failing batch retains all diagnostics, including filenames; every
     # nonzero tool status remains a failure, even without diagnostic output.
-    # shellcheck disable=SC2016
-    sh "$repo_root/tests/_static/sh/run-check-batches.sh" 64 "$queue_file" sh -c '
-        item_id=$$
-        log_path="${SHELLCHECK_LOG_DIR}/${item_id}.log"
-        if "$SHELLCHECK_CMD_INNER" -x -P "${REPO_ROOT_INNER}" "$@" >"$log_path" 2>&1; then
-            printf "OK\t%s\t%s\n" "$item_id" "$#"
-        else
-            printf "NG\t%s\t%s\n" "$item_id" "$#"
-        fi
-    ' sh > "$result_fifo" &
+    sh "$script_dir/run-check-batches.sh" 64 "$queue_file" \
+        sh "$script_dir/run-shellcheck-batch.sh" > "$result_fifo" &
     worker_pid=$!
     unset SHELLCHECK_CMD_INNER REPO_ROOT_INNER SHELLCHECK_LOG_DIR
 
@@ -110,6 +109,7 @@ else
     done < "$result_fifo"
 
     wait "$worker_pid" || scheduler_status=$?
+    worker_pid=
     if test "$progress_is_tty" -eq 1; then
         printf '\n'
     fi
@@ -127,8 +127,8 @@ else
         echo "ERROR: shellcheck checked $done_count of $total files"
         failed=1
     }
-    printf '[shellcheck] summary: checked=%d total=%d failed_batches=%d\n' \
-        "$done_count" "$total" "$failed_count"
+    printf '[shellcheck] summary: checked=%d cached=%d total=%d failed_batches=%d\n' \
+        "$((done_count - cache_hits))" "$cache_hits" "$total" "$failed_count"
 
     if test -s "$failed_list"; then
         while IFS= read -r item_id; do

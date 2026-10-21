@@ -770,6 +770,12 @@ staticcheck_cases = [
       actionlint_prog.found() ? actionlint_prog.full_path() : ''],
   ],
   [
+    'staticcheck-shellcheck-cache-controls',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-shellcheck-cache-controls.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-shellcheck',
     [meson.current_source_dir() / '_static/sh/staticcheck-shellcheck.sh',
       meson.current_source_dir() / '_static/sh/shellcheck.sh',

@@ -354,6 +354,10 @@ run_case_tap "staticcheck-suboption-image-coverage" \
     "$src_root/tests/_static/sh/staticcheck-suboption-image-coverage.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-shellcheck-cache-controls" \
+    "$src_root/tests/_static/sh/staticcheck-shellcheck-cache-controls.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-loader-cms-boundary" \
     "$src_root/tests/_static/sh/staticcheck-loader-cms-boundary.sh" \
     "$src_root" || fail_and_exit $?

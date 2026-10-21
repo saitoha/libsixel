@@ -1613,6 +1613,10 @@ endif
 staticcheck:
 	$(MAKE) -C tests $(AM_MAKEFLAGS) staticcheck
 
+.PHONY: staticcheck-cache-clean
+staticcheck-cache-clean:
+	$(MAKE) -C tests $(AM_MAKEFLAGS) staticcheck-cache-clean
+
 install-data-local:
 	@:
 

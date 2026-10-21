@@ -83,6 +83,7 @@ converters/completion_embed.h
 afl-out
 .local
 tests/_artifacts
+/.staticcheck-cache/
 tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer
 tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer
 libsixel-*.tar.gz
