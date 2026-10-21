@@ -910,7 +910,7 @@ results.
 
 ## Measured static-image quality, size, and speed
 
-These figures and tables are historical, before integer carry and canonical Stucki/Sierra 2 coefficients. See [integer carry measurements](#integer-carry-measurements) for the separately recorded current implementation.
+These figures and tables are historical, before integer carry and canonical Stucki/Sierra 2 coefficients. See [integer carry measurements](#historical-integer-carry-measurements) for the separately recorded integer-carry implementation.
 
 ### Questions and scope
 

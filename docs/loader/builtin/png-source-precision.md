@@ -382,7 +382,7 @@ The exclusive builtin PNG loader and actual builtin CMS convert the existing 4x2
 
 ### Quality regression tests
 
-The [shared PNG quality regression matrix](../png-color-metadata.md#quality-regression-tests) owns the metadata reference-image MS-SSIM tests. Additional builtin PNG/APNG quality cases are identified by assertion mechanism in the [builtin-loader inventory](../../testing/builtin-loader-coverage.md). They are separate from the source/frame expected-value tests above, even when they use the same PNG metadata or CMS setting. Neither a perceptual floor nor a byte-equality comparison between two encoder runs is an independent numerical CMS oracle.
+The [shared decoded RGB matrix](../png-color-metadata.md#decoded-rgb-matrix-contracts) owns the metadata reference-image tests, which compare decoded samples numerically rather than by MS-SSIM. Additional builtin PNG/APNG quality cases are identified by assertion mechanism in the [builtin-loader inventory](../../testing/builtin-loader-coverage.md). They are separate from the source/frame expected-value tests above, even when they use the same PNG metadata or CMS setting. Neither a perceptual floor nor a byte-equality comparison between two encoder runs is an independent numerical CMS oracle.
 
 ### Coverage boundary
 
