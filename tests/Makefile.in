@@ -19985,6 +19985,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-timeline-logging-boundary.sh \
 	_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
+	_static/sh/staticcheck-test-log-cleanup.sh \
 	_static/sh/staticcheck-test-runner-link.sh \
 	_static/python/test_runner_link.py \
 	_static/sh/staticcheck-command-dependencies.sh \
@@ -90856,22 +90857,8 @@ installcheck-local:
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
 check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
-	@find "$(builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -print | \
-	    while IFS= read -r file; do \
-	        test -n "$$file" || continue; \
-	        test "$$file" != "." || continue; \
-	        test "$$file" != "./" || continue; \
-	        test -f "$$file" || continue; \
-	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
-	    done
-	@find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
-	    while IFS= read -r file; do \
-	        test -n "$$file" || continue; \
-	        test "$$file" != "." || continue; \
-	        test "$$file" != "./" || continue; \
-	        test -f "$$file" || continue; \
-	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
-	    done
+	@$(SHELL) "$(top_srcdir)/build-aux/clean-test-logs.sh" \
+	    "$(builddir)" "@build_os@"
 	@file="$(TEST_SUITE_LOG)"; while test -e "$$file"; do rm -f "$$file" || exit $$?; done
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
@@ -90999,14 +90986,6 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	for file in "$$trs_manifest" "$$failed_manifest" "$$testsuite_tmp"; do \
 	    while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
 	done; \
-	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
-	    while IFS= read -r file; do \
-	        test -n "$$file" || continue; \
-	        test "$$file" != "." || continue; \
-	        test "$$file" != "./" || continue; \
-	        test -f "$$file" || continue; \
-	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
-	    done; \
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
 	    $$ruby_make_arg \
