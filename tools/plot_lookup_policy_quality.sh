@@ -46,6 +46,8 @@ plot_quality_curve()
         --label8 rbc \
         --command9 "${policy_common} --lookup-policy=mahalanobis {input}" \
         --label9 mahalanobis \
+        --command10 "${policy_common} --lookup-policy=delaunay {input}" \
+        --label10 delaunay \
         --img2sixel "${IMG2SIXEL_PATH}" \
         --lsqa "${LSQA_PATH}" \
         "$@"

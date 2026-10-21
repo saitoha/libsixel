@@ -22,6 +22,7 @@ POLICIES = (
     "vptree",
     "rbc",
     "mahalanobis",
+    "delaunay",
 )
 BROAD_COLORS = (8, 16, 32, 64, 128, 256)
 FOCUSED_COLORS = (128, 144, 160, 176, 192, 208, 224, 240, 256)
@@ -468,7 +469,9 @@ def main() -> int:
         from plot_lookup_policy_delaunay import validate_artifacts
         validate_artifacts(directory)
     print(
-        "validated 486 quality points and 108 speed points across 9 policies"
+        f"validated {sum(len(colors) for colors, _ in QUALITY_FILES.values()) * len(POLICIES)} "
+        f"quality points and {2 * len(BROAD_COLORS) * len(POLICIES)} speed points "
+        f"across {len(POLICIES)} policies"
     )
     if args.require_acceleration or acceleration_present:
         print("validated 36 shared-instance and 24 Metal speed points")

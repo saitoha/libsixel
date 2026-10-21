@@ -1,5 +1,5 @@
 #!/bin/sh
-# Rebuild and reproduce the nine-policy quality and single-image speed sweeps.
+# Rebuild and reproduce the ten-policy quality and single-image speed sweeps.
 
 set -eu
 

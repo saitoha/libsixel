@@ -34,7 +34,7 @@ from matplotlib import ticker
 
 DEFAULT_COLORS = "8,16,32,64,128,256"
 DEFAULT_POLICIES = (
-    "none,5bit,6bit,certlut,eytzinger,fhedt,vptree,rbc,mahalanobis"
+    "none,5bit,6bit,certlut,eytzinger,fhedt,vptree,rbc,mahalanobis,delaunay"
 )
 
 # The Okabe-Ito palette is combined with markers and line styles so the figure
@@ -49,8 +49,9 @@ PLOT_COLORS = (
     "#56B4E9",
     "#F0E442",
     "#332288",
+    "#882255",
 )
-PLOT_MARKERS = ("o", "s", "^", "D", "v", "P", "X", "<", ">")
+PLOT_MARKERS = ("o", "s", "^", "D", "v", "P", "X", "<", ">", "h")
 PLOT_LINESTYLES = (
     "-",
     "--",
@@ -61,6 +62,7 @@ PLOT_LINESTYLES = (
     (0, (1, 1)),
     (0, (5, 1, 1, 1)),
     (0, (3, 2, 1, 2)),
+    (0, (7, 2)),
 )
 
 

@@ -60,6 +60,7 @@ PLOT_COLORS = (
     "#56B4E9",
     "#F0E442",
     "#332288",
+    "#882255",
 )
 PLOT_LINESTYLES = (
     "-",
@@ -71,8 +72,9 @@ PLOT_LINESTYLES = (
     (0, (1, 1)),
     (0, (5, 1, 1, 1)),
     (0, (3, 2, 1, 2)),
+    (0, (7, 2)),
 )
-PLOT_MARKERS = ("o", "s", "^", "D", "v", "P", "X", "<", ">")
+PLOT_MARKERS = ("o", "s", "^", "D", "v", "P", "X", "<", ">", "h")
 
 
 def split_command_template(template: str) -> List[str]:
