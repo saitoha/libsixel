@@ -740,6 +740,8 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/decoder/pipeline/figures/decoding-pipeline-figures.json \
 	docs/decoder/pipeline/figures/decoding-pipeline-mobile.svg \
 	docs/decoder/pipeline/figures/decoding-pipeline-wide.svg \
+	docs/documentation/manifesto.md \
+	docs/documentation/workflow.md \
 	docs/encoder/pipeline/README.md \
 	docs/encoder/pipeline/figures/encoding-pipeline-figures.json \
 	docs/encoder/pipeline/figures/encoding-pipeline-mobile.svg \

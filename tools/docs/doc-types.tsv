@@ -159,3 +159,5 @@ docs/concepts/gamut-mapping/README.md	explanation	both	worked color examples and
 docs/programs/quicklook-extension.md	reference	both	deployment reference + usage and source-inspected build limits
 docs/programs/wic-codec.md	reference	both	deployment and COM contracts + behavioral test ownership
 docs/testing/companion-programs-coverage.md	reference	contributor	exhaustive observation inventory and evidence limits
+docs/documentation/manifesto.md	explanation	contributor	
+docs/documentation/workflow.md	how-to	contributor	process how-to + review checklists

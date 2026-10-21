@@ -7979,6 +7979,7 @@ staticcheck-loader-cms-boundary \
 	staticcheck-docs-github-math \
 	staticcheck-doc-types-inventory \
 	staticcheck-docs-dist-sync \
+	staticcheck-docs-length-limits \
 	staticcheck-doc-test-links \
 	staticcheck-test-plan-links \
 	staticcheck-c-header-modeline
@@ -8063,6 +8064,7 @@ staticcheck-docs-envvars-help-table \
 staticcheck-docs-github-math \
 staticcheck-doc-types-inventory \
 staticcheck-docs-dist-sync \
+staticcheck-docs-length-limits \
 staticcheck-doc-test-links \
 staticcheck-test-plan-links \
 staticcheck-c-header-modeline: \
@@ -8837,6 +8839,16 @@ staticcheck-docs-dist-sync:
 		--trs-file staticcheck-docs-dist-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-dist-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-docs-length-limits:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-docs-length-limits" \
+		--log-file staticcheck-docs-length-limits.log \
+		--trs-file staticcheck-docs-length-limits.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-docs-length-limits.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-doc-test-links:
@@ -9806,6 +9818,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-docs-github-math.sh \
     _static/sh/staticcheck-doc-types-inventory.sh \
     _static/sh/staticcheck-docs-dist-sync.sh \
+    _static/sh/staticcheck-docs-length-limits.sh \
     _static/sh/staticcheck-doc-test-links.sh \
     _static/sh/staticcheck-test-plan-links.sh \
     _static/sh/tap-case.sh \
@@ -9814,6 +9827,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/awk/suboption-image-coverage.awk \
     _static/awk/docs-github-math.awk \
     _static/awk/doc-types-inventory.awk \
+    _static/awk/docs-length-limits.awk \
     _static/awk/dllexport-declarations.awk \
     _static/data/github-math-macros.txt \
     _static/sh/staticcheck-c-header-modeline.sh \

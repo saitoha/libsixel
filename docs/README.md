@@ -232,6 +232,8 @@ Building, testing, and maintaining libsixel and its documentation.
 
 ### Documentation
 
+- [Documentation manifesto](documentation/manifesto.md) states the design principles that keep the documentation one coherent work.
+- [Documentation workflow](documentation/workflow.md) defines how a documentation change is classified, proposed, reviewed, and accepted.
 - [Documentation instructions](AGENTS.md) define document scope, organization, policy ownership, reference-based reuse, and document/test traceability.
 
 ### Building the HTML site

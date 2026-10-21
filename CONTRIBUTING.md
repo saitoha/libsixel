@@ -502,6 +502,10 @@ commit message.
 - GitHub Actions CI has been checked.
 - Bug fixes include a regression test, or explain why one was not added.
 - CLI/API/docs/help/completion/bindings synchronization was checked.
+- Changes under `docs/` follow the documentation workflow in
+  `docs/documentation/workflow.md`; for a new document, a new normative
+  section, or a restructuring, the description includes the approved
+  placement proposal.
 - Autotools and Meson were both updated where needed.
 - Build options, source lists, test registration, and install paths are aligned
   between the two build systems.

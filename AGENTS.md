@@ -33,7 +33,7 @@ Important directories include:
 
 ## Documentation
 
-Use the [documentation index](docs/README.md) to find durable project references. [docs/AGENTS.md](docs/AGENTS.md) defines the maintenance policy for that documentation. The principal references are:
+Use the [documentation index](docs/README.md) to find durable project references. [docs/AGENTS.md](docs/AGENTS.md) defines the maintenance policy for that documentation. Every change under `docs/` follows the [documentation workflow](docs/documentation/workflow.md): new documents, new normative sections, and restructuring need an approved placement proposal before the prose is written. The principal references are:
 
 - [Project history and lineage](docs/project-history.md)
 - [SIXEL format](docs/sixel-format/README.md)

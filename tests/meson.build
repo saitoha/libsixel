@@ -1086,6 +1086,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-docs-length-limits',
+    [meson.current_source_dir() / '_static/sh/staticcheck-docs-length-limits.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-doc-test-links',
     [meson.current_source_dir() / '_static/sh/staticcheck-doc-test-links.sh',
       meson.project_source_root()],

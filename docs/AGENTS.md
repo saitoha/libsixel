@@ -4,6 +4,8 @@
 
 These instructions apply to documentation under `docs/`. The repository-level `AGENTS.md` continues to apply. User instructions take precedence.
 
+The [documentation manifesto](documentation/manifesto.md) states the principles these instructions implement, and the [documentation workflow](documentation/workflow.md) defines how a documentation change is classified, proposed, reviewed, and accepted. Follow the workflow for every change under `docs/`; a new document, a new section with normative content, or any restructuring requires an approved placement proposal before its prose is written.
+
 ## Purpose of this directory
 
 `docs/` contains durable, project-wide references that users and contributors should be able to discover from the repository. Keep the top level limited to the documentation index, documentation governance, and similarly important entry points. Put detailed material in a subject directory so that each area can grow into multiple documents without crowding the top level.
@@ -101,6 +103,24 @@ An exhaustive test-plan inventory serves a different purpose from a behavioral c
 
 The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-links.sh) check expands every marked glob and enforces exact, duplicate-free document links and reciprocal `Test-plan:` comments. It also runs the builtin-loader inventory generator in `--check` mode, so generated assertion-mechanism counts and rows cannot drift from test sources. A suite addition, deletion, rename, moved link, one-sided comment change, or stale generated summary therefore fails the static suite until the inventory is regenerated.
 
+## Length limits
+
+[`tools/docs/length-limits.tsv`](../tools/docs/length-limits.tsv) is the single source of the numeric length limits for Markdown documents under `docs/`. Its rows with path `*` set the default limit for each kind of unit:
+
+| Kind | Unit measured | What is counted |
+| --- | --- | --- |
+| `document` | One Markdown file | Non-blank source lines, including code, math, and tables |
+| `section` | One `##` heading and everything up to the next `##` heading, including subsections | Non-blank source lines |
+| `paragraph` | One prose source line: a paragraph, a list item, or a quote | Words; code, math, tables, headings, comments, and image lines are not paragraphs |
+
+The defaults are deliberately loose. They catch material that has clearly outgrown its unit; whether a unit is too long for its siblings or its reader is judged in review under [P5 and P11 of the manifesto](documentation/manifesto.md#principles). Because Markdown prose is not hard-wrapped, a paragraph's length is measured in words rather than lines.
+
+A row naming a specific document is an exception. It applies to the whole document, to one `##` section identified by its exact heading text, or to every paragraph of the document, and it records the measured value exactly. An exception can only shrink: the check fails when a measured value exceeds its exception, when the exception is higher than the measured value, or when the measured value is back within the default and the row should be removed. Adding an exception or raising any limit requires maintainer approval as a Class D change in the [documentation workflow](documentation/workflow.md); lowering or removing an exception as material is split needs no separate approval.
+
+To bring a unit within its limit, split it along the lines the manifesto describes, for example by moving variants, measurements, or a test ledger into companion documents, rather than by merging paragraphs, removing headings, or otherwise defeating the measurement.
+
+The [`staticcheck-docs-length-limits`](../tests/_static/sh/staticcheck-docs-length-limits.sh) check enforces these rules.
+
 ## Document-type inventory
 
 [`tools/docs/doc-types.tsv`](../tools/docs/doc-types.tsv) records one row per Markdown document under `docs/`: `path` is repository-relative; `type` is the primary [Diátaxis](https://diataxis.fr/start-here/) purpose (`tutorial`, `how-to`, `reference` or `explanation`); `audience` is `user`, `contributor` or `both`; `note` identifies mixed purposes or audiences and is otherwise empty. Classify from the opening sections and headings, not the directory name or the largest section alone. `user` includes CLI users and library integrators; `contributor` means repository development and maintenance; a short implementation/evidence link alone does not make a page `both`. Update the inventory in the same change that adds, removes, renames or materially changes a document.
@@ -111,7 +131,7 @@ Every file under `docs/`, including figures and measurement data, must also be l
 
 ## Adding a document
 
-Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.
+Adding a document is a Class C change in the [documentation workflow](documentation/workflow.md#stage-1-classify-the-change) and requires an approved placement proposal. Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.
 
 The [index](README.md) is arranged by reader purpose into parts (`##` headings) and, within a part, chapters (`###` headings). A part orders the reading path from introduction and usage through concepts, quality, and implementation to development; a chapter groups related documents and may collect them from several subject directories. Place a new document in the chapter where its intended reader needs it: command-line behavior that requires no color or encoding background belongs under usage, while options that depend on concepts are documented with their implementation stage. Directories stay organized by subject and are not renamed to follow parts. The documentation site builds its navigation from these headings, and every document must be reachable from the index.
 
@@ -128,7 +148,8 @@ Keep each directory's internal layout consistent with its subject. A document wi
 | DG-03 | Marked test-plan inventories contain every scoped test exactly once and every listed test links back without using `Policy:` for non-contract coverage. | [tests/_static/sh/staticcheck-test-plan-links.sh](../tests/_static/sh/staticcheck-test-plan-links.sh) |
 | DG-04 | The document-type inventory lists every Markdown document under `docs/` exactly once with a known type and audience. | [tests/_static/sh/staticcheck-doc-types-inventory.sh](../tests/_static/sh/staticcheck-doc-types-inventory.sh) |
 | DG-05 | Every file under `docs/` is listed in `EXTRA_DIST`, and every listed `docs/` path exists. | [tests/_static/sh/staticcheck-docs-dist-sync.sh](../tests/_static/sh/staticcheck-docs-dist-sync.sh) |
+| DG-06 | Documents, `##` sections, and paragraphs stay within the default length limits or their exact, shrink-only exceptions. | [tests/_static/sh/staticcheck-docs-length-limits.sh](../tests/_static/sh/staticcheck-docs-length-limits.sh) |
 
 ### Coverage boundary
 
-The static checks validate paths, the completeness of reciprocal behavioral-contract and test-plan inventories, document-type inventory coverage, and distribution of every documentation file. They do not infer missing contracts from prose, treat a defensive inventory as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.
+The static checks validate paths, the completeness of reciprocal behavioral-contract and test-plan inventories, document-type inventory coverage, distribution of every documentation file, and the numeric length limits. They do not infer missing contracts from prose, treat a defensive inventory as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.
