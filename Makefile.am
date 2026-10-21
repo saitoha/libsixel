@@ -781,8 +781,19 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	images/measurements/palette-pipeline/smooth-gradient-900x675.png \
 	images/measurements/palette-pipeline/smooth-gradient-1920x1080.png \
 	docs/encoder/palette-application/lookup-policy/README.md \
+	docs/encoder/palette-application/lookup-policy/5bit.md \
+	docs/encoder/palette-application/lookup-policy/6bit.md \
+	docs/encoder/palette-application/lookup-policy/auto.md \
+	docs/encoder/palette-application/lookup-policy/certlut.md \
+	docs/encoder/palette-application/lookup-policy/eytzinger.md \
+	docs/encoder/palette-application/lookup-policy/fhedt.md \
+	docs/encoder/palette-application/lookup-policy/mahalanobis.md \
+	docs/encoder/palette-application/lookup-policy/none.md \
+	docs/encoder/palette-application/lookup-policy/rbc.md \
+	docs/encoder/palette-application/lookup-policy/vptree.md \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-color-error.csv \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-color-error.png \
+	docs/encoder/palette-application/lookup-policy/measurements/README.md \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-acceleration-run.json \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-heckbert-high-k.csv \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-heckbert-high-k.png \

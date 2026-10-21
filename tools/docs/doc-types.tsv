@@ -49,7 +49,7 @@ docs/encoder/palette-construction/external-palettes.md	reference	both	palette fo
 docs/encoder/palette-construction/fixed-palettes.md	reference	both	palette/mask contracts + contributor test ledger
 docs/encoder/output/high-color/README.md	reference	both	high-color support limits + algorithm explanation and implementation roadmap
 docs/encoder/output/high-color/measurement.md	reference	both	measurement record + interpretation and reproduction how-to
-docs/encoder/palette-application/lookup-policy/README.md	reference	both	lookup contracts + mathematical explanation and contributor benchmark design
+docs/encoder/palette-application/lookup-policy/README.md	reference	both	lookup contracts + shared mathematical explanation
 docs/encoder/palette-construction/merge-policy/README.md	reference	both	merge contracts + algorithm explanation and contributor measurements/test ledger
 docs/encoder/output/or-mode/README.md	reference	both	OR wire contracts + stepwise explanation, usage how-to and test ledger
 docs/encoder/output/or-mode/scaling.md	reference	both	scaling measurements + interpretation and reproduction how-to
@@ -163,3 +163,14 @@ docs/documentation/manifesto.md	explanation	contributor
 docs/documentation/workflow.md	how-to	contributor	process how-to + review checklists
 docs/documentation/site-build.md	how-to	contributor	
 docs/documentation/document-kinds.md	reference	contributor	
+docs/encoder/palette-application/lookup-policy/5bit.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/6bit.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/auto.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/certlut.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/eytzinger.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/fhedt.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/mahalanobis.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/measurements/README.md	reference	contributor	
+docs/encoder/palette-application/lookup-policy/none.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/rbc.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/vptree.md	reference	both	policy-specific mathematics and cost
