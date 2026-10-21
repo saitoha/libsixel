@@ -13,19 +13,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-probe_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_GPU_POLICY=force \
-        -d none -p 16 --lookup-policy=none -o /dev/null "${probe_image}" || {
-    printf "1..0 # SKIP forced GPU palette apply is unavailable\n"
-    exit 0
-}
-
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    dither/positional/0048_gpu_6delta >/dev/null || {
+# Keep capability initialization and real dispatch in one timed process.
+status=0
+
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
+    dither/positional/0048_gpu_6delta >/dev/null || status=$?
+test "$status" -ne 77 || {
+    echo "ok 1 # SKIP GPU palette backend is unavailable"
+    exit 0
+}
+test "$status" -eq 0 || {
     echo "not ok 1 - GPU 6delta accumulation result mismatch"
     exit 0
 }

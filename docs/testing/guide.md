@@ -141,6 +141,8 @@ Only TAP belongs on standard output. Redirect output from tested programs and he
 
 Skip output must explain the unavailable capability. A missing optional dependency is a skip only when that feature-disabled configuration is supported.
 
+For GPU prerequisites and the distinction between capability skips and execution failures, see [GPU initialization and execution](#gpu-initialization-and-execution).
+
 ## Image-quality tests
 
 Every test that measures MS-SSIM must compare images whose width and height are both at least 176 pixels, as required by the [MS-SSIM fixture policy](../quality/measurement-policy.md#standard-inputs). This applies after cropping, resizing, frame selection and any other comparison preparation. Tests specifically asserting rejection or unavailability below that boundary deliberately use smaller inputs and must check that outcome instead of a quality threshold.
@@ -192,6 +194,14 @@ Documentation links are part of test registration. Follow the [documentation-to-
 ## Test timing
 
 Keep each test within the recommended 30 ms of wall time. A slower test may use an explicitly approved, exact-name entry in [`tests/test-time-allowlist.tsv`](../../tests/test-time-allowlist.tsv), with its limit, reason and user approval reference. An exception must be above 30 ms and at most 100 ms; wildcards, missing approval and limits above 100 ms are rejected. Do not automatically populate the allowlist from slow results or move necessary work outside the timer to meet a budget. The checker validates the approval field's presence; review must verify the user's actual approval.
+
+### GPU initialization and execution
+
+A small GPU test can be dominated by host-side device discovery, command-queue creation, shader/pipeline preparation, buffer setup and synchronization. Separate these costs from upload, kernel execution, download and completed-result validation. Submission time alone does not measure asynchronous GPU completion. A slow wall-clock result does not establish GPU-core saturation or transfer-bandwidth saturation; those claims need device timings or utilization evidence at the relevant stage.
+
+GPU palette C tests can use `test_runner --require-gpu-palette <test>` to check backend availability and execute the observation in one process. Exit 77 means the backend is unavailable; wrappers translate it to a TAP skip and propagate every other nonzero result as failure. Device and pipeline initialization stay inside the measured test interval. The real test must still dispatch GPU work and check its result; the prerequisite alone is not execution evidence. CLI tests that assert successful GPU execution and its backend trace may defer a separate availability probe until that assertion fails. Probe exit 77 permits a skip; an available backend must preserve the original conversion or trace failure. This keeps unavailable-device classification without initializing a second successful process.
+
+Keep process-first-use initialization in the timed observation. Do not prewarm a device outside the measurement or merge independent test files merely to amortize startup and hide their cost. After redundant initialization is removed, record the remaining required startup or synchronization cost as such; do not label all GPU tests unoptimizable or grant a category-wide exception.
 
 ### Measurement boundaries and logs
 

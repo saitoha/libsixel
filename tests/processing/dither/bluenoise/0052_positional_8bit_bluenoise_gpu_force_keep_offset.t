@@ -13,21 +13,21 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0;
 }
 
-probe_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_GPU_POLICY=force \
-        -d none -p 16 --lookup-policy=none -o /dev/null "${probe_image}" || {
-    printf "1..0 # SKIP forced GPU palette apply is unavailable\n";
-    exit 0;
-}
-
 echo "1..1"
 set -v
 
+# Keep capability initialization and real dispatch in one timed process.
+status=0
+
 SIXEL_THREADS=1 \
 SIXEL_DITHER_BLUENOISE_STRENGTH=0.4 \
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    dither/bluenoise/0052_keep_offset >/dev/null || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
+    dither/bluenoise/0052_keep_offset >/dev/null || status=$?
+test "$status" -ne 77 || {
+    echo "ok 1 # SKIP GPU palette backend is unavailable"
+    exit 0
+}
+test "$status" -eq 0 || {
     echo "not ok 1 - forced GPU bluenoise keep-offset encode failed"
     exit 0
 }

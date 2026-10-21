@@ -25,6 +25,7 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include "src/gpu-palette.h"
 #if HAVE_TIME_H
 # include <time.h>
 #endif
@@ -10089,6 +10090,7 @@ print_usage(char const *program)
 
     fprintf(stderr, "usage: %s <test-name> [args...]\n", program);
     fprintf(stderr, "       %s --list\n", program);
+    fprintf(stderr, "       %s --require-gpu-palette <test>\n", program);
     fprintf(stderr, "       %s --is-running-under-wine\n", program);
     fprintf(stderr,
             "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms|0> "
@@ -11563,7 +11565,9 @@ main(int argc, char **argv)
     size_t index;
     char const *requested;
     int first_index;
+    int require_gpu_palette;
 
+    require_gpu_palette = 0;
     index = 0u;
     requested = NULL;
     first_index = 1;
@@ -11608,9 +11612,28 @@ main(int argc, char **argv)
                                                argv + first_index));
     }
 
+    /* Probe in the test process so Metal initialization is measured once.
+     * AUTO with a zero threshold asks the real backend, unlike FORCE which
+     * claims ownership even when the device is unavailable. Each test still
+     * performs its own real dispatch and must report execution failures. */
+    if (strcmp(argv[first_index], "--require-gpu-palette") == 0) {
+        require_gpu_palette = 1;
+        ++first_index;
+        if (argc <= first_index) {
+            print_usage(argv[0]);
+            return test_runner_process_exit_status(EXIT_FAILURE);
+        }
+    }
+
     requested = argv[first_index];
     for (index = 0u; test_entries[index].name != NULL; index++) {
         if (strcmp(requested, test_entries[index].name) == 0) {
+            if (require_gpu_palette &&
+                    !sixel_gpu_palette_policy_claims_apply_stage(
+                        SIXEL_GPU_POLICY_AUTO, 0U, SIXEL_LUT_POLICY_NONE,
+                        SIXEL_DIFFUSE_NONE, SIXEL_SCAN_RASTER, 1U)) {
+                return test_runner_process_exit_status(77);
+            }
             return test_runner_process_exit_status(
                 test_entries[index].run(argc - first_index,
                                         argv + first_index));

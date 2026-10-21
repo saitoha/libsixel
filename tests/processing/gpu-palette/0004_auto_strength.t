@@ -8,19 +8,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gforce -dnone -p16 \
-    -L 'builtin:cms_engine=none!' --precision=8bit -Xgamma -Wgamma \
-    -aoff -Fnone '-~none' -o /dev/null \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" || {
-    echo "1..0 # SKIP forced GPU palette apply is unavailable"
-    exit 0
-}
-
 echo "1..1"
 set -v
 
+# Keep capability initialization and real dispatch in one timed process.
+status=0
+
 SIXEL_DITHER_BLUENOISE_STRENGTH=invalid \
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gpu-palette/0004_auto_strength || {
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette gpu-palette/0004_auto_strength || status=$?
+test "$status" -ne 77 || {
+    echo "ok 1 # SKIP GPU palette backend is unavailable"
+    exit 0
+}
+test "$status" -eq 0 || {
     echo "not ok 1 - GPU auto strength follows paintable palette size"
     exit 0
 }
