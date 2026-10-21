@@ -4,21 +4,16 @@ path	kind	key	limit
 *	paragraph	*	200
 *	index-entry	*	60
 docs/concepts/pixelformat-precision/README.md	paragraph	*	220
-docs/encoder/output/delta-encoding.md	section	Test coverage	317
-docs/encoder/output/output-colorspace.md	document	*	1138
-docs/encoder/output/output-colorspace.md	section	Test coverage	760
 docs/encoder/output/output-colorspace.md	paragraph	*	368
-docs/encoder/palette-application/dithering/README.md	document	*	1103
-docs/encoder/palette-application/lookup-policy/README.md	document	*	1758
+docs/encoder/palette-application/dithering/README.md	document	*	885
+docs/encoder/palette-application/lookup-policy/README.md	document	*	1576
 docs/encoder/palette-application/lookup-policy/README.md	section	Measured quality and speed comparison	435
 docs/encoder/palette-construction/cover-policy/README.md	paragraph	*	240
 docs/encoder/palette-construction/quantization/README.md	paragraph	*	225
-docs/loader/builtin/png-source-precision.md	section	Test coverage	329
-docs/loader/color-management/README.md	document	*	1170
+docs/loader/color-management/README.md	document	*	973
 docs/loader/color-management/README.md	section	Implementation references	608
 docs/loader/color-management/README.md	paragraph	*	216
 docs/loader/libpng.md	paragraph	*	219
-docs/loader/png-color-metadata.md	section	Test coverage	439
 docs/programs/quicklook-extension.md	paragraph	*	261
 docs/quality/visual-perception/README.md	paragraph	*	231
 docs/sixel-format/comparison/README.md	paragraph	*	267

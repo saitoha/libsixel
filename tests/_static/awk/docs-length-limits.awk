@@ -7,7 +7,9 @@
 # code, display math, tables, headings, comments and image lines count
 # toward document and section lines but are not paragraphs.  An index entry
 # is one list item of the documentation index named by index_path, measured
-# in words like a paragraph.
+# in words like a paragraph.  A "## Test coverage" section is a ledger that
+# readers skip, so its lines count toward neither its document nor a section;
+# its paragraphs are still checked.
 #
 # A row whose path is "*" sets the default limit of its kind.  Any other row
 # is an exception that raises the limit for one document, one section of a
@@ -77,6 +79,7 @@ FNR == 1 {
     finish_document()
     FILE_KEY = FILENAME
     lines = 0
+    coverage = 0
     fence = 0
     math = 0
 }
@@ -91,7 +94,8 @@ FNR == 1 {
     } else if (!fence && !math) {
         if (text ~ /^## /) {
             finish_section()
-            section = substr(text, 4)
+            coverage = (text == "## Test coverage")
+            section = coverage ? "" : substr(text, 4)
         }
         if (text !~ /^#/ && text !~ /^[ \t]*\|/ && \
             text !~ /^[ \t]*<!--/ && text !~ /^[ \t]*!\[/) {
@@ -122,6 +126,9 @@ FNR == 1 {
                 }
             }
         }
+    }
+    if (coverage) {
+        next
     }
     lines++
     if (section != "") {

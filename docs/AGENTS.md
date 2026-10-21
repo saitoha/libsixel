@@ -87,6 +87,8 @@ The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-li
 | `paragraph` | One prose source line: a paragraph, a list item, or a quote | Words; code, math, tables, headings, comments, and image lines are not paragraphs |
 | `index-entry` | One list item of the [documentation index](README.md) | Words, as for a paragraph; the index entry also counts as a paragraph |
 
+A `## Test coverage` section is a ledger at the end of its document that readers skip unless they need it, so its lines count toward neither the document nor a section; its paragraphs are still checked.
+
 The defaults are deliberately loose. They catch material that has clearly outgrown its unit; whether a unit is too long for its siblings or its reader is judged in review under [P5 and P11 of the manifesto](documentation/manifesto.md#principles). Because Markdown prose is not hard-wrapped, a paragraph's length is measured in words rather than lines.
 
 A row naming a specific document is an exception. It applies to the whole document, to one `##` section identified by its exact heading text, to every paragraph of the document, or to every entry of the index, and it records the measured value exactly. An exception can only shrink: the check fails when a measured value exceeds its exception, when the exception is higher than the measured value, or when the measured value is back within the default and the row should be removed. Adding an exception or raising any limit requires maintainer approval as a Class D change in the [documentation workflow](documentation/workflow.md); lowering or removing an exception as material is split needs no separate approval.
