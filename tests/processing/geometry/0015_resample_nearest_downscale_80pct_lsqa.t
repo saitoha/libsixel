@@ -10,6 +10,7 @@
 # The test compares img2sixel output against the prebuilt reference image.
 # Regenerate with tests/data/inputs/generate_scaling_quality_fixtures.py.
 # Both aligned dimensions remain >=176 after scaling.
+# Calculate only the metric asserted by this quality gate.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -35,7 +36,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 80% -o "${output_sixel}" "${
 
 lsqa_err=$(
     set +xv
-    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

@@ -20,7 +20,7 @@ set -v
 
 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -M 6delta-progressive \
     -i "${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192.six" | \
-    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b MS-SSIM:0.98 \
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b MS-SSIM:0.98 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png" - >/dev/null || {
     echo "not ok 1 - final PNG differs from reference"
     exit 0

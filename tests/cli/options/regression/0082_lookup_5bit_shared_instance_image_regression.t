@@ -4,6 +4,7 @@
 # Registry binding: lut_policy_shared_instance|lut_policy_shared_instance_override
 # Lookup contract: shared=1|shared_override=1
 
+# Calculate only the metric asserted by this quality gate.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -59,7 +60,7 @@ case "${env_trace}" in *LSXDTH1\|*shared=1\|shared_override=1**) true ;; *) fals
 
 # Competing first writers make shared dense-cache output non-reproducible.
 equivalence_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${short_output}" "${env_output}" 2>&1) || \
+    -m MS-SSIM -b "MS-SSIM:0.98" "${short_output}" "${env_output}" 2>&1) || \
     equivalence_status=$?
 test "${equivalence_status:-0}" -eq 0 || {
     echo "not ok" 1 - "5bit:shared_instance short and env output diverged"
@@ -68,7 +69,7 @@ test "${equivalence_status:-0}" -eq 0 || {
 }
 
 lsqa_error=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" \
-    -b "MS-SSIM:0.98" "${reference_image}" \
+    -m MS-SSIM -b "MS-SSIM:0.98" "${reference_image}" \
     "${short_output}" 2>&1) || lsqa_status=$?
 test "${lsqa_status:-0}" -eq 0 || {
     echo "not ok" 1 - "5bit:shared_instance image quality regressed"

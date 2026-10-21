@@ -607,7 +607,7 @@ END {
         gsub(/[[:space:]]+/, " ", source)
         if (index(source, "equivalence_error=$(set +xv; " \
                 "${SIXEL_RUNTIME-} \"${LSQA_PATH}\" " \
-                "-b \"MS-SSIM:0.98\" \"${short_output}\" " \
+                "-m MS-SSIM -b \"MS-SSIM:0.98\" \"${short_output}\" " \
                 "\"${env_output}\" 2>&1) || equivalence_status=$?") > 0 &&
                 index(source, "test \"${equivalence_status:-0}\" -eq 0 || {") > 0) {
             has_compare[file] = 1
@@ -615,7 +615,7 @@ END {
             # reference: both option paths could share the same defect.
             if (index(source, "lsqa_error=$(set +xv; " \
                     "${SIXEL_RUNTIME-} \"${LSQA_PATH}\" " \
-                    "-b \"MS-SSIM:0.98\" \"${reference_image}\" " \
+                    "-m MS-SSIM -b \"MS-SSIM:0.98\" \"${reference_image}\" " \
                     "\"${short_output}\" 2>&1) || lsqa_status=$?") == 0 ||
                     index(source, "test \"${lsqa_status:-0}\" -eq 0 || {") == 0) {
                 fail(file " lacks a checked independent image reference")

@@ -7,6 +7,7 @@
 # - Run lsqa to ensure quality stays above the minimum floors.
 
 # The reference five-scale MS-SSIM requires dimensions >=176x176.
+# Calculate only the metric asserted by this quality gate.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -31,7 +32,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d sierra:variant=2:scan=raster -o "${outp
 
 lsqa_err=$(
     set +xv
-    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}"
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}"
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

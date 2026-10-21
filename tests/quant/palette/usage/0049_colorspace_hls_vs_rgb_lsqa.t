@@ -6,6 +6,7 @@
 # - Convert the input image with -t rgb.
 # - Compare both outputs and enforce MS-SSIM >= 0.99.
 # The reference five-scale MS-SSIM requires dimensions >=176x176.
+# Calculate only the metric asserted by this quality gate.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -36,7 +37,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -t rgb -o "${output_rgb}" "${input_image}"
 
 lsqa_err=$(
     set +xv
-    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${output_rgb}" "${output_hls}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" "${output_rgb}" "${output_hls}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {

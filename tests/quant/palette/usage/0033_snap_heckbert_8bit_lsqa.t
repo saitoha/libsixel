@@ -1,6 +1,7 @@
 #!/bin/sh
 # Run lsqa quality checks for Heckbert palette snapping with 8-bit palettes.
 # The reference five-scale MS-SSIM requires dimensions >=176x176.
+# Calculate only the metric asserted by this quality gate.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -27,7 +28,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PALETTE_SNAP_POLICY=reversible
     exit 0
 }
 
-lsqa_err=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
+lsqa_err=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
     echo "ok" 1 - "snap heckbert 8bit lsqa passed"

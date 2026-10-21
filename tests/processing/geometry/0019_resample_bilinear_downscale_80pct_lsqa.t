@@ -9,6 +9,7 @@
 #
 # The test compares img2sixel output against the prebuilt reference image
 # using LSQA with the default MS-SSIM floor (0.98 unless overridden).
+# Calculate only the metric asserted by this quality gate.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -35,7 +36,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r bilinear -w 80% -o "${output_sixel}" "$
 
 lsqa_err=$(
     set +xv
-    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
+    ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
