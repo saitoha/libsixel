@@ -33,31 +33,6 @@ Important directories include:
 
 ## Documentation
 
-Use the [documentation index](docs/README.md) to find durable project references. [docs/AGENTS.md](docs/AGENTS.md) defines the maintenance policy for that documentation. Every change under `docs/` follows the [documentation workflow](docs/documentation/workflow.md): new documents, new normative sections, and restructuring need an approved placement proposal before the prose is written. The principal references are:
-
-- [Project history and lineage](docs/project-history.md)
-- [SIXEL format](docs/sixel-format/README.md)
-- [Build, runtime, and platform support](docs/platform-support.md)
-- [Color spaces](docs/concepts/colorspace/README.md)
-- [Color management basics](docs/concepts/color-management/README.md)
-- [Color-space handling](docs/encoder/colorspace-handling/README.md)
-- [Loader precision, gamut, and fast paths](docs/loader/precision-policy.md)
-- [Pixel-format precision](docs/concepts/pixelformat-precision/README.md)
-- [Pixel formats and alpha representation](docs/concepts/pixelformat.md)
-- [Functional overview](docs/overview.md)
-- [Palette clustering color space](docs/encoder/palette-construction/clustering-colorspace/README.md)
-- [Palette working color space](docs/encoder/palette-application/working-colorspace/README.md)
-- [Final palette merge policy](docs/encoder/palette-construction/merge-policy/README.md)
-- [Palette cover policy](docs/encoder/palette-construction/cover-policy/README.md)
-- [Palette snap policy](docs/encoder/palette-construction/snap-policy/README.md)
-- [Encoder working precision](docs/encoder/precision/README.md)
-- [Alpha policy](docs/loader/alpha-policy/README.md)
-- [Background policy](docs/loader/background-policy.md)
-- [CLI design policy](docs/cli/design-policy.md)
-- [Quality measurement policy](docs/quality/measurement-policy.md)
-- [Testing guide](docs/testing/guide.md)
-- [Staticcheck model](docs/testing/staticcheck.md)
-- [Threading architecture](docs/threading/README.md)
-- [CI architecture and design](docs/ci/design.md)
+Use the [documentation index](docs/README.md) to find durable project references and the document that owns each subject. [docs/AGENTS.md](docs/AGENTS.md) defines the maintenance policy for that documentation. Every change under `docs/` follows the [documentation workflow](docs/documentation/workflow.md): new documents, new normative sections, and restructuring need an approved placement proposal before the prose is written.
 
 Keep `docs/` focused on durable project-wide guidance. Issue investigations, one-off implementation notes, and task-specific reports belong outside the tracked repository unless the user explicitly requests their publication.

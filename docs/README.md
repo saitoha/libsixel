@@ -235,9 +235,4 @@ Building, testing, and maintaining libsixel and its documentation.
 - [Documentation manifesto](documentation/manifesto.md) states the design principles that keep the documentation one coherent work.
 - [Documentation workflow](documentation/workflow.md) defines how a documentation change is classified, proposed, reviewed, and accepted.
 - [Documentation instructions](AGENTS.md) define document scope, organization, policy ownership, reference-based reuse, and document/test traceability.
-
-### Building the HTML site
-
-Run `tools/build-docs` from any directory to build the complete searchable HTML site under `site/`. The command creates and caches a private virtual environment under `.docs-build/`; MkDocs and Material for MkDocs remain optional and are not required for configuring, building, testing, or installing libsixel itself. The first documentation build requires network access to install the versions pinned in `tools/docs/requirements.txt`; subsequent builds reuse the cached environment.
-
-An Autotools build provides the equivalent `make docs` target, and a Meson build provides `meson compile -C BUILDDIR docs`. Both write the generated site to `site/` under their build directory. Pass `--no-bootstrap` to `tools/build-docs` only when the current Python environment already contains the pinned documentation packages.
+- [Building the documentation site](documentation/site-build.md) explains how to build the searchable HTML site locally.

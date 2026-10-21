@@ -1,6 +1,6 @@
 path	type	audience	note
 docs/AGENTS.md	reference	contributor	reference + how-to for documentation maintenance
-docs/README.md	reference	both	navigation for both audiences + HTML-site build how-to
+docs/README.md	reference	both	navigation for both audiences
 docs/build/README.md	explanation	both	build rationale + contributor ownership reference and validation commands
 docs/build/autotools.md	explanation	contributor	build rationale + target reference and regeneration how-to
 docs/build/configure-macros.md	reference	contributor	macro inventory + explanation of configuration boundaries
@@ -161,3 +161,4 @@ docs/programs/wic-codec.md	reference	both	deployment and COM contracts + behavio
 docs/testing/companion-programs-coverage.md	reference	contributor	exhaustive observation inventory and evidence limits
 docs/documentation/manifesto.md	explanation	contributor	
 docs/documentation/workflow.md	how-to	contributor	process how-to + review checklists
+docs/documentation/site-build.md	how-to	contributor	

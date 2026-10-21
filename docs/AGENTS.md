@@ -10,34 +10,7 @@ The [documentation manifesto](documentation/manifesto.md) states the principles 
 
 `docs/` contains durable, project-wide references that users and contributors should be able to discover from the repository. Keep the top level limited to the documentation index, documentation governance, and similarly important entry points. Put detailed material in a subject directory so that each area can grow into multiple documents without crowding the top level.
 
-Start from the [documentation index](README.md). Read the relevant document before changing its subject area:
-
-- [Project history and lineage](project-history.md): origin, development milestones, contribution history, and attribution sources.
-- [SIXEL format overview](sixel-format/README.md): wire syntax, control functions, rendering semantics, interoperability, and implementation references.
-- [Build, runtime, and platform support](platform-support.md): build and runtime requirements, CI-backed support tiers, and platform matrix.
-- [Color spaces](concepts/colorspace/README.md): color interpretation, primaries, white points, transfer functions, conversion hubs, gamut, and linear-light mixing.
-- [Color management basics](concepts/color-management/README.md): ICC profiles, the profile connection space, chromatic adaptation, and rendering intents.
-- [Color-space handling](encoder/colorspace-handling/README.md): implicit conversions, the `-X`, `-W`, and `-U` boundaries, loader ICC/CMS settings, and extended-coordinate preservation.
-- [Loader precision, gamut, and fast paths](loader/precision-policy.md): backend representation, preservation boundaries, byte eligibility, and validation.
-- [Pixel-format precision](concepts/pixelformat-precision/README.md): byte and float32 storage, implicit promotion boundaries, resize precision, and focused quality measurements.
-- [Pixel formats and alpha representation](concepts/pixelformat.md): input memory layouts, frame storage, transparency metadata, and the SIXEL wire boundary.
-- [Functional overview](overview.md): capabilities, components, data flow, and architectural boundaries. Encoder topics live under `encoder/` (preprocessing, palette construction, palette application and output) and decoder topics under `decoder/`.
-- [Palette clustering color space](encoder/palette-construction/clustering-colorspace/README.md): `-X` geometry, normalization, interactions, and reproducible measurements.
-- [Palette working color space](encoder/palette-application/working-colorspace/README.md): `-W` palette-application geometry, lookup and dither interactions, precision, and reproducible quality, speed, and size measurements.
-- [External palette input and output](encoder/palette-construction/external-palettes.md): `-m` and `-M` workflows, format origins, application compatibility, detection rules, and fixed-palette policy interactions.
-- [Final palette merge policy](encoder/palette-construction/merge-policy/README.md): `-F` Ward reduction, optional Lloyd polishing, objective tradeoffs, and reproducible quality, speed, size, geometry, and flat-patch measurements.
-- [Palette cover policy](encoder/palette-construction/cover-policy/README.md): post-quantizer gamut reachability repair, soft and hard anchors, historical color-model connections, growth, and layered reachability measurement.
-- [Palette snap policy](encoder/palette-construction/snap-policy/README.md): enablement, reversible 101-level tone mapping, timing, approach rate, and working-space target selection.
-- [Encoder working precision](encoder/precision/README.md): requested and effective `--precision` paths and cross-policy measurement controls.
-- [Alpha policy](loader/alpha-policy/README.md): source-alpha treatment, omitted SIXEL pixels, and `P2` selection.
-- [Background policy](loader/background-policy.md): background-source priority, colorspace, and OSC 11 interaction.
-- [CLI](cli/design-policy.md): option design, compatibility, parsing, diagnostics, and documentation synchronization.
-- [Quality](quality/measurement-policy.md): perceptual metrics, fixtures, thresholds, baselines, and performance comparisons.
-- [Testing](testing/guide.md): test organization, shell TAP rules, registration, portability, and required checks.
-- [Staticcheck](testing/staticcheck.md): the repository-wide invariant-verification target, cross-surface synchronization, generated artifacts, and test meta-checks.
-- [Threading](threading/README.md): worker budgets, band encoding and decoding, stage ordering, animation, and reproducible timeline measurements.
-- [CI](ci/design.md): workflow responsibilities, matrix design, failure triage, and CI-change validation.
-- [Platform compatibility ledger](misc/platforms/README.md): maintained platform, ABI, C-runtime, tool, test-harness, and reciprocal staticcheck boundaries, including OpenVMS, MinGW, Haiku, and Solaris.
+Start from the [documentation index](README.md) and read the document that owns a subject before changing it.
 
 ## Documentation rules
 
@@ -131,7 +104,7 @@ Every file under `docs/`, including figures and measurement data, must also be l
 
 ## Adding a document
 
-Adding a document is a Class C change in the [documentation workflow](documentation/workflow.md#stage-1-classify-the-change) and requires an approved placement proposal. Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Add a repository-level link only when contributors must read it before working in that area.
+Adding a document is a Class C change in the [documentation workflow](documentation/workflow.md#stage-1-classify-the-change) and requires an approved placement proposal. Add a document only when the topic is durable and materially distinct from the existing references. Give it a stable subject-oriented name, place it in the owning subject directory, and add it to `README.md` when users or contributors should discover it. Do not add document lists to the repository-level `AGENTS.md` or to this file; the index is the only list of documents.
 
 The [index](README.md) is arranged by reader purpose into parts (`##` headings) and, within a part, chapters (`###` headings). A part orders the reading path from introduction and usage through concepts, quality, and implementation to development; a chapter groups related documents and may collect them from several subject directories. Place a new document in the chapter where its intended reader needs it: command-line behavior that requires no color or encoding background belongs under usage, while options that depend on concepts are documented with their implementation stage. Directories stay organized by subject and are not renamed to follow parts. The documentation site builds its navigation from these headings, and every document must be reachable from the index.
 
