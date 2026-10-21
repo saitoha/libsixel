@@ -1384,6 +1384,7 @@ ms_ssim_scale(double const *a, double const *b, double *horizontal,
               int width, int height, double const kernel[11], int last)
 {
     double moments[5];
+    double const *window_rows[11];
     double av;
     double bv;
     double weight;
@@ -1399,7 +1400,12 @@ ms_ssim_scale(double const *a, double const *b, double *horizontal,
     int moment;
 
     valid_width = width - 10;
+    sum = 0.0;
     for (row = 0; row < height; ++row) {
+        /* A vertical window consumes only eleven horizontal rows. Replace
+         * the oldest row, then emit the next complete window immediately
+         * to keep the working set bounded. No row is read before
+         * it is filled, including when this storage is reused at a scale. */
         for (column = 0; column < valid_width; ++column) {
             memset(moments, 0, sizeof(moments));
             source = (size_t)row * (size_t)width + (size_t)column;
@@ -1413,21 +1419,28 @@ ms_ssim_scale(double const *a, double const *b, double *horizontal,
                 moments[3] += weight * bv * bv;
                 moments[4] += weight * av * bv;
             }
-            target = ((size_t)row * (size_t)valid_width +
+            target = ((size_t)(row % 11) * (size_t)valid_width +
                 (size_t)column) * 5u;
             memcpy(horizontal + target, moments, sizeof(moments));
         }
-    }
-    sum = 0.0;
-    for (row = 0; row < height - 10; ++row) {
+        if (row < 10) {
+            continue;
+        }
+        /* Resolve ring positions once per output row, not per pixel/tap.
+         * Keep tap order and row-major pooling identical to the full-image
+         * implementation: changing reduction order changes the metric. */
+        for (tap = 0; tap < 11; ++tap) {
+            window_rows[tap] = horizontal
+                + (size_t)((row - 10 + tap) % 11)
+                * (size_t)valid_width * 5u;
+        }
         for (column = 0; column < valid_width; ++column) {
             memset(moments, 0, sizeof(moments));
+            source = (size_t)column * 5u;
             for (tap = 0; tap < 11; ++tap) {
-                source = ((size_t)(row + tap) * (size_t)valid_width +
-                    (size_t)column) * 5u;
                 for (moment = 0; moment < 5; ++moment) {
                     moments[moment] += kernel[tap] *
-                        horizontal[source + (size_t)moment];
+                        window_rows[tap][source + (size_t)moment];
                 }
             }
             av = moments[0];
@@ -1494,6 +1507,7 @@ ms_ssim_luma(sixel_assessment_float_buffer_t const *ref,
     double *b;
     double *horizontal;
     size_t count;
+    size_t horizontal_count;
     size_t index;
     int tap;
     int level;
@@ -1503,7 +1517,14 @@ ms_ssim_luma(sixel_assessment_float_buffer_t const *ref,
     if (width < 176 || height < 176) {
         return NAN;
     }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        assessment_fail(SIXEL_BAD_ALLOCATION,
+                        "MS-SSIM image size overflow");
+    }
     count = (size_t)width * (size_t)height;
+    /* Retain the conservative bound for two images plus five moments per
+     * pixel. With height >= 176, the eleven-row ring is strictly smaller
+     * than the old five-image scratch area, so the allocation below fits. */
     if (count > SIZE_MAX / (7u * sizeof(double))) {
         assessment_fail(SIXEL_BAD_ALLOCATION,
                         "MS-SSIM workspace size overflow");
@@ -1513,7 +1534,9 @@ ms_ssim_luma(sixel_assessment_float_buffer_t const *ref,
             return NAN;
         }
     }
-    workspace = (double *)xmalloc(count * 7u * sizeof(double));
+    horizontal_count = (size_t)(width - 10) * 11u * 5u;
+    workspace = (double *)xmalloc(
+        (count * 2u + horizontal_count) * sizeof(double));
     a = workspace;
     b = a + count;
     horizontal = b + count;
