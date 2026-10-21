@@ -8,7 +8,7 @@
     "directory": ".",
     "ldflags": ""
   },
-  "generated_at_utc": "2026-10-21T16:33:04.674874+00:00",
+  "generated_at_utc": "2026-10-21T17:15:36.275063+00:00",
   "host": {
     "matplotlib": "3.11.2",
     "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
@@ -84,7 +84,7 @@
   },
   "schema_version": 1,
   "source": {
-    "revision": "5b1da5b55c55fb450bd4548a87579140bae893b8",
+    "revision": "26a31afef67dbbdd9b45d2b0f115ba099b51bdb6",
     "tracked_worktree_state_at_start": "clean"
   }
 }

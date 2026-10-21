@@ -22,7 +22,7 @@ The ten-policy sweeps resolve to planner `work=rgb888`, but their actual lookup 
 
 ## Conditions
 
-The ten-policy quality and single-thread speed sweeps were measured on 2026-10-22 JST from tracked-clean revision `5b1da5b55c55fb450bd4548a87579140bae893b8`. The host was an Apple M3 Max with 36 GiB RAM, macOS 27.0.1 arm64, and Apple Clang 21.0.0. Autotools used `CFLAGS=-O3`, libpng, and LCMS2; the manifests retain the complete configuration and executable hashes. The input was [`images/snake.png`](../../../../../images/snake.png), at 600 by 450 pixels. The broad curves use `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128 through 256.
+The ten-policy quality and single-thread speed sweeps were measured on 2026-10-22 JST from tracked-clean revision `26a31afef67dbbdd9b45d2b0f115ba099b51bdb6`. The host was an Apple M3 Max with 36 GiB RAM, macOS 27.0.1 arm64, and Apple Clang 21.0.0. Autotools used `CFLAGS=-O3`, libpng, and LCMS2; the manifests retain the complete configuration and executable hashes. The input was [`images/snake.png`](../../../../../images/snake.png), at 600 by 450 pixels. The broad curves use `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128 through 256.
 
 The shared-instance and Metal artifacts retain their 2026-09-06 revision `f2c138d8f` and macOS 26.5.1 conditions. Their sections describe the historical evidence and its limits. The four-policy Delaunay study has its own snapshot and protocol below. Compare times within each study; do not splice their samples into the ten-policy curves.
 
@@ -87,6 +87,8 @@ img2sixel \
 ```
 
 `lsqa` compares each SIXEL stream with the original image and reports its existing `Δ E00_mean`, `Δ Chroma_mean`, and MS-SSIM metrics. The runner removes inherited `SIXEL_*` variables from both programs, then sets `SIXEL_LOADER_CMS_ENGINE=none` for both. Encoder input is pinned to `libpng`; assessment settings stay identical across policies. The K-means seed is one, and the diffusion control changes only `none` to `fs`.
+
+The recorded build leaves `FLOAT_LOOKUP_CFLAGS` empty. Delaunay's byte cold batches use NEON, while its native-float K-means sweep retains scalar misses under the [float SIMD gate](../delaunay.md#method); this sweep does not measure the optional float batch kernel.
 
 Untimed probes at `K = 256` check all ten consumer classes for K-means with both diffusion settings and for Heckbert without diffusion. The manifests retain these probes. In this build, the K-means `5bit` and `6bit` measurements exercise their native-float exhaustive fallbacks; only the Heckbert quality curves exercise their byte-addressed caches. `-Wgamma` selects gamma-RGB application coordinates without forcing a byte palette.
 
@@ -191,7 +193,7 @@ At `K = 256`, `eytzinger` and `vptree` have mean Delta E00 values of 2.068099 an
 
 ### End-to-end speed
 
-The speed figure compares native-float K-means lookup, including palette construction and SIXEL encoding. Delaunay and VP-tree have nearly equal medians at `K = 256`.
+The speed figure compares native-float K-means lookup, including palette construction and SIXEL encoding. Delaunay and VP-tree are compared under the same conditions at each palette size.
 
 ![Median end-to-end runtime for each lookup policy with native-float K-means](lookup-policy-speed.png)
 
@@ -201,20 +203,20 @@ At `K = 256`, the result is:
 
 | Policy | Median time | Speedup over `none` |
 | --- | ---: | ---: |
-| `none` | 119.2 ms | 1.00x |
-| `5bit` | 127.9 ms | 0.93x |
-| `6bit` | 128.4 ms | 0.93x |
-| `certlut` | 100.4 ms | 1.19x |
-| `eytzinger` | 74.6 ms | 1.60x |
-| `fhedt` | 70.8 ms | 1.68x |
-| `vptree` | 65.9 ms | 1.81x |
-| `rbc` | 99.5 ms | 1.20x |
-| `mahalanobis` | 128.0 ms | 0.93x |
-| `delaunay` | 65.9 ms | 1.81x |
+| `none` | 122.0 ms | 1.00x |
+| `5bit` | 131.3 ms | 0.93x |
+| `6bit` | 131.8 ms | 0.93x |
+| `certlut` | 102.9 ms | 1.19x |
+| `eytzinger` | 77.3 ms | 1.58x |
+| `fhedt` | 74.0 ms | 1.65x |
+| `vptree` | 68.7 ms | 1.77x |
+| `rbc` | 102.7 ms | 1.19x |
+| `mahalanobis` | 131.4 ms | 0.93x |
+| `delaunay` | 68.7 ms | 1.78x |
 
-Delaunay and VP-tree each take about 65.9 ms, compared with 119.2 ms for `none`; their interquartile ranges overlap. Native-float `5bit` and `6bit` take about 128 ms and do not show a byte-cache speed advantage. Their byte performance belongs to the separate representation-controlled Delaunay study below.
+Delaunay takes 68.7 ms and VP-tree 68.7 ms, compared with 122.0 ms for `none`. Native-float `5bit` and `6bit` take 131.3 and 131.8 ms and do not show a byte-cache speed advantage. The error bars describe variation within this run; the table does not establish a stable ordering of close medians.
 
-In this run, `fhedt` takes 70.8 ms while VP-tree and Delaunay are faster and match the direct quality scores. This does not establish a portable ranking. Preparation, queries, palette construction, loading, and SIXEL output all contribute to elapsed time; a component benchmark is needed to assign the differences to a particular stage.
+In this run, `fhedt` takes 74.0 ms. VP-tree and Delaunay match the direct quality scores; their elapsed times are listed separately above. This does not establish a portable ranking. Preparation, queries, palette construction, loading, and SIXEL output all contribute to elapsed time; a component benchmark is needed to assign the differences to a particular stage.
 
 ### Shared-instance performance
 
@@ -290,24 +292,26 @@ The timing data are in [`lookup-policy-fs-speed.csv`](lookup-policy-fs-speed.csv
 
 | Policy | No-diffusion median | FS median | FS median change |
 | --- | ---: | ---: | ---: |
-| `none` | 119.2 ms | 125.2 ms | +5.1% |
-| `5bit` | 127.9 ms | 137.4 ms | +7.4% |
-| `6bit` | 128.4 ms | 137.3 ms | +7.0% |
-| `certlut` | 100.4 ms | 132.4 ms | +31.9% |
-| `eytzinger` | 74.6 ms | 89.2 ms | +19.5% |
-| `fhedt` | 70.8 ms | 90.3 ms | +27.4% |
-| `vptree` | 65.9 ms | 81.7 ms | +24.0% |
-| `rbc` | 99.5 ms | 110.5 ms | +11.0% |
-| `mahalanobis` | 128.0 ms | 136.4 ms | +6.5% |
-| `delaunay` | 65.9 ms | 80.2 ms | +21.8% |
+| `none` | 122.0 ms | 128.7 ms | +5.5% |
+| `5bit` | 131.3 ms | 139.8 ms | +6.5% |
+| `6bit` | 131.8 ms | 139.8 ms | +6.1% |
+| `certlut` | 102.9 ms | 137.7 ms | +33.7% |
+| `eytzinger` | 77.3 ms | 92.8 ms | +20.0% |
+| `fhedt` | 74.0 ms | 91.4 ms | +23.6% |
+| `vptree` | 68.7 ms | 83.9 ms | +22.0% |
+| `rbc` | 102.7 ms | 113.8 ms | +10.8% |
+| `mahalanobis` | 131.4 ms | 140.5 ms | +6.9% |
+| `delaunay` | 68.7 ms | 81.7 ms | +19.0% |
 
-Delaunay takes 80.2 ms and VP-tree 81.7 ms at this point, with matching reported quality scores. These results include diffusion arithmetic, changed query colors, and SIXEL encoding. They do not isolate nearest-neighbor query cost or establish a constant additive diffusion overhead. The median increase is largest for `certlut` in this run, but the table cannot attribute it to one component.
+Delaunay takes 81.7 ms and VP-tree 83.9 ms at this point, with matching reported quality scores. These results include diffusion arithmetic, changed query colors, and SIXEL encoding. They do not isolate nearest-neighbor query cost or establish a constant additive diffusion overhead. The median percentage increase is largest for `certlut` in this run, but the table cannot attribute it to one component.
 
 ### Delaunay: byte and native-float comparison
 
 This study compares [`delaunay`](../delaunay.md), `vptree`, `5bit`, and `6bit` at `K = 32, 64, 128, 256`, with both `fs` and `none` diffusion. It uses [`snake.png`](../../../../../images/snake.png) and [`egret.jpg`](../../../../../images/egret.jpg) at 600 by 450 pixels, plus [`vimperator3.png`](../../../../../images/vimperator3.png) at 582 by 746 pixels. Egret is converted once to an 8-bit RGB PNG before timing so every input uses the same `libpng` loader. There are 192 timed configurations and 48 paired Delaunay/VP-tree output checks.
 
-The run was recorded on 2026-10-22 JST on an Apple M3 Max with 36 GiB RAM, macOS 27.0.1 arm64, and Apple Clang 21.0.0. The implementation is identified by clean local measurement snapshot `d1acd91280d9e97247aaf6f2f96abe7b8e60345b`, based on repository revision `50bcca8f391b71bea52a7cf85d5174432720a104`. The snapshot contains the Delaunay implementation under evaluation; its ID identifies a local measurement commit, not a published release or branch. The [manifest](lookup-policy-delaunay-run.json) records its tree ID, compiler and configure arguments, input and executable/library hashes, effective lookup classes, all timing samples, and paired output hashes. Autotools used `CFLAGS=-O3` with the project's C99 flag. Byte lookup used NEON; `FLOAT_LOOKUP_CFLAGS` was empty, so float lookup retained native scalar arithmetic under the existing [SIMD gate](../delaunay.md#method).
+The run was recorded on 2026-10-22 JST on an Apple M3 Max with 36 GiB RAM, macOS 27.0.1 arm64, and Apple Clang 21.0.0. The implementation is identified by clean local measurement snapshot `d1acd91280d9e97247aaf6f2f96abe7b8e60345b`, based on repository revision `50bcca8f391b71bea52a7cf85d5174432720a104`. The snapshot contains the Delaunay implementation under evaluation; its ID identifies a local measurement commit, not a published release or branch. The [manifest](lookup-policy-delaunay-run.json) records its tree ID, compiler and configure arguments, input and executable/library hashes, effective lookup classes, all timing samples, and paired output hashes.
+
+This snapshot predates eight-query cold-miss batching in Delaunay, so its timings characterize the earlier point-walk miss path. Autotools used `CFLAGS=-O3` with the project's C99 flag. Byte lookup used NEON; `FLOAT_LOOKUP_CFLAGS` was empty, so float lookup retained native scalar arithmetic under the existing [SIMD gate](../delaunay.md#method).
 
 Every command uses `--threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Wgamma --gpu-policy=off`. The byte matrix adds `--cms-engine=none`; the float matrix keeps default CMS and adds `-Xoklab`. All inherited `SIXEL_*` variables are removed. An untimed `LSXLUT2|phase=palette-apply` trace confirms `lookup/POLICY.8bit` or `lookup/POLICY.float32` for each configuration. CMS and clustering differ between the two matrices, so comparisons are within each representation, not an estimate of the cost of changing representation alone.
 
