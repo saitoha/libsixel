@@ -40,15 +40,16 @@ The proposal answers these questions:
 
 1. **Reader and question.** Who arrives at this material, and what question brings them? (P3)
 2. **Purpose and audience.** The primary Diátaxis type (`tutorial`, `how-to`, `reference`, `explanation`) and audience (`user`, `contributor`, `both`), and which parts, if any, serve a different purpose and therefore belong in a companion. (P3, P4)
-3. **Existing owners.** The documents found through the [index](../README.md) and a repository search that already discuss the subject, with what each one owns. (P2)
-4. **Decision.** Extend an existing owner, add a companion, add a new document, or restructure, with the reason the alternatives were rejected. Extending an owner is the default. (P1, P9)
-5. **Place in the structure.** The part and chapter of the index, the parent document that links to it, and the siblings it sits beside. (P1)
-6. **Granularity.** How its scope compares with those siblings, and its expected size. A proposal for a page much larger or smaller than its siblings explains why or adjusts the split. (P5)
-7. **Normative statements.** The contracts, defaults, and definitions the change introduces or alters, the other statements in the documentation about the same subjects, and how any conflict will be reconciled in the owner. (P2, P7)
-8. **Terms.** Terms the change introduces or relies on, and the document that defines each one. (P7)
-9. **Supersession.** What the change makes redundant, and what will be deleted, shortened, or replaced with a link. (P9)
-10. **Evidence and coverage.** Where measurements, reproduction material, and test ledgers will live, and which tests the contracts link to. (P6, P10)
-11. **Figures and tables.** The structures, flows, geometric ideas, and comparisons the material explains, and the figure or table planned for each. (P11)
+3. **Kind.** The [document kind](document-kinds.md) of each resulting document, which fixes its sections and their names. (P5)
+4. **Existing owners.** The documents found through the [index](../README.md) and a repository search that already discuss the subject, with what each one owns. (P2)
+5. **Decision.** Extend an existing owner, add a companion, add a new document, or restructure, with the reason the alternatives were rejected. Extending an owner is the default. (P1, P9)
+6. **Place in the structure.** The part and chapter of the index, the parent document that links to it, and the siblings it sits beside. (P1)
+7. **Granularity.** How its scope compares with those siblings, and its expected size. A proposal for a page much larger or smaller than its siblings explains why or adjusts the split. (P5)
+8. **Normative statements.** The contracts, defaults, and definitions the change introduces or alters, the other statements in the documentation about the same subjects, and how any conflict will be reconciled in the owner. (P2, P7)
+9. **Terms.** Terms the change introduces or relies on, and the document that defines each one. (P7)
+10. **Supersession.** What the change makes redundant, and what will be deleted, shortened, or replaced with a link. (P9)
+11. **Evidence and coverage.** Where measurements, reproduction material, and test ledgers will live, and which tests the contracts link to. (P6, P10)
+12. **Figures and tables.** The structures, flows, geometric ideas, and comparisons the material explains, and the figure or table planned for each. (P11)
 
 ## Stage 3: structural review
 
@@ -76,6 +77,7 @@ Run the documentation static checks before requesting the content review. They a
 The maintainer performs the content review of every change, including Class A changes. Passing the length checks does not settle whether a unit is the right length for its siblings and its reader; the review judges that. The content review confirms:
 
 - The document opens by stating its reader, its scope, and where neighboring material lives.
+- The document follows the skeleton of its [kind](document-kinds.md): its sections appear in the listed order under their canonical names, and subject-specific headings stay in the subject-section slot.
 - Each normative statement appears only in its owner; other occurrences are links or have been reconciled. Search the documentation for the subject of every new or altered statement, not only for the exact wording.
 - Terms are used with the meaning their owner defines.
 - The text reads easily: short sentences, one idea per paragraph, terms defined before use, and examples near the abstractions they illustrate. Structures, flows, geometric ideas, and comparisons that are explained in prose are supported by a figure or a table, each introduced by the text and stating what the reader should take from it. (P11)

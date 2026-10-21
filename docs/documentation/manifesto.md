@@ -84,7 +84,7 @@ Words alone are a poor medium for structure, flow, geometry, and comparison, so 
 - The index and chapter entries are navigation. Each entry is one sentence that says what the reader will find; the detailed scope statement belongs at the top of the document itself.
 - Every document opens by saying who it is for, what it covers, and where neighboring material lives.
 - A paragraph that a reader has to reread to follow, or a concept that needs a mental picture the text does not draw, is a defect to fix like a wrong value: split the sentences, add an example, or add the figure or table.
-- Documents of the same kind share a skeleton, so a reader who has read one policy page knows where to look in the next.
+- Documents of the same kind share a skeleton, so a reader who has read one policy page knows where to look in the next. The [document kinds](document-kinds.md) reference defines those skeletons.
 - A topic with substantial evidence or test inventories is a directory whose `README.md` holds the contract and whose companions hold the rest.
 - Loose numeric limits on the length of documents, sections, and paragraphs are enforced mechanically, so that clear overgrowth never reaches review; whether a unit is the right size for its place and its reader is judged by people.
 - Structural changes, such as new documents, new chapters, splits, merges, and moves, are proposed and reviewed before the prose is written, as described in the [documentation workflow](workflow.md).
