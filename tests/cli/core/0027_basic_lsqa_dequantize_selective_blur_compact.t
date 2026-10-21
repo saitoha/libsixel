@@ -3,6 +3,7 @@
 # Policy: docs/decoder/dequantization/README.md
 # Verify lsqa accepts selective_blur full and compact forms.
 
+# Option parsing needs no full-size image or unrelated quality metrics.
 set -eux
 
 test -n "${LSQA_PATH-}" || {
@@ -18,16 +19,16 @@ test -x "${LSQA_PATH}" || {
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -d selective_blur:threshold=24 \
-        "${TOP_SRCDIR}/images/snake.six" \
-        "${TOP_SRCDIR}/images/snake.six" >/dev/null || {
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -m PSNR_Y -d selective_blur:threshold=24 \
+        "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" \
+        "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" >/dev/null || {
     echo "not ok" 1 - "lsqa selective_blur full form rejected"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -d s:T24 \
-        "${TOP_SRCDIR}/images/snake.six" \
-        "${TOP_SRCDIR}/images/snake.six" >/dev/null || {
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -m PSNR_Y -d s:T24 \
+        "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" \
+        "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" >/dev/null || {
     echo "not ok" 1 - "lsqa selective_blur compact form rejected"
     exit 0
 }

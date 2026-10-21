@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify lsqa accepts the compact Vlight dequantize alias.
 
+# Option parsing needs no full-size image or unrelated quality metrics.
 set -eux
 
 test -n "${LSQA_PATH-}" || {
@@ -16,9 +17,9 @@ test -x "${LSQA_PATH}" || {
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -d l:Vl \
-        "${TOP_SRCDIR}/images/snake.six" \
-        "${TOP_SRCDIR}/images/snake.six" >/dev/null || {
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -m PSNR_Y -d l:Vl \
+        "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" \
+        "${TOP_SRCDIR}/tests/data/color-numeric/stable.six" >/dev/null || {
     echo "not ok" 1 - "lsqa compact Vlight dequantize alias rejected"
     exit 0
 }

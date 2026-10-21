@@ -8,8 +8,8 @@ set -eux
 printf '1..1\n'
 set -v
 
-image_ref="${TOP_SRCDIR}/images/snake.png"
-image_out="${TOP_SRCDIR}/images/snake.six"
+image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
+image_out="${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192-baseline.six"
 value_short=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -B "#112233" \
     "${image_ref}" "${image_out}") || {
     echo "not ok" 1 - "lsqa -B #rrggbb should be accepted"

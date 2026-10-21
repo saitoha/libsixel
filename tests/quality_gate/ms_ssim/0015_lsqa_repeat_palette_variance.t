@@ -8,8 +8,8 @@ set -eux
 printf '1..1\n'
 set -v
 
-image1="${TOP_SRCDIR}/images/snake-palette.png"
-image2="${TOP_SRCDIR}/images/snake.six"
+image1="${TOP_SRCDIR}/tests/data/inputs/snake_palette_192.png"
+image2="${TOP_SRCDIR}/tests/data/inputs/progressive-snake-192-baseline.six"
 
 value0=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image1}" "${image2}")
 value1=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM "${image1}" "${image2}")

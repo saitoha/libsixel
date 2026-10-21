@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 
-value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -L builtin "${TOP_SRCDIR}/images/snake.png" "${TOP_SRCDIR}/images/snake.png") || {
+value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -D -L builtin "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
     echo "not ok 1 - JSON evaluation failed"
     exit 0
 }

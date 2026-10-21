@@ -1,6 +1,8 @@
 #!/bin/sh
 # Verify Vlight thread-count output remains visually stable.
 
+# Keep 256x256 pixels to reach the decoder parallel threshold (65536).
+# Calculate only the metric asserted by this quality gate.
 set -eux
 
 test "${HAVE_SIXEL2PNG-}" = 1 || {
@@ -30,7 +32,7 @@ thread4_png="${artifact_dir}/vlight-thread4-$$.png"
 
 SIXEL_THREADS=1 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -D -dl:Vl \
-        -i "${TOP_SRCDIR}/images/snake.six" \
+        -i "${TOP_SRCDIR}/tests/data/inputs/snake_256.six" \
         -o "${thread1_png}" || {
     echo "not ok" 1 - "single-thread fast4 decode failed"
     exit 0
@@ -38,13 +40,13 @@ SIXEL_THREADS=1 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
 
 SIXEL_THREADS=4 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -D -dl:Vl \
-        -i "${TOP_SRCDIR}/images/snake.six" \
+        -i "${TOP_SRCDIR}/tests/data/inputs/snake_256.six" \
         -o "${thread4_png}" || {
     echo "not ok" 1 - "four-thread fast4 decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -b "MS-SSIM:0.999" \
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
         "${thread1_png}" "${thread4_png}" >/dev/null || {
     echo "not ok" 1 - "Vlight thread-count output fell below MS-SSIM 0.999"
     exit 0
