@@ -4,7 +4,7 @@
 
 Runtime test discovery is centralized in [read-check-test-list.sh](../../build-aux/read-check-test-list.sh). The helper scans the test source tree, normalizes relative paths, sorts them deterministically, and selects `.t` scripts and numbered Python, Ruby, Perl, and PHP binding tests. It prunes private test environments and artifacts and excludes selected static-only scripts that run under `staticcheck`.
 
-Autotools invokes discovery during configuration; Meson invokes it during setup. A directory scan is shared policy, not continuous discovery on every test invocation. After adding or renaming tests, refresh the configured inventory.
+Autotools invokes discovery during configuration; Meson invokes it during setup. A directory scan is shared policy, not continuous discovery on every test invocation. After adding, removing or renaming tests, refresh the configured inventory with `./config.status --recheck` followed by `./config.status` (or rerun configure with the intended options). Merely regenerating `tests/Makefile` from the old `config.status` reuses the old inventory. Apply this in the destination build directory after integrating such changes, too; otherwise a passing source integration can leave `make check` requesting removed filenames and omitting new tests.
 
 Autotools substitutes the inventory directly into `TESTS` in `tests/Makefile`. `AM_SUBST_NOTMAKE` suppresses an unused `SIXEL_CHECK_TESTS` assignment in every generated Makefile, so directories that do not run these tests do not carry a duplicate inventory.
 
