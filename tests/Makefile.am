@@ -7905,6 +7905,7 @@ AM_LOG_FLAGS =
 	staticcheck-staticcheck-suite-sync \
 	staticcheck-suboption-image-coverage \
 	staticcheck-tap-dispatch \
+	staticcheck-suite-workers \
 	staticcheck-actionlint \
 	staticcheck-shellcheck \
 	staticcheck-codespell \
@@ -7984,6 +7985,7 @@ staticcheck \
 staticcheck-staticcheck-suite-sync \
 staticcheck-suboption-image-coverage \
 staticcheck-tap-dispatch \
+staticcheck-suite-workers \
 staticcheck-actionlint \
 staticcheck-shellcheck \
 staticcheck-codespell \
@@ -8094,6 +8096,16 @@ staticcheck-tap-dispatch:
 		--trs-file staticcheck-tap-dispatch.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-tap-dispatch.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-suite-workers:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-suite-workers" \
+		--log-file staticcheck-suite-workers.log \
+		--trs-file staticcheck-suite-workers.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-suite-workers.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-suboption-image-coverage:
@@ -9700,6 +9712,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-staticcheck-suite-sync.sh \
     _static/sh/staticcheck-suboption-image-coverage.sh \
     _static/sh/staticcheck-tap-dispatch.sh \
+    _static/sh/staticcheck-suite-workers.sh \
     _static/sh/staticcheck-suboption-registry.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \

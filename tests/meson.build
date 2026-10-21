@@ -734,6 +734,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-suite-workers',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-suite-workers.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-suboption-image-coverage',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-suboption-image-coverage.sh',

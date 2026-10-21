@@ -19,8 +19,23 @@ test -n "$src_root" || {
 
 test -n "$build_root" || build_root="$src_root"
 
-tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-staticcheck-suite-XXXXXX")
-trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
+# Workers share only immutable inventory and uniquely numbered result paths.
+# The parent alone owns cleanup, after xargs has reaped every worker.
+tmpdir=${9:-}
+worker_index=${10:-}
+if test -z "$tmpdir"; then
+    tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-staticcheck-suite-XXXXXX")
+    suite_pid=
+    # shellcheck disable=SC2329
+    cleanup_suite() {
+        # A signal can interrupt wait. Keep worker files until the scheduler
+        # has finished, so surviving children never write into a removed tree.
+        test -z "$suite_pid" || wait "$suite_pid" || :
+        rm -rf "$tmpdir"
+    }
+    trap cleanup_suite EXIT
+    trap 'exit 1' HUP INT TERM
+fi
 
 TOP_SRCDIR=${TOP_SRCDIR:-$src_root}
 TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
@@ -29,6 +44,7 @@ export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
 # Source-only TAP contracts retain ordinary test-harness coverage. Discover
 # their stable roles once; the registrations below require exactly one owner.
+if test -z "$worker_index"; then
 find "$src_root/tests" -type f -name '*.t' -exec awk '
 /^# Staticcheck: / {
     if (FNR > 20 || NF != 3 || $3 !~ /^staticcheck-[a-z0-9-]+$/) {
@@ -38,6 +54,7 @@ find "$src_root/tests" -type f -name '*.t' -exec awk '
     print $3 "|" FILENAME
 }
 ' {} + > "$tmpdir/source-contracts"
+fi
 
 run_source_contract() {
     run_case_tap "$1" run_source_contract_test "$1"
@@ -59,6 +76,8 @@ run_source_contract_test() {
         sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" "$contract_path"
 }
 
+total=${STATICCHECK_TOTAL:-}
+if test -z "$worker_index"; then
 total=$(awk '
 $1 ~ /^(run_case_(tap|plain|skip)|run_source_contract)$/ {
     name=$2
@@ -75,6 +94,7 @@ END {
     print count + 0
 }
 ' "$0")
+fi
 index=0
 pass_count=0
 skip_count=0
@@ -90,7 +110,7 @@ tool_is_available() {
 # shellcheck source=tests/_static/sh/tap-case.sh
 . "$src_root/tests/_static/sh/tap-case.sh"
 
-run_case_plain() {
+run_case_plain_impl() {
     case_name=$1
     shift
 
@@ -115,7 +135,7 @@ run_case_plain() {
     return 1
 }
 
-run_case_skip() {
+run_case_skip_impl() {
     case_name=$1
     reason=$2
 
@@ -126,11 +146,37 @@ run_case_skip() {
     printf 'SKIP: %s\n' "$reason"
 }
 
+# Registration remains the single source of ordering for both build systems.
+# A worker walks these cheap registrations, executes exactly its selected case,
+# and exits. No source inventory or preceding check is rerun by the worker.
+select_case() {
+    case_kind=$1
+    shift
+    index=$((index + 1))
+    test "$index" = "$worker_index" || return 0
+    index=$((index - 1))
+    case_status=0
+    case "$case_kind" in
+        tap)
+            # Restore the shared strict TAP dispatcher only in this worker.
+            # shellcheck source=tests/_static/sh/tap-case.sh
+            . "$src_root/tests/_static/sh/tap-case.sh"
+            run_case_tap "$@" || case_status=$?
+            ;;
+        plain) run_case_plain_impl "$@" || case_status=$? ;;
+        skip) run_case_skip_impl "$@" ;;
+    esac
+    test "$case_status" -eq 0 || exit 1
+    test "$skip_count" -eq 0 || exit 77
+    exit 0
+}
+
+run_case_tap() { select_case tap "$@"; }
+run_case_plain() { select_case plain "$@"; }
+run_case_skip() { select_case skip "$@"; }
+
 fail_and_exit() {
-    rc=$1
-    printf 'staticcheck summary: total=%d pass=%d skip=%d fail=%d\n' \
-        "$index" "$pass_count" "$skip_count" "$fail_count"
-    exit "$rc"
+    exit "$1"
 }
 
 # shellcheck disable=SC2329
@@ -287,6 +333,10 @@ run_case_tap "staticcheck-staticcheck-suite-sync" \
 
 run_case_tap "staticcheck-tap-dispatch" \
     "$src_root/tests/_static/sh/staticcheck-tap-dispatch.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-suite-workers" \
+    "$src_root/tests/_static/sh/staticcheck-suite-workers.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-suboption-image-coverage" \
@@ -716,7 +766,69 @@ run_source_contract "staticcheck-psd-deferred-stroke-adjust" || fail_and_exit $?
 
 run_source_contract "staticcheck-kcenter-auto-perceptual-preference" || fail_and_exit $?
 
+# Dispatch all registered cases, then replay complete logs in registry order.
+# Worker failures are data, not xargs failures: an early failed case must not
+# prevent another scheduled case from being accounted for in the summary.
+test -z "$worker_index" || {
+    echo "FAIL staticcheck worker did not find registration $worker_index"
+    exit 1
+}
+test "$index" -eq "$total" || {
+    echo "FAIL staticcheck registration count differs from declared total"
+    exit 1
+}
+jobs=${STATICCHECK_JOBS:-}
+if test -z "$jobs"; then
+    jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf '4')
+    case "$jobs" in ''|*[!0-9]*|0) jobs=1 ;; esac
+    test "$jobs" -le 8 || jobs=8
+fi
+case "$jobs" in ''|*[!0-9]*) jobs=1 ;; esac
+test "$jobs" -gt 0 2>/dev/null || jobs=1
+STATICCHECK_TOTAL=$total
+STATICCHECK_OUTPUT_DIR=$tmpdir
+# Lint tools must retain their bounded internal parallelism: ShellCheck
+# dominates CPU time even after startup and shared parsing are amortized.
+STATICCHECK_JOBS=$jobs
+export STATICCHECK_TOTAL STATICCHECK_OUTPUT_DIR STATICCHECK_JOBS
+awk -v total="$total" 'BEGIN { for (i = 1; i <= total; i++) print i }' \
+    > "$tmpdir/queue"
+xargs_status=0
+# shellcheck disable=SC2016
+xargs -n 1 -P "$jobs" sh -c '
+    for item_index do :; done
+    item_log="$STATICCHECK_OUTPUT_DIR/$item_index.worker.log"
+    item_status=0
+    sh "$@" > "$item_log" 2>&1 || item_status=$?
+    printf "%s\n" "$item_status" > "$STATICCHECK_OUTPUT_DIR/$item_index.status"
+' sh "$0" "$src_root" "$build_root" "$actionlint_bin" \
+    "$shellcheck_driver" "$shellcheck_bin" "$codespell_bin" \
+    "$python_bin" "$have_tree_sitter_c" "$tmpdir" \
+    < "$tmpdir/queue" &
+suite_pid=$!
+wait "$suite_pid" || xargs_status=$?
+suite_pid=
+
+index=0
+while test "$index" -lt "$total"; do
+    index=$((index + 1))
+    case_status=missing
+    if test -f "$tmpdir/$index.worker.log"; then
+        cat "$tmpdir/$index.worker.log"
+    fi
+    if test -f "$tmpdir/$index.status"; then
+        read -r case_status < "$tmpdir/$index.status" || case_status=missing
+    fi
+    case "$case_status" in
+        0) pass_count=$((pass_count + 1)) ;;
+        77) skip_count=$((skip_count + 1)) ;;
+        *)
+            fail_count=$((fail_count + 1))
+            printf 'FAIL staticcheck worker %d (status %s)\n' \
+                "$index" "$case_status"
+            ;;
+    esac
+done
 printf 'staticcheck summary: total=%d pass=%d skip=%d fail=%d\n' \
     "$index" "$pass_count" "$skip_count" "$fail_count"
-
-exit 0
+test "$xargs_status" -eq 0 && test "$fail_count" -eq 0
