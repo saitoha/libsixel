@@ -73,6 +73,16 @@ A secondary metric is diagnostic unless its interpretation and threshold are
 defined for the tested behavior. Do not select whichever metric makes a change
 look best after seeing the result.
 
+## Color regression guards
+
+When adding or updating a general-purpose quality gate for color output, preserve its structural requirement and include an independently calibrated upper bound on color error. MS-SSIM compares luma and cannot by itself exclude severe hue or chroma regressions. Structural and color conditions must both pass; do not combine their scores so that good structure can compensate for unacceptable color. An unavailable or nonfinite required metric must not satisfy the gate.
+
+Choose the color observation for the supported failure modes. Per-pixel CIEDE2000 can expose hue and chroma errors hidden by luma, but intended dithering also contributes to it. Regional mean and maximum CIEDE2000 compare spatially averaged physical colors and can guard against broad color shifts and localized region damage without treating every dither sample as a defect. Fix the region window and alignment in advance. Regional averaging can hide errors that cancel within a tile, and whole-image means can hide sparse corruption; preserve applicable per-pixel, tail or direct-value coverage rather than treating any one summary as complete color correctness. The definitions and limitations remain owned by [color-aware evaluation](color-evaluation.md#per-pixel-and-regional-differences).
+
+Keep the structural gate primary and set the supplementary color bounds to reject substantial degradation while admitting the intended quantization and dither behavior. There is no universal color threshold implied by the MS-SSIM floor. Calibrate each applicable fixture family against independently accepted outputs and relevant degraded controls, including hue shifts with approximately preserved luma, desaturation, localized color corruption and, where applicable, within-region color cancellation. Record the comparison colorspaces, alpha background, precision, region size, thresholds and controls. Do not derive a new bound from the candidate output alone, automatically loosen it when a candidate fails, or change the reference with the implementation under review.
+
+Before adding checks, audit the existing direct-value and quality coverage as required by the [testing guide](../testing/guide.md#image-quality-tests). Keep useful incidental visual-regression coverage and avoid duplicate semantic observations. Use the [named, repeatable lsqa gates](metrics.md#selecting-metrics-and-gates) to evaluate selected structural and color metrics from one decoded image pair, sharing loading, normalization and intermediate data; measure the added cost rather than enabling every available metric. A policy decision or recorded diagnostic value does not establish an executable color gate: the selected bounds and degraded controls must be implemented and verified in the owning tests.
+
 ## Semantic assertions
 
 Apply the [general assertion rules](../testing/guide.md#assertions-and-evidence) when interpreting image-quality measurements. Relevant image properties to check alongside the metrics include:
@@ -99,6 +109,8 @@ Apply the [general assertion rules](../testing/guide.md#assertions-and-evidence)
   standard sizes.
 
 The shared `tests/data/inputs/snake_192.png` quality fixture is generated from the original `images/snake.png` using `magick images/snake.png -filter Lanczos -resize '192x192!' -depth 8 -strip PNG24:tests/data/inputs/snake_192.png`. Its square sampling follows the small snake fixtures while retaining all five reference scales. Encoding tests compare their decoded output directly with this pre-encoding reference; they do not enlarge encoded pixels.
+
+The palette repeatability fixture is `magick images/snake-palette.png -filter Lanczos -resize '192x192!' -depth 8 -strip PNG8:tests/data/inputs/snake_palette_192.png`; it retains indexed PNG loading at the five-scale size. The compact single-packet decoder fixture is generated with `converters/img2sixel -Goff --threads=1 -Qheckbert -d fs:scan=raster -t rgb -w256 -h256 -o tests/data/inputs/snake_256.six tests/data/inputs/snake_192.png`. Its 256 by 256 raster reaches the decoder's 65536-pixel parallel threshold; it serves thread equivalence, not an independent color-accuracy oracle. Palette metric repeatability uses the existing 192-pixel black SIXEL baseline as a non-identity target.
 
 The resampling quality cases use a 240 by 240 source so their 80% and 120% targets have exact 192 by 192 and 288 by 288 dimensions. `python3 tests/data/inputs/generate_scaling_quality_fixtures.py` regenerates this source from the original photograph and each independent filter reference (ImageMagick for weighted kernels, documented floor-index selection for nearest). The same script creates the 192-pixel JPEG and 191-pixel independent resize reference used by SIMD integration cases. Absolute-height option tests retain small fixtures and assert dimensions directly.
 

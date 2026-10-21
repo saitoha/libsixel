@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
 #if HAVE_STRINGS_H
 # include <strings.h>
 #endif
@@ -1906,6 +1907,13 @@ lsqa_copy_option_text(char *buffer,
     return 0;
 }
 
+/* A gate owns its metric and direction; argument order never pairs -m/-b. */
+typedef struct Baseline {
+    const MetricSpec *spec;
+    double value;
+    int maximum;
+} Baseline;
+
 typedef struct Options {
     const char *ref_spec;
     const char *out_spec;
@@ -1928,12 +1936,12 @@ typedef struct Options {
     char loader_order_buffer[PATH_MAX];
     const MetricSpec *metric_spec;
     const char *metric_key;
-    const MetricSpec *baseline_spec;
-    const char *baseline_key;
-    float baseline_value;
+    Baseline baselines[2 * SIXEL_ASSESSMENT_METRIC_COUNT];
+    unsigned int report_mask;
+    unsigned int baseline_mask;
     unsigned int metric_mask;
-    int metrics_filtered;
-    int baseline_enabled;
+    int report_count;
+    int baseline_count;
     int verbose;
     int grayscale_compare;
     int compare_colorspace;
@@ -1947,7 +1955,6 @@ typedef struct Options {
     int compare_colorspace_specified;
     int compare_precision_specified;
     int loader_order_specified;
-    char baseline_name[64];
     unsigned char bgcolor[3];
     int has_bgcolor;
 } Options;
@@ -2051,7 +2058,7 @@ static void
 lsqa_set_parse_error(char const *message);
 
 static int
-lsqa_parse_baseline(const char *arg, Options *opts);
+lsqa_parse_selection(const char *arg, Options *opts, int baseline);
 
 static int
 lsqa_apply_env_overrides(Options *opts)
@@ -2062,7 +2069,6 @@ lsqa_apply_env_overrides(Options *opts)
     char *colorspace_env;
     char *precision_env;
     char *loaders_env;
-    const MetricSpec *metric_spec;
     int boolean_value;
     int status;
     char option_detail[256];
@@ -2077,7 +2083,6 @@ lsqa_apply_env_overrides(Options *opts)
     colorspace_env = NULL;
     precision_env = NULL;
     loaders_env = NULL;
-    metric_spec = NULL;
     boolean_value = 0;
     status = 0;
     option_detail[0] = '\0';
@@ -2090,45 +2095,16 @@ lsqa_apply_env_overrides(Options *opts)
     loaders_env = lsqa_getenv_dup("LSQA_LOADERS");
 
     if (metrics_env != NULL && metrics_env[0] != '\0'
-            && opts->metric_spec == NULL) {
-        if (lsqa_parse_metric_spec_choice(metrics_env,
-                                          &metric_spec,
-                                          option_detail,
-                                          sizeof(option_detail)) != 0
-                || metric_spec == NULL) {
-            lsqa_report_invalid_argument('m',
-                                         metrics_env,
-                                         option_detail[0] != '\0'
-                                             ? option_detail
-                                             : "Unknown metric name.");
-            status = -1;
-            goto cleanup;
-        }
-        opts->metric_spec = metric_spec;
-        opts->metric_key = metric_spec->json_key;
-        opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK(
-            metric_spec->metric_id);
-        opts->metrics_filtered = 1;
-        if (opts->baseline_spec != NULL
-                && opts->baseline_spec != opts->metric_spec) {
-            lsqa_set_parse_error("lsqa: baseline metric must match -m.");
-            status = -1;
-            goto cleanup;
-        }
+            && !opts->report_count
+            && lsqa_parse_selection(metrics_env, opts, 0) != 0) {
+        status = -1;
+        goto cleanup;
     }
-
     if (baseline_env != NULL && baseline_env[0] != '\0'
-            && !opts->baseline_enabled) {
-        if (lsqa_parse_baseline(baseline_env, opts) != 0) {
-            status = -1;
-            goto cleanup;
-        }
-        if (opts->metric_spec != NULL
-                && opts->metric_spec != opts->baseline_spec) {
-            lsqa_set_parse_error("lsqa: baseline metric must match -m.");
-            status = -1;
-            goto cleanup;
-        }
+            && !opts->baseline_count
+            && lsqa_parse_selection(baseline_env, opts, 1) != 0) {
+        status = -1;
+        goto cleanup;
     }
 
     if (grayscale_env != NULL && grayscale_env[0] != '\0'
@@ -2253,16 +2229,17 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'm',
         "metrics",
-        "-m NAME, --metrics=NAME    limit computation to NAME and print\n"
-        "                           only that value. DELTA_E00: mean;\n"
-        "                           DE00_max: maximum pixel color error.\n"
+        "-m NAME[,NAME...], --metrics=NAME[,NAME...] (repeatable)\n"
+        "                           one unique metric: value; multiple: JSON.\n"
+        "                           Gate-only metrics are not printed.\n"
     },
     {
         'b',
         "baseline",
-        "-b METRIC:VALUE, --baseline=METRIC:VALUE\n"
-        "                           fail when METRIC is below VALUE;\n"
-        "                           S-CIELAB/S-CIELAB_max: above VALUE.\n"
+        "-b METRIC:min=VALUE, --baseline=METRIC:max=VALUE (repeatable)\n"
+        "                           comma lists; all bounds must pass.\n"
+        "                           METRIC:VALUE retains legacy directions:\n"
+        "                           minimum except S-CIELAB/S-CIELAB_max.\n"
     },
     {
         '%',
@@ -2582,31 +2559,37 @@ static void
 print_usage(const char *prog)
 {
     fprintf(stderr,
-            "Usage: %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
+            "Usage: %s [-m NAMES]... [-b CONDITIONS]... [-g]\n"
+            "             [-W COLORSPACE] [-P PRECISION] "
+            "[-L LIST] [-# ENGINE]\n"
             "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "             <reference> [target]\n",
             prog);
     fprintf(stderr,
-            "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
+            "       %s [-m NAMES]... [-b CONDITIONS]... [-g]\n"
+            "             [-W COLORSPACE] [-P PRECISION] "
+            "[-L LIST] [-# ENGINE]\n"
             "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "             <reference> < target\n",
             prog);
     fprintf(stderr,
-            "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
-            "             [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
+            "       %s [-m NAMES]... [-b CONDITIONS]... [-g]\n"
+            "             [-W COLORSPACE] [-P PRECISION] "
+            "[-L LIST] [-# ENGINE]\n"
             "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "             <reference> - < target\n",
             prog);
     fprintf(stderr,
-    "  -m, --metrics NAME  limit computation to a single metric\n");
+    "  -m, --metrics NAMES  comma list; repeat to add metrics\n");
     fprintf(stderr,
-            "                        and print only that value\n");
+            "                        one metric: value; multiple: JSON\n");
     fprintf(stderr,
-            "  -b, --baseline METRIC:VALUE\n");
+            "  -b, --baseline METRIC:min=VALUE or METRIC:max=VALUE\n");
     fprintf(stderr,
-            "                        fail below VALUE (S-CIELAB: above VALUE)\n");
+            "                        repeat or use commas; AND all bounds\n"
+            "                        each bound names its metric; -m optional\n"
+            "                        METRIC:VALUE keeps its legacy direction\n"
+            "                        (minimum except S-CIELAB/S-CIELAB_max)\n");
     fprintf(stderr,
             "  -v, --scielab-ppd PPD  pixels/degree, 1..1024 (default 60)\n");
     fprintf(stderr,
@@ -2650,15 +2633,15 @@ show_help(void)
      * Help text must go to stdout to match converter tools and allow piping.
      */
     fprintf(stdout,
-            "Usage: lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "Usage: lsqa [-m NAMES]... [-b CONDITIONS]... [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "            <reference> [target]\n"
-            "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "       lsqa [-m NAMES]... [-b CONDITIONS]... [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "            <reference> < target\n"
-            "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
+            "       lsqa [-m NAMES]... [-b CONDITIONS]... [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST] [-# ENGINE]\n"
             "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
             "            <reference> - < target\n"
@@ -2672,10 +2655,11 @@ show_help(void)
             "                  unavailable results print nan; JSON uses null\n"
             "\n"
             "Environment overrides:\n"
-            "  LSQA_METRICS=NAME\n"
-            "  LSQA_BASELINE=METRIC:VALUE\n"
+            "  LSQA_METRICS=NAME[,NAME...] (CLI replaces the list)\n"
+            "  LSQA_BASELINE=CONDITION[,CONDITION...] (CLI replaces the list)\n"
             "  LSQA_GRAYSCALE=0|1\n"
-            "  LSQA_COMPARE_COLORSPACE=reference|gamma|linear|oklab|cielab|din99d\n"
+            "  LSQA_COMPARE_COLORSPACE=reference|gamma|linear|oklab|"
+            "cielab|din99d\n"
             "  LSQA_COMPARE_PRECISION=reference|8bit|float32\n"
             "  LSQA_LOADERS=LIST\n"
             "  SIXEL_LOADER_CMS_ENGINE=none|auto|builtin|lcms2|colorsync\n"
@@ -2705,14 +2689,14 @@ lsqa_parse_baseline(const char *arg, Options *opts)
     size_t name_len;
     const MetricSpec *spec;
     const char *value_text;
+    char name[64];
     char *tail;
     double value;
-
-    if (arg == NULL || arg[0] == '\0') {
-        lsqa_report_invalid_argument('b', arg,
-                                     "Missing METRIC:VALUE baseline.");
-        return -1;
-    }
+    Baseline *prior;
+    Baseline *gate;
+    int maximum;
+    int explicit_direction;
+    int i;
 
     colon = strchr(arg, ':');
     if (colon == NULL) {
@@ -2720,35 +2704,37 @@ lsqa_parse_baseline(const char *arg, Options *opts)
                                      "Expected METRIC:VALUE format.");
         return -1;
     }
-
     name_len = (size_t)(colon - arg);
-    if (name_len == 0u) {
+    if (name_len == 0u || name_len >= sizeof(name)) {
         lsqa_report_invalid_argument('b', arg,
-                                     "Metric name is empty.");
+                                     "Metric name is empty or too long.");
         return -1;
     }
-    if (name_len >= sizeof(opts->baseline_name)) {
-        lsqa_report_invalid_argument('b', arg,
-                                     "Metric name is too long.");
-        return -1;
-    }
-
-    memcpy(opts->baseline_name, arg, name_len);
-    opts->baseline_name[name_len] = '\0';
-    spec = metric_spec_from_name(opts->baseline_name);
+    memcpy(name, arg, name_len);
+    name[name_len] = '\0';
+    spec = metric_spec_from_name(name);
     if (spec == NULL) {
-        lsqa_report_invalid_argument('b', arg,
-                                     "Unknown metric name.");
+        lsqa_report_invalid_argument('b', arg, "Unknown metric name.");
         return -1;
     }
 
+    /* Preserve legacy METRIC:VALUE directions. Explicit min/max can gate
+     * any metric, including lower-is-better color errors, unambiguously. */
+    maximum = spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIELAB
+        || spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX;
+    explicit_direction = 0;
     value_text = colon + 1;
+    if (strncmp(value_text, "min=", 4) == 0
+            || strncmp(value_text, "max=", 4) == 0) {
+        maximum = value_text[1] == 'a';
+        explicit_direction = 1;
+        value_text += 4;
+    }
     if (value_text[0] == '\0') {
-        lsqa_report_invalid_argument('b', arg,
-                                     "Baseline value is empty.");
+        lsqa_report_invalid_argument('b', arg, "Baseline value is empty.");
         return -1;
     }
-
+    errno = 0;
     value = strtod(value_text, &tail);
     if (tail == value_text) {
         lsqa_report_invalid_argument('b', arg,
@@ -2756,69 +2742,204 @@ lsqa_parse_baseline(const char *arg, Options *opts)
         return -1;
     }
     while (*tail == ' ' || *tail == '\t') {
-        tail += 1;
+        ++tail;
     }
     if (*tail != '\0') {
         lsqa_report_invalid_argument('b', arg,
                                      "Unexpected characters in value.");
         return -1;
     }
-    if (!isfinite(value)) {
+    if (!isfinite(value) || errno == ERANGE) {
         lsqa_report_invalid_argument('b', arg,
-                                     "Baseline value is not finite.");
+                "Baseline value is not finite or in range.");
         return -1;
     }
-
-    opts->baseline_spec = spec;
-    opts->baseline_key = spec->json_key;
-    opts->baseline_value = (float)value;
-    opts->baseline_enabled = 1;
+    /* Legacy thresholds were stored as float; keep their rounding. New
+     * explicit limits retain the supplied double for range validation. */
+    if (!explicit_direction) {
+        if (value > FLT_MAX || value < -FLT_MAX) {
+            lsqa_report_invalid_argument('b', arg,
+                                         "Baseline value is out of range.");
+            return -1;
+        }
+        value = (float)value;
+    }
+    for (i = 0; i < opts->baseline_count; ++i) {
+        prior = &opts->baselines[i];
+        if (prior->spec->metric_id != spec->metric_id) {
+            continue;
+        }
+        if (prior->maximum == maximum) {
+            lsqa_report_invalid_argument('b', arg,
+                "baseline already specified for this metric and direction.");
+            return -1;
+        }
+        /* The prior bound has the opposite direction: require min <= max. */
+        if (maximum ? value < prior->value : value > prior->value) {
+            lsqa_report_invalid_argument('b', arg,
+                                         "Baseline minimum exceeds maximum.");
+            return -1;
+        }
+    }
+    if (opts->baseline_count >= 2 * SIXEL_ASSESSMENT_METRIC_COUNT) {
+        lsqa_report_invalid_argument('b', arg, "Too many baseline limits.");
+        return -1;
+    }
+    gate = &opts->baselines[opts->baseline_count++];
+    gate->spec = spec;
+    gate->value = value;
+    gate->maximum = maximum;
+    opts->baseline_mask |= SIXEL_ASSESSMENT_METRIC_MASK(spec->metric_id);
     return 0;
 }
 
-/* Spatial color error is an upper bound; existing baseline meanings stay
- * unchanged for the previously available metrics. */
+/* Repeated options and comma lists have identical additive semantics.
+ * Reject empty members instead of silently dropping a missing condition. */
 static int
-lsqa_baseline_is_maximum(const Options *opts)
+lsqa_parse_selection(const char *arg, Options *opts, int baseline)
 {
-    return opts->baseline_spec != NULL
-        && (opts->baseline_spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIELAB
-            || opts->baseline_spec->metric_id
-                == SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX);
+    char *copy;
+    char *item;
+    char *next;
+    char *end;
+    const MetricSpec *spec;
+    unsigned int bit;
+    int status;
+    char detail[256];
+
+    copy = (char *)malloc(strlen(arg) + 1u);
+    if (copy == NULL) {
+        lsqa_set_parse_error("Cannot allocate metric selection.");
+        return -1;
+    }
+    strcpy(copy, arg);
+    status = 0;
+    item = copy;
+    do {
+        next = strchr(item, ',');
+        if (next != NULL) {
+            *next++ = '\0';
+        }
+        while (*item == ' ' || *item == '\t') {
+            ++item;
+        }
+        end = item + strlen(item);
+        while (end > item && (end[-1] == ' ' || end[-1] == '\t')) {
+            *--end = '\0';
+        }
+        if (*item == '\0') {
+            lsqa_report_invalid_argument(baseline ? 'b' : 'm', arg,
+                                         "Empty selection member.");
+            status = -1;
+        } else if (baseline) {
+            status = lsqa_parse_baseline(item, opts);
+        } else {
+            detail[0] = '\0';
+            spec = NULL;
+            status = lsqa_parse_metric_spec_choice(item, &spec,
+                                                   detail, sizeof(detail));
+            if (status != 0 || spec == NULL) {
+                lsqa_report_invalid_argument('m', item, detail);
+                status = -1;
+            } else {
+                bit = SIXEL_ASSESSMENT_METRIC_MASK(spec->metric_id);
+                if ((opts->report_mask & bit) == 0u) {
+                    opts->report_mask |= bit;
+                    ++opts->report_count;
+                    opts->metric_spec = spec;
+                    opts->metric_key = spec->json_key;
+                }
+            }
+        }
+        item = next;
+    } while (status == 0 && item != NULL);
+    free(copy);
+    return status;
 }
 
+/* Report every failed gate, even when an earlier bound already failed.
+ * Missing/nonfinite required results cannot satisfy a quality gate. */
 static int
-lsqa_check_baseline(const Options *opts,
-                    const Metrics *metrics,
-                    float *out_value)
+lsqa_check_baselines(const Options *opts, const Metrics *metrics)
 {
-    int metric_status;
-    float metric_value;
+    const Baseline *gate;
+    float value;
+    int i;
+    int status;
+    int failed;
 
-    if (opts == NULL || metrics == NULL || out_value == NULL) {
-        return -1;
+    failed = 0;
+    for (i = 0; i < opts->baseline_count; ++i) {
+        gate = &opts->baselines[i];
+        value = 0.0f;
+        status = metrics_get_value(metrics, gate->spec->json_key, &value);
+        if (status != 0 || !isfinite(value)) {
+            fprintf(stderr, "Metric %s is NaN or unavailable\n",
+                    gate->spec->json_key);
+            failed = 1;
+        } else if (gate->maximum ? value > gate->value : value < gate->value) {
+            fprintf(stderr, "%s %.6f is %s baseline %.6f\n",
+                    gate->spec->json_key, value,
+                    gate->maximum ? "above" : "below", gate->value);
+            failed = 1;
+        }
     }
-    if (!opts->baseline_enabled) {
-        return 0;
-    }
+    return failed ? LSQA_EXIT_BASELINE_FAILED : LSQA_EXIT_SUCCESS;
+}
 
-    metric_value = 0.0f;
-    metric_status = metrics_get_value(metrics,
-                                      opts->baseline_key,
-                                      &metric_value);
-    if (metric_status < 0) {
-        return -1;
+/* One selected metric keeps the scalar interface. Multiple selections use
+ * named JSON fields in registry order; gate-only metrics stay off stdout. */
+static int
+lsqa_print_selection(const Options *opts, const Metrics *metrics,
+                     double const *video_means)
+{
+    size_t i;
+    float value;
+    double displayed;
+    int status;
+    int emitted;
+    const MetricBinding *binding;
+
+    if (!opts->report_count) {
+        return LSQA_EXIT_SUCCESS;
     }
-    if (metric_status > 0) {
-        return 2;
+    if (opts->report_count == 1) {
+        status = metrics_get_value(metrics, opts->metric_key, &value);
+        if (status < 0) {
+            return LSQA_EXIT_RUNTIME_FAILED;
+        }
+        if (status > 0 || !isfinite(value)) {
+            printf("nan\n");
+        } else {
+            displayed = video_means == NULL ? value
+                : video_means[SIXEL_ASSESSMENT_INDEX(
+                    opts->metric_spec->metric_id)];
+            printf("%.6f\n", displayed);
+        }
+    } else {
+        emitted = 0;
+        printf("{\n");
+        for (i = 0; i < sizeof(g_metric_bindings) /
+                sizeof(g_metric_bindings[0]); ++i) {
+            binding = &g_metric_bindings[i];
+            if ((opts->report_mask & SIXEL_ASSESSMENT_METRIC_MASK(
+                    binding->metric_id)) == 0u) {
+                continue;
+            }
+            status = metrics_get_value(metrics, binding->name, &value);
+            printf("%s  \"%s\": ", emitted ? ",\n" : "", binding->name);
+            if (status != 0 || !isfinite(value)) {
+                printf("null");
+            } else {
+                displayed = video_means == NULL ? value
+                    : video_means[SIXEL_ASSESSMENT_INDEX(binding->metric_id)];
+                printf("%.6f", displayed);
+            }
+            emitted = 1;
+        }
+        printf("\n}\n");
     }
-    *out_value = metric_value;
-    if (lsqa_baseline_is_maximum(opts)
-            ? metric_value > opts->baseline_value
-            : metric_value < opts->baseline_value) {
-        return 1;
-    }
-    return 0;
+    return fflush(stdout) == 0 ? LSQA_EXIT_SUCCESS : LSQA_EXIT_RUNTIME_FAILED;
 }
 
 static int
@@ -2989,9 +3110,6 @@ parse_args(int argc, char **argv, Options *opts)
     const char *ref_arg;
     const char *out_arg;
     char *verbose_env;
-    const char *metrics_arg;
-    const char *baseline_arg;
-    const MetricSpec *metric_spec;
     int argi;
     int parse_status;
     char **scan_argv;
@@ -3015,12 +3133,11 @@ parse_args(int argc, char **argv, Options *opts)
     opts->out_path = "-";
     opts->metric_spec = NULL;
     opts->metric_key = NULL;
-    opts->baseline_spec = NULL;
-    opts->baseline_key = NULL;
-    opts->baseline_value = 0.0f;
+    opts->report_mask = 0u;
+    opts->baseline_mask = 0u;
     opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK_ALL;
-    opts->metrics_filtered = 0;
-    opts->baseline_enabled = 0;
+    opts->report_count = 0;
+    opts->baseline_count = 0;
     opts->verbose = 0;
     opts->grayscale_compare = 0;
     opts->compare_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
@@ -3048,7 +3165,6 @@ parse_args(int argc, char **argv, Options *opts)
     opts->compare_precision_specified = 0;
     opts->loader_order_specified = 0;
     opts->loader_order_buffer[0] = '\0';
-    opts->baseline_name[0] = '\0';
     opts->bgcolor[0] = 0u;
     opts->bgcolor[1] = 0u;
     opts->bgcolor[2] = 0u;
@@ -3344,55 +3460,8 @@ parse_args(int argc, char **argv, Options *opts)
             }
             break;
         case 'b':
-            if (opts->baseline_enabled) {
-                lsqa_set_parse_error(
-                    "lsqa: baseline already specified.");
-                parse_status = -1;
-                goto cleanup;
-            }
-            baseline_arg = optarg;
-            if (lsqa_parse_baseline(baseline_arg, opts) != 0) {
-                parse_status = -1;
-                goto cleanup;
-            }
-            if (opts->metric_spec != NULL &&
-                    opts->metric_spec != opts->baseline_spec) {
-                lsqa_set_parse_error(
-                    "lsqa: baseline metric must match -m.");
-                parse_status = -1;
-                goto cleanup;
-            }
-            break;
         case 'm':
-            metrics_arg = optarg;
-            if (lsqa_parse_metric_spec_choice(metrics_arg,
-                                              &metric_spec,
-                                              detail_buffer,
-                                              sizeof(detail_buffer)) != 0
-                    || metric_spec == NULL) {
-                lsqa_report_invalid_argument('m',
-                                             metrics_arg,
-                                             detail_buffer[0] != '\0'
-                                                 ? detail_buffer
-                                                 : "Unknown metric name.");
-                parse_status = -1;
-                goto cleanup;
-            }
-            if (opts->metric_spec != NULL) {
-                lsqa_set_parse_error(
-                    "lsqa: metric already specified.");
-                parse_status = -1;
-                goto cleanup;
-            }
-            opts->metric_spec = metric_spec;
-            opts->metric_key = metric_spec->json_key;
-            opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK(
-                metric_spec->metric_id);
-            opts->metrics_filtered = 1;
-            if (opts->baseline_spec != NULL &&
-                    opts->baseline_spec != opts->metric_spec) {
-                lsqa_set_parse_error(
-                    "lsqa: baseline metric must match -m.");
+            if (lsqa_parse_selection(optarg, opts, opt == 'b') != 0) {
                 parse_status = -1;
                 goto cleanup;
             }
@@ -3454,6 +3523,11 @@ parse_args(int argc, char **argv, Options *opts)
     if (lsqa_apply_env_overrides(opts) != 0) {
         parse_status = -1;
         goto cleanup;
+    }
+    /* Select just the union needed for output and gates. An unfiltered,
+     * ungated invocation retains the complete default report. */
+    if (opts->report_count || opts->baseline_count) {
+        opts->metric_mask = opts->report_mask | opts->baseline_mask;
     }
     if (lsqa_video_environment(opts) != 0) {
         parse_status = -1;
@@ -3526,7 +3600,6 @@ lsqa_run_video(Options const *opts, sixel_allocator_t *allocator)
     unsigned int valid_mask;
     SIXELSTATUS status;
     Metrics metrics;
-    float baseline;
     int i;
     int result;
 
@@ -3553,7 +3626,7 @@ lsqa_run_video(Options const *opts, sixel_allocator_t *allocator)
         : opts->compare_precision == LSQA_COMPARE_PRECISION_8BIT;
     video.grayscale = opts->grayscale_compare;
     video.region_window = opts->region_window;
-    video.print_summary = !opts->metrics_filtered && !opts->baseline_enabled;
+    video.print_summary = !opts->report_count && !opts->baseline_count;
     status = lsqa_video_run(&video, allocator, means, &valid_mask);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "Video assessment failed: %s (%s)\n",
@@ -3568,20 +3641,17 @@ lsqa_run_video(Options const *opts, sixel_allocator_t *allocator)
                 means[i], 1);
         }
     }
-    if (opts->metrics_filtered) {
-        i = SIXEL_ASSESSMENT_INDEX(opts->metric_spec->metric_id);
-        if ((valid_mask & (1u << i)) == 0) {
-            return LSQA_EXIT_RUNTIME_FAILED;
-        }
-        printf("%.6f\n", means[i]);
-        if (fflush(stdout) != 0) { return LSQA_EXIT_RUNTIME_FAILED; }
+    /* Preserve the ungated scalar video's unavailable-result error.
+     * Gates must instead diagnose unavailable required metrics as exit 5. */
+    if (opts->report_count == 1 && opts->baseline_count == 0
+            && (valid_mask & opts->report_mask) == 0u) {
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
-    result = lsqa_check_baseline(opts, &metrics, &baseline);
-    if (result != 0) {
-        fprintf(stderr, "Video baseline failed: %s\n", opts->baseline_key);
-        return result < 0 ? LSQA_EXIT_RUNTIME_FAILED : LSQA_EXIT_BASELINE_FAILED;
+    result = lsqa_print_selection(opts, &metrics, means);
+    if (result != LSQA_EXIT_SUCCESS) {
+        return result;
     }
-    return LSQA_EXIT_SUCCESS;
+    return lsqa_check_baselines(opts, &metrics);
 }
 
 int
@@ -3597,10 +3667,6 @@ main(int argc, char **argv)
     Metrics metrics;
     JsonCollector collector;
     int exit_code;
-    int metric_status;
-    float metric_value;
-    int baseline_status;
-    float baseline_value;
     char const *parse_message;
     int parse_status;
     int reference_colorspace;
@@ -3614,10 +3680,6 @@ main(int argc, char **argv)
     ref_frame = NULL;
     out_frame = NULL;
     exit_code = LSQA_EXIT_RUNTIME_FAILED;
-    metric_status = 0;
-    metric_value = 0.0f;
-    baseline_status = 0;
-    baseline_value = 0.0f;
     parse_message = NULL;
     parse_status = 0;
     reference_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -3770,7 +3832,7 @@ main(int argc, char **argv)
     metrics_init(&metrics);
     collector.metrics = &metrics;
 
-    if (opts.metrics_filtered || opts.baseline_enabled) {
+    if (opts.report_count || opts.baseline_count) {
         collector.stream = NULL;
         status = sixel_assessment_get_json(assessment,
                                            SIXEL_ASSESSMENT_SECTION_QUALITY,
@@ -3787,56 +3849,12 @@ main(int argc, char **argv)
             return LSQA_EXIT_RUNTIME_FAILED;
         }
 
-        if (opts.metrics_filtered) {
-            metric_status = metrics_get_value(&metrics,
-                                              opts.metric_key,
-                                              &metric_value);
-            if (metric_status < 0) {
-                fprintf(stderr,
-                        "Requested metric not found in output: %s\n",
-                        opts.metric_key);
-                sixel_assessment_unref(assessment);
-                sixel_frame_unref(ref_frame);
-                sixel_frame_unref(out_frame);
-                sixel_allocator_unref(allocator);
-                return LSQA_EXIT_RUNTIME_FAILED;
-            }
-            if (metric_status > 0) {
-                fprintf(stdout, "nan\n");
-            } else {
-                fprintf(stdout, "%.6f\n", metric_value);
-            }
-        }
-
+        exit_code = lsqa_print_selection(&opts, &metrics, NULL);
         if (opts.verbose) {
             verbose_print(&metrics);
         }
-
-        baseline_status = lsqa_check_baseline(&opts,
-                                              &metrics,
-                                              &baseline_value);
-        if (baseline_status != 0) {
-            if (baseline_status < 0) {
-                fprintf(stderr,
-                        "Metric %s is unavailable\n",
-                        opts.baseline_key);
-                exit_code = LSQA_EXIT_RUNTIME_FAILED;
-            } else if (baseline_status == 2) {
-                fprintf(stderr,
-                        "Metric %s is NaN\n",
-                        opts.baseline_key);
-                exit_code = LSQA_EXIT_BASELINE_FAILED;
-            } else {
-                fprintf(stderr,
-                        "%s %.6f is %s baseline %.6f\n",
-                        opts.baseline_key,
-                        baseline_value,
-                        lsqa_baseline_is_maximum(&opts) ? "above" : "below",
-                        opts.baseline_value);
-                exit_code = LSQA_EXIT_BASELINE_FAILED;
-            }
-        } else {
-            exit_code = LSQA_EXIT_SUCCESS;
+        if (exit_code == LSQA_EXIT_SUCCESS) {
+            exit_code = lsqa_check_baselines(&opts, &metrics);
         }
         sixel_assessment_unref(assessment);
         sixel_frame_unref(ref_frame);
@@ -3865,30 +3883,7 @@ main(int argc, char **argv)
         verbose_print(&metrics);
     }
 
-    baseline_status = lsqa_check_baseline(&opts, &metrics, &baseline_value);
-    if (baseline_status != 0) {
-        if (baseline_status < 0) {
-            fprintf(stderr,
-                    "Metric %s is unavailable\n",
-                    opts.baseline_key);
-            exit_code = LSQA_EXIT_RUNTIME_FAILED;
-        } else if (baseline_status == 2) {
-            fprintf(stderr,
-                    "Metric %s is NaN\n",
-                    opts.baseline_key);
-            exit_code = LSQA_EXIT_BASELINE_FAILED;
-        } else {
-            fprintf(stderr,
-                    "%s %.6f is %s baseline %.6f\n",
-                    opts.baseline_key,
-                    baseline_value,
-                    lsqa_baseline_is_maximum(&opts) ? "above" : "below",
-                    opts.baseline_value);
-            exit_code = LSQA_EXIT_BASELINE_FAILED;
-        }
-    } else {
-        exit_code = LSQA_EXIT_SUCCESS;
-    }
+    exit_code = LSQA_EXIT_SUCCESS;
 
     sixel_assessment_unref(assessment);
     sixel_frame_unref(ref_frame);

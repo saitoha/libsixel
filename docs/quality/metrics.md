@@ -6,6 +6,31 @@ This document explains the image-quality metrics that `lsqa` reports: where each
 
 [Visual perception for image quality](visual-perception/README.md) explains the sensory physiology these metrics rest on: perceptual quality, photoreceptors and adaptation, contrast sensitivity, and viewing geometry. [Color difference and color reproduction](color-difference.md) compares color-difference formulas and evaluates color across scales. The [image-quality measurement policy](measurement-policy.md) owns the primary gate, thresholds, fixtures, baselines, and comparison conditions. [Color-aware quality evaluation](color-evaluation.md) owns input interpretation, the XYZ D50 connection space, the comparison-signal options, and regional tiling. This page defines and explains; it does not set acceptance limits.
 
+## Selecting metrics and gates
+
+`-m NAME` selects a metric to print; `-b METRIC:min=VALUE` or `-b METRIC:max=VALUE` adds an inclusive lower or upper acceptance bound. Every condition names its metric, so argument order never associates an unnamed number with a previous `-m`. Both options may repeat and accept comma-separated members. For example, these invocations express the same gate:
+
+```sh
+lsqa -b MS-SSIM:min=0.98 -b "DE00_region_max:max=$color_limit" reference.png output.six
+lsqa -b "MS-SSIM:min=0.98,DE00_region_max:max=$color_limit" reference.png output.six
+```
+
+`color_limit` represents a separately calibrated limit, not a universal color threshold. The [measurement policy](measurement-policy.md#primary-and-secondary-metrics) owns metric choice, calibration and degraded controls. Repeated gates are combined with AND. Failure of any bound, or an unavailable or nonfinite required result, exits with code 5; stderr describes every failed condition. Equality passes. Reporting a metric does not require gating it, and gating a metric does not add it to selected stdout. The evaluator computes the union of requested output and gate metrics from one loaded comparison pair, sharing normalization and intermediate data. Video uses these same selections and gates on its [duration-weighted means](video-evaluation.md#report-and-map-semantics).
+
+One unique `-m` retains the numeric scalar interface (`nan` when unavailable for still images). For compatibility, an ungated scalar video request with an unavailable result exits with code 4 and no stdout. Multiple unique metrics produce a flat JSON object with canonical metric keys, in registry order, and `null` for unavailable results. Only selected fields appear. Repeated aliases select a metric once, including when that leaves just one scalar. `-b` without `-m` is quiet on success. With neither option, lsqa retains the full JSON report with metadata. Use full JSON when reproducing interpretation and comparison settings is necessary.
+
+```sh
+lsqa -m MS-SSIM -m DE00_region_max reference.png output.six
+lsqa -m MS-SSIM,DE00_region_max reference.png output.six
+lsqa -m PSNR_Y -b MS-SSIM:min=0.98 reference.png output.six
+```
+
+Legacy `METRIC:VALUE` remains accepted: S-CIELAB and S-CIELAB_max use upper bounds, and all other metrics use lower bounds, including legacy color-difference names. Prefer explicit directions for new gates. Legacy values retain float32 threshold rounding; explicit bounds retain parsed double precision. The existing metric collection precision is retained: still-image gates collect six-decimal JSON values into float32, and video gates collect temporal means into float32. A displayed value alone may therefore be insufficient to reproduce a decision at a rounding boundary. Names retain their existing aliases and case rules; `-m` also retains its established unique-prefix matching. `SSIM` remains an alias for MS-SSIM, not a single-scale metric. The `min=` and `max=` keywords are lowercase.
+
+At most one lower and one upper bound may be supplied for each canonical metric. Duplicate bounds, including through aliases or mixed legacy/explicit spelling, are usage errors (exit 2). Opposite bounds form an inclusive interval; a lower bound greater than its upper bound is rejected in either order. Numeric values must be finite and parse without range errors or trailing garbage. Empty comma members and unknown directions are rejected. Spaces and tabs around list members are ignored.
+
+`LSQA_METRICS` and `LSQA_BASELINE` accept the respective comma-list grammars. Any explicit `-m` replaces the entire environment metric list, and any explicit `-b` replaces the entire environment gate list; the two families are independent. Ignored environment lists are not parsed. Multiple CLI occurrences accumulate within their family rather than replacing earlier occurrences.
+
 ## Reading the definitions
 
 `lsqa` compares a reference image `x` with a test image `y` over their common top-left rectangle of `W × H` pixels. Two kinds of signal are used:
@@ -396,6 +421,42 @@ This inventory covers reference MS-SSIM, S-CIELAB, and their coexistence with th
 | SC-15 | A target read from standard input has the same score. | [tests/quality_gate/scielab/0007_stdin.t](../../tests/quality_gate/scielab/0007_stdin.t) |
 | SC-16 | Nonfinite PPD is rejected by the CLI. | [tests/quality_gate/scielab/0008_ppd_nonfinite.t](../../tests/quality_gate/scielab/0008_ppd_nonfinite.t) |
 | SC-17 | Default JSON includes both metrics at 60 PPD. | [tests/quality_gate/scielab/0009_json_default.t](../../tests/quality_gate/scielab/0009_json_default.t) |
+
+### Metric selection and gate contracts
+
+These tests assert CLI behavior, including deliberate rejection controls; their bounds do not define encoder quality floors.
+
+| ID | Contract | Test |
+| --- | --- | --- |
+| MG-01 | Output selection and gate metrics are independent. | [tests/quality_gate/ms_ssim/0043_lsqa_independent_output_and_gate.t](../../tests/quality_gate/ms_ssim/0043_lsqa_independent_output_and_gate.t) |
+| MG-02 | Repeated metrics produce named JSON. | [tests/quality_gate/ms_ssim/0047_lsqa_repeated_metric_json.t](../../tests/quality_gate/ms_ssim/0047_lsqa_repeated_metric_json.t) |
+| MG-03 | Metric aliases deduplicate to scalar output. | [tests/quality_gate/gates/0001_metric_list_dedup.t](../../tests/quality_gate/gates/0001_metric_list_dedup.t) |
+| MG-04 | Comma lists emit metrics in registry order. | [tests/quality_gate/gates/0002_metric_list_order.t](../../tests/quality_gate/gates/0002_metric_list_order.t) |
+| MG-05 | Structural and color gates pass quietly. | [tests/quality_gate/gates/0003_structure_color_pass.t](../../tests/quality_gate/gates/0003_structure_color_pass.t) |
+| MG-06 | Color error fails despite passing structure. | [tests/quality_gate/gates/0004_color_failure.t](../../tests/quality_gate/gates/0004_color_failure.t) |
+| MG-07 | Structure fails despite passing color. | [tests/quality_gate/gates/0005_structure_failure.t](../../tests/quality_gate/gates/0005_structure_failure.t) |
+| MG-08 | Every failed bound is diagnosed. | [tests/quality_gate/gates/0006_all_failed_diagnostics.t](../../tests/quality_gate/gates/0006_all_failed_diagnostics.t) |
+| MG-09 | Both inclusive bounds may gate one metric. | [tests/quality_gate/gates/0007_inclusive_interval.t](../../tests/quality_gate/gates/0007_inclusive_interval.t) |
+| MG-10 | Contradictory bounds are rejected. | [tests/quality_gate/gates/0008_contradictory_interval.t](../../tests/quality_gate/gates/0008_contradictory_interval.t) |
+| MG-11 | Contradiction detection is order independent. | [tests/quality_gate/gates/0009_reversed_interval.t](../../tests/quality_gate/gates/0009_reversed_interval.t) |
+| MG-12 | Aliases cannot duplicate a bound. | [tests/quality_gate/gates/0010_duplicate_alias_bound.t](../../tests/quality_gate/gates/0010_duplicate_alias_bound.t) |
+| MG-13 | Legacy color bounds retain minimum semantics. | [tests/quality_gate/gates/0011_legacy_color_direction.t](../../tests/quality_gate/gates/0011_legacy_color_direction.t) |
+| MG-14 | Unavailable required metric fails a combined gate. | [tests/quality_gate/gates/0012_unavailable_required.t](../../tests/quality_gate/gates/0012_unavailable_required.t) |
+| MG-15 | Selected JSON uses null for unavailable metrics. | [tests/quality_gate/gates/0013_json_unavailable.t](../../tests/quality_gate/gates/0013_json_unavailable.t) |
+| MG-16 | Environment lists select and gate multiple metrics. | [tests/quality_gate/gates/0014_environment_lists.t](../../tests/quality_gate/gates/0014_environment_lists.t) |
+| MG-17 | Explicit lists replace malformed environment lists. | [tests/quality_gate/gates/0015_cli_replaces_environment.t](../../tests/quality_gate/gates/0015_cli_replaces_environment.t) |
+| MG-18 | CLI output selection retains environment gates. | [tests/quality_gate/gates/0016_environment_gate_independence.t](../../tests/quality_gate/gates/0016_environment_gate_independence.t) |
+| MG-19 | CLI gates retain environment output selection. | [tests/quality_gate/gates/0017_environment_output_independence.t](../../tests/quality_gate/gates/0017_environment_output_independence.t) |
+| MG-20 | Multiple metrics and gates share one stdin input. | [tests/quality_gate/gates/0018_stdin_shared.t](../../tests/quality_gate/gates/0018_stdin_shared.t) |
+| MG-21 | Video reports named means and checks combined gates. | [tests/quality_gate/gates/0019_video_selection.t](../../tests/quality_gate/gates/0019_video_selection.t) |
+| MG-22 | Video diagnoses all failed mean bounds. | [tests/quality_gate/gates/0020_video_failure.t](../../tests/quality_gate/gates/0020_video_failure.t) |
+| MG-23 | Empty metric member is rejected. | [tests/quality_gate/gates/0021_empty_metric_member.t](../../tests/quality_gate/gates/0021_empty_metric_member.t) |
+| MG-24 | Empty gate member is rejected. | [tests/quality_gate/gates/0022_empty_gate_member.t](../../tests/quality_gate/gates/0022_empty_gate_member.t) |
+| MG-25 | Nonfinite bound is rejected. | [tests/quality_gate/gates/0023_nonfinite_bound.t](../../tests/quality_gate/gates/0023_nonfinite_bound.t) |
+| MG-26 | Overflow bound is rejected. | [tests/quality_gate/gates/0024_overflow_bound.t](../../tests/quality_gate/gates/0024_overflow_bound.t) |
+| MG-27 | Unknown direction is rejected. | [tests/quality_gate/gates/0025_unknown_direction.t](../../tests/quality_gate/gates/0025_unknown_direction.t) |
+| MG-28 | An ungated unavailable scalar video metric retains exit 4 and no stdout. | [tests/quality_gate/gates/0026_video_scalar_unavailable.t](../../tests/quality_gate/gates/0026_video_scalar_unavailable.t) |
+| MG-29 | Legacy limits outside float32 range are rejected before conversion. | [tests/quality_gate/gates/0027_legacy_float_overflow.t](../../tests/quality_gate/gates/0027_legacy_float_overflow.t) |
 
 These are value, state and CLI-contract assertions. They do not establish an encoder quality floor or transfer an old threshold to the new metric.
 
