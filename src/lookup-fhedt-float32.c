@@ -1254,6 +1254,42 @@ sixel_lookup_fhedt_pass_x_worker_float32(sixel_thread_pool_job_t job,
     return SIXEL_OK;
 }
 
+/* Gather adjacent X lines together. A separate strided traversal for each
+ * line repeatedly evicts the same cache lines and page translations at
+ * R=256. Eight independent lines fit in a small workspace; interleaving
+ * only their transfers preserves the scalar EDT and its exact tie order.
+ * The diagnostic path below retains the original per-line event ordering. */
+static void
+sixel_lookup_fhedt_pass_columns_float32(
+    double *grid_distances, int *grid_sources, size_t base, size_t stride,
+    int length, int count, double weight,
+    sixel_lookup_fhedt_edt1d_float32_fn edt1d)
+{
+    double distances[8][256];
+    int sources[8][256];
+    size_t offset;
+    int coord;
+    int lane;
+
+    for (coord = 0; coord < length; ++coord) {
+        offset = base + (size_t)coord * stride;
+        for (lane = 0; lane < count; ++lane) {
+            distances[lane][coord] = grid_distances[offset + (size_t)lane];
+            sources[lane][coord] = grid_sources[offset + (size_t)lane];
+        }
+    }
+    for (lane = 0; lane < count; ++lane) {
+        edt1d(distances[lane], sources[lane], length, weight);
+    }
+    for (coord = 0; coord < length; ++coord) {
+        offset = base + (size_t)coord * stride;
+        for (lane = 0; lane < count; ++lane) {
+            grid_distances[offset + (size_t)lane] = distances[lane][coord];
+            grid_sources[offset + (size_t)lane] = sources[lane][coord];
+        }
+    }
+}
+
 static int
 sixel_lookup_fhedt_pass_y_worker_float32(sixel_thread_pool_job_t job,
                                 void *userdata,
@@ -1272,6 +1308,7 @@ sixel_lookup_fhedt_pass_y_worker_float32(sixel_thread_pool_job_t job,
     int x;
     int y;
     int z;
+    int count;
     size_t offset;
     size_t next_offset;
     char message[32];
@@ -1291,6 +1328,22 @@ sixel_lookup_fhedt_pass_y_worker_float32(sixel_thread_pool_job_t job,
     x_end = x_start + plan->tile_x;
     if (x_end > plan->res) {
         x_end = plan->res;
+    }
+
+    if (!plan->log_lines) {
+        for (z = z_start; z < z_end; ++z) {
+            for (x = x_start; x < x_end; x += 8) {
+                count = x_end - x;
+                if (count > 8) {
+                    count = 8;
+                }
+                offset = (size_t)z * plan->stride_z + (size_t)x;
+                sixel_lookup_fhedt_pass_columns_float32(
+                    plan->distances, plan->sources, offset, plan->stride_y,
+                    plan->res, count, plan->weight, plan->edt1d);
+            }
+        }
+        return SIXEL_OK;
     }
 
     for (z = z_start; z < z_end; ++z) {
@@ -1364,6 +1417,7 @@ sixel_lookup_fhedt_pass_z_worker_float32(sixel_thread_pool_job_t job,
     int x;
     int y;
     int z;
+    int count;
     size_t offset;
     size_t next_offset;
     char message[32];
@@ -1383,6 +1437,22 @@ sixel_lookup_fhedt_pass_z_worker_float32(sixel_thread_pool_job_t job,
     x_end = x_start + plan->tile_x;
     if (x_end > plan->res) {
         x_end = plan->res;
+    }
+
+    if (!plan->log_lines) {
+        for (y = y_start; y < y_end; ++y) {
+            for (x = x_start; x < x_end; x += 8) {
+                count = x_end - x;
+                if (count > 8) {
+                    count = 8;
+                }
+                offset = (size_t)y * plan->stride_y + (size_t)x;
+                sixel_lookup_fhedt_pass_columns_float32(
+                    plan->distances, plan->sources, offset, plan->stride_z,
+                    plan->res, count, plan->weight, plan->edt1d);
+            }
+        }
+        return SIXEL_OK;
     }
 
     for (y = y_start; y < y_end; ++y) {
@@ -1915,12 +1985,15 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
                                                         total
                                                         * sizeof(float));
     }
-    shared->boundary = (unsigned char *)sixel_allocator_malloc(
-        fhedt->allocator,
-        (total + 7U) / 8U);
+    /* Unrefined handles never consult boundary bits. Avoid a full-grid
+     * neighbor scan and allocation when that optional lookup is disabled. */
+    if (refine != 0) {
+        shared->boundary = (unsigned char *)sixel_allocator_malloc(
+            fhedt->allocator, (total + 7U) / 8U);
+    }
     if ((shared->use_u16 && shared->indices16 == NULL)
         || (!shared->use_u16 && shared->indices8 == NULL)
-        || shared->boundary == NULL
+        || (refine != 0 && shared->boundary == NULL)
         || (use_dist2 != 0 && shared->dist2 == NULL)) {
         sixel_lookup_fhedt_shared_destroy_float32(fhedt->allocator, shared);
         sixel_helper_set_additional_message(
@@ -1985,7 +2058,9 @@ sixel_lookup_fhedt_float32_build(sixel_lookup_fhedt_float32_t *fhedt,
                                 tile_xy,
                                 tile_depth);
     sixel_lookup_fhedt_fill_indices_float32(shared, sources);
-    sixel_lookup_fhedt_mark_boundaries_float32(shared, sources);
+    if (refine != 0) {
+        sixel_lookup_fhedt_mark_boundaries_float32(shared, sources);
+    }
     if (shared->dist2 != NULL) {
         for (offset = 0U; offset < total; ++offset) {
             shared->dist2[offset] = (float)distances[offset];
