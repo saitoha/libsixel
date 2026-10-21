@@ -24,19 +24,17 @@ trace_log=$(set +xv; printf '\211PNG\r\n\032\n' | \
     exit 0
 }
 
-after_gd=${trace_log#*LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD*}
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=gd\|code=L_ERR_GD**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "gd failure code was not reported"
     exit 0
 }
 
-after_builtin=${after_gd#*LSXLOAD1|event=try|loader=builtin|code=L_TRY*}
-case "${after_gd}" in *LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin loader was not attempted after gd failure"
     exit 0
 }
 
-case "${after_builtin}" in *LSXLOAD1\|event=fail\|loader=builtin\|code=**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*"LSXLOAD1|event=try|loader=builtin|code=L_TRY"*LSXLOAD1\|event=fail\|loader=builtin\|code=**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin loader failure code was not reported"
     exit 0
 }

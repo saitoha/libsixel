@@ -17,10 +17,11 @@ echo "1..1"
 set -v
 set +x
 
+# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
 command_status=0
-delegated_tail=''
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
@@ -33,19 +34,18 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-delegated_tail="${trace_output#*builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback*}"
 case "${trace_output}" in *builtin\ PSD:\ deferring\ dual-stroke\ ownership\ to\ clipped\ group\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred ownership trace"
     exit 0
 }
 
-case "${delegated_tail}" in *builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ in\ layer\ fallback**) false ;; *) true ;; esac || {
+case "${trace_output}" in *"builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback"*builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite kept base mode-aware dual-stroke after ownership delegation"
     exit 0
 }
 
-case "${delegated_tail}" in *builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
+case "${trace_output}" in *"builtin PSD: deferring dual-stroke ownership to clipped group in layer fallback"*builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite lost deferred mode-aware dual-stroke after ownership delegation"
     exit 0

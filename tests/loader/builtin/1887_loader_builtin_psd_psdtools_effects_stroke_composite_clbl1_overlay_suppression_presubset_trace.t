@@ -17,9 +17,10 @@ echo "1..1"
 set -v
 set +x
 
+# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-suppressed_tail=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -43,14 +44,13 @@ case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gra
     exit 0
 }
 
-suppressed_tail="${trace_output#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
 
-case "${suppressed_tail}" in *builtin\ PSD:\ applying\ solid\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
+case "${trace_output}" in *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ solid\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base solid overlay after suppression"
     exit 0
 }
 
-case "${suppressed_tail}" in *builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
+case "${trace_output}" in *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base gradient overlay after suppression"
     exit 0
 }

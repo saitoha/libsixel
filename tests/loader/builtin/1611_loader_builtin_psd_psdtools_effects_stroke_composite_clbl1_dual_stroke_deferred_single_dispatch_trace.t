@@ -17,9 +17,10 @@ echo "1..1"
 set -v
 set +x
 
+# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-first_match=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -33,24 +34,22 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-first_match="${trace_output#*builtin PSD: applying owned deferred dual-stroke on clipped group*}"
 case "${trace_output}" in *builtin\ PSD:\ applying\ owned\ deferred\ dual-stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing owned deferred dual-stroke apply trace"
     exit 0
 }
-case "${first_match}" in *builtin\ PSD:\ applying\ owned\ deferred\ dual-stroke\ on\ clipped\ group**) false ;; *) true ;; esac || {
+case "${trace_output}" in *"builtin PSD: applying owned deferred dual-stroke on clipped group"*builtin\ PSD:\ applying\ owned\ deferred\ dual-stroke\ on\ clipped\ group**) false ;; *) true ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite duplicated owned deferred dual-stroke apply trace"
     exit 0
 }
 
-first_match="${trace_output#*builtin PSD: applying deferred stroke on clipped group*}"
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ stroke\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred stroke trace"
     exit 0
 }
-case "${first_match}" in *builtin\ PSD:\ applying\ deferred\ stroke\ on\ clipped\ group**) false ;; *) true ;; esac || {
+case "${trace_output}" in *"builtin PSD: applying deferred stroke on clipped group"*builtin\ PSD:\ applying\ deferred\ stroke\ on\ clipped\ group**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite duplicated deferred stroke trace"
     exit 0
 }

@@ -30,19 +30,17 @@ test "${run_status}" -ne 0 || {
     exit 0
 }
 
-after_libjpeg=${trace_log#*LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT*}
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=libjpeg\|code=L_ERR_BAD_INPUT**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "libjpeg failure code was not reported"
     exit 0
 }
 
-after_builtin=${after_libjpeg#*LSXLOAD1|event=try|loader=builtin|code=L_TRY*}
-case "${after_libjpeg}" in *LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin loader was not attempted after libjpeg"
     exit 0
 }
 
-case "${after_builtin}" in *LSXLOAD1\|event=fail\|loader=builtin\|code=**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*"LSXLOAD1|event=try|loader=builtin|code=L_TRY"*LSXLOAD1\|event=fail\|loader=builtin\|code=**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin failure code was not reported after libjpeg"
     exit 0
 }

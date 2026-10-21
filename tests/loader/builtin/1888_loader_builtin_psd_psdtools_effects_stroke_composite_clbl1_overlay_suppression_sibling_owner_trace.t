@@ -17,10 +17,10 @@ echo "1..1"
 set -v
 set +x
 
+# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-sibling_tail=''
-suppressed_tail=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -34,26 +34,24 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-sibling_tail="${trace_output#*builtin PSD: hardening vector-style clipping sibling alpha in layer fallback*}"
 
 case "${trace_output}" in *builtin\ PSD:\ hardening\ vector-style\ clipping\ sibling\ alpha\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing clipping sibling trace marker"
     exit 0
 }
 
-case "${sibling_tail}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
+case "${trace_output}" in *"builtin PSD: hardening vector-style clipping sibling alpha in layer fallback"*builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite missing clbl=1 overlay suppression after sibling marker"
     exit 0
 }
 
-suppressed_tail="${sibling_tail#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
 
-case "${suppressed_tail}" in *builtin\ PSD:\ applying\ solid\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
+case "${trace_output}" in *"builtin PSD: hardening vector-style clipping sibling alpha in layer fallback"*"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ solid\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base solid overlay after sibling suppression"
     exit 0
 }
 
-case "${suppressed_tail}" in *builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
+case "${trace_output}" in *"builtin PSD: hardening vector-style clipping sibling alpha in layer fallback"*"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ gradient\ overlay\ effect\ in\ layer\ fallback**) false ;; *) true ;; esac || {
     echo "not ok" 1 - "effects/stroke-composite unexpectedly applied base gradient overlay after sibling suppression"
     exit 0
 }

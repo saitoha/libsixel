@@ -17,9 +17,10 @@ echo "1..1"
 set -v
 set +x
 
+# Check for a post-commit character without extracting a long trace suffix.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-committed_tail=''
 diag_line=''
 command_status=0
 commit_marker='builtin PSD: compositing deferred offscreen clipped group buffer to canvas'
@@ -37,14 +38,13 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-committed_tail="${trace_output#*"${commit_marker}"}"
 
 { test -n "${commit_marker}" && case "${trace_output}" in *"${commit_marker}"*) true ;; *) false ;; esac; } || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred group commit trace"
     exit 0
 }
 
-test -n "${committed_tail}" || {
+case "${trace_output}" in *"${commit_marker}"?*) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing post-commit trace tail"
     exit 0

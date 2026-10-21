@@ -27,13 +27,12 @@ trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L libjpeg,builtin! \
     "${input_jpeg}" -o /dev/null 2>&1 || true)
 
-after_libjpeg=${trace_log#*LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT*}
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=libjpeg\|code=L_ERR_BAD_INPUT**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "libjpeg failure code was not reported"
     exit 0
 }
 
-case "${after_libjpeg}" in *LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin loader was not attempted after libjpeg"
     exit 0
 }

@@ -169,6 +169,60 @@ def shell_pattern(word):
     return False
 
 
+def redundant_prefix_scans(source):
+    """Reject the syntactically redundant wildcard in ${value#*marker*}.
+
+    Shortest-prefix removal repeatedly tests prefix lengths in some shells.
+    A trailing wildcard is redundant here and usually signals a trace-tail
+    predicate. This narrow check does not ban useful field/path extraction
+    or pretend to infer input lengths and arbitrary shell data flow.
+    """
+    findings = []
+    for offset, raw, logical, tokens in statements(source):
+        for token in tokens:
+            value = token.text
+            assignment = re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*=(.*)',
+                                      value, re.S)
+            if assignment:
+                value = assignment[1]
+            parsed = parameter(value)
+            if not parsed or parsed[1] != '#':
+                continue
+            pattern = parsed[2]
+            if len(pattern) < 3 or not pattern.startswith('*'):
+                continue
+            # Only an unquoted, unescaped final star is a wildcard.
+            quote = ''
+            last_star = -1
+            i = 0
+            while i < len(pattern):
+                c = pattern[i]
+                if c == '\\' and quote != "'":
+                    i += 2
+                    continue
+                if quote:
+                    if c == quote:
+                        quote = ''
+                elif c in "\"'":
+                    quote = c
+                elif c == '*':
+                    last_star = i
+                i += 1
+            if last_star != len(pattern) - 1:
+                continue
+            findings.append({
+                'line': source.count('\n', 0, offset) + 1,
+                'statement': raw.rstrip('\r\n'),
+                'logical': logical,
+                'start': token.start,
+                'end': token.end,
+                'reason': 'avoid ${value#*marker*}; use ordered case patterns '
+                          'for trace order/count checks',
+            })
+            break
+    return findings
+
+
 def predicates(source):
     """Find removal-vs-original tests, including assigned/copy operands.
 
@@ -243,6 +297,10 @@ def predicates(source):
                         'start': token.start,
                         'end': right.end,
                     })
+    # One statement has one approval identity even if both rules detect it.
+    keys = {(f['line'], f['statement']) for f in findings}
+    findings.extend(f for f in redundant_prefix_scans(source)
+                    if (f['line'], f['statement']) not in keys)
     return findings
 
 
@@ -295,8 +353,10 @@ def audit(root):
     rejected = [f for f in findings if
                 (f['path'], f['line'], f['sha256']) not in approved]
     for finding in rejected:
-        print('# {}:{}: use case for pattern matching (sha256 {})'.format(
-            finding['path'], finding['line'], finding['sha256']))
+        print('# {}:{}: {} (sha256 {})'.format(
+            finding['path'], finding['line'],
+            finding.get('reason', 'use case for pattern matching'),
+            finding['sha256']))
     return not rejected
 
 
@@ -324,6 +384,17 @@ def selftest():
         ('[[ "$x" == "*needle*" ]]', 0),
         ('[[ "$x" =~ needle ]]', 1),
         ('case "$x" in *needle*) true ;; *) false ;; esac', 0),
+        ('tail=${trace#*marker*}\ncase "$tail" in *next*) :;; esac', 1),
+        ('tail="${trace#*"${marker}"*}"', 1),
+        ('trace=${trace#*marker*}', 1),
+        ('test "${trace#*marker*}" != "$trace"', 1),
+        ('# tail=${trace#*marker*}', 0),
+        ("printf '%s' '${trace#*marker*}'", 0),
+        ("cat <<'EOF'\ntail=${trace#*marker*}\nEOF\n", 0),
+        ('tail=${trace#*marker\\*}', 0),
+        ('tail=${trace#*"marker*"}', 0),
+        ('tail=${trace#"*marker*"}', 0),
+        ('field=${trace#*key=}', 0),
         ('field=${line##*=}\ntest "$field" = expected', 0),
         ('test "${file##*/}" = fixture.png', 0),
         ('x=${x#needle}\ntest "$x" = "$x"', 0),

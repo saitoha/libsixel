@@ -17,9 +17,10 @@ echo "1..1"
 set -v
 set +x
 
+# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-trace_tail=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -33,20 +34,19 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-trace_tail="${trace_output#*builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group*}"
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ overlap\ decomposition\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing deferred overlap decomposition trace"
     exit 0
 }
 
-case "${trace_tail}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ pseudo-layer\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
+case "${trace_output}" in *"builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group"*builtin\ PSD:\ applying\ deferred\ dual-stroke\ pseudo-layer\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing deferred pseudo-layer overlap trace"
     exit 0
 }
 
-case "${trace_tail}" in *builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
+case "${trace_output}" in *"builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group"*builtin\ PSD:\ applying\ mode-aware\ dual-stroke\ blend\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing deferred mode-aware dual-stroke trace"
     exit 0

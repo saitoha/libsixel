@@ -17,9 +17,10 @@ echo "1..1"
 set -v
 set +x
 
+# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-overlap_tail=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -33,14 +34,13 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-overlap_tail="${trace_output#*builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group*}"
 case "${trace_output}" in *builtin\ PSD:\ applying\ deferred\ dual-stroke\ overlap\ decomposition\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing deferred dual-stroke overlap decomposition trace"
     exit 0
 }
 
-case "${overlap_tail}" in *builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
+case "${trace_output}" in *"builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group"*builtin\ PSD:\ applying\ effect-priority\ dual-stroke\ overlap\ on\ clipped\ group**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing FXPRI overlap trace after deferred overlap decomposition"
     exit 0

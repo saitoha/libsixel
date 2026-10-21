@@ -31,13 +31,12 @@ trace_log=$(set +xv; head -c 32 "${input_tga}" | \
     exit 0
 }
 
-after_gd=${trace_log#*LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD*}
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=gd\|code=L_ERR_GD**) true ;; *) false ;; esac || {
     echo "not ok 1 - gd failure code was not reported"
     exit 0
 }
 
-case "${after_gd}" in *LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*LSXLOAD1\|event=try\|loader=builtin\|code=L_TRY**) true ;; *) false ;; esac || {
     echo "not ok 1 - builtin loader was not attempted after gd failure"
     exit 0
 }

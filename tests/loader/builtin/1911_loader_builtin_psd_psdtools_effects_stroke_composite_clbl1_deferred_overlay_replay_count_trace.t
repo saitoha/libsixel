@@ -21,9 +21,6 @@ input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.
 trace_output=''
 suppression_count=0
 replay_count=0
-suppression_tail=''
-replay_tail=''
-next_tail=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -37,23 +34,19 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-suppression_tail="${trace_output}"
-while :
+# PSD emits one trace event per line. Count those events in a single pass
+# instead of repeatedly searching every prefix of the entire trace.
+while IFS= read -r trace_line
 do
-    next_tail="${suppression_tail#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
-    case "${suppression_tail}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) false ;; *) true ;; esac && break
-    suppression_count=$((suppression_count + 1))
-    suppression_tail="${next_tail}"
-done
-
-replay_tail="${trace_output}"
-while :
-do
-    next_tail="${replay_tail#*builtin PSD: replaying deferred clbl=1 overlay entry in layer fallback*}"
-    case "${replay_tail}" in *builtin\ PSD:\ replaying\ deferred\ clbl=1\ overlay\ entry\ in\ layer\ fallback**) false ;; *) true ;; esac && break
-    replay_count=$((replay_count + 1))
-    replay_tail="${next_tail}"
-done
+    case "$trace_line" in
+        *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*)
+            suppression_count=$((suppression_count + 1)) ;;
+        *"builtin PSD: replaying deferred clbl=1 overlay entry in layer fallback"*)
+            replay_count=$((replay_count + 1)) ;;
+    esac
+done <<EOF
+${trace_output}
+EOF
 
 test "${suppression_count}" -gt 0 || {
     echo "not ok" 1 - "effects/stroke-composite missing clbl=1 suppression trace"

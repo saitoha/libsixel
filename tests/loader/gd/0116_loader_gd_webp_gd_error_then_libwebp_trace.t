@@ -37,19 +37,17 @@ trace_log=$(set +xv; head -c 64 "${input_webp}" | \
     exit 0
 }
 
-after_gd=${trace_log#*LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD*}
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=gd\|code=L_ERR_GD**) true ;; *) false ;; esac || {
     echo "not ok 1 - gd failure code was not reported"
     exit 0
 }
 
-after_libwebp=${after_gd#*LSXLOAD1|event=try|loader=libwebp|code=L_TRY*}
-case "${after_gd}" in *LSXLOAD1\|event=try\|loader=libwebp\|code=L_TRY**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*LSXLOAD1\|event=try\|loader=libwebp\|code=L_TRY**) true ;; *) false ;; esac || {
     echo "not ok 1 - libwebp loader was not attempted after gd failure"
     exit 0
 }
 
-case "${after_libwebp}" in *LSXLOAD1\|event=fail\|loader=libwebp\|code=**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*"LSXLOAD1|event=try|loader=libwebp|code=L_TRY"*LSXLOAD1\|event=fail\|loader=libwebp\|code=**) true ;; *) false ;; esac || {
     echo "not ok 1 - libwebp failure code was not reported"
     exit 0
 }

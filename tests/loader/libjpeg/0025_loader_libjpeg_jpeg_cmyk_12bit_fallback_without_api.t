@@ -35,13 +35,12 @@ test "${run_status}" -eq 0 || {
     exit 0
 }
 
-after_libjpeg=${trace_log#*LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT*}
 case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=libjpeg\|code=L_ERR_BAD_INPUT**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "libjpeg failure code was not reported"
     exit 0
 }
 
-case "${after_libjpeg}" in *LSXLOAD1\|event=ok\|loader=builtin\|code=L_OK**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT"*LSXLOAD1\|event=ok\|loader=builtin\|code=L_OK**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "builtin success code was not reported after libjpeg"
     exit 0
 }

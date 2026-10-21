@@ -17,9 +17,10 @@ echo "1..1"
 set -v
 set +x
 
+# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-deferred_tail=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -39,14 +40,13 @@ case "${trace_output}" in *builtin\ PSD:\ clbl=1\;\ deferring\ interior\ overlay
     exit 0
 }
 
-deferred_tail="${trace_output#*builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback*}"
 case "${trace_output}" in *builtin\ PSD:\ applying\ clip-weighted\ deferred\ gradient\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing deferred gradient overlay apply trace"
     exit 0
 }
 
-case "${deferred_tail}" in *builtin\ PSD:\ compositing\ deferred\ offscreen\ clipped\ group\ buffer\ to\ canvas**) true ;; *) false ;; esac || {
+case "${trace_output}" in *"builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback"*builtin\ PSD:\ compositing\ deferred\ offscreen\ clipped\ group\ buffer\ to\ canvas**) true ;; *) false ;; esac || {
     echo "not ok" 1 - \
         "effects/stroke-composite missing offscreen-group commit after deferred overlays"
     exit 0
