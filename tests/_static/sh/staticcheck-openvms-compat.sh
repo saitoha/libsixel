@@ -2,6 +2,7 @@
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
 # Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12 OV-14 OV-17
+# Coverage: OV-20
 
 # Named tests form the OpenVMS compatibility ledger: each records a specific
 # RMS record, native exit-status, or GNV I/O workaround, not suite coverage.
@@ -32,6 +33,25 @@ require_fixed()
 }
 
 echo "1..1"
+
+# Inspect maintained sources, including TAP, Make and Meson inputs. The
+# scanner joins continued lines and ignores comments, but does not attempt
+# data-flow analysis of dynamically constructed filenames.
+stream_scanner="$src_root/tests/_static/awk/native-stream-paths.awk"
+awk -v selftest=1 -f "$stream_scanner" </dev/null ||
+    fail "native stream path scanner self-test failed"
+find "$src_root/src" "$src_root/include" "$src_root/converters" \
+    "$src_root/assessment" "$src_root/tools" "$src_root/tests" \
+    "$src_root/build-aux" "$src_root/examples" "$src_root/openvms" \
+    -type f \( -name '*.c' -o -name '*.h' -o -name '*.cc' \
+    -o -name '*.cpp' -o -name '*.m' -o -name '*.t' -o -name '*.sh' \
+    -o -name '*.bash' -o -name '*.am' -o -name '*.mk' -o -name '*.in' \
+    -o -name 'meson.build' -o -name 'Makefile' \) \
+    -exec awk -f "$stream_scanner" {} + ||
+    fail "native file paths must not depend on Unix stream aliases"
+awk -f "$stream_scanner" "$src_root/Makefile.am" \
+    "$src_root/meson.build" "$src_root/configure.ac" ||
+    fail "top-level build inputs use a native stream alias"
 
 openvms_detect_line=$(awk '/^sixel_openvms_mode=no$/ { print NR; exit }' \
     "$src_root/configure.ac")

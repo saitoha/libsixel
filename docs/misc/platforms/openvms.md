@@ -157,6 +157,8 @@ RMS also keeps an exclusive writer lock on a converter-owned output file. A test
 
 Output-failure tests use a child path beneath an existing regular fixture to force an open failure. Do not use `.` as an assumed invalid output filename: native OpenVMS path interpretation differs from POSIX directory syntax.
 
+Shell support for `/dev/stderr` does not imply that the native C runtime can reopen that redirected stream by filename. Timeline assertions set `SIXEL_LOG_PATH` to a regular file owned by the converter and read it after process exit. The [OpenVMS staticcheck](../../../tests/_static/sh/staticcheck-openvms-compat.sh) and its [source scanner](../../../tests/_static/awk/native-stream-paths.awk) reject literal `/dev/stdin`, `/dev/stdout`, `/dev/stderr`, `/dev/fd/N`, and `/proc/self/fd/N` paths in native `fopen`, `freopen`, `open`, `open64`, and `sixel_compat_fopen` calls and in `SIXEL_LOG_PATH` settings. Coverage includes C sources and headers, shell scripts, TAP `*.t` files, Make inputs, and Meson inputs; comments and line continuations are handled. Regular filenames, `/dev/null`, and shell descriptor redirection remain valid. This is a literal-source guard, not data-flow analysis of filenames assembled through variables, macros, or helper functions. Its in-memory positive and negative cases verify the detection boundary without compiling or running native programs.
+
 Clock behavior is another platform boundary. Forcing `TZ=UTC0` in CI shifted the time GNV make compared with RMS modification times, producing false future-timestamp and clock-skew warnings. The OpenVMS job leaves `TZ` unset. Tests that require a stable monotonic relationship between platform clock origins are skipped explicitly when that relationship was not demonstrated on GNV.
 
 Signal, pipeline, and background-job semantics were handled test by test. The port did not blanket-skip the suite: it exported `RUNTIME_ENV_IS_OPENVMS`, replaced avoidable assumptions, and retained targeted skips only where the observation itself was not portable.
@@ -220,6 +222,7 @@ Using top-level `make check` would re-enter the expensive library-object walk be
 | OV-17 | Quality-test captures use converter-owned output files instead of GNV shell text records, retaining full SIXEL packets without reducing the image or quality threshold. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 | OV-18 | Flushing the shared timeline releases RMS writer locks so completed sessions are readable in the same process, and later sessions append without truncating earlier records. | [tests/processing/timeline/0006_timeline_encode_frame_session.t](../../../tests/processing/timeline/0006_timeline_encode_frame_session.t) |
 | OV-19 | An output-open failure beneath an existing regular input preserves the previously configured PNG destination and configuration revision. | [tests/processing/progressive/0013_failed_output_preserves_destination.t](../../../tests/processing/progressive/0013_failed_output_preserves_destination.t) |
+| OV-20 | Literal Unix stream aliases do not reach native file-opening APIs or timeline destinations in maintained C, shell, TAP, Make, and Meson sources. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 
 ### Coverage boundary
 

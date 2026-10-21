@@ -9733,6 +9733,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/data/platform-ci-contracts.tsv \
     _static/data/openvms-record-fixtures.tsv \
     _static/sh/staticcheck-openvms-compat.sh \
+    _static/awk/native-stream-paths.awk \
     _static/sh/staticcheck-ci-doc-public-surface.sh \
     _static/sh/staticcheck-binding-loader-setopt-sync.sh \
     _static/sh/staticcheck-binding-constants-sync.sh \
