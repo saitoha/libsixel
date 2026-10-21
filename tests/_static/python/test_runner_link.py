@@ -25,7 +25,11 @@ def check(root):
             (work / name).touch()
         (work / 'verify.py').write_text(
             'import json, pathlib, sys\n'
-            'pathlib.Path(sys.argv[1]).write_text(json.dumps(sys.argv[2:]))\n')
+            'args = []\n'
+            'for arg in sys.argv[2:]:\n'
+            '    args.extend(pathlib.Path(arg[1:]).read_text().splitlines()\n'
+            '                if arg.startswith("@") else [arg])\n'
+            'pathlib.Path(sys.argv[1]).write_text(json.dumps(args))\n')
         makefile = work / 'Makefile'
         makefile.write_text(
             'test_runner_OBJECTS = ' + ' '.join(objects) + '\n'
@@ -62,6 +66,20 @@ def check(root):
         if stamps != (inventory.stat().st_mtime_ns, target.stat().st_mtime_ns):
             raise RuntimeError('an up-to-date runner rewrote or relinked files')
 
+        # The configured fast path must give the compiler one response-file
+        # argument before libraries, while preserving the exact inventory.
+        target.unlink()
+        dry = run('-n', 'SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=yes')
+        if '@test_runner.objects' not in dry or 'objects=$(cat' in dry:
+            raise RuntimeError('the fast path expanded objects in the shell')
+        run('SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=yes')
+        if json.loads(target.read_text()) != expected:
+            raise RuntimeError('response-file linking changed argument order')
+        stamps = inventory.stat().st_mtime_ns, target.stat().st_mtime_ns
+        run('SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=yes')
+        if stamps != (inventory.stat().st_mtime_ns, target.stat().st_mtime_ns):
+            raise RuntimeError('response-file linking was not incremental')
+
         # Updating the configured inventory must refresh the response file.
         makefile.write_text(makefile.read_text().replace(
             ' '.join(objects), ' '.join(objects[1:])))
@@ -71,15 +89,18 @@ def check(root):
         if inventory.read_text().splitlines() != objects[1:]:
             raise RuntimeError('the list stayed stale after a Makefile change')
 
-        # A failed read must not invoke the linker with an empty object list.
+        # Neither path may publish a target from an unreadable inventory.
         inventory.unlink()
         inventory.mkdir()
         target.unlink()
-        result = subprocess.run(
-            [make, '--no-print-directory', 'test_runner'], cwd=work,
-            text=True, capture_output=True)
-        if result.returncode == 0 or target.exists():
-            raise RuntimeError('an unreadable inventory did not stop linking')
+        for mode in ('no', 'yes'):
+            result = subprocess.run(
+                [make, '--no-print-directory',
+                 'SIXEL_TEST_RUNNER_USE_RESPONSE_FILE=' + mode, 'test_runner'],
+                cwd=work, text=True, capture_output=True)
+            if result.returncode == 0 or target.exists():
+                raise RuntimeError('an unreadable inventory did not stop linking')
+
 
 
 try:

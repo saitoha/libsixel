@@ -7868,7 +7868,7 @@ test_runner_LDADD = libfloatlookuptests.la $(TESTS_COMMON_LDADD_VAL) \
         @THREAD_LIBS@
 endif
 # Both branches feed the shared target below. Keep the native OpenVMS
-# command while ordinary Libtool builds read their object list in the shell.
+# command while ordinary Libtool builds use the configured object-list path.
 if OPENVMS_GNV
 test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 SIXEL_TEST_RUNNER_OBJECT_LIST = $(strip)
@@ -7879,6 +7879,7 @@ test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
 	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
 endif
+SIXEL_TEST_RUNNER_USE_RESPONSE_FILE = @SIXEL_TEST_RUNNER_USE_RESPONSE_FILE@
 include $(top_srcdir)/build-aux/test-runner-link.am
 
 LOG_DRIVER = $(T_LOG_DRIVER)

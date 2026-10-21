@@ -14,13 +14,18 @@ test_runner.objects: Makefile
 	$(call sixel_write_test_runner_objects,$(test_runner_OBJECTS))
 	@mv -f $@.tmp $@
 
-# Expand the file inside the already-running shell, preserving object order
-# before libraries. Libtool receives ordinary individual .o/.obj arguments:
-# its -objectlist option requires .lo descriptors, and compiler @file support
-# is not universal. Disable globbing when splitting make's whitespace list.
+# A successful configure link probe permits passing the object inventory
+# straight to the compiler. Libtool forwards @file unchanged, avoiding its
+# repeated argument/string processing for thousands of ordinary objects.
+# Libraries remain visible to Libtool, preserving wrapper and runtime paths.
+# Compilers without this grammar retain the shell-expanded argv fallback;
+# -objectlist cannot replace it because that Libtool option requires .lo.
 SIXEL_TEST_RUNNER_OBJECT_LIST ?= test_runner.objects
-SIXEL_TEST_RUNNER_LINK_COMMAND ?= set -f; objects=$$(cat test_runner.objects) && \
-    $(test_runner_LINK) $$objects $(test_runner_LDADD) $(LIBS)
+SIXEL_TEST_RUNNER_LINK_COMMAND ?= $(if \
+    $(filter yes,$(SIXEL_TEST_RUNNER_USE_RESPONSE_FILE)),\
+    $(test_runner_LINK) @test_runner.objects $(test_runner_LDADD) $(LIBS),\
+    set -f; objects=$$(cat test_runner.objects) && \
+    $(test_runner_LINK) $$objects $(test_runner_LDADD) $(LIBS))
 
 # OpenVMS supplies its native command and an empty list prerequisite. Keep
 # one unconditional target so Automake does not emit a second link recipe.

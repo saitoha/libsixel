@@ -836,6 +836,33 @@ AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
 LT_INIT
 
+# Passing thousands of ordinary objects through Libtool's shell argument
+# processing is expensive. Probe the compiler's response-file grammar by
+# linking a referenced object; accepting an unused option is not sufficient.
+# This is link-only so it also works while cross compiling. OpenVMS keeps
+# its native linker option-file implementation instead.
+AC_CACHE_CHECK([whether the C compiler links objects from a response file],
+  [sixel_cv_cc_object_response], [
+  sixel_cv_cc_object_response=no
+  AS_IF([test "x$sixel_openvms_mode" != xyes], [
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+int sixel_response_probe(void) { return 0; }
+]])], [
+      mv conftest.$ac_objext conftest-response.$ac_objext
+      printf '%s\n' "conftest-response.$ac_objext" > conftest-response.objects
+      sixel_response_save_LIBS=$LIBS
+      LIBS="@conftest-response.objects $LIBS"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+extern int sixel_response_probe(void);
+]], [[return sixel_response_probe();]])], [sixel_cv_cc_object_response=yes])
+      LIBS=$sixel_response_save_LIBS
+      rm -f conftest-response.$ac_objext conftest-response.objects
+    ])
+  ])
+])
+AC_SUBST([SIXEL_TEST_RUNNER_USE_RESPONSE_FILE], [$sixel_cv_cc_object_response])
+AM_SUBST_NOTMAKE([SIXEL_TEST_RUNNER_USE_RESPONSE_FILE])
+
 # Expose libtool runtime metadata to test environments so shell tests can
 # execute the real binaries directly without probing stale build artifacts.
 AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
