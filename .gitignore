@@ -114,3 +114,6 @@ images/component/
 # optional HTML documentation build
 .docs-build/
 site/
+
+# Transient staticcheck workspaces, including child-tool temporary files.
+.staticcheck-tmp/

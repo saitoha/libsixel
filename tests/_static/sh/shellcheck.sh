@@ -33,10 +33,8 @@ fi
 
 tmpfile=$(mktemp "${TMPDIR:-/tmp}/libsixel-shellcheck-files-XXXXXX")
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-shellcheck-run-XXXXXX")
-worker_pid=
 # shellcheck disable=SC2329
 cleanup() {
-    test -z "$worker_pid" || wait "$worker_pid" || :
     rm -f "$tmpfile"
     rm -rf "$tmpdir"
 }
@@ -65,10 +63,8 @@ elif test "$cache_hits" -eq "$total"; then
 else
     queue_file="$tmpdir/queue.bin"
     test -z "$SHELLCHECK_CACHE_ROOT" || mkdir -p "$SHELLCHECK_CACHE_ROOT"
-    result_fifo="$tmpdir/result.fifo"
     failed_list="$tmpdir/failed.list"
     tab_char=$(printf '\t')
-    mkfifo "$result_fifo"
     : > "$failed_list"
 
     done_count=$cache_hits
@@ -84,60 +80,70 @@ else
     # and shared source parsing without exceeding command-line/memory limits.
     # A failing batch retains all diagnostics, including filenames; every
     # nonzero tool status remains a failure, even without diagnostic output.
-    sh "$script_dir/run-check-batches.sh" 64 "$queue_file" \
-        sh "$script_dir/run-shellcheck-batch.sh" > "$result_fifo" &
-    worker_pid=$!
-    unset SHELLCHECK_CMD_INNER REPO_ROOT_INNER SHELLCHECK_LOG_DIR
+    # Foreground pipelines retain terminal signals. An explicit final record
+    # carries the producer status without a FIFO, background PID or pipefail.
+    collect_results() {
+        scheduler_status=missing
+        while IFS="$tab_char" read -r result item_id item_count; do
+            test -n "$result" || continue
+            if test "$result" = STATUS; then
+                scheduler_status=$item_id
+                continue
+            fi
+            done_count=$((done_count + item_count))
+            case "$result" in
+                OK)
+                    ok_count=$((ok_count + item_count))
+                    ;;
+                NG)
+                    failed_count=$((failed_count + 1))
+                    printf '%s\n' "$item_id" >> "$failed_list"
+                    ;;
+            esac
+            percent=$((done_count * 100 / total))
+            if test "$progress_is_tty" -eq 1; then
+                printf '\r[shellcheck] %3d%% (%d/%d) clean_files=%d failed_batches=%d' \
+                    "$percent" "$done_count" "$total" "$ok_count" "$failed_count"
+            fi
+        done
 
-    while IFS="$tab_char" read -r result item_id item_count; do
-        test -n "$result" || continue
-        done_count=$((done_count + item_count))
-        case "$result" in
-            OK)
-                ok_count=$((ok_count + item_count))
+        if test "$progress_is_tty" -eq 1; then
+            printf '\n'
+        fi
+
+        case "$scheduler_status" in
+            0|123)
                 ;;
-            NG)
-                failed_count=$((failed_count + 1))
-                printf '%s\n' "$item_id" >> "$failed_list"
+            *)
+                echo "ERROR: batch scheduler failed while running shellcheck (status=$scheduler_status)"
+                failed=1
                 ;;
         esac
-        percent=$((done_count * 100 / total))
-        if test "$progress_is_tty" -eq 1; then
-            printf '\r[shellcheck] %3d%% (%d/%d) clean_files=%d failed_batches=%d' \
-                "$percent" "$done_count" "$total" "$ok_count" "$failed_count"
-        fi
-    done < "$result_fifo"
 
-    wait "$worker_pid" || scheduler_status=$?
-    worker_pid=
-    if test "$progress_is_tty" -eq 1; then
-        printf '\n'
-    fi
-
-    case "$scheduler_status" in
-        0|123)
-            ;;
-        *)
-            echo "ERROR: batch scheduler failed while running shellcheck (status=$scheduler_status)"
+        test "$done_count" -eq "$total" || {
+            echo "ERROR: shellcheck checked $done_count of $total files"
             failed=1
-            ;;
-    esac
+        }
+        printf '[shellcheck] summary: checked=%d cached=%d total=%d failed_batches=%d\n' \
+            "$((done_count - cache_hits))" "$cache_hits" "$total" "$failed_count"
 
-    test "$done_count" -eq "$total" || {
-        echo "ERROR: shellcheck checked $done_count of $total files"
-        failed=1
+        if test -s "$failed_list"; then
+            while IFS= read -r item_id; do
+                test -n "$item_id" || continue
+                echo "shellcheck failure in batch $item_id:"
+                cat "$tmpdir/$item_id.log"
+            done < "$failed_list"
+            failed=1
+        fi
+        test "$failed" -eq 0
     }
-    printf '[shellcheck] summary: checked=%d cached=%d total=%d failed_batches=%d\n' \
-        "$((done_count - cache_hits))" "$cache_hits" "$total" "$failed_count"
-
-    if test -s "$failed_list"; then
-        while IFS= read -r item_id; do
-            test -n "$item_id" || continue
-            echo "shellcheck failure in batch $item_id:"
-            cat "$tmpdir/$item_id.log"
-        done < "$failed_list"
-        failed=1
-    fi
+    {
+        scheduler_status=0
+        sh "$script_dir/run-check-batches.sh" 64 "$queue_file" \
+            sh "$script_dir/run-shellcheck-batch.sh" || scheduler_status=$?
+        printf 'STATUS\t%s\t0\n' "$scheduler_status"
+    } | collect_results || failed=1
+    unset SHELLCHECK_CMD_INNER REPO_ROOT_INNER SHELLCHECK_LOG_DIR
 fi
 
 echo "Checking shell test policy rules"

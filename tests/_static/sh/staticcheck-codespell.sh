@@ -58,7 +58,8 @@ fi
 
 tmpfile=$(mktemp "${TMPDIR:-/tmp}/libsixel-codespell-files-XXXXXX")
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-codespell-run-XXXXXX")
-trap 'rm -f "$tmpfile"; rm -rf "$tmpdir"' EXIT HUP INT TERM
+trap 'rm -f "$tmpfile"; rm -rf "$tmpdir"' EXIT
+trap 'exit 1' HUP INT TERM
 
 cd "$src_root"
 
@@ -85,7 +86,6 @@ if test "$total" -eq 0; then
 fi
 
 queue_file="$tmpdir/queue.bin"
-result_fifo="$tmpdir/result.fifo"
 failed_list="$tmpdir/failed.list"
 tab_char=$(printf '\t')
 while IFS= read -r file_path; do
@@ -93,7 +93,6 @@ while IFS= read -r file_path; do
     printf '%s\0' "$file_path"
 done < "$tmpfile" > "$queue_file"
 
-mkfifo "$result_fifo"
 : > "$failed_list"
 
 done_count=0
@@ -103,70 +102,78 @@ scheduler_status=0
 
 export CODESPELL_BIN="$codespell_bin"
 export CODESPELL_LOG_DIR="$tmpdir"
-# shellcheck disable=SC2016
-# Amortize Python startup and dictionary loading across bounded batches.
-sh "$src_root/tests/_static/sh/run-check-batches.sh" 64 "$queue_file" sh -c '
-    item_id=$$
-    log_path="${CODESPELL_LOG_DIR}/${item_id}.log"
-    # "doub"/"alis" are PSD descriptor types; "Alph" is a PSB section key.
-    if "$CODESPELL_BIN" -L "ser,sie,doub,alis,alph" "$@" >"$log_path" 2>&1; then
-        printf "OK\t%s\t%s\n" "$item_id" "$#"
-    else
-        printf "NG\t%s\t%s\n" "$item_id" "$#"
-    fi
-' sh > "$result_fifo" &
-worker_pid=$!
-unset CODESPELL_BIN CODESPELL_LOG_DIR
+# Stream results in the foreground so Ctrl+C reaches both pipeline stages.
+collect_results() {
+    scheduler_status=missing
+    while IFS="$tab_char" read -r result id item_count; do
+        test -n "$result" || continue
+        if test "$result" = STATUS; then
+            scheduler_status=$id
+            continue
+        fi
+        done_count=$((done_count + item_count))
+        case "$result" in
+            OK)
+                ok_count=$((ok_count + item_count))
+                ;;
+            NG)
+                failed_count=$((failed_count + 1))
+                printf '%s\n' "$id" >> "$failed_list"
+                ;;
+        esac
+        percent=$((done_count * 100 / total))
+        if test "$progress_is_tty" -eq 1; then
+            printf '\r[codespell] %3d%% (%d/%d) clean_files=%d failed_batches=%d' \
+                "$percent" "$done_count" "$total" "$ok_count" "$failed_count"
+        fi
+    done
 
-while IFS="$tab_char" read -r result id item_count; do
-    test -n "$result" || continue
-    done_count=$((done_count + item_count))
-    case "$result" in
-        OK)
-            ok_count=$((ok_count + item_count))
+    if test "$progress_is_tty" -eq 1; then
+        printf '\n'
+    fi
+
+    case "$scheduler_status" in
+        0|123)
             ;;
-        NG)
+        *)
+            emit_note "codespell: batch scheduler failed with status $scheduler_status"
             failed_count=$((failed_count + 1))
-            printf '%s\n' "$id" >> "$failed_list"
             ;;
     esac
-    percent=$((done_count * 100 / total))
-    if test "$progress_is_tty" -eq 1; then
-        printf '\r[codespell] %3d%% (%d/%d) clean_files=%d failed_batches=%d' \
-            "$percent" "$done_count" "$total" "$ok_count" "$failed_count"
+
+    if test -s "$failed_list"; then
+        while IFS= read -r id; do
+            test -n "$id" || continue
+            emit_note "codespell failure in batch $id:"
+            cat "$tmpdir/$id.log"
+        done < "$failed_list"
     fi
-done < "$result_fifo"
 
-wait "$worker_pid" || scheduler_status=$?
-if test "$progress_is_tty" -eq 1; then
-    printf '\n'
-fi
-
-case "$scheduler_status" in
-    0|123)
-        ;;
-    *)
-        emit_note "codespell: batch scheduler failed with status $scheduler_status"
+    test "$done_count" -eq "$total" || {
+        emit_note "codespell: checked $done_count of $total files"
         failed_count=$((failed_count + 1))
-        ;;
-esac
+    }
+    if test "$failed_count" -eq 0; then
+        emit_pass
+        exit 0
+    fi
 
-if test -s "$failed_list"; then
-    while IFS= read -r id; do
-        test -n "$id" || continue
-        emit_note "codespell failure in batch $id:"
-        cat "$tmpdir/$id.log"
-    done < "$failed_list"
-fi
-
-test "$done_count" -eq "$total" || {
-    emit_note "codespell: checked $done_count of $total files"
-    failed_count=$((failed_count + 1))
+    emit_fail
+    exit 1
 }
-if test "$failed_count" -eq 0; then
-    emit_pass
-    exit 0
-fi
+{
+    # shellcheck disable=SC2016
+    # Amortize Python startup and dictionary loading across bounded batches.
+    sh "$src_root/tests/_static/sh/run-check-batches.sh" 64 "$queue_file" sh -c '
+        item_id=$$
+        log_path="${CODESPELL_LOG_DIR}/${item_id}.log"
+        # "doub"/"alis" are PSD descriptor types; "Alph" is a PSB section key.
+        if "$CODESPELL_BIN" -L "ser,sie,doub,alis,alph" "$@" >"$log_path" 2>&1; then
+            printf "OK\t%s\t%s\n" "$item_id" "$#"
+        else
+            printf "NG\t%s\t%s\n" "$item_id" "$#"
+        fi
+    ' sh || scheduler_status=$?
+    printf 'STATUS\t%s\t0\n' "$scheduler_status"
 
-emit_fail
-exit 1
+} | collect_results

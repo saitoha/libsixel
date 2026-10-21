@@ -49,11 +49,9 @@ if test -z "${SIXEL_STATICCHECK_MAKE:-}"; then
 fi
 
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-check-batches-XXXXXX")
-scheduler_pid=
 # shellcheck disable=SC2329
 cleanup() {
-    # A signal may interrupt wait while children still need the batch files.
-    test -z "$scheduler_pid" || wait "$scheduler_pid" || :
+    # Foreground Make reaps its recipes before the shell runs this trap.
     rm -rf "$tmpdir"
 }
 trap cleanup EXIT
@@ -96,8 +94,5 @@ xargs -0 -n "$batch_size" sh -c '
 
 status=0
 "$SIXEL_STATICCHECK_MAKE" --no-print-directory -s -k \
-    -f "$tmpdir/Makefile" all &
-scheduler_pid=$!
-wait "$scheduler_pid" || status=$?
-scheduler_pid=
+    -f "$tmpdir/Makefile" all || status=$?
 exit "$status"

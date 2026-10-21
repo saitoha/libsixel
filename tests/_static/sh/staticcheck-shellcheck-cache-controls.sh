@@ -31,6 +31,11 @@ if test "${1:-}" = --version; then echo 'cache control 1'; exit 0; fi
 test "$1" = -x && test "$2" = -P
 shift 3
 test "$#" -gt 0 && test "$#" -le 64
+# A foreground lint pipeline must not inherit SIGINT ignored.
+interrupted=no
+trap 'interrupted=yes' INT
+kill -INT $$
+test "$interrupted" = yes || exit 9
 printf '%s\n' "$@" >> "$CONTROL_REPORT"
 for path do
     while IFS= read -r line; do

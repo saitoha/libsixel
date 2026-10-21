@@ -24,13 +24,17 @@ test -n "$build_root" || build_root="$src_root"
 tmpdir=${9:-}
 worker_index=${10:-}
 if test -z "$tmpdir"; then
-    tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-staticcheck-suite-XXXXXX")
-    suite_pid=
+    # Keep every child tool's scratch files inside the source tree. A sibling
+    # of tests/ avoids races with recursive source scans while jobs clean up.
+    mkdir -p "$src_root/.staticcheck-tmp"
+    tmpdir=$(mktemp -d "$src_root/.staticcheck-tmp/suite-XXXXXX")
+    TMPDIR=$tmpdir
+    TMP=$tmpdir
+    TEMP=$tmpdir
+    export TMPDIR TMP TEMP
     # shellcheck disable=SC2329
     cleanup_suite() {
-        # A signal can interrupt wait. Keep worker files until the scheduler
-        # has finished, so surviving children never write into a removed tree.
-        test -z "$suite_pid" || wait "$suite_pid" || :
+        # The foreground scheduler reaps workers before this trap runs.
         rm -rf "$tmpdir"
     }
     trap cleanup_suite EXIT
@@ -45,6 +49,7 @@ export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 # Source-only TAP contracts retain ordinary test-harness coverage. Discover
 # their stable roles once; the registrations below require exactly one owner.
 if test -z "$worker_index"; then
+    printf '[staticcheck] preparing checks\n' >&2
     sh "$src_root/tests/_static/sh/collect-source-references.sh" \
         "$src_root" "$tmpdir"
     SIXEL_STATICCHECK_REFERENCE_DIR=$tmpdir
@@ -803,27 +808,33 @@ export STATICCHECK_TOTAL STATICCHECK_OUTPUT_DIR
 # Completion order never changes the canonical reporting order below.
 awk '
     $2 == "staticcheck-shellcheck" || $2 == "staticcheck-codespell" {
-        printf "%d%c", $1, 0
+        printf "%d%c%s%c", $1, 0, $2, 0
         next
     }
-    { pending[++count]=$1 }
-    END { for (i=1; i<=count; i++) printf "%d%c", pending[i], 0 }
+    { pending[++count]=$0 }
+    END { for (i=1; i<=count; i++) {
+        split(pending[i], fields)
+        printf "%d%c%s%c", fields[1], 0, fields[2], 0
+    } }
 ' "$tmpdir/registrations" > "$tmpdir/queue"
 scheduler_status=0
 # shellcheck disable=SC2016
-sh "$src_root/tests/_static/sh/run-check-batches.sh" 1 "$tmpdir/queue" sh -c '
-    for item_index do :; done
+sh "$src_root/tests/_static/sh/run-check-batches.sh" 2 "$tmpdir/queue" sh -c '
+    item_name=
+    for argument do item_index=$item_name; item_name=$argument; done
     item_log="$STATICCHECK_OUTPUT_DIR/$item_index.worker.log"
     item_status=0
+    # Progress bypasses captured diagnostics without borrowing a descriptor
+    # that may belong to the Make jobserver. Each event is one short write.
+    printf "[staticcheck] START %s\n" "$item_name" >&2
     sh "$@" > "$item_log" 2>&1 || item_status=$?
+    case "$item_status" in 0) verdict=PASS ;; 77) verdict=SKIP ;; *) verdict=FAIL ;; esac
+    printf "[staticcheck] %s %s\n" "$verdict" "$item_name" >&2
     printf "%s\n" "$item_status" > "$STATICCHECK_OUTPUT_DIR/$item_index.status"
 ' sh "$0" "$src_root" "$build_root" "$actionlint_bin" \
     "$shellcheck_driver" "$shellcheck_bin" "$codespell_bin" \
     "$python_bin" "$have_tree_sitter_c" "$tmpdir" \
-    &
-suite_pid=$!
-wait "$suite_pid" || scheduler_status=$?
-suite_pid=
+    || scheduler_status=$?
 
 index=0
 while test "$index" -lt "$total"; do

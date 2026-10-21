@@ -27,7 +27,17 @@ lines'
 run_case_skip "staticcheck-control-absent" 'tool unavailable'
 run_case_tap "staticcheck-control-bad-tap" sh -c 'printf "1..1\n"'
 run_case_plain "staticcheck-control-child-failure" sh -c 'echo sentinel >&2; exit 9'
-run_case_tap "staticcheck-control-last" sh -c 'printf "1..1\nok 1\n"'
+run_case_tap "staticcheck-control-last" sh -c '
+    case "$TMPDIR" in "$CONTROL_ROOT/root/.staticcheck-tmp/"*) ;; *) exit 9 ;; esac
+    # The start event must already be visible while this check is running.
+    awk '\''$0 == "[staticcheck] START staticcheck-control-last" { found=1 }
+        END { exit !found }'\'' "$CONTROL_ROOT/progress.log" || exit 9
+    # A background shell inherits SIGINT ignored and cannot restore it.
+    # Self-signalling tests that contract without interrupting the test runner.
+    trap '\''printf "1..1\nok 1\n"; exit 0'\'' INT
+    kill -INT $$
+    exit 9
+'
 CASES
 awk '/^# Dispatch all registered cases/ { copy = 1 } copy' \
     "$src_root/tests/_static/sh/staticcheck-suite.sh" >> "$tmpdir/suite.sh"
@@ -40,11 +50,13 @@ STATICCHECK_JOBS=99
 export CONTROL_ROOT STATICCHECK_JOBS
 cat > "$tmpdir/Makefile" <<'MAKEFILE'
 all:
-	+@SIXEL_STATICCHECK_MAKE='$(MAKE)' sh "$$CONTROL_ROOT/suite.sh" "$$CONTROL_ROOT/root" > "$$CONTROL_ROOT/result.log" 2>&1
+	+@SIXEL_STATICCHECK_MAKE='$(MAKE)' sh "$$CONTROL_ROOT/suite.sh" "$$CONTROL_ROOT/root" > "$$CONTROL_ROOT/result.log" 2> "$$CONTROL_ROOT/progress.log"
 MAKEFILE
-for jobs in 1 3; do
+for jobs in default 1 3; do
     status=0
-    MAKEFLAGS='' MFLAGS='' MAKELEVEL=0 make --no-print-directory -s -j "$jobs" \
+    set --
+    test "$jobs" = default || set -- -j "$jobs"
+    MAKEFLAGS='' MFLAGS='' MAKELEVEL=0 make --no-print-directory -s "$@" \
         -f "$tmpdir/Makefile" > "$tmpdir/make.log" 2>&1 || status=$?
     test "$status" -ne 0 || {
         echo 'not ok 1 - failed cases must fail the parallel suite'
@@ -61,6 +73,11 @@ for jobs in 1 3; do
             exit 0
             ;;
     esac
+    set -- "$tmpdir/root/.staticcheck-tmp/"*
+    test ! -e "$1" || {
+        echo 'not ok 1 - completed suites must remove their local workspace'
+        exit 0
+    }
 done
 cmp -s "$tmpdir/1.log" "$tmpdir/3.log" || {
     echo 'not ok 1 - worker logs must retain serial registration order'
@@ -70,7 +87,7 @@ cmp -s "$tmpdir/1.log" "$tmpdir/3.log" || {
 # A direct invocation has no Make-owned slots and must still check every case.
 status=0
 SIXEL_STATICCHECK_MAKE='' sh "$tmpdir/suite.sh" "$tmpdir/root" \
-    > "$tmpdir/direct.log" 2>&1 || status=$?
+    > "$tmpdir/direct.log" 2> "$tmpdir/progress.log" || status=$?
 # Both the failed status and identical output are required.
 # shellcheck disable=SC2015
 test "$status" -ne 0 && cmp -s "$tmpdir/1.log" "$tmpdir/direct.log" || {
@@ -97,6 +114,11 @@ esac
 printf 'one\000two\000three\000four\000' > "$tmpdir/queue"
 cat > "$tmpdir/leaf.sh" <<'LEAF'
 #!/bin/sh
+# Successful signal handling is required before this worker records any work.
+interrupted=no
+trap 'interrupted=yes' INT
+kill -INT $$
+test "$interrupted" = yes || exit 9
 printf 'start\n' >> "$CONTROL_ROOT/events"
 sleep 0.1
 printf 'end\n' >> "$CONTROL_ROOT/events"
@@ -148,6 +170,23 @@ MAKEFLAGS='' MFLAGS='' MAKELEVEL=0 make --no-print-directory -sn -j3 \
 }
 test ! -s "$tmpdir/events" || {
     echo 'not ok 1 - recursive dry run executed checks'
+    exit 0
+}
+# Exercise the real codespell pipeline with a tool that requires SIGINT.
+mkdir -p "$tmpdir/root/src"
+printf 'int example;\n' > "$tmpdir/root/src/example.c"
+cat > "$tmpdir/codespell" <<'TOOL'
+#!/bin/sh
+interrupted=no
+trap 'interrupted=yes' INT
+kill -INT $$
+test "$interrupted" = yes
+TOOL
+chmod +x "$tmpdir/codespell"
+SIXEL_STATICCHECK_MAKE='' sh "$src_root/tests/_static/sh/staticcheck-codespell.sh" \
+    "$tmpdir/root" "$tmpdir/codespell" > "$tmpdir/codespell.log" 2>&1 || {
+    echo 'not ok 1 - codespell workers must retain SIGINT handling'
+    cat "$tmpdir/codespell.log"
     exit 0
 }
 echo 'ok 1 - staticcheck shares Make slots and preserves complete verdicts'
