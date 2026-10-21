@@ -19,6 +19,8 @@ high_map="${ARTIFACT_LOCAL_DIR}/high-weight.ppm"
 low_palette="${ARTIFACT_LOCAL_DIR}/low-weight.pal"
 high_palette="${ARTIFACT_LOCAL_DIR}/high-weight.pal"
 
+# Pixel generation is deterministic; trace the conversions, not each pixel.
+set +x
 # Both maps contain the same 17x17 set of 289 colors.  Only the 1,000 extra
 # pixels differ: one map weights RGB 60/60/0, the other RGB 180/180/0.
 {
@@ -55,6 +57,7 @@ high_palette="${ARTIFACT_LOCAL_DIR}/high-weight.pal"
         i=$((i + 1))
     done
 } >"${high_map}"
+set -x
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threads=1 \
     --gpu-policy=off -Wgamma -Ugamma -m "${low_map}" \

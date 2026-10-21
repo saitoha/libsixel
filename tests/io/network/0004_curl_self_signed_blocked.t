@@ -56,9 +56,12 @@ server_root="${TOP_SRCDIR}"
 server_pid=$!
 
 server_port=""
+# Keep readiness inside the timer without tracing each polling iteration.
+set +x
 while test ! -s "${port_file}"; do
     kill -0 "${server_pid}" 2>/dev/null || break
 done
+set -x
 test -s "${port_file}" && {
     IFS= read -r server_port < "${port_file}" || test -n "${server_port}"
 }

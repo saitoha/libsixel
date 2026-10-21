@@ -11,12 +11,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 printf '1..1\n'
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 issue207="${TOP_SRCDIR}/tests/data/security/issue/data/207/poc"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -h 50% -r lanczos3 -w 300px "${issue207}" \
-    >"${ARTIFACT_LOCAL_DIR}/issue207-resize.sixel" || command_status=$?
+    >/dev/null || command_status=$?
 
 # Accept success or mapped error exits without crashing.
 test "${command_status-0}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {

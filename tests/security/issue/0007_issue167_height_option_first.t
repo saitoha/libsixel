@@ -10,14 +10,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 printf '1..1\n'
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 
 issue167="${TOP_SRCDIR}/tests/data/security/issue/data/167/poc"
 
 
 set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -h128 "${issue167}" >"${ARTIFACT_LOCAL_DIR}/issue167-height-option-first.sixel"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -h128 "${issue167}" >/dev/null
 command_status=$?
 set -e
 
