@@ -2276,6 +2276,8 @@ The existing [lookup quality suite](../../../../tests/quant/palette/usage/) chec
 
 ### Bulk mapping and dither dispatch
 
+The bulk/scalar contract test constructs two independent immutable FHEDT seed grids inside its timed process, then reprepares separate query handles from those owners for each traversal and tail length. Scalar and bulk cache identities remain distinct; immutable construction is reused without sharing mutable query state or removing cold/warm comparisons.
+
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | LUTBULK-01 | All byte and float lookup classes map runs, separated repeats, distinct queries, reverse rows, empty input and short tails identically to ordered scalar calls on independent cold state. | [tests/processing/lookup/0015_lookup_batch_contract.c](../../../../tests/processing/lookup/0015_lookup_batch_contract.c), [tests/processing/lookup/0015_lookup_batch_contract.t](../../../../tests/processing/lookup/0015_lookup_batch_contract.t) |

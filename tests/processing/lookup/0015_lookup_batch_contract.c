@@ -66,6 +66,7 @@ batch_contract_check(char const *class_name,
     sixel_factory_t *factory;
     sixel_lookup_policy_interface_t *policy;
     sixel_lookup_policy_interface_t *reference;
+    sixel_lookup_policy_interface_t *seeds[2];
     sixel_lookup_policy_prepare_request_t request;
     unsigned char pixel[BATCH_CONTRACT_QUERIES * 3];
     float pixel_float[BATCH_CONTRACT_QUERIES * 3];
@@ -75,6 +76,8 @@ batch_contract_check(char const *class_name,
     void *service;
     unsigned int state;
     int is_float;
+    int is_fhedt;
+    int seed;
     int ncolors;
     int count;
     int channel;
@@ -89,6 +92,8 @@ batch_contract_check(char const *class_name,
     factory = NULL;
     policy = NULL;
     reference = NULL;
+    seeds[0] = seeds[1] = NULL;
+    seed = 0;
     memset(&request, 0, sizeof(request));
     memset(pixel, 0, sizeof(pixel));
     memset(pixel_float, 0, sizeof(pixel_float));
@@ -96,6 +101,7 @@ batch_contract_check(char const *class_name,
     service = NULL;
     state = 11U;
     is_float = strstr(class_name, ".float32") != NULL;
+    is_fhedt = strstr(class_name, "lookup/fhedt.") != NULL;
     /* The monochrome policies serve two-color palettes only. */
     ncolors = BATCH_CONTRACT_COLORS;
     if (strstr(class_name, "/mono-") != NULL) {
@@ -124,6 +130,10 @@ batch_contract_check(char const *class_name,
         status = factory->vtbl->create(factory, class_name, allocator,
                                       (void **)&reference);
     }
+    for (seed = 0; is_fhedt && seed < 2 && SIXEL_SUCCEEDED(status); ++seed) {
+        status = factory->vtbl->create(factory, class_name, allocator,
+                                      (void **)&seeds[seed]);
+    }
     factory->vtbl->unref(factory);
     factory = NULL;
     if (SIXEL_FAILED(status)) {
@@ -140,6 +150,20 @@ batch_contract_check(char const *class_name,
         request.palette_float = palette_float;
         request.float_depth = 3 * (int)sizeof(float);
         request.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    }
+    /* Build two independent immutable FHEDT grids once, inside this test.
+     * Reprepare below still resets each query handle. Separate seed owners
+     * keep the scalar and bulk TLS cache identities distinct, including when
+     * the optional cache is enabled. Never share mutable lookup state. */
+    if (is_fhedt) {
+        request.fhedt_shared_override = 1;
+        request.fhedt_shared = 1;
+        for (seed = 0; seed < 2; ++seed) {
+            if (SIXEL_FAILED(seeds[seed]->vtbl->prepare(seeds[seed],
+                                                       &request))) {
+                goto cleanup;
+            }
+        }
     }
     /* Runs, nonadjacent repeats and distinct colors share one cold stream.
      * The last byte of every float remains part of the query's identity. */
@@ -166,9 +190,12 @@ batch_contract_check(char const *class_name,
         /* Both cold and warm calls, SIMD tails, and reverse traversal. */
         for (length = 1; length <= BATCH_CONTRACT_QUERIES;
                 length = length < 17 ? length + 1 : BATCH_CONTRACT_QUERIES) {
-            if (SIXEL_FAILED(policy->vtbl->prepare(policy, &request))
-                    || SIXEL_FAILED(reference->vtbl->prepare(reference,
-                                                            &request))) {
+            request.reuse_policy = seeds[0];
+            if (SIXEL_FAILED(policy->vtbl->prepare(policy, &request))) {
+                goto cleanup;
+            }
+            request.reuse_policy = seeds[1];
+            if (SIXEL_FAILED(reference->vtbl->prepare(reference, &request))) {
                 goto cleanup;
             }
             start = direction == 1 ? 0 : length - 1;
@@ -200,6 +227,11 @@ batch_contract_check(char const *class_name,
     result = EXIT_SUCCESS;
 
 cleanup:
+    for (seed = 0; seed < 2; ++seed) {
+        if (seeds[seed] != NULL) {
+            seeds[seed]->vtbl->unref(seeds[seed]);
+        }
+    }
     if (reference != NULL) {
         reference->vtbl->unref(reference);
     }
