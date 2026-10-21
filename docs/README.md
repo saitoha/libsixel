@@ -165,6 +165,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 
 - [Palette working color space](encoder/palette-application/working-colorspace/README.md) explains `-W` and how it affects lookup, dithering, and measured trade-offs.
 - [Lookup policy](encoder/palette-application/lookup-policy/README.md) explains `-~`, the exactness and cost of each nearest-color policy, and their measured comparison.
+- [Delaunay lookup](encoder/palette-application/lookup-policy/delaunay.md) describes exact graph walks, representation boundaries, SIMD arithmetic and their tests.
 - [Dithering](encoder/palette-application/dithering/README.md) explains `-d`, each error-diffusion and positional method, and their cost and measured quality.
 - [Dither clamp policy](encoder/palette-application/clamp-policy.md) explains `-0` and how extended source values and diffusion feedback are clamped.
 

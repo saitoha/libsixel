@@ -2192,6 +2192,7 @@ amalgamated_sources_enabled = amalgamated_lib_enabled or amalgamated_tools_enabl
 
 # Keep native scalar arithmetic unless noncontraction is already guaranteed.
 # Do not infer this from the compiler family or the selected C dialect.
+# VP-tree and Delaunay float kernels share this isolated arithmetic gate.
 float_lookup_c_args = []
 float_lookup_contract_off = false
 foreach arg : get_option('c_args')

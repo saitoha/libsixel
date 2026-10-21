@@ -155,6 +155,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_VPTREE  0x8  /* VP-tree lookup */
 #define SIXEL_LUT_POLICY_RBC     0x9  /* Random Ball Cover lookup */
 #define SIXEL_LUT_POLICY_MAHALANOBIS 0xa /* RBC + Mahalanobis pruning */
+#define SIXEL_LUT_POLICY_DELAUNAY 0xb /* Delaunay-graph walk lookup */
 
 /* Upper-level GPU policy for selected accelerator stages */
 #define SIXEL_GPU_POLICY_OFF     0x0  /* keep all stages on CPU */

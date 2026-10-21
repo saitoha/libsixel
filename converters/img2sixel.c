@@ -815,6 +815,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :tile_depth=1..1024 (:Tvalue)\n"
         "          :first_touch=0|1 (:O0 or :O1)\n"
         "          :pin_threads=0|1 (:P0 or :P1)\n"
+        "      delaunay  -> exact Delaunay graph walk lookup\n"
         "      vptree    -> VP-tree lookup built from palette entries\n"
         "      rbc       -> Random Ball Cover cluster pruning\n"
         "      mahalanobis -> exhaustive normalized scan in RBC cluster order\n"
@@ -1268,8 +1269,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS environment value\n"
         "    P3: effective float precision; -X/-W accept all five spaces;\n"
         "    -Qauto|kmeans|center|medoids|heckbert; any sampling;\n"
-        "    lookup none/certlut/5bit/6bit/auto/vptree/rbc/mahalanobis/"
-        "eytzinger/fhedt;\n"
+        "    lookup none/certlut/5bit/6bit/auto/vptree/delaunay/"
+        "rbc/mahalanobis/eytzinger/fhedt;\n"
         "    binning: kmeans any, center none/exact/hard/auto,\n"
         "    medoids/heckbert none/auto;\n"
         "    none/CPU spatial or positional diffusion/auto;\n"
@@ -2393,7 +2394,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "eytzinger, fhedt, vptree, rbc, or mahalanobis; default is auto)."
+        "eytzinger, fhedt, vptree, delaunay, rbc, or mahalanobis; "
+        "default is auto)."
     },
     {
         "SIXEL_GPU_POLICY",

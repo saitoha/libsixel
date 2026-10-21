@@ -174,3 +174,4 @@ docs/encoder/palette-application/lookup-policy/measurements/README.md	reference	
 docs/encoder/palette-application/lookup-policy/none.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/rbc.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/vptree.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/delaunay.md	reference	both	policy-specific mathematics and cost

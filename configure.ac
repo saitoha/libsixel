@@ -2704,6 +2704,7 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
 # that adding it leaves the user's compiler settings unchanged. Admit explicit
 # contract-off builds or x86-64 targets without any FMA instruction set; all
 # other builds retain memoization and the native scalar expression.
+# VP-tree and Delaunay float kernels share this isolated arithmetic gate.
 FLOAT_LOOKUP_CFLAGS=""
 sixel_float_contract=unknown
 for sixel_float_arg in $CPPFLAGS $CFLAGS; do

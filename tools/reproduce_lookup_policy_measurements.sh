@@ -1,5 +1,5 @@
 #!/bin/sh
-# Rebuild and reproduce every checked-in lookup-policy measurement artifact.
+# Rebuild and reproduce the nine-policy quality and single-image speed sweeps.
 
 set -eu
 

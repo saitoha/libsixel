@@ -202,6 +202,9 @@ test_runner_tests_sources_text = run_command(
   '! -name "*.inc.c" ' +
   '! -name "0018_lookup_float_batch_exact.c" ' +
   '! -name "0019_lookup_float_simd_distance.c" ' +
+  '! -name "0030_delaunay_float_exact.c" ' +
+  '! -name "0031_delaunay_float_distance.c" ' +
+  '! -name "0032_delaunay_float_bulk.c" ' +
   '! -path "./extension/wic-installed/*.c" -print | ' +
   'LC_ALL=C sort | sed "s|^\\./||"',
   'meson-test-runner-sources',
@@ -235,7 +238,10 @@ test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
 
 float_lookup_tests = static_library('sixel_float_lookup_tests',
   ['processing/lookup/0018_lookup_float_batch_exact.c',
-   'processing/lookup/0019_lookup_float_simd_distance.c', sixcells_h],
+   'processing/lookup/0019_lookup_float_simd_distance.c',
+   'processing/lookup/0030_delaunay_float_exact.c',
+   'processing/lookup/0031_delaunay_float_distance.c',
+   'processing/lookup/0032_delaunay_float_bulk.c', sixcells_h],
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,
   c_args: libsixel_posix_defs + float_lookup_c_args,

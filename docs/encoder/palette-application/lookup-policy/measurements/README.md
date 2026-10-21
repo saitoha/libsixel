@@ -4,7 +4,7 @@ This page holds the evidence behind the measured claims of the [lookup policy](.
 
 ## Questions
 
-The historical RGB555 path reduces each byte-valued color axis from 256 values to 32 histogram and cache addresses. This section asks six user-visible questions:
+The historical RGB555 path reduces each byte-valued color axis from 256 values to 32 histogram and cache addresses. This section asks seven user-visible questions:
 
 1. How do current policies compare when palette construction is controlled by `-Qkmeans:Gw -Xoklab`?
 2. How does the current Heckbert compatibility mapping expose the legacy RGB555 limitation alongside policies that were added later?
@@ -12,16 +12,17 @@ The historical RGB555 path reduces each byte-valued color axis from 256 values t
 4. Does sharing the `5bit`, `6bit`, or `certlut` instance between workers materially change end-to-end latency?
 5. What latency change does the Metal PaletteApply path produce for its supported `none` and `eytzinger` policies?
 6. How do the nine policies change when Floyd--Steinberg error diffusion is enabled instead of disabling dithering?
+7. How does `delaunay` compare with `vptree`, `5bit`, and `6bit` across byte and native-float lookup, three images, and both diffusion settings?
 
-The checked-in measurements answer those questions for one fixture. They are not a universal ranking of lookup policies.
+The nine-policy measurements answer the first six questions for one fixture. The separate Delaunay comparison answers the seventh for three fixtures. Neither establishes a universal ranking of lookup policies.
 
 Unless a subsection explicitly says otherwise, every quality and speed result below uses `--diffusion=none`. This isolates palette construction and lookup more clearly by removing spatial error feedback. It is not representative of the default experience when a user enables dithering; the dedicated Floyd--Steinberg control below measures that case separately.
 
-All commands labeled 8-bit in this section resolve to `work=rgb888`. This is part of the protocol because the same lookup-policy name selects different backends and cost structures on `rgb-f32`. The matched `K=64` comparison is in [Encoder Working Precision](../../../precision/README.md#lookup-policies); it complements, rather than replaces, the palette-size sweeps below.
+The nine-policy curves labeled 8-bit resolve to `work=rgb888`. This is part of the protocol because the same lookup-policy name selects different backends and cost structures on `rgb-f32`. The Delaunay comparison records the selected `lookup/POLICY.8bit` or `lookup/POLICY.float32` class for each case; `--precision=8bit` alone does not establish lookup representation when CMS promotes an input. The matched `K=64` comparison is in [Encoder Working Precision](../../../precision/README.md#lookup-policies); it complements, rather than replaces, the palette-size sweeps below.
 
 ## Conditions
 
-The no-diffusion, Floyd--Steinberg, shared-instance, and Metal curves were measured on 2026-09-06 from clean Autotools builds of revision `f2c138d8f` on macOS 26.5.1 arm64. The input was [`images/snake.png`](../../../../../images/snake.png). The broad curves use `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128 through 256.
+The nine-policy no-diffusion and Floyd--Steinberg curves, shared-instance curves, and Metal curves were measured on 2026-09-06 from clean Autotools builds of revision `f2c138d8f` on macOS 26.5.1 arm64. The input was [`images/snake.png`](../../../../../images/snake.png). The broad curves use `K = 8, 16, 32, 64, 128, 256`; both focused curves use steps of 16 from 128 through 256. The Delaunay study has its own source snapshot, conditions, and figures below; its times must not be spliced into these older curves.
 
 The controlled K-means quality and speed comparisons use this normal CLI path:
 
@@ -290,9 +291,38 @@ At `K = 256`, the timing comparison is:
 
 These are end-to-end results: they include diffusion arithmetic and every policy-dependent change to the error propagated into later pixels. They do not isolate nearest-neighbor query cost, and they must not be compared with the no-diffusion curves as though diffusion were a constant additive overhead. The dither-adjusted color stream can also change lookup-cache locality and the work performed by SIXEL encoding. In this run that effect is most visible for `certlut`, `vptree`, and `6bit`; the table does not by itself assign the timing change to one component.
 
+### Delaunay: byte and native-float comparison
+
+This study compares [`delaunay`](../delaunay.md), `vptree`, `5bit`, and `6bit` at `K = 32, 64, 128, 256`, with both `fs` and `none` diffusion. It uses [`snake.png`](../../../../../images/snake.png) and [`egret.jpg`](../../../../../images/egret.jpg) at 600 by 450 pixels, plus [`vimperator3.png`](../../../../../images/vimperator3.png) at 582 by 746 pixels. Egret is converted once to an 8-bit RGB PNG before timing so every input uses the same `libpng` loader. There are 192 timed configurations and 48 paired Delaunay/VP-tree output checks.
+
+The run was recorded on 2026-10-22 JST on an Apple M3 Max with 36 GiB RAM, macOS 27.0.1 arm64, and Apple Clang 21.0.0. The implementation is identified by clean local measurement snapshot `d1acd91280d9e97247aaf6f2f96abe7b8e60345b`, based on repository revision `50bcca8f391b71bea52a7cf85d5174432720a104`. The snapshot contains the Delaunay implementation under evaluation; its ID identifies a local measurement commit, not a published release or branch. The [manifest](lookup-policy-delaunay-run.json) records its tree ID, compiler and configure arguments, input and executable/library hashes, effective lookup classes, all timing samples, and paired output hashes. Autotools used `CFLAGS=-O3` with the project's C99 flag. Byte lookup used NEON; `FLOAT_LOOKUP_CFLAGS` was empty, so float lookup retained native scalar arithmetic under the existing [SIMD gate](../delaunay.md#method).
+
+Every command uses `--threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Wgamma --gpu-policy=off`. The byte matrix adds `--cms-engine=none`; the float matrix keeps default CMS and adds `-Xoklab`. All inherited `SIXEL_*` variables are removed. An untimed `LSXLUT2|phase=palette-apply` trace confirms `lookup/POLICY.8bit` or `lookup/POLICY.float32` for each configuration. CMS and clustering differ between the two matrices, so comparisons are within each representation, not an estimate of the cost of changing representation alone.
+
+Hyperfine runs each configuration with `-N`, two warmups and seven measured fresh processes. The plots show arithmetic mean elapsed time with sample-standard-deviation error bars; the [CSV](lookup-policy-delaunay-speed.csv) also retains medians and extrema, and the [JSON](lookup-policy-delaunay-run.json) retains every sample. Output goes to the null device during timing. Policy order is fixed as `vptree`, `delaunay`, `5bit`, `6bit`, without round-by-round rotation. Process startup, loading, palette construction, lookup preparation, mapping, and SIXEL encoding are all included.
+
+![Mean end-to-end runtime with standard-deviation bars for byte lookup, three images, and two diffusion settings](lookup-policy-delaunay-8bit-speed.png)
+
+![Mean end-to-end runtime with standard-deviation bars for native-float lookup, three images, and two diffusion settings](lookup-policy-delaunay-float32-speed.png)
+
+The following ratios divide each Delaunay mean by its matched VP-tree mean. Each geometric mean gives equal weight to 12 configurations, comprising three images and four palette sizes; a ratio below one means less elapsed time.
+
+| Lookup representation | Diffusion | Geometric mean ratio | Range of individual ratios |
+| --- | --- | ---: | ---: |
+| Byte | Floyd--Steinberg | 0.946 | 0.882--1.028 |
+| Byte | None | 1.014 | 0.913--1.163 |
+| Native float | Floyd--Steinberg | 0.972 | 0.885--1.067 |
+| Native float | None | 1.003 | 0.880--1.060 |
+
+Delaunay has lower aggregate elapsed time with Floyd--Steinberg in this run, while the no-diffusion aggregate is close to VP-tree. It is not faster in every configuration. Native-float `5bit` and `6bit` are exhaustive fallbacks rather than byte-addressed caches, which explains why their high-`K` curves differ substantially from their byte counterparts. These end-to-end measurements cannot assign the difference to graph walking, SIMD, or any other individual stage.
+
+Variation is material at several points. For example, byte `egret` without diffusion at `K = 256` takes `80.58 ± 28.51 ms` for `5bit`, with a `71.41 ms` median and one `133.02 ms` sample; byte `snake` without diffusion at `K = 128` takes `74.10 ± 7.76 ms` for Delaunay. Every sample is retained, including these slow observations. Seven sequential samples and a fixed policy order do not establish statistical significance or a stable universal ranking.
+
+The separate output probes produced byte-identical SIXEL for Delaunay and VP-tree in all 48 matched cases. This establishes equality for these fixtures and commands, including diffusion; it does not replace the [native-coordinate correctness tests](../delaunay.md#test-coverage). This study does not add perceptual quality scores, multithreaded or shared-instance results, or measurements of the float SIMD build.
+
 ## Interpretation
 
-- One natural image cannot characterize every color distribution. Add gradients, saturated synthetic colors, alpha cases, and a small image set before using the result to change a default.
+- The nine-policy quality study uses one natural image, and the Delaunay timing study adds a second photo and one screenshot. Neither characterizes every color distribution. Add gradients, saturated synthetic colors, alpha cases, and a broader image set before using the result to change a default.
 - Mean Delta E00 includes lightness, chroma, and hue contributions but hides worst-case pixels. Mean chroma error omits hue and lightness.
 - The quality test does not measure memory use, output size, or palette-index stability. Those require separate curves.
 - The speed curve is end-to-end single-image latency, not an isolated lookup microbenchmark. Loader, palette construction, and SIXEL encoding add common work, while policy-dependent preparation remains part of the measurement.
@@ -319,6 +349,28 @@ PYTHON=.venv/bin/python tools/reproduce_lookup_policy_acceleration.sh
 ```
 
 The Python override is only an example; use an interpreter with Matplotlib. The runner rebuilds the project, measures both fixed matrices, forces Metal, checks CPU/Metal output equivalence, checks the required `S0`/`S1` output relation, writes [`lookup-policy-acceleration-run.json`](lookup-policy-acceleration-run.json), and invokes the common artifact validator. The default shared-instance thread limit is eight and can be changed with `LOOKUP_POLICY_SHARED_THREADS`; such a run is a different protocol and should not overwrite the checked-in results without updating their interpretation.
+
+The Delaunay study uses a separate runner because its fixture set, representations, and seven-sample protocol differ from the nine-policy study. Configure and finish an Autotools build with libpng and LCMS2 in an out-of-tree directory, using `CFLAGS=-O3` to match the recorded build. Install Hyperfine, ImageMagick, and Python Matplotlib, and run the following from a clean source checkout containing Delaunay; `BUILD_DIR` must identify that checkout's completed build. Keep raw logs outside the source checkout, and run without other build or test jobs:
+
+```sh
+python3 tools/plot_lookup_policy_delaunay.py measure \
+  docs/encoder/palette-application/lookup-policy/measurements \
+  --source-dir "$PWD" --build-dir "$BUILD_DIR" \
+  --raw-dir /tmp/lookup-policy-delaunay-raw
+```
+
+The runner refuses tracked or untracked source changes, verifies the source and executable/library hashes again after timing, requires every consumer class and paired SIXEL output to match, and then writes the JSON, CSV, and two figures. `--snapshot-kind=local-measurement` explicitly labels an isolated local snapshot, as used for the checked artifacts. A clean Git snapshot must already exist; the runner does not create commits. Timing JSON and trace files remain in the raw directory for inspection.
+
+To regenerate only the Delaunay CSV and figures from the retained samples, then validate all checked artifacts without running benchmarks:
+
+```sh
+python3 tools/plot_lookup_policy_delaunay.py plot \
+  docs/encoder/palette-application/lookup-policy/measurements
+python3 tools/check_lookup_policy_measurements.py --require-delaunay \
+  docs/encoder/palette-application/lookup-policy/measurements
+```
+
+The Delaunay validator requires the full 192-configuration matrix, seven successful samples per point, matching sample-derived statistics and CSV rows, the expected consumer classes, and all 48 equal output digests and lengths. The common validator also detects the Delaunay files automatically; `--require-delaunay` additionally rejects their complete absence. Plot regeneration requires Matplotlib; validation alone uses Python's standard library.
 
 The quality wrapper regenerates the broad and focused controlled K-means comparisons and the broad and focused current-Heckbert compatibility comparisons. The CSV files store the full command template for every point. A manifest stores the source state and revision, input and executable SHA-256 digests, libtool payload digests, configure arguments, compiler flags, Python and Matplotlib versions, platform, and timing protocol. A quality rerun is comparable when those inputs and commands match. Compare speed only on the same otherwise-idle host with the same power and thermal conditions; the manifest makes host or build changes visible but cannot normalize them.
 

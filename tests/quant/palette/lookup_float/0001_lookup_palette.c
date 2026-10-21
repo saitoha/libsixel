@@ -14,7 +14,7 @@
 
 static char const *const lookup_options[] = {
     "certlut", "5bit", "6bit", "auto", "default", "vptree", "rbc",
-    "mahalanobis", "eytzinger", "fhedt"
+    "mahalanobis", "eytzinger", "fhedt", "delaunay"
 };
 static char const *const lookup_spaces[] = {
     "gamma", "linear", "oklab", "cielab", "din99d"
@@ -29,7 +29,7 @@ static int const lookup_codes[] = {
     SIXEL_LUT_POLICY_AUTO, SIXEL_LUT_POLICY_CERTLUT,
     SIXEL_LUT_POLICY_VPTREE, SIXEL_LUT_POLICY_RBC,
     SIXEL_LUT_POLICY_MAHALANOBIS, SIXEL_LUT_POLICY_EYTZINGER,
-    SIXEL_LUT_POLICY_FHEDT
+    SIXEL_LUT_POLICY_FHEDT, SIXEL_LUT_POLICY_DELAUNAY
 };
 
 typedef struct lookup_capture {
@@ -306,7 +306,7 @@ test_lookup_palette(int argc, char **argv)
     policy = atoi(argv[2]);
     space = atoi(argv[3]);
     p3 = atoi(argv[4]);
-    if (policy < 0 || policy > 9 || space < 0 || space > 4 ||
+    if (policy < 0 || policy > 10 || space < 0 || space > 4 ||
             p3 < 0 || p3 > 1) {
         return EXIT_FAILURE;
     }

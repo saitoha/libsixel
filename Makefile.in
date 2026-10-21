@@ -1298,6 +1298,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	images/measurements/palette-pipeline/smooth-gradient-1920x1080.png \
 	docs/encoder/palette-application/lookup-policy/README.md \
 	docs/encoder/palette-application/lookup-policy/5bit.md \
+	docs/encoder/palette-application/lookup-policy/delaunay.md \
 	docs/encoder/palette-application/lookup-policy/6bit.md \
 	docs/encoder/palette-application/lookup-policy/auto.md \
 	docs/encoder/palette-application/lookup-policy/certlut.md \
@@ -1311,6 +1312,10 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-color-error.png \
 	docs/encoder/palette-application/lookup-policy/measurements/README.md \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-acceleration-run.json \
+	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-delaunay-8bit-speed.png \
+	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-delaunay-float32-speed.png \
+	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-delaunay-run.json \
+	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-delaunay-speed.csv \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-heckbert-high-k.csv \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-heckbert-high-k.png \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-kmeans-color-error.csv \
@@ -1480,6 +1485,7 @@ EXTRA_DIST = tools/generate_output_icc_fixtures.py \
 	tools/check_merge_policy_measurements.py \
 	tools/palette_pipeline_suite.json \
 	tools/plot_lookup_policy_acceleration.py \
+	tools/plot_lookup_policy_delaunay.py \
 	tools/plot_clustering_binning_threshold_measurements.py \
 	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_cover_policy_figures.py \

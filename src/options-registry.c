@@ -1264,6 +1264,10 @@ static sixel_option_value_schema_t const g_lookup_values[] = {
     {
         "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "delaunay", SIXEL_LUT_POLICY_DELAUNAY, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
     }
 };
 

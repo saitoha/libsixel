@@ -77,6 +77,7 @@ final class Constants
     public const SIXEL_LUT_POLICY_VPTREE = 0x8;
     public const SIXEL_LUT_POLICY_RBC = 0x9;
     public const SIXEL_LUT_POLICY_MAHALANOBIS = 0xa;
+    public const SIXEL_LUT_POLICY_DELAUNAY = 0xb;
     public const SIXEL_GPU_POLICY_OFF = 0x0;
     public const SIXEL_GPU_POLICY_AUTO = 0x1;
     public const SIXEL_GPU_POLICY_FORCE = 0x2;

@@ -1383,6 +1383,10 @@ int test_lookup_0017_none_batch_fences(int argc, char **argv);
 int test_lookup_0018_float_batch_exact(int argc, char **argv);
 int test_lookup_0019_float_simd_distance(int argc, char **argv);
 int test_lookup_0020_float_workspace_failure(int argc, char **argv);
+int test_lookup_0021_delaunay_byte_exact(int argc, char **argv);
+int test_lookup_0030_delaunay_float_exact(int argc, char **argv);
+int test_lookup_0031_delaunay_float_distance(int argc, char **argv);
+int test_lookup_0032_delaunay_float_bulk(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
@@ -6126,6 +6130,14 @@ static test_entry_t const test_entries[] = {
       test_lookup_0019_float_simd_distance },
     { "lookup/0020_float_workspace_failure",
       test_lookup_0020_float_workspace_failure },
+    { "lookup/0021_delaunay_byte_exact",
+      test_lookup_0021_delaunay_byte_exact },
+    { "lookup/0030_delaunay_float_exact",
+      test_lookup_0030_delaunay_float_exact },
+    { "lookup/0031_delaunay_float_distance",
+      test_lookup_0031_delaunay_float_distance },
+    { "lookup/0032_delaunay_float_bulk",
+      test_lookup_0032_delaunay_float_bulk },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",

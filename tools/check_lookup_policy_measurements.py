@@ -438,6 +438,7 @@ def main() -> int:
     """Validate one complete generated measurement directory."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--require-acceleration", action="store_true")
+    parser.add_argument("--require-delaunay", action="store_true")
     parser.add_argument("directory", type=Path)
     args = parser.parse_args()
     directory = args.directory
@@ -462,11 +463,17 @@ def main() -> int:
     )
     if args.require_acceleration or acceleration_present:
         validate_acceleration(directory)
+    delaunay_present = any(directory.glob("lookup-policy-delaunay-*"))
+    if args.require_delaunay or delaunay_present:
+        from plot_lookup_policy_delaunay import validate_artifacts
+        validate_artifacts(directory)
     print(
         "validated 486 quality points and 108 speed points across 9 policies"
     )
     if args.require_acceleration or acceleration_present:
         print("validated 36 shared-instance and 24 Metal speed points")
+    if args.require_delaunay or delaunay_present:
+        print("validated 192 Delaunay comparison timings and 48 exact outputs")
     return 0
 
 

@@ -86,6 +86,7 @@ __STRICT_ANSI__	language	-
 __TINYC__	compiler	-
 __VA_ARGS__	language	-
 __aarch64__	architecture	-
+__wasm_simd128__	architecture	-
 __atomic_compare_exchange_n	compiler	-
 __atomic_load_n	compiler	-
 __atomic_store_n	compiler	-

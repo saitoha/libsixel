@@ -116,10 +116,16 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libfloatlookuptests_la_LIBADD =
 am__libfloatlookuptests_la_SOURCES_DIST =  \
 	processing/lookup/0018_lookup_float_batch_exact.c \
-	processing/lookup/0019_lookup_float_simd_distance.c
+	processing/lookup/0019_lookup_float_simd_distance.c \
+	processing/lookup/0030_delaunay_float_exact.c \
+	processing/lookup/0031_delaunay_float_distance.c \
+	processing/lookup/0032_delaunay_float_bulk.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_OBJECTS = processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo \
-@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/libfloatlookuptests_la-0030_delaunay_float_exact.lo \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/libfloatlookuptests_la-0031_delaunay_float_distance.lo \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo
 libfloatlookuptests_la_OBJECTS = $(am_libfloatlookuptests_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -1760,6 +1766,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/lookup/0016_lookup_auto_dither.c \
 	processing/lookup/0017_lookup_none_batch_fences.c \
 	processing/lookup/0020_lookup_float_workspace_failure.c \
+	processing/lookup/0021_delaunay_byte_exact.c \
 	processing/dither/0001_dither_policy.c \
 	processing/dither/perturb/0018_perturb_keep_lookup.c \
 	processing/dither/perturb/0017_perturb_keep_early.c \
@@ -5555,6 +5562,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0016_lookup_auto_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0017_lookup_none_batch_fences.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0020_lookup_float_workspace_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0021_delaunay_byte_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0018_perturb_keep_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0017_perturb_keep_early.$(OBJEXT) \
@@ -10147,6 +10155,9 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo \
 	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Plo \
+	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0030_delaunay_float_exact.Plo \
+	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0031_delaunay_float_distance.Plo \
+	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0032_delaunay_float_bulk.Plo \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po \
@@ -10155,6 +10166,7 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0020_lookup_float_workspace_failure.Po \
+	processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po \
@@ -14058,6 +14070,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_LOOKUP_FLOAT_BATCH_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_LOOKUP_FLOAT_SIMD_DISTANCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_LOOKUP_FLOAT_WORKSPACE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_DELAUNAY_BYTE_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_DELAUNAY_FLOAT_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_DELAUNAY_FLOAT_DISTANCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_DELAUNAY_FLOAT_BULK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_COVER_ANCHOR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -16014,7 +16030,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@noinst_LTLIBRARIES = libfloatlookuptests.la
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_SOURCES = \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0018_lookup_float_batch_exact.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0019_lookup_float_simd_distance.c
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0019_lookup_float_simd_distance.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0030_delaunay_float_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0031_delaunay_float_distance.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0032_delaunay_float_bulk.c
 
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
@@ -17654,6 +17673,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0016_lookup_auto_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0017_lookup_none_batch_fences.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0020_lookup_float_workspace_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0021_delaunay_byte_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0018_perturb_keep_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0017_perturb_keep_early.c \
@@ -20133,6 +20153,15 @@ processing/lookup/libfloatlookuptests_la-0018_lookup_float_batch_exact.lo:  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo:  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/libfloatlookuptests_la-0030_delaunay_float_exact.lo:  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/libfloatlookuptests_la-0031_delaunay_float_distance.lo:  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo:  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 
@@ -25146,6 +25175,9 @@ processing/lookup/test_runner-0017_lookup_none_batch_fences.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-0020_lookup_float_workspace_failure.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-0021_delaunay_byte_exact.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/dither/$(am__dirstamp):
@@ -34644,6 +34676,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0030_delaunay_float_exact.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0031_delaunay_float_distance.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0032_delaunay_float_bulk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0012_lookup_packing_registry_direct.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0013_lookup_parallel_dense_cache.Po@am__quote@ # am--include-marker
@@ -34652,6 +34687,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0016_lookup_auto_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0017_lookup_none_batch_fences.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0020_lookup_float_workspace_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po@am__quote@ # am--include-marker
@@ -36114,6 +36150,27 @@ processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo: pro
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0019_lookup_float_simd_distance.c' object='processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -c -o processing/lookup/libfloatlookuptests_la-0019_lookup_float_simd_distance.lo `test -f 'processing/lookup/0019_lookup_float_simd_distance.c' || echo '$(srcdir)/'`processing/lookup/0019_lookup_float_simd_distance.c
+
+processing/lookup/libfloatlookuptests_la-0030_delaunay_float_exact.lo: processing/lookup/0030_delaunay_float_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -MT processing/lookup/libfloatlookuptests_la-0030_delaunay_float_exact.lo -MD -MP -MF processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0030_delaunay_float_exact.Tpo -c -o processing/lookup/libfloatlookuptests_la-0030_delaunay_float_exact.lo `test -f 'processing/lookup/0030_delaunay_float_exact.c' || echo '$(srcdir)/'`processing/lookup/0030_delaunay_float_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0030_delaunay_float_exact.Tpo processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0030_delaunay_float_exact.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0030_delaunay_float_exact.c' object='processing/lookup/libfloatlookuptests_la-0030_delaunay_float_exact.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -c -o processing/lookup/libfloatlookuptests_la-0030_delaunay_float_exact.lo `test -f 'processing/lookup/0030_delaunay_float_exact.c' || echo '$(srcdir)/'`processing/lookup/0030_delaunay_float_exact.c
+
+processing/lookup/libfloatlookuptests_la-0031_delaunay_float_distance.lo: processing/lookup/0031_delaunay_float_distance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -MT processing/lookup/libfloatlookuptests_la-0031_delaunay_float_distance.lo -MD -MP -MF processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0031_delaunay_float_distance.Tpo -c -o processing/lookup/libfloatlookuptests_la-0031_delaunay_float_distance.lo `test -f 'processing/lookup/0031_delaunay_float_distance.c' || echo '$(srcdir)/'`processing/lookup/0031_delaunay_float_distance.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0031_delaunay_float_distance.Tpo processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0031_delaunay_float_distance.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0031_delaunay_float_distance.c' object='processing/lookup/libfloatlookuptests_la-0031_delaunay_float_distance.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -c -o processing/lookup/libfloatlookuptests_la-0031_delaunay_float_distance.lo `test -f 'processing/lookup/0031_delaunay_float_distance.c' || echo '$(srcdir)/'`processing/lookup/0031_delaunay_float_distance.c
+
+processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo: processing/lookup/0032_delaunay_float_bulk.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -MT processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo -MD -MP -MF processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0032_delaunay_float_bulk.Tpo -c -o processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo `test -f 'processing/lookup/0032_delaunay_float_bulk.c' || echo '$(srcdir)/'`processing/lookup/0032_delaunay_float_bulk.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0032_delaunay_float_bulk.Tpo processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0032_delaunay_float_bulk.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0032_delaunay_float_bulk.c' object='processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libfloatlookuptests_la_CPPFLAGS) $(CPPFLAGS) $(libfloatlookuptests_la_CFLAGS) $(CFLAGS) -c -o processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo `test -f 'processing/lookup/0032_delaunay_float_bulk.c' || echo '$(srcdir)/'`processing/lookup/0032_delaunay_float_bulk.c
 
 test_runner-test_runner.o: test_runner.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT test_runner-test_runner.o -MD -MP -MF $(DEPDIR)/test_runner-test_runner.Tpo -c -o test_runner-test_runner.o `test -f 'test_runner.c' || echo '$(srcdir)/'`test_runner.c
@@ -58444,6 +58501,20 @@ processing/lookup/test_runner-0020_lookup_float_workspace_failure.obj: processin
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0020_lookup_float_workspace_failure.c' object='processing/lookup/test_runner-0020_lookup_float_workspace_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0020_lookup_float_workspace_failure.obj `if test -f 'processing/lookup/0020_lookup_float_workspace_failure.c'; then $(CYGPATH_W) 'processing/lookup/0020_lookup_float_workspace_failure.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0020_lookup_float_workspace_failure.c'; fi`
+
+processing/lookup/test_runner-0021_delaunay_byte_exact.o: processing/lookup/0021_delaunay_byte_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0021_delaunay_byte_exact.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Tpo -c -o processing/lookup/test_runner-0021_delaunay_byte_exact.o `test -f 'processing/lookup/0021_delaunay_byte_exact.c' || echo '$(srcdir)/'`processing/lookup/0021_delaunay_byte_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Tpo processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0021_delaunay_byte_exact.c' object='processing/lookup/test_runner-0021_delaunay_byte_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0021_delaunay_byte_exact.o `test -f 'processing/lookup/0021_delaunay_byte_exact.c' || echo '$(srcdir)/'`processing/lookup/0021_delaunay_byte_exact.c
+
+processing/lookup/test_runner-0021_delaunay_byte_exact.obj: processing/lookup/0021_delaunay_byte_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0021_delaunay_byte_exact.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Tpo -c -o processing/lookup/test_runner-0021_delaunay_byte_exact.obj `if test -f 'processing/lookup/0021_delaunay_byte_exact.c'; then $(CYGPATH_W) 'processing/lookup/0021_delaunay_byte_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0021_delaunay_byte_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Tpo processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0021_delaunay_byte_exact.c' object='processing/lookup/test_runner-0021_delaunay_byte_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0021_delaunay_byte_exact.obj `if test -f 'processing/lookup/0021_delaunay_byte_exact.c'; then $(CYGPATH_W) 'processing/lookup/0021_delaunay_byte_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0021_delaunay_byte_exact.c'; fi`
 
 processing/dither/test_runner-0001_dither_policy.o: processing/dither/0001_dither_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/test_runner-0001_dither_policy.o -MD -MP -MF processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo -c -o processing/dither/test_runner-0001_dither_policy.o `test -f 'processing/dither/0001_dither_policy.c' || echo '$(srcdir)/'`processing/dither/0001_dither_policy.c

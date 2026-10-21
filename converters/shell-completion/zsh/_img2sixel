@@ -127,6 +127,7 @@ _lookuppolicy() {
     'eytzinger[implicit binary tree lookup with neighbour scan]' \
     'fhedt[Voronoi grid built via a 3D EDT with boundary refinement]' \
     'vptree[VP-tree lookup built from palette entries]' \
+    'delaunay[Exact Delaunay graph walk lookup]' \
     'rbc[Random Ball Cover cluster pruning]' \
     'mahalanobis[RBC pruning with Mahalanobis lower bounds]'
 }
