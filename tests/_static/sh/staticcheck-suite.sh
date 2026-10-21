@@ -785,6 +785,14 @@ if test -z "$jobs"; then
 fi
 case "$jobs" in ''|*[!0-9]*) jobs=1 ;; esac
 test "$jobs" -gt 0 2>/dev/null || jobs=1
+# Some legacy hosts have xargs but no parallel option. Preserve full serial
+# verification there rather than introducing a new mandatory tool feature.
+set --
+if xargs -P 1 sh -c ':' sh </dev/null >/dev/null 2>&1; then
+    set -- -P "$jobs"
+else
+    jobs=1
+fi
 STATICCHECK_TOTAL=$total
 STATICCHECK_OUTPUT_DIR=$tmpdir
 # Lint tools must retain their bounded internal parallelism: ShellCheck
@@ -795,7 +803,7 @@ awk -v total="$total" 'BEGIN { for (i = 1; i <= total; i++) print i }' \
     > "$tmpdir/queue"
 xargs_status=0
 # shellcheck disable=SC2016
-xargs -n 1 -P "$jobs" sh -c '
+xargs -n 1 "$@" sh -c '
     for item_index do :; done
     item_log="$STATICCHECK_OUTPUT_DIR/$item_index.worker.log"
     item_status=0

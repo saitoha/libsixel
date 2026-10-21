@@ -71,4 +71,26 @@ case "$status:$output" in
         exit 0
         ;;
 esac
+# A host without xargs -P must still run every check serially.
+CONTROL_XARGS=$(command -v xargs)
+export CONTROL_XARGS
+cat > "$tmpdir/bin/xargs" <<'SERIAL'
+#!/bin/sh
+for argument do
+    test "$argument" != -P || exit 2
+done
+exec "$CONTROL_XARGS" "$@"
+SERIAL
+status=0
+PATH="$tmpdir/bin:$PATH" STATICCHECK_JOBS=3 \
+    sh "$tmpdir/suite.sh" "$tmpdir/root" > "$tmpdir/serial-host.log" 2>&1 \
+    || status=$?
+test "$status" -ne 0 || {
+    echo 'not ok 1 - serial fallback must propagate failed checks'
+    exit 0
+}
+cmp -s "$tmpdir/1.log" "$tmpdir/serial-host.log" || {
+    echo 'not ok 1 - xargs without parallel support must preserve all checks'
+    exit 0
+}
 echo 'ok 1 - parallel staticcheck preserves order and complete verdicts'
