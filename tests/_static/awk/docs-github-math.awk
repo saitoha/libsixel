@@ -109,12 +109,11 @@ function is_escaped(line, position, count, index_) {
     return count % 2
 }
 
-function find_dollar(line, start, index_) {
-    for (index_ = start; index_ <= length(line); index_++) {
-        if (substr(line, index_, 1) == "$" &&
-            !is_escaped(line, index_)) {
-            return index_
-        }
+function find_dollar(line, start, offset) {
+    while ((offset = index(substr(line, start), "$")) != 0) {
+        start += offset - 1
+        if (!is_escaped(line, start)) return start
+        start++
     }
     return 0
 }
@@ -183,6 +182,10 @@ function scan_prose(line, path, line_number, position, close_position,
             continue
         }
 
+        # Plain prose cannot change math state. Jump to a delimiter instead
+        # of performing substr for every character in long paragraphs.
+        if (!match(substr(line, position), /[`$]/)) return
+        position += RSTART - 1
         if (substr(line, position, 1) == "`") {
             count = run_width(line, position, "`")
             close_position = find_tick_close(line, position + count, count)

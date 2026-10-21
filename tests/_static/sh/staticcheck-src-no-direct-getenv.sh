@@ -29,36 +29,36 @@ fi
 matches=$(find "$src_dir" -maxdepth 1 -type f -name '*.[ch]' \
     ! -name 'compat_stub.*' -print0 | \
     xargs -0 awk '
+# Skip complete comment/code spans without rescanning each character.
+function strip_comments(line, code, block_start, line_start, block_end) {
+    code = ""
+    while (line != "") {
+        if (in_block) {
+            block_end = index(line, "*/")
+            if (!block_end) return code
+            line = substr(line, block_end + 2)
+            in_block = 0
+            continue
+        }
+        block_start = index(line, "/*")
+        line_start = index(line, "//")
+        if (line_start && (!block_start || line_start < block_start)) {
+            return code substr(line, 1, line_start - 1)
+        }
+        if (!block_start) return code line
+        code = code substr(line, 1, block_start - 1)
+        line = substr(line, block_start + 2)
+        in_block = 1
+    }
+    return code
+}
 BEGIN {
     in_block = 0
     found = 0
 }
 {
     line = $0
-    code = ""
-    i = 1
-    while (i <= length(line)) {
-        two = substr(line, i, 2)
-        if (in_block) {
-            if (two == "*/") {
-                in_block = 0
-                i += 2
-                continue
-            }
-            i += 1
-            continue
-        }
-        if (two == "/*") {
-            in_block = 1
-            i += 2
-            continue
-        }
-        if (two == "//") {
-            break
-        }
-        code = code substr(line, i, 1)
-        i += 1
-    }
+    code = strip_comments(line)
     if (code ~ /(^|[^[:alnum:]_])getenv[[:space:]]*\(/) {
         print FILENAME ":" FNR ":" line
         found = 1
@@ -141,6 +141,29 @@ getenv_argument_matches=$(awk \
     -v registry_file="$registry_file" \
     -v color_registry_file="$color_registry_file" \
     -v completion_registry_file="$completion_registry_file" '
+# Skip complete comment/code spans without rescanning each character.
+function strip_comments(line, code, block_start, line_start, block_end) {
+    code = ""
+    while (line != "") {
+        if (in_block) {
+            block_end = index(line, "*/")
+            if (!block_end) return code
+            line = substr(line, block_end + 2)
+            in_block = 0
+            continue
+        }
+        block_start = index(line, "/*")
+        line_start = index(line, "//")
+        if (line_start && (!block_start || line_start < block_start)) {
+            return code substr(line, 1, line_start - 1)
+        }
+        if (!block_start) return code line
+        code = code substr(line, 1, block_start - 1)
+        line = substr(line, block_start + 2)
+        in_block = 1
+    }
+    return code
+}
 FILENAME == registry_file {
     line = $0
     while (match(line, /"[A-Z][A-Z0-9_]*_[A-Z0-9_]+"/)) {
@@ -253,30 +276,7 @@ FILENAME ~ /\/(compat_stub|compat)\.[ch]$/ {
         splice = line
         next
     }
-    code = ""
-    i = 1
-    while (i <= length(line)) {
-        two = substr(line, i, 2)
-        if (in_block) {
-            if (two == "*/") {
-                in_block = 0
-                i += 2
-                continue
-            }
-            i += 1
-            continue
-        }
-        if (two == "/*") {
-            in_block = 1
-            i += 2
-            continue
-        }
-        if (two == "//") {
-            break
-        }
-        code = code substr(line, i, 1)
-        i += 1
-    }
+    code = strip_comments(line)
     rest = code
     while (rest != "") {
         if (in_call) {

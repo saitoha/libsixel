@@ -127,6 +127,10 @@ while IFS='|' read -r doc_rel plan_glob; do
 done < "$plan_specs"
 LC_ALL=C sort -u "$expected_pairs" -o "$expected_pairs"
 
+# Adjacent inventory entries usually share a directory. Cache only its
+# physical resolution; existence and label equality are still checked per link.
+last_target_dir=
+resolved_dir=
 while IFS='|' read -r doc_rel test_rel target; do
     test -n "$doc_rel" || continue
     test -f "$src_root/$test_rel" || {
@@ -142,7 +146,11 @@ while IFS='|' read -r doc_rel test_rel target; do
     }
     target_dir=${target_path%/*}
     target_base=${target_path##*/}
-    resolved_target=$(CDPATH='' cd -- "$target_dir" && pwd -P)/$target_base
+    if test "$target_dir" != "$last_target_dir"; then
+        resolved_dir=$(CDPATH='' cd -- "$target_dir" && pwd -P)
+        last_target_dir=$target_dir
+    fi
+    resolved_target=$resolved_dir/$target_base
     test "$resolved_target" = "$src_root/$test_rel" || {
         printf '%s: test label %s resolves to a different target: %s\n' \
             "$doc_rel" "$test_rel" "$target" >> "$errors"

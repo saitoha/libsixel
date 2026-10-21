@@ -26,9 +26,19 @@ for scan_dir in "$src_root/src" "$src_root/include" "$src_root/tests"
 do
     test -d "$scan_dir" || continue
     find "$scan_dir" -type f \( -name '*.c' -o -name '*.h' \) -print
-done | LC_ALL=C sort | while IFS= read -r path
-do
-    awk '
+done | LC_ALL=C sort > "$tmpdir/sources"
+
+# Populate argv inside awk to avoid both per-file processes and ARG_MAX.
+awk -v sources="$tmpdir/sources" '
+    BEGIN {
+        while ((getline path < sources) > 0) ARGV[ARGC++] = path
+        close(sources)
+        if (ARGC == 1) exit
+    }
+    FNR == 1 {
+        depth = 0
+        delete guarded
+    }
     function starts_if(line) {
         return line ~ /^[[:space:]]*#[[:space:]]*(if|ifdef|ifndef)([[:space:]]|$)/
     }
@@ -68,11 +78,10 @@ do
     /^[[:space:]]*#[[:space:]]*pragma[[:space:]]+(GCC|clang)[[:space:]]+diagnostic[[:space:]]+ignored[[:space:]]+"-Wdeprecated-declarations"/ {
         if (!guarded[depth]) {
             printf "%s:%d:unguarded -Wdeprecated-declarations pragma\n",
-                FILENAME, NR
+                FILENAME, FNR
         }
     }
-    ' "$path"
-done > "$bad"
+    ' > "$bad"
 
 if test -f "$configure_ac"; then
     awk '

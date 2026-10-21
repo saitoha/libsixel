@@ -31,78 +31,45 @@ if test ! -d "$tests_root"; then
 fi
 
 find "$tests_root" -type f \( -name '*.c' -o -name '*.h' \
-    -o -name '*.inc.c' \) -exec awk '
+    -o -name '*.inc.c' \) -exec awk -v getenv_matches="$getenv_matches" \
+    -v fopen_matches="$fopen_matches" '
+# Skip complete comment/code spans without rescanning each character.
+function strip_comments(line, code, block_start, line_start, block_end) {
+    code = ""
+    while (line != "") {
+        if (in_block) {
+            block_end = index(line, "*/")
+            if (!block_end) return code
+            line = substr(line, block_end + 2)
+            in_block = 0
+            continue
+        }
+        block_start = index(line, "/*")
+        line_start = index(line, "//")
+        if (line_start && (!block_start || line_start < block_start)) {
+            return code substr(line, 1, line_start - 1)
+        }
+        if (!block_start) return code line
+        code = code substr(line, 1, block_start - 1)
+        line = substr(line, block_start + 2)
+        in_block = 1
+    }
+    return code
+}
 BEGIN {
     in_block = 0
 }
 {
     line = $0
-    code = ""
-    i = 1
-    while (i <= length(line)) {
-        two = substr(line, i, 2)
-        if (in_block) {
-            if (two == "*/") {
-                in_block = 0
-                i += 2
-                continue
-            }
-            i += 1
-            continue
-        }
-        if (two == "/*") {
-            in_block = 1
-            i += 2
-            continue
-        }
-        if (two == "//") {
-            break
-        }
-        code = code substr(line, i, 1)
-        i += 1
-    }
+    code = strip_comments(line)
     if (code ~ /(^|[^[:alnum:]_])getenv[[:space:]]*\(/) {
-        print FILENAME ":" FNR ":" line
-    }
-}
-' {} + >"$getenv_matches"
-
-find "$tests_root" -type f \( -name '*.c' -o -name '*.h' \
-    -o -name '*.inc.c' \) -exec awk '
-BEGIN {
-    in_block = 0
-}
-{
-    line = $0
-    code = ""
-    i = 1
-    while (i <= length(line)) {
-        two = substr(line, i, 2)
-        if (in_block) {
-            if (two == "*/") {
-                in_block = 0
-                i += 2
-                continue
-            }
-            i += 1
-            continue
-        }
-        if (two == "/*") {
-            in_block = 1
-            i += 2
-            continue
-        }
-        if (two == "//") {
-            break
-        }
-        code = code substr(line, i, 1)
-        i += 1
+        print FILENAME ":" FNR ":" line >> getenv_matches
     }
     if (code ~ /(^|[^[:alnum:]_])fopen[[:space:]]*\(/) {
-        print FILENAME ":" FNR ":" line
+        print FILENAME ":" FNR ":" line >> fopen_matches
     }
 }
-' {} + >"$fopen_matches"
+' {} +
 
 status=0
 

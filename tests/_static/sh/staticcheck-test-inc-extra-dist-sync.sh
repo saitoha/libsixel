@@ -49,9 +49,8 @@ in_dist_file=$tmpdir/in-dist.txt
 all_dist_file=$tmpdir/all-dist.txt
 missing_paths_file=$tmpdir/missing-paths.txt
 
-find "$tests_root" -type f -name '*.c' | LC_ALL=C sort | while IFS= read -r c_file
-do
-    awk '
+# Batch independent include scans; the final sort owns ordering and deduplication.
+find "$tests_root" -type f -name '*.c' -exec awk '
     {
         line = $0
         while (match(line, /#include[[:space:]]+"tests\/[A-Za-z0-9_.\/-]+\.inc\.c"/)) {
@@ -63,8 +62,7 @@ do
             line = substr(line, RSTART + RLENGTH)
         }
     }
-    ' "$c_file"
-done | LC_ALL=C sort -u > "$includes_file"
+    ' {} + | LC_ALL=C sort -u > "$includes_file"
 
 awk '
 BEGIN {

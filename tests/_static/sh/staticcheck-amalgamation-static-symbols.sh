@@ -141,9 +141,13 @@ if test ! -s "$unit_files"; then
     exit 0
 fi
 
-: > "$raw_symbols"
-while IFS= read -r unit_path; do
-    awk -v file="$unit_path" -v tests_root="$src_root/tests/" '
+# Keep parsing state local to each translation unit while reusing one process.
+# Loading argv from the inventory also avoids the host command-length limit.
+awk -v units="$unit_files" -v tests_root="$src_root/tests/" '
+BEGIN {
+    while ((getline file < units) > 0) ARGV[ARGC++] = file
+    close(units)
+}
 function trim(s) {
     sub(/^[[:space:]]+/, "", s)
     sub(/[[:space:]]+$/, "", s)
@@ -283,7 +287,9 @@ function start_signature(line,   candidate, search) {
     state = 2
     return 1
 }
-BEGIN {
+FNR == 1 {
+    file = FILENAME
+    delete macro_alias
     in_comment = 0
     is_test = index(file, tests_root) == 1
     in_typedef = 0
@@ -406,8 +412,7 @@ BEGIN {
         }
     }
 }
-' "$unit_path" >> "$raw_symbols"
-done < "$unit_files"
+' > "$raw_symbols"
 
 if test ! -s "$raw_symbols"; then
     echo "ok 1 - amalgamation static helpers and test types are unique"

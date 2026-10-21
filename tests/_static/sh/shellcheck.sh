@@ -17,7 +17,7 @@ test -n "${repo_root}" || {
     exit 2
 }
 
-script_dir=$(CDPATH="" cd -- "$(dirname -- "$0")" && pwd)
+script_dir=$(CDPATH="" cd -- "${0%/*}" && pwd)
 cd "${script_dir}/../../.."
 
 test -d "${repo_root}/tests" || {
@@ -66,11 +66,9 @@ else
     result_fifo="$tmpdir/result.fifo"
     failed_list="$tmpdir/failed.list"
     tab_char=$(printf '\t')
-    index=0
     while IFS= read -r test_file; do
         test -n "${test_file}" || continue
-        index=$((index + 1))
-        printf '%s\0%s\0' "$index" "$test_file" >> "$queue_file"
+        printf '%s\0' "$test_file" >> "$queue_file"
     done < "$tmpfile"
 
     mkfifo "$result_fifo"
@@ -84,36 +82,38 @@ else
     export SHELLCHECK_CMD_INNER="$shellcheck_cmd"
     export REPO_ROOT_INNER="$repo_root"
     export SHELLCHECK_LOG_DIR="$tmpdir"
+    # Each invocation checks a bounded batch. This amortizes process startup
+    # and shared source parsing without exceeding command-line/memory limits.
+    # A failing batch retains all diagnostics, including filenames; every
+    # nonzero tool status remains a failure, even without diagnostic output.
     # shellcheck disable=SC2016
-    xargs -0 -n 2 -P "$jobs" sh -c '
-        item_id=$1
-        test_file=$2
-        rel_file=${test_file#${REPO_ROOT_INNER}/}
+    xargs -0 -n 64 -P "$jobs" sh -c '
+        item_id=$$
         log_path="${SHELLCHECK_LOG_DIR}/${item_id}.log"
-        if "$SHELLCHECK_CMD_INNER" -x -P "${REPO_ROOT_INNER}" "$test_file" >"$log_path" 2>&1; then
-            printf "OK\t%s\t%s\n" "$item_id" "$rel_file"
+        if "$SHELLCHECK_CMD_INNER" -x -P "${REPO_ROOT_INNER}" "$@" >"$log_path" 2>&1; then
+            printf "OK\t%s\t%s\n" "$item_id" "$#"
         else
-            printf "NG\t%s\t%s\n" "$item_id" "$rel_file"
+            printf "NG\t%s\t%s\n" "$item_id" "$#"
         fi
     ' sh < "$queue_file" > "$result_fifo" &
     worker_pid=$!
     unset SHELLCHECK_CMD_INNER REPO_ROOT_INNER SHELLCHECK_LOG_DIR
 
-    while IFS="$tab_char" read -r result item_id rel_file; do
+    while IFS="$tab_char" read -r result item_id item_count; do
         test -n "$result" || continue
-        done_count=$((done_count + 1))
+        done_count=$((done_count + item_count))
         case "$result" in
             OK)
-                ok_count=$((ok_count + 1))
+                ok_count=$((ok_count + item_count))
                 ;;
             NG)
                 failed_count=$((failed_count + 1))
-                printf '%s\t%s\n' "$item_id" "$rel_file" >> "$failed_list"
+                printf '%s\n' "$item_id" >> "$failed_list"
                 ;;
         esac
         percent=$((done_count * 100 / total))
         if test "$progress_is_tty" -eq 1; then
-            printf '\r[shellcheck] %3d%% (%d/%d) success=%d failed=%d' \
+            printf '\r[shellcheck] %3d%% (%d/%d) clean_files=%d failed_batches=%d' \
                 "$percent" "$done_count" "$total" "$ok_count" "$failed_count"
         fi
     done < "$result_fifo"
@@ -132,14 +132,18 @@ else
             ;;
     esac
 
-    printf '[shellcheck] summary: success=%d failed=%d total=%d\n' \
-        "$ok_count" "$failed_count" "$total"
+    test "$done_count" -eq "$total" || {
+        echo "ERROR: shellcheck checked $done_count of $total files"
+        failed=1
+    }
+    printf '[shellcheck] summary: checked=%d total=%d failed_batches=%d\n' \
+        "$done_count" "$total" "$failed_count"
 
     if test -s "$failed_list"; then
-        while IFS="$tab_char" read -r item_id rel_file; do
+        while IFS= read -r item_id; do
             test -n "$item_id" || continue
-            echo "shellcheck failure: $rel_file"
-            sed -n '1,120p' "$tmpdir/$item_id.log"
+            echo "shellcheck failure in batch $item_id:"
+            cat "$tmpdir/$item_id.log"
         done < "$failed_list"
         failed=1
     fi

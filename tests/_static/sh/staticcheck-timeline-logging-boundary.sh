@@ -40,6 +40,10 @@ FILENAME != last_file {
     last_file = FILENAME
     path = rel(FILENAME)
 }
+# All rules below contain one of these literal fragments. Most source lines
+# need none of the more expensive expressions, including generated tables.
+index($0, "logger") == 0 && index($0, "timeline") == 0 &&
+    index($0, "sleep") == 0 { next }
 /# *include[ \t]+"logger\.h"/ {
     print path ":" FNR ": old logger.h include is forbidden"
 }

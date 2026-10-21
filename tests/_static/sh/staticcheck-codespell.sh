@@ -97,11 +97,9 @@ queue_file="$tmpdir/queue.bin"
 result_fifo="$tmpdir/result.fifo"
 failed_list="$tmpdir/failed.list"
 tab_char=$(printf '\t')
-index=0
 while IFS= read -r file_path; do
     test -n "$file_path" || continue
-    index=$((index + 1))
-    printf '%s\0%s\0' "$index" "$file_path" >> "$queue_file"
+    printf '%s\0' "$file_path" >> "$queue_file"
 done < "$tmpfile"
 
 mkfifo "$result_fifo"
@@ -115,35 +113,35 @@ xargs_status=0
 export CODESPELL_BIN="$codespell_bin"
 export CODESPELL_LOG_DIR="$tmpdir"
 # shellcheck disable=SC2016
-xargs -0 -n 2 -P "$jobs" sh -c '
-    item_id=$1
-    item_path=$2
+# Amortize Python startup and dictionary loading across bounded batches.
+xargs -0 -n 64 -P "$jobs" sh -c '
+    item_id=$$
     log_path="${CODESPELL_LOG_DIR}/${item_id}.log"
     # "doub"/"alis" are PSD descriptor types; "Alph" is a PSB section key.
-    if "$CODESPELL_BIN" -L "ser,sie,doub,alis,alph" "$item_path" >"$log_path" 2>&1; then
-        printf "OK\t%s\t%s\n" "$item_id" "$item_path"
+    if "$CODESPELL_BIN" -L "ser,sie,doub,alis,alph" "$@" >"$log_path" 2>&1; then
+        printf "OK\t%s\t%s\n" "$item_id" "$#"
     else
-        printf "NG\t%s\t%s\n" "$item_id" "$item_path"
+        printf "NG\t%s\t%s\n" "$item_id" "$#"
     fi
 ' sh < "$queue_file" > "$result_fifo" &
 worker_pid=$!
 unset CODESPELL_BIN CODESPELL_LOG_DIR
 
-while IFS="$tab_char" read -r result id file_path; do
+while IFS="$tab_char" read -r result id item_count; do
     test -n "$result" || continue
-    done_count=$((done_count + 1))
+    done_count=$((done_count + item_count))
     case "$result" in
         OK)
-            ok_count=$((ok_count + 1))
+            ok_count=$((ok_count + item_count))
             ;;
         NG)
             failed_count=$((failed_count + 1))
-            printf '%s\t%s\n' "$id" "$file_path" >> "$failed_list"
+            printf '%s\n' "$id" >> "$failed_list"
             ;;
     esac
     percent=$((done_count * 100 / total))
     if test "$progress_is_tty" -eq 1; then
-        printf '\r[codespell] %3d%% (%d/%d) success=%d failed=%d' \
+        printf '\r[codespell] %3d%% (%d/%d) clean_files=%d failed_batches=%d' \
             "$percent" "$done_count" "$total" "$ok_count" "$failed_count"
     fi
 done < "$result_fifo"
@@ -163,13 +161,17 @@ case "$xargs_status" in
 esac
 
 if test -s "$failed_list"; then
-    while IFS="$tab_char" read -r id file_path; do
+    while IFS= read -r id; do
         test -n "$id" || continue
-        emit_note "codespell failure: $file_path"
-        sed -n '1,120p' "$tmpdir/$id.log"
+        emit_note "codespell failure in batch $id:"
+        cat "$tmpdir/$id.log"
     done < "$failed_list"
 fi
 
+test "$done_count" -eq "$total" || {
+    emit_note "codespell: checked $done_count of $total files"
+    failed_count=$((failed_count + 1))
+}
 if test "$failed_count" -eq 0; then
     emit_pass
     exit 0
