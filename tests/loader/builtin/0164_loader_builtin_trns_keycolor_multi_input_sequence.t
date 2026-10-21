@@ -3,6 +3,7 @@
 # Verify alpha-policy selection is stable across multi-input sequences.
 # Policy: docs/loader/alpha-policy/README.md
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -22,21 +23,21 @@ out_composite="${ARTIFACT_LOCAL_DIR}/builtin-alpha-policy-multi-composite.six"
 out_repeated="${ARTIFACT_LOCAL_DIR}/builtin-alpha-policy-multi-repeated.six"
 
 # Keep the policy-sensitive PNG first in the sequence.
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ALPHA_POLICY=keep \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_ALPHA_POLICY=keep \
               --env SIXEL_THREADS=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_keep}" || {
     echo "not ok 1 - builtin multi-input alpha-policy=keep render failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ALPHA_POLICY=composite \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_ALPHA_POLICY=composite \
               --env SIXEL_THREADS=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_composite}" || {
     echo "not ok 1 - builtin multi-input alpha-policy=composite render failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
               --env SIXEL_ALPHA_POLICY=keep \
               --env SIXEL_ALPHA_POLICY=composite \
               --env SIXEL_THREADS=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \

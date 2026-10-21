@@ -2,6 +2,7 @@
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify empty SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR matches default behavior in builtin APNG path.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -18,7 +19,7 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 out_empty="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-env-empty.six"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-default.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR= \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR= \
               -Lbuiltin! \
               -d fs:scan=raster \
               "${input_png}" >"${out_empty}" || {
@@ -26,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -Lbuiltin! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin APNG default render failed"

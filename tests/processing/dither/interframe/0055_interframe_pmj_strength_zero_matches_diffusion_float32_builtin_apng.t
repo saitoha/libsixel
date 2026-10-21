@@ -2,6 +2,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring float32 PMJ strength=0 matches diffusion on APNG.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -11,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
     -L builtin \
     -ldisable \
@@ -26,7 +27,7 @@ echo "1..1"
 set -v
 
 diffusion_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         -L builtin \
         -ldisable \
@@ -39,7 +40,7 @@ diffusion_output=$(
 
 pmj_zero_output=$(
     SIXEL_DITHER_STBN_STRENGTH=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         -L builtin \
         -ldisable \

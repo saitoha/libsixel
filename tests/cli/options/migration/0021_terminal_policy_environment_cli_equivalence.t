@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify terminal cursor policy is equivalent through CLI and env paths.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -17,7 +18,7 @@ cli_output="${ARTIFACT_LOCAL_DIR}/terminal-policy-cli-$$.six"
 env_output="${ARTIFACT_LOCAL_DIR}/terminal-policy-env-$$.six"
 
 cli_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -l disable -z1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable -z1 \
     "${input_image}" -o "${cli_output}" 2>&1) || {
     echo "not ok" 1 - "terminal policy CLI conversion failed"
     exit 0
@@ -28,7 +29,7 @@ case "${cli_trace}" in *LSXTTY1\|hide_cursor=1\|override=1\|**) true ;; *) false
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -l disable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable \
     --env SIXEL_ANIMATION_HIDE_CURSOR=1 \
     "${input_image}" -o "${env_output}" 2>&1) || {
     echo "not ok" 1 - "terminal policy environment conversion failed"
@@ -40,7 +41,7 @@ case "${env_trace}" in *LSXTTY1\|hide_cursor=1\|override=0\|**) true ;; *) false
 }
 
 empty_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -l disable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable \
     --env SIXEL_ANIMATION_HIDE_CURSOR= \
     "${input_image}" -o /dev/null 2>&1) || {
     echo "not ok" 1 - "empty terminal policy conversion failed"
@@ -52,7 +53,7 @@ case "${empty_trace}" in *LSXTTY1\|hide_cursor=0\|override=0\|**) true ;; *) fal
 }
 
 override_trace=$(set +xv; SIXEL_TRACE_TOPIC=terminal_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -l disable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable \
     --env SIXEL_ANIMATION_HIDE_CURSOR=1 -z0 \
     "${input_image}" -o /dev/null 2>&1) || {
     echo "not ok" 1 - "terminal policy override conversion failed"

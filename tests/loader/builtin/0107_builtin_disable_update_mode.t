@@ -2,6 +2,7 @@
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # TAP test: builtin loader accepts disable/update macro mode flag combination.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -15,7 +16,7 @@ set -v
 
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -dnone -u -lauto "${image_gif}" -o/dev/null || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -Lbuiltin! -ldisable -dnone -u -lauto "${image_gif}" -o/dev/null || {
     echo "not ok" 1 - "animation disable with update failed"
     exit 0
 }

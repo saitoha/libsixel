@@ -2,6 +2,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring float32 CLI stbn alias matches stbn-hash output.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -20,7 +21,7 @@ nl='
 '
 
 hash_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         --precision=float32 \
         -L builtin \
@@ -36,7 +37,7 @@ test "${status}" -eq 0 || {
 
 status=0
 alias_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         --precision=float32 \
         -L builtin \
@@ -57,7 +58,7 @@ test "${alias_output}" = "${hash_output}" || {
 
 status=0
 msg=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --env SIXEL_TRACE_TOPIC=dither_contract \
         --threads=1 \
         --precision=float32 \

@@ -3,6 +3,7 @@
 # Policy: docs/loader/builtin/gif.md
 # TAP test: builtin GIF start frame accepts positive indexes.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -15,14 +16,14 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -L builtin! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/builtin_gif_start_default.six" || {
     echo "not ok" 1 - "baseline builtin GIF decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --env "SIXEL_TRACE_TOPIC=gif_decode" \
     --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
     -L builtin! -ldisable \

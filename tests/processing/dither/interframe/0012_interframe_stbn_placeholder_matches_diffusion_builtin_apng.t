@@ -4,6 +4,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring internal STBN placeholder stays diffusion-equivalent.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -13,7 +14,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
     -L builtin \
     -ldisable \
@@ -29,7 +30,7 @@ set -v
 
 diffusion_output=$(
     SIXEL_DITHER_STBN_SOURCE=diffusion \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         -L builtin \
         -ldisable \
@@ -42,7 +43,7 @@ diffusion_output=$(
 
 stbn_output=$(
     SIXEL_DITHER_STBN_SOURCE=stbn \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         -L builtin \
         -ldisable \

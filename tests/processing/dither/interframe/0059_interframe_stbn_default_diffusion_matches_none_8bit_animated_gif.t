@@ -2,6 +2,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring 8bit stbn defaults to diffusion=none.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -11,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
     -L builtin \
     -ldisable \
@@ -26,7 +27,7 @@ echo "1..1"
 set -v
 
 default_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         -L builtin \
         -ldisable \
@@ -38,7 +39,7 @@ default_output=$(
 }
 
 none_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         -L builtin \
         -ldisable \

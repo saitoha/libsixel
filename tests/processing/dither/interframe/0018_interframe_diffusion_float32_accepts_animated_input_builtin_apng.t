@@ -2,6 +2,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring interframe float32 accepts builtin APNG animation input.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -16,7 +17,7 @@ echo "1..1"
 set -v
 set +xv
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
     --precision=float32 \
     -L builtin \
@@ -25,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${input_apng}" >/dev/null 2>&1 || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         --precision=float32 \
         -L builtin \

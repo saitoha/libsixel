@@ -2,6 +2,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring alpha_guard=1 is reflected in 8bit STBN contract.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -13,7 +14,7 @@ input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 
 msg=''
 status=0
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --env SIXEL_TRACE_TOPIC=dither_contract \
     --threads=1 \
     -L builtin \

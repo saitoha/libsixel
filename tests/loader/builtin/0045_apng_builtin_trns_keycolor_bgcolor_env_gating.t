@@ -2,6 +2,7 @@
 # Test-plan: docs/testing/builtin-loader-coverage.md
 # Verify process SIXEL_BGCOLOR disables builtin APNG keycolor path.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -18,7 +19,7 @@ input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 out_on="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-bg-on.six"
 out_off="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-bg-off.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin! -d fs:scan=raster \
               "${input_png}" >"${out_on}" || {
@@ -26,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin! -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {

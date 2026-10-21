@@ -2,6 +2,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring 8bit PMJ strategy contract differs from STBN hash.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -14,7 +15,7 @@ input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 hash_msg=''
 status=0
 hash_msg=$(set +xv; SIXEL_DITHER_STBN_SOURCE=stbn-hash \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --env SIXEL_TRACE_TOPIC=dither_contract \
         --threads=1 \
         -L builtin \
@@ -34,7 +35,7 @@ set -v
 pmj_msg=''
 status=0
 pmj_msg=$(set +xv; SIXEL_DITHER_STBN_SOURCE=pmj \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --env SIXEL_TRACE_TOPIC=dither_contract \
         --threads=1 \
         -L builtin \

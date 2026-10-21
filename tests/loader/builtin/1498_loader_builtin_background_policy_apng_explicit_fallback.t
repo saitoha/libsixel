@@ -3,6 +3,7 @@
 # Verify APNG background policy fallback when only explicit background exists.
 # Policy: docs/loader/background-policy.md
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -15,27 +16,27 @@ set -v
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png"
 
-out_default=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+out_default=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     -Lbuiltin! -B#fff -d fs:scan=raster "${input_png}") || {
     echo "not ok 1 - default APNG background render failed"
     exit 0
 }
 
-out_explicit_first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+out_explicit_first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --env SIXEL_BACKGROUND_POLICY=explicit_first \
     -Lbuiltin! -B#fff -d fs:scan=raster "${input_png}") || {
     echo "not ok 1 - explicit_first APNG background render failed"
     exit 0
 }
 
-out_invalid=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+out_invalid=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --env SIXEL_BACKGROUND_POLICY=oops \
     -Lbuiltin! -B#fff -d fs:scan=raster "${input_png}") || {
     echo "not ok 1 - invalid APNG background policy render failed"
     exit 0
 }
 
-out_no_bg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+out_no_bg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     -Lbuiltin! -d fs:scan=raster "${input_png}") || {
     echo "not ok 1 - APNG no-bg render failed"
     exit 0

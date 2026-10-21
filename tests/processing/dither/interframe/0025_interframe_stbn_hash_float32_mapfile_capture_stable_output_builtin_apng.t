@@ -2,6 +2,7 @@
 # Policy: docs/encoder/palette-application/dithering/README.md
 # TAP test ensuring float32 stbn-hash mapfile capture is stable on APNG.
 
+# Assert frame content and option routing without playback delays.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
@@ -12,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 palette_output="${ARTIFACT_LOCAL_DIR}/interframe-float32-stbn-hash-mapfile-builtin-apng.pal"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
     --precision=float32 \
     -L builtin \
@@ -30,7 +31,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 baseline_output=$(
     SIXEL_DITHER_STBN_SOURCE=stbn-hash \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         --precision=float32 \
         -L builtin \
@@ -45,7 +46,7 @@ baseline_output=$(
 
 captured_output=$(
     SIXEL_DITHER_STBN_SOURCE=stbn-hash \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
         --precision=float32 \
         -L builtin \
