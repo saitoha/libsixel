@@ -408,6 +408,18 @@ Generated float palette entries retain the generation request's typed coordinate
 Before CPU palette application, compatibility-byte changes are reconciled with the working float view. Reading an unchanged byte view preserves its float fractions. Changing bytes through the mutable getter replaces the complete float view with the assigned byte coordinates in the current working format, so lookup and serialization agree. Explicit `sixel_dither_set_palette()` assignment is a byte precision boundary even when the assigned bytes equal the existing projection. Indexed serialization, which can bypass application, performs the same reconciliation before copying the working entries. An unchanged entry count and order after application do not invalidate prepared output values. Native standalone palettes retain their separately described domain and byte-shadow rules.
 
 
+## Implementation references
+
+- [`converters/terminal-color-job.c`](../../../converters/terminal-color-job.c): CLI requests, stdout routing and per-image save/set/verify/encode/restore.
+- [`converters/terminal-color-tty.c`](../../../converters/terminal-color-tty.c): private nonblocking TTY access and bounded exchanges.
+- [`src/encoder.c`](../../../src/encoder.c): option defaults and parsing, palette-source preparation, output format handoff, and the separate `-M` capture conversion.
+- [`src/encoder-core-encode.c`](../../../src/encoder-core-encode.c): private byte/float palette copies, output conversion, exact-snap finalization, and RGB/HLS definitions.
+- [`src/colorspace.c`](../../../src/colorspace.c): transfer curves, SMPTE-C matrices, conversion through linear RGB, clipping, and byte/float dispatch.
+- [`src/encoder-core-highcolor.c`](../../../src/encoder-core-highcolor.c): the alternate high-color implementation and destination-sample conversion.
+- [Color-space handling](../colorspace-handling/README.md): the wider source-profile, working-space, and output-space model, building on [Color spaces](../../concepts/colorspace/README.md).
+
+The CIELAB export witness protects neutral float endpoints; see the [external-palette coverage boundary](../palette-construction/external-palettes.md#coverage-audit-boundary) for its scope.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -1226,19 +1238,6 @@ The two-color fixtures preserve one extended and one fractional sample in all fi
 | OC-430 | Unsnapped sRGB8 palette export agrees between gamma and linear output. | [tests/quant/palette/output_float/0028_export_linear.t](../../../tests/quant/palette/output_float/0028_export_linear.t) |
 | OC-431 | Unsnapped sRGB8 palette export agrees between gamma and smptec output. | [tests/quant/palette/output_float/0029_export_smptec.t](../../../tests/quant/palette/output_float/0029_export_smptec.t) |
 
-## Implementation references
-
-- [`converters/terminal-color-job.c`](../../../converters/terminal-color-job.c): CLI requests, stdout routing and per-image save/set/verify/encode/restore.
-- [`converters/terminal-color-tty.c`](../../../converters/terminal-color-tty.c): private nonblocking TTY access and bounded exchanges.
-- [`src/encoder.c`](../../../src/encoder.c): option defaults and parsing, palette-source preparation, output format handoff, and the separate `-M` capture conversion.
-- [`src/encoder-core-encode.c`](../../../src/encoder-core-encode.c): private byte/float palette copies, output conversion, exact-snap finalization, and RGB/HLS definitions.
-- [`src/colorspace.c`](../../../src/colorspace.c): transfer curves, SMPTE-C matrices, conversion through linear RGB, clipping, and byte/float dispatch.
-- [`src/encoder-core-highcolor.c`](../../../src/encoder-core-highcolor.c): the alternate high-color implementation and destination-sample conversion.
-- [Color-space handling](../colorspace-handling/README.md): the wider source-profile, working-space, and output-space model, building on [Color spaces](../../concepts/colorspace/README.md).
-
-The CIELAB export witness protects neutral float endpoints; see the [external-palette coverage boundary](../palette-construction/external-palettes.md#coverage-audit-boundary) for its scope.
-
-
 ### Cover capacity and omission-slot contracts
 
 | ID | Contract | Owning test |
@@ -1279,7 +1278,7 @@ The CIELAB export witness protects neutral float endpoints; see the [external-pa
 | PR-16 | Compatibility projection rounding cannot replace K-center float values; the compatibility byte is not a substitute for the retained representative. | [tests/quant/palette/retention/0016_kcenter_boundary.t](../../../tests/quant/palette/retention/0016_kcenter_boundary.t) |
 | PR-17 | The compatibility hard-grid K-center path retains its selected typed representatives without a byte roundtrip. | [tests/quant/palette/0043_kcenter_float_grid_values.t](../../../tests/quant/palette/0043_kcenter_float_grid_values.t) |
 
-## Named destination contracts
+### Named destination contracts
 
 The named destination checks use independent Decimal primary matrices, Bradford adaptation and transfer equations. XYZ arithmetic uses an absolute tolerance of `2e-10`; ICC export permits `4e-5` for signed 15.16 matrix/TRC representation. The selected two-pixel wire witnesses have at least `0.035` percentage units to a rounding boundary, above the `0.002` propagated conversion budget. Working-space setup exercises roundtrip integration; the named XYZ checks independently test the colorimetry. The libpng/libtiff witnesses derive expectations from the stored P3 ICC coefficients and original 16-bit samples, with at least `0.087` percentage units to an RGB101 rounding boundary.
 
@@ -1326,7 +1325,7 @@ The named destination checks use independent Decimal primary matrices, Bradford 
 | ON-39 | Convert P3 ICC 16-bit libtiff input through builtin CMS to adobe-rgb. | [tests/quant/palette/named_output/0039_adobe_libtiff.t](../../../tests/quant/palette/named_output/0039_adobe_libtiff.t) |
 | ON-40 | Convert P3 ICC 16-bit libtiff input through builtin CMS to dci-p3. | [tests/quant/palette/named_output/0040_dci_libtiff.t](../../../tests/quant/palette/named_output/0040_dci_libtiff.t) |
 
-### ICC file endpoint contracts
+#### ICC file endpoint contracts
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -1363,7 +1362,7 @@ The named destination checks use independent Decimal primary matrices, Bradford 
 | IO-31 | The contribution table counts the ICC black baseline once. | [tests/quant/palette/icc_output/0031_black_table.t](../../../tests/quant/palette/icc_output/0031_black_table.t) |
 | IO-32 | Cached snap-grid evaluation preserves the ICC black baseline. | [tests/quant/palette/icc_output/0032_black_cache.t](../../../tests/quant/palette/icc_output/0032_black_cache.t) |
 
-### ICC option quality regression tests
+#### ICC option quality regression tests
 
 These image comparisons check CLI/environment equivalence and gross rendering regressions; the ICC contract tests above independently check numeric transforms and metadata.
 

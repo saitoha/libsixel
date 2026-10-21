@@ -287,30 +287,6 @@ The timing meta-check reads completed real-test results and does not register ex
 
 Time overruns are advisory. Missing/unreadable reports, missing non-skip durations, invalid durations or malformed allowlist records are evidence errors, not slow-test exceptions. The Python reader also rejects a supplied log with no measured records and nonfinite/negative measurements. Neither reader infers every intended observation from a partial log or proves that reported timing surrounds the required work; source review and comparison with actual TAP results remain necessary. Validation uses completed run logs and their measured selections; it does not rely on a separate boundary-value runtime self-test suite. Changes to the executor also require bounded process-semantic controls for exit-zero TAP failure, abnormal exit, delayed descendant output, early stream closure, timeout/backpressure, broken output, outer termination, setup/clock errors, argv/environment preservation, and the declared platform/fallback behavior. These controls do not replace normal-entry measurements or turn historical slow samples into passes.
 
-## Test coverage
-
-<!-- test-coverage: enforced -->
-
-Each automated contract has a stable ID and an owning test. The reciprocal `Policy:` reference in each check is itself verified by `staticcheck-doc-test-links`.
-
-| ID | Contract | Owning test |
-| --- | --- | --- |
-| TG-01 | TAP-producing test sources declare one observation, or a whole-file skip. | [tests/_static/sh/staticcheck-test-plan-single.sh](../../tests/_static/sh/staticcheck-test-plan-single.sh) |
-| TG-02 | Every shell TAP test passes ShellCheck, and global checks reject top-level `if` and shell function definitions. | [tests/_static/sh/staticcheck-shellcheck.sh](../../tests/_static/sh/staticcheck-shellcheck.sh) |
-| TG-03 | Shell TAP tests do not invoke `grep`, `awk`, or `sed`. | [tests/_static/sh/staticcheck-test-no-grep-awk.sh](../../tests/_static/sh/staticcheck-test-no-grep-awk.sh) |
-| TG-04 | Test-owned artifact directories are created lazily after TAP setup and early feature skips, while the harness does not create them. | [tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh](../../tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh) |
-| TG-05 | Numbered test-runner C sources, shared test support and registered external support retain synchronized amalgamation build defines; include fragments and always-included production units require no standalone test guard. | [tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh](../../tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh) |
-| TG-06 | Enforced policy documents and their listed tests carry reciprocal repository-relative links, and every coverage row has an owning test. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
-| TG-07 | Shell TAP tests do not use `for` or `until` loops; heredoc payloads in other languages are excluded. | [tests/_static/sh/staticcheck-test-no-for-until.sh](../../tests/_static/sh/staticcheck-test-no-for-until.sh) |
-| TG-08 | Aborttrace TAP tests that invoke the shared abort helper retain early whole-file skips for both Wine runtime prefixes. | [tests/_static/sh/staticcheck-aborttrace-wine-skip.sh](../../tests/_static/sh/staticcheck-aborttrace-wine-skip.sh) |
-| TG-09 | Marked test-plan inventories and their complete glob-scoped test sets carry exact reciprocal links without duplicate entries. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
-| TG-10 | Shell TAP sources retain executable filesystem or Git modes on the supported checkout and distribution paths. | [tests/_static/sh/staticcheck-test-executable.sh](../../tests/_static/sh/staticcheck-test-executable.sh) |
-| TG-11 | Shell pattern predicates use `case`; the redundant `${value#*marker*}` scan is rejected, and only exact, current entries with a recorded user approval can exempt a detected form. | [tests/_static/sh/staticcheck-test-pattern-match.sh](../../tests/_static/sh/staticcheck-test-pattern-match.sh) |
-
-### Coverage boundary
-
-These checks enforce the repository-wide invariants stated in their contract rows. The test-plan link check proves set completeness and reciprocity, not whether an inventory description accurately characterizes the assertion. Assertion choice, reference independence, numerical error budgets, actual-path verification, naming quality, fixture minimality, whether separate values provide distinct observations, and the necessity of file or process work still require review because they cannot be inferred reliably from syntax alone. Other syntactic rules in this guide are requirements even where the current static suite does not yet enforce them; the table must not be read as claiming broader mechanical coverage than its rows state.
-
 ## Required validation
 
 Put project-local Autotools, Meson, and related tools first in `PATH`.
@@ -346,3 +322,27 @@ Run `git diff --check` before committing. Use `make distcheck` when a change aff
 - A generated test name missing from the current build may indicate stale configuration; investigate regeneration before changing the assertion.
 
 Do not weaken assertions, replace expected output, or broaden skips until the failure's owning boundary is understood.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+Each automated contract has a stable ID and an owning test. The reciprocal `Policy:` reference in each check is itself verified by `staticcheck-doc-test-links`.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TG-01 | TAP-producing test sources declare one observation, or a whole-file skip. | [tests/_static/sh/staticcheck-test-plan-single.sh](../../tests/_static/sh/staticcheck-test-plan-single.sh) |
+| TG-02 | Every shell TAP test passes ShellCheck, and global checks reject top-level `if` and shell function definitions. | [tests/_static/sh/staticcheck-shellcheck.sh](../../tests/_static/sh/staticcheck-shellcheck.sh) |
+| TG-03 | Shell TAP tests do not invoke `grep`, `awk`, or `sed`. | [tests/_static/sh/staticcheck-test-no-grep-awk.sh](../../tests/_static/sh/staticcheck-test-no-grep-awk.sh) |
+| TG-04 | Test-owned artifact directories are created lazily after TAP setup and early feature skips, while the harness does not create them. | [tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh](../../tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh) |
+| TG-05 | Numbered test-runner C sources, shared test support and registered external support retain synchronized amalgamation build defines; include fragments and always-included production units require no standalone test guard. | [tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh](../../tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh) |
+| TG-06 | Enforced policy documents and their listed tests carry reciprocal repository-relative links, and every coverage row has an owning test. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
+| TG-07 | Shell TAP tests do not use `for` or `until` loops; heredoc payloads in other languages are excluded. | [tests/_static/sh/staticcheck-test-no-for-until.sh](../../tests/_static/sh/staticcheck-test-no-for-until.sh) |
+| TG-08 | Aborttrace TAP tests that invoke the shared abort helper retain early whole-file skips for both Wine runtime prefixes. | [tests/_static/sh/staticcheck-aborttrace-wine-skip.sh](../../tests/_static/sh/staticcheck-aborttrace-wine-skip.sh) |
+| TG-09 | Marked test-plan inventories and their complete glob-scoped test sets carry exact reciprocal links without duplicate entries. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
+| TG-10 | Shell TAP sources retain executable filesystem or Git modes on the supported checkout and distribution paths. | [tests/_static/sh/staticcheck-test-executable.sh](../../tests/_static/sh/staticcheck-test-executable.sh) |
+| TG-11 | Shell pattern predicates use `case`; the redundant `${value#*marker*}` scan is rejected, and only exact, current entries with a recorded user approval can exempt a detected form. | [tests/_static/sh/staticcheck-test-pattern-match.sh](../../tests/_static/sh/staticcheck-test-pattern-match.sh) |
+
+### Coverage boundary
+
+These checks enforce the repository-wide invariants stated in their contract rows. The test-plan link check proves set completeness and reciprocity, not whether an inventory description accurately characterizes the assertion. Assertion choice, reference independence, numerical error budgets, actual-path verification, naming quality, fixture minimality, whether separate values provide distinct observations, and the necessity of file or process work still require review because they cannot be inferred reliably from syntax alone. Other syntactic rules in this guide are requirements even where the current static suite does not yet enforce them; the table must not be read as claiming broader mechanical coverage than its rows state.

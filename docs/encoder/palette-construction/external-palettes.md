@@ -279,6 +279,13 @@ The project then moved away from that dependency. A [July 2015 commit](https://g
 
 `-M` is not part of that early history. It was added in [November 2025](https://github.com/saitoha/libsixel/commit/74a8cda3f441145dc6601989eab9e1f9412f0107), turning the older one-way fixed-palette input into a palette-generation, inspection, editing, and reuse workflow.
 
+## Implementation
+
+- [`src/mapfile.c`](../../../src/mapfile.c) implements format detection, parsing, and writing for ACT, JASC PAL, RIFF PAL, and GPL.
+- [`src/encoder.c`](../../../src/encoder.c) decides whether a mapfile is a palette or image, prepares fixed palettes, applies option conflicts, captures the final palette, and emits `-M` output.
+- [`tests/quant/mapfile/`](../../../tests/quant/mapfile/) covers format parsing, detection, malformed inputs, standard input, and format writers.
+- [`tests/quant/palette/usage/`](../../../tests/quant/palette/usage/) covers image mapfiles, lookup and diffusion application, fixed-palette bypasses, color-space conversion, animation, and palette export.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -514,13 +521,6 @@ EP-08 through EP-15 close the field-layout and line-ending gaps that the earlier
 This table proves libsixel's emitted bytes and its accepted and rejected interpretation of representative input. It does not run Photoshop, PaintShop Pro, GIMP, Krita, Aseprite, or Windows palette consumers, so the application-compatibility column remains evidence from the cited external specifications and application documentation rather than an integration-test claim. The exhaustive test-plan inventory proves that every current mapfile test remains discoverable, but its presence alone does not promote future fault-injection or implementation-specific cases into this public behavioral table.
 
 The fixed-palette snap and cover interactions are owned by the [snap-policy](snap-policy/README.md) and [cover-policy](cover-policy/README.md) documents. Their tests should remain linked there rather than being duplicated here solely because `-m`, `-b`, or `-e` participates in the scenario. The explicit lookup behavior for `-b` and `-e` is tested, but the lookup-policy document does not yet have an enforced coverage inventory, so those two tests currently have no reciprocal policy link.
-
-## Implementation
-
-- [`src/mapfile.c`](../../../src/mapfile.c) implements format detection, parsing, and writing for ACT, JASC PAL, RIFF PAL, and GPL.
-- [`src/encoder.c`](../../../src/encoder.c) decides whether a mapfile is a palette or image, prepares fixed palettes, applies option conflicts, captures the final palette, and emits `-M` output.
-- [`tests/quant/mapfile/`](../../../tests/quant/mapfile/) covers format parsing, detection, malformed inputs, standard input, and format writers.
-- [`tests/quant/palette/usage/`](../../../tests/quant/palette/usage/) covers image mapfiles, lookup and diffusion application, fixed-palette bypasses, color-space conversion, animation, and palette export.
 
 ## External format and compatibility references
 
