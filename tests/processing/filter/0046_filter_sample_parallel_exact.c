@@ -315,17 +315,28 @@ test_filter_0046_filter_sample_parallel_exact(int argc, char **argv)
     int clipped;
     int mode;
 
-    (void)argc;
-    (void)argv;
+    /* Each TAP producer selects one format so the full matrix remains
+     * bounded on slower hosts. Keep every clipping, quality and
+     * thread-budget comparison within that format's observation. */
+    if (argc != 2) {
+        return EXIT_FAILURE;
+    }
+    if (strcmp(argv[1], "rgb888") == 0) {
+        format = 0;
+    } else if (strcmp(argv[1], "pal8") == 0) {
+        format = 1;
+    } else if (strcmp(argv[1], "float32") == 0) {
+        format = 2;
+    } else {
+        return EXIT_FAILURE;
+    }
     if (sixel_compat_setenv("SIXEL_SAMPLE_PARALLEL_MIN_PIXELS", "1") != 0) {
         return EXIT_FAILURE;
     }
-    for (format = 0; format < 3; ++format) {
-        for (clipped = 0; clipped < 2; ++clipped) {
-            for (mode = 0; mode < 5; ++mode) {
-                if (!sample_case(format, clipped, mode)) {
-                    return EXIT_FAILURE;
-                }
+    for (clipped = 0; clipped < 2; ++clipped) {
+        for (mode = 0; mode < 5; ++mode) {
+            if (!sample_case(format, clipped, mode)) {
+                return EXIT_FAILURE;
             }
         }
     }
