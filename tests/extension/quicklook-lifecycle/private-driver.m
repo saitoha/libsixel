@@ -11,8 +11,8 @@ static NSString *test_pkgutil;
 #define SIXEL_PKGUTIL test_pkgutil
 #define SIXEL_PLUGIN_TOOL test_os
 #define SIXEL_INSTALL_UID 0
-#define SIXEL_USER_PROBE "private-user.h"
-#define SIXEL_USER_MUTATOR "private-mutations.h"
+#define SIXEL_USER_PROBE "private-user.inc.h"
+#define SIXEL_USER_MUTATOR "private-mutations.inc.h"
 #define main package_tool_main
 #include "../../../quicklook-extension/Sources/SixelPackageTool.m"
 #undef main

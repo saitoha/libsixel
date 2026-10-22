@@ -117,6 +117,8 @@ The `--enable-amalgamated-lib` and `--enable-amalgamated-tools` options are inde
 
 Consumers select the required parts of the generated source through compilation defines. The Autotools amalgamated test runner additionally uses `TEST_RUNNER_AMALGAMATION_DEFINES`; ordinary test-source registration alone is insufficient. In the amalgamated library path, `dither.c` is compiled separately with the split-dither contract to avoid compiler failures on an excessively large translation unit. Amalgamation therefore describes a generated source delivery mechanism, not a promise that every selected build uses exactly one object file.
 
+Headers containing implementation fragments that depend on declarations at their inclusion site use the `.inc.h` suffix. The generator excludes these fragments from its common header preamble. Quick Look lifecycle controls inject their private Objective-C query and mutation bodies through `SIXEL_USER_PROBE` and `SIXEL_USER_MUTATOR`; those bodies belong inside the private driver and must not enter ordinary C library builds.
+
 The tools-only amalgamation mode prepares shared generated inputs before parallel consumer builds. A stale `sixel.c` can retain an old feature selection or test registration, so rebuilding only `tests/test_runner` is insufficient when its generator inputs have changed but the owning generation path was bypassed.
 
 ## Test, install, and distribution targets
@@ -130,3 +132,13 @@ The tools-only amalgamation mode prepares shared generated inputs before paralle
 ## Source and generated-file maintenance
 
 Before changing this layer, inspect the root orchestration and the owning subdirectory together. Keep normal sources, distributed sources, optional feature branches, and amalgamated defines synchronized. Existing static checks cover selected invariants, including generated Makefile pairs, library source distribution, Meson palette source lists, and test-runner amalgamation defines. They do not prove complete semantic equivalence of the two build systems.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning check |
+| --- | --- | --- |
+| AT-01 | Private lifecycle injection bodies retain fragment names and remain absent from the generated common preamble, while ordinary public headers are still emitted. | [tests/_static/sh/staticcheck-amalgamation-test-fragments.sh](../../tests/_static/sh/staticcheck-amalgamation-test-fragments.sh) |
+
+This check verifies the generator boundary without compiling the generated C or the native Objective-C driver. Platform compilation and lifecycle behavior require their respective build and test jobs.

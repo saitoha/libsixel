@@ -1,5 +1,7 @@
-/* Private state endpoints. These headers are never included in the shipped
- * executable. The driver uses real payload/Security and journal code. */
+/* Private state endpoints injected inside the lifecycle driver. Keep the
+ * .inc.h suffix: these bodies require earlier driver declarations and must
+ * not be hoisted into the common amalgamation header preamble. The driver
+ * uses real payload/Security and journal code. */
 static NSDictionary *
 private_state(void)
 {

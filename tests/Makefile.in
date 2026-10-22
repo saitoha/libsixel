@@ -20023,6 +20023,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-test-suite-report.sh \
 	_static/sh/staticcheck-test-log-cleanup.sh \
 	_static/sh/staticcheck-installcheck-launch.sh \
+	_static/sh/staticcheck-amalgamation-test-fragments.sh \
 	_static/sh/staticcheck-test-runner-link.sh \
 	_static/python/test_runner_link.py \
 	_static/sh/staticcheck-command-dependencies.sh \
@@ -20098,8 +20099,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/edge-reference.h \
 	data/color-numeric/ray-reference.py \
 	data/color-numeric/ray-reference.h test-time-allowlist.tsv \
-	extension/quicklook-lifecycle/private-user.h \
-	extension/quicklook-lifecycle/private-mutations.h \
+	extension/quicklook-lifecycle/private-user.inc.h \
+	extension/quicklook-lifecycle/private-mutations.inc.h \
 	extension/quicklook-lifecycle/private-driver.m \
 	extension/quicklook-lifecycle/private-os.m \
 	extension/quicklook-lifecycle/audit.m \

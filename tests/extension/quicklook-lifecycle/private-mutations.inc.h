@@ -1,5 +1,6 @@
 /* Independent private OS state, with failure injection and a write-ahead
- * witness. Product code must publish pending intent before any mutation. */
+ * witness. Product code must publish pending intent before any mutation.
+ * This .inc.h body belongs inside the driver, not the amalgamation preamble. */
 static NSMutableDictionary *
 private_before_mutation(NSString *operation)
 {

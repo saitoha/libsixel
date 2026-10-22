@@ -9828,6 +9828,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-test-suite-report.sh \
     _static/sh/staticcheck-test-log-cleanup.sh \
     _static/sh/staticcheck-installcheck-launch.sh \
+    _static/sh/staticcheck-amalgamation-test-fragments.sh \
     _static/sh/staticcheck-test-runner-link.sh \
     _static/python/test_runner_link.py \
     _static/sh/staticcheck-command-dependencies.sh \
@@ -9998,8 +9999,8 @@ EXTRA_DIST += data/color-numeric/ray-reference.py \
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
 
-EXTRA_DIST += extension/quicklook-lifecycle/private-user.h \
-    extension/quicklook-lifecycle/private-mutations.h \
+EXTRA_DIST += extension/quicklook-lifecycle/private-user.inc.h \
+    extension/quicklook-lifecycle/private-mutations.inc.h \
     extension/quicklook-lifecycle/private-driver.m \
     extension/quicklook-lifecycle/private-os.m \
     extension/quicklook-lifecycle/audit.m \
