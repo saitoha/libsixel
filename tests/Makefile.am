@@ -247,6 +247,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0017_X_STRENGTH_PRECEDENCE \
     -DBUILD_TEST_0018_WIRE_A \
     -DBUILD_TEST_0019_WIRE_X \
+    -DBUILD_TEST_0020_DIRECT_EXACT \
     -DBUILD_TEST_0026_SCIELAB_IDENTITY \
     -DBUILD_TEST_0027_SCIELAB_UNIFORM \
     -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
@@ -5468,6 +5469,7 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0009_wire_hls_bluenoise.c \
     processing/gpu-palette/0010_comparison_default.c \
     processing/gpu-palette/0011_comparison_short.c \
+    processing/gpu-palette/0020_direct_exact.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \

@@ -1608,6 +1608,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gpu-palette/0009_wire_hls_bluenoise.c \
 	processing/gpu-palette/0010_comparison_default.c \
 	processing/gpu-palette/0011_comparison_short.c \
+	processing/gpu-palette/0020_direct_exact.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -5411,6 +5412,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0009_wire_hls_bluenoise.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0010_comparison_default.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0011_comparison_short.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0020_direct_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
@@ -10153,6 +10155,7 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo \
@@ -12269,6 +12272,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_X_STRENGTH_PRECEDENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_WIRE_A \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_WIRE_X \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_DIRECT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SCIELAB_IDENTITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_SCIELAB_UNIFORM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
@@ -17521,6 +17525,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0009_wire_hls_bluenoise.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0010_comparison_default.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0011_comparison_short.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0020_direct_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -24664,6 +24669,9 @@ processing/gpu-palette/test_runner-0010_comparison_default.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/test_runner-0011_comparison_short.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0020_direct_exact.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-dequant/$(am__dirstamp):
@@ -34704,6 +34712,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0017_x_strength_precedence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0018_wire_a.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo@am__quote@ # am--include-marker
@@ -56406,6 +56415,20 @@ processing/gpu-palette/test_runner-0011_comparison_short.obj: processing/gpu-pal
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0011_comparison_short.c' object='processing/gpu-palette/test_runner-0011_comparison_short.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0011_comparison_short.obj `if test -f 'processing/gpu-palette/0011_comparison_short.c'; then $(CYGPATH_W) 'processing/gpu-palette/0011_comparison_short.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0011_comparison_short.c'; fi`
+
+processing/gpu-palette/test_runner-0020_direct_exact.o: processing/gpu-palette/0020_direct_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0020_direct_exact.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Tpo -c -o processing/gpu-palette/test_runner-0020_direct_exact.o `test -f 'processing/gpu-palette/0020_direct_exact.c' || echo '$(srcdir)/'`processing/gpu-palette/0020_direct_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0020_direct_exact.c' object='processing/gpu-palette/test_runner-0020_direct_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0020_direct_exact.o `test -f 'processing/gpu-palette/0020_direct_exact.c' || echo '$(srcdir)/'`processing/gpu-palette/0020_direct_exact.c
+
+processing/gpu-palette/test_runner-0020_direct_exact.obj: processing/gpu-palette/0020_direct_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0020_direct_exact.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Tpo -c -o processing/gpu-palette/test_runner-0020_direct_exact.obj `if test -f 'processing/gpu-palette/0020_direct_exact.c'; then $(CYGPATH_W) 'processing/gpu-palette/0020_direct_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0020_direct_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0020_direct_exact.c' object='processing/gpu-palette/test_runner-0020_direct_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0020_direct_exact.obj `if test -f 'processing/gpu-palette/0020_direct_exact.c'; then $(CYGPATH_W) 'processing/gpu-palette/0020_direct_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0020_direct_exact.c'; fi`
 
 processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c

@@ -31,6 +31,14 @@ D(i, x) = sum_d (x[d] - c[i][d])^2
 
 The scan updates its result only for a strict improvement. If two entries have equal distance, the lower palette index wins because it was visited first.
 
+The Metal palette-application path evaluates the same scan as a matrix product. Dropping the query term common to every entry leaves the ranking unchanged:
+
+```text
+D(i, x) - |x|^2 = |c[i]|^2 - 2 x . c[i]
+```
+
+Each simdgroup multiplies 32 byte queries, as rows `(r, g, b, 1)`, by tiles of eight palette entries, as columns `(-2r, -2g, -2b, |c|^2)`, and keeps the first minimum in palette order. With byte coordinates every product and partial sum is an integer below `2^24`, so float32 matrix arithmetic is exact in any summation order and the kernel returns the scan's index, including the first-index tie rule. Apple GPU family 7 and later use this kernel; other devices, or a failed kernel build, keep the per-pixel scan. Both variants exclude a reserved omission key and apply 6delta keeps exactly as the scan does.
+
 Unlike the accelerated float32 policies, `none` does not divide each channel by its declared range. It is therefore the exhaustive reference for its own stored-coordinate metric, not for every other policy's normalized metric.
 
 ## Guarantee
@@ -60,4 +68,4 @@ For a SIXEL palette, `K` is bounded, but the factor remains important because th
 
 `none` is a libsixel descriptive name: no lookup acceleration. It is not the claim that palette application does no work.
 
-The implementation is [`lookup-policy-none.c`](../../../../src/lookup-policy-none.c), and selector-level monochrome handling is in [`lookup-policy.c`](../../../../src/lookup-policy.c).
+The implementation is [`lookup-policy-none.c`](../../../../src/lookup-policy-none.c), and selector-level monochrome handling is in [`lookup-policy.c`](../../../../src/lookup-policy.c). The Metal palette-application path, including its matrix-product direct lookup, is in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m).

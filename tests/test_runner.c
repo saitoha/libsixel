@@ -1198,6 +1198,7 @@ int test_gpupal_0010_comparison_default(int argc, char **argv);
 int test_gpupal_0011_comparison_short(int argc, char **argv);
 int test_gpupal_0018_wire_a(int argc, char **argv);
 int test_gpupal_0019_wire_x(int argc, char **argv);
+int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0012_a_candidates(int argc, char **argv);
 int test_gpupal_0013_x_candidates(int argc, char **argv);
 int test_gpupal_0014_a_auto_strength(int argc, char **argv);
@@ -5023,6 +5024,7 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0010_comparison_default },
     { "gpu-palette/0018_wire_a", test_gpupal_0018_wire_a },
     { "gpu-palette/0019_wire_x", test_gpupal_0019_wire_x },
+    { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0012_a_candidates",
       test_gpupal_0012_a_candidates },
     { "gpu-palette/0013_x_candidates",

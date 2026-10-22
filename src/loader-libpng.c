@@ -1619,6 +1619,12 @@ typedef struct sixel_apng_canvas {
     float *backup;
     int width;
     int height;
+    /* Nonzero while every canvas value is the linear decoding of a byte:
+     * no applied CMS transform, no source deeper than 8 bits and no
+     * fractional coverage have entered it.  Such frames are emitted as
+     * RGB888, as the builtin APNG byte canvas does, so later stages keep
+     * the byte pipeline.  The flag never returns to one. */
+    int byte_exact;
 } sixel_apng_canvas_t;
 
 typedef struct sixel_apng_replay_cache {
@@ -2015,19 +2021,20 @@ decode_png_rgba(unsigned char **result, int *width, int *height,
                 unsigned char *buffer, size_t size, unsigned char *bgcolor,
                 int enable_cms, int chrm_arithmetic,
                 sixel_png_alpha_t *alpha_state,
+                int *cms_applied,
                 sixel_allocator_t *allocator)
 {
     int format;
     int ncolors;
     int transparent;
     int alpha_zero;
-    int cms_applied;
 
     format = 0;
     ncolors = 0;
+    *cms_applied = 0;
     alpha_state->defer_composition = 1;
     return load_png(result, buffer, size, width, height, NULL, &ncolors, 0,
-                    &format, bgcolor, &transparent, &alpha_zero, &cms_applied,
+                    &format, bgcolor, &transparent, &alpha_zero, cms_applied,
                     enable_cms, chrm_arithmetic, alpha_state, allocator);
 }
 
@@ -2231,6 +2238,7 @@ emit_apng_frame(
     unsigned char *png_data;
     unsigned char *subframe;
     float *emitted;
+    unsigned char *emitted_bytes;
     unsigned char *mask;
     sixel_png_alpha_t alpha_state;
     size_t pixel_count;
@@ -2238,7 +2246,11 @@ emit_apng_frame(
     int channel;
     int hidden;
     int has_hidden;
+    int cms_applied;
+    unsigned int color_chunks;
+    char const *cicp_name;
     double alpha;
+    double value;
     size_t canvas_bytes;
     int cache_frame;
     unsigned char ihdr_copy[13];
@@ -2250,8 +2262,12 @@ emit_apng_frame(
     png_data = NULL;
     subframe = NULL;
     emitted = NULL;
+    emitted_bytes = NULL;
     mask = NULL;
     memset(&alpha_state, 0, sizeof(alpha_state));
+    cms_applied = 0;
+    color_chunks = 0u;
+    cicp_name = NULL;
     canvas_bytes = 0u;
     cache_frame = 0;
     (void)reqcolors;
@@ -2310,6 +2326,7 @@ emit_apng_frame(
                              enable_cms,
                              chrm_arithmetic,
                              &alpha_state,
+                             &cms_applied,
                              allocator);
 
     if (SIXEL_FAILED(status)) {
@@ -2318,6 +2335,30 @@ emit_apng_frame(
     if (width != (int)control->width || height != (int)control->height) {
         status = SIXEL_BAD_INPUT;
         goto end;
+    }
+    /* Color metadata other than an sRGB identity keeps the float canvas
+     * even when CMS is disabled: the bytes are not sRGB values to restore.
+     * This is load_png's source_color_work, evaluated without enable_cms.
+     * IHDR byte 8 is the bit depth. Binary coverage keeps both SOURCE and
+     * OVER results equal to one of the two byte-decoded operands. */
+    color_chunks = png_source_color_chunks(png_data, png_size);
+    cicp_name = sixel_frompng_cicp_name(png_data, png_size);
+    if (cicp_name != NULL && strcmp(cicp_name, "srgb") == 0) {
+        color_chunks = 0u;
+        cicp_name = NULL;
+    }
+    if (cms_applied || color_chunks != 0u || cicp_name != NULL ||
+            state->ihdr[8] > 8) {
+        canvas->byte_exact = 0;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    for (pixel_index = 0u;
+            canvas->byte_exact && pixel_index < pixel_count;
+            ++pixel_index) {
+        if (alpha_state.values[pixel_index] != 0.0f &&
+                alpha_state.values[pixel_index] != 1.0f) {
+            canvas->byte_exact = 0;
+        }
     }
 
     canvas_bytes = (size_t)canvas->width * (size_t)canvas->height
@@ -2358,6 +2399,26 @@ emit_apng_frame(
         }
     }
 
+    /* A byte-exact canvas holds only decoded bytes; the inverse transfer
+     * restores them exactly, as for unapplied metadata in load_png. A
+     * background color enters through the same byte decoding. */
+    if (canvas->byte_exact) {
+        emitted_bytes = (unsigned char *)sixel_allocator_malloc(
+            allocator, pixel_count * 3u);
+        if (emitted_bytes == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (pixel_index = 0u; pixel_index < pixel_count * 3u;
+                ++pixel_index) {
+            value = png_encode_srgb_unit(emitted[pixel_index]);
+            emitted_bytes[pixel_index] =
+                (unsigned char)(value * 255.0 + 0.5);
+        }
+        sixel_allocator_free(allocator, emitted);
+        emitted = NULL;
+    }
+
     status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2367,20 +2428,39 @@ emit_apng_frame(
     sixel_frame_set_frame_no(frame, frame_no);
     sixel_frame_set_loop_count(frame, loop_no);
     sixel_frame_set_multiframe(frame, multiframe);
-    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
-        sixel_frame_as_interface(frame),
-        &(sixel_frame_pixels_request_t){
-            (unsigned char *)emitted,
-            NULL,
-            canvas->width,
-            canvas->height,
-            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-            SIXEL_COLORSPACE_LINEAR,
-            0,
-            SIXEL_FRAME_PIXELS_FLOAT32
-        });
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (emitted_bytes != NULL) {
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                emitted_bytes,
+                NULL,
+                canvas->width,
+                canvas->height,
+                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_COLORSPACE_GAMMA,
+                0,
+                SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        emitted_bytes = NULL;
+    } else {
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                (unsigned char *)emitted,
+                NULL,
+                canvas->width,
+                canvas->height,
+                SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+                SIXEL_COLORSPACE_LINEAR,
+                0,
+                SIXEL_FRAME_PIXELS_FLOAT32
+            });
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
     frame->alpha_zero_is_transparent = has_hidden;
     if (has_hidden) {
@@ -2419,6 +2499,7 @@ end:
     sixel_allocator_free(allocator, png_data);
     sixel_allocator_free(allocator, subframe);
     sixel_allocator_free(allocator, emitted);
+    sixel_allocator_free(allocator, emitted_bytes);
     sixel_allocator_free(allocator, mask);
     sixel_allocator_free(allocator, alpha_state.values);
     sixel_allocator_free(allocator, alpha_state.mask);
@@ -2497,6 +2578,7 @@ load_apng_frames(
     seen_idat = 0;
     emit_callback = 1;
     memset(&canvas, 0, sizeof(canvas));
+    canvas.byte_exact = 1;
     canvas_bytes = 0;
     sequence_no = 0;
     fd_sequence = 0;
