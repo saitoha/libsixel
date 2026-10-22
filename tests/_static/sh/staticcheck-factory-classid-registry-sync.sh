@@ -45,6 +45,7 @@ if ! awk -f "$generator" \
     "$src_root"/src/lookup-policy-rbc.h \
     "$src_root"/src/lookup-policy-vptree.h \
     "$src_root"/src/lookup-policy-delaunay.h \
+    "$src_root"/src/lookup-policy-blockcull.h \
     "$src_root"/src/dither-policy-none.h \
     "$src_root"/src/dither-policy-fs.h \
     "$src_root"/src/dither-policy-atkinson.h \

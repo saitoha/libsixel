@@ -2956,7 +2956,8 @@ sixel_dither_set_lut_policy_with_override(sixel_dither_t *dither,
         || lut_policy == SIXEL_LUT_POLICY_VPTREE
         || lut_policy == SIXEL_LUT_POLICY_RBC
         || lut_policy == SIXEL_LUT_POLICY_MAHALANOBIS
-        || lut_policy == SIXEL_LUT_POLICY_DELAUNAY) {
+        || lut_policy == SIXEL_LUT_POLICY_DELAUNAY
+        || lut_policy == SIXEL_LUT_POLICY_BLOCKCULL) {
         normalized = lut_policy;
     }
     previous_policy = dither->lut_policy;

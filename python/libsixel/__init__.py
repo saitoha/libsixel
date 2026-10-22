@@ -356,6 +356,7 @@ SIXEL_LUT_POLICY_VPTREE    = 0x8  # VP-tree palette lookup
 SIXEL_LUT_POLICY_RBC       = 0x9  # randomized ball cover lookup
 SIXEL_LUT_POLICY_MAHALANOBIS = 0xa  # Mahalanobis-aware lookup
 SIXEL_LUT_POLICY_DELAUNAY = 0xb  # Exact Delaunay graph lookup
+SIXEL_LUT_POLICY_BLOCKCULL = 0xc  # Exact block candidate culling
 
 SIXEL_GPU_POLICY_OFF       = 0x0  # keep CPU palette apply
 SIXEL_GPU_POLICY_AUTO      = 0x1  # probe GPU above internal threshold

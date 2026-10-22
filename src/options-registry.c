@@ -1268,6 +1268,10 @@ static sixel_option_value_schema_t const g_lookup_values[] = {
     {
         "delaunay", SIXEL_LUT_POLICY_DELAUNAY, 0u,
         SIXEL_OPTION_BASE_POLICY_NONE
+    },
+    {
+        "blockcull", SIXEL_LUT_POLICY_BLOCKCULL, 0u,
+        SIXEL_OPTION_BASE_POLICY_NONE
     }
 };
 

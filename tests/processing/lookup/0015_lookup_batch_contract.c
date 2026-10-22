@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: MIT
  *
  * Policy: docs/encoder/palette-application/lookup-policy/delaunay.md
+ * Policy: docs/encoder/palette-application/lookup-policy/blockcull.md
  * Policy: docs/encoder/palette-application/lookup-policy/README.md
  * Compare ordered bulk calls against cold independent point-query state.
  */
@@ -273,6 +274,8 @@ test_lookup_0015_batch_contract(int argc, char **argv)
         "lookup/vptree.float32",
         "lookup/delaunay.8bit",
         "lookup/delaunay.float32",
+        "lookup/blockcull.8bit",
+        "lookup/blockcull.float32",
         "lookup/rbc.8bit",
         "lookup/rbc.float32",
         "lookup/mahalanobis.8bit",

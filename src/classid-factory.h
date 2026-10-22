@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_factory_classid_lookup --language=ANSI-C -m5 -t -H sixel_factory_classid_hash -W sixel_factory_classid_wordlist ./classid-factory.gperf  */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_factory_classid_lookup --language=ANSI-C -m5 -t -H sixel_factory_classid_hash -W sixel_factory_classid_wordlist ../../src/classid-factory.gperf  */
 /* Computed positions: -k'1,8,11,14,20' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,7 +29,7 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
-#line 6 "./classid-factory.gperf"
+#line 6 "../../src/classid-factory.gperf"
 
 #if defined(HAVE_STRING_H) && HAVE_STRING_H
 #include <string.h>
@@ -46,6 +46,7 @@
 #include "lookup-policy-rbc.h"
 #include "lookup-policy-vptree.h"
 #include "lookup-policy-delaunay.h"
+#include "lookup-policy-blockcull.h"
 #include "dither-policy-none.h"
 #include "dither-policy-fs.h"
 #include "dither-policy-atkinson.h"
@@ -205,267 +206,277 @@ typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
 # define SIXEL_FACTORY_CLASSID_CREATE_24 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_25 sixel_dither_policy_none_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_25 sixel_lookup_policy_blockcull_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_25 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_26 sixel_dither_policy_none_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_26 sixel_lookup_policy_blockcull_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_26 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_27 sixel_dither_policy_fs_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_27 sixel_dither_policy_none_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_27 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_28 sixel_dither_policy_fs_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_28 sixel_dither_policy_none_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_28 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_29 sixel_dither_policy_atkinson_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_29 sixel_dither_policy_fs_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_29 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_30 sixel_dither_policy_atkinson_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_30 sixel_dither_policy_fs_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_30 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_31 sixel_dither_policy_jajuni_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_31 sixel_dither_policy_atkinson_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_31 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_32 sixel_dither_policy_jajuni_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_32 sixel_dither_policy_atkinson_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_32 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_33 sixel_dither_policy_stucki_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_33 sixel_dither_policy_jajuni_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_33 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_34 sixel_dither_policy_stucki_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_34 sixel_dither_policy_jajuni_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_34 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_35 sixel_dither_policy_burkes_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_35 sixel_dither_policy_stucki_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_35 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_36 sixel_dither_policy_burkes_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_36 sixel_dither_policy_stucki_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_36 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_37 sixel_dither_policy_sierra1_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_37 sixel_dither_policy_burkes_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_37 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_38 sixel_dither_policy_sierra1_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_38 sixel_dither_policy_burkes_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_38 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_39 sixel_dither_policy_sierra2_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_39 sixel_dither_policy_sierra1_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_39 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_40 sixel_dither_policy_sierra2_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_40 sixel_dither_policy_sierra1_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_40 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_41 sixel_dither_policy_sierra3_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_41 sixel_dither_policy_sierra2_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_41 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_42 sixel_dither_policy_sierra3_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_42 sixel_dither_policy_sierra2_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_42 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_43 sixel_dither_policy_lso2_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_43 sixel_dither_policy_sierra3_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_43 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_44 sixel_dither_policy_lso2_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_44 sixel_dither_policy_sierra3_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_44 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_45 sixel_dither_policy_a_dither_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_45 sixel_dither_policy_lso2_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_45 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_46 sixel_dither_policy_a_dither_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_46 sixel_dither_policy_lso2_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_46 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_47 sixel_dither_policy_x_dither_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_47 sixel_dither_policy_a_dither_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_47 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_48 sixel_dither_policy_x_dither_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_48 sixel_dither_policy_a_dither_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_48 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_49 sixel_dither_policy_bluenoise_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_49 sixel_dither_policy_x_dither_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_49 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_50 sixel_dither_policy_bluenoise_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_50 sixel_dither_policy_x_dither_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_50 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_51 sixel_dither_policy_interframe_8bit_new
+# define SIXEL_FACTORY_CLASSID_CREATE_51 sixel_dither_policy_bluenoise_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_51 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_52 sixel_dither_policy_interframe_float32_new
+# define SIXEL_FACTORY_CLASSID_CREATE_52 sixel_dither_policy_bluenoise_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_52 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_53 sixel_loader_builtin_new
+# define SIXEL_FACTORY_CLASSID_CREATE_53 sixel_dither_policy_interframe_8bit_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_53 0
 #endif
-#if HAVE_COREGRAPHICS
-# define SIXEL_FACTORY_CLASSID_CREATE_54 sixel_loader_coregraphics_new
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_54 sixel_dither_policy_interframe_float32_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_54 0
 #endif
-#if HAVE_GD
-# define SIXEL_FACTORY_CLASSID_CREATE_55 sixel_loader_gd_new
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_55 sixel_loader_builtin_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_55 0
 #endif
-#if HAVE_GDK_PIXBUF2
-# define SIXEL_FACTORY_CLASSID_CREATE_56 sixel_loader_gdkpixbuf2_new
+#if HAVE_COREGRAPHICS
+# define SIXEL_FACTORY_CLASSID_CREATE_56 sixel_loader_coregraphics_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_56 0
 #endif
-#if HAVE_FREEDESKTOP_THUMBNAILING
-# define SIXEL_FACTORY_CLASSID_CREATE_57 sixel_loader_gnome_thumbnailer_new
+#if HAVE_GD
+# define SIXEL_FACTORY_CLASSID_CREATE_57 sixel_loader_gd_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_57 0
 #endif
-#if HAVE_JPEG
-# define SIXEL_FACTORY_CLASSID_CREATE_58 sixel_loader_libjpeg_new
+#if HAVE_GDK_PIXBUF2
+# define SIXEL_FACTORY_CLASSID_CREATE_58 sixel_loader_gdkpixbuf2_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_58 0
 #endif
-#if HAVE_LIBPNG
-# define SIXEL_FACTORY_CLASSID_CREATE_59 sixel_loader_libpng_new
+#if HAVE_FREEDESKTOP_THUMBNAILING
+# define SIXEL_FACTORY_CLASSID_CREATE_59 sixel_loader_gnome_thumbnailer_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_59 0
 #endif
-#if HAVE_LIBRSVG
-# define SIXEL_FACTORY_CLASSID_CREATE_60 sixel_loader_librsvg_new
+#if HAVE_JPEG
+# define SIXEL_FACTORY_CLASSID_CREATE_60 sixel_loader_libjpeg_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_60 0
 #endif
-#if HAVE_LIBTIFF
-# define SIXEL_FACTORY_CLASSID_CREATE_61 sixel_loader_libtiff_new
+#if HAVE_LIBPNG
+# define SIXEL_FACTORY_CLASSID_CREATE_61 sixel_loader_libpng_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_61 0
 #endif
-#if HAVE_WEBP
-# define SIXEL_FACTORY_CLASSID_CREATE_62 sixel_loader_libwebp_new
+#if HAVE_LIBRSVG
+# define SIXEL_FACTORY_CLASSID_CREATE_62 sixel_loader_librsvg_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_62 0
 #endif
-#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-# define SIXEL_FACTORY_CLASSID_CREATE_63 sixel_loader_quicklook_new
+#if HAVE_LIBTIFF
+# define SIXEL_FACTORY_CLASSID_CREATE_63 sixel_loader_libtiff_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_63 0
 #endif
-#if HAVE_WIC
-# define SIXEL_FACTORY_CLASSID_CREATE_64 sixel_loader_wic_new
+#if HAVE_WEBP
+# define SIXEL_FACTORY_CLASSID_CREATE_64 sixel_loader_libwebp_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_64 0
 #endif
-#if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_65 sixel_writer_factory_new
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+# define SIXEL_FACTORY_CLASSID_CREATE_65 sixel_loader_quicklook_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_65 0
 #endif
-#if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_66 sixel_encoder_core_factory_new
+#if HAVE_WIC
+# define SIXEL_FACTORY_CLASSID_CREATE_66 sixel_loader_wic_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_66 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_67 sixel_encoder_core_normal_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_67 sixel_writer_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_67 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_68 sixel_encoder_core_highcolor_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_68 sixel_encoder_core_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_68 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_69 sixel_encoder_core_ormode_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_69 sixel_encoder_core_normal_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_69 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_70 sixel_chunk_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_70 sixel_encoder_core_highcolor_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_70 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_71 sixel_frame_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_71 sixel_encoder_core_ormode_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_71 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_72 sixel_palette_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_72 sixel_chunk_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_72 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_73 sixel_loader_manager_new
+# define SIXEL_FACTORY_CLASSID_CREATE_73 sixel_frame_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_73 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_74 sixel_timeline_logger_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_74 sixel_palette_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_74 0
 #endif
-#line 431 "./classid-factory.gperf"
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_75 sixel_loader_manager_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_75 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_76 sixel_timeline_logger_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_76 0
+#endif
+#line 442 "../../src/classid-factory.gperf"
 struct sixel_factory_classid_entry {
     char const *name;
     sixel_factory_class_new_fn create;
 };
 
-#define TOTAL_KEYWORDS 74
+#define TOTAL_KEYWORDS 76
 #define MIN_WORD_LENGTH 9
 #define MAX_WORD_LENGTH 28
 #define MIN_HASH_VALUE 10
-#define MAX_HASH_VALUE 113
-/* maximum key range = 104, duplicates = 0 */
+#define MAX_HASH_VALUE 114
+/* maximum key range = 105, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -479,32 +490,32 @@ sixel_factory_classid_hash (register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114,   9,   0, 114, 114,  57,
-       27,  18, 114,  72,   0, 114,  18, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114,   0,   0,  21,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115,   9,   0, 115, 115,  57,
+       27,  18, 115,  72,   0, 115,  18, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115,   0,   0,  21,
         6,   6,  30,   9,  15,   0,  27,  39,   0,   6,
-        0,  12,  72,  57,   0,  12,   0,  18,  48,   0,
-       45, 114,  24, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114, 114, 114, 114, 114,
-      114, 114, 114, 114, 114, 114
+        0,  12,  72,  57,   0,  12,   0,  18,  75,   0,
+       45, 115,  36, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115, 115, 115, 115, 115,
+      115, 115, 115, 115, 115, 115
     };
   register unsigned int hval = len;
 
@@ -548,168 +559,172 @@ static const struct sixel_factory_classid_entry sixel_factory_classid_wordlist[]
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0},
-#line 499 "./classid-factory.gperf"
-    {"loader/wic", SIXEL_FACTORY_CLASSID_CREATE_64},
+#line 512 "../../src/classid-factory.gperf"
+    {"loader/wic", SIXEL_FACTORY_CLASSID_CREATE_66},
     {"", 0}, {"", 0}, {"", 0},
-#line 488 "./classid-factory.gperf"
-    {"loader/builtin", SIXEL_FACTORY_CLASSID_CREATE_53},
-#line 454 "./classid-factory.gperf"
+#line 501 "../../src/classid-factory.gperf"
+    {"loader/builtin", SIXEL_FACTORY_CLASSID_CREATE_55},
+#line 465 "../../src/classid-factory.gperf"
     {"lookup/rbc.8bit", SIXEL_FACTORY_CLASSID_CREATE_19},
-#line 438 "./classid-factory.gperf"
+#line 449 "../../src/classid-factory.gperf"
     {"lookup/6bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_3},
-#line 506 "./classid-factory.gperf"
-    {"image/frame", SIXEL_FACTORY_CLASSID_CREATE_71},
-#line 490 "./classid-factory.gperf"
-    {"loader/gd", SIXEL_FACTORY_CLASSID_CREATE_55},
-#line 439 "./classid-factory.gperf"
+#line 519 "../../src/classid-factory.gperf"
+    {"image/frame", SIXEL_FACTORY_CLASSID_CREATE_73},
+#line 503 "../../src/classid-factory.gperf"
+    {"loader/gd", SIXEL_FACTORY_CLASSID_CREATE_57},
+#line 450 "../../src/classid-factory.gperf"
     {"lookup/6bit.float32", SIXEL_FACTORY_CLASSID_CREATE_4},
-#line 508 "./classid-factory.gperf"
-    {"loader/manager", SIXEL_FACTORY_CLASSID_CREATE_73},
-#line 500 "./classid-factory.gperf"
-    {"io/sixel-writer", SIXEL_FACTORY_CLASSID_CREATE_65},
-#line 452 "./classid-factory.gperf"
+#line 521 "../../src/classid-factory.gperf"
+    {"loader/manager", SIXEL_FACTORY_CLASSID_CREATE_75},
+#line 513 "../../src/classid-factory.gperf"
+    {"io/sixel-writer", SIXEL_FACTORY_CLASSID_CREATE_67},
+#line 463 "../../src/classid-factory.gperf"
     {"lookup/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_17},
-#line 495 "./classid-factory.gperf"
-    {"loader/librsvg", SIXEL_FACTORY_CLASSID_CREATE_60},
+#line 508 "../../src/classid-factory.gperf"
+    {"loader/librsvg", SIXEL_FACTORY_CLASSID_CREATE_62},
     {"", 0},
-#line 453 "./classid-factory.gperf"
+#line 464 "../../src/classid-factory.gperf"
     {"lookup/none.float32", SIXEL_FACTORY_CLASSID_CREATE_18},
-#line 458 "./classid-factory.gperf"
+#line 469 "../../src/classid-factory.gperf"
     {"lookup/delaunay.8bit", SIXEL_FACTORY_CLASSID_CREATE_23},
     {"", 0},
-#line 460 "./classid-factory.gperf"
-    {"dither/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_25},
-#line 459 "./classid-factory.gperf"
+#line 473 "../../src/classid-factory.gperf"
+    {"dither/none.8bit", SIXEL_FACTORY_CLASSID_CREATE_27},
+#line 470 "../../src/classid-factory.gperf"
     {"lookup/delaunay.float32", SIXEL_FACTORY_CLASSID_CREATE_24},
-#line 455 "./classid-factory.gperf"
+#line 466 "../../src/classid-factory.gperf"
     {"lookup/rbc.float32", SIXEL_FACTORY_CLASSID_CREATE_20},
-#line 461 "./classid-factory.gperf"
-    {"dither/none.float32", SIXEL_FACTORY_CLASSID_CREATE_26},
-#line 480 "./classid-factory.gperf"
-    {"dither/a_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_45},
-#line 484 "./classid-factory.gperf"
-    {"dither/bluenoise.8bit", SIXEL_FACTORY_CLASSID_CREATE_49},
-#line 486 "./classid-factory.gperf"
-    {"dither/interframe.8bit", SIXEL_FACTORY_CLASSID_CREATE_51},
-#line 481 "./classid-factory.gperf"
-    {"dither/a_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_46},
+#line 474 "../../src/classid-factory.gperf"
+    {"dither/none.float32", SIXEL_FACTORY_CLASSID_CREATE_28},
+#line 493 "../../src/classid-factory.gperf"
+    {"dither/a_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_47},
+#line 497 "../../src/classid-factory.gperf"
+    {"dither/bluenoise.8bit", SIXEL_FACTORY_CLASSID_CREATE_51},
+#line 499 "../../src/classid-factory.gperf"
+    {"dither/interframe.8bit", SIXEL_FACTORY_CLASSID_CREATE_53},
+#line 494 "../../src/classid-factory.gperf"
+    {"dither/a_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_48},
     {"", 0},
-#line 487 "./classid-factory.gperf"
-    {"dither/interframe.float32", SIXEL_FACTORY_CLASSID_CREATE_52},
-#line 464 "./classid-factory.gperf"
-    {"dither/atkinson.8bit", SIXEL_FACTORY_CLASSID_CREATE_29},
-#line 492 "./classid-factory.gperf"
-    {"loader/gnome-thumbnailer", SIXEL_FACTORY_CLASSID_CREATE_57},
-#line 440 "./classid-factory.gperf"
+#line 500 "../../src/classid-factory.gperf"
+    {"dither/interframe.float32", SIXEL_FACTORY_CLASSID_CREATE_54},
+#line 477 "../../src/classid-factory.gperf"
+    {"dither/atkinson.8bit", SIXEL_FACTORY_CLASSID_CREATE_31},
+#line 505 "../../src/classid-factory.gperf"
+    {"loader/gnome-thumbnailer", SIXEL_FACTORY_CLASSID_CREATE_59},
+#line 451 "../../src/classid-factory.gperf"
     {"lookup/certlut.8bit", SIXEL_FACTORY_CLASSID_CREATE_5},
-#line 465 "./classid-factory.gperf"
-    {"dither/atkinson.float32", SIXEL_FACTORY_CLASSID_CREATE_30},
-#line 450 "./classid-factory.gperf"
+#line 478 "../../src/classid-factory.gperf"
+    {"dither/atkinson.float32", SIXEL_FACTORY_CLASSID_CREATE_32},
+#line 461 "../../src/classid-factory.gperf"
     {"lookup/mono-lightbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_15},
-#line 441 "./classid-factory.gperf"
+#line 452 "../../src/classid-factory.gperf"
     {"lookup/certlut.float32", SIXEL_FACTORY_CLASSID_CREATE_6},
-#line 496 "./classid-factory.gperf"
-    {"loader/libtiff", SIXEL_FACTORY_CLASSID_CREATE_61},
-#line 451 "./classid-factory.gperf"
+#line 509 "../../src/classid-factory.gperf"
+    {"loader/libtiff", SIXEL_FACTORY_CLASSID_CREATE_63},
+#line 462 "../../src/classid-factory.gperf"
     {"lookup/mono-lightbg.float32", SIXEL_FACTORY_CLASSID_CREATE_16},
-#line 489 "./classid-factory.gperf"
-    {"loader/coregraphics", SIXEL_FACTORY_CLASSID_CREATE_54},
-#line 446 "./classid-factory.gperf"
+#line 502 "../../src/classid-factory.gperf"
+    {"loader/coregraphics", SIXEL_FACTORY_CLASSID_CREATE_56},
+#line 457 "../../src/classid-factory.gperf"
     {"lookup/mahalanobis.8bit", SIXEL_FACTORY_CLASSID_CREATE_11},
-#line 485 "./classid-factory.gperf"
-    {"dither/bluenoise.float32", SIXEL_FACTORY_CLASSID_CREATE_50},
-#line 478 "./classid-factory.gperf"
-    {"dither/lso2.8bit", SIXEL_FACTORY_CLASSID_CREATE_43},
-#line 493 "./classid-factory.gperf"
-    {"loader/libjpeg", SIXEL_FACTORY_CLASSID_CREATE_58},
-#line 509 "./classid-factory.gperf"
-    {"diagnostics/timeline-logger", SIXEL_FACTORY_CLASSID_CREATE_74},
-#line 479 "./classid-factory.gperf"
-    {"dither/lso2.float32", SIXEL_FACTORY_CLASSID_CREATE_44},
+#line 498 "../../src/classid-factory.gperf"
+    {"dither/bluenoise.float32", SIXEL_FACTORY_CLASSID_CREATE_52},
+#line 491 "../../src/classid-factory.gperf"
+    {"dither/lso2.8bit", SIXEL_FACTORY_CLASSID_CREATE_45},
+#line 506 "../../src/classid-factory.gperf"
+    {"loader/libjpeg", SIXEL_FACTORY_CLASSID_CREATE_60},
+#line 522 "../../src/classid-factory.gperf"
+    {"diagnostics/timeline-logger", SIXEL_FACTORY_CLASSID_CREATE_76},
+#line 492 "../../src/classid-factory.gperf"
+    {"dither/lso2.float32", SIXEL_FACTORY_CLASSID_CREATE_46},
     {"", 0},
-#line 501 "./classid-factory.gperf"
-    {"codec/encoder-core", SIXEL_FACTORY_CLASSID_CREATE_66},
-#line 476 "./classid-factory.gperf"
-    {"dither/sierra3.8bit", SIXEL_FACTORY_CLASSID_CREATE_41},
+#line 514 "../../src/classid-factory.gperf"
+    {"codec/encoder-core", SIXEL_FACTORY_CLASSID_CREATE_68},
+#line 489 "../../src/classid-factory.gperf"
+    {"dither/sierra3.8bit", SIXEL_FACTORY_CLASSID_CREATE_43},
     {"", 0},
-#line 468 "./classid-factory.gperf"
-    {"dither/stucki.8bit", SIXEL_FACTORY_CLASSID_CREATE_33},
-#line 477 "./classid-factory.gperf"
-    {"dither/sierra3.float32", SIXEL_FACTORY_CLASSID_CREATE_42},
-#line 448 "./classid-factory.gperf"
+#line 481 "../../src/classid-factory.gperf"
+    {"dither/stucki.8bit", SIXEL_FACTORY_CLASSID_CREATE_35},
+#line 490 "../../src/classid-factory.gperf"
+    {"dither/sierra3.float32", SIXEL_FACTORY_CLASSID_CREATE_44},
+#line 459 "../../src/classid-factory.gperf"
     {"lookup/mono-darkbg.8bit", SIXEL_FACTORY_CLASSID_CREATE_13},
-#line 442 "./classid-factory.gperf"
-    {"lookup/eytzinger.8bit", SIXEL_FACTORY_CLASSID_CREATE_7},
-#line 502 "./classid-factory.gperf"
-    {"codec/encoder-core.normal", SIXEL_FACTORY_CLASSID_CREATE_67},
-#line 447 "./classid-factory.gperf"
+#line 471 "../../src/classid-factory.gperf"
+    {"lookup/blockcull.8bit", SIXEL_FACTORY_CLASSID_CREATE_25},
+#line 515 "../../src/classid-factory.gperf"
+    {"codec/encoder-core.normal", SIXEL_FACTORY_CLASSID_CREATE_69},
+#line 458 "../../src/classid-factory.gperf"
     {"lookup/mahalanobis.float32", SIXEL_FACTORY_CLASSID_CREATE_12},
-#line 470 "./classid-factory.gperf"
-    {"dither/burkes.8bit", SIXEL_FACTORY_CLASSID_CREATE_35},
-#line 474 "./classid-factory.gperf"
-    {"dither/sierra2.8bit", SIXEL_FACTORY_CLASSID_CREATE_39},
-#line 505 "./classid-factory.gperf"
-    {"image/chunk", SIXEL_FACTORY_CLASSID_CREATE_70},
-#line 456 "./classid-factory.gperf"
-    {"lookup/vptree.8bit", SIXEL_FACTORY_CLASSID_CREATE_21},
-#line 475 "./classid-factory.gperf"
-    {"dither/sierra2.float32", SIXEL_FACTORY_CLASSID_CREATE_40},
-#line 462 "./classid-factory.gperf"
-    {"dither/fs.8bit", SIXEL_FACTORY_CLASSID_CREATE_27},
-#line 466 "./classid-factory.gperf"
-    {"dither/jajuni.8bit", SIXEL_FACTORY_CLASSID_CREATE_31},
-#line 507 "./classid-factory.gperf"
-    {"quant/palette", SIXEL_FACTORY_CLASSID_CREATE_72},
-#line 444 "./classid-factory.gperf"
+#line 483 "../../src/classid-factory.gperf"
+    {"dither/burkes.8bit", SIXEL_FACTORY_CLASSID_CREATE_37},
+#line 487 "../../src/classid-factory.gperf"
+    {"dither/sierra2.8bit", SIXEL_FACTORY_CLASSID_CREATE_41},
+#line 518 "../../src/classid-factory.gperf"
+    {"image/chunk", SIXEL_FACTORY_CLASSID_CREATE_72},
+    {"", 0},
+#line 488 "../../src/classid-factory.gperf"
+    {"dither/sierra2.float32", SIXEL_FACTORY_CLASSID_CREATE_42},
+#line 475 "../../src/classid-factory.gperf"
+    {"dither/fs.8bit", SIXEL_FACTORY_CLASSID_CREATE_29},
+#line 479 "../../src/classid-factory.gperf"
+    {"dither/jajuni.8bit", SIXEL_FACTORY_CLASSID_CREATE_33},
+#line 520 "../../src/classid-factory.gperf"
+    {"quant/palette", SIXEL_FACTORY_CLASSID_CREATE_74},
+#line 455 "../../src/classid-factory.gperf"
     {"lookup/fhedt.8bit", SIXEL_FACTORY_CLASSID_CREATE_9},
-    {"", 0},
-#line 504 "./classid-factory.gperf"
-    {"codec/encoder-core.ormode", SIXEL_FACTORY_CLASSID_CREATE_69},
-#line 449 "./classid-factory.gperf"
+#line 453 "../../src/classid-factory.gperf"
+    {"lookup/eytzinger.8bit", SIXEL_FACTORY_CLASSID_CREATE_7},
+#line 517 "../../src/classid-factory.gperf"
+    {"codec/encoder-core.ormode", SIXEL_FACTORY_CLASSID_CREATE_71},
+#line 460 "../../src/classid-factory.gperf"
     {"lookup/mono-darkbg.float32", SIXEL_FACTORY_CLASSID_CREATE_14},
-#line 443 "./classid-factory.gperf"
+#line 472 "../../src/classid-factory.gperf"
+    {"lookup/blockcull.float32", SIXEL_FACTORY_CLASSID_CREATE_26},
+    {"", 0},
+#line 495 "../../src/classid-factory.gperf"
+    {"dither/x_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_49},
+#line 482 "../../src/classid-factory.gperf"
+    {"dither/stucki.float32", SIXEL_FACTORY_CLASSID_CREATE_36},
+#line 516 "../../src/classid-factory.gperf"
+    {"codec/encoder-core.highcolor", SIXEL_FACTORY_CLASSID_CREATE_70},
+#line 496 "../../src/classid-factory.gperf"
+    {"dither/x_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_50},
+#line 504 "../../src/classid-factory.gperf"
+    {"loader/gdk-pixbuf2", SIXEL_FACTORY_CLASSID_CREATE_58},
+    {"", 0},
+#line 476 "../../src/classid-factory.gperf"
+    {"dither/fs.float32", SIXEL_FACTORY_CLASSID_CREATE_30},
+#line 484 "../../src/classid-factory.gperf"
+    {"dither/burkes.float32", SIXEL_FACTORY_CLASSID_CREATE_38},
+#line 507 "../../src/classid-factory.gperf"
+    {"loader/libpng", SIXEL_FACTORY_CLASSID_CREATE_61},
+#line 510 "../../src/classid-factory.gperf"
+    {"loader/libwebp", SIXEL_FACTORY_CLASSID_CREATE_64},
+#line 454 "../../src/classid-factory.gperf"
     {"lookup/eytzinger.float32", SIXEL_FACTORY_CLASSID_CREATE_8},
-    {"", 0},
-#line 482 "./classid-factory.gperf"
-    {"dither/x_dither.8bit", SIXEL_FACTORY_CLASSID_CREATE_47},
-#line 469 "./classid-factory.gperf"
-    {"dither/stucki.float32", SIXEL_FACTORY_CLASSID_CREATE_34},
-#line 503 "./classid-factory.gperf"
-    {"codec/encoder-core.highcolor", SIXEL_FACTORY_CLASSID_CREATE_68},
-#line 483 "./classid-factory.gperf"
-    {"dither/x_dither.float32", SIXEL_FACTORY_CLASSID_CREATE_48},
-#line 491 "./classid-factory.gperf"
-    {"loader/gdk-pixbuf2", SIXEL_FACTORY_CLASSID_CREATE_56},
-    {"", 0},
-#line 463 "./classid-factory.gperf"
-    {"dither/fs.float32", SIXEL_FACTORY_CLASSID_CREATE_28},
-#line 471 "./classid-factory.gperf"
-    {"dither/burkes.float32", SIXEL_FACTORY_CLASSID_CREATE_36},
-#line 494 "./classid-factory.gperf"
-    {"loader/libpng", SIXEL_FACTORY_CLASSID_CREATE_59},
-#line 497 "./classid-factory.gperf"
-    {"loader/libwebp", SIXEL_FACTORY_CLASSID_CREATE_62},
-#line 457 "./classid-factory.gperf"
-    {"lookup/vptree.float32", SIXEL_FACTORY_CLASSID_CREATE_22},
-#line 436 "./classid-factory.gperf"
+#line 447 "../../src/classid-factory.gperf"
     {"lookup/5bit.8bit", SIXEL_FACTORY_CLASSID_CREATE_1},
     {"", 0},
-#line 467 "./classid-factory.gperf"
-    {"dither/jajuni.float32", SIXEL_FACTORY_CLASSID_CREATE_32},
-#line 437 "./classid-factory.gperf"
+#line 480 "../../src/classid-factory.gperf"
+    {"dither/jajuni.float32", SIXEL_FACTORY_CLASSID_CREATE_34},
+#line 448 "../../src/classid-factory.gperf"
     {"lookup/5bit.float32", SIXEL_FACTORY_CLASSID_CREATE_2},
+    {"", 0},
+#line 467 "../../src/classid-factory.gperf"
+    {"lookup/vptree.8bit", SIXEL_FACTORY_CLASSID_CREATE_21},
+#line 485 "../../src/classid-factory.gperf"
+    {"dither/sierra1.8bit", SIXEL_FACTORY_CLASSID_CREATE_39},
     {"", 0}, {"", 0},
-#line 472 "./classid-factory.gperf"
-    {"dither/sierra1.8bit", SIXEL_FACTORY_CLASSID_CREATE_37},
-    {"", 0}, {"", 0},
-#line 473 "./classid-factory.gperf"
-    {"dither/sierra1.float32", SIXEL_FACTORY_CLASSID_CREATE_38},
+#line 486 "../../src/classid-factory.gperf"
+    {"dither/sierra1.float32", SIXEL_FACTORY_CLASSID_CREATE_40},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 498 "./classid-factory.gperf"
-    {"loader/quicklook", SIXEL_FACTORY_CLASSID_CREATE_63},
+#line 511 "../../src/classid-factory.gperf"
+    {"loader/quicklook", SIXEL_FACTORY_CLASSID_CREATE_65},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 445 "./classid-factory.gperf"
-    {"lookup/fhedt.float32", SIXEL_FACTORY_CLASSID_CREATE_10}
+#line 456 "../../src/classid-factory.gperf"
+    {"lookup/fhedt.float32", SIXEL_FACTORY_CLASSID_CREATE_10},
+#line 468 "../../src/classid-factory.gperf"
+    {"lookup/vptree.float32", SIXEL_FACTORY_CLASSID_CREATE_22}
   };
 
 const struct sixel_factory_classid_entry *
@@ -729,7 +744,7 @@ sixel_factory_classid_lookup (register const char *str, register unsigned int le
     }
   return 0;
 }
-#line 510 "./classid-factory.gperf"
+#line 523 "../../src/classid-factory.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

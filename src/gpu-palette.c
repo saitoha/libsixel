@@ -70,11 +70,13 @@ sixel_gpu_palette_lut_policy_is_supported(
     /*
      * The Metal kernel has two explicit lookup modes.  NONE keeps the exact
      * direct scan, while EYTZINGER uses the one-dimensional projected search.
-     * Keep AUTO conservative for all other CPU lookup policies because the
-     * GPU path does not reproduce their output semantics.
+     * BLOCKCULL culls each pixel block's candidates before the same exact
+     * scan.  Keep AUTO conservative for all other CPU lookup policies because
+     * the GPU path does not reproduce their output semantics.
      */
     if (request->lut_policy == SIXEL_LUT_POLICY_NONE ||
-            request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
+            request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER ||
+            request->lut_policy == SIXEL_LUT_POLICY_BLOCKCULL) {
         return 1;
     }
     return sixel_gpu_palette_policy_is_force(request->policy);
@@ -471,7 +473,8 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
         return 1;
     }
     if (lut_policy != SIXEL_LUT_POLICY_NONE &&
-            lut_policy != SIXEL_LUT_POLICY_EYTZINGER) {
+            lut_policy != SIXEL_LUT_POLICY_EYTZINGER &&
+            lut_policy != SIXEL_LUT_POLICY_BLOCKCULL) {
         return 0;
     }
     if (!sixel_gpu_palette_method_is_supported(method_for_diffuse)) {

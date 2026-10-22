@@ -71,7 +71,8 @@ else
 # Isolate arithmetic flags from every other translation unit.
 noinst_LTLIBRARIES = libfloatlookup.la
 libfloatlookup_la_SOURCES = $(srcdir)/lookup-vptree-float32.c \
-    $(srcdir)/lookup-delaunay-float32.c
+    $(srcdir)/lookup-delaunay-float32.c \
+    $(srcdir)/lookup-blockcull-float32.c
 libfloatlookup_la_CPPFLAGS = $(libsixel_la_CPPFLAGS)
 libfloatlookup_la_CFLAGS = $(libsixel_la_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 FLOAT_LOOKUP_LIB = libfloatlookup.la
@@ -104,6 +105,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-fhedt.c \
                 $(srcdir)/lookup-policy-vptree.c \
                 $(srcdir)/lookup-policy-delaunay.c \
+                $(srcdir)/lookup-policy-blockcull.c \
                 $(srcdir)/lookup-policy-rbc.c \
                 $(srcdir)/lookup-policy-mahalanobis.c \
                 $(srcdir)/factory.c \
@@ -120,6 +122,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-delaunay-graph.h \
                 $(srcdir)/lookup-vptree-float32.h \
                 $(srcdir)/lookup-delaunay-float32.h \
+                $(srcdir)/lookup-blockcull-float32.h \
                 $(srcdir)/lookup-policy.h \
                 $(srcdir)/lookup-policy-none.h \
                 $(srcdir)/lookup-policy-mono-darkbg.h \
@@ -131,6 +134,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-fhedt.h \
                 $(srcdir)/lookup-policy-vptree.h \
                 $(srcdir)/lookup-policy-delaunay.h \
+                $(srcdir)/lookup-policy-blockcull.h \
                 $(srcdir)/lookup-policy-rbc.h \
                 $(srcdir)/lookup-policy-mahalanobis.h \
                 $(srcdir)/factory.h \
@@ -568,7 +572,8 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-none.h \
     $(srcdir)/lookup-policy-rbc.h \
     $(srcdir)/lookup-policy-vptree.h \
-    $(srcdir)/lookup-policy-delaunay.h
+    $(srcdir)/lookup-policy-delaunay.h \
+    $(srcdir)/lookup-policy-blockcull.h
 
 DITHER_POLICY_CLASSID_INPUTS = \
     $(srcdir)/dither-policy-none.h \

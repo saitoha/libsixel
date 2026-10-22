@@ -98,6 +98,7 @@ srcs = [
   'lookup-policy-fhedt.c',
   'lookup-policy-vptree.c',
   'lookup-policy-delaunay.c',
+  'lookup-policy-blockcull.c',
   'lookup-policy-rbc.c',
   'lookup-policy-mahalanobis.c',
   'factory.c',
@@ -293,6 +294,7 @@ srcs = [
   'lookup-policy-fhedt.h',
   'lookup-policy-vptree.h',
   'lookup-policy-delaunay.h',
+  'lookup-policy-blockcull.h',
   'lookup-policy-rbc.h',
   'lookup-policy-mahalanobis.h',
   'factory.h',
@@ -303,6 +305,7 @@ srcs = [
   'lookup-delaunay-graph.h',
   'lookup-vptree-float32.h',
   'lookup-delaunay-float32.h',
+  'lookup-blockcull-float32.h',
   'gpu-palette.h',
   'dither-interframe-method.c',
   'dither-interframe-method.h',
@@ -366,7 +369,8 @@ if amalgamated_lib_enabled
   libsixel_c_args = libsixel_posix_defs
 else
   float_lookup = static_library('sixel_float_lookup',
-    ['lookup-vptree-float32.c', 'lookup-delaunay-float32.c', sixcells_h],
+    ['lookup-vptree-float32.c', 'lookup-delaunay-float32.c',
+     'lookup-blockcull-float32.c', sixcells_h],
     include_directories: project_inc,
     dependencies: deps,
     c_args: libsixel_posix_defs + float_lookup_c_args,

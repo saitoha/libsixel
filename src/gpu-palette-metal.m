@@ -42,6 +42,7 @@
 #include "bluenoise_64x64.h"
 #include "gpu-dequant.h"
 #include "gpu-palette.h"
+#include "loader-common.h"
 
 enum {
     SIXEL_GPU_METAL_MODE_NONE = 0,
@@ -125,6 +126,7 @@ static id<MTLCommandQueue> g_sixel_gpu_metal_queue = nil;
 static id<MTLComputePipelineState> g_sixel_gpu_metal_pipeline = nil;
 static id<MTLComputePipelineState> g_sixel_gpu_metal_dequant_pipeline = nil;
 static id<MTLComputePipelineState> g_sixel_gpu_metal_gemm_pipeline = nil;
+static id<MTLComputePipelineState> g_sixel_gpu_metal_blockcull_pipeline = nil;
 static int g_sixel_gpu_metal_gemm_probe_done = 0;
 static id<MTLBuffer> g_sixel_gpu_metal_blue_noise_buffer = nil;
 static id<MTLBuffer> g_sixel_gpu_metal_dummy_buffer = nil;
@@ -242,8 +244,9 @@ static char const * const g_sixel_gpu_metal_gemm_source_chunks[] = {
 "    fn = (qid & 2u) * 2u + (lane % 2u) * 2u;\n"
 "    for (uint m = 0u; m < 4u; ++m) {\n"
 "        row = (m * 8u + fm) * 4u;\n"
-"        value = fn < 4u ? float2(rows[sg][row + fn], rows[sg][row + fn + 1u])\n"
-"                        : float2(0.0f);\n"
+"        value = fn < 4u\n"
+"            ? float2(rows[sg][row + fn], rows[sg][row + fn + 1u])\n"
+"            : float2(0.0f);\n"
 "        a[m].thread_elements()[0] = value.x;\n"
 "        a[m].thread_elements()[1] = value.y;\n"
 "        best_score[m] = INFINITY;\n"
@@ -286,6 +289,226 @@ static char const * const g_sixel_gpu_metal_gemm_source_chunks[] = {
 "        finish_pixel(result, params, accumulation, accumulation_valid_mask,\n"
 "                     accumulation_result_mask, gid, source,\n"
 "                     uint(picks[sg][lane]));\n"
+"    }\n"
+"}\n",
+"/*\n"
+" * Block-culled exact lookup.  A simdgroup owns an 8x8 pixel block; lane\n"
+" * L maps block positions L and L + 32 (column % 8, row / 8).  For color\n"
+" * c, far(c) bounds the distance from c to every point of the queries'\n"
+" * bounding box, so U = min far(c) bounds each query's nearest distance;\n"
+" * a color whose box distance exceeds U is strictly farther than the\n"
+" * color attaining U at every query.  Survivors keep palette order in\n"
+" * threadgroup GEMM tiles of 32 floats (rows -2r, -2g, -2b, |c|^2); a load\n"
+" * also reads the next tile's rows as rows 4..7, which meet the zero query\n"
+" * columns.  The first minimum then returns the direct scan's index, ties\n"
+" * included.  More than SIXEL_BLOCKCULL_CAP survivors use the full device\n"
+" * tiles.\n"
+" */\n"
+"#define SIXEL_BLOCKCULL_CAP 128u\n"
+"static uint blockcull_gid(constant Params& params, uint block, uint pos)\n"
+"{\n"
+"    uint blocks_x;\n"
+"    uint x;\n"
+"    uint y;\n"
+"\n"
+"    blocks_x = (params.width + 7u) / 8u;\n"
+"    x = (block % blocks_x) * 8u + pos % 8u;\n"
+"    y = (block / blocks_x) * 8u + pos / 8u;\n"
+"    if (x < params.width && y < params.height &&\n"
+"            y * params.width + x < params.pixel_count) {\n"
+"        return y * params.width + x;\n"
+"    }\n"
+"    return params.pixel_count;\n"
+"}\n"
+"kernel void sixel_gpu_palette_apply_blockcull(\n"
+"    device uchar *result [[buffer(0)]],\n"
+"    device const uchar *pixels [[buffer(1)]],\n"
+"    constant uchar *palette [[buffer(2)]],\n"
+"    device const uchar *transparent_mask [[buffer(3)]],\n"
+"    device const uchar *blue_noise [[buffer(4)]],\n"
+"    device const uchar *gradient [[buffer(5)]],\n"
+"    constant Params& params [[buffer(6)]],\n"
+"    device const uchar *accumulation [[buffer(7)]],\n"
+"    device const uchar *accumulation_valid_mask [[buffer(8)]],\n"
+"    device uchar *accumulation_result_mask [[buffer(9)]],\n"
+"    device const float *tiles [[buffer(13)]],\n"
+"    uint group [[threadgroup_position_in_grid]],\n"
+"    ushort group_simdgroups [[simdgroups_per_threadgroup]],\n"
+"    ushort lane [[thread_index_in_simdgroup]],\n"
+"    ushort sg [[simdgroup_index_in_threadgroup]])\n"
+"{\n"
+"    threadgroup float rows[8][64 * 4];\n"
+"    threadgroup float culled[8][(SIXEL_BLOCKCULL_CAP / 8u + 1u) * 32u];\n"
+"    threadgroup uchar map[8][SIXEL_BLOCKCULL_CAP];\n"
+"    threadgroup uchar picks[8][64];\n"
+"    uchar3 query[2];\n"
+"    uchar3 source[2];\n"
+"    bool done[2];\n"
+"    uint gid[2];\n"
+"    bool spill;\n"
+"    uint block;\n"
+"    uint3 low;\n"
+"    uint3 high;\n"
+"    int3 color;\n"
+"    int3 gap;\n"
+"    int bound;\n"
+"    uint count;\n"
+"    uint keep;\n"
+"    uint slot;\n"
+"    uint c;\n"
+"    uint h;\n"
+"    uint tile_count;\n"
+"    threadgroup float *column;\n"
+"    ushort qid;\n"
+"    ushort fm;\n"
+"    ushort fn;\n"
+"    uint row;\n"
+"    uint first;\n"
+"    float2 value;\n"
+"    float2 score;\n"
+"    float best_score[8];\n"
+"    uint best_index[8];\n"
+"    float other_score;\n"
+"    uint other_index;\n"
+"    simdgroup_float8x8 a[8];\n"
+"    simdgroup_float8x8 b;\n"
+"    simdgroup_float8x8 product;\n"
+"\n"
+"    block = group * uint(group_simdgroups) + uint(sg);\n"
+"    low = uint3(255u);\n"
+"    high = uint3(0u);\n"
+"    for (h = 0u; h < 2u; ++h) {\n"
+"        gid[h] = blockcull_gid(params, block, uint(lane) + h * 32u);\n"
+"        done[h] = prepare_query(result, pixels, transparent_mask,\n"
+"                                blue_noise, gradient, params, accumulation,\n"
+"                                accumulation_valid_mask,\n"
+"                                accumulation_result_mask, gid[h],\n"
+"                                query[h], source[h]);\n"
+"        if (!done[h]) {\n"
+"            low = min(low, uint3(query[h]));\n"
+"            high = max(high, uint3(query[h]));\n"
+"        }\n"
+"        rows[sg][(lane + h * 32u) * 4u + 0u] = float(query[h].x);\n"
+"        rows[sg][(lane + h * 32u) * 4u + 1u] = float(query[h].y);\n"
+"        rows[sg][(lane + h * 32u) * 4u + 2u] = float(query[h].z);\n"
+"        rows[sg][(lane + h * 32u) * 4u + 3u] = 1.0f;\n"
+"    }\n"
+"    if (simd_all(done[0] && done[1])) {\n"
+"        return;\n"
+"    }\n"
+"    low = uint3(simd_min(low.x), simd_min(low.y), simd_min(low.z));\n"
+"    high = uint3(simd_max(high.x), simd_max(high.y), simd_max(high.z));\n",
+"\n"
+"    bound = 0x7fffffff;\n"
+"    for (c = lane; c < params.ncolors; c += 32u) {\n"
+"        color = int3(palette[c * 3u + 0u], palette[c * 3u + 1u],\n"
+"                     palette[c * 3u + 2u]);\n"
+"        gap = max(color - int3(low), int3(high) - color);\n"
+"        bound = min(bound, gap.x * gap.x + gap.y * gap.y + gap.z * gap.z);\n"
+"    }\n"
+"    bound = simd_min(bound);\n"
+"\n"
+"    count = 0u;\n"
+"    for (uint base = 0u; base < params.ncolors &&\n"
+"            count <= SIXEL_BLOCKCULL_CAP; base += 32u) {\n"
+"        c = base + lane;\n"
+"        keep = 0u;\n"
+"        color = int3(0);\n"
+"        if (c < params.ncolors) {\n"
+"            color = int3(palette[c * 3u + 0u], palette[c * 3u + 1u],\n"
+"                         palette[c * 3u + 2u]);\n"
+"            gap = max(max(int3(low) - color, color - int3(high)), int3(0));\n"
+"            keep = gap.x * gap.x + gap.y * gap.y + gap.z * gap.z <= bound\n"
+"                ? 1u : 0u;\n"
+"        }\n"
+"        slot = count + simd_prefix_exclusive_sum(keep);\n"
+"        if (keep != 0u && slot < SIXEL_BLOCKCULL_CAP) {\n"
+"            column = &culled[sg][(slot / 8u) * 32u + slot % 8u];\n"
+"            column[0] = -2.0f * float(color.x);\n"
+"            column[8] = -2.0f * float(color.y);\n"
+"            column[16] = -2.0f * float(color.z);\n"
+"            column[24] = float(color.x * color.x + color.y * color.y +\n"
+"                               color.z * color.z);\n"
+"            map[sg][slot] = uchar(c);\n"
+"        }\n"
+"        count += simd_sum(keep);\n"
+"    }\n"
+"    spill = count > SIXEL_BLOCKCULL_CAP;\n"
+"    if (spill) {\n"
+"        tile_count = (params.ncolors + 7u) / 8u;\n"
+"    } else {\n"
+"        /* Unused columns never win; the extra tile only feeds rows 4..7\n"
+"         * of the last load and must stay finite. */\n"
+"        tile_count = (count + 7u) / 8u;\n"
+"        for (slot = count + lane; slot < tile_count * 8u + 8u;\n"
+"                slot += 32u) {\n"
+"            column = &culled[sg][(slot / 8u) * 32u + slot % 8u];\n"
+"            column[0] = 0.0f;\n"
+"            column[8] = 0.0f;\n"
+"            column[16] = 0.0f;\n"
+"            column[24] = slot < tile_count * 8u ? 1.0e30f : 0.0f;\n"
+"        }\n"
+"    }\n"
+"    simdgroup_barrier(mem_flags::mem_threadgroup);\n",
+"\n"
+"    qid = lane / 4u;\n"
+"    fm = (qid & 4u) + (lane / 2u) % 4u;\n"
+"    fn = (qid & 2u) * 2u + (lane % 2u) * 2u;\n"
+"    for (uint m = 0u; m < 8u; ++m) {\n"
+"        row = (m * 8u + fm) * 4u;\n"
+"        value = fn < 4u\n"
+"            ? float2(rows[sg][row + fn], rows[sg][row + fn + 1u])\n"
+"            : float2(0.0f);\n"
+"        a[m].thread_elements()[0] = value.x;\n"
+"        a[m].thread_elements()[1] = value.y;\n"
+"        best_score[m] = INFINITY;\n"
+"        best_index[m] = 0u;\n"
+"    }\n"
+"    for (uint t = 0u; t < tile_count; ++t) {\n"
+"        if (spill) {\n"
+"            simdgroup_load(b, tiles + t * 64u, 8);\n"
+"        } else {\n"
+"            simdgroup_load(b, &culled[sg][t * 32u], 8);\n"
+"        }\n"
+"        first = t * 8u + fn;\n"
+"        for (uint m = 0u; m < 8u; ++m) {\n"
+"            simdgroup_multiply(product, a[m], b);\n"
+"            score = float2(product.thread_elements()[0],\n"
+"                           product.thread_elements()[1]);\n"
+"            if (score.x < best_score[m]) {\n"
+"                best_score[m] = score.x;\n"
+"                best_index[m] = first;\n"
+"            }\n"
+"            if (score.y < best_score[m]) {\n"
+"                best_score[m] = score.y;\n"
+"                best_index[m] = first + 1u;\n"
+"            }\n"
+"        }\n"
+"    }\n"
+"    for (uint m = 0u; m < 8u; ++m) {\n"
+"        for (ushort mask = 1u; mask <= 8u; mask = ushort(mask * 8u)) {\n"
+"            other_score = simd_shuffle_xor(best_score[m], mask);\n"
+"            other_index = simd_shuffle_xor(best_index[m], mask);\n"
+"            if (other_score < best_score[m] ||\n"
+"                    (other_score == best_score[m] &&\n"
+"                     other_index < best_index[m])) {\n"
+"                best_score[m] = other_score;\n"
+"                best_index[m] = other_index;\n"
+"            }\n"
+"        }\n"
+"        if ((lane & 9u) == 0u) {\n"
+"            picks[sg][m * 8u + fm] = spill ? uchar(best_index[m])\n"
+"                                           : map[sg][best_index[m]];\n"
+"        }\n"
+"    }\n"
+"    simdgroup_barrier(mem_flags::mem_threadgroup);\n"
+"    for (h = 0u; h < 2u; ++h) {\n"
+"        if (!done[h]) {\n"
+"            finish_pixel(result, params, accumulation,\n"
+"                         accumulation_valid_mask, accumulation_result_mask,\n"
+"                         gid[h], source[h],\n"
+"                         uint(picks[sg][lane + h * 32u]));\n"
+"        }\n"
 "    }\n"
 "}\n",
 NULL
@@ -1177,6 +1400,34 @@ sixel_gpu_palette_metal_prepare_locked(void)
     return 1;
 }
 
+/* The simdgroup kernels' lane layout assumes 32-wide simdgroups, and
+ * dispatch needs at least one whole simdgroup per threadgroup. */
+static id<MTLComputePipelineState>
+sixel_gpu_palette_metal_simdgroup_pipeline(id<MTLLibrary> library,
+                                           NSString *name)
+{
+    NSError *error;
+    id<MTLFunction> function;
+    id<MTLComputePipelineState> pipeline;
+
+    error = nil;
+    function = [library newFunctionWithName:name];
+    if (function == nil) {
+        return nil;
+    }
+    pipeline =
+        [g_sixel_gpu_metal_device newComputePipelineStateWithFunction:function
+                                                                 error:&error];
+    [function release];
+    if (pipeline != nil &&
+            ([pipeline threadExecutionWidth] != 32U ||
+             [pipeline maxTotalThreadsPerThreadgroup] < 32U)) {
+        [pipeline release];
+        pipeline = nil;
+    }
+    return pipeline;
+}
+
 /*
  * Build the GEMM pipeline on first request.  Failure leaves the pipeline
  * nil and the direct scan in use; it never disables Metal palette apply.
@@ -1187,11 +1438,9 @@ sixel_gpu_palette_metal_prepare_gemm_locked(void)
     NSError *error;
     NSMutableString *source;
     id<MTLLibrary> library;
-    id<MTLFunction> function;
 
     error = nil;
     library = nil;
-    function = nil;
     if (g_sixel_gpu_metal_gemm_probe_done != 0) {
         return g_sixel_gpu_metal_gemm_pipeline != nil;
     }
@@ -1218,24 +1467,17 @@ sixel_gpu_palette_metal_prepare_gemm_locked(void)
     if (library == nil) {
         return 0;
     }
-    function = [library newFunctionWithName:@"sixel_gpu_palette_apply_gemm"];
-    [library release];
-    if (function == nil) {
-        return 0;
-    }
     g_sixel_gpu_metal_gemm_pipeline =
-        [g_sixel_gpu_metal_device newComputePipelineStateWithFunction:function
-                                                                 error:&error];
-    [function release];
-    /* The kernel's lane layout assumes 32-wide simdgroups, and dispatch
-     * needs at least one whole simdgroup per threadgroup. */
-    if (g_sixel_gpu_metal_gemm_pipeline != nil &&
-            ([g_sixel_gpu_metal_gemm_pipeline threadExecutionWidth] != 32U ||
-             [g_sixel_gpu_metal_gemm_pipeline
-                 maxTotalThreadsPerThreadgroup] < 32U)) {
-        [g_sixel_gpu_metal_gemm_pipeline release];
-        g_sixel_gpu_metal_gemm_pipeline = nil;
+        sixel_gpu_palette_metal_simdgroup_pipeline(
+            library, @"sixel_gpu_palette_apply_gemm");
+    /* Block culling shares the library; without it, blockcull keeps the
+     * exhaustive GEMM, which returns the same indexes. */
+    if (g_sixel_gpu_metal_gemm_pipeline != nil) {
+        g_sixel_gpu_metal_blockcull_pipeline =
+            sixel_gpu_palette_metal_simdgroup_pipeline(
+                library, @"sixel_gpu_palette_apply_blockcull");
     }
+    [library release];
     return g_sixel_gpu_metal_gemm_pipeline != nil;
 }
 
@@ -1400,6 +1642,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     id<MTLBuffer> gemm_tiles_buffer;
     id<MTLComputePipelineState> pipeline;
     int use_gemm;
+    int use_blockcull;
+    NSUInteger dispatched;
     int result_buffer_direct;
     int locked;
 
@@ -1439,6 +1683,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     gemm_tiles_buffer = nil;
     pipeline = nil;
     use_gemm = 0;
+    use_blockcull = 0;
+    dispatched = 0U;
     result_buffer_direct = 0;
     locked = 0;
 
@@ -1595,7 +1841,23 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             if (gemm_tiles_buffer != nil) {
                 pipeline = g_sixel_gpu_metal_gemm_pipeline;
                 use_gemm = 1;
+                /* Culling keeps the full tiles for blocks that overflow
+                 * its survivor capacity.  A palette of at most four tiles
+                 * costs less to scan than to cull; both return the same
+                 * indexes. */
+                if (request->lut_policy == SIXEL_LUT_POLICY_BLOCKCULL &&
+                        request->ncolors > 32 &&
+                        g_sixel_gpu_metal_blockcull_pipeline != nil) {
+                    pipeline = g_sixel_gpu_metal_blockcull_pipeline;
+                    use_blockcull = 1;
+                }
             }
+        }
+        if (sixel_trace_topic_is_enabled("gpu_contract")) {
+            fprintf(stderr, "LSXGPU2|consumer=palette-apply|kernel=%s\n",
+                    use_blockcull ? "blockcull" : use_gemm ? "gemm" :
+                    request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER ?
+                    "eytzinger" : "direct");
         }
 
         command_buffer = [g_sixel_gpu_metal_queue commandBuffer];
@@ -1636,8 +1898,13 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         if (threads_per_group == 0U) {
             threads_per_group = 1U;
         }
-        groups = ((NSUInteger)request->pixel_count + threads_per_group - 1U) /
-            threads_per_group;
+        dispatched = (NSUInteger)request->pixel_count;
+        if (use_blockcull) {
+            /* One simdgroup per 8x8 pixel block. */
+            dispatched = (NSUInteger)((request->width + 7) / 8) *
+                (NSUInteger)((request->height + 7) / 8) * 32U;
+        }
+        groups = (dispatched + threads_per_group - 1U) / threads_per_group;
         [encoder dispatchThreadgroups:MTLSizeMake(groups, 1U, 1U)
                 threadsPerThreadgroup:MTLSizeMake(threads_per_group, 1U, 1U)];
         [encoder endEncoding];

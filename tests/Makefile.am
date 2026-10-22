@@ -248,6 +248,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0018_WIRE_A \
     -DBUILD_TEST_0019_WIRE_X \
     -DBUILD_TEST_0020_DIRECT_EXACT \
+    -DBUILD_TEST_0021_BLOCKCULL_EXACT \
     -DBUILD_TEST_0026_SCIELAB_IDENTITY \
     -DBUILD_TEST_0027_SCIELAB_UNIFORM \
     -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
@@ -2059,6 +2060,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0031_DELAUNAY_FLOAT_DISTANCE \
     -DBUILD_TEST_0032_DELAUNAY_FLOAT_BULK \
     -DBUILD_TEST_0034_DELAUNAY_BYTE_BULK \
+    -DBUILD_TEST_0035_BLOCKCULL_EXACT \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -5470,6 +5472,7 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0010_comparison_default.c \
     processing/gpu-palette/0011_comparison_short.c \
     processing/gpu-palette/0020_direct_exact.c \
+    processing/gpu-palette/0021_blockcull_exact.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -5630,6 +5633,7 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0020_lookup_float_workspace_failure.c \
     processing/lookup/0021_delaunay_byte_exact.c \
     processing/lookup/0034_delaunay_byte_bulk.c \
+    processing/lookup/0035_blockcull_exact.c \
     processing/dither/0001_dither_policy.c \
     processing/dither/perturb/0018_perturb_keep_lookup.c \
     processing/dither/perturb/0017_perturb_keep_early.c \
