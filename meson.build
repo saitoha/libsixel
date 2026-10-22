@@ -2634,7 +2634,7 @@ endif
 extension_installcheck_command = wic_installcheck_command
 # Keep extension observation independent of generic CLI selection. Its log
 # base is separate so the later generic suite cannot replace its evidence.
-if get_option('tests')
+if get_option('tests') and have_quicklook_extension
   run_target('register-quicklook-extension', command: [sh,
     meson.current_source_dir() / 'tools/quicklook-user.sh', 'activate',
     meson.current_build_dir() / 'quicklook-extension/package', package_tool])

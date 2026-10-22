@@ -61,7 +61,7 @@ sh "$src_root/build-aux/clean-test-logs.sh" "$tmpdir/missing" darwin && {
 }
 : > "$cleanup_calls"
 PATH="$tmpdir/bin:$PATH" cleanup_versions=yes \
-    sh "$src_root/build-aux/clean-test-logs.sh" "$tmpdir/logs" openvms || {
+    sh "$src_root/build-aux/clean-test-logs.sh" "$tmpdir/logs" vms || {
     echo 'not ok 1 - versioned report cleanup failed'
     exit 0
 }

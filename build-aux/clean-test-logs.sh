@@ -4,7 +4,8 @@
 set -eu
 
 case ${2-} in
-  *openvms*)
+  *vms*)
+    # config.sub canonicalizes OpenVMS to vms, not openvms.
     # RMS may expose another version after each removal. Retain the GNV
     # per-path retry loop; batching on POSIX must not weaken this contract.
     find "$1" -type f \( -name '*.log' -o -name '*.trs' \) \

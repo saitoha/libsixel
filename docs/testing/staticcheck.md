@@ -63,6 +63,8 @@ The Meson build exposes the same umbrella suite through its run target:
 meson compile -C build staticcheck
 ```
 
+Before dispatch, the Autotools umbrella target asks the owning `include/Makefile` to refresh `sixel.h` and `6cells.h`. Configured-header and IDL dependencies therefore apply even when no C compilation precedes the check; an incremental checkout must not compare current bindings against an older generated header. Failure to regenerate a required header stops dispatch. Direct checker invocations still require their documented inputs.
+
 The suite schedules independent named checks through recursive Make and prints start and completion events immediately on stderr. Complete diagnostic logs remain in deterministic registration order on stdout, followed by a concise pass, skip, and fail summary.
 
 Scheduling and lint pipelines run in the foreground so terminal Ctrl+C reaches their children; temporary workspaces are removed after foreground jobs exit. Each invocation creates its scratch workspace under the source tree's `.staticcheck-tmp/` and passes that path through `TMPDIR`, `TMP`, and `TEMP` to child tools, including out-of-tree builds. This keeps temporary files out of the system temporary directory and outside recursively scanned source directories.
@@ -130,7 +132,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 
 | ID | Staticcheck meta-contract | Owning check |
 | --- | --- | --- |
-| SC-01 | Every standalone `staticcheck-*.sh` implementation other than the runner itself is registered in the umbrella suite, the suite does not reference missing implementations, source-only TAP roles have exactly one owner and one registration, and both Autotools and Meson invoke that suite. | [tests/_static/sh/staticcheck-staticcheck-suite-sync.sh](../../tests/_static/sh/staticcheck-staticcheck-suite-sync.sh) |
+| SC-01 | Every standalone `staticcheck-*.sh` implementation other than the runner itself is registered in the umbrella suite, the suite does not reference missing implementations, source-only TAP roles have exactly one owner and one registration, both Autotools and Meson invoke that suite, and Autotools registers public-header refresh before dispatch. | [tests/_static/sh/staticcheck-staticcheck-suite-sync.sh](../../tests/_static/sh/staticcheck-staticcheck-suite-sync.sh) |
 | SC-02 | This document and its owning meta-checks maintain complete reciprocal links. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
 | SC-03 | Exhaustive test-plan markers, their scoped test links, and reciprocal test comments remain complete and duplicate-free. | [tests/_static/sh/staticcheck-test-plan-links.sh](../../tests/_static/sh/staticcheck-test-plan-links.sh) |
 | SC-04 | The actual TAP dispatcher preserves failure diagnostics and rejects failed, missing, malformed, misnumbered, prematurely terminated, or bailed-out results while distinguishing mixed success/skip from all-skip. | [tests/_static/sh/staticcheck-tap-dispatch.sh](../../tests/_static/sh/staticcheck-tap-dispatch.sh) |

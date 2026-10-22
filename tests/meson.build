@@ -378,9 +378,10 @@ foreach t : tests
   test_executable = sh
   if have_child_time_executor
     # Wrap the entire command; zero retains Meson timeout/multiplier control.
+    # Meson before 1.6 accepts a path, not an ExternalProgram, in test args.
     test_env.set('LSO_CHILD_TIME', '1')
     test_args = ['--record-child-time', t, '0', '--',
-                 sh] + test_args
+                 sh.full_path()] + test_args
     test_executable = child_time_executor
   else
     test_env.set('LSO_CHILD_TIME', child_time_fallback)

@@ -25,6 +25,9 @@ TESTS =
 else
 TESTS = @SIXEL_CHECK_TESTS@
 endif
+# Keep the installed-command selection inside make, including caller-supplied
+# TESTS. Passing the filtered inventory to recursive make exceeds argv limits.
+override TESTS := $(if $(filter 1,$(SIXEL_INSTALLCHECK_GENERIC)),$(filter-out extension/quicklook-installed/%,$(TESTS)),$(TESTS))
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
@@ -8081,7 +8084,13 @@ staticcheck-test-plan-links \
 staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
 
-staticcheck: staticcheck-clean
+# Source-only checks still read configured public headers. Refresh them via
+# their owning Makefile before any checker can compare generated bindings.
+.PHONY: prepare-staticcheck-headers
+prepare-staticcheck-headers:
+	+@$(MAKE) -C "$(top_builddir)/include" sixel.h 6cells.h
+
+staticcheck: staticcheck-clean prepare-staticcheck-headers
 	+@$(SHELL) "$(top_srcdir)/tests/_static/sh/run-check-batches.sh" \
 	--make-command '$(MAKE)' env TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
@@ -9186,7 +9195,7 @@ installcheck-local:
 	    echo "installcheck: skipping tests/installcheck-local (driver inactive)"; \
 	    exit 0; \
 	fi; \
-	if test -z "$(filter-out extension/quicklook-installed/%,$(TESTS))"; then \
+	if test -z "$(firstword $(filter-out extension/quicklook-installed/%,$(TESTS)))"; then \
 	    echo "installcheck: no generic observations selected"; exit 0; \
 	fi; \
 	install_bindir='$(SIXEL_INSTALL_BINDIR)'; \
@@ -9225,7 +9234,7 @@ installcheck-local:
 	export SIXEL_INSTALLCHECK_LSQA_PATH="$$install_bindir/lsqa@EXEEXT@"; \
 	export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH='test_runner@EXEEXT@'; \
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS \
-	    TESTS='$(filter-out extension/quicklook-installed/%,$(TESTS))' \
+	    SIXEL_INSTALLCHECK_GENERIC=1 \
 	    SIXEL_INSTALLCHECK=1 \
 	    SIXEL_RUNTIME=''
 
@@ -9818,6 +9827,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-test-suite-report.sh \
     _static/sh/staticcheck-test-log-cleanup.sh \
+    _static/sh/staticcheck-installcheck-launch.sh \
     _static/sh/staticcheck-test-runner-link.sh \
     _static/python/test_runner_link.py \
     _static/sh/staticcheck-command-dependencies.sh \

@@ -2927,8 +2927,13 @@ lsqa_print_selection(const Options *opts, const Metrics *metrics,
                 continue;
             }
             status = metrics_get_value(metrics, binding->name, &value);
+            /* Invalid bindings are runtime errors, as in scalar output.
+             * Only unavailable metric values are represented as null. */
+            if (status < 0) {
+                return LSQA_EXIT_RUNTIME_FAILED;
+            }
             printf("%s  \"%s\": ", emitted ? ",\n" : "", binding->name);
-            if (status != 0 || !isfinite(value)) {
+            if (status > 0 || !isfinite(value)) {
                 printf("null");
             } else {
                 displayed = video_means == NULL ? value

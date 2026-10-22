@@ -67,12 +67,18 @@ test ! -s "$missing" -a ! -s "$unknown" || {
 }
 
 awk '
-index($0, "staticcheck: staticcheck-clean") { target = 1 }
+index($0, "staticcheck: staticcheck-clean prepare-staticcheck-headers") {
+    target = 1
+}
+index($0, "prepare-staticcheck-headers:") { headers = 1 }
+index($0, "$(MAKE) -C \"$(top_builddir)/include\" sixel.h 6cells.h") {
+    refresh = 1
+}
 index($0, "tests/_static/sh/staticcheck-suite.sh") { runner = 1 }
-END { exit target && runner ? 0 : 1 }
+END { exit target && runner && headers && refresh ? 0 : 1 }
 ' "$makefile_am" || {
     echo "not ok 1 - staticcheck suite registration is synchronized"
-    echo "# tests/Makefile.am does not invoke staticcheck-suite.sh"
+    echo "# tests/Makefile.am must refresh headers before invoking the suite"
     exit 1
 }
 
