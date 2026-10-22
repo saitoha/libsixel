@@ -9176,12 +9176,12 @@ installcheck-quicklook:
 	    $(quicklook_installed_tests:.t=.log)
 	@set -eu; \
 	printf '%s\n' $(quicklook_installed_tests:.t=.trs) > .quicklook-trs.list; \
-	$(AWK) -v suite=1 -v builddir="$(abs_builddir)" \
+	$(SHELL) "$(top_srcdir)/build-aux/test-suite-report.sh" "$(AWK)" \
+	    .quicklook-report -v builddir="$(abs_builddir)" \
 	    -v suite_title="Quick Look installed observations" \
 	    -v counts_file=".quicklook-counts" \
 	    -v failures_file=".quicklook-failures" \
 	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
-	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" \
 	    .quicklook-trs.list > quicklook-installcheck.log; \
 	mkdir -p "$(quicklook_installed_reportdir)"; \
 	cp $(quicklook_installed_tests:.t=.log) \
@@ -9384,14 +9384,14 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	    $$perl_make_arg \
 	    $$php_make_arg || exit $$?; \
 	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
-	$(AWK) -v suite=1 \
+	$(SHELL) "$(top_srcdir)/build-aux/test-suite-report.sh" "$(AWK)" \
+	    "$$testsuite_tmp" \
 	    -v suite_title="$(PACKAGE_STRING): $(subdir)/$(TEST_SUITE_LOG)" \
 	    -v builddir="$(abs_builddir)" \
 	    -v counts_file="$$counts_manifest" \
 	    -v failures_file="$$failed_manifest" \
 	    -v quiet="$(SIXEL_TEST_TIME_DEFER)" \
 	    -v allowlist="$(top_srcdir)/tests/test-time-allowlist.tsv" \
-	    -f "$(top_srcdir)/build-aux/test-suite-report.awk" \
 	    "$$trs_manifest" > "$$testsuite_tmp" || exit $$?; \
 	read -r all pass skip xfail fail xpass error < "$$counts_manifest" || exit $$?; \
 	mv "$$testsuite_tmp" "$(TEST_SUITE_LOG)"; \

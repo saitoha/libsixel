@@ -8,7 +8,7 @@ set -v
 src_root=$1
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-suite-report-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
-# Quoting must survive the optional diagnostic-copy command, including a
+# The shell must copy diagnostics as data, including a
 # filename containing spaces, an apostrophe and a literal dollar sign.
 bad_name="failure ' \$dollar"
 printf ':test-result: PASS first\r\n:test-result: SKIP optional\r\n:global-test-result: PASS\r\n:duration-ms: 11.000\r\n:test-name: pass.t\r\n:copy-in-global-log: no\r\n' > "$tmpdir/pass.trs"
@@ -32,16 +32,20 @@ printf 'diagnostic\r\nunterminated' > "$tmpdir/$bad_name.log"
 printf ':test-result: SKIP absent\n:global-test-result: SKIP\n:test-name: absent.t\n:copy-in-global-log: no' > "$tmpdir/absent.trs"
 printf '%s\n' "$tmpdir/pass.trs" "$tmpdir/expected.trs" \
     "$tmpdir/$bad_name.trs" "$tmpdir/absent.trs" > "$tmpdir/manifest"
-set -- "${2:-awk}" -v suite=1 -v suite_title=fixture -v quiet=1 \
+set -- sh "$src_root/build-aux/test-suite-report.sh" "${2:-awk}" \
+    "$tmpdir/aggregate" -v suite_title=fixture -v quiet=1 \
     -v builddir="$tmpdir" -v counts_file="$tmpdir/counts" \
-    -v failures_file="$tmpdir/failures" \
-    -f "$src_root/build-aux/test-suite-report.awk"
+    -v failures_file="$tmpdir/failures"
 "$@" "$tmpdir/manifest" > "$tmpdir/report" 2> "$tmpdir/stderr" || {
     echo 'not ok 1 - suite report could not consume valid records'
     exit 0
 }
 {
-    printf 'fixture\n\nFAIL: %s\ndiagnostic\r\nunterminated\n' "$bad_name"
+    # Match the shell collector's native cat semantics. GNV may expose an
+    # incomplete RMS text record with a terminator; POSIX cat keeps it absent.
+    printf 'fixture\n\nFAIL: %s\n' "$bad_name"
+    cat "$tmpdir/$bad_name.log"
+    printf '\n'
     cat <<'EOF'
 TOTAL: 7
 PASS: 1

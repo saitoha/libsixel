@@ -87,6 +87,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in \
 	build-aux/test-suite-report.awk \
+	build-aux/test-suite-report.sh \
 	build-aux/read-check-test-list.sh \
 	build-aux/cli-color-tty-probe.c \
 	build-aux/resolve-binding-test-common.sh \

@@ -10,23 +10,19 @@ function first_word(value,    words) {
     split(value, words, " ")
     return words[1]
 }
-function shell_quote(value) {
-    gsub(/'/, "'\\''", value)
-    return "'" value "'"
-}
 function append_suite_log(path,    status, line) {
-    # getline cannot preserve an absent final newline portably. Probe for
-    # readability, then let cat copy diagnostic bytes exactly as before.
-    # Only logs explicitly marked for inclusion launch a subprocess.
+    # Probe readability here so missing diagnostics contribute to the counts.
+    # The shell copies bytes: GNV awk adds a newline to an incomplete record,
+    # and its system() does not follow POSIX quoting or stdout inheritance.
     status = getline line < path
     close(path)
     if (status < 0) {
-        print "missing log file: " path
+        print "Hmissing log file: " path >> diagnostics_file
+        print "H" >> diagnostics_file
         outcomes["ERROR"]++
-    } else if (system("cat " shell_quote(path)) != 0) {
-        fatal("cannot copy " path)
+    } else {
+        print "F" path >> diagnostics_file
     }
-    print ""
 }
 function add_timing(name, duration, result,    limit, row) {
     if (duration == "unmeasured" && result != "SKIP")
@@ -50,8 +46,10 @@ function add_timing(name, duration, result,    limit, row) {
 }
 BEGIN {
     if (suite) {
-        print suite_title
-        print ""
+        if (diagnostics_file == "")
+            fatal("suite mode requires the shell report driver")
+        print "H" suite_title > diagnostics_file
+        print "H" > diagnostics_file
     }
     if (allowlist != "") {
         status = getline line < allowlist
@@ -147,7 +145,7 @@ BEGIN {
             global_result == "ERROR")
             print global_result ": " relative_name >> failures_file
         if (copy_log) {
-            print global_result ": " relative_name
+            print "H" global_result ": " relative_name >> diagnostics_file
             append_suite_log(base ".log")
         }
     } else if (copy_log && !times_only) {
@@ -178,6 +176,8 @@ END {
             outcomes["XPASS"], outcomes["ERROR"] > counts_file
         if (close(counts_file) != 0) fatal("cannot write " counts_file)
         close(failures_file)
+        if (close(diagnostics_file) != 0)
+            fatal("cannot write " diagnostics_file)
     }
     if (!from_report) {
         print "Test durations (wall time, including process startup)"
