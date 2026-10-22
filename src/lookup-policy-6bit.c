@@ -42,6 +42,7 @@
 #include "sixel_atomic.h"
 
 #define SIXEL_LUT_DENSE_EMPTY (-1)
+#define SIXEL_LOOKUP_POLICY_BIT6_FILTER_MAX 256
 
 /*
  * IDL (internal contract)
@@ -84,6 +85,10 @@ typedef struct sixel_lookup_policy_bit6_object {
         int ncolors;
         float weights[3];
         float *palette;
+        /* Planar double copy of palette for the exhaustive scan, or NULL. */
+        double *planar;
+        /* Planar float copy for the filtered scan, or NULL. */
+        float *planar32;
         sixel_allocator_t *allocator;
     } state_float;
     int parallel_dither_active;
@@ -578,6 +583,333 @@ sixel_lookup_policy_bit6_float_linear_search(
     return best_index;
 }
 
+static void
+sixel_lookup_policy_bit6_free_planar(
+    sixel_lookup_policy_bit6_object_t *object)
+{
+    if (object->state_float.planar != NULL
+            && object->state_float.allocator != NULL) {
+        sixel_allocator_free(object->state_float.allocator,
+                             object->state_float.planar);
+    }
+    object->state_float.planar = NULL;
+    if (object->state_float.planar32 != NULL
+            && object->state_float.allocator != NULL) {
+        sixel_allocator_free(object->state_float.allocator,
+                             object->state_float.planar32);
+    }
+    object->state_float.planar32 = NULL;
+}
+
+/*
+ * The filtered scan bounds float rounding relative to the true distance,
+ * which needs finite coordinates and weights that keep products far from
+ * the float overflow and underflow limits.  Other palettes keep the double
+ * scan.
+ */
+static void
+sixel_lookup_policy_bit6_build_planar32(
+    sixel_lookup_policy_bit6_object_t *object)
+{
+    float *planar32;
+    float value;
+    size_t ncolors;
+    size_t index;
+    size_t component;
+
+    ncolors = (size_t)object->state_float.ncolors;
+    if (ncolors > SIXEL_LOOKUP_POLICY_BIT6_FILTER_MAX) {
+        return;
+    }
+    for (component = 0U; component < 3U; ++component) {
+        value = object->state_float.weights[component];
+        if (!(value >= 0x1p-20f && value <= 0x1p20f)) {
+            return;
+        }
+    }
+    for (index = 0U; index < ncolors * 3U; ++index) {
+        value = object->state_float.palette[index];
+        if (!(value >= -0x1p40f && value <= 0x1p40f)) {
+            return;
+        }
+    }
+    planar32 = (float *)sixel_allocator_malloc(
+        object->state_float.allocator, ncolors * 3U * sizeof(float));
+    if (planar32 == NULL) {
+        return;
+    }
+    for (component = 0U; component < 3U; ++component) {
+        for (index = 0U; index < ncolors; ++index) {
+            planar32[component * ncolors + index] =
+                object->state_float.palette[index * 3U + component];
+        }
+    }
+    object->state_float.planar32 = planar32;
+}
+
+/* Allocation failure keeps the original scan; it changes only speed. */
+static void
+sixel_lookup_policy_bit6_build_planar(
+    sixel_lookup_policy_bit6_object_t *object)
+{
+    double *planar;
+    size_t ncolors;
+    size_t index;
+    size_t component;
+
+    sixel_lookup_policy_bit6_free_planar(object);
+    if (object->state_float.palette == NULL
+            || object->state_float.depth != 3
+            || object->state_float.ncolors <= 0) {
+        return;
+    }
+    ncolors = (size_t)object->state_float.ncolors;
+    planar = (double *)sixel_allocator_malloc(object->state_float.allocator,
+                                              ncolors * 3U * sizeof(double));
+    if (planar == NULL) {
+        return;
+    }
+    for (component = 0U; component < 3U; ++component) {
+        for (index = 0U; index < ncolors; ++index) {
+            planar[component * ncolors + index] = (double)
+                object->state_float.palette[index * 3U + component];
+        }
+    }
+    object->state_float.planar = planar;
+    sixel_lookup_policy_bit6_build_planar32(object);
+}
+
+/*
+ * Same result as float_linear_search().  Each distance repeats its
+ * operations in the same order.  Four lanes scan interleaved indexes; a
+ * strict comparison keeps the lowest index of each lane's minimum, and the
+ * merge breaks equal distances toward the lower index, which reproduces
+ * the single ordered scan.  Selects instead of branches keep the loop free
+ * of data-dependent jumps.
+ */
+static int
+sixel_lookup_policy_bit6_float_planar_search(
+    sixel_lookup_policy_bit6_object_t const *object,
+    float const *sample)
+{
+    enum { SIXEL_LOOKUP_POLICY_BIT6_LANES = 4 };
+    double const *p0;
+    double const *p1;
+    double const *p2;
+    double s0;
+    double s1;
+    double s2;
+    double w0;
+    double w1;
+    double w2;
+    double diff;
+    double distance;
+    double best_distance[SIXEL_LOOKUP_POLICY_BIT6_LANES];
+    int best_index[SIXEL_LOOKUP_POLICY_BIT6_LANES];
+    int ncolors;
+    int index;
+    int lane;
+    int better;
+    int result;
+    double result_distance;
+
+    ncolors = object->state_float.ncolors;
+    p0 = object->state_float.planar;
+    p1 = p0 + ncolors;
+    p2 = p1 + ncolors;
+    s0 = (double)sample[0];
+    s1 = (double)sample[1];
+    s2 = (double)sample[2];
+    w0 = (double)object->state_float.weights[0];
+    w1 = (double)object->state_float.weights[1];
+    w2 = (double)object->state_float.weights[2];
+    for (lane = 0; lane < SIXEL_LOOKUP_POLICY_BIT6_LANES; ++lane) {
+        best_distance[lane] = DBL_MAX;
+        best_index[lane] = -1;
+    }
+
+    for (index = 0; index + SIXEL_LOOKUP_POLICY_BIT6_LANES <= ncolors;
+            index += SIXEL_LOOKUP_POLICY_BIT6_LANES) {
+        for (lane = 0; lane < SIXEL_LOOKUP_POLICY_BIT6_LANES; ++lane) {
+            diff = s0 - p0[index + lane];
+            diff *= diff;
+            diff *= w0;
+            distance = 0.0 + diff;
+            diff = s1 - p1[index + lane];
+            diff *= diff;
+            diff *= w1;
+            distance += diff;
+            diff = s2 - p2[index + lane];
+            diff *= diff;
+            diff *= w2;
+            distance += diff;
+            better = distance < best_distance[lane];
+            best_distance[lane] = better ? distance : best_distance[lane];
+            best_index[lane] = better ? index + lane : best_index[lane];
+        }
+    }
+    for (lane = 0; index < ncolors; ++index, ++lane) {
+        diff = s0 - p0[index];
+        diff *= diff;
+        diff *= w0;
+        distance = 0.0 + diff;
+        diff = s1 - p1[index];
+        diff *= diff;
+        diff *= w1;
+        distance += diff;
+        diff = s2 - p2[index];
+        diff *= diff;
+        diff *= w2;
+        distance += diff;
+        if (distance < best_distance[lane]) {
+            best_distance[lane] = distance;
+            best_index[lane] = index;
+        }
+    }
+
+    /* A lane that never beats DBL_MAX keeps -1; the plain scan returns 0. */
+    result = 0;
+    result_distance = DBL_MAX;
+    for (lane = 0; lane < SIXEL_LOOKUP_POLICY_BIT6_LANES; ++lane) {
+        if (best_index[lane] < 0) {
+            continue;
+        }
+        if (best_distance[lane] < result_distance
+                || (best_distance[lane] == result_distance
+                    && best_index[lane] < result)) {
+            result_distance = best_distance[lane];
+            result = best_index[lane];
+        }
+    }
+
+    return result;
+}
+
+/*
+ * Same result as float_linear_search(), with most candidates rejected by a
+ * float pass.
+ *
+ * Each float distance takes at most six roundings of relative size 2^-24
+ * from the true distance D, plus an absolute error far below 2^-100 for the
+ * weight and coordinate ranges accepted by build_planar32().  The double
+ * distances that decide the answer are within 6 * 2^-53 of D.  Let m be the
+ * smallest float distance.  The answer of the double scan, and any equal
+ * double distance at a lower index, has a float distance below
+ * m * (1 + 2^-18) + 2^-98, so it survives the filter.  Survivors are then
+ * compared by the original double distance, ties going to the lower index.
+ *
+ * The float pass keeps one running minimum per lane so the minimum does not
+ * form one long dependency chain, and a lane whose minimum misses the
+ * threshold holds no survivor.
+ */
+static int
+sixel_lookup_policy_bit6_float_filter_search(
+    sixel_lookup_policy_bit6_object_t const *object,
+    float const *sample)
+{
+    enum { SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES = 16 };
+    float distances[SIXEL_LOOKUP_POLICY_BIT6_FILTER_MAX];
+    float minimums[SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES];
+    float const *q0;
+    float const *q1;
+    float const *q2;
+    float s0;
+    float s1;
+    float s2;
+    float w0;
+    float w1;
+    float w2;
+    float d0;
+    float d1;
+    float d2;
+    float value;
+    float minimum;
+    float cutoff;
+    double threshold;
+    double distance;
+    double best_distance;
+    int best_index;
+    int ncolors;
+    int blocks;
+    int index;
+    int lane;
+
+    ncolors = object->state_float.ncolors;
+    q0 = object->state_float.planar32;
+    q1 = q0 + ncolors;
+    q2 = q1 + ncolors;
+    s0 = sample[0];
+    s1 = sample[1];
+    s2 = sample[2];
+    if (!(s0 >= -0x1p40f && s0 <= 0x1p40f && s1 >= -0x1p40f
+            && s1 <= 0x1p40f && s2 >= -0x1p40f && s2 <= 0x1p40f)) {
+        return sixel_lookup_policy_bit6_float_planar_search(object, sample);
+    }
+    w0 = object->state_float.weights[0];
+    w1 = object->state_float.weights[1];
+    w2 = object->state_float.weights[2];
+    for (lane = 0; lane < SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES; ++lane) {
+        minimums[lane] = FLT_MAX;
+    }
+    blocks = ncolors - ncolors % SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES;
+    for (index = 0; index < blocks;
+            index += SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES) {
+        for (lane = 0; lane < SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES;
+                ++lane) {
+            d0 = s0 - q0[index + lane];
+            d1 = s1 - q1[index + lane];
+            d2 = s2 - q2[index + lane];
+            value = d0 * d0 * w0 + d1 * d1 * w1 + d2 * d2 * w2;
+            distances[index + lane] = value;
+            minimums[lane] = value < minimums[lane] ? value : minimums[lane];
+        }
+    }
+    for (lane = 0; index < ncolors; ++index, ++lane) {
+        d0 = s0 - q0[index];
+        d1 = s1 - q1[index];
+        d2 = s2 - q2[index];
+        value = d0 * d0 * w0 + d1 * d1 * w1 + d2 * d2 * w2;
+        distances[index] = value;
+        minimums[lane] = value < minimums[lane] ? value : minimums[lane];
+    }
+    minimum = minimums[0];
+    for (lane = 1; lane < SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES; ++lane) {
+        minimum = minimums[lane] < minimum ? minimums[lane] : minimum;
+    }
+    if (!(minimum <= FLT_MAX)) {
+        return sixel_lookup_policy_bit6_float_planar_search(object, sample);
+    }
+
+    /* Rounding the cutoff up only admits extra survivors. */
+    threshold = (double)minimum * (1.0 + 0x1p-18) + 0x1p-98;
+    cutoff = (float)(threshold * (1.0 + 0x1p-20));
+    best_distance = DBL_MAX;
+    best_index = -1;
+    for (lane = 0; lane < SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES; ++lane) {
+        if (minimums[lane] > cutoff) {
+            continue;
+        }
+        for (index = lane; index < ncolors;
+                index += SIXEL_LOOKUP_POLICY_BIT6_FILTER_LANES) {
+            if (distances[index] > cutoff) {
+                continue;
+            }
+            distance = sixel_lookup_policy_bit6_float_distance(
+                object, sample, index);
+            if (distance < best_distance
+                    || (distance == best_distance && index < best_index)) {
+                best_distance = distance;
+                best_index = index;
+            }
+        }
+    }
+    if (best_index < 0) {
+        return sixel_lookup_policy_bit6_float_planar_search(object, sample);
+    }
+
+    return best_index;
+}
+
 static SIXELSTATUS
 sixel_lookup_policy_bit6_prepare_float_palette(
     sixel_lookup_policy_bit6_object_t *object,
@@ -879,6 +1211,7 @@ sixel_lookup_policy_bit6_configure_float32(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    sixel_lookup_policy_bit6_free_planar(object);
     if (object->state_float.palette != NULL
             && object->state_float.allocator != NULL) {
         sixel_allocator_free(object->state_float.allocator,
@@ -914,6 +1247,7 @@ sixel_lookup_policy_bit6_configure_float32(
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    sixel_lookup_policy_bit6_build_planar(object);
 
     return SIXEL_OK;
 }
@@ -933,6 +1267,12 @@ sixel_lookup_policy_bit6_map_float32(
     }
 
     sample = (float const *)(void const *)pixel;
+    if (object->state_float.planar32 != NULL) {
+        return sixel_lookup_policy_bit6_float_filter_search(object, sample);
+    }
+    if (object->state_float.planar != NULL) {
+        return sixel_lookup_policy_bit6_float_planar_search(object, sample);
+    }
     return sixel_lookup_policy_bit6_float_linear_search(object, sample);
 }
 
@@ -944,6 +1284,7 @@ sixel_lookup_policy_bit6_reset_state(
         return;
     }
 
+    sixel_lookup_policy_bit6_free_planar(object);
     if (object->state_float.palette != NULL
             && object->state_float.allocator != NULL) {
         sixel_allocator_free(object->state_float.allocator,
@@ -1061,6 +1402,8 @@ sixel_lookup_policy_bit6_prepare_8bit(
             reuse_object->state_8bit.dense_size = 0U;
             reuse_object->state_8bit.dense_ready = 0;
             reuse_object->state_float.palette = NULL;
+            reuse_object->state_float.planar = NULL;
+            reuse_object->state_float.planar32 = NULL;
             reuse_object->state_float.allocator = NULL;
             reuse_object->prepared = 0;
             if (request->reuse_policy_slot != NULL
@@ -1147,6 +1490,8 @@ sixel_lookup_policy_bit6_prepare_float32(
             reuse_object->state_8bit.dense_size = 0U;
             reuse_object->state_8bit.dense_ready = 0;
             reuse_object->state_float.palette = NULL;
+            reuse_object->state_float.planar = NULL;
+            reuse_object->state_float.planar32 = NULL;
             reuse_object->state_float.allocator = NULL;
             reuse_object->prepared = 0;
             if (request->reuse_policy_slot != NULL
