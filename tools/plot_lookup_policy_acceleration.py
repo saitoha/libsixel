@@ -106,7 +106,7 @@ def make_command(img2sixel: str,
     command = [
         img2sixel,
         f"--threads={variant.threads}",
-        "--precision=8bit",
+        "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",
     ]
@@ -482,7 +482,7 @@ def write_metadata(path: Path,
         },
         "programs": programs,
         "protocol": {
-            "precision": "8bit",
+            "precision": "auto",
             "required_work_format": "rgb888",
             "colors": list(colors),
             "warmups": warmups,

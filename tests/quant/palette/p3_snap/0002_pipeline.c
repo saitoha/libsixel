@@ -35,7 +35,7 @@ p3_snap_pipeline(int model, int space, int policy, int mode)
         { '=', "1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
         { '4', "full-frame" }, { '5', "none" }, { 'U', "display-p3" },
-        { '.', "8bit" }
+        { '.', "auto" }
     };
     sixel_encoder_t *encoder;
     sixel_output_t *output;

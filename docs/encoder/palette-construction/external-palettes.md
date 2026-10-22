@@ -88,7 +88,7 @@ Existing image mapfiles keep their image-to-palette meaning. In the P3 path, a m
 The other selected-path restrictions still apply, including the supported lookup policies, [CPU spatial/positional dithering or none](../output/output-colorspace.md#display-p3-selected-cpu-float-path), and static RGB source images, optionally with a complete [separate alpha-zero mask](../output/output-colorspace.md#separate-alpha-zero-masks), including [normalized packed alpha input](../output/output-colorspace.md#packed-alpha-normalization). Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
 
 ```sh
-img2sixel --threads=1 --gpu-policy=off --precision=auto \
+img2sixel --threads=1 --gpu-policy=off --precision-policy=auto \
   -Qkmeans:seed=1 -Xlinear -Wlinear -Fnone -_none '-~none' \
   --sampling-policy=full-frame --binning-policy=none \
   -d fs -t rgb -U display-p3 -m colors.pal input.png
@@ -299,7 +299,7 @@ The table contains tests that directly own user-visible contracts stated by this
 | EP-01 | A direct-color PNG can supply colors through `-m`. | [tests/quant/palette/usage/0050_palette_map_png_rgb.t](../../../tests/quant/palette/usage/0050_palette_map_png_rgb.t) |
 | EP-02 | Indexed PNG map images with 1-, 2-, 4-, and 8-bit indices are accepted. | [tests/quant/palette/usage/0051_palette_map_png_pal1.t](../../../tests/quant/palette/usage/0051_palette_map_png_pal1.t), [tests/quant/palette/usage/0052_palette_map_png_pal2.t](../../../tests/quant/palette/usage/0052_palette_map_png_pal2.t), [tests/quant/palette/usage/0053_palette_map_png_pal4.t](../../../tests/quant/palette/usage/0053_palette_map_png_pal4.t), [tests/quant/palette/usage/0054_palette_map_png_pal8.t](../../../tests/quant/palette/usage/0054_palette_map_png_pal8.t) |
 | EP-164 | An unmanaged 2-bit grayscale image map retains its four decoded gray values through gamma-byte palette reconstruction; palette order is not prescribed. | [tests/quant/palette/usage/0056_palette_map_png_g2_values.t](../../../tests/quant/palette/usage/0056_palette_map_png_g2_values.t) |
-| EP-03 | Non-gamma image-map clustering retains original occupied unmanaged colors and required float precision despite a byte preference; explicit float reconstruction provides a control. | [tests/quant/palette/usage/0122_mapfile_png_clustering_values.t](../../../tests/quant/palette/usage/0122_mapfile_png_clustering_values.t), [tests/quant/palette/usage/0123_mapfile_png_float_values.t](../../../tests/quant/palette/usage/0123_mapfile_png_float_values.t), [tests/quant/palette/usage/0130_mapfile_png_clustering_float_output.t](../../../tests/quant/palette/usage/0130_mapfile_png_clustering_float_output.t) |
+| EP-03 | Non-gamma image-map clustering retains original occupied unmanaged colors and builds in float under every precision policy; automatic precision also applies that float palette, and explicit float reconstruction provides a control. | [tests/quant/palette/usage/0122_mapfile_png_clustering_values.t](../../../tests/quant/palette/usage/0122_mapfile_png_clustering_values.t), [tests/quant/palette/usage/0123_mapfile_png_float_values.t](../../../tests/quant/palette/usage/0123_mapfile_png_float_values.t), [tests/quant/palette/usage/0130_mapfile_png_clustering_float_output.t](../../../tests/quant/palette/usage/0130_mapfile_png_clustering_float_output.t) |
 | EP-04 | Native linear working conversion preserves the occupied source sRGB8 colors of indexed and RGBA PNG mapfiles at export, with CMS, binning and snap explicitly disabled, including embedded ICC metadata. | [tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t](../../../tests/quant/palette/usage/0145_mapfile_png_working_output_colorspace_deterministic.t), [tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t](../../../tests/quant/palette/usage/0156_mapfile_png_icc_working_output_colorspace_deterministic.t) |
 | EP-05 | `-m` and `-M` can translate a prepared JASC PAL palette to GPL. | [tests/quant/palette/usage/0147_mapfile_pal_mapfile_output_gpl.t](../../../tests/quant/palette/usage/0147_mapfile_pal_mapfile_output_gpl.t) |
 | EP-06 | An explicit lookup policy reaches both byte and float32 palette application with a palette mapfile. | [tests/quant/palette/usage/0191_mapfile_pal_explicit_lookup_policy_applied.t](../../../tests/quant/palette/usage/0191_mapfile_pal_explicit_lookup_policy_applied.t) |
@@ -444,7 +444,7 @@ The direct FS case uses byte samples 92 then 91 and palette entries 88/94. The f
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| EP-118 | Retain a managed map primary with byte source and gamma work. | [tests/quant/palette/map_precision/0001_map_cms_gamma.t](../../../tests/quant/palette/map_precision/0001_map_cms_gamma.t) |
+| EP-118 | `--precision-policy=8bit` rounds a managed map primary to bytes and applies it on the byte path. | [tests/quant/palette/map_precision/0001_map_cms_gamma.t](../../../tests/quant/palette/map_precision/0001_map_cms_gamma.t) |
 | EP-119 | Retain a managed map primary with byte source and linear work. | [tests/quant/palette/map_precision/0002_map_cms_linear.t](../../../tests/quant/palette/map_precision/0002_map_cms_linear.t) |
 | EP-120 | Retain a managed map primary with byte source and oklab work. | [tests/quant/palette/map_precision/0003_map_cms_oklab.t](../../../tests/quant/palette/map_precision/0003_map_cms_oklab.t) |
 | EP-121 | Retain a managed map primary with byte source and cielab work. | [tests/quant/palette/map_precision/0004_map_cms_cielab.t](../../../tests/quant/palette/map_precision/0004_map_cms_cielab.t) |
@@ -501,12 +501,12 @@ These value tests reduce a two-pixel sRGB red/blue map at the internal one-color
 | EP-155 | Keep exact source endpoints through native K-center map construction. | [tests/quant/palette/map_cluster/0006_map_center_endpoints.t](../../../tests/quant/palette/map_cluster/0006_map_center_endpoints.t) |
 | EP-156 | Keep exact source endpoints through native K-medoids map construction. | [tests/quant/palette/map_cluster/0007_map_medoids_endpoints.t](../../../tests/quant/palette/map_cluster/0007_map_medoids_endpoints.t) |
 | EP-157 | Resolve AUTO image-map construction through the common native builder. | [tests/quant/palette/map_cluster/0008_map_auto_mean.t](../../../tests/quant/palette/map_cluster/0008_map_auto_mean.t) |
-| EP-158 | Keep required map clustering precision despite an explicit byte preference. | [tests/quant/palette/map_cluster/0009_map_byte_request.t](../../../tests/quant/palette/map_cluster/0009_map_byte_request.t) |
+| EP-158 | `--precision-policy=8bit` rounds the float map clustering palette to bytes before application. | [tests/quant/palette/map_cluster/0009_map_byte_request.t](../../../tests/quant/palette/map_cluster/0009_map_byte_request.t) |
 | EP-159 | Keep a gamma-only byte image map on the byte path. | [tests/quant/palette/map_cluster/0010_map_gamma_byte.t](../../../tests/quant/palette/map_cluster/0010_map_gamma_byte.t) |
 | EP-160 | Keep a structured byte palette byte-eligible despite an unused linear -X. | [tests/quant/palette/map_cluster/0011_map_structured_byte.t](../../../tests/quant/palette/map_cluster/0011_map_structured_byte.t) |
 | EP-161 | Re-evaluate a static map across linear, gamma and CIELAB clustering on one encoder. | [tests/quant/palette/map_cluster/0012_map_clustering_reuse.t](../../../tests/quant/palette/map_cluster/0012_map_clustering_reuse.t) |
 | EP-162 | Reuse the native map source and application across animation frames and loop replay. | [tests/quant/palette/map_cluster/0013_map_animation_cache.t](../../../tests/quant/palette/map_cluster/0013_map_animation_cache.t) |
-| EP-163 | A tRNS PNG image map retains required non-gamma clustering precision despite a byte preference. | [tests/quant/palette/usage/0155_mapfile_png_trns_clustering_float_output.t](../../../tests/quant/palette/usage/0155_mapfile_png_trns_clustering_float_output.t) |
+| EP-163 | A tRNS PNG image map retains required non-gamma clustering precision under automatic precision. | [tests/quant/palette/usage/0155_mapfile_png_trns_clustering_float_output.t](../../../tests/quant/palette/usage/0155_mapfile_png_trns_clustering_float_output.t) |
 
 ### Defensive, malformed-input, and supplementary tests
 

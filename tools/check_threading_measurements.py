@@ -21,7 +21,7 @@ DECODER_SIZES = (
     ("1920x1080", 1920, 1080, "decoder-thread8.jsonl"),
 )
 ENCODER_COMMAND_SUFFIX = (
-    "--precision=8bit",
+    "--precision-policy=auto",
     "--quality=full",
     "--sampling-policy=full-frame",
     "--binning-policy=hard",

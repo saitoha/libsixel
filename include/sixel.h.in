@@ -325,9 +325,9 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_7BIT_MODE         ('7')  /* -7, --7bit-mode: for 7bit terminals or printers (default) */
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
-#define SIXEL_OPTFLAG_PRECISION         ('.')
-    /* -., --precision: control quantization precision. */
-    /* 8bit applies when the working colorspace is gamma. */
+#define SIXEL_OPTFLAG_PRECISION_POLICY ('.')
+    /* -., --precision-policy: palette application precision. */
+    /* 8bit requires the gamma working colorspace. */
 #define SIXEL_OPTFLAG_THREADS           ('=')  /* -=, --threads: override encoder/decoder thread count. */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */

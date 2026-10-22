@@ -15,7 +15,7 @@ fixture_root="${TOP_SRCDIR}/tests/data/inputs/resampling-exact"
 serial_sixel="${ARTIFACT_LOCAL_DIR}/thread-serial.six"
 parallel_sixel="${ARTIFACT_LOCAL_DIR}/thread-parallel.six"
 
-set -- --precision=8bit --quality=full \
+set -- --precision-policy=8bit --quality=full \
     '--loaders=builtin!' --cms-engine=none \
     --sampling-policy=full-frame --binning-policy=hard \
     -Xgamma -Wgamma -Ugamma --diffusion=none \

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify worker 8bit preserves float.
+# Verify worker sampling stays float while 8bit applies bytes.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 

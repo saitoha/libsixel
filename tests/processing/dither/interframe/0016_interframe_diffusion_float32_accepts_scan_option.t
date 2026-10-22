@@ -17,7 +17,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 float32_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -S -T 0 \
         -d interframe:scan=serpentine -p 16 \
         "${input_gif}"

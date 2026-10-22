@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Retain a managed map primary with byte source and gamma work. */
+/* Round a managed map primary to bytes under precision-policy=8bit. */
 int test_map_precision(int, int, char const *, char const *,
                        char const *, char const *);
 

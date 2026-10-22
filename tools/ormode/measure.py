@@ -67,7 +67,7 @@ def command(path, colors, threads, mode, output="-"):
     args = [
         IMG,
         f"--threads={threads}",
-        "--precision=8bit",
+        "--precision-policy=8bit",
         "--loaders=builtin!",
         "--gpu-policy=off",
         "--palette-type=rgb",

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify smptec 8bit preference native output.
+# Verify 8bit applies a float source as bytes with SMPTE-C output.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 

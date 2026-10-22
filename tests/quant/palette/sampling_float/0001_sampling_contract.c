@@ -206,6 +206,13 @@ sampling_wire(int space, int p3, char const *mode, char const *precision,
             diagnostic->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
             strstr(capture.bytes, ";2;0;0;0") != NULL &&
             strstr(capture.bytes, ";2;100;100;100") != NULL;
+    } else if (strcmp(precision, "8bit") == 0) {
+        /* Sampling and clustering stay float; application rounds to bytes.
+         * This centroid's wire code is the same from either palette view. */
+        ok = SIXEL_SUCCEEDED(status) && diagnostic != NULL &&
+            diagnostic->use_rgb101_palette == 0 &&
+            diagnostic->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+            strstr(capture.bytes, expected) != NULL;
     } else {
         ok = SIXEL_SUCCEEDED(status) && diagnostic != NULL &&
             diagnostic->use_rgb101_palette != 0 &&

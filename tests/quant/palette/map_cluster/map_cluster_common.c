@@ -125,7 +125,8 @@ test_map_cluster(int mode, char const *path)
         if (mode == 11) {
             space = pass == 1 ? 4 : pass == 2 ? 2 : 0;
         }
-        native = space != 4 && mode != 10;
+        /* precision-policy=8bit rounds the float map clustering palette. */
+        native = space != 4 && mode != 10 && mode != 8;
         memset(&capture, 0, sizeof(capture));
         memset(&view, 0, sizeof(view));
         encoder->reqcolors = -1;
@@ -201,8 +202,9 @@ test_map_cluster(int mode, char const *path)
                       bytes.entries == NULL || bytes.entry_count != 4 ||
                       memcmp(bytes.entries, structured,
                           sizeof(structured)) != 0)) ||
-                    (mode != 10 &&
-                     strstr(capture.data, ";2;50;0;50") == NULL)) {
+                    /* 8bit keeps the linear centroid, rounded to bytes. */
+                    (mode != 10 && strstr(capture.data, mode == 8
+                        ? ";2;74;0;74" : ";2;50;0;50") == NULL)) {
                 goto end;
             }
         }

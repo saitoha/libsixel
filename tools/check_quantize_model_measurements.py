@@ -87,7 +87,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
     expected_protocol = {
         "comparison_scope": "complete explicit -Q configurations",
         "threads": 1,
-        "precision": "8bit",
+        "precision": "auto",
         "quality": "full",
         "loader": "libpng!",
         "clustering_colorspace": "oklab",
@@ -156,7 +156,7 @@ def validate_command(row: Dict[str, str],
         raise ValueError(f"invalid {field} in {path}: {config}") from exc
     required = {
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",
         f"--quantize-model={option}",

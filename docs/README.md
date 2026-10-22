@@ -122,7 +122,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 - [Encoding pipeline](encoder/pipeline/README.md) connects loading, palette construction, palette application, and SIXEL output, with their composed cost.
 - [Encoder execution map](encoder/execution-map/README.md) traces the implementation path through each encoder stage and its scheduling.
 - [Color-space handling](encoder/colorspace-handling/README.md) describes every implicit and explicit color conversion in the encoder and how to inspect the effective path.
-- [Encoder working precision](encoder/precision/README.md) explains the `--precision` axis and compares quality, speed, and size across processing policies.
+- [Encoder working precision](encoder/precision/README.md) explains the `--precision-policy` axis and compares quality, speed, and size across processing policies.
 
 ### Image loading
 

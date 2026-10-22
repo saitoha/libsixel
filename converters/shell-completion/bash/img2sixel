@@ -47,7 +47,7 @@ _img2sixel()
     opt_short_uninstall="-3"
     opt_threads="--threads"
     opt_short_threads="-="
-    opt_precision="--precision"
+    opt_precision="--precision-policy"
     opt_short_precision="-."
     opt_cms_engine="--cms-engine"
     opt_short_cms_engine="-#"
@@ -743,7 +743,7 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'auto' -- "$cur" ) )
         return 0
         ;;
-    -.|--precision)
+    -.|--precision-policy)
         COMPREPLY=( $( compgen -W 'auto 8bit float32' -- "$cur" ) )
         return 0
         ;;
@@ -1120,7 +1120,7 @@ _img2sixel()
         COMPREPLY=( $( compgen -W '
                                    -o --outfile \
                                    -= --threads \
-                                   -. --precision \
+                                   -. --precision-policy \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -R --gri-limit \

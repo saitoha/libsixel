@@ -15,7 +15,7 @@ palette_output="${ARTIFACT_LOCAL_DIR}/interframe-float32-pmj-mapfile-builtin-apn
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -S -T 1 \
@@ -33,7 +33,7 @@ first_capture_output=$(
     SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \
@@ -49,7 +49,7 @@ second_capture_output=$(
     SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \

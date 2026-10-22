@@ -19,7 +19,7 @@ set +xv
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -d interframe -p 16 \
@@ -28,7 +28,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
 test "${command_status}" -eq 0 || {
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \

@@ -13,7 +13,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -S -T 0 \
@@ -29,7 +29,7 @@ set -v
 stbn_hash_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d stbn:source=hash -p 16 \
@@ -42,7 +42,7 @@ stbn_hash_output=$(
 pmj_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d stbn:source=pmj -p 16 \

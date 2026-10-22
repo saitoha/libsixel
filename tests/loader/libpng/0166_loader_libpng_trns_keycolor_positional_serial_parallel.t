@@ -22,7 +22,7 @@ output_six="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-xdither-float32-s
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=1 \
               -Llibpng:cms_engine=none! \
-              --precision=float32 \
+              --precision-policy=float32 \
               -d x_dither:scan=raster \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - positional float32 serial render failed"

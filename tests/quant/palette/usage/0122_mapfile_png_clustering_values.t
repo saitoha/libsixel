@@ -29,7 +29,7 @@ JASC-PAL'
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision=8bit -Wgamma -Fnone \
+        -Lbuiltin:cms_engine=none! --precision-policy=8bit -Wgamma -Fnone \
         -_none --binning-policy=none -X oklab -m "${mapfile_png}" -M pal:- -o /dev/null "${input_image}"
 ) || {
     echo "not ok" 1 - "PNG mapfile export failed with -X oklab"

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Active P3 snap promotes input despite an explicit byte request.
+# Active P3 snap promotes byte input to float work.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 
@@ -13,7 +13,7 @@ set -v
 
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" --threads=1 \
-    -Lbuiltin:cms_engine=none! -.8bit -Qk -Xlinear -Wlinear \
+    -Lbuiltin:cms_engine=none! -.auto -Qk -Xlinear -Wlinear \
     -dnone -aoff -_nearest -Udisplay-p3 -v \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || {
     echo "not ok 1 - P3 snap rejected byte input"

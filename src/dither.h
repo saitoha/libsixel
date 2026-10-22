@@ -206,6 +206,9 @@ struct sixel_dither {
     int transparent_bgcolor_valid;  /* non-zero when backdrop is configured */
     int pixelformat;                /* pixelformat for internal processing */
     int prefer_float32;             /* opt-in flag for float32 internals */
+    /* --precision-policy=8bit: round float work samples and the palette to
+     * gamma bytes just before palette application, then stay on bytes. */
+    int apply_8bit;
     sixel_allocator_t *allocator;   /* allocator */
     int lut_policy;                 /* histogram LUT policy */
     int lut_policy_override;        /* explicit lookup policy flag */

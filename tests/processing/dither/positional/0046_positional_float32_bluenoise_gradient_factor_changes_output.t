@@ -17,7 +17,7 @@ output_grad=$(mktemp)
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=0 \
-    -d bluenoise:scan=raster --precision=float32 -p 16 \
+    -d bluenoise:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_zero}" "${input_image}" || {
     echo "not ok" 1 - "float32 bluenoise zero gradient_factor baseline failed"
     exit 0
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=1 \
-    -d bluenoise:scan=raster --precision=float32 -p 16 \
+    -d bluenoise:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_grad}" "${input_image}" || {
     echo "not ok" 1 - "float32 bluenoise gradient_factor run failed"
     exit 0

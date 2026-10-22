@@ -115,7 +115,7 @@ test_named_output(int kind, int space, int model, int mode)
     static struct { int flag; char const *value; } const options[] = {
         {'=', "1"}, {'F', "none"}, {'_', "none"}, {'~', "none"},
         {'d', "none"}, {'t', "rgb"}, {'4', "full-frame"}, {'5', "none"},
-        {'.', "8bit"}, {'p', "2"}, {'a', "off"}
+        {'.', "auto"}, {'p', "2"}, {'a', "off"}
     };
     sixel_encoder_t *encoder;
     sixel_output_t *output;

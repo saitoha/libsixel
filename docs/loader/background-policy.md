@@ -40,7 +40,7 @@ The loader suboption is request-specific and therefore overrides the global dedi
 
 ## Colorspace
 
-Linear-light composition first converts foreground and background into the same linear RGB basis, then combines them using alpha. This can introduce an internal conversion even with `-Wgamma` or `--precision=8bit`. See [Why mixing and background composition use linear RGB](../concepts/colorspace/README.md#why-mixing-and-background-composition-use-linear-rgb) for the equation, a numerical example, and the distinction between mathematical intermediates and stored frames.
+Linear-light composition first converts foreground and background into the same linear RGB basis, then combines them using alpha. This can introduce an internal conversion even with `-Wgamma` or `--precision-policy=8bit`. See [Why mixing and background composition use linear RGB](../concepts/colorspace/README.md#why-mixing-and-background-composition-use-linear-rgb) for the equation, a numerical example, and the distinction between mathematical intermediates and stored frames.
 
 `SIXEL_LOADER_BACKGROUND_COLORSPACE` and the corresponding loader suboption select `gamma` or `linear`; `gamma` is the default. The libpng adapter uses linear-light composition under both settings and applies this option to the external background's encoding. File backgrounds use source metadata. Builtin indexed and APNG paths have their own representation boundaries; the [PNG loader comparison](builtin/png/README.md#background-source-interpretation-and-blend-arithmetic) records older path-specific measurements, while the [libpng reference](libpng.md#alpha-and-background) describes its current contract. OSC 11 describes a terminal UI color and is always interpreted as gamma-encoded, regardless of the setting.
 

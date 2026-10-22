@@ -33,7 +33,7 @@ expected_palette='JASC-PAL
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --precision=float32 -bxterm16 -M pal:- -o /dev/null "${input_image}"
+        --precision-policy=float32 -bxterm16 -M pal:- -o /dev/null "${input_image}"
 ) || {
     echo "not ok" 1 - "builtin palette export failed with float32 precision"
     exit 0

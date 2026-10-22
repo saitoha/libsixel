@@ -22,7 +22,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-gamma.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=fhedt --precision=float32 --working-colorspace=gamma -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=fhedt --precision-policy=float32 --working-colorspace=gamma -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "float32 FHEDT gamma colorspace conversion failed"
     exit 0
 }

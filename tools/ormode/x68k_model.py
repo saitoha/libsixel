@@ -30,7 +30,7 @@ def encode(path, colors, extra):
     args = [
         SRC / "converters/.libs/img2sixel",
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=8bit",
         "--loaders=builtin!",
         "--gpu-policy=off",
         "--palette-type=rgb",

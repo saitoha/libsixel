@@ -262,7 +262,7 @@ with dithering is a separate experiment.
 Non-gamma clustering paths require floating-point coordinates. A fair
 comparison should also request float32 for `gamma`, otherwise representation
 precision becomes a second independent variable. The measurements below use
-`--precision=float32` for every space.
+`--precision-policy=float32` for every space.
 
 Gamma RGB can be clustered in either 8-bit or float32 coordinates. Linear RGB
 and the Lab-family spaces are not available as 8-bit clustering
@@ -272,6 +272,8 @@ the gamma pair therefore includes clustering precision, while the other four
 pairs hold the float32 clustering stage fixed and change only the surrounding
 base gamma pipeline.
 
+Clustering precision does not decide palette-application precision. Under `--precision-policy=auto`, a non-gamma clustering result is applied as a float palette. Under `--precision-policy=8bit`, the same float32 clustering result is rounded to gamma bytes immediately before application, so clustering can use linear or Lab-family coordinates while lookup, dithering and output stay byte-based. The [encoder precision reference](../../precision/README.md#requested-precision-and-effective-format) owns this policy.
+
 ## Measured comparison
 
 The checked-in experiment compares all five spaces at
@@ -279,7 +281,7 @@ The checked-in experiment compares all five spaces at
 [`images/snake.png`](../../../../images/snake.png) fixture. Its controlled command is:
 
 ```text
-img2sixel --threads=1 --precision=float32 --quality=full \
+img2sixel --threads=1 --precision-policy=float32 --quality=full \
   --loaders=builtin! --sampling-policy=full-frame \
   --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
   -F none -a off -X COLORSPACE -Wgamma --diffusion=none \

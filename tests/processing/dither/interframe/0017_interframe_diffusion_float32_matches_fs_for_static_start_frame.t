@@ -18,7 +18,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 interframe_static=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -S -T 0 \
         -d interframe -p 16 \
         "${input_gif}"
@@ -30,7 +30,7 @@ interframe_static=$(
 fs_static=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -S -T 0 \
         -d fs -p 16 \
         "${input_gif}"

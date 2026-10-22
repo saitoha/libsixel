@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify image-map clustering: byte request.
+# Verify precision-policy=8bit rounds an image-map clustering palette.
 # Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 

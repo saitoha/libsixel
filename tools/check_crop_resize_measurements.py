@@ -159,7 +159,7 @@ def validate_command(command_text: str, input_token: str) -> None:
     required = (
         "{img2sixel}",
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",

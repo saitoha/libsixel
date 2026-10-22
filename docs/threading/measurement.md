@@ -71,7 +71,7 @@ are Full HD. The worker-budget sweep, allocation sweep, and representative
 timelines fix the following non-threading choices:
 
 ```text
---precision=8bit
+--precision-policy=auto
 --quality=full
 --sampling-policy=full-frame
 --binning-policy=hard

@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
-/* Map precision is independent of the source image's byte preference. */
+/* Map precision is independent of automatic source precision; the 8bit
+ * precision policy rounds the managed map to bytes before application. */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,6 +63,7 @@ test_map_precision_run(int mode, int space, char const *precision,
     int height;
     int colors;
     int native;
+    int byte_policy;
     int passes;
     int pass;
     int i;
@@ -78,6 +80,7 @@ test_map_precision_run(int mode, int space, char const *precision,
     decoded = NULL;
     palette = NULL;
     ok = 0;
+    byte_policy = strcmp(precision, "8bit") == 0;
     expected = test_map_p3_primary(space);
     if (expected == NULL ||
             SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
@@ -117,7 +120,7 @@ test_map_precision_run(int mode, int space, char const *precision,
         encoder->fignore_delay = 1;
     }
     for (pass = 0; pass < passes; ++pass) {
-        native = mode != 1;
+        native = mode != 1 && !byte_policy;
         if (mode == 9) {
             space = pass == 1 ? 4 : 0;
             expected = test_map_p3_primary(space);
@@ -163,6 +166,10 @@ test_map_precision_run(int mode, int space, char const *precision,
         memset(&view, 0, sizeof(view));
         if (SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
                 dither->palette, &view))) {
+            goto end;
+        }
+        /* 8bit applies the byte view only; no float coordinates remain. */
+        if (byte_policy && view.entries != NULL) {
             goto end;
         }
         selected = -1;

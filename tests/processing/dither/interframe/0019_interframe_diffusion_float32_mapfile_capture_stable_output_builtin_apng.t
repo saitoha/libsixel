@@ -15,7 +15,7 @@ palette_output="${ARTIFACT_LOCAL_DIR}/interframe-float32-mapfile-builtin-apng.pa
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -S -T 1 \
@@ -32,7 +32,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 baseline_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \
@@ -46,7 +46,7 @@ baseline_output=$(
 captured_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \

@@ -60,7 +60,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
         "quantizers": quantizer_records(),
         "merge_configurations": merge_records(),
         "threads": 1,
-        "precision": "8bit",
+        "precision": "auto",
         "required_work_format": "rgb888",
         "quality": "full",
         "loader": "builtin!",
@@ -152,7 +152,7 @@ def validate_command(row: Dict[str, str], timeline: bool) -> None:
         raise ValueError(f"invalid {field}") from exc
     required = {
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=auto",
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",

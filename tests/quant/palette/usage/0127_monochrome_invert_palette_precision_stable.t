@@ -19,7 +19,7 @@ expected_palette='JASC-PAL
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --precision=float32 -e -i -M pal:- -o /dev/null "${input_image}"
+        --precision-policy=float32 -e -i -M pal:- -o /dev/null "${input_image}"
 ) || {
     echo "not ok" 1 - "inverted mono palette export failed with float32 precision"
     exit 0

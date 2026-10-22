@@ -91,7 +91,7 @@ def validate_command(row: Dict[str, str]) -> None:
     command_bits = binbits if policy == "hard" else 6
     required = (
         "--threads=1",
-        "--precision=float32",
+        "--precision-policy=float32",
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",

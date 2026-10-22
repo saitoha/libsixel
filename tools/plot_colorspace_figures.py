@@ -84,7 +84,7 @@ PIPELINE_EDGES = [
 ]
 RESIZE_CASES = [
     {'title': 'A · Gamma input / gamma work',
-     'condition': '--precision=8bit -Wgamma',
+     'condition': '--precision-policy=8bit -Wgamma',
      'nodes': [('RGB888', ['Gamma-encoded source']),
                ('LINEARRGBFLOAT32', ['Resize in linear light']),
                ('RGB888', ['Gamma work · -Wgamma'])],

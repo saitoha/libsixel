@@ -445,19 +445,19 @@ Options:
                           integers >=1 keep deterministic output
                           ordering. img2sixel defaults to `auto`
                           when SIXEL_THREADS is unset or empty.
--., --precision=MODE
-                          control quantization precision.
-                            auto    -> honor the
-                                        `SIXEL_FLOAT32_DITHER`
-                                        environment (default).
-                            8bit    -> use the historical integer
-                                        pipeline with gamma working
-                                        space. Float-only working spaces
-                                        still require float32.
-                            float32 -> request the experimental
-                                        high-precision path even when
-                                        the environment keeps the
-                                        legacy setting.
+-., --precision-policy=POLICY
+                          select the sample precision of palette
+                          application.
+                            auto    -> promote to float32 where
+                                        processing requires it
+                                        (default).
+                            8bit    -> apply the palette on 8-bit
+                                        gamma samples. Earlier stages
+                                        may use float32. Rejects a
+                                        non-gamma -W and a named -U
+                                        destination.
+                            float32 -> request float even when bytes
+                                        would suffice.
 -o, --outfile              specify output file name.
                            (default:stdout)
                            Use a name ending in ".png", the literal
@@ -1203,42 +1203,9 @@ SIXEL_PALETTE_KMEDOIDS_BANDIT_CANDIDATES
 SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH
                            override BanditPAM mini-batch size
                            (8-4096).
-SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
-                           quantizer backend.  Set to `0`,
-                           `off`, `false`, or `no` to keep the
-                           legacy 8bit pipeline.  Leaving the
-                           variable empty (for example running
-                           `SIXEL_FLOAT32_DITHER=`) also keeps the
-                           legacy implementation.  Any other
-                           non-empty value (for example `1`,
-                           `on`, `yes`, `auto`, or `kmeans`)
-                           requests the float32 path when it is
-                           available.  The float32 route currently
-                           enables dedicated k-means and Heckbert
-                           solvers, forces the LUT policy to `none`,
-                           and keeps the generated palette in a
-                           float32 buffer so callers can fetch
-                           normalized entries via the new copy
-                           helpers.
-                           The variable is ignored unless
-                           float32 support is compiled in.
-                           When the flag is enabled libsixel
-                           promotes the RGB888 buffers gathered
-                           after `sixel_dither_new()` to
-                           RGBFLOAT32 before palette generation.
-                           Frames converted via `-W linear` or
-                           `-W oklab` keep their values in
-                           LINEARRGBFLOAT32, OKLABFLOAT32, or
-                           CIELABFLOAT32 so
-                           the working colorspace changes no
-                           longer quantize back to 8bit.
-                           Allocation failures automatically fall
-                           back to the legacy route so existing
-                           workflows continue to succeed.
-                           The img2sixel options `-. float32` and
-                           `--precision=float32` set the variable for
-                           the current process so callers do not need
-                           to export it manually.
+SIXEL_PRECISION_POLICY     precision policy: `auto`, `8bit` or
+                           `float32`, as for `-.`/`--precision-policy`.
+                           The command-line option takes precedence.
 ```
 
 See [Terminal macros](docs/encoder/output/terminal-macros.md) for `-u` animation playback and `-n` preloading with DECDMAC/DECINVM, including invocation examples, receiver requirements, and static-image and animation behavior.
@@ -1694,8 +1661,8 @@ applications cannot accidentally write into the quantized colors owned by the
 When the float32 copy exists, the encoder now keeps it alongside the legacy
 RGB888 buffer and passes the float data straight into the SIXEL palette
 definitions.  This skips an extra byte quantization step at the very end of the
-pipeline so `SIXEL_FLOAT32_DITHER=1` callers can preserve the k-means/Heckbert
-precision all the way to the DECGCI commands.
+pipeline so `SIXEL_PRECISION_POLICY=float32` callers can preserve the
+k-means/Heckbert precision all the way to the DECGCI commands.
 
 ```C
 /* duplicate palette entries as RGB888 */

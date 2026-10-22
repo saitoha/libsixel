@@ -13,7 +13,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -S -T 0 \
@@ -30,7 +30,7 @@ diffusion_output=$(
     SIXEL_DITHER_STBN_SOURCE=diffusion \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d interframe -p 16 \
@@ -44,7 +44,7 @@ stbn_hash_output=$(
     SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d stbn -p 16 \

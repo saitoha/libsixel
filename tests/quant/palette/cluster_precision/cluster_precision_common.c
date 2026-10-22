@@ -123,7 +123,8 @@ test_cluster_precision(int mode)
         if (mode == 11) {
             space = pass == 1 ? 4 : pass == 2 ? 2 : 0;
         }
-        native = space != 4 && mode != 9;
+        /* precision-policy=8bit rounds the float clustering palette. */
+        native = space != 4 && mode != 9 && mode != 10;
         memset(&capture, 0, sizeof(capture));
         memset(&view, 0, sizeof(view));
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'X', spaces[space])) ||

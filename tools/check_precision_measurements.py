@@ -194,7 +194,7 @@ def require_command_contract(row: Dict[str, str]) -> None:
     required = (
         "{img2sixel}",
         "--threads=1",
-        f"--precision={row['precision']}",
+        f"--precision-policy={row['precision']}",
         "--quality=full",
         "--loaders=builtin!",
         "-Wgamma",

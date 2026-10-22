@@ -204,7 +204,8 @@ test_output_native(int space, int output_kind, int model, int mode,
                 memcmp(saved_bytes, bytes, sizeof(bytes)) != 0) {
             goto end;
         }
-        if (byte) {
+        /* precision-policy=8bit also applies a float source as bytes. */
+        if (byte || mode == 4) {
             ok = !dither->use_rgb101_palette &&
                 dither->pixelformat == SIXEL_PIXELFORMAT_RGB888;
             if (!ok) {

@@ -99,7 +99,7 @@ def make_command(img2sixel: str, diffusion: str) -> List[str]:
     return [
         img2sixel,
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
         "--builtin-palette=gray4",

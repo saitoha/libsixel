@@ -44,15 +44,15 @@ RESIZE_CASES = tuple(literal_assignment(PLOTTER, "RESIZE_CASES"))
 EXPECTED_FORMATS = {
     "gamma-8bit": ("rgb888", "rgb888", "rgb888", "1", "rgb888"),
     "gamma-float32": ("rgb888", "rgb-f32", "rgb888", "3", "rgb888"),
-    "working-linear-8bit": ("rgb888", "linear-f32", "rgb888", "3", "rgb888"),
+    "working-linear-auto": ("rgb888", "linear-f32", "rgb888", "3", "rgb888"),
     "working-linear-float32": ("rgb888", "linear-f32", "rgb888", "3", "rgb888"),
-    "working-oklab-8bit": ("rgb888", "oklab-f32", "rgb888", "3", "rgb888"),
+    "working-oklab-auto": ("rgb888", "oklab-f32", "rgb888", "3", "rgb888"),
     "working-oklab-float32": ("rgb888", "oklab-f32", "rgb888", "3", "rgb888"),
     "cms-gamma-byte": ("rgb888", "rgb888", "rgb888", "1", "rgb888"),
     "cms-gamma-float": ("rgb-f32", "rgb-f32", "rgb-f32", "3", "rgb-f32"),
     "cms-linear-byte": ("rgb888", "linear-f32", "rgb888", "3", "rgb888"),
     "cms-linear-float": ("linear-f32", "linear-f32", "linear-f32", "3", "linear-f32"),
-    "cms-oklab-8bit": ("oklab-f32", "oklab-f32", "oklab-f32", "3", "oklab-f32"),
+    "cms-oklab-auto": ("oklab-f32", "oklab-f32", "oklab-f32", "3", "oklab-f32"),
     "cms-oklab-float32": ("oklab-f32", "oklab-f32", "oklab-f32", "3", "oklab-f32"),
 }
 
@@ -174,9 +174,9 @@ def validate_paths(rows: Sequence[Dict[str, str]]) -> None:
         if len(row["output_sha256"]) != 64 or int(row["sixel_bytes"]) <= 0:
             fail(f"invalid output record for {row['case']}")
     for left, right in (
-        ("working-linear-8bit", "working-linear-float32"),
-        ("working-oklab-8bit", "working-oklab-float32"),
-        ("cms-oklab-8bit", "cms-oklab-float32"),
+        ("working-linear-auto", "working-linear-float32"),
+        ("working-oklab-auto", "working-oklab-float32"),
+        ("cms-oklab-auto", "cms-oklab-float32"),
     ):
         if by_id[left]["output_sha256"] != by_id[right]["output_sha256"]:
             fail(f"implicit and explicit float32 outputs differ: {left}, {right}")
@@ -185,7 +185,7 @@ def validate_paths(rows: Sequence[Dict[str, str]]) -> None:
         "cms-gamma-float": ("gamma", "0", "rgbfloat32"),
         "cms-linear-byte": ("linear", "1", "rgb888"),
         "cms-linear-float": ("linear", "0", "linearrgbfloat32"),
-        "cms-oklab-8bit": ("oklab", "0", "oklabfloat32"),
+        "cms-oklab-auto": ("oklab", "0", "oklabfloat32"),
         "cms-oklab-float32": ("oklab", "0", "oklabfloat32"),
     }
     for case_id, expected in cms_contracts.items():
@@ -223,7 +223,7 @@ def validate_resize(rows: Sequence[Dict[str, str]]) -> None:
         if observed != expected:
             fail(f"resize format contract changed for {row['mode']}: {observed}")
         command = shlex.split(row["command"])
-        if ("--precision=8bit" not in command
+        if ("--precision-policy=8bit" not in command
                 or "-w50%" not in command
                 or "-rbilinear" not in command):
             fail(f"resize command is not controlled for {row['mode']}")

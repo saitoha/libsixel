@@ -23,7 +23,7 @@ out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-scan-serpentine-carry-f3
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
-              --precision=float32 \
+              --precision-policy=float32 \
               -d lso2:scan=serpentine \
               "${input_png}" >"${out}" || {
     echo "not ok 1 - scan/carry render failed"

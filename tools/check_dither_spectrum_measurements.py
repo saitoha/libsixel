@@ -134,7 +134,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         raise ValueError(f"invalid command in {path}: {method}") from exc
     required = {
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
         "--builtin-palette=gray4",

@@ -206,7 +206,7 @@ def make_command(
     command = [
         img2sixel,
         "--threads=1",
-        "--precision=float32",
+        "--precision-policy=float32",
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",

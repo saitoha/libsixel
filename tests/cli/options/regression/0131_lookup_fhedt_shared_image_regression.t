@@ -53,7 +53,7 @@ case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*shared=0**) true ;; *) false ;;
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    --precision=float32 "-~fhedt:S0" "${input_image}" \
+    --precision-policy=float32 "-~fhedt:S0" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt shared float32 conversion failed"
     exit 0

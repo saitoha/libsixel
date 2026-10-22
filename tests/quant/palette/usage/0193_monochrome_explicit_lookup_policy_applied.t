@@ -13,7 +13,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma -Goff -dnone \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision-policy=8bit -Wgamma -Goff -dnone \
     -e --lookup-policy=5bit -o/dev/null "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "monochrome conversion with 5bit lookup failed"
@@ -30,7 +30,7 @@ case "${trace}" in *LSXLUT2\|phase=palette-apply\|selected=lookup/5bit.8bit\|exp
 }
 
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=float32 -Wgamma -Goff -dnone \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision-policy=float32 -Wgamma -Goff -dnone \
     -e --lookup-policy=5bit -o/dev/null "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "monochrome conversion with 5bit lookup failed"

@@ -792,7 +792,7 @@ def plot_visual_comparison(path: Path,
         colorbar.set_label("Delta E00 (lower is better)")
     figure.suptitle("What final merge changes on snake.png at K=32")
     figure.supxlabel(
-        "Heckbert; 8bit; no dithering; exact lookup; cover and snap disabled",
+        "Heckbert; auto precision; no dithering; exact lookup; cover and snap disabled",
         fontsize=9, color="#555555",
     )
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -1095,7 +1095,7 @@ def write_metadata(path: Path,
             "lookup_policy": "none",
             "gpu_policy": "off",
             "threads": 1,
-            "precision": "8bit",
+            "precision": "auto",
             "clustering_colorspace": "oklab",
             "working_colorspace": "gamma",
             "output_colorspace": "gamma",

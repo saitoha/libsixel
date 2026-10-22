@@ -195,7 +195,7 @@ def make_command(img2sixel: str,
         )
     else:
         raise ValueError(f"Unknown measurement domain: {domain}")
-    replace_option(command, "--precision=", f"--precision={precision}")
+    replace_option(command, "--precision-policy=", f"--precision-policy={precision}")
     replace_option(command, "--loaders=", "--loaders=builtin!")
     return command
 

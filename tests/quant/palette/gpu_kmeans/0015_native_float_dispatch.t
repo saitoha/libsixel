@@ -18,7 +18,7 @@ backend_ok=0
 probe_status=0
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto --precision=float32 -Xoklab -Qkmeans:backend=gpu:seed=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gauto --precision-policy=float32 -Xoklab -Qkmeans:backend=gpu:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 case "$trace" in
     *LSXKMEANS1\|requested=gpu\|effective=metal\|*) backend_ok=1 ;;

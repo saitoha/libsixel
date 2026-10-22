@@ -28,7 +28,7 @@ output_rgb="${ARTIFACT_LOCAL_DIR}/webp-icc-rgb.sixel"
 
 # An unmanaged lossy source needs an explicit float request to select YUV.
 message=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=0 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=float32 --threads=1 --lookup-policy=none \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=float32 --threads=1 --lookup-policy=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" 2>&1 >"${output_yuv}") || {
     echo "not ok 1 - YUV decode failed: $message"
     exit 0
@@ -38,7 +38,7 @@ case "$message" in *"static decode path=lossy_yuv "*) true ;; *) false ;; esac |
     exit 0
 }
 message=$(set +xv; SIXEL_TRACE_TOPIC=webp_decode _SIXEL_TEST_LIBWEBP_FORCE_RGB_DECODE=1 \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=float32 --threads=1 --lookup-policy=none \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=float32 --threads=1 --lookup-policy=none \
     -Llibwebp:cms_engine=auto! "${input_webp}" 2>&1 >"${output_rgb}") || {
     echo "not ok 1 - RGB decode failed: $message"
     exit 0

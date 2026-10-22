@@ -168,7 +168,7 @@ test_map_solver_run(int mode, int space, char const *path,
                 "builtin:cms_engine=builtin:cms_target=linear:"
                 "prefer_8bit=0!"))) ||
             (image && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                '.', "8bit"))) ||
+                '.', "auto"))) ||
             (mode == 7 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'M', "gpl:-")))) {
         goto end;

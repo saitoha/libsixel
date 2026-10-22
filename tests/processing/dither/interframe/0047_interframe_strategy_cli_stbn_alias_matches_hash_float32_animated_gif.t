@@ -23,7 +23,7 @@ nl='
 hash_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d stbn:source=hash -p 16 \
@@ -39,7 +39,7 @@ status=0
 alias_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d stbn -p 16 \
@@ -61,7 +61,7 @@ msg=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --env SIXEL_TRACE_TOPIC=dither_contract \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d stbn -p 16 \

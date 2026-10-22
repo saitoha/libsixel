@@ -62,9 +62,9 @@ sources in a float format until the final palette is emitted.
 
 1. Ensure libsixel itself was built with the Ruby bindings enabled so
    the gem can load the new dithering entry points.
-2. Opt into the float pipeline by setting ``ENV["SIXEL_FLOAT32_DITHER"]
-   = "1"`` before instantiating an ``Encoder``.  This mirrors
-   ``img2sixel -.float32``.
+2. Opt into the float pipeline by setting
+   ``ENV["SIXEL_PRECISION_POLICY"] = "float32"`` before instantiating an
+   ``Encoder``.  This mirrors ``img2sixel -.float32``.
 3. Request the float precision flag through ``encoder.setopt('.',
    'float32')`` so that automatic image loading uses the expanded path.
 4. Select a working colorspace via ``encoder.setopt('W', 'linear')`` or
@@ -87,7 +87,7 @@ sources in a float format until the final palette is emitted.
 ```ruby
 require 'libsixel'
 
-ENV['SIXEL_FLOAT32_DITHER'] = '1'
+ENV['SIXEL_PRECISION_POLICY'] = 'float32'
 
 encoder = Encoder.new
 encoder.setopt '.', 'float32'

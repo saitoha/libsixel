@@ -1,5 +1,5 @@
 #!/bin/sh
-# Preserve SIXEL_FLOAT32_DITHER equivalence with -. during migration.
+# SIXEL_PRECISION_POLICY selects the same policy as -.
 
 set -eux
 
@@ -21,7 +21,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -. float32 "${input}" \
     echo "not ok 1 - precision CLI conversion failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_FLOAT32_DITHER=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_PRECISION_POLICY=float32 \
     "${input}" >"${env_output}" || {
     echo "not ok 1 - precision environment conversion failed"
     exit 0

@@ -60,7 +60,7 @@ static char const *g_env_keys[] = {
     "SIXEL_OPTION_FUZZY_SUGGESTIONS",
     "SIXEL_OPTION_PATH_SUGGESTIONS",
     "SIXEL_LOADER_CMS_ENGINE",
-    "SIXEL_FLOAT32_DITHER"
+    "SIXEL_PRECISION_POLICY"
 };
 
 static char const *g_env_values[] = {

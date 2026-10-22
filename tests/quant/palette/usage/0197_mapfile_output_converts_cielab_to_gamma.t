@@ -32,7 +32,7 @@ Columns: 16
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -L builtin! --cms-engine=none --threads=1 --precision=float32 \
+        -L builtin! --cms-engine=none --threads=1 --precision-policy=float32 \
         --sampling-policy=full-frame --binning-policy=none \
         --quantize-model=kmeans:seed=1 --merge-policy=none \
         --cover-policy=off --snap-policy=none --lookup-policy=none \

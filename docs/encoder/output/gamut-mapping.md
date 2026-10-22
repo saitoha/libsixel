@@ -87,7 +87,7 @@ The [pipeline diagram](../../concepts/gamut-mapping/README.md#where-the-mapper-s
 | `-M` | Exports using the existing sRGB interchange interpretation. Mapping can change the constructed palette, but does not reinterpret a legacy mapfile as device RGB. |
 | `sixel2png -T` | Interprets decoded numbers. It does not apply a second gamut mapping. |
 
-The mapper uses the selected CPU float palette/high-color paths and their existing admission rules. Effective precision is float even under an explicit byte preference. `auto` and `clip` do not introduce a mapper or force float. RGB101 rounding remains at the output boundary unless an explicit snap policy requests earlier projection.
+The mapper uses the selected CPU float palette/high-color paths and their existing admission rules. The mapping itself runs in float under every precision policy; `--precision-policy=8bit` rounds the mapped result to gamma bytes at palette application. `auto` and `clip` do not introduce a mapper or force float. RGB101 rounding remains at the output boundary unless an explicit snap policy requests earlier projection.
 
 ## Evaluation boundary
 

@@ -12,7 +12,7 @@ Select `--update-policy=delta` (short form `-Z delta`) to enable 6delta. The def
 
 ```sh
 img2sixel --update-policy=delta:threshold=0:error=diffuse \
-  --precision=8bit --working-colorspace=gamma --gpu-policy=off \
+  --precision-policy=8bit --working-colorspace=gamma --gpu-policy=off \
   --loop-control=disable animation.gif
 ```
 

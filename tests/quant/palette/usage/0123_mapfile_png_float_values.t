@@ -32,7 +32,7 @@ expected_palette='JASC-PAL
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
-        --precision=float32 -m "${mapfile_png}" -M pal:- -o /dev/null \
+        --precision-policy=float32 -m "${mapfile_png}" -M pal:- -o /dev/null \
         "${input_image}"
 ) || {
     echo "not ok" 1 - "PNG mapfile export failed with float32 precision"

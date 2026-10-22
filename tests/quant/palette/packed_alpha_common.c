@@ -505,15 +505,21 @@ test_packed_wire_run(int space, int mode, int animated)
         }
         dither = (sixel_dither_t *)encoder->diagnostic_dither;
         if (dither == NULL ||
-                dither->use_rgb101_palette != (mode != 4) ||
+                dither->use_rgb101_palette != (mode != 4 && mode != 13) ||
                 (mode == 4 && dither->ncolors != 4) ||
                 memcmp(input, saved, sizeof(input)) != 0 ||
                 !pa_decode(capture.data, width, painted, colors)) {
             goto end;
         }
+        /* precision-policy=8bit composes in float, then applies bytes. */
+        if (mode == 13 && (SIXEL_FAILED(
+                dither->palette->vtbl->get_entries_float32(
+                    dither->palette, &view)) || view.entries != NULL)) {
+            goto end;
+        }
         /* The wire grid cannot expose every intermediate byte rounding.
          * Require the actual gamma palette to retain each rational blend. */
-        if (space == 0 && (mode == 0 || mode == 13)) {
+        if (space == 0 && mode == 0) {
             if (SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
                     dither->palette, &view)) || view.entries == NULL) {
                 goto end;

@@ -1,5 +1,5 @@
 #!/bin/sh
-# A byte preference does not narrow an already-float source.
+# precision-policy=8bit applies a float source through the byte path.
 # Policy: docs/encoder/output/output-colorspace.md
 # Policy: docs/encoder/palette-construction/cover-policy/README.md
 set -eux

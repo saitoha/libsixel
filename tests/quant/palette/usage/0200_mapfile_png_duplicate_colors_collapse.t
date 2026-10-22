@@ -25,7 +25,7 @@ expected_palette='JASC-PAL
 # byte alpha normalization. Reconstruction retains the exact blue endpoint.
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
-        --precision=float32 --alpha-policy=composite \
+        --precision-policy=float32 --alpha-policy=composite \
         -B '#0000ff' -m "${mapfile_png}" -M pal-jasc:- \
         -o /dev/null "${input_image}"
 ) || {

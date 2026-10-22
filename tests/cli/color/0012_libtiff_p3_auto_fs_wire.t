@@ -20,7 +20,7 @@ set -v
 
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -L"libtiff:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
-    -jscalar:resize_precision=float --precision=auto -Qkmeans:seed=1 \
+    -jscalar:resize_precision=float --precision-policy=auto -Qkmeans:seed=1 \
     -Xlinear -Wlinear -Udisplay-p3 -Fnone -aoff -_none '-~none' -dfs -trgb \
     --binning-policy=none --sampling-policy=full-frame \
     "${TOP_SRCDIR}/tests/data/color-numeric/tiff-layout-rgb16-o6.tif" 2>&1) || {

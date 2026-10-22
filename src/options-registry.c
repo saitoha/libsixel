@@ -1410,11 +1410,6 @@ static sixel_option_value_schema_t const g_precision_values[] = {
     }
 };
 
-static sixel_suboption_choice_t const g_precision_environment_choices[] = {
-    { "0", SIXEL_OPTION_PRECISION_8BIT },
-    { "1", SIXEL_OPTION_PRECISION_FLOAT32 }
-};
-
 static sixel_option_value_schema_t const g_threads_values[] = {
     { "auto", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
 };
@@ -3326,18 +3321,17 @@ static sixel_option_argument_schema_t const g_options[] = {
         0,
         g_loader_values,
         "SIXEL_LOADER_PRIORITY_LIST"),
-    SIXEL_REGISTRY_SCALAR_CHOICE_ENV(
+    SIXEL_REGISTRY_SCALAR_CHOICE(
         SIXEL_OPTION_SCHEMA_PRECISION,
         SIXEL_OPTION_SCOPE_ENCODER,
-        SIXEL_OPTFLAG_PRECISION,
-        "precision",
+        SIXEL_OPTFLAG_PRECISION_POLICY,
+        "precision-policy",
         SIXEL_OPTION_MATCH_PREFIX,
         SIXEL_OPTION_MATCH_EXACT,
-        "SIXEL_FLOAT32_DITHER",
-        "precision accepts auto, 8bit, or float32.",
+        "SIXEL_PRECISION_POLICY",
+        "precision-policy accepts auto, 8bit, or float32.",
         SIXEL_OPTION_PRECISION_AUTO,
-        g_precision_values,
-        g_precision_environment_choices),
+        g_precision_values),
     SIXEL_REGISTRY_SCALAR_INT(
         SIXEL_OPTION_SCHEMA_THREADS,
         SIXEL_OPTION_SCOPE_ALL,

@@ -26,10 +26,10 @@ export SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=
 
 # Sixteen colors exercise the low-color geometry where overlap is otherwise
 # useful for diffusion. This is exact pixel coverage, not a quality gate.
-set -- 'none --precision=8bit' 'none -Xc' \
-    'a_dither --precision=8bit' 'a_dither -Xc' \
-    'x_dither --precision=8bit' 'x_dither -Xc' \
-    'bluenoise --precision=8bit' 'bluenoise -Xc'
+set -- 'none --precision-policy=8bit' 'none -Xc' \
+    'a_dither --precision-policy=8bit' 'a_dither -Xc' \
+    'x_dither --precision-policy=8bit' 'x_dither -Xc' \
+    'bluenoise --precision-policy=8bit' 'bluenoise -Xc'
 while test "$#" -gt 0; do
     kernel=${1%% *}
     precision=${1#* }

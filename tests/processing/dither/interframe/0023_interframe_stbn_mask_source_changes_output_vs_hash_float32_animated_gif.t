@@ -13,7 +13,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin -ldisable \
     -S -T 0 \
     -d fs -p 16 \
@@ -28,7 +28,7 @@ set -v
 hash_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin -ldisable \
         -d stbn:source=hash -p 16 \
         "${input_gif}"
@@ -40,7 +40,7 @@ hash_output=$(
 mask_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin -ldisable \
         -d stbn:source=mask -p 16 \
         "${input_gif}"

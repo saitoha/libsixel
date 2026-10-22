@@ -104,7 +104,7 @@ Defaults are chosen so that most users never need an advanced option. The [encod
 | --- | --- | --- | --- |
 | `-v`, `--verbose` | basic | Print diagnostic information and the processing plan. | [Diagnostics](diagnostics.md) |
 | `-=`, `--threads` | advanced | Number of encoder threads, or `auto`. | [Encoder threading](../threading/encoder.md) |
-| `-.`, `--precision` | advanced | Base arithmetic precision of the pipeline. | [Encoder working precision](../encoder/precision/README.md) |
+| `-.`, `--precision-policy` | advanced | Precision policy: `auto`, `8bit` palette application, or `float32`. | [Encoder working precision](../encoder/precision/README.md) |
 | `-G`, `--gpu-policy` | advanced | Use the GPU for palette application where supported. | [Metal palette application](../encoder/palette-application/lookup-policy/measurements/README.md#metal-paletteapply-performance) |
 | `-j`, `--runtime-policy` | advanced | Process-wide SIMD and scheduling tuning. | [Runtime execution policy](runtime-policy.md) |
 | `-x`, `--diagnostics` | advanced | Diagnostic presentation and trace topics. | [Diagnostics](diagnostics.md) |

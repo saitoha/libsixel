@@ -404,7 +404,7 @@ sixel_lookup_policy_fhedt_byte_metric(
             settings->weights[0] != settings->weights[1] ||
             settings->weights[0] != settings->weights[2]) {
         sixel_helper_set_additional_message(
-            "Nonuniform FHEDT weights require --precision=float32.");
+            "Nonuniform FHEDT weights require --precision-policy=float32.");
         return SIXEL_BAD_ARGUMENT;
     }
     return SIXEL_OK;

@@ -23,7 +23,7 @@ short_output="${artifact_dir}/0128-fhedt-pin-threads-short-$$.six"
 env_output="${artifact_dir}/0128-fhedt-pin-threads-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision-policy=8bit -Wgamma \
     "-~fhedt:P1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "fhedt:pin_threads short conversion failed"
     exit 0
@@ -47,7 +47,7 @@ case "${short_trace}" in *LSXFHD1\|*precision=8bit\|*pin_threads=1**) true ;; *)
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision-policy=8bit -Wgamma \
     --env "SIXEL_LOOKUP_FHEDT_PIN_THREADS=1" "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "fhedt:pin_threads environment conversion failed"
@@ -71,8 +71,8 @@ case "${env_trace}" in *LSXFHD1\|*precision=8bit\|*pin_threads=1**) true ;; *) f
     exit 0
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
-    --precision=float32 "-~fhedt:P1" "${input_image}" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision-policy=8bit -Wgamma \
+    --precision-policy=float32 "-~fhedt:P1" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt pin_threads float32 conversion failed"
     exit 0
@@ -88,7 +88,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 legacy_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threads=1 -v --precision-policy=8bit -Wgamma \
     --env "SIXEL_FHEDT_PIN_THREADS=1" "-~fhedt" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "legacy pin_threads conversion failed"

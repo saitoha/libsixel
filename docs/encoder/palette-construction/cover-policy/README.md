@@ -354,7 +354,7 @@ The following historical design measurement used a frozen 64-entry palette and e
 | corners plus face centers, 14 | 0% | 12% | 15% | 12% | 9% |
 | previous plus edge midpoints, 26 | 0% | 4% | 10% | 12% | 5% |
 
-Global mean Delta E or MSE alone can hide the defect this option targets. A durable comparison should report region-specific and tail color error for rare saturated patches, MS-SSIM for spatial impact, palette-build and end-to-end time, actual palette entry count, exact SIXEL byte size, hull-exterior volume and area, and closed-loop probe ambiguity. It should sweep palette sizes across the `auto` boundaries, compare `soft` and `hard`, keep `-Q`, `-F`, `-X`, `--precision`, lookup, and thread count fixed, and show both `-d none` and an error-diffusion control such as `-d fs`.
+Global mean Delta E or MSE alone can hide the defect this option targets. A durable comparison should report region-specific and tail color error for rare saturated patches, MS-SSIM for spatial impact, palette-build and end-to-end time, actual palette entry count, exact SIXEL byte size, hull-exterior volume and area, and closed-loop probe ambiguity. It should sweep palette sizes across the `auto` boundaries, compare `soft` and `hard`, keep `-Q`, `-F`, `-X`, `--precision-policy`, lookup, and thread count fixed, and show both `-d none` and an error-diffusion control such as `-d fs`.
 
 The source tree now contains a one-command **measurement-definition control** for the geometry, flat-patch, finite-area, Delta E00, palette-spacing, and hotspot views used in Figures 6-8:
 
@@ -523,12 +523,12 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 | CP-111 | Plain AUTO preserves native extended palette values. | [tests/quant/palette/auto_cover_float/0011_explicit_auto_native.t](../../../../tests/quant/palette/auto_cover_float/0011_explicit_auto_native.t) |
 | CP-112 | AUTO leaves an otherwise byte-eligible job on its byte path. | [tests/quant/palette/auto_cover_float/0012_byte_auto_eligible.t](../../../../tests/quant/palette/auto_cover_float/0012_byte_auto_eligible.t) |
 | CP-113 | Explicit float precision admits a byte source with AUTO. | [tests/quant/palette/auto_cover_float/0013_byte_forced_float.t](../../../../tests/quant/palette/auto_cover_float/0013_byte_forced_float.t) |
-| CP-114 | A byte preference does not narrow an already-float source. | [tests/quant/palette/auto_cover_float/0014_float_byte_preference.t](../../../../tests/quant/palette/auto_cover_float/0014_float_byte_preference.t) |
+| CP-114 | `--precision-policy=8bit` applies an already-float source through the byte path. | [tests/quant/palette/auto_cover_float/0014_float_byte_preference.t](../../../../tests/quant/palette/auto_cover_float/0014_float_byte_preference.t) |
 | CP-115 | Working-space conversion admits required float with AUTO. | [tests/quant/palette/auto_cover_float/0015_linear_required_float.t](../../../../tests/quant/palette/auto_cover_float/0015_linear_required_float.t) |
 | CP-116 | Environment AUTO admits the native palette path. | [tests/quant/palette/auto_cover_float/0016_environment_auto.t](../../../../tests/quant/palette/auto_cover_float/0016_environment_auto.t) |
 | CP-117 | Environment hard mode and growth leave native AUTO off. | [tests/quant/palette/auto_cover_float/0017_environment_hard_grow.t](../../../../tests/quant/palette/auto_cover_float/0017_environment_hard_grow.t) |
 | CP-118 | Explicit AUTO overrides an active environment cover budget. | [tests/quant/palette/auto_cover_float/0018_explicit_auto_precedence.t](../../../../tests/quant/palette/auto_cover_float/0018_explicit_auto_precedence.t) |
-| CP-119 | P3 defaults admit byte input despite a byte preference. | [tests/quant/palette/auto_cover_float/0019_p3_default_byte.t](../../../../tests/quant/palette/auto_cover_float/0019_p3_default_byte.t) |
+| CP-119 | P3 defaults admit byte input into float work. | [tests/quant/palette/auto_cover_float/0019_p3_default_byte.t](../../../../tests/quant/palette/auto_cover_float/0019_p3_default_byte.t) |
 | CP-120 | P3 can enable and disable snap on a reused encoder while retaining automatic cover semantics. | [tests/quant/palette/auto_cover_float/0020_p3_snap_transition.t](../../../../tests/quant/palette/auto_cover_float/0020_p3_snap_transition.t) |
 | CP-121 | Interleaved encoders retain independent byte and float admission. | [tests/quant/palette/auto_cover_float/0021_encoder_isolation.t](../../../../tests/quant/palette/auto_cover_float/0021_encoder_isolation.t) |
 | CP-122 | Omitted cover excludes hidden RGB and reserves its mask slot. | [tests/quant/palette/auto_cover_float/0022_masked_default.t](../../../../tests/quant/palette/auto_cover_float/0022_masked_default.t) |

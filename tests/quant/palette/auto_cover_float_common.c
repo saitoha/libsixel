@@ -325,7 +325,7 @@ test_auto_cover_admission(int mode)
             sixel_encoder_setopt(encoder, 'a', "auto"))) ||
             (mode == 3 && SIXEL_FAILED(sixel_encoder_setopt(
                 encoder, '.', "float32"))) ||
-            ((mode == 4 || mode == 9) && SIXEL_FAILED(sixel_encoder_setopt(
+            (mode == 4 && SIXEL_FAILED(sixel_encoder_setopt(
                 encoder, '.', "8bit"))) ||
             (linear && SIXEL_FAILED(sixel_encoder_setopt(
                 encoder, 'W', "linear"))) ||
@@ -341,7 +341,9 @@ test_auto_cover_admission(int mode)
         byte_input = mode == 2 || mode == 3 || mode == 5 || mode == 9 ||
             mode == 15 ||
             ((mode == 11 || mode == 13) && pass == 1);
-        byte_work = byte_input && mode != 3 && mode != 5 && mode != 9;
+        /* precision-policy=8bit applies bytes even to a float source. */
+        byte_work = (byte_input && mode != 3 && mode != 5 && mode != 9) ||
+            mode == 4;
         memset(&capture, 0, sizeof(capture));
         memset(&view, 0, sizeof(view));
         for (i = 0; i < 4; ++i) {

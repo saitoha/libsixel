@@ -24,7 +24,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_192.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=float32 --lookup-policy=none -o "${output_sixel}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=float32 --lookup-policy=none -o "${output_sixel}" "${input_image}" || {
     echo "not ok" 1 - "float32 lookup policy none lsqa failed"
     exit 0
 }

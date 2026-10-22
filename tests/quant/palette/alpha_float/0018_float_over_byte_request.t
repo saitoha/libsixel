@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify native alpha: float over byte request.
+# Verify native alpha: 8bit applies float input through bytes.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 

@@ -8,7 +8,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Gforce -dnone -p16 \
-    -L 'builtin:cms_engine=none!' --precision=8bit -Xgamma -Wgamma \
+    -L 'builtin:cms_engine=none!' --precision-policy=8bit -Xgamma -Wgamma \
     -aoff -Fnone '-~none' -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" || {
     echo "1..0 # SKIP GPU unavailable"

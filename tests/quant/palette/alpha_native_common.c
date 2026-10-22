@@ -190,7 +190,8 @@ test_alpha_native_run(int space, int mode, int animated)
     ok = 0;
     pass = 0;
     byte_input = mode == 7 || mode == 8;
-    byte_work = mode == 7;
+    /* precision-policy=8bit applies even a float source through bytes. */
+    byte_work = mode == 7 || mode == 9;
     passes = mode == 11 || mode == 12 ? 3 : 1;
     if (mode == 26 && SIXEL_FAILED(sixel_allocator_new(&allocator,
             an_malloc, NULL, NULL, NULL))) {

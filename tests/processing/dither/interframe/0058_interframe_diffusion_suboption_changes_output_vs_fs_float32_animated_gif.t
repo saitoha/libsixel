@@ -30,7 +30,7 @@ fs_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        --precision=float32 \
+        --precision-policy=float32 \
         -d interframe -p 16 \
         "${input_gif}"
 ) || {
@@ -43,7 +43,7 @@ atkinson_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        --precision=float32 \
+        --precision-policy=float32 \
         -d interframe:diffusion=atkinson -p 16 \
         "${input_gif}"
 ) || {

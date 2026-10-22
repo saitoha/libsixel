@@ -1,5 +1,5 @@
 #!/bin/sh
-# Retain a managed map primary with byte source and gamma work.
+# Round a managed map primary to bytes under precision-policy=8bit.
 # Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
@@ -15,8 +15,8 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
     exit 0
 }
 
-case "${trace}" in *"selected=lookup/5bit.float32"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - actual float32 consumer"
+case "${trace}" in *"selected=lookup/5bit.8bit"*) true ;; *) false ;; esac || {
+    echo "not ok 1 - actual 8bit consumer"
     printf '# %s\n' "${trace}"
     exit 0
 }

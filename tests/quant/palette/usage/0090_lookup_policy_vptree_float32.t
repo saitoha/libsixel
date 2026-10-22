@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/vptree-float32.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=vptree --precision=float32 -p 16 -d none \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=vptree --precision-policy=float32 -p 16 -d none \
         -o "${output_sixel}" "${snake_png}" || {
     echo "not ok" 1 - "float32 VP-tree lookup policy failed"
     exit 0

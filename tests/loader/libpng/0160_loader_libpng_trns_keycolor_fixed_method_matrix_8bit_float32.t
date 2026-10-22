@@ -22,7 +22,7 @@ output_six="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-a-dither-8bit-tbb
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
               --env SIXEL_THREADS=4 \
               -Llibpng:cms_engine=none! \
-              --precision=8bit \
+              --precision-policy=8bit \
               -d a_dither:scan=raster \
               "${input_png}" >"${output_six}" || {
     echo "not ok 1 - a_dither 8bit render failed"

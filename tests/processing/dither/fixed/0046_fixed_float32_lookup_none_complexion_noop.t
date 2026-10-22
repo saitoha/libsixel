@@ -23,12 +23,12 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/complexion.six"
 default_sixel="${ARTIFACT_LOCAL_DIR}/default.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision=float32 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision-policy=float32 \
         --lookup-policy=none -C 8 -p 16 "${input_image}" >"${output_sixel}" || {
     echo "not ok 1 - deprecated complexion conversion failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision=float32 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision-policy=float32 \
         --lookup-policy=none -p 16 "${input_image}" >"${default_sixel}" || {
     echo "not ok 1 - default complexion conversion failed"
     exit 0

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/encoder/output/output-colorspace.md
-# Verify packed alpha: wire fractional byte request.
+# Verify packed alpha: 8bit composes fractions in float, then applies bytes.
 set -eux
 
 echo "1..1"

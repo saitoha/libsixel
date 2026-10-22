@@ -29,7 +29,7 @@ OUT = None
 ENV = {k: v for k, v in os.environ.items() if not k.startswith('SIXEL_')}
 ENCODER = str(ROOT / 'converters/img2sixel')
 DECODER = str(ROOT / 'converters/sixel2png')
-COMMON = ['-v', '--threads=1', '--precision=8bit', '--gpu-policy=off',
+COMMON = ['-v', '--threads=1', '--precision-policy=8bit', '--gpu-policy=off',
           '--lookup-policy=none', '-Wgamma', '-Ugamma']
 CONDITIONS = [
     ('fs-0', 'FS / P=0', 'raster', 0),

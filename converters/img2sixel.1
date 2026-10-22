@@ -105,18 +105,19 @@ preserves the sequential fallback path.
 When \fBSIXEL_THREADS\fP is unset or empty, the \fBimg2sixel\fP frontend
 defaults to \fBauto\fP.
 .TP 5
-.B \-., \-\-precision=\fIMODE\fP
-control the arithmetic precision used by the quantizers and dithering
-pipelines.
+.B \-. \fIPOLICY\fP, \-\-precision\-policy=\fIPOLICY\fP
+select the sample precision of palette application.
 .RS
 .TP 5
 .B auto
--> choose from source and processing requirements, without requesting
-   an additional float promotion.
+-> promote to float32 where CMS output, high-depth source samples,
+   color-space calculations or the clustering view require it (default).
 .TP 5
 .B 8bit
--> prefer byte storage when sufficient. CMS output, high-depth source
-   samples and color-space calculations retain their float requirements.
+-> apply the palette on 8-bit gamma samples. Earlier stages may still
+   use float32; the work samples and the palette are rounded to bytes
+   just before palette application. A non-gamma \fB-W\fP and a named
+   \fB-U\fP destination are rejected.
 .TP 5
 .B float32
 -> request float processing even when byte storage would suffice.
@@ -1891,10 +1892,10 @@ specify number of colors to reduce the image to (default=256).
 overrided by -p(--colors) option.
 .br
 .TP 5
-.B SIXEL_FLOAT32_DITHER
+.B SIXEL_PRECISION_POLICY
 .br
-prefer the float32 quantization path. Only 0 and 1 are accepted. 1 enables the
-high-precision pipeline; unset, empty, invalid, and 0 keep the 8-bit pipeline.
+precision policy: auto, 8bit or float32, as for \fB-.\fP/\fB--precision-policy\fP.
+The command-line option takes precedence.
 .br
 For SVG decoded via \fBlibrsvg\fP, the source raster remains cairo ARGB32
 (8-bit per channel); float32 improves downstream processing precision but does

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify float clustering byte request.
+# Verify precision-policy=8bit rounds a float clustering palette to bytes.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 

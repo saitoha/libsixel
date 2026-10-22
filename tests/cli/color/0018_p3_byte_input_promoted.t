@@ -12,15 +12,15 @@ echo "1..1"
 set -v
 
 trace=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    -Lbuiltin:cms_engine=none! -.8bit -Qk -Xgamma -Wgamma \
+    -Lbuiltin:cms_engine=none! -.auto -Qk -Xgamma -Wgamma \
     -0hard -dnone -aoff -_auto:rate=0 -Udisplay-p3 -v \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || {
-    echo "not ok 1 - P3 rejected a byte precision request"
+    echo "not ok 1 - P3 rejected byte input"
     exit 0
 }
 case "$trace" in
     *'formats: source=rgb888 work=rgb-f32 scale_out=rgb888'*) ;;
     *) echo "not ok 1 - P3 did not promote byte input"; exit 0 ;;
 esac
-echo "ok 1 - P3 promotes byte input even with a byte request"
+echo "ok 1 - P3 promotes byte input"
 exit 0

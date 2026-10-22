@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    -Lbuiltin! --cms-engine=none --precision=auto \
+    -Lbuiltin! --cms-engine=none --precision-policy=auto \
     --sampling-policy=full-frame --binning-policy=none \
     -Qkmeans:seed=1 -Xlinear -Wgamma -Udisplay-p3 \
     -Fnone -_none '-~none' -dnone -trgb -Goff \

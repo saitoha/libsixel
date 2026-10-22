@@ -2228,6 +2228,7 @@ sixel_dither_new(
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->prefer_float32 = 0;
+    (*ppdither)->apply_8bit = 0;
     (*ppdither)->clamp_policy = SIXEL_DITHER_CLAMP_AUTO;
     (*ppdither)->clamp_threshold = SIXEL_DITHER_CLAMP_THRESHOLD;
     (*ppdither)->palette_snap_exact = 0;
@@ -4531,10 +4532,29 @@ sixel_dither_apply_palette_with_mode(
      * diffusion keeps its per-tap saturation and has no clamp policy.
      */
     if (float_backend_available != 0
+            && dither->apply_8bit == 0
             && (dither->prefer_float32 != 0
                 || source_has_float != 0
                 || palette_has_float != 0)) {
         prefer_float_pipeline = 1;
+    }
+    if (dither->apply_8bit != 0 && dither->use_rgb101_palette != 0) {
+        sixel_helper_set_additional_message(
+            "precision-policy=8bit cannot apply an RGB101 float palette.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
+    if (dither->apply_8bit != 0 && palette_has_float != 0) {
+        /* 8bit applies bytes: the float palette shares the work samples'
+         * gamma coordinates, so round it with the same format first. */
+        status = sixel_palette_round_to_bytes(
+            palette,
+            source_has_float ? pipeline_pixelformat
+                             : SIXEL_PIXELFORMAT_RGBFLOAT32);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_has_float = 0;
     }
     if (dither->use_rgb101_palette != 0 &&
             (!prefer_float_pipeline ||

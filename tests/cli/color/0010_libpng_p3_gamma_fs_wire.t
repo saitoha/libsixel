@@ -20,7 +20,7 @@ set -v
 
 trace=$(SIXEL_TRACE_TOPIC=loader,dither_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -p2 -L"libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
-    -jscalar:resize_precision=float --precision=auto -Qkmeans:seed=1 \
+    -jscalar:resize_precision=float --precision-policy=auto -Qkmeans:seed=1 \
     -Xlinear -Wgamma -Udisplay-p3 -Fnone -aoff -_none '-~none' -dfs:scan=raster -trgb \
     --binning-policy=none --sampling-policy=full-frame \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-p3-16-rgb.png" 2>&1) || {

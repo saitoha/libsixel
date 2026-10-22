@@ -25,7 +25,7 @@ expected_palette='JASC-PAL
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --precision=float32 -m pal:- -M pal:- -o /dev/null \
+        --precision-policy=float32 -m pal:- -M pal:- -o /dev/null \
         "${input_image}" <<'PAL'
 JASC-PAL
 0100

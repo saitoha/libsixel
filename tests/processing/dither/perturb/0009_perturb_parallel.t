@@ -17,21 +17,21 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 
 # Hold band history fixed while changing scheduling and worker count.
 first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=8 \
-    --gpu-policy=off --precision=8bit -p 16 \
+    --gpu-policy=off --precision-policy=8bit -p 16 \
     -d fs:perturb=0.5:scan=serpentine:band_width=12:threads_max=2 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
     echo "not ok 1 - parallel conversion failed"
     exit 0
 }
 second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=8 \
-    --gpu-policy=off --precision=8bit -p 16 \
+    --gpu-policy=off --precision-policy=8bit -p 16 \
     -d fs:perturb=0.5:scan=serpentine:band_width=12:threads_max=3 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
     echo "not ok 1 - parallel conversion failed"
     exit 0
 }
 third=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=8 \
-    --gpu-policy=off --precision=8bit -p 16 \
+    --gpu-policy=off --precision-policy=8bit -p 16 \
     -d fs:perturb=0.5:scan=serpentine:band_width=12:threads_max=4 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png") || {
     echo "not ok 1 - parallel conversion failed"

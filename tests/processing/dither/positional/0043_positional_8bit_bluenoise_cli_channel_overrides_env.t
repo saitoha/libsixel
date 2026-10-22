@@ -18,7 +18,7 @@ output_cli="${ARTIFACT_LOCAL_DIR}/output_cli.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_CHANNEL=mono \
-    -d bluenoise:scan=raster --precision=8bit -p 16 \
+    -d bluenoise:scan=raster --precision-policy=8bit -p 16 \
     -o "${output_env}" "${input_image}" || {
     echo "not ok" 1 - "8-bit bluenoise env baseline failed"
     exit 0
@@ -26,7 +26,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_CHANNEL=mono \
-    -d bluenoise:channel=rgb:scan=raster --precision=8bit -p 16 \
+    -d bluenoise:channel=rgb:scan=raster --precision-policy=8bit -p 16 \
     -o "${output_cli}" "${input_image}" || {
     echo "not ok" 1 - "8-bit bluenoise channel override failed"
     exit 0

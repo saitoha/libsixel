@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify linear 8bit preference native output.
+# Verify 8bit applies a float source as bytes with linear output.
 # Policy: docs/encoder/output/output-colorspace.md
 set -eux
 

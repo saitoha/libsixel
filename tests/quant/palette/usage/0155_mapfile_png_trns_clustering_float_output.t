@@ -16,7 +16,7 @@ mapfile_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8-trns.png"
 
 expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision=float -Xoklab \
+        -Lbuiltin:cms_engine=none! --precision-policy=float -Xoklab \
         -Wgamma -Fnone -_none -m "${mapfile_png}" -o - "${input_image}"
 ) || {
     echo "not ok" 1 - "PNG tRNS mapfile baseline encode failed"
@@ -30,7 +30,7 @@ test -n "${expected_output}" || {
 
 actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision=8bit -Xoklab \
+        -Lbuiltin:cms_engine=none! --precision-policy=auto -Xoklab \
         -Wgamma -Fnone -_none -m "${mapfile_png}" -o - "${input_image}"
 ) || {
     echo "not ok" 1 - "PNG tRNS mapfile encode failed with -X oklab"

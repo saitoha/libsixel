@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0188-deadzone-env-$$.six"
 default_output="${artifact_dir}/0188-deadzone-default-$$.six"
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs:D0" \
-    --precision=8bit "${input_image}" 2>&1 >"${short_output}") || {
+    --precision-policy=8bit "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "fs:deadzone short conversion failed"
     exit 0
 }
@@ -45,7 +45,7 @@ case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|*deadzone=0\|deadzone_override=1
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_DEADZONE=0" -d "fs" \
-    --precision=8bit "${input_image}" 2>&1 >"${env_output}") || {
+    --precision-policy=8bit "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "fs:deadzone environment conversion failed"
     exit 0
 }
@@ -66,7 +66,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "fs" \
-    --precision=8bit "${input_image}" >"${default_output}" || {
+    --precision-policy=8bit "${input_image}" >"${default_output}" || {
     echo "not ok" 1 - "fs default 8-bit conversion failed"
     exit 0
 }
@@ -81,7 +81,7 @@ test -s "${short_output}" || {
     echo "not ok 1 - option output is empty"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=8bit \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit \
     --env "SIXEL_DITHER_DEADZONE=100" -d "fs:deadzone=0" \
     "${input_image}" >"${env_output}" || {
     echo "not ok 1 - CLI override conversion failed"

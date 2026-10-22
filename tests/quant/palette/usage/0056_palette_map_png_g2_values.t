@@ -25,7 +25,7 @@ JASC-PAL'
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! \
-        --precision=8bit -Xgamma -Wgamma -0hard -Fnone -_none \
+        --precision-policy=8bit -Xgamma -Wgamma -0hard -Fnone -_none \
         -~none -dnone -m "${TOP_SRCDIR}/images/pngsuite/basic/basn0g02.png" \
         -M pal-jasc:- -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 ) || {

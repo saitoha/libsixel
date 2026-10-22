@@ -81,7 +81,7 @@ def measure(args):
                     "PNG24:" + str(converted)], check=True)
     inputs = {"snake": source / "images/snake.png", "egret": converted,
               "vimperator3": source / "images/vimperator3.png"}
-    common = [str(exe), "--threads=1", "--precision=8bit", "--quality=full",
+    common = [str(exe), "--threads=1", "--precision-policy=auto", "--quality=full",
               "--loaders=libpng!", "--quantize-model=kmeans:seed=1",
               "--merge-policy=ward", "-Wgamma", "--gpu-policy=off"]
     payload = {
@@ -221,7 +221,7 @@ def load_validated(directory):
         command = row["command"]
         required = [f"--lookup-policy={policy}", f"--diffusion={diffusion}",
                     "--threads=1", "--gpu-policy=off", "--loaders=libpng!",
-                    "--precision=8bit", "--quality=full",
+                    "--precision-policy=auto", "--quality=full",
                     "--quantize-model=kmeans:seed=1", "--merge-policy=ward", "-Wgamma"]
         required += ["--cms-engine=none"] if rep == "8bit" else ["-Xoklab"]
         arguments = shlex.split(command)

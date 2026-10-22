@@ -29,7 +29,7 @@ printf '\211\120\116\107\015\012\032\012\000\000\000\015\111\110\104\122\000\000
 
 actual_palette=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none \
-        --precision=float32 -m "${mapfile_png}" \
+        --precision-policy=float32 -m "${mapfile_png}" \
         -M pal-jasc:- -o /dev/null "${input_image}"
 ) || {
     echo "not ok" 1 - "indexed PNG with a source index gap failed"

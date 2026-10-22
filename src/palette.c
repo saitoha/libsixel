@@ -1772,6 +1772,39 @@ sixel_palette_reconcile_bytes(sixel_palette_t *palette, int pixelformat)
 }
 
 SIXELSTATUS
+sixel_palette_round_to_bytes(sixel_palette_t *palette, int pixelformat)
+{
+    SIXELSTATUS status;
+    sixel_palette_storage_t *storage;
+    size_t index;
+    size_t count;
+
+    if (palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = SIXEL_PALETTE_STORAGE(palette);
+    if (storage->entries_float32 == NULL) {
+        return SIXEL_OK;
+    }
+    /* Accept the mutable byte view first, as lookup always would. */
+    status = sixel_palette_reconcile_bytes(palette, pixelformat);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    count = (size_t)storage->entry_count * 3U;
+    for (index = 0U; index < count; ++index) {
+        storage->entries[index] = sixel_pixelformat_float_channel_to_byte(
+            pixelformat, (int)(index % 3U), storage->entries_float32[index]);
+    }
+    sixel_palette_clear_output(storage);
+    sixel_allocator_free(storage->allocator, storage->entries_float32);
+    storage->entries_float32 = NULL;
+    storage->entries_float32_size = 0U;
+    storage->float_depth = 0;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
 sixel_palette_prepare_rgb101(sixel_palette_t *palette, int source_colorspace,
                              int output_definition)
 {

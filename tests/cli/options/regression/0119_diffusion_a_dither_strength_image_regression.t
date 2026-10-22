@@ -28,7 +28,7 @@ float_default_output="${artifact_dir}/0119-a-dither-strength-float-default-$$.si
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "a_dither:T0.25" \
-    --precision=8bit "${input_image}" 2>&1 >"${short_output}") || {
+    --precision-policy=8bit "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "a_dither:strength short conversion failed"
     exit 0
 }
@@ -46,7 +46,7 @@ case "${short_trace}" in *LSXDTH1\|*diffuse=a_dither\|*a_strength=0.25\|a_streng
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_A_DITHER_STRENGTH=0.25" -d "a_dither" \
-    --precision=8bit "${input_image}" 2>&1 >"${env_output}") || {
+    --precision-policy=8bit "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "a_dither:strength environment conversion failed"
     exit 0
 }
@@ -67,7 +67,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "a_dither" \
-    --precision=8bit "${input_image}" >"${default_output}" || {
+    --precision-policy=8bit "${input_image}" >"${default_output}" || {
     echo "not ok" 1 - "a_dither default 8-bit conversion failed"
     exit 0
 }
@@ -78,14 +78,14 @@ cmp -s "${short_output}" "${default_output}" && {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "a_dither:T0.25" \
-    --precision=float32 "${input_image}" >"${float_short_output}" || {
+    --precision-policy=float32 "${input_image}" >"${float_short_output}" || {
     echo "not ok" 1 - "a_dither float32 short conversion failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_DITHER_A_DITHER_STRENGTH=0.25" -d "a_dither" \
-    --precision=float32 "${input_image}" >"${float_env_output}" || {
+    --precision-policy=float32 "${input_image}" >"${float_env_output}" || {
     echo "not ok" 1 - "a_dither float32 environment conversion failed"
     exit 0
 }
@@ -96,7 +96,7 @@ cmp -s "${float_short_output}" "${float_env_output}" || {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d "a_dither" \
-    --precision=float32 "${input_image}" >"${float_default_output}" || {
+    --precision-policy=float32 "${input_image}" >"${float_default_output}" || {
     echo "not ok" 1 - "a_dither default float32 conversion failed"
     exit 0
 }

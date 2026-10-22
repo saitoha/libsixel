@@ -111,6 +111,11 @@ sixel_palette_generate_extended(
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_reconcile_bytes(sixel_palette_t *palette, int pixelformat);
 
+/* Make the byte view the only palette: round the float coordinates of the
+ * supplied gamma working format to bytes and release them. No allocation. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_round_to_bytes(sixel_palette_t *palette, int pixelformat);
+
 /* Cache destination RGB101 codes without changing either working view.
  * Wire quantization does not implicitly enable palette snapping. */
 SIXEL_INTERNAL_API SIXELSTATUS

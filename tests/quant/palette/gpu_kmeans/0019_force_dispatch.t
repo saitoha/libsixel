@@ -18,7 +18,7 @@ backend_ok=0
 probe_status=0
 # FORCE application requires byte RGB; CMS must not promote this fixture.
 trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=8bit -Lbuiltin:cms_engine=none! -Gforce -Qkmeans:backend=gpu:seed=1 --lookup-policy=none -dnone \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Lbuiltin:cms_engine=none! -Gforce -Qkmeans:backend=gpu:seed=1 --lookup-policy=none -dnone \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 case "$trace" in
     *LSXKMEANS1\|requested=gpu\|effective=metal\|*) backend_ok=1 ;;

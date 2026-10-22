@@ -23,7 +23,7 @@ set -v
 # and actual loader/CMS records; it never launches a second image conversion.
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 -L"libtiff:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
-    -jscalar:resize_precision=float --precision=float -aoff -Qheckbert \
+    -jscalar:resize_precision=float --precision-policy=float -aoff -Qheckbert \
     -Xgamma -Wgamma -Ugamma -Fnone -_none '-~none' -dnone -trgb \
     -Akeep -Bblack -w6 -h4 -rnearest \
     "${TOP_SRCDIR}/tests/data/color-numeric/tiff-legacy-ycbcr8-111.tif" 2>&1) || {

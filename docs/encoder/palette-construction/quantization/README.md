@@ -580,7 +580,7 @@ currently selects Heckbert compatibility behavior;
 The controlled command shape is:
 
 ```text
-img2sixel --threads=1 --precision=8bit --quality=full \
+img2sixel --threads=1 --precision-policy=auto --quality=full \
   --loaders=libpng! --quantize-model=CONFIG -Xoklab -Wgamma \
   --diffusion=none --gpu-policy=off --lookup-policy=none \
   -p K images/snake.png
@@ -804,7 +804,7 @@ These observations check two-color native coordinates with a small binary32 erro
 | AQ-05 | Default auto retains native Oklab coordinates. | [tests/quant/palette/auto_float/0005_auto_default_oklab.t](../../../../tests/quant/palette/auto_float/0005_auto_default_oklab.t) |
 | AQ-06 | Default auto retains native CIELAB coordinates. | [tests/quant/palette/auto_float/0006_auto_default_cielab.t](../../../../tests/quant/palette/auto_float/0006_auto_default_cielab.t) |
 | AQ-07 | Default auto retains native DIN99d coordinates. | [tests/quant/palette/auto_float/0007_auto_default_din99d.t](../../../../tests/quant/palette/auto_float/0007_auto_default_din99d.t) |
-| AQ-08 | Source float precision survives a base 8bit preference. | [tests/quant/palette/auto_float/0008_auto_retain_float.t](../../../../tests/quant/palette/auto_float/0008_auto_retain_float.t) |
+| AQ-08 | Under `--precision-policy=auto`, automatic selection builds from the float source, then rounds the work samples and palette to the gamma byte cube before application. | [tests/quant/palette/auto_float/0008_auto_retain_float.t](../../../../tests/quant/palette/auto_float/0008_auto_retain_float.t) |
 | AQ-09 | Eligible gamma bytes retain the byte consumer and literal wire levels. | [tests/quant/palette/auto_float/0009_auto_byte_fastpath.t](../../../../tests/quant/palette/auto_float/0009_auto_byte_fastpath.t) |
 | AQ-10 | Explicit float preference promotes otherwise eligible bytes. | [tests/quant/palette/auto_float/0010_auto_byte_promote.t](../../../../tests/quant/palette/auto_float/0010_auto_byte_promote.t) |
 | AQ-11 | Auto with exact binning resolves to native K-means. | [tests/quant/palette/auto_float/0011_auto_exact_kmeans.t](../../../../tests/quant/palette/auto_float/0011_auto_exact_kmeans.t) |

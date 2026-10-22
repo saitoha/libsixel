@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: MIT */
-/* Separate requested precision from the output's effective float format. */
+/* Separate requested precision from the output's effective float format;
+ * precision-policy=8bit rejects the named P3 destination. */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -49,7 +50,7 @@ test_palette_0059_p3_precision(int argc, char **argv)
     } const phases[] = {
         {"float", "gamma", SIXEL_OPTION_PRECISION_FLOAT32, 1},
         {"auto", "gamma", SIXEL_OPTION_PRECISION_AUTO, 0},
-        {"8bit", "display-p3", SIXEL_OPTION_PRECISION_8BIT, 1},
+        {"8bit", "gamma", SIXEL_OPTION_PRECISION_8BIT, 0},
         {"auto", "display-p3", SIXEL_OPTION_PRECISION_AUTO, 1},
         {"float", "gamma", SIXEL_OPTION_PRECISION_FLOAT32, 1},
         {"auto", "gamma", SIXEL_OPTION_PRECISION_AUTO, 0},
@@ -140,7 +141,12 @@ test_palette_0059_p3_precision(int argc, char **argv)
             goto end;
         }
         status = sixel_encoder_encode_frame(encoder, frame, output);
-        if (SIXEL_FAILED(status) ||
+        /* A byte palette cannot carry a named P3 destination. */
+        if (byte_request) {
+            if (!SIXEL_FAILED(status) || p3_precision_size != 0) {
+                goto end;
+            }
+        } else if (SIXEL_FAILED(status) ||
                 strstr(p3_precision_output, expected_wire) == NULL) {
             goto end;
         }

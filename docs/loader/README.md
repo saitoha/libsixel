@@ -104,7 +104,7 @@ The stable handoff records dimensions, storage kind, `pixelformat`, `colorspace`
 
 Consequently, “loaded frame (RGBA)” and “get pixel (RGBA)” are incorrect general contracts. Consumers must inspect the frame metadata instead of deriving component count, precision, or color interpretation from the loader name.
 
-Loader output is also not controlled solely by the encoder's `--precision` option. A decoder can preserve high-depth source values as float32 before encoder preprocessing begins. Conversely, a requested float-capable CMS target does not manufacture extra source precision when no transform runs. With CMS enabled, `prefer_8bit=0` permits float32 target output; `prefer_8bit=1` requests an 8-bit gamma RGB boundary. See [Pixel-format Precision](../concepts/pixelformat-precision/README.md) and [Color-Space Handling](../encoder/colorspace-handling/README.md) for the later resize and encoder conversions.
+Loader output is also not controlled solely by the encoder's `--precision-policy` option. A decoder can preserve high-depth source values as float32 before encoder preprocessing begins. Conversely, a requested float-capable CMS target does not manufacture extra source precision when no transform runs. With CMS enabled, `prefer_8bit=0` permits float32 target output; `prefer_8bit=1` requests an 8-bit gamma RGB boundary. See [Pixel-format Precision](../concepts/pixelformat-precision/README.md) and [Color-Space Handling](../encoder/colorspace-handling/README.md) for the later resize and encoder conversions.
 
 [Patent status of loader formats](patents.md) records what is known about patents for each loader path.
 

@@ -196,11 +196,13 @@ static cli_option_help_t const g_option_help_table[] = {
     },
     {
         '.',
-        "precision",
-        "-., --precision=MODE\n"
-        "    select base precision; required color precision takes priority.\n"
-        "      auto    -> choose from source and processing requirements.\n"
-        "      8bit    -> prefer bytes when sufficient; keep required float.\n"
+        "precision-policy",
+        "-. POLICY, --precision-policy=POLICY\n"
+        "    select the sample precision of palette application.\n"
+        "      auto    -> promote to float32 where processing requires it.\n"
+        "      8bit    -> apply the palette on 8-bit gamma samples; earlier\n"
+        "                 stages may use float32. Rejects a non-gamma -W\n"
+        "                 and a named -U destination.\n"
         "      float32 -> request float even when bytes would suffice.\n"
     },
     {
@@ -1566,9 +1568,9 @@ static cli_env_help_t const g_env_help_table[] = {
         "Does not enable delta. The update-policy suboption takes precedence."
     },
     {
-        "SIXEL_FLOAT32_DITHER",
-        "prefer the float32 quantization path. Accepts only 0/1.\n"
-        "1 enables it; unset, empty, invalid, and 0 keep the 8-bit path."
+        "SIXEL_PRECISION_POLICY",
+        "precision policy: auto, 8bit or float32. The -./--precision-policy\n"
+        "option takes precedence."
     },
     {
         "SIXEL_DECODER_INPUT_COLORSPACE",
@@ -3540,7 +3542,7 @@ img2sixel_main(int argc, char *argv[])
     struct option long_options[] = {
         {"outfile",               required_argument,  &long_opt, 'o'},
         {"threads",               required_argument,  &long_opt, '='},
-        {"precision",             required_argument,  &long_opt, '.'},
+        {"precision-policy",      required_argument,  &long_opt, '.'},
         {"7bit-mode",             no_argument,        &long_opt, '7'},
         {"8bit-mode",             no_argument,        &long_opt, '8'},
         {"gri-limit",             no_argument,        &long_opt, 'R'},
@@ -3997,7 +3999,7 @@ unknown_option_error:
         sixel_helper_get_additional_message());
     fprintf(stderr,
             "\n"
-            "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"
+            "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision-policy] [-p colors] [-m file]\n"
             "                 [-d diffusiontype] [-Q model]\n"
             "                 [-4 samplingpolicy] [-5 binningpolicy]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"

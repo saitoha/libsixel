@@ -54,7 +54,7 @@ case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*resolution=128**) true ;; *) fa
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    --precision=float32 "-~fhedt:R128" "${input_image}" \
+    --precision-policy=float32 "-~fhedt:R128" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt resolution float32 conversion failed"
     exit 0

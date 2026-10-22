@@ -88,7 +88,7 @@ def encoder_policy_arguments(threads: int,
     """Return the controlled choices shared by static encoder fixtures."""
     return [
         f"--threads={threads}",
-        "--precision=8bit",
+        "--precision-policy=auto",
         "--quality=full",
         "--sampling-policy=full-frame",
         "--binning-policy=hard",
@@ -1703,7 +1703,7 @@ def write_metadata(args: argparse.Namespace,
             "dependencies_unchanged_during_measurement": True,
         },
         "protocol": {
-            "precision": "8bit",
+            "precision": "auto",
             "required_work_format": "rgb888",
             "thread_counts": list(args.threads),
             "timeline_thread_counts": list(args.timeline_threads),

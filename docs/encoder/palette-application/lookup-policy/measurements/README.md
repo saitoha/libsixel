@@ -18,7 +18,7 @@ The ten-policy sweeps answer questions one, two, three, and six for one fixture.
 
 Unless a subsection explicitly says otherwise, every quality and speed result below uses `--diffusion=none`. This isolates palette construction and lookup more clearly by removing spatial error feedback. It is not representative of the default experience when a user enables dithering; the dedicated Floyd--Steinberg control below measures that case separately.
 
-The ten-policy sweeps resolve to planner `work=rgb888`, but their actual lookup classes differ: controlled OKLab K-means uses `lookup/POLICY.float32`, while Heckbert uses `lookup/POLICY.8bit`. The retained native palette explains this distinction; [Encoder Working Precision](../../../precision/README.md#requested-precision-and-effective-format) owns that contract. Neither the planner field nor `--precision=8bit` alone establishes the lookup representation. The separate Delaunay study also records the actual consumer classes.
+The ten-policy sweeps resolve to planner `work=rgb888`, but their actual lookup classes differ: controlled OKLab K-means uses `lookup/POLICY.float32`, while Heckbert uses `lookup/POLICY.8bit`. The retained native palette explains this distinction; [Encoder Working Precision](../../../precision/README.md#requested-precision-and-effective-format) owns that contract. Neither the planner field nor `--precision-policy=auto` alone establishes the lookup representation. The separate Delaunay study also records the actual consumer classes.
 
 ## Conditions
 
@@ -30,7 +30,7 @@ The controlled K-means quality and speed comparisons use this normal CLI path, w
 
 ```text
 img2sixel \
-  --threads=1 --precision=8bit --quality=full \
+  --threads=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
   --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=none --gpu-policy=off \
@@ -42,7 +42,7 @@ The Floyd--Steinberg control changes only the diffusion option:
 
 ```text
 img2sixel \
-  --threads=1 --precision=8bit --quality=full \
+  --threads=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
   --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=fs --gpu-policy=off \
@@ -54,7 +54,7 @@ The current Heckbert compatibility comparison instead uses:
 
 ```text
 img2sixel \
-  --threads=1 --precision=8bit --quality=full \
+  --threads=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
   --quantize-model=heckbert --cover-policy=off --merge-policy=none \
   --diffusion=none --gpu-policy=off \
@@ -66,7 +66,7 @@ The shared-instance speed comparison uses controlled K-means, eight total pipeli
 
 ```text
 img2sixel \
-  --threads=8 --precision=8bit --quality=full \
+  --threads=8 --precision-policy=auto --quality=full \
   --loaders=libpng! \
   --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=none:band_overwrap=0 --gpu-policy=off \
@@ -78,7 +78,7 @@ The Metal comparison uses one CPU thread and forces the GPU PaletteApply path:
 
 ```text
 img2sixel \
-  --threads=1 --precision=8bit --quality=full \
+  --threads=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
   --quantize-model=heckbert --cover-policy=off --merge-policy=none \
   --diffusion=none:band_overwrap=0 --gpu-policy=off|force \
@@ -313,7 +313,7 @@ The run was recorded on 2026-10-22 JST on an Apple M3 Max with 36 GiB RAM, macOS
 
 This snapshot predates eight-query cold-miss batching in Delaunay, so its timings characterize the earlier point-walk miss path. Autotools used `CFLAGS=-O3` with the project's C99 flag. Byte lookup used NEON; `FLOAT_LOOKUP_CFLAGS` was empty, so float lookup retained native scalar arithmetic under the existing [SIMD gate](../delaunay.md#method).
 
-Every command uses `--threads=1 --precision=8bit --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Wgamma --gpu-policy=off`. The byte matrix adds `--cms-engine=none`; the float matrix keeps default CMS and adds `-Xoklab`. All inherited `SIXEL_*` variables are removed. An untimed `LSXLUT2|phase=palette-apply` trace confirms `lookup/POLICY.8bit` or `lookup/POLICY.float32` for each configuration. CMS and clustering differ between the two matrices, so comparisons are within each representation, not an estimate of the cost of changing representation alone.
+Every command uses `--threads=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Wgamma --gpu-policy=off`. The byte matrix adds `--cms-engine=none`; the float matrix keeps default CMS and adds `-Xoklab`. All inherited `SIXEL_*` variables are removed. An untimed `LSXLUT2|phase=palette-apply` trace confirms `lookup/POLICY.8bit` or `lookup/POLICY.float32` for each configuration. CMS and clustering differ between the two matrices, so comparisons are within each representation, not an estimate of the cost of changing representation alone.
 
 Hyperfine runs each configuration with `-N`, two warmups and seven measured fresh processes. The plots show arithmetic mean elapsed time with sample-standard-deviation error bars; the [CSV](lookup-policy-delaunay-speed.csv) also retains medians and extrema, and the [JSON](lookup-policy-delaunay-run.json) retains every sample. Output goes to the null device during timing. Policy order is fixed as `vptree`, `delaunay`, `5bit`, `6bit`, without round-by-round rotation. Process startup, loading, palette construction, lookup preparation, mapping, and SIXEL encoding are all included.
 

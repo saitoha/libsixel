@@ -55,7 +55,7 @@ case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*weights=1/1/1**) true ;; *) fal
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    --precision=float32 -Wc "-~fhedt:W1/1/1" "${input_image}" \
+    --precision-policy=float32 -Wc "-~fhedt:W1/1/1" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt weights float32 conversion failed"
     exit 0

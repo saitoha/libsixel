@@ -15,7 +15,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
     -L builtin \
     -ldisable \
-    --precision=float32 \
+    --precision-policy=float32 \
     -S -T 0 \
     -d fs -p 16 \
     "${input_gif}" >/dev/null 2>&1 || {
@@ -31,7 +31,7 @@ base_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        --precision=float32 \
+        --precision-policy=float32 \
         -d stbn:source=pmj -p 16 \
         "${input_gif}"
 ) || {
@@ -44,7 +44,7 @@ weighted_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        --precision=float32 \
+        --precision-policy=float32 \
         -d stbn:source=pmj:perceptual_weight=1 -p 16 \
         "${input_gif}"
 ) || {

@@ -2,13 +2,7 @@
 
 ## Scope
 
-`img2sixel --precision=8bit|float32` selects the base representation used by
-the shared encoder pipeline. This is not only a loader or resize setting. The
-chosen representation can change the samples presented to palette
-construction, arithmetic inside palette application, lookup-policy backends,
-dither error state, selected palette indices, and the resulting SIXEL stream.
-It also changes memory traffic and the amount of work available to threaded or
-GPU execution paths.
+`img2sixel --precision-policy=auto|8bit|float32` selects the precision policy of the shared encoder pipeline. Its decisive boundary is palette application: `8bit` fixes it to gamma bytes, while `float32` also requests float work in earlier stages. This is not only a loader or resize setting. The chosen policy can change the samples presented to palette construction, arithmetic inside palette application, lookup-policy backends, dither error state, selected palette indices, and the resulting SIXEL stream. It also changes memory traffic and the amount of work available to threaded or GPU execution paths.
 
 The underlying `RGB888` and typed float32 storage contracts, implicit promotion by resize and CMS, and an isolated linear-light resize quality measurement are documented in [Pixel-format precision](../../concepts/pixelformat-precision/README.md).
 
@@ -23,42 +17,40 @@ precision and the effective working format.
 
 [Loader precision, gamut, and fast paths](../../loader/precision-policy.md) defines which decoded representations may remain byte-based and which operations must preserve higher precision before this shared pipeline.
 
-`-.` (or `--precision`) expresses a base preference. `-.8bit` uses byte storage when eight bits are sufficient; it does not force CMS output, high-depth source samples, or color-space calculations through a byte boundary. `-.float32` additionally selects float work when the byte path would otherwise be sufficient. `auto` does not request that extra promotion.
+`-.` (or `--precision-policy`) selects one of three policies:
 
-| Input and required work | `-.auto` / `-.8bit` | `-.float32` |
-| --- | --- | --- |
-| Byte input, no applied CMS, gamma working coordinates, no independent float requirement | byte path | float path |
-| Float loader input, including CMS or high-depth source samples | retain float | retain float |
-| Working color-space conversion or Display P3 output | float as required | float |
-| Byte source with an image map retaining float samples, within the selected CPU float map path | retain source bytes; native palette and float application | float path |
-| Soft or open error-diffusion feedback | float dither buffer; byte loading and palette construction remain eligible | float dither buffer |
-| Resize | the resize policy controls its workspace; source float precision is retained | retain float work |
+- `auto` promotes to float32 wherever processing requires it: applied CMS, high-depth source samples, a non-gamma working space, non-gamma clustering coordinates, an image map that retains float samples, or a named output destination. Once promoted, the work stays float through palette application.
+- `float32` additionally selects float work when the byte path would otherwise be sufficient.
+- `8bit` fixes palette application to gamma bytes. Earlier stages keep the precision they require; immediately before palette application, the work samples and the palette are rounded to gamma bytes, and lookup, dithering and SIXEL output then use only those bytes. The palette is written from its byte view, without RGB101 native palette preparation.
 
-An enabled CMS engine alone is not a reason to promote an image: when no applicable source definition is present, supported byte decoders retain byte samples. The loader preference reaches the selectable JPEG and WebP decoding paths as well as the builtin and CoreGraphics loaders. Lossless byte decoders may leave explicit float promotion to the shared planner. Linear-light background composition, profile conversion and high-depth source decoding retain their precision requirements. The CMS suboption `prefer_8bit` remains a separate explicit post-CMS representation boundary.
+Because `8bit` rounds in gamma coordinates, it requires `-Wgamma` and an output that converts only the final byte palette. A non-gamma `-W` or a [named RGB destination](../output/output-colorspace.md#named-destination-definitions) is rejected before encoding; the legacy `gamma`, `linear` and `smpte-c` outputs remain available.
 
-For the selected [named RGB destinations](../output/output-colorspace.md#named-destination-definitions), the output requirement takes precedence over `-.8bit`, including with `-Wgamma`. Leaving named output removes only the output requirement and retains the selected precision, source and working-space requirements. `resize_precision=preserve` preserves the resize input representation; it does not authorize narrowing an existing float source. Explicit `float32` is retained with `preserve` or `linear` resize.
+| Input and required work | `-.auto` | `-.8bit` | `-.float32` |
+| --- | --- | --- | --- |
+| Byte input, no applied CMS, gamma working coordinates, no independent float requirement | byte path | byte path | float path |
+| Float loader input, including CMS or high-depth source samples | retain float | float until palette application, then bytes | retain float |
+| Non-gamma working color space or named RGB output | float as required | rejected | float |
+| Non-gamma clustering, or an image map retaining float samples, within the selected CPU float path | retain source bytes; native palette and float application | float construction; byte palette and byte application | float path |
+| Soft or open error-diffusion feedback | float dither buffer; byte loading and palette construction remain eligible | same as `auto` | float dither buffer |
+| Resize | the resize policy controls its workspace; source float precision is retained | same as `auto` until palette application | retain float work |
 
-Repeated precision options replace the base request for all output spaces. `--precision=float --precision=auto -Wgamma` clears the explicit float request; automatic precision still retains a float source, while byte input can use byte work for ordinary output. A non-gamma working space or P3 output can independently require effective float. `auto` clears an earlier explicit request even when P3 is never selected. Revisions before commit `dafd2ddfb` left the earlier request unchanged.
+An enabled CMS engine alone is not a reason to promote an image: when no applicable source definition is present, supported byte decoders retain byte samples. Loaders also receive `8bit` as a byte preference: the selectable JPEG and WebP decoding paths and the builtin and CoreGraphics loaders keep byte samples when eight bits are sufficient. Lossless byte decoders may leave explicit float promotion to the shared planner. Linear-light background composition, profile conversion and high-depth source decoding retain their precision requirements under every policy; `8bit` narrows their results only at palette application. The CMS suboption `prefer_8bit` remains a separate explicit post-CMS representation boundary.
 
-A non-gamma working color space such as `-Wlinear` or `-Woklab` requires floating-point samples. It promotes the effective shared path to the matching typed format, such as `linear-f32` or `oklab-f32`, even when the base request is `--precision=8bit`. Such a command is useful, but it is not an 8-bit-versus-float32 experiment.
+For the selected [named RGB destinations](../output/output-colorspace.md#named-destination-definitions), the output requirement promotes `auto` to float, including with `-Wgamma`. Leaving named output removes only the output requirement and retains the selected precision, source and working-space requirements. `resize_precision=preserve` preserves the resize input representation; it does not authorize narrowing an existing float source. Explicit `float32` is retained with `preserve` or `linear` resize.
 
-`-X` has a different role. It selects the coordinates used to construct the
-palette. Gamma RGB can be clustered in either 8-bit or float32 coordinates, so
-the `-Xgamma` pair includes a real clustering-precision comparison. Linear RGB
-and the Lab-family clustering spaces are float32-only; there is no 8-bit
-Linear RGB, OKLab, CIELAB, or DIN99d clustering mode to compare. Those
-selections create a float32 palette-building view without necessarily
-promoting an otherwise gamma `rgb888` main path. Their matched `--precision`
-pairs compare the shared pipeline before and after the same float32 clustering
-stage, not two numeric representations of that stage.
+Repeated precision options replace the base request for all output spaces. `--precision-policy=float --precision-policy=auto -Wgamma` clears the explicit float request; automatic precision still retains a float source, while byte input can use byte work for ordinary output. A non-gamma working space or P3 output can independently require effective float. `auto` clears an earlier explicit request even when P3 is never selected. Revisions before commit `dafd2ddfb` left the earlier request unchanged.
 
-Within the [selected CPU native palette path](../output/output-colorspace.md#selected-ordinary-srgb-float-path), a non-gamma `-X` also requires preserving the generated float palette when it returns to gamma working coordinates. The main image may still report `work=rgb888`; lookup converts its byte queries to float to use that authoritative palette. This is required clustering precision, not an implicit rewrite of the `-.` request. Fixed built-in tables bypass clustering, so their unused `-X` setting does not impose this requirement.
+A non-gamma working color space such as `-Wlinear` or `-Woklab` requires floating-point samples. Under `auto` it promotes the effective shared path to the matching typed format, such as `linear-f32` or `oklab-f32`. `8bit` rejects it: byte palette application is defined only for gamma coordinates, so there is no byte form of a linear or Lab-family working sample to apply.
 
-An [image map](../palette-construction/external-palettes.md#selected-ordinary-srgb-output) can independently require float palette application even when the source is byte-eligible. Its loader result and any non-gamma `-X` construction requirement are examined before workspace conversion, without rewriting the base precision preference. This also applies to byte map images with gamma working coordinates; structured palettes bypass construction and keep their independent byte eligibility. Static encoder reuse re-evaluates the map under current loader settings. An initial planner field `work=rgb888` alone does not describe the eventual lookup precision.
+`-X` has a different role. It selects the coordinates used to construct the palette. Gamma RGB can be clustered in either 8-bit or float32 coordinates, so the `-Xgamma` pair includes a real clustering-precision comparison. Linear RGB and the Lab-family clustering spaces are float32-only; there is no 8-bit Linear RGB, OKLab, CIELAB, or DIN99d clustering mode to compare. Those selections create a float32 palette-building view without necessarily promoting an otherwise gamma `rgb888` main path, under every policy. A matched `8bit`/`float32` pair therefore compares byte and float application of the same float32 clustering stage, not two numeric representations of that stage.
+
+Within the [selected CPU native palette path](../output/output-colorspace.md#selected-ordinary-srgb-float-path), a non-gamma `-X` under `auto` also requires preserving the generated float palette when it returns to gamma working coordinates. The main image may still report `work=rgb888`; lookup converts its byte queries to float to use that authoritative palette. Under `8bit`, the same float palette is rounded to gamma bytes before application instead, which keeps the clustering result while making lookup and output byte-based. Fixed built-in tables bypass clustering, so their unused `-X` setting does not impose either requirement.
+
+An [image map](../palette-construction/external-palettes.md#selected-ordinary-srgb-output) can independently require float palette application under `auto` even when the source is byte-eligible; under `8bit` its float entries are rounded to bytes before application. Its loader result and any non-gamma `-X` construction requirement are examined before workspace conversion, without rewriting the precision policy. This also applies to byte map images with gamma working coordinates; structured palettes bypass construction and keep their independent byte eligibility. Static encoder reuse re-evaluates the map under current loader settings. An initial planner field `work=rgb888` alone does not describe the eventual lookup precision.
 
 [Dither clamp policy](../palette-application/clamp-policy.md) never promotes the palette-application buffer: it limits byte carry candidates and float feedback in their already-selected coordinate precision. A planner trace such as `work=rgb888` therefore also describes byte diffusion unless a float palette or another float requirement promotes palette application. Check the palette-application lookup trace for the effective byte/float path and the clamp trace for `clamp_requested`, `clamp_effective`, and `clamp_threshold`.
 
-CPU palette application tests retained float entries against its three color coordinates. The source storage stride does not define the palette component count: RGBA, ARGB, BGRA, ABGR and the corresponding padded RGB layouts normalize to RGB before lookup. A retained float palette therefore requires float application for these inputs, including with no diffusion or hard clamp. A byte palette without an independent float requirement still uses byte application. The [existing packed-alpha composition and mask convention](../output/output-colorspace.md#packed-alpha-normalization) is unchanged.
+CPU palette application tests retained float entries against its three color coordinates. The source storage stride does not define the palette component count: RGBA, ARGB, BGRA, ABGR and the corresponding padded RGB layouts normalize to RGB before lookup. Outside `8bit`, a retained float palette therefore requires float application for these inputs, including with no diffusion or hard clamp. A byte palette without an independent float requirement still uses byte application. The [existing packed-alpha composition and mask convention](../output/output-colorspace.md#packed-alpha-normalization) is unchanged.
 
 Once CPU palette application selects float arithmetic, failure to allocate its RGB888-to-float working buffer is an error. It must not retry byte arithmetic: an authoritative float palette, an explicit float preference and a feedback-headroom requirement each retain their precision contract under memory pressure. This also applies to no-dither and hard-clamp application. Failed setup publishes no index result, leaves borrowed index storage untouched, and permits a later retry with the same palette. A genuine byte palette with no float requirement remains eligible for byte application; explicit byte palette assignment remains a deliberate precision boundary.
 
@@ -71,7 +63,7 @@ work=rgb888
 ```
 
 The corresponding float32 run must report `work=rgb-f32`. Measurement scripts
-must validate this field rather than infer the image path from the command line. To claim byte diffusion too, verify a byte lookup/application path and a compatible clamp policy; the planner field alone is insufficient.
+must validate this field rather than infer the image path from the command line. The `work` field describes image storage before palette application: under `8bit`, a CMS or high-depth source still reports `work=rgb-f32`, while the palette-application lookup trace selects an `.8bit` lookup class. To claim byte application or byte diffusion, verify that lookup trace and a compatible clamp policy; the planner field alone is insufficient.
 
 Low-level `sixel_dither_initialize()` selects palette-construction precision from the supplied pixel format. Reinitializing a dither object with RGB888 replaces its previous float input setting and permits byte construction; initializing it with a typed float format retains those coordinates. Encoder-level precision requests are resolved before this boundary.
 
@@ -140,7 +132,7 @@ Each configuration is measured once with a true `rgb888` path and once with a
 true `rgb-f32` path. The figures keep four user-visible outcomes together:
 MS-SSIM, mean Delta E00, end-to-end latency, and exact SIXEL byte size.
 
-The controlled fixture is the 600-by-450 RGB [`images/snake.png`](../../../images/snake.png) at `K=64`. Commands use the builtin loader with loader CMS disabled (`SIXEL_LOADER_CMS_ENGINE=none`), one thread, full quality, gamma working coordinates, and no GPU assistance. Each domain reuses the command builder owned by its detailed measurement document, then changes only `--precision` within a matched pair. Thus a pair is a valid precision comparison, while absolute values from two different domains need not share every other policy.
+The controlled fixture is the 600-by-450 RGB [`images/snake.png`](../../../images/snake.png) at `K=64`. Commands use the builtin loader with loader CMS disabled (`SIXEL_LOADER_CMS_ENGINE=none`), one thread, full quality, gamma working coordinates, and no GPU assistance. Each domain reuses the command builder owned by its detailed measurement document, then changes only `--precision-policy` within a matched pair. Thus a pair is a valid precision comparison, while absolute values from two different domains need not share every other policy.
 
 The plots use paired markers rather than bars from zero. This makes small
 precision changes visible without implying that a narrow quality-axis range is
@@ -150,7 +142,7 @@ grayscale reproduction. Timing whiskers show the interquartile range.
 
 ## Measured results
 
-The checked-in run was recorded on 2026-09-12 UTC from clean revision `85a2674e5` on macOS arm64, including the corrected DIN99d transform and common coordinate scale. The table summarizes float32 relative to the matching 8-bit row. Counts report the direction of the metric, not its statistical or practical significance.
+The checked-in run was recorded on 2026-09-12 UTC from clean revision `85a2674e5` on macOS arm64, including the corrected DIN99d transform and common coordinate scale. The table summarizes float32 relative to the matching 8-bit row. Counts report the direction of the metric, not its statistical or practical significance. At that revision the 8-bit option was a byte preference that did not narrow a float palette, so the four non-gamma clustering pairs applied a float palette in both rows; their 8-bit rows do not describe the current byte application and must be remeasured before such a comparison.
 
 | Domain | Configurations | Median float32 / 8-bit time | Float32 has higher MS-SSIM | Float32 has lower mean Delta E00 | Stream-size range |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -277,7 +269,7 @@ and the artifact contract is enforced by
 | EP-01 | A byte preference preserves exact stored gamma float samples. | [tests/processing/precision/0001_byte_request_float_source.t](../../../tests/processing/precision/0001_byte_request_float_source.t) |
 | EP-02 | A byte preference converts linear float input to extended gamma float without clipping. | [tests/processing/precision/0002_byte_request_linear_source.t](../../../tests/processing/precision/0002_byte_request_linear_source.t) |
 | EP-03 | Automatic precision retains the float source representation. | [tests/processing/precision/0003_auto_float_source.t](../../../tests/processing/precision/0003_auto_float_source.t) |
-| EP-04 | A non-gamma working space retains its float requirement over an explicit byte request. | [tests/processing/precision/0004_non_gamma_float_work.t](../../../tests/processing/precision/0004_non_gamma_float_work.t) |
+| EP-04 | A non-gamma working space requires float work under automatic precision. | [tests/processing/precision/0004_non_gamma_float_work.t](../../../tests/processing/precision/0004_non_gamma_float_work.t) |
 | EP-05 | Explicit float resize retains gamma float working storage after resampling. | [tests/processing/precision/0005_resize_float_override.t](../../../tests/processing/precision/0005_resize_float_override.t) |
 | EP-06 | Temporary linear resize retains float source precision despite a byte preference. | [tests/processing/precision/0006_resize_linear_float_source.t](../../../tests/processing/precision/0006_resize_linear_float_source.t) |
 | EP-07 | Preserve resize retains source precision through the subsequent float coordinate conversion. | [tests/processing/precision/0007_resize_preserve_float_source.t](../../../tests/processing/precision/0007_resize_preserve_float_source.t) |
@@ -304,9 +296,16 @@ and the artifact contract is enforced by
 | EP-28 | Failed packed-source normalization publishes no indices and preserves the source and float palette. | [tests/processing/precision/0024_packed_normalization_failure.t](../../../tests/processing/precision/0024_packed_normalization_failure.t) |
 | EP-29 | Failed float promotion after packed-source normalization releases its temporary RGB buffer and reports failure without a byte retry. | [tests/processing/precision/0025_packed_promotion_failure.t](../../../tests/processing/precision/0025_packed_promotion_failure.t) |
 | EP-30 | Packed-source promotion failure preserves borrowed index storage; reapplying the input format and buffer on retry retains masks and float nearest-color results. | [tests/processing/precision/0026_packed_failure_reuse.t](../../../tests/processing/precision/0026_packed_failure_reuse.t) |
+| EP-31 | `8bit` keeps CMS output float before palette application, then applies it through an 8-bit lookup without RGB101 preparation. | [tests/cli/options/matching/0283_option_matching_precision_8bit_cms_byte_apply.t](../../../tests/cli/options/matching/0283_option_matching_precision_8bit_cms_byte_apply.t) |
+| EP-32 | `8bit` keeps a 16-bit source float before palette application, then applies it through an 8-bit lookup. | [tests/cli/options/matching/0284_option_matching_precision_8bit_high_depth_byte_apply.t](../../../tests/cli/options/matching/0284_option_matching_precision_8bit_high_depth_byte_apply.t) |
+| EP-33 | `8bit` rounds an OKLab-clustered palette to bytes and applies it through an 8-bit lookup without RGB101 preparation. | [tests/cli/options/matching/0285_option_matching_precision_8bit_clustering_byte_apply.t](../../../tests/cli/options/matching/0285_option_matching_precision_8bit_clustering_byte_apply.t) |
+| EP-34 | `8bit` rejects a named `-U` destination with a diagnostic naming that destination. | [tests/cli/options/matching/0286_option_matching_precision_8bit_named_output_rejected.t](../../../tests/cli/options/matching/0286_option_matching_precision_8bit_named_output_rejected.t) |
+| EP-35 | `auto` keeps CMS output on a float32 lookup through palette application. | [tests/cli/options/matching/0287_option_matching_precision_auto_cms_float_apply.t](../../../tests/cli/options/matching/0287_option_matching_precision_auto_cms_float_apply.t) |
 
-EP-01 through EP-08 pass prepared float frames through the public encoder, inspect the resulting frame storage and samples, and use the independent [frame byte fixtures](../../../tests/data/color-numeric/frame-byte.json). Constant nearest-neighbor footprints isolate the resize storage boundary from interpolation weights. Existing [option-order tests](../../../tests/cli/options/matching/) cover repeated precision and working-space requests; the P3 precision override remains covered by the [output-color contract](../output/output-colorspace.md#test-coverage).
+EP-01 through EP-08 pass prepared float frames through the public encoder, inspect the resulting frame storage and samples, and use the independent [frame byte fixtures](../../../tests/data/color-numeric/frame-byte.json). Constant nearest-neighbor footprints isolate the resize storage boundary from interpolation weights. Existing [option-order tests](../../../tests/cli/options/matching/) cover repeated precision and working-space requests, including the rejected non-gamma working space; the P3 promotion and its `8bit` rejection remain covered by the [output-color contract](../output/output-colorspace.md#test-coverage).
 
 EP-13 through EP-20 arm a single image-sized allocation failure through the allocator API; the byte-eligible control must never reach that allocation. They check the actual application status, index-buffer ownership, unchanged source and palette storage, and literal nearest-color indices. Their seven-pixel fixtures isolate promotion and recovery; they do not measure image quality, throughput or all later allocation failures.
 
 EP-22 through EP-30 exercise the low-level palette-application boundary with seven packed pixels. They check literal indices and actual byte/float depth, exact storage retention, allocation cleanup and retry ownership. The hard-FS case checks the first lookup and effective precision; it does not specify later diffusion taps. Packed-format fixtures use gray levels to isolate palette precision from channel-swizzle testing. These cases do not expand the accepted native-output combinations or change loader alpha resolution.
+
+EP-31 through EP-35 observe the CLI planner field, the palette-application lookup trace and the dither contract's `rgb101` field. They establish which application path runs, not the numeric rounding of each sample; the per-driver palette contracts linked from the [output-color coverage](../output/output-colorspace.md#test-coverage) check rounded entries and wire values.

@@ -16,7 +16,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
     -L builtin \
     -ldisable \
-    --precision=float32 \
+    --precision-policy=float32 \
     -S -T 1 \
     -d fs -p 16 \
     "${input_apng}" >/dev/null 2>&1 || {
@@ -32,7 +32,7 @@ slow_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        --precision=float32 \
+        --precision-policy=float32 \
         -d stbn:source=pmj:fastpath=0 -p 16 \
         "${input_apng}"
 ) || {
@@ -45,7 +45,7 @@ fast_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        --precision=float32 \
+        --precision-policy=float32 \
         -d stbn:source=pmj:fastpath=1 -p 16 \
         "${input_apng}"
 ) || {

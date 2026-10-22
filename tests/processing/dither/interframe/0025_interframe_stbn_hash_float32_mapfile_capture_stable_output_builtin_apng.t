@@ -15,7 +15,7 @@ palette_output="${ARTIFACT_LOCAL_DIR}/interframe-float32-stbn-hash-mapfile-built
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -S -T 1 \
@@ -33,7 +33,7 @@ baseline_output=$(
     SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \
@@ -48,7 +48,7 @@ captured_output=$(
     SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \

@@ -152,7 +152,7 @@ img2sixel -jauto:resize_precision=preserve -w 50% input.png
 img2sixel -jauto:resize_precision=float -w 50% input.png
 ```
 
-Explicit `--precision=float32` also requests a float32 main work path. A non-gamma working space can require float32 independently of `resize_precision`; the planner therefore resolves the effective path from all precision and colorspace constraints. Allocation failure in the float resize path is an error rather than an automatic fallback to `preserve`, because fallback would silently change image values.
+Explicit `--precision-policy=float32` also requests a float32 main work path. A non-gamma working space can require float32 independently of `resize_precision`; the planner therefore resolves the effective path from all precision and colorspace constraints. Allocation failure in the float resize path is an error rather than an automatic fallback to `preserve`, because fallback would silently change image values.
 
 Use `-v` with `SIXEL_TRACE_TOPIC=runtime_contract` when validating a run. The planner trace reports `source`, `work`, `scale_out`, resize mode, resize input format, requested SIMD cap, native capability, and effective cap. The checked measurement metadata records the complete six-case preflight matrix rather than inferring it from the command line.
 

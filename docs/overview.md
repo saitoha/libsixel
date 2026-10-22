@@ -36,7 +36,7 @@ The introductory [Encoding Pipeline](encoder/pipeline/README.md) explains the in
 - [Palette Clustering Color Space](encoder/palette-construction/clustering-colorspace/README.md), selected by `-X`,
   determines the coordinate geometry used to construct those palette colors;
 - [Working Color Space](encoder/palette-application/working-colorspace/README.md), selected by `-W`, determines the coordinate geometry used to apply the palette through lookup and dithering;
-- [Encoder Working Precision](encoder/precision/README.md), selected by `--precision`,
+- [Encoder Working Precision](encoder/precision/README.md), selected by `--precision-policy`,
   determines the base sample representation shared across palette
   construction, palette application, dithering, lookup, and encoding;
 - [Dithering](encoder/palette-application/dithering/README.md), selected by `-d`, determines how representation

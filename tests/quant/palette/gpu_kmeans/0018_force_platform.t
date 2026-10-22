@@ -24,7 +24,7 @@ test "$probe_status" -eq 77 || {
 
 conversion_status=0
 trace=$(set +xv; SIXEL_TRACE_TOPIC=kmeans_backend \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision=8bit -Gforce -Qkmeans:backend=gpu:seed=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --precision-policy=8bit -Gforce -Qkmeans:backend=gpu:seed=1 \
     -Fnone -p 16 -o /dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1) || conversion_status=$?
 test "$conversion_status" -ne 0 || {
     echo "not ok 1 - forced GPU conversion unexpectedly succeeded"

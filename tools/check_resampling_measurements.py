@@ -165,7 +165,7 @@ def validate_encoder_command(
     required = (
         "{img2sixel}",
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
         "--sampling-policy=full-frame",

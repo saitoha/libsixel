@@ -1,5 +1,5 @@
 #!/bin/sh
-# P3 defaults admit byte input despite a byte preference.
+# P3 defaults admit byte input into float work.
 # Policy: docs/encoder/output/output-colorspace.md
 # Policy: docs/encoder/palette-construction/cover-policy/README.md
 set -eux

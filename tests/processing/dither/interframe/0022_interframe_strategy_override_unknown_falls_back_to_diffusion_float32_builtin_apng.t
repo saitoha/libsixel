@@ -14,7 +14,7 @@ input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -S -T 1 \
@@ -31,7 +31,7 @@ diffusion_output=$(
     SIXEL_DITHER_STBN_SOURCE=diffusion \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d interframe -p 16 \
@@ -45,7 +45,7 @@ unknown_output=$(
     SIXEL_DITHER_STBN_SOURCE=unknown-strategy \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -d interframe -p 16 \

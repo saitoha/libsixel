@@ -156,7 +156,7 @@ change the experiment.
 
 Distinguish three different facts in reports:
 
-- the requested base precision selected by `--precision`;
+- the requested base precision selected by `--precision-policy`;
 - the effective shared working format used by the main encoder pipeline;
 - a temporary float32 view created for an operation such as resizing or
   clustering.
@@ -169,8 +169,8 @@ Gamma RGB clustering supports both 8-bit and float32 coordinates. A matched
 `-Xgamma` comparison can therefore vary the clustering precision as well as the
 surrounding base pipeline. Linear RGB and the Lab-family clustering spaces are
 float32-only. There is no 8-bit Linear RGB, OKLab, CIELAB, or DIN99d clustering
-mode: their matched `--precision=8bit|float32` rows keep clustering itself at
-float32 and compare only the surrounding base pipeline. Label such figures as
+mode: their matched `--precision-policy=8bit|float32` rows keep clustering itself at
+float32 and compare the surrounding pipeline, including byte versus float palette application. Label such figures as
 base-precision comparisons, not as 8-bit-versus-float32 comparisons of those
 color spaces.
 

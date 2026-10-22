@@ -43,7 +43,7 @@ for precision in 8bit float32; do
                 if test "${precision}" = "float32"; then
                     "${img2sixel_bin}" \
                         -d "${mode}" \
-                        --precision=float32 \
+                        --precision-policy=float32 \
                         -p 16 \
                         --threads="${threads}" \
                         "${input_image}" >/dev/null

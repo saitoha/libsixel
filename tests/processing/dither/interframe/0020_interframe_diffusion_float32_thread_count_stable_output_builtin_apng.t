@@ -18,7 +18,7 @@ input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
-    --precision=float32 \
+    --precision-policy=float32 \
     -L builtin \
     -ldisable \
     -S -T 1 \
@@ -34,7 +34,7 @@ set -v
 single_thread_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \
@@ -48,7 +48,7 @@ single_thread_output=$(
 multi_thread_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=2 \
-        --precision=float32 \
+        --precision-policy=float32 \
         -L builtin \
         -ldisable \
         -S -T 1 \

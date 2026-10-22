@@ -112,7 +112,7 @@ def make_base_command(img2sixel: Path, threads: int = 1,
     command = [
         str(img2sixel),
         f"--threads={threads}",
-        "--precision=8bit",
+        "--precision-policy=8bit",
         "--quality=high",
         "--loaders=builtin!",
         "--diffusion=none",

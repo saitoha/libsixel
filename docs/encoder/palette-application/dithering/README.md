@@ -103,7 +103,7 @@ Deadzone suppression trades fine-scale integration accuracy for less flat-field 
 
 The 2026-10-20 gamma RGB comparison uses baseline `bcec0359b` and the carry implementation through `306219591`, with the scoped deadzone registry correction recorded by source hash in [run metadata](measurements/carry-run.json). Both are Meson release builds on an Apple M3 Max (14 cores), macOS 27.0.1. Preflight confirms `work=rgb888` and `lookup/vptree.8bit`; the separate float experiment confirms `work=rgb-f32` and `lookup/vptree.float32`. These are CPU, off-screen measurements.
 
-The quality corpus contains `photo-001` through `photo-010` and `chart-001` through `chart-010` at 640×480, plus the supplied 1920×1080 `photo-001-fhd` and `photo-011-fhd` rasters, all identified by SHA-256. Commands use `-=1 -Goff --precision=8bit -Xgamma -Wgamma -Ugamma -d METHOD -p COLORS`. The same baseline `sixel2png` and `lsqa` decode and score both versions. MS-SSIM at approximately 64 ppd uses 2×2 gamma RGB box means, rounded to 8-bit samples before scoring. Flat grain is the mean output luma standard deviation over 8×8 tiles whose reference standard deviation is below 1, using byte-domain luma coefficients 0.2126, 0.7152 and 0.0722; images without such tiles are omitted for that metric rather than counted as zero.
+The quality corpus contains `photo-001` through `photo-010` and `chart-001` through `chart-010` at 640×480, plus the supplied 1920×1080 `photo-001-fhd` and `photo-011-fhd` rasters, all identified by SHA-256. Commands use `-=1 -Goff --precision-policy=auto -Xgamma -Wgamma -Ugamma -d METHOD -p COLORS`. The same baseline `sixel2png` and `lsqa` decode and score both versions. MS-SSIM at approximately 64 ppd uses 2×2 gamma RGB box means, rounded to 8-bit samples before scoring. Flat grain is the mean output luma standard deviation over 8×8 tiles whose reference standard deviation is below 1, using byte-domain luma coefficients 0.2126, 0.7152 and 0.0722; images without such tiles are omitted for that metric rather than counted as zero.
 
 Each table cell gives before → after and improved/equal/worse image counts. Higher MS-SSIM is better; lower S-CIELAB is better. All 22 images are equally weighted. [Per-image results](measurements/carry-quality-main.csv) retain all eight metrics; [class summaries](measurements/carry-summary-main.csv) separate photographs and charts, including ΔE00 mean/maximum, flat grain, byte counts, and valid sample counts.
 
@@ -1074,7 +1074,7 @@ Direct `--lookup-policy=none` avoids adding an approximate lookup policy to the
 quality comparison. GPU assistance is disabled, and one worker avoids
 parallel-band seams and scan-history differences.
 
-The requested `--precision=8bit` is required to resolve to `work=rgb888`; a
+The requested `--precision-policy=auto` is required to resolve to `work=rgb888`; a
 float-promoted command is a different experiment. The matched precision
 cross-section in [Encoder Working Precision](../../precision/README.md#dither-policies)
 shows why this matters: dither residual arithmetic changes quality, size, and
@@ -1084,7 +1084,7 @@ Every spatial method uses explicit raster order so the figure compares kernels u
 
 ```text
 img2sixel \
-  --threads=1 --precision=8bit --quality=full \
+  --threads=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
   --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=METHOD:scan=raster \

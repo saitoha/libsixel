@@ -99,7 +99,7 @@ def read_metadata(path: Path) -> Dict[str, object]:
         fail("measurement metadata has invalid measured-run count")
     expected_controls = {
         "threads": 1,
-        "precision": "8bit",
+        "precision": "auto",
         "clustering_colorspace": "oklab",
         "working_colorspace": "gamma",
         "lookup_policy": "none",
@@ -147,7 +147,7 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
         raise ValueError(f"invalid command in {path}: {method}") from exc
     required = {
         "--threads=1",
-        "--precision=8bit",
+        "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",
         "-Xoklab",

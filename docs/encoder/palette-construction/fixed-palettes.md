@@ -74,7 +74,7 @@ Table order, duplicate colors and unused entries are retained. `-M` exports the 
 The other selected-path limits still apply. Snap settings are accepted and bypassed for fixed palettes, including Display P3 output; they do not alter the supplied table. Complete separate alpha-zero masks are supported under the [shared mask contract](../output/output-colorspace.md#separate-alpha-zero-masks); [packed inputs are normalized first](../output/output-colorspace.md#packed-alpha-normalization). [Animation](../output/output-colorspace.md#fixed-palettes-in-animation) retains the fixed source and application cache. Native sRGB/gamma [delta output](../output/delta-encoding.md#fixed-table-omission-and-ownership) preserves every table entry through a separate omission mask. Other output combinations follow the linked output contracts; GPU retains its separate boundary. The distinct `-e` foreground-mask path is described below. A native gray1 palette emits ordinary black/white color definitions and maps pixels using the configured working geometry; it does not acquire the receiver-dependent foreground-mask semantics of `-e`.
 
 ```sh
-img2sixel --precision=float32 -b xterm256 -W oklab -d fs image.png
+img2sixel --precision-policy=float32 -b xterm256 -W oklab -d fs image.png
 img2sixel -b xterm16 -U display-p3 -d fs image.png
 ```
 

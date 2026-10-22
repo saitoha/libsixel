@@ -8,7 +8,7 @@ It assumes the concepts in [Color spaces](../../concepts/colorspace/README.md) (
 
 ## Implicit conversions users should expect
 
-**Internal color conversion can occur even when no color-space option is supplied.** Loader CMS, background composition, and the default resize path can require a different representation before palette processing starts. `-Wgamma` selects palette-application coordinates, and `--precision=8bit` requests the byte base path; neither forbids a temporary linear-light float buffer. Likewise, `--cms-engine=none` disables loader CMS but does not disable linear-light resize or composition on loader paths that implement it. These conversions can change intermediate pixel values, memory use, processing time, and the resulting image.
+**Internal color conversion can occur even when no color-space option is supplied.** Loader CMS, background composition, and the default resize path can require a different representation before palette processing starts. `-Wgamma` selects palette-application coordinates, and `--precision-policy=8bit` requests the byte base path; neither forbids a temporary linear-light float buffer. Likewise, `--cms-engine=none` disables loader CMS but does not disable linear-light resize or composition on loader paths that implement it. These conversions can change intermediate pixel values, memory use, processing time, and the resulting image.
 
 The purpose is to perform each operation in suitable coordinates while preserving the interpretation of the color. The [conversion hubs](../../concepts/colorspace/README.md#linear-rgb-and-xyz-as-conversion-hubs) explain the mathematics; [lazy conversion at operation boundaries](#lazy-conversion-at-operation-boundaries) identifies the triggers and how to inspect the effective path. Loader behavior is path-specific, so the explanation does not imply that every backend composites in linear light.
 
@@ -41,7 +41,7 @@ Here, "lazy" means converting when a consuming operation needs different coordin
 
 For resize, `sixel_encoding_planner_analyze()` compares the actual frame format with the required resize input and work formats. The encoder inserts pre-resize and post-resize conversion steps only where those formats differ. An already linear float frame needs no pre-resize transfer decoding; an Oklab frame must return to linear RGB for the default resize path and can re-enter Oklab afterward. If resize is absent, there is no resize buffer, although CMS or `-X`/`-W` may independently require conversion. The general color converter likewise skips matching source and destination color spaces.
 
-For example, an opaque `RGB888` source with no applied CMS transform, no resize, and gamma palette policies can stay on the gamma byte path. Adding a resize with `--precision=8bit -Wgamma` introduces a temporary linear float stage, shown in case A below. If a loader's background-composition path instead returns linear float and `-Woklab` is selected, case B applies: resize already has its required input coordinates, and conversion to Oklab follows the resize.
+For example, an opaque `RGB888` source with no applied CMS transform, no resize, and gamma palette policies can stay on the gamma byte path. Adding a resize with `--precision-policy=8bit -Wgamma` introduces a temporary linear float stage, shown in case A below. If a loader's background-composition path instead returns linear float and `-Woklab` is selected, case B applies: resize already has its required input coordinates, and conversion to Oklab follows the resize.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/resize-boundaries-mobile.svg">
@@ -55,7 +55,7 @@ Case B needs no extra sRGB decoding before resize. The planner retains loader-or
 Use verbose planner output to see the source, work, and resize representations together:
 
 ```sh
-img2sixel --cms-engine=none --precision=8bit -Wgamma \
+img2sixel --cms-engine=none --precision-policy=8bit -Wgamma \
   -w50% -v -o /dev/null image.png
 ```
 
@@ -68,7 +68,7 @@ resize: mode=2 input=linear-f32
 
 Reading only `work=rgb888` misses the temporary conversion. To investigate a loader-produced float source, use the [loader contract trace](../../concepts/pixelformat-precision/README.md#observing-the-resolved-path) and check CMS, source alpha, and the resolved background. The planner report begins at the returned frame; it does not enumerate internal PCS calculations or every loader conversion.
 
-The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize in gamma RGB, reducing buffer memory at the cost of different mixing results. It does not disable CMS or loader background processing. Conversely, `--precision=float32` selects float storage but does not by itself make gamma coordinates linear. See [Pixel-format precision](../../concepts/pixelformat-precision/README.md#operations-that-promote-to-float32) for the exact promotion and preservation rules.
+The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize in gamma RGB, reducing buffer memory at the cost of different mixing results. It does not disable CMS or loader background processing. Conversely, `--precision-policy=float32` selects float storage but does not by itself make gamma coordinates linear. See [Pixel-format precision](../../concepts/pixelformat-precision/README.md#operations-that-promote-to-float32) for the exact promotion and preservation rules.
 
 ## The three encoder color-space options
 

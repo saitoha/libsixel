@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify a byte preference preserves required PNG map clustering precision.
+# Verify automatic precision preserves required PNG map clustering precision.
 # Policy: docs/encoder/palette-construction/external-palettes.md
 set -eux
 
@@ -19,7 +19,7 @@ mapfile_png="${TOP_SRCDIR}/images/map8-palette.png"
 
 expected_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision=float -Xoklab -Wgamma -0hard \
+        -Lbuiltin:cms_engine=none! --precision-policy=float -Xoklab -Wgamma -0hard \
         -m "${mapfile_png}" -o - "${input_image}"
 ) || {
     echo "not ok" 1 - "explicit float PNG mapfile baseline encode failed"
@@ -28,10 +28,10 @@ expected_output=$(
 
 actual_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -Lbuiltin:cms_engine=none! --precision=8bit -Wgamma -0hard \
+        -Lbuiltin:cms_engine=none! --precision-policy=auto -Wgamma -0hard \
         -X oklab -m "${mapfile_png}" -o - "${input_image}"
 ) || {
-    echo "not ok" 1 - "byte PNG mapfile encode failed with -X oklab"
+    echo "not ok" 1 - "automatic PNG mapfile encode failed with -X oklab"
     exit 0
 }
 
@@ -40,5 +40,5 @@ test "${actual_output}" = "${expected_output}" || {
     exit 0
 }
 
-echo "ok" 1 - "PNG mapfile clustering overrides byte preference"
+echo "ok" 1 - "PNG mapfile clustering keeps float precision automatically"
 exit 0

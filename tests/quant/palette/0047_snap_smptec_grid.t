@@ -15,7 +15,7 @@ set -v
 # safe bytes (128,64,31). Independent SMPTE-C matrix/gamma evaluation
 # then rounds to (51,25,14); (51,25,15) describes the unsnapped source.
 stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
-    --precision=float32 --quality=full --sampling-policy=full-frame \
+    --precision-policy=float32 --quality=full --sampling-policy=full-frame \
     --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
     --merge-policy=none --cover-policy=off --lookup-policy=none \
     --gpu-policy=off --diffusion=none --palette-type=rgb -p2 \

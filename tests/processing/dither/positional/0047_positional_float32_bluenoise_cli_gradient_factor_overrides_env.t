@@ -17,7 +17,7 @@ output_cli=$(mktemp)
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=0 \
-    -d bluenoise:scan=raster --precision=float32 -p 16 \
+    -d bluenoise:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_env}" "${input_image}" || {
     echo "not ok" 1 - "float32 bluenoise env baseline failed"
     exit 0
@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR=0 \
-    -d bluenoise:G1.0:scan=raster --precision=float32 -p 16 \
+    -d bluenoise:G1.0:scan=raster --precision-policy=float32 -p 16 \
     -o "${output_cli}" "${input_image}" || {
     echo "not ok" 1 - "float32 bluenoise CLI gradient_factor override failed"
     exit 0

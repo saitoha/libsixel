@@ -322,7 +322,7 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     arguments[count++] =
         "-Llibpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!";
     arguments[count++] = "-jscalar:resize_precision=float";
-    arguments[count++] = "--precision=auto";
+    arguments[count++] = "--precision-policy=auto";
     arguments[count++] = "-Qkmeans:seed=1";
     arguments[count++] = "-Xlinear";
     arguments[count++] = "-Wlinear";

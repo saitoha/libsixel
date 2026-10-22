@@ -3911,8 +3911,8 @@ sixel_encoder_apply_precision_override(
 
     /*
      * Precision preference and colorspace requirements are independent.
-     * Keeping both states makes repeated -W and --precision options resolve
-     * identically regardless of their order.
+     * Keeping both states makes repeated -W and --precision-policy options
+     * resolve identically regardless of their order.
      */
     encoder->precision_requested = mode;
     sixel_encoder_update_precision(encoder);
@@ -4672,6 +4672,10 @@ sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
         dither,
         encoder->lut_policy,
         encoder->lut_policy_override);
+    /* Every dither route passes here, so the palette-application precision
+     * reaches fixed, mapfile and generated palettes alike. */
+    dither->apply_8bit =
+        encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT;
     dither->lut_policy_shared_instance_override =
         encoder->lut_policy_shared_instance_override;
     dither->lut_policy_shared_instance =
@@ -7430,7 +7434,8 @@ sixel_encoder_native_delta(sixel_encoder_t const *encoder)
 /* The selected float pipeline keeps a separate RGB101 wire cache. Keep
  * this admission check shared with P3 validation. A restriction describes
  * the incompatible operation, not the precision request: P3 already
- * promotes the effective format to float, including under --precision=8bit.
+ * promotes the effective format to float, and --precision-policy=8bit
+ * rejects P3 before reaching this check.
  * Ordinary sRGB callers inspect only whether a restriction exists. */
 static char const *
 sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
@@ -7718,6 +7723,11 @@ sixel_encoder_rgb101_frame(sixel_encoder_t const *encoder,
     if (encoder->output_color_definition != SIXEL_PALETTE_OUTPUT_LEGACY) {
         return 1;
     }
+    /* 8bit applies the palette on bytes, so the native float palette is
+     * not retained. Validation has rejected the named destinations above. */
+    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
+        return 0;
+    }
     /* A non-gamma clustering view already requires float arithmetic even
      * when the image stays RGB888 for gamma application. Retain its native
      * palette instead of returning through bytes. Fixed palettes bypass
@@ -7739,6 +7749,25 @@ sixel_encoder_validate_output_definition(sixel_encoder_t const *encoder)
     char message[256];
     sixel_color_def_t *linear;
 
+    /* 8bit applies the palette on gamma bytes. A float-only working space
+     * would be discarded at that boundary, and a named destination needs
+     * the extended palette coordinates that the bytes cannot hold. */
+    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT &&
+            encoder->color_option != SIXEL_COLOR_OPTION_HIGHCOLOR) {
+        if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+            sixel_helper_set_additional_message(
+                "precision-policy=8bit requires the gamma working "
+                "colorspace (-W gamma).");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        if (encoder->output_color_definition !=
+                SIXEL_PALETTE_OUTPUT_LEGACY) {
+            sixel_helper_set_additional_message(
+                "precision-policy=8bit cannot be combined with a named "
+                "-U destination.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+    }
     if (encoder->output_icc != NULL &&
             encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
             encoder->snap_policy != SIXEL_PALETTE_SNAP_POLICY_NONE &&
@@ -13394,7 +13423,7 @@ sixel_encoder_setopt_owned(
     case SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT:  /* R */
         encoder->has_gri_arg_limit = 1;
         break;
-    case SIXEL_OPTFLAG_PRECISION:  /* . */
+    case SIXEL_OPTFLAG_PRECISION_POLICY:  /* . */
         status = sixel_option_parse_scalar_argument(
             SIXEL_OPTION_SCHEMA_PRECISION,
             SIXEL_OPTION_SCOPE_ENCODER,

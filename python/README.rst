@@ -88,9 +88,9 @@ preserve float data end-to-end:
 
 1. Build libsixel with the Python module enabled so that the wrapper
    uses the same shared library as `img2sixel`.
-2. Opt into the float32 dithering path via the
-   ``SIXEL_FLOAT32_DITHER`` environment variable before creating an
-   encoder instance.  The value ``"1"`` matches ``img2sixel -.float32``.
+2. Opt into the float32 path via the ``SIXEL_PRECISION_POLICY``
+   environment variable before creating an encoder instance.  The value
+   ``"float32"`` matches ``img2sixel -.float32``.
 3. When you feed your own buffers to ``encode_bytes`` you may keep them
    in one of the float pixel formats that libsixel exposes:
 
@@ -112,12 +112,12 @@ preserve float data end-to-end:
 
        import os
        from libsixel_wheel.encoder import Encoder
-       from libsixel_wheel import SIXEL_OPTFLAG_PRECISION
+       from libsixel_wheel import SIXEL_OPTFLAG_PRECISION_POLICY
 
-       os.environ["SIXEL_FLOAT32_DITHER"] = "1"
+       os.environ["SIXEL_PRECISION_POLICY"] = "float32"
 
        encoder = Encoder()
-       encoder.setopt(SIXEL_OPTFLAG_PRECISION, "float32")
+       encoder.setopt(SIXEL_OPTFLAG_PRECISION_POLICY, "float32")
        encoder.setopt(SIXEL_OPTFLAG_COLORS, "256")
        encoder.encode("images/snake.png")
 

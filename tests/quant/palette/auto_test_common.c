@@ -167,12 +167,21 @@ test_auto_palette(int mode, int space)
         if (SIXEL_FAILED(status) || dither == NULL ||
                 encoder->quantize_model != SIXEL_QUANTIZE_MODEL_AUTO ||
                 dither->quantize_model != solver || dither->ncolors != 2 ||
-                dither->use_rgb101_palette != !byte_work ||
-                dither->pixelformat != (byte_work
+                dither->use_rgb101_palette != !(byte_work || mode == 3) ||
+                dither->pixelformat != (byte_work || mode == 3
                     ? SIXEL_PIXELFORMAT_RGB888 : formats[space])) {
             goto end;
         }
-        if (byte_work) {
+        if (mode == 3) {
+            /* precision-policy=8bit rounds the float work and palette to
+             * the gamma byte cube just before application. */
+            if (SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
+                    dither->palette, &view)) || view.entries != NULL ||
+                    strstr(capture.data, ";2;0;0;0") == NULL ||
+                    strstr(capture.data, ";2;100;100;100") == NULL) {
+                goto end;
+            }
+        } else if (byte_work) {
             if (strstr(capture.data, ";2;13;13;13") == NULL ||
                     strstr(capture.data, ";2;88;88;88") == NULL) {
                 goto end;
