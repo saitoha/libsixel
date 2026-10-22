@@ -75,6 +75,9 @@ typedef struct sixel_lookup_policy_bit6_object {
         sixel_atomic_i32_t *dense;
         size_t dense_size;
         int dense_ready;
+        /* Per-byte bucket key parts, indexed by pixel byte position. */
+        uint32_t key_table[3][256];
+        int key_table_ready;
     } state_8bit;
     struct {
         int depth;
@@ -108,7 +111,7 @@ sixel_lookup_policy_bit6_quant_make(unsigned int depth)
 
     shift = 2U;
     if (depth > 3U) {
-        shift = 3U;
+        shift = 2U;
     }
 
     quant.channel_shift = shift;
@@ -363,6 +366,53 @@ sixel_lookup_policy_bit6_pack(
         &object->state_8bit.quant);
 }
 
+/*
+ * Linear and Morton keys are ORs of independent per-channel bit fields, so
+ * one 256-entry table per pixel byte reproduces pack() exactly.  Hilbert
+ * keys mix the channels and keep using pack().
+ */
+static void
+sixel_lookup_policy_bit6_build_key_table(
+    sixel_lookup_policy_bit6_object_t *object)
+{
+    unsigned int depth;
+    unsigned int plane;
+    unsigned int value;
+    unsigned int bit;
+    unsigned int rounded;
+    unsigned int key;
+    sixel_lookup_policy_bit6_quantization_t const *quant;
+
+    object->state_8bit.key_table_ready = 0;
+    depth = (unsigned int)object->state_8bit.depth;
+    quant = &object->state_8bit.quant;
+    if (depth != 3U || quant->channel_shift == 0U
+            || object->state_8bit.packing == SIXEL_LOOKUP_PACK_HILBERT) {
+        return;
+    }
+
+    for (plane = 0U; plane < depth; ++plane) {
+        for (value = 0U; value < 256U; ++value) {
+            rounded = (value + (1U << (quant->channel_shift - 1U)))
+                >> quant->channel_shift;
+            if (rounded > quant->channel_mask) {
+                rounded = quant->channel_mask;
+            }
+            if (object->state_8bit.packing == SIXEL_LOOKUP_PACK_MORTON) {
+                key = 0U;
+                for (bit = 0U; bit < quant->channel_bits; ++bit) {
+                    key |= ((rounded >> bit) & 1U) << (bit * depth + plane);
+                }
+            } else {
+                key = rounded << (plane * quant->channel_bits);
+            }
+            object->state_8bit.key_table[depth - 1U - plane][value] =
+                (uint32_t)key;
+        }
+    }
+    object->state_8bit.key_table_ready = 1;
+}
+
 static void
 sixel_lookup_policy_bit6_clear_8bit_state(sixel_lookup_policy_bit6_object_t
                                           *object)
@@ -387,6 +437,7 @@ sixel_lookup_policy_bit6_clear_8bit_state(sixel_lookup_policy_bit6_object_t
     object->state_8bit.dense = NULL;
     object->state_8bit.dense_size = 0U;
     object->state_8bit.dense_ready = 0;
+    object->state_8bit.key_table_ready = 0;
 }
 
 static SIXELSTATUS
@@ -450,14 +501,14 @@ sixel_lookup_policy_bit6_float_component(float const *palette,
                                          int index,
                                          int axis)
 {
-    enum { SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS = 3 };
+    enum { SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS = 3 };
     int clamped_axis;
 
     clamped_axis = axis;
     if (clamped_axis < 0) {
         clamped_axis = 0;
-    } else if (clamped_axis >= SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS) {
-        clamped_axis = SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS - 1;
+    } else if (clamped_axis >= SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS) {
+        clamped_axis = SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS - 1;
     }
 
     return palette[index * depth + clamped_axis];
@@ -469,7 +520,7 @@ sixel_lookup_policy_bit6_float_distance(
     float const *sample,
     int palette_index)
 {
-    enum { SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS = 3 };
+    enum { SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS = 3 };
     double diff;
     double distance;
     int component;
@@ -479,7 +530,7 @@ sixel_lookup_policy_bit6_float_distance(
     diff = 0.0;
     distance = 0.0;
     component = 0;
-    for (component = 0; component < SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS;
+    for (component = 0; component < SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS;
             ++component) {
         diff = (double)sample[component]
              - sixel_lookup_policy_bit6_float_component(
@@ -630,6 +681,7 @@ sixel_lookup_policy_bit6_configure_8bit(
     sixel_lookup_policy_bit6_trace_packing(object->state_8bit.packing);
     object->state_8bit.quant = sixel_lookup_policy_bit6_quant_make(
         (unsigned int)object->state_8bit.depth);
+    sixel_lookup_policy_bit6_build_key_table(object);
 
     status = sixel_lookup_policy_bit6_prepare_cache(object);
     if (SIXEL_FAILED(status)) {
@@ -640,10 +692,12 @@ sixel_lookup_policy_bit6_configure_8bit(
     return SIXEL_OK;
 }
 
+/* Exhaustive search for a bucket miss; publishes the result to the LUT. */
 static int
-sixel_lookup_policy_bit6_map_8bit(
+sixel_lookup_policy_bit6_search_8bit(
     sixel_lookup_policy_bit6_object_t *object,
-                                  unsigned char const *pixel)
+    unsigned char const *pixel,
+    unsigned int bucket)
 {
     int result;
     int diff;
@@ -655,42 +709,9 @@ sixel_lookup_policy_bit6_map_8bit(
     int pixel1;
     int pixel2;
     int delta;
-    unsigned int bucket;
-    int32_t cached;
 
-    result = 0;
+    result = -1;
     diff = INT_MAX;
-    i = 0;
-    distant = 0;
-    entry = NULL;
-    end = NULL;
-    pixel0 = 0;
-    pixel1 = 0;
-    pixel2 = 0;
-    delta = 0;
-    bucket = 0U;
-    cached = SIXEL_LUT_DENSE_EMPTY;
-    if (object == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    if (object->state_8bit.palette == NULL
-            || object->state_8bit.ncolors <= 0) {
-        return 0;
-    }
-
-    if (object->state_8bit.dense_ready != 0
-            && object->state_8bit.dense != NULL) {
-        bucket = sixel_lookup_policy_bit6_pack(object, pixel);
-        if ((size_t)bucket < object->state_8bit.dense_size) {
-            cached = sixel_atomic_load_relaxed_i32(
-                &object->state_8bit.dense[bucket]);
-            if (cached >= 0) {
-                return cached;
-            }
-        }
-    }
-
     entry = object->state_8bit.palette;
     end = object->state_8bit.palette
         + (size_t)object->state_8bit.ncolors
@@ -698,7 +719,6 @@ sixel_lookup_policy_bit6_map_8bit(
     pixel0 = (int)pixel[0];
     pixel1 = (int)pixel[1];
     pixel2 = (int)pixel[2];
-    result = -1;
     for (i = 0; entry < end; ++i, entry += object->state_8bit.depth) {
         delta = pixel0 - (int)entry[0];
         distant = delta * delta;
@@ -733,14 +753,116 @@ sixel_lookup_policy_bit6_map_8bit(
     return result;
 }
 
+static int
+sixel_lookup_policy_bit6_map_8bit(
+    sixel_lookup_policy_bit6_object_t *object,
+                                  unsigned char const *pixel)
+{
+    unsigned int bucket;
+    int32_t cached;
+
+    bucket = 0U;
+    cached = SIXEL_LUT_DENSE_EMPTY;
+    if (object == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    if (object->state_8bit.palette == NULL
+            || object->state_8bit.ncolors <= 0) {
+        return 0;
+    }
+
+    if (object->state_8bit.dense_ready != 0
+            && object->state_8bit.dense != NULL) {
+        if (object->state_8bit.key_table_ready != 0) {
+            bucket = object->state_8bit.key_table[0][pixel[0]]
+                   | object->state_8bit.key_table[1][pixel[1]]
+                   | object->state_8bit.key_table[2][pixel[2]];
+        } else {
+            bucket = sixel_lookup_policy_bit6_pack(object, pixel);
+        }
+        if ((size_t)bucket < object->state_8bit.dense_size) {
+            cached = sixel_atomic_load_relaxed_i32(
+                &object->state_8bit.dense[bucket]);
+            if (cached >= 0) {
+                return cached;
+            }
+        }
+    }
+
+    return sixel_lookup_policy_bit6_search_8bit(object, pixel, bucket);
+}
+
+/*
+ * Bulk form of map_8bit() for the table-keyed fast path.  The per-call
+ * checks hoist out of the loop; misses run the same ordered search, so
+ * results match repeated map_pixel() calls.
+ */
+static void
+sixel_lookup_policy_bit6_map_pixels_8bit(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixels,
+    size_t count,
+    int pixel_stride,
+    sixel_index_t *result,
+    int result_stride,
+    void *workspace)
+{
+    sixel_lookup_policy_bit6_object_t *object;
+    uint32_t const *table0;
+    uint32_t const *table1;
+    uint32_t const *table2;
+    sixel_atomic_i32_t *dense;
+    unsigned int bucket;
+    int32_t cached;
+    size_t i;
+
+    object = NULL;
+    if (policy == NULL || count == 0U) {
+        return;
+    }
+    object = (sixel_lookup_policy_bit6_object_t *)(void *)
+        sixel_lookup_policy_bit6_from_base_const(policy);
+    if (object->prepared == 0
+            || object->state_8bit.key_table_ready == 0
+            || object->state_8bit.dense_ready == 0
+            || object->state_8bit.dense == NULL
+            || object->state_8bit.palette == NULL
+            || object->state_8bit.ncolors <= 0) {
+        sixel_lookup_policy_map_pixels_default(policy, pixels, count,
+                                               pixel_stride, result,
+                                               result_stride, workspace);
+        return;
+    }
+
+    table0 = object->state_8bit.key_table[0];
+    table1 = object->state_8bit.key_table[1];
+    table2 = object->state_8bit.key_table[2];
+    dense = object->state_8bit.dense;
+    for (i = 0U; i < count; ++i) {
+        bucket = table0[pixels[0]] | table1[pixels[1]] | table2[pixels[2]];
+        cached = sixel_atomic_load_relaxed_i32(&dense[bucket]);
+        if (cached < 0) {
+            cached = sixel_lookup_policy_bit6_search_8bit(object, pixels,
+                                                         bucket);
+        }
+        *result = (sixel_index_t)cached;
+        /* Do not form a pointer before the buffer after a reverse row. */
+        if (i + 1U < count) {
+            pixels += pixel_stride;
+            result += result_stride;
+        }
+    }
+}
+
 static SIXELSTATUS
 sixel_lookup_policy_bit6_configure_float32(
     sixel_lookup_policy_bit6_object_t *object,
     sixel_lookup_policy_prepare_request_t const *request)
 {
-    enum { SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS = 3 };
+    enum { SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS = 3 };
     SIXELSTATUS status;
-    float base_weights[SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS];
+    float base_weights[SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS];
     float range;
     float scale;
     int component;
@@ -771,7 +893,7 @@ sixel_lookup_policy_bit6_configure_float32(
     base_weights[1] = 1.0f;
     base_weights[2] = 1.0f;
     for (component = 0;
-            component < SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS;
+            component < SIXEL_LOOKUP_POLICY_BIT6_FLOAT_COMPONENTS;
             ++component) {
         range = sixel_pixelformat_float_channel_range(request->pixelformat,
                                                       component);
@@ -1127,7 +1249,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_bit6_prepare_8bit,
     sixel_lookup_policy_bit6_map_pixel_8bit,
     sixel_lookup_policy_bit6_map_pixel_hint_8bit,
-    sixel_lookup_policy_map_pixels_default,
+    sixel_lookup_policy_bit6_map_pixels_8bit,
     NULL,
 };
 
