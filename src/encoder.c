@@ -15257,11 +15257,10 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
 
     status = SIXEL_OK;
     queue_frame = NULL;
-    metadata.frame_no = 0;
-    metadata.loop_no = 0;
-    metadata.delay = 0;
-    metadata.multiframe = 0;
-    metadata.needs_preplan_clone = 0;
+    /* Loader frames share the queue with playback submissions, but have no
+     * playback options or cancellation request. Initialize the whole record
+     * so the worker never treats stack contents as a cancelled frame. */
+    memset(&metadata, 0, sizeof(metadata));
     cancel_requested = 0;
 
     if (pipeline == NULL || frame == NULL || pipeline->initialized == 0) {
