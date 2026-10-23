@@ -71,7 +71,11 @@ test_node_unlink_stream(int policy, unsigned long serial,
     output = NULL;
     ok = 0;
     saved_threads = sixel_threads_resolve();
-    max_threads = SIXEL_ENABLE_THREADS ? 12 : 1;
+#if SIXEL_ENABLE_THREADS
+    max_threads = 12;
+#else
+    max_threads = 1;
+#endif
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
