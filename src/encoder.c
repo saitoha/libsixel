@@ -3280,9 +3280,17 @@ sixel_encoder_update_accumulation_from_frame(
     int keep_previous;
     int encoded_rgb_ready;
     int approximate;
+    unsigned char const *keep_mask;
+    unsigned char const *covered_mask;
+    unsigned char *paint_marks;
+    int alpha_test;
 
     approximate = 0;
     painted_pixels = 0u;
+    keep_mask = NULL;
+    covered_mask = NULL;
+    paint_marks = NULL;
+    alpha_test = 0;
     status = SIXEL_FALSE;
     current_rgb = NULL;
     encoded_mask = NULL;
@@ -3450,6 +3458,16 @@ sixel_encoder_update_accumulation_from_frame(
      * never displayed.  Pixels outside this frame keep whatever the plane
      * already holds.
      */
+    /* The per-pixel keep tests below only read these frame-wide facts. */
+    keep_mask = encoded_mask != NULL && encoded_mask_size >= pixel_count
+        ? encoded_mask : NULL;
+    covered_mask = transparency.transparent_mask != NULL &&
+        transparency.transparent_mask_size >= pixel_count
+        ? transparency.transparent_mask : NULL;
+    alpha_test = transparency.alpha_zero_is_transparent != 0;
+    paint_marks = encoder->presentation != NULL &&
+        encoder->presentation->video_pair
+        ? encoder->presentation->ordinary_paint : NULL;
     for (row = 0; row < view.height; ++row) {
         plane_row_base = (size_t)(origin_y + row) * (size_t)plane_width
             + (size_t)origin_x;
@@ -3457,15 +3475,10 @@ sixel_encoder_update_accumulation_from_frame(
             index = (size_t)row * (size_t)view.width + (size_t)column;
             plane_index = plane_row_base + (size_t)column;
             keep_previous =
-                (encoded_mask != NULL &&
-                 encoded_mask_size >= pixel_count &&
-                 encoded_mask[index] != 0U) ||
-                sixel_encoder_frame_mask_covers_pixel(&transparency,
-                                                      pixel_count,
-                                                      index) ||
-                sixel_encoder_frame_alpha_covers_pixel(&transparency,
-                                                       &view,
-                                                       index);
+                (keep_mask != NULL && keep_mask[index] != 0U) ||
+                (covered_mask != NULL && covered_mask[index] != 0U) ||
+                (alpha_test && sixel_encoder_pixel_alpha_is_zero(
+                    view.pixels, view.pixelformat, index));
             if (keep_previous != 0) {
                 if (encoded_mask != NULL && encoded_mask_size > index &&
                         (encoded_mask[index] & 2U) != 0U) {
@@ -3474,9 +3487,8 @@ sixel_encoder_update_accumulation_from_frame(
                 continue;
             }
             update_rgb = encoded_rgb + index * 3u;
-            if (encoder->presentation != NULL &&
-                    encoder->presentation->video_pair) {
-                encoder->presentation->ordinary_paint[index] = 1;
+            if (paint_marks != NULL) {
+                paint_marks[index] = 1;
             }
             ++painted_pixels;
             memcpy(encoder->accumulation_pixels + plane_index * 3u,
