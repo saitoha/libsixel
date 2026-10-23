@@ -13,7 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -112,7 +111,6 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
 libfloatlookuptests_la_LIBADD =
 am__libfloatlookuptests_la_SOURCES_DIST =  \
 	processing/lookup/0018_lookup_float_batch_exact.c \
@@ -16046,7 +16044,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # libsixel amalgamation already contains lookup-policy objects.
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
-@WANT_AMALGAMATED_TOOLS_FALSE@noinst_LTLIBRARIES = libfloatlookuptests.la
+
+# Test-only code builds for check, never as part of all.
+@WANT_AMALGAMATED_TOOLS_FALSE@check_LTLIBRARIES = libfloatlookuptests.la
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_SOURCES = \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0018_lookup_float_batch_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0019_lookup_float_simd_distance.c \
@@ -20178,9 +20178,9 @@ clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
 
-clean-noinstLTLIBRARIES:
-	-$(am__rm_f) $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; \
+clean-checkLTLIBRARIES:
+	-$(am__rm_f) $(check_LTLIBRARIES)
+	@list='$(check_LTLIBRARIES)'; \
 	locs=`for p in $$list; do echo $$p; done | \
 	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
 	      sort -u`; \
@@ -89334,7 +89334,7 @@ echo "information.  Thanks.";                                                \
 	  echo "$$col$$br$$std";					\
 	fi;								\
 	$$success || exit 1
-recheck: all $(check_PROGRAMS)
+recheck: all $(check_PROGRAMS) $(check_LTLIBRARIES)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; $(am__set_TESTS_bases); \
 	bases=`for i in $$bases; do echo $$i; done \
@@ -89425,11 +89425,11 @@ distdir-am: $(DISTFILES)
 	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
 	  dist-hook
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_LTLIBRARIES)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile
 installdirs:
 install: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) install-am
@@ -89729,8 +89729,8 @@ maintainer-clean-generic:
 	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
-	clean-noinstLTLIBRARIES mostlyclean-am
+clean-am: clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
+	clean-libtool clean-local mostlyclean-am
 
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -89796,8 +89796,8 @@ uninstall-am:
 	install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
-	check-am clean clean-checkPROGRAMS clean-generic clean-libtool \
-	clean-local clean-noinstLTLIBRARIES cscopelist-am ctags \
+	check-am clean clean-checkLTLIBRARIES clean-checkPROGRAMS \
+	clean-generic clean-libtool clean-local cscopelist-am ctags \
 	ctags-am dist-hook distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \

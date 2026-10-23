@@ -246,6 +246,7 @@ float_lookup_tests = static_library('sixel_float_lookup_tests',
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,
   c_args: libsixel_posix_defs + float_lookup_c_args,
+  build_by_default: false,
   install: false)
 
 test_runner_exe = executable('test_runner', test_runner_sources,
@@ -257,6 +258,8 @@ test_runner_exe = executable('test_runner', test_runner_sources,
   c_args: libsixel_posix_defs + ['-DGDK_PIXBUF_ENABLE_BACKEND',
                                  '-DSIXEL_PIXBUF_LOADER_TESTING',
                                  '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
+  # Tests build it through their dependencies, never as part of all.
+  build_by_default: false,
   install: false)
 
 test_deps = [test_runner_exe, lsqa_bin] + img2sixel_deps + sixel2png_deps

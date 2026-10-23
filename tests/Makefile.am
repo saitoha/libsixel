@@ -3983,7 +3983,8 @@ else
 TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
-noinst_LTLIBRARIES = libfloatlookuptests.la
+# Test-only code builds for check, never as part of all.
+check_LTLIBRARIES = libfloatlookuptests.la
 libfloatlookuptests_la_SOURCES = \
     processing/lookup/0018_lookup_float_batch_exact.c \
     processing/lookup/0019_lookup_float_simd_distance.c \
