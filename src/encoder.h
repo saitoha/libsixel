@@ -93,6 +93,8 @@ struct sixel_encoder {
      * per-frame ownership can be released for progressive work. */
     int operation_playback;
     sixel_thread_identity_t playback_owner;
+    /* A sixel_playback_t owns the encoder; ordinary calls are refused. */
+    int playback_attached;
     struct sixel_encoder_callback_scope *active_callbacks;
     /* A setting candidate borrows runtime state. Destructive cache/history
      * effects are recorded here and run only after successful validation. */

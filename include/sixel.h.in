@@ -86,6 +86,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_BAD_CLIPBOARD     (SIXEL_RUNTIME_ERROR | 0x0006)  /* clipboard unavailable */
 #define SIXEL_LOADER_FAILED     (SIXEL_RUNTIME_ERROR | 0x0007)  /* no loader decoded input */
 #define SIXEL_TIMEOUT           (SIXEL_RUNTIME_ERROR | 0x0008)  /* operation timed out */
+#define SIXEL_QUEUE_FULL        (SIXEL_RUNTIME_ERROR | 0x0009)  /* queue has no free slot */
 
 #define SIXEL_NOT_IMPLEMENTED   (SIXEL_FEATURE_ERROR | 0x0001)  /* feature not implemented */
 
@@ -2153,6 +2154,183 @@ sixel_encoder_encode_frame(
     sixel_encoder_t /* in */ *encoder,
     sixel_frame_t   /* in */ *frame,
     sixel_output_t  /* in */ *output);
+
+/*
+ * Frame playback queue.
+ *
+ * A playback object accepts frames one at a time from the application and
+ * encodes them in submission order on internal workers, producing the same
+ * bytes as calling sixel_encoder_encode_frame() for each frame in turn.  In
+ * thread-enabled builds the palette of the next frame is constructed while
+ * the current frame is diffused and written, so frames flow faster than
+ * through repeated direct calls.  Thread-disabled builds encode inside the
+ * submitting call; there only reservations hold slots, and a wait for a
+ * slot times out at once because nothing else could free one.
+ *
+ * Backpressure.  Every frame occupies one of CAPACITY slots from admission
+ * until its completion callback; reservations also occupy a slot.  When no
+ * slot is free, SIXEL_PLAYBACK_NOWAIT admission returns SIXEL_QUEUE_FULL and
+ * SIXEL_PLAYBACK_WAIT admission blocks, returning SIXEL_TIMEOUT once
+ * TIMEOUT_MS milliseconds pass (a negative timeout waits indefinitely).
+ * Rejected frames are never queued.  Applications that capture or decode
+ * frames should reserve a slot first and produce the frame only after the
+ * reservation succeeds, so work is not spent on frames that would be refused.
+ *
+ * Ownership.  An admitted frame is referenced by the playback object and
+ * may be modified by encoding; the caller must neither read nor modify it
+ * until its completion callback has run.  Per-frame 6delta placement and
+ * threshold limits are taken from the submission options, not from the
+ * encoder at the time the frame is encoded.
+ *
+ * While a playback object is attached, other calls on its encoder fail with
+ * SIXEL_BAD_ARGUMENT; release the playback object to use the encoder
+ * directly again.  The completion callback runs on a playback worker in
+ * submission order; it must not call the playback object or its encoder.
+ * sixel_helper_get_additional_message() inside the callback describes a
+ * failed frame.  After a failure, frames not yet started complete with
+ * SIXEL_INTERRUPTED and later admissions return the first failure status.
+ * Progressive repair contexts, DRCS output and paired presentation are not
+ * supported by playback.
+ */
+#define SIXEL_HAVE_PLAYBACK 1
+
+struct sixel_playback;
+typedef struct sixel_playback sixel_playback_t;
+
+#define SIXEL_PLAYBACK_CAPACITY_MAX       16
+#define SIXEL_PLAYBACK_DEFAULT_CAPACITY   2
+
+/* admission modes */
+#define SIXEL_PLAYBACK_NOWAIT             0
+#define SIXEL_PLAYBACK_WAIT               1
+
+/* palette dependency modes; only per-frame palettes are implemented */
+#define SIXEL_PLAYBACK_PALETTE_PER_FRAME  0
+
+/* sixel_playback_options_t.flags */
+#define SIXEL_PLAYBACK_OPTION_ORIGIN          0x1  /* apply origin_x/y */
+#define SIXEL_PLAYBACK_OPTION_THRESHOLD_LIMIT 0x2  /* apply threshold_limit */
+
+typedef struct sixel_playback_result {
+    size_t struct_size;
+    uint64_t user_tag;              /* copied from the submission options */
+    uint64_t sequence;              /* admission order, starting at one */
+    SIXELSTATUS status;
+    size_t painted_pixels;          /* see sixel_encoder_get_6delta_... */
+    int needs_6delta_refinement;    /* see sixel_encoder_needs_6delta_... */
+    uint64_t palette_sequence;      /* frame whose palette was applied */
+    double queued_seconds;          /* admission to start of encoding */
+    double processing_seconds;      /* start of encoding to completion */
+} sixel_playback_result_t;
+
+typedef void (*sixel_playback_done_function)(
+    sixel_playback_result_t const *result,
+    void *context);
+
+typedef struct sixel_playback_config {
+    size_t struct_size;
+    unsigned int capacity;          /* 1..SIXEL_PLAYBACK_CAPACITY_MAX */
+    int palette_mode;               /* SIXEL_PLAYBACK_PALETTE_PER_FRAME */
+    sixel_playback_done_function done;  /* optional */
+    void *done_context;
+} sixel_playback_config_t;
+
+typedef struct sixel_playback_options {
+    size_t struct_size;
+    int flags;                      /* SIXEL_PLAYBACK_OPTION_* */
+    int origin_x;                   /* as set_6delta_plane_origin() */
+    int origin_y;
+    unsigned int threshold_limit;   /* as set_6delta_threshold_limit() */
+    uint64_t user_tag;
+} sixel_playback_options_t;
+
+/* A reservation; valid until submitted or released. */
+typedef struct sixel_playback_ticket {
+    sixel_playback_t *owner;
+    uint64_t id;
+} sixel_playback_ticket_t;
+
+typedef struct sixel_playback_stats {
+    size_t struct_size;
+    unsigned int capacity;
+    unsigned int depth;             /* occupied slots, reservations included */
+    unsigned int reserved;
+    unsigned int free_slots;
+    uint64_t submitted;
+    uint64_t completed;
+    uint64_t rejected;              /* admissions refused or timed out */
+    double oldest_wait_seconds;     /* longest wait of a frame not started */
+    double last_processing_seconds;
+} sixel_playback_stats_t;
+
+/* Initialize supported fields; call with sizeof(*config) or sizeof(*options).
+ * Defaults: capacity 2, per-frame palettes, no callback, no flags. */
+SIXELAPI SIXELSTATUS
+sixel_playback_config_init(sixel_playback_config_t *config,
+                           size_t struct_size);
+
+SIXELAPI SIXELSTATUS
+sixel_playback_options_init(sixel_playback_options_t *options,
+                            size_t struct_size);
+
+/* Attach a playback queue to ENCODER, writing to OUTPUT (NULL selects the
+ * encoder destination). The playback object retains both. NULL CONFIG and
+ * NULL ALLOCATOR select defaults. */
+SIXELAPI SIXELSTATUS
+sixel_playback_new(sixel_playback_t **playback,
+                   sixel_encoder_t *encoder,
+                   sixel_output_t *output,
+                   sixel_playback_config_t const *config,
+                   sixel_allocator_t *allocator);
+
+/* Occupy one slot before producing a frame; see the admission rules above. */
+SIXELAPI SIXELSTATUS
+sixel_playback_reserve(sixel_playback_t *playback,
+                       int mode,
+                       int timeout_ms,
+                       sixel_playback_ticket_t *ticket);
+
+/* Admit FRAME into a reserved slot; this call never waits for space. NULL
+ * OPTIONS selects defaults. The ticket is consumed even on failure. */
+SIXELAPI SIXELSTATUS
+sixel_playback_submit_reserved(sixel_playback_t *playback,
+                               sixel_playback_ticket_t *ticket,
+                               sixel_frame_t *frame,
+                               sixel_playback_options_t const *options);
+
+/* Return an unused reservation. */
+SIXELAPI void
+sixel_playback_release_reservation(sixel_playback_t *playback,
+                                   sixel_playback_ticket_t *ticket);
+
+/* Reserve and submit in one call. */
+SIXELAPI SIXELSTATUS
+sixel_playback_submit(sixel_playback_t *playback,
+                      sixel_frame_t *frame,
+                      int mode,
+                      int timeout_ms,
+                      sixel_playback_options_t const *options);
+
+/* Wait until every admitted frame has completed. Outstanding reservations
+ * are not waited for. Returns SIXEL_TIMEOUT when TIMEOUT_MS passes (negative
+ * waits indefinitely) and the first failure status once playback failed. */
+SIXELAPI SIXELSTATUS
+sixel_playback_drain(sixel_playback_t *playback, int timeout_ms);
+
+/* Discard admitted frames that have not started; each completes with
+ * SIXEL_INTERRUPTED. Frames already being encoded finish normally. */
+SIXELAPI SIXELSTATUS
+sixel_playback_cancel(sixel_playback_t *playback);
+
+/* Snapshot the queue state into STATS, whose struct_size the caller sets to
+ * sizeof(*stats); a free slot may be taken immediately after. */
+SIXELAPI SIXELSTATUS
+sixel_playback_get_stats(sixel_playback_t *playback,
+                         sixel_playback_stats_t *stats);
+
+/* Drain, stop the workers and detach from the encoder. */
+SIXELAPI void
+sixel_playback_unref(sixel_playback_t *playback);
 
 /* Progressive repair operates on the encoder's retained 6delta plane. */
 #define SIXEL_HAVE_ENCODER_6DELTA_PROGRESSIVE 1

@@ -69,6 +69,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #if HAVE_ERRNO_H
 # include <errno.h>
@@ -313,6 +314,42 @@ sixel_cond_wait(sixel_cond_t *cond, sixel_mutex_t *mutex)
     }
 }
 
+SIXELAPI int
+sixel_cond_timedwait(sixel_cond_t *cond, sixel_mutex_t *mutex, int timeout_ms)
+{
+    struct timespec deadline;
+    long nanoseconds;
+    int rc;
+
+    if (cond == NULL || mutex == NULL) {
+        return 1;
+    }
+    if (timeout_ms < 0) {
+        timeout_ms = 0;
+    }
+    /* pthread condition variables measure against the realtime clock. */
+    if (clock_gettime(CLOCK_REALTIME, &deadline) != 0) {
+        return 1;
+    }
+    deadline.tv_sec += timeout_ms / 1000;
+    nanoseconds = deadline.tv_nsec + (long)(timeout_ms % 1000) * 1000000L;
+    deadline.tv_sec += nanoseconds / 1000000000L;
+    deadline.tv_nsec = nanoseconds % 1000000000L;
+    rc = pthread_cond_timedwait(&cond->native, &mutex->native, &deadline);
+#if HAVE_ERRNO_H
+    if (rc == ETIMEDOUT) {
+        return 1;
+    }
+    if (rc == EINTR) {
+        return 0;
+    }
+#endif
+    if (rc != 0) {
+        sixel_pthread_abort("pthread_cond_timedwait", rc);
+    }
+    return 0;
+}
+
 SIXELAPI void
 sixel_cond_signal(sixel_cond_t *cond)
 {
@@ -544,6 +581,30 @@ sixel_cond_wait(sixel_cond_t *cond, sixel_mutex_t *mutex)
     }
 }
 
+SIXELAPI int
+sixel_cond_timedwait(sixel_cond_t *cond, sixel_mutex_t *mutex, int timeout_ms)
+{
+    BOOL rc;
+    DWORD error;
+
+    if (cond == NULL || mutex == NULL) {
+        return 1;
+    }
+    if (timeout_ms < 0) {
+        timeout_ms = 0;
+    }
+    rc = SleepConditionVariableCS(&cond->native, &mutex->native,
+                                  (DWORD)timeout_ms);
+    if (rc == 0) {
+        error = GetLastError();
+        if (error == ERROR_TIMEOUT) {
+            return 1;
+        }
+        sixel_win32_abort("SleepConditionVariableCS", error);
+    }
+    return 0;
+}
+
 SIXELAPI void
 sixel_cond_signal(sixel_cond_t *cond)
 {
@@ -688,6 +749,15 @@ sixel_cond_wait(sixel_cond_t *cond, sixel_mutex_t *mutex)
 {
     (void)cond;
     (void)mutex;
+}
+
+SIXELAPI int
+sixel_cond_timedwait(sixel_cond_t *cond, sixel_mutex_t *mutex, int timeout_ms)
+{
+    (void)cond;
+    (void)mutex;
+    (void)timeout_ms;
+    return 1;
 }
 
 SIXELAPI void

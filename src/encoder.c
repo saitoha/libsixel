@@ -144,6 +144,7 @@
 #include "sleep.h"
 #include "threading.h"
 #include "planner.h"
+#include "timer.h"
 #include "sixel_atomic.h"
 
 #define SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR \
@@ -214,6 +215,13 @@ sixel_encoder_operation_enter_reason(sixel_encoder_t *encoder, int kind,
         sixel_helper_set_additional_message(
             "encoder callback must not reenter the active encoder.");
         return SIXEL_RUNTIME_ERROR;
+    }
+    if (kind != SIXEL_ENCODER_OPERATION_PLAYBACK &&
+            encoder->playback_attached) {
+        sixel_encoder_operation_unlock(encoder);
+        sixel_helper_set_additional_message(
+            "encoder is attached to a playback queue.");
+        return SIXEL_BAD_ARGUMENT;
     }
     if (kind == SIXEL_ENCODER_OPERATION_REPAIR &&
             (encoder->operation_active || encoder->operation_waiters != 0)) {
@@ -527,6 +535,8 @@ static SIXELSTATUS sixel_encoder_promote_pal8_transparent_for_geometry(
     sixel_frame_t *frame);
 
 #define SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY 4
+/* Queue storage; playback admission may hold more frames than the loader. */
+#define SIXEL_ENCODER_FRAME_PIPELINE_SLOTS SIXEL_PLAYBACK_CAPACITY_MAX
 #define SIXEL_TRACE_TOPIC_ENCODE_HANDOFF "encode_handoff"
 
 typedef enum sixel_encoder_handoff_mode {
@@ -891,15 +901,25 @@ typedef struct sixel_encoder_frame_handoff_meta {
     int delay;
     int multiframe;
     int needs_preplan_clone;
+    /* Playback submissions only. */
+    uint64_t sequence;
+    uint64_t user_tag;
+    int option_flags;
+    int origin_x;
+    int origin_y;
+    unsigned int threshold_limit;
+    double admitted_at;
+    double started_at;
+    int cancelled;              /* complete with SIXEL_INTERRUPTED unencoded */
 } sixel_encoder_frame_handoff_meta_t;
 
 typedef struct sixel_encoder_frame_pipeline {
     sixel_thread_t thread;
     sixel_mutex_t mutex;
     sixel_cond_t cond;
-    sixel_frame_t *queue[SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY];
+    sixel_frame_t *queue[SIXEL_ENCODER_FRAME_PIPELINE_SLOTS];
     sixel_encoder_frame_handoff_meta_t
-        queue_meta[SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY];
+        queue_meta[SIXEL_ENCODER_FRAME_PIPELINE_SLOTS];
     sixel_encoder_t *encoder;
     sixel_output_t *output;
     sixel_presentation_t *presentation;
@@ -910,6 +930,9 @@ typedef struct sixel_encoder_frame_pipeline {
     int initialized;
     int started;
     int loader_done;
+    int queue_limit;            /* frames the producer may queue */
+    int worker_exited;
+    struct sixel_playback *playback;    /* per-frame hooks, or NULL */
     sixel_encoder_handoff_mode_t handoff_mode;
 } sixel_encoder_frame_pipeline_t;
 
@@ -10387,6 +10410,7 @@ sixel_encoder_new(
     (*ppencoder)->option_clear_cache = 0;
     (*ppencoder)->option_invalidate_history = 0;
     (*ppencoder)->operation_playback = 0;
+    (*ppencoder)->playback_attached = 0;
     (*ppencoder)->active_callbacks = NULL;
     (*ppencoder)->operation_initialized = 0;
     (*ppencoder)->operation_active = 0;
@@ -14271,6 +14295,163 @@ sixel_encoder_present_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
 }
 
 
+/*
+ * Playback queue state.  Admission counters and statistics are guarded by
+ * the frame pipeline mutex, which also orders the queue they describe.  A
+ * slot is occupied from reservation or admission until the completion
+ * callback of its frame has returned.
+ */
+struct sixel_playback {
+    sixel_allocator_t *allocator;
+    sixel_encoder_t *encoder;
+    sixel_output_t *output;
+    sixel_encoder_frame_pipeline_t pipeline;
+    sixel_playback_done_function done;
+    void *done_context;
+    unsigned int capacity;
+    unsigned int admitted;          /* reservations, queued and running */
+    unsigned int reserved;
+    uint64_t next_ticket;
+    uint64_t next_sequence;
+    uint64_t submitted;
+    uint64_t completed;
+    uint64_t rejected;
+    double last_processing_seconds;
+    SIXELSTATUS failure;            /* first failure of synchronous playback */
+    int threaded;
+};
+
+/* Apply the submission-time 6delta controls of a playback frame. */
+static SIXELSTATUS
+sixel_encoder_playback_frame_begin(sixel_encoder_frame_pipeline_t *pipeline,
+                                   sixel_encoder_frame_handoff_meta_t *meta)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (pipeline->playback == NULL) {
+        return SIXEL_OK;
+    }
+    meta->started_at = sixel_timer_now();
+    if ((meta->option_flags & SIXEL_PLAYBACK_OPTION_ORIGIN) != 0) {
+        status = sixel_encoder_set_6delta_plane_origin_owned(
+            pipeline->encoder, meta->origin_x, meta->origin_y);
+    }
+    if (SIXEL_SUCCEEDED(status) &&
+            (meta->option_flags & SIXEL_PLAYBACK_OPTION_THRESHOLD_LIMIT) != 0) {
+        status = sixel_encoder_set_6delta_threshold_limit_owned(
+            pipeline->encoder, meta->threshold_limit);
+    }
+
+    return status;
+}
+
+/*
+ * Report a playback frame and free its slot.  ENCODED means the frame went
+ * through output, so the encoder's per-frame delta results describe it.
+ * The callback runs before the slot is freed, so a drained queue has also
+ * delivered every callback.
+ */
+static void
+sixel_encoder_playback_frame_done(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoder_frame_handoff_meta_t const *meta,
+    SIXELSTATUS status,
+    int encoded)
+{
+    sixel_playback_t *playback;
+    sixel_playback_result_t result;
+    double now;
+
+    playback = pipeline->playback;
+    if (playback == NULL) {
+        return;
+    }
+    now = sixel_timer_now();
+    memset(&result, 0, sizeof(result));
+    result.struct_size = sizeof(result);
+    result.user_tag = meta->user_tag;
+    result.sequence = meta->sequence;
+    result.status = status;
+    if (encoded != 0 && status == SIXEL_OK) {
+        result.painted_pixels = pipeline->encoder->sixdelta_painted_pixels;
+        result.needs_6delta_refinement =
+            pipeline->encoder->sixdelta_refinement_needed;
+    }
+    result.palette_sequence = meta->sequence;
+    if (meta->started_at > 0.0) {
+        result.queued_seconds = meta->started_at - meta->admitted_at;
+        result.processing_seconds = now - meta->started_at;
+    } else {
+        result.queued_seconds = now - meta->admitted_at;
+    }
+    if (playback->done != NULL) {
+        playback->done(&result, playback->done_context);
+    }
+
+    if (playback->threaded != 0) {
+        sixel_mutex_lock(&pipeline->mutex);
+    }
+    --playback->admitted;
+    ++playback->completed;
+    if (meta->started_at > 0.0) {
+        playback->last_processing_seconds = result.processing_seconds;
+    }
+    if (playback->threaded != 0) {
+        sixel_cond_broadcast(&pipeline->cond);
+        sixel_mutex_unlock(&pipeline->mutex);
+    }
+}
+
+/*
+ * Prepare a frame for the pipeline output.  Frame cleanup always releases
+ * the output it was given, so hold one reference per frame; a preparation
+ * that fails before owning its context returns that reference here.
+ */
+static SIXELSTATUS
+sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
+                                   sixel_encoder_frame_job_t *job,
+                                   sixel_frame_t *frame,
+                                   sixel_encoder_frame_handoff_meta_t *meta)
+{
+    SIXELSTATUS status;
+
+    if (pipeline->output != NULL) {
+        sixel_output_ref(pipeline->output);
+    }
+    status = sixel_encoder_frame_job_prepare(job, pipeline->encoder, frame,
+                                             pipeline->output, meta);
+    if (job->active == 0 && pipeline->output != NULL) {
+        sixel_output_unref(pipeline->output);
+    }
+
+    return status;
+}
+
+/* Serial counterpart of the prepare-ahead worker for one frame. */
+static SIXELSTATUS
+sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
+                                    sixel_frame_t *frame,
+                                    sixel_encoder_frame_handoff_meta_t *meta)
+{
+    sixel_encoder_frame_job_t job;
+    SIXELSTATUS status;
+
+    job.delta_alpha_key = -1;
+    status = sixel_encoder_pipeline_prepare_job(pipeline, &job, frame, meta);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_frame_job_emit(&job);
+    } else {
+        pipeline->encoder->sixdelta_refinement_needed = 0;
+        pipeline->encoder->sixdelta_painted_pixels = 0u;
+    }
+    if (job.active == 0) {
+        return status;
+    }
+
+    return sixel_encoder_frame_job_finish(&job, status);
+}
+
 #if SIXEL_ENABLE_THREADS
 /*
  * Prepare-ahead playback.
@@ -14420,7 +14601,7 @@ sixel_encoder_frame_pipeline_take(sixel_encoder_frame_pipeline_t *pipeline,
            0,
            sizeof(pipeline->queue_meta[pipeline->queue_head]));
     pipeline->queue_head = (pipeline->queue_head + 1)
-        % SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
+        % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS;
     --pipeline->queue_count;
     sixel_cond_broadcast(&pipeline->cond);
     sixel_mutex_unlock(&pipeline->mutex);
@@ -14491,6 +14672,10 @@ sixel_encoder_prepare_ahead_main(void *arg)
                 &slot->frame, &slot->metadata) == 1) {
             sixel_encoder_pipeline_slot_bind(ahead->pipeline, slot);
             status = slot->bind_status;
+            /* The worker reports a cancelled frame in order. */
+            if (slot->metadata.cancelled != 0) {
+                status = SIXEL_FALSE;
+            }
         }
         /* Without a pristine copy a missed prediction could not be
          * repaired, so leave such a frame to serial preparation. */
@@ -14501,9 +14686,9 @@ sixel_encoder_prepare_ahead_main(void *arg)
         }
         if (SIXEL_SUCCEEDED(status)) {
             slot->job->delta_alpha_key = ahead->alpha_key;
-            slot->status = sixel_encoder_frame_job_prepare(
-                slot->job, ahead->encoder, slot->work_frame,
-                ahead->output, &slot->metadata);
+            slot->status = sixel_encoder_pipeline_prepare_job(
+                ahead->pipeline, slot->job, slot->work_frame,
+                &slot->metadata);
             if (SIXEL_FAILED(slot->status)) {
                 sixel_status_take_message(&slot->message);
             }
@@ -14636,8 +14821,16 @@ sixel_encoder_frame_pipeline_run_ahead(
             sixel_encoder_pipeline_slot_bind(pipeline, current);
         }
         have_current = 0;
+        if (current->metadata.cancelled != 0) {
+            sixel_encoder_playback_frame_done(pipeline, &current->metadata,
+                                              SIXEL_INTERRUPTED, 0);
+            sixel_encoder_pipeline_slot_clear(current);
+            continue;
+        }
         if (SIXEL_FAILED(current->bind_status)) {
             status = current->bind_status;
+            sixel_encoder_playback_frame_done(pipeline, &current->metadata,
+                                              status, 0);
             sixel_encoder_pipeline_slot_clear(current);
             sixel_encoder_frame_pipeline_request_stop(
                 pipeline,
@@ -14647,7 +14840,16 @@ sixel_encoder_frame_pipeline_run_ahead(
         }
         status = sixel_encoder_operation_enter(encoder,
             SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (status == SIXEL_OK) {
+            status = sixel_encoder_playback_frame_begin(pipeline,
+                                                        &current->metadata);
+            if (status != SIXEL_OK) {
+                sixel_encoder_operation_leave(encoder);
+            }
+        }
         if (status != SIXEL_OK) {
+            sixel_encoder_playback_frame_done(pipeline, &current->metadata,
+                                              status, 0);
             sixel_encoder_pipeline_slot_clear(current);
             sixel_encoder_frame_pipeline_request_stop(pipeline, status,
                 SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_ERROR);
@@ -14674,9 +14876,9 @@ sixel_encoder_frame_pipeline_run_ahead(
         }
         if (current->prepared == 0) {
             current->job->delta_alpha_key = -1;
-            current->status = sixel_encoder_frame_job_prepare(
-                current->job, encoder, current->work_frame,
-                pipeline->output, &current->metadata);
+            current->status = sixel_encoder_pipeline_prepare_job(
+                pipeline, current->job, current->work_frame,
+                &current->metadata);
         } else if (SIXEL_FAILED(current->status)) {
             sixel_status_restore_message(&current->message);
         }
@@ -14698,6 +14900,8 @@ sixel_encoder_frame_pipeline_run_ahead(
         if (current->job->active != 0) {
             status = sixel_encoder_frame_job_finish(current->job, status);
         }
+        sixel_encoder_playback_frame_done(pipeline, &current->metadata,
+                                          status, 1);
         if (have_next != 0) {
             sixel_encoder_prepare_ahead_wait(&ahead);
         }
@@ -14727,6 +14931,12 @@ sixel_encoder_frame_pipeline_run_ahead(
 
     sixel_encoder_prepare_ahead_stop(&ahead);
     for (index = 0; index < 2; ++index) {
+        /* A frame taken but never started still owes its completion. */
+        if (slots[index].frame != NULL) {
+            sixel_encoder_playback_frame_done(pipeline,
+                                              &slots[index].metadata,
+                                              SIXEL_INTERRUPTED, 0);
+        }
         sixel_encoder_pipeline_slot_clear(&slots[index]);
         sixel_allocator_free(encoder->allocator, slots[index].job);
     }
@@ -14742,7 +14952,7 @@ sixel_encoder_frame_pipeline_run_ahead(
 #endif  /* SIXEL_ENABLE_THREADS */
 
 static int
-sixel_encoder_frame_pipeline_worker(void *priv)
+sixel_encoder_frame_pipeline_worker_body(void *priv)
 {
     sixel_encoder_frame_pipeline_t *pipeline;
     sixel_frame_t *frame;
@@ -14823,7 +15033,7 @@ sixel_encoder_frame_pipeline_worker(void *priv)
                0,
                sizeof(pipeline->queue_meta[pipeline->queue_head]));
         pipeline->queue_head = (pipeline->queue_head + 1)
-            % SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
+            % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS;
         --pipeline->queue_count;
         sixel_cond_broadcast(&pipeline->cond);
         sixel_mutex_unlock(&pipeline->mutex);
@@ -14835,6 +15045,13 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             metadata.loop_no,
             SIXEL_OK,
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+        if (metadata.cancelled != 0) {
+            sixel_encoder_playback_frame_done(pipeline, &metadata,
+                                              SIXEL_INTERRUPTED, 0);
+            sixel_frame_unref(frame);
+            frame = NULL;
+            continue;
+        }
         if (pipeline->presentation != NULL) {
             status = sixel_encoder_present_frame(pipeline->encoder, frame,
                 &metadata, pipeline->presentation);
@@ -14844,7 +15061,14 @@ sixel_encoder_frame_pipeline_worker(void *priv)
         }
         status = sixel_encoder_operation_enter(pipeline->encoder,
             SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (status == SIXEL_OK) {
+            status = sixel_encoder_playback_frame_begin(pipeline, &metadata);
+            if (status != SIXEL_OK) {
+                sixel_encoder_operation_leave(pipeline->encoder);
+            }
+        }
         if (status != SIXEL_OK) {
+            sixel_encoder_playback_frame_done(pipeline, &metadata, status, 0);
             sixel_frame_unref(frame);
             frame = NULL;
             sixel_encoder_frame_pipeline_request_stop(pipeline, status,
@@ -14863,6 +15087,8 @@ sixel_encoder_frame_pipeline_worker(void *priv)
                 sixel_frame_unref(frame);
                 frame = NULL;
                 sixel_encoder_operation_leave(pipeline->encoder);
+                sixel_encoder_playback_frame_done(pipeline, &metadata,
+                                                  status, 0);
                 sixel_encoder_frame_pipeline_request_stop(
                     pipeline,
                     status,
@@ -14878,10 +15104,9 @@ sixel_encoder_frame_pipeline_worker(void *priv)
                 SIXEL_OK,
                 SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         }
-        status = sixel_encoder_encode_frame_internal(pipeline->encoder,
-                                                     work_frame,
-                                                     pipeline->output,
+        status = sixel_encoder_pipeline_encode_frame(pipeline, work_frame,
                                                      &metadata);
+        sixel_encoder_playback_frame_done(pipeline, &metadata, status, 1);
         if (need_clone != 0) {
             sixel_frame_unref(work_frame);
             work_frame = NULL;
@@ -14916,6 +15141,25 @@ frame_encoded:
     return 0;
 }
 
+/* Mark the worker gone so playback waits cannot outlive it. */
+static int
+sixel_encoder_frame_pipeline_worker(void *priv)
+{
+    sixel_encoder_frame_pipeline_t *pipeline;
+    int result;
+
+    pipeline = (sixel_encoder_frame_pipeline_t *)priv;
+    result = sixel_encoder_frame_pipeline_worker_body(priv);
+    if (pipeline != NULL && pipeline->initialized != 0) {
+        sixel_mutex_lock(&pipeline->mutex);
+        pipeline->worker_exited = 1;
+        sixel_cond_broadcast(&pipeline->cond);
+        sixel_mutex_unlock(&pipeline->mutex);
+    }
+
+    return result;
+}
+
 
 static SIXELSTATUS
 sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
@@ -14934,7 +15178,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    for (i = 0; i < SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY; ++i) {
+    for (i = 0; i < SIXEL_ENCODER_FRAME_PIPELINE_SLOTS; ++i) {
         pipeline->queue[i] = NULL;
         memset(&pipeline->queue_meta[i], 0, sizeof(pipeline->queue_meta[i]));
     }
@@ -14947,6 +15191,9 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->initialized = 0;
     pipeline->started = 0;
     pipeline->loader_done = 0;
+    pipeline->queue_limit = SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
+    pipeline->worker_exited = 0;
+    pipeline->playback = NULL;
     pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_UNDECIDED;
 
 #if !SIXEL_ENABLE_THREADS
@@ -14983,7 +15230,7 @@ sixel_encoder_frame_pipeline_dispose(sixel_encoder_frame_pipeline_t *pipeline)
         return;
     }
 
-    for (i = 0; i < SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY; ++i) {
+    for (i = 0; i < SIXEL_ENCODER_FRAME_PIPELINE_SLOTS; ++i) {
         if (pipeline->queue[i] != NULL) {
             sixel_frame_unref(pipeline->queue[i]);
             pipeline->queue[i] = NULL;
@@ -15075,7 +15322,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
             SIXEL_INTERRUPTED,
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_ENQUEUE_CANCEL_PREWAIT);
     }
-    while (pipeline->queue_count >= SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY
+    while (pipeline->queue_count >= pipeline->queue_limit
            && pipeline->worker_status == SIXEL_OK) {
         sixel_encoder_handoff_trace_emit(
             pipeline,
@@ -15110,7 +15357,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->queue[pipeline->queue_tail] = queue_frame;
     pipeline->queue_meta[pipeline->queue_tail] = metadata;
     pipeline->queue_tail = (pipeline->queue_tail + 1)
-        % SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
+        % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS;
     ++pipeline->queue_count;
     sixel_cond_signal(&pipeline->cond);
     sixel_mutex_unlock(&pipeline->mutex);
@@ -17778,6 +18025,563 @@ sixel_encoder_encode(sixel_encoder_t *encoder, char const *filename)
         sixel_encoder_unref(encoder);
     }
     return status;
+}
+
+
+SIXELAPI SIXELSTATUS
+sixel_playback_config_init(sixel_playback_config_t *config,
+                           size_t struct_size)
+{
+    if (config == NULL || struct_size < sizeof(*config)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memset(config, 0, sizeof(*config));
+    config->struct_size = sizeof(*config);
+    config->capacity = SIXEL_PLAYBACK_DEFAULT_CAPACITY;
+    config->palette_mode = SIXEL_PLAYBACK_PALETTE_PER_FRAME;
+
+    return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_options_init(sixel_playback_options_t *options,
+                            size_t struct_size)
+{
+    if (options == NULL || struct_size < sizeof(*options)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memset(options, 0, sizeof(*options));
+    options->struct_size = sizeof(*options);
+    options->threshold_limit = 255u;
+
+    return SIXEL_OK;
+}
+
+/* Detach PLAYBACK from its encoder and release everything it retained. */
+static void
+sixel_playback_destroy(sixel_playback_t *playback)
+{
+    sixel_encoder_t *encoder;
+    sixel_allocator_t *allocator;
+
+    encoder = playback->encoder;
+    allocator = playback->allocator;
+    if (playback->threaded != 0) {
+        sixel_encoder_frame_pipeline_dispose(&playback->pipeline);
+    }
+    sixel_encoder_operation_lock(encoder);
+    encoder->playback_attached = 0;
+    if (encoder->operation_initialized) {
+        sixel_cond_broadcast(&encoder->operation_cond);
+    }
+    sixel_encoder_operation_unlock(encoder);
+    if (playback->output != NULL) {
+        sixel_output_unref(playback->output);
+    }
+    sixel_encoder_unref(encoder);
+    sixel_allocator_free(allocator, playback);
+    sixel_allocator_unref(allocator);
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_new(sixel_playback_t **playback,
+                   sixel_encoder_t *encoder,
+                   sixel_output_t *output,
+                   sixel_playback_config_t const *config,
+                   sixel_allocator_t *allocator)
+{
+    sixel_playback_config_t defaults;
+    sixel_playback_t *object;
+    SIXELSTATUS status;
+
+    if (playback == NULL || encoder == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *playback = NULL;
+    (void)sixel_playback_config_init(&defaults, sizeof(defaults));
+    if (config != NULL) {
+        if (config->struct_size < sizeof(*config)) {
+            sixel_helper_set_additional_message(
+                "sixel_playback_new: unsupported configuration size.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        defaults = *config;
+    }
+    if (defaults.capacity < 1u ||
+            defaults.capacity > SIXEL_PLAYBACK_CAPACITY_MAX) {
+        sixel_helper_set_additional_message(
+            "sixel_playback_new: capacity is out of range.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_PER_FRAME) {
+        sixel_helper_set_additional_message(
+            "sixel_playback_new: palette mode is not implemented.");
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+    if (allocator == NULL) {
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    } else {
+        sixel_allocator_ref(allocator);
+    }
+    object = (sixel_playback_t *)sixel_allocator_malloc(allocator,
+                                                        sizeof(*object));
+    if (object == NULL) {
+        sixel_allocator_unref(allocator);
+        sixel_helper_set_additional_message(
+            "sixel_playback_new: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memset(object, 0, sizeof(*object));
+    object->allocator = allocator;
+    object->encoder = encoder;
+    object->output = output;
+    object->capacity = defaults.capacity;
+    object->done = defaults.done;
+    object->done_context = defaults.done_context;
+
+    /* Attach inside an ordinary operation so no call is in progress. */
+    status = sixel_encoder_operation_enter(encoder,
+                                           SIXEL_ENCODER_OPERATION_NORMAL);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, object);
+        sixel_allocator_unref(allocator);
+        return status;
+    }
+    if (encoder->fdrcs != 0 || encoder->progressive_context != NULL ||
+            encoder->presentation != NULL) {
+        sixel_encoder_operation_leave(encoder);
+        sixel_allocator_free(allocator, object);
+        sixel_allocator_unref(allocator);
+        sixel_helper_set_additional_message(
+            "sixel_playback_new: DRCS, progressive repair and paired "
+            "presentation are not supported.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sixel_encoder_operation_lock(encoder);
+    encoder->playback_attached = 1;
+    sixel_encoder_operation_unlock(encoder);
+    sixel_encoder_operation_leave(encoder);
+    sixel_encoder_ref(encoder);
+    if (output != NULL) {
+        sixel_output_ref(output);
+    }
+
+    status = sixel_encoder_frame_pipeline_init(&object->pipeline, encoder,
+                                               output);
+    if (SIXEL_FAILED(status)) {
+        sixel_playback_destroy(object);
+        return status;
+    }
+    object->pipeline.playback = object;
+#if SIXEL_ENABLE_THREADS
+    if (object->pipeline.initialized != 0) {
+        object->pipeline.handoff_mode = SIXEL_ENCODER_HANDOFF_PIPELINE;
+        object->pipeline.queue_limit = (int)object->capacity;
+        if (sixel_thread_create(&object->pipeline.thread,
+                                sixel_encoder_frame_pipeline_worker,
+                                &object->pipeline) == SIXEL_OK) {
+            object->pipeline.started = 1;
+            object->threaded = 1;
+        } else {
+            /* Encode in the submitting thread instead. */
+            sixel_encoder_frame_pipeline_dispose(&object->pipeline);
+        }
+    }
+#endif
+    *playback = object;
+
+    return SIXEL_OK;
+}
+
+/* Wait on the pipeline condition until DEADLINE; negative waits forever.
+ * Returns nonzero once the deadline has passed. */
+static int
+sixel_playback_wait_locked(sixel_playback_t *playback, double deadline)
+{
+    double remaining;
+
+    if (deadline < 0.0) {
+        sixel_cond_wait(&playback->pipeline.cond, &playback->pipeline.mutex);
+        return 0;
+    }
+    remaining = deadline - sixel_timer_now();
+    if (remaining <= 0.0) {
+        return 1;
+    }
+    (void)sixel_cond_timedwait(&playback->pipeline.cond,
+                               &playback->pipeline.mutex,
+                               (int)(remaining * 1000.0) + 1);
+    return 0;
+}
+
+static double
+sixel_playback_deadline(int timeout_ms)
+{
+    return timeout_ms < 0 ? -1.0
+        : sixel_timer_now() + (double)timeout_ms / 1000.0;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_reserve(sixel_playback_t *playback,
+                       int mode,
+                       int timeout_ms,
+                       sixel_playback_ticket_t *ticket)
+{
+    SIXELSTATUS status;
+    double deadline;
+
+    if (playback == NULL || ticket == NULL ||
+            (mode != SIXEL_PLAYBACK_NOWAIT && mode != SIXEL_PLAYBACK_WAIT)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    ticket->owner = NULL;
+    ticket->id = 0u;
+    if (playback->threaded == 0) {
+        /* Synchronous playback encodes inside submission, so only
+         * reservations hold slots and nothing else could free one. */
+        if (playback->failure != SIXEL_OK) {
+            return playback->failure;
+        }
+        if (playback->admitted >= playback->capacity) {
+            ++playback->rejected;
+            return mode == SIXEL_PLAYBACK_NOWAIT ? SIXEL_QUEUE_FULL
+                                                 : SIXEL_TIMEOUT;
+        }
+        ++playback->reserved;
+        ++playback->admitted;
+        ticket->owner = playback;
+        ticket->id = ++playback->next_ticket;
+        return SIXEL_OK;
+    }
+
+    deadline = sixel_playback_deadline(timeout_ms);
+    status = SIXEL_OK;
+    sixel_mutex_lock(&playback->pipeline.mutex);
+    for (;;) {
+        if (playback->pipeline.worker_status != SIXEL_OK) {
+            status = playback->pipeline.worker_status;
+            break;
+        }
+        if (playback->admitted < playback->capacity) {
+            ++playback->admitted;
+            ++playback->reserved;
+            ticket->owner = playback;
+            ticket->id = ++playback->next_ticket;
+            break;
+        }
+        if (mode == SIXEL_PLAYBACK_NOWAIT) {
+            ++playback->rejected;
+            status = SIXEL_QUEUE_FULL;
+            break;
+        }
+        if (sixel_playback_wait_locked(playback, deadline) != 0) {
+            ++playback->rejected;
+            status = SIXEL_TIMEOUT;
+            break;
+        }
+    }
+    sixel_mutex_unlock(&playback->pipeline.mutex);
+
+    return status;
+}
+
+SIXELAPI void
+sixel_playback_release_reservation(sixel_playback_t *playback,
+                                   sixel_playback_ticket_t *ticket)
+{
+    if (playback == NULL || ticket == NULL || ticket->owner != playback ||
+            ticket->id == 0u) {
+        return;
+    }
+    ticket->owner = NULL;
+    ticket->id = 0u;
+    if (playback->threaded != 0) {
+        sixel_mutex_lock(&playback->pipeline.mutex);
+    }
+    --playback->reserved;
+    --playback->admitted;
+    if (playback->threaded != 0) {
+        sixel_cond_broadcast(&playback->pipeline.cond);
+        sixel_mutex_unlock(&playback->pipeline.mutex);
+    }
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_submit_reserved(sixel_playback_t *playback,
+                               sixel_playback_ticket_t *ticket,
+                               sixel_frame_t *frame,
+                               sixel_playback_options_t const *options)
+{
+    sixel_encoder_frame_handoff_meta_t metadata;
+    sixel_playback_options_t defaults;
+    SIXELSTATUS status;
+
+    if (playback == NULL || ticket == NULL || ticket->owner != playback ||
+            ticket->id == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    (void)sixel_playback_options_init(&defaults, sizeof(defaults));
+    if (frame == NULL ||
+            (options != NULL && options->struct_size < sizeof(*options))) {
+        sixel_playback_release_reservation(playback, ticket);
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (options != NULL) {
+        defaults = *options;
+    }
+
+    memset(&metadata, 0, sizeof(metadata));
+    metadata.frame_no = sixel_frame_get_frame_no(frame);
+    metadata.loop_no = sixel_frame_get_loop_no(frame);
+    metadata.delay = sixel_frame_get_delay(frame);
+    metadata.multiframe = sixel_frame_get_multiframe(frame);
+    metadata.user_tag = defaults.user_tag;
+    metadata.option_flags = defaults.flags;
+    metadata.origin_x = defaults.origin_x;
+    metadata.origin_y = defaults.origin_y;
+    metadata.threshold_limit = defaults.threshold_limit;
+    metadata.admitted_at = sixel_timer_now();
+    ticket->owner = NULL;
+    ticket->id = 0u;
+
+    if (playback->threaded == 0) {
+        /* Mirror sixel_encoder_encode_frame() in the calling thread. */
+        --playback->reserved;
+        metadata.sequence = ++playback->next_sequence;
+        ++playback->submitted;
+        status = sixel_encoder_operation_enter(playback->encoder,
+            SIXEL_ENCODER_OPERATION_PLAYBACK);
+        if (status == SIXEL_OK) {
+            status = sixel_encoder_playback_frame_begin(&playback->pipeline,
+                                                        &metadata);
+            if (status == SIXEL_OK) {
+                status = sixel_encoder_pipeline_encode_frame(
+                    &playback->pipeline, frame, &metadata);
+            }
+            sixel_encoder_playback_frame_done(&playback->pipeline,
+                                              &metadata, status, 1);
+            sixel_encoder_operation_leave(playback->encoder);
+        } else {
+            sixel_encoder_playback_frame_done(&playback->pipeline,
+                                              &metadata, status, 0);
+        }
+        if (SIXEL_FAILED(status) && playback->failure == SIXEL_OK) {
+            playback->failure = status;
+        }
+        return status;
+    }
+
+    sixel_frame_ref(frame);
+    sixel_mutex_lock(&playback->pipeline.mutex);
+    --playback->reserved;
+    status = playback->pipeline.worker_status;
+    if (status != SIXEL_OK || playback->pipeline.worker_exited != 0) {
+        --playback->admitted;
+        sixel_cond_broadcast(&playback->pipeline.cond);
+        sixel_mutex_unlock(&playback->pipeline.mutex);
+        sixel_frame_unref(frame);
+        return status != SIXEL_OK ? status : SIXEL_RUNTIME_ERROR;
+    }
+    metadata.sequence = ++playback->next_sequence;
+    ++playback->submitted;
+    playback->pipeline.queue[playback->pipeline.queue_tail] = frame;
+    playback->pipeline.queue_meta[playback->pipeline.queue_tail] = metadata;
+    playback->pipeline.queue_tail = (playback->pipeline.queue_tail + 1)
+        % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS;
+    ++playback->pipeline.queue_count;
+    sixel_cond_broadcast(&playback->pipeline.cond);
+    sixel_mutex_unlock(&playback->pipeline.mutex);
+
+    return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_submit(sixel_playback_t *playback,
+                      sixel_frame_t *frame,
+                      int mode,
+                      int timeout_ms,
+                      sixel_playback_options_t const *options)
+{
+    sixel_playback_ticket_t ticket;
+    SIXELSTATUS status;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = sixel_playback_reserve(playback, mode, timeout_ms, &ticket);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return sixel_playback_submit_reserved(playback, &ticket, frame, options);
+}
+
+/* Complete every queued frame that has not started with SIXEL_INTERRUPTED. */
+static void
+sixel_playback_discard_queued(sixel_playback_t *playback)
+{
+    sixel_frame_t *frames[SIXEL_ENCODER_FRAME_PIPELINE_SLOTS];
+    sixel_encoder_frame_handoff_meta_t
+        metas[SIXEL_ENCODER_FRAME_PIPELINE_SLOTS];
+    sixel_encoder_frame_pipeline_t *pipeline;
+    int count;
+    int index;
+
+    pipeline = &playback->pipeline;
+    count = 0;
+    sixel_mutex_lock(&pipeline->mutex);
+    while (pipeline->queue_count > 0) {
+        frames[count] = pipeline->queue[pipeline->queue_head];
+        metas[count] = pipeline->queue_meta[pipeline->queue_head];
+        pipeline->queue[pipeline->queue_head] = NULL;
+        pipeline->queue_head = (pipeline->queue_head + 1)
+            % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS;
+        --pipeline->queue_count;
+        ++count;
+    }
+    sixel_cond_broadcast(&pipeline->cond);
+    sixel_mutex_unlock(&pipeline->mutex);
+    for (index = 0; index < count; ++index) {
+        sixel_encoder_playback_frame_done(pipeline, &metas[index],
+                                          SIXEL_INTERRUPTED, 0);
+        sixel_frame_unref(frames[index]);
+    }
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_drain(sixel_playback_t *playback, int timeout_ms)
+{
+    SIXELSTATUS status;
+    double deadline;
+    int exited;
+
+    if (playback == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (playback->threaded == 0) {
+        return playback->failure;
+    }
+    deadline = sixel_playback_deadline(timeout_ms);
+    status = SIXEL_OK;
+    sixel_mutex_lock(&playback->pipeline.mutex);
+    while (playback->admitted > playback->reserved &&
+            playback->pipeline.worker_exited == 0 &&
+            playback->pipeline.worker_status == SIXEL_OK) {
+        if (sixel_playback_wait_locked(playback, deadline) != 0) {
+            status = SIXEL_TIMEOUT;
+            break;
+        }
+    }
+    if (playback->pipeline.worker_status != SIXEL_OK) {
+        status = playback->pipeline.worker_status;
+        /* A stopped worker reports its own frames first and never starts
+         * the queued ones; complete those after it is gone. */
+        while (playback->pipeline.worker_exited == 0) {
+            sixel_cond_wait(&playback->pipeline.cond,
+                            &playback->pipeline.mutex);
+        }
+    }
+    exited = playback->pipeline.worker_exited;
+    sixel_mutex_unlock(&playback->pipeline.mutex);
+    if (exited != 0) {
+        sixel_playback_discard_queued(playback);
+    }
+
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_cancel(sixel_playback_t *playback)
+{
+    int index;
+    int exited;
+
+    if (playback == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (playback->threaded == 0) {
+        return SIXEL_OK;
+    }
+    /* The worker reports cancelled frames, keeping callbacks on one thread
+     * and in submission order; a stopped worker leaves that to us. */
+    sixel_mutex_lock(&playback->pipeline.mutex);
+    for (index = 0; index < playback->pipeline.queue_count; ++index) {
+        playback->pipeline.queue_meta[(playback->pipeline.queue_head + index)
+            % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS].cancelled = 1;
+    }
+    exited = playback->pipeline.worker_exited;
+    sixel_cond_broadcast(&playback->pipeline.cond);
+    sixel_mutex_unlock(&playback->pipeline.mutex);
+    if (exited != 0) {
+        sixel_playback_discard_queued(playback);
+    }
+
+    return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_playback_get_stats(sixel_playback_t *playback,
+                         sixel_playback_stats_t *stats)
+{
+    double now;
+    int index;
+    int position;
+
+    if (playback == NULL || stats == NULL ||
+            stats->struct_size < sizeof(*stats)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memset(stats, 0, sizeof(*stats));
+    stats->struct_size = sizeof(*stats);
+    now = sixel_timer_now();
+    if (playback->threaded != 0) {
+        sixel_mutex_lock(&playback->pipeline.mutex);
+    }
+    stats->capacity = playback->capacity;
+    stats->depth = playback->admitted;
+    stats->reserved = playback->reserved;
+    stats->free_slots = playback->admitted < playback->capacity
+        ? playback->capacity - playback->admitted : 0u;
+    stats->submitted = playback->submitted;
+    stats->completed = playback->completed;
+    stats->rejected = playback->rejected;
+    stats->last_processing_seconds = playback->last_processing_seconds;
+    for (index = 0; index < playback->pipeline.queue_count; ++index) {
+        position = (playback->pipeline.queue_head + index)
+            % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS;
+        if (now - playback->pipeline.queue_meta[position].admitted_at >
+                stats->oldest_wait_seconds) {
+            stats->oldest_wait_seconds =
+                now - playback->pipeline.queue_meta[position].admitted_at;
+        }
+    }
+    if (playback->threaded != 0) {
+        sixel_mutex_unlock(&playback->pipeline.mutex);
+    }
+
+    return SIXEL_OK;
+}
+
+SIXELAPI void
+sixel_playback_unref(sixel_playback_t *playback)
+{
+    if (playback == NULL) {
+        return;
+    }
+    if (playback->threaded != 0) {
+        (void)sixel_playback_drain(playback, -1);
+        sixel_mutex_lock(&playback->pipeline.mutex);
+        playback->pipeline.loader_done = 1;
+        sixel_cond_broadcast(&playback->pipeline.cond);
+        sixel_mutex_unlock(&playback->pipeline.mutex);
+        sixel_thread_join(&playback->pipeline.thread);
+        playback->pipeline.started = 0;
+        sixel_playback_discard_queued(playback);
+    }
+    sixel_playback_destroy(playback);
 }
 
 /* emacs Local Variables:      */

@@ -347,6 +347,10 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_ALLOCATION_AUTOMATIC_POLICY \
     -DBUILD_ALLOCATION_RUNTIME_COMMON \
     -DBUILD_PIPELINE_WORKER_COUNTS_COMMON \
+    -DBUILD_TEST_0020_PLAYBACK_DIRECT_EQUIVALENCE \
+    -DBUILD_TEST_0021_PLAYBACK_ADMISSION \
+    -DBUILD_TEST_0022_PLAYBACK_CANCEL_FAILURE \
+    -DBUILD_PLAYBACK_TEST_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
     -DBUILD_TEST_0002_HELPER_BITS \
@@ -4933,6 +4937,11 @@ test_runner_SOURCES = test_runner.c \
     planner/allocation/allocation_runtime_common.c \
     planner/allocation/allocation_runtime_common.h \
     planner/pipeline/pipeline_worker_counts_common.c \
+    planner/pipeline/0020_playback_direct_equivalence.c \
+    planner/pipeline/0021_playback_admission.c \
+    planner/pipeline/0022_playback_cancel_failure.c \
+    planner/pipeline/playback_test_common.c \
+    planner/pipeline/playback_test_common.h \
     processing/colorspace/parallel/0001_frame_bits.c \
     processing/colorspace/parallel/0002_helper_bits.c \
     processing/colorspace/parallel/0003_frame_atomic.c \

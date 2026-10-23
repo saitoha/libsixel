@@ -571,6 +571,9 @@ int test_progressive_0097(int argc, char **argv);
 int test_progressive_0098(int argc, char **argv);
 int test_progressive_0099(int argc, char **argv);
 int test_progressive_0100(int argc, char **argv);
+int test_playback_0020(int argc, char **argv);
+int test_playback_0021(int argc, char **argv);
+int test_playback_0022(int argc, char **argv);
 int test_sequence_0086(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -5813,6 +5816,12 @@ static test_entry_t const test_entries[] = {
       test_progressive_0116 },
     { "progressive/0100_public_admission_snapshot",
       test_progressive_0100 },
+    { "planner/pipeline/0020_playback_direct_equivalence",
+      test_playback_0020 },
+    { "planner/pipeline/0021_playback_admission",
+      test_playback_0021 },
+    { "planner/pipeline/0022_playback_cancel_failure",
+      test_playback_0022 },
     { "decoder/0086_multi_pass_allocation_failure",
       test_sequence_0086 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },

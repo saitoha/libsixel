@@ -91,6 +91,8 @@
     ("runtime error: unable to decode input with available loaders")
 #define SIXEL_MESSAGE_TIMEOUT               \
     ("runtime error: operation timed out")
+#define SIXEL_MESSAGE_QUEUE_FULL            \
+    ("runtime error: queue has no free slot")
 #define SIXEL_MESSAGE_RUNTIME_ERROR         ("runtime error")
 #define SIXEL_MESSAGE_LOGIC_ERROR           ("logic error")
 #define SIXEL_MESSAGE_NOT_IMPLEMENTED       ("feature error: not implemented")
@@ -853,6 +855,9 @@ sixel_helper_format_error(
                 break;
             case SIXEL_TIMEOUT:
                 error_string = SIXEL_MESSAGE_TIMEOUT;
+                break;
+            case SIXEL_QUEUE_FULL:
+                error_string = SIXEL_MESSAGE_QUEUE_FULL;
                 break;
             default:
                 error_string = SIXEL_MESSAGE_RUNTIME_ERROR;

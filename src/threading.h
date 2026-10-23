@@ -99,6 +99,11 @@ SIXEL_INTERNAL_API int sixel_cond_init(sixel_cond_t *cond);
 SIXEL_INTERNAL_API void sixel_cond_destroy(sixel_cond_t *cond);
 SIXEL_INTERNAL_API void sixel_cond_wait(sixel_cond_t *cond,
                                         sixel_mutex_t *mutex);
+/* Wait at most TIMEOUT_MS milliseconds. Returns nonzero on timeout; like
+ * sixel_cond_wait(), a zero return may also be a spurious wakeup. */
+SIXEL_INTERNAL_API int sixel_cond_timedwait(sixel_cond_t *cond,
+                                            sixel_mutex_t *mutex,
+                                            int timeout_ms);
 SIXEL_INTERNAL_API void sixel_cond_signal(sixel_cond_t *cond);
 SIXEL_INTERNAL_API void sixel_cond_broadcast(sixel_cond_t *cond);
 
