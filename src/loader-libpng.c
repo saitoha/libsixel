@@ -301,6 +301,58 @@ png_decode_source_unit(double value, int transfer_mode, double file_gamma)
     return png_decode_srgb_unit(value);
 }
 
+/*
+ * Direct-mapped memo for one transfer function over float inputs.  A slot
+ * is reused only when it holds the exact bits of the input, so the memo
+ * returns what the function returns.  Decoded byte samples and colors
+ * rebuilt from them take few distinct values, which removes nearly every
+ * pow() from per-sample conversion loops.
+ */
+enum { SIXEL_PNG_TRANSFER_MEMO_SIZE = 1024 };
+
+typedef struct sixel_png_transfer_memo {
+    uint32_t key[SIXEL_PNG_TRANSFER_MEMO_SIZE];
+    double value[SIXEL_PNG_TRANSFER_MEMO_SIZE];
+    unsigned char filled[SIXEL_PNG_TRANSFER_MEMO_SIZE];
+    int encode;
+    int transfer_mode;
+    double file_gamma;
+} sixel_png_transfer_memo_t;
+
+/* encode selects png_encode_srgb_unit(); otherwise png_decode_source_unit(). */
+static void
+png_transfer_memo_init(sixel_png_transfer_memo_t *memo, int encode,
+                       int transfer_mode, double file_gamma)
+{
+    memset(memo->filled, 0, sizeof(memo->filled));
+    memo->encode = encode;
+    memo->transfer_mode = transfer_mode;
+    memo->file_gamma = file_gamma;
+}
+
+static double
+png_transfer_memo_apply(sixel_png_transfer_memo_t *memo, float input)
+{
+    uint32_t bits;
+    size_t slot;
+    double value;
+
+    memcpy(&bits, &input, sizeof(bits));
+    slot = (size_t)((bits * 2654435761u) >> 22);
+    if (memo->filled[slot] != 0 && memo->key[slot] == bits) {
+        return memo->value[slot];
+    }
+    value = memo->encode
+        ? png_encode_srgb_unit(input)
+        : png_decode_source_unit(input, memo->transfer_mode,
+                                 memo->file_gamma);
+    memo->key[slot] = bits;
+    memo->value[slot] = value;
+    memo->filled[slot] = 1;
+
+    return value;
+}
+
 static void
 png_expand_background_sample_to_unit(png_uint_16 sample,
                                      png_uint_32 bitdepth,
@@ -539,6 +591,7 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
     size_t count;
     size_t i;
     sixel_cms_profile_t *cicp_profile;
+    sixel_png_transfer_memo_t memo;
 
     count = (size_t)width * (size_t)height;
     converted = 0;
@@ -564,8 +617,9 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
         }
         /* Identity source interpretation still needs transfer decoding for
          * alpha composition, but must not revive any lower-priority ICC. */
+        png_transfer_memo_init(&memo, 0, SIXEL_PNG_TRANSFER_SRGB, 0.0);
         for (i = 0u; i < count * 3u; ++i) {
-            pixels[i] = (float)png_decode_srgb_unit(pixels[i]);
+            pixels[i] = (float)png_transfer_memo_apply(&memo, pixels[i]);
         }
         return 0;
     }
@@ -618,10 +672,10 @@ png_source_to_linear(png_structp png_ptr, png_infop info_ptr,
             }
         }
     }
+    png_transfer_memo_init(&memo, 0,
+        has_gamma ? SIXEL_PNG_TRANSFER_GAMA : SIXEL_PNG_TRANSFER_SRGB, gamma);
     for (i = 0u; i < count * 3u; ++i) {
-        pixels[i] = (float)png_decode_source_unit(pixels[i],
-            has_gamma ? SIXEL_PNG_TRANSFER_GAMA : SIXEL_PNG_TRANSFER_SRGB,
-            gamma);
+        pixels[i] = (float)png_transfer_memo_apply(&memo, pixels[i]);
     }
     if (has_matrix) {
         result = sixel_png_chrm_apply(&matrix, pixels, pixels, count, &stats);
@@ -815,6 +869,8 @@ load_png(unsigned char      /* out */ **result,
     unsigned char **volatile rows;
     unsigned char *volatile raw16_pixels;
     float *volatile cms_pixels;
+    /* Not read after a libpng longjmp. */
+    sixel_png_transfer_memo_t memo;
     png_color *png_palette;
     png_uint_32 width;
     png_uint_32 height;
@@ -1561,8 +1617,10 @@ load_png(unsigned char      /* out */ **result,
         } else if (!palette_colors) {
             /* Unapplied metadata keeps the original palette bytes exactly.
              * Other unconverted sources retain their existing storage. */
+            png_transfer_memo_init(&memo, 1, SIXEL_PNG_TRANSFER_SRGB, 0.0);
             for (dst_index = 0u; dst_index < color_count * 3u; ++dst_index) {
-                value = png_encode_srgb_unit(cms_pixels[dst_index]);
+                value = png_transfer_memo_apply(&memo,
+                                                cms_pixels[dst_index]);
                 if (*pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
                     ((float *)*result)[dst_index] = (float)value;
                 } else if (*pixelformat != SIXEL_PIXELFORMAT_G8) {
@@ -2251,6 +2309,7 @@ emit_apng_frame(
     char const *cicp_name;
     double alpha;
     double value;
+    sixel_png_transfer_memo_t memo;
     size_t canvas_bytes;
     int cache_frame;
     unsigned char ihdr_copy[13];
@@ -2409,9 +2468,10 @@ emit_apng_frame(
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        png_transfer_memo_init(&memo, 1, SIXEL_PNG_TRANSFER_SRGB, 0.0);
         for (pixel_index = 0u; pixel_index < pixel_count * 3u;
                 ++pixel_index) {
-            value = png_encode_srgb_unit(emitted[pixel_index]);
+            value = png_transfer_memo_apply(&memo, emitted[pixel_index]);
             emitted_bytes[pixel_index] =
                 (unsigned char)(value * 255.0 + 0.5);
         }
