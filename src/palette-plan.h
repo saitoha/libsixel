@@ -158,6 +158,9 @@ typedef struct sixel_palette_frame_state {
     sixel_palette_binning_state_t binning;
     sixel_palette_policy_resolution_t quantizer;
     unsigned int quantizer_retry_count;
+    /* 6delta keep-key reservation decided by the caller: -1 asks the
+     * encoder's retained history, 0 or 1 is fixed for this frame. */
+    int delta_alpha_key;
 } sixel_palette_frame_state_t;
 
 /*

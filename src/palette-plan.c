@@ -700,6 +700,7 @@ sixel_palette_frame_state_init(sixel_palette_frame_state_t *state)
         SIXEL_PALETTE_POLICY_VALUE_UNSET,
         SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
     state->quantizer_retry_count = 0U;
+    state->delta_alpha_key = -1;
 }
 
 /* emacs Local Variables:      */
