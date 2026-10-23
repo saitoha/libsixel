@@ -22,7 +22,7 @@ expected="${ARTIFACT_LOCAL_DIR}/palette-worker-init-$$.six"
 actual="${ARTIFACT_LOCAL_DIR}/palette-worker-sample-$$.six"
 
 _SIXEL_TEST_PALETTE_JOB_FAILURE=init \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=4 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${expected}" || {
     echo "not ok 1 - reference full-frame fallback failed"
@@ -31,7 +31,7 @@ _SIXEL_TEST_PALETTE_JOB_FAILURE=init \
 
 message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_JOB_FAILURE=sample \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=4 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=4 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >"${actual}") || {
     echo "not ok 1 - palette sample failure stopped encoding"

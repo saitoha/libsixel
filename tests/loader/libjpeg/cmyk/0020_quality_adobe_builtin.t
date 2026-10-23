@@ -26,7 +26,7 @@ test "$result" -eq 0 || {
     exit 0
 }
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 --threads=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 --threading-policy=1 \
     -L 'libjpeg:cms_engine=builtin:cms_intent=relative!!' \
     "${TOP_SRCDIR}/tests/data/color-numeric/jpeg-cmyk-affine-adobe.jpg" \
     >"${ARTIFACT_LOCAL_DIR}/output.six" || {

@@ -100,7 +100,7 @@ indexed_adaptive_encode_is_valid(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS, "1");
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY, "1");
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

@@ -560,7 +560,7 @@ main(int argc, char **argv)
         "delta") == SIXEL_OK);
     STUDY_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         "off") == SIXEL_OK);
-    STUDY_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS,
+    STUDY_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
         "1") == SIXEL_OK);
     STUDY_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_LUT_POLICY,
         "none") == SIXEL_OK);

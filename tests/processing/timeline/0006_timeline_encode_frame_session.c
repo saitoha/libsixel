@@ -52,7 +52,8 @@ timeline_0006_encode_twice(void)
     }
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS, "1");
+        status = sixel_encoder_setopt(encoder,
+                                      SIXEL_OPTFLAG_THREADING_POLICY, "1");
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_output_new(&output, timeline_0006_discard, NULL, NULL);

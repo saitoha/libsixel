@@ -10,7 +10,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-gamma=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --precision-policy=float32 --quality=full \
+gamma=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 --precision-policy=float32 --quality=full \
     --sampling-policy=full-frame --binning-policy=hard \
     --quantize-model=kmeans:seed=1:binbits=6 --merge-policy=none \
     --cover-policy=corners:Wsoft:V1 --lookup-policy=none --gpu-policy=off \
@@ -20,7 +20,7 @@ gamma=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --precision-policy=flo
     echo "not ok 1 - gamma output palette export failed"
     exit 0
 }
-linear=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --precision-policy=float32 --quality=full \
+linear=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 --precision-policy=float32 --quality=full \
     --sampling-policy=full-frame --binning-policy=hard \
     --quantize-model=kmeans:seed=1:binbits=6 --merge-policy=none \
     --cover-policy=corners:Wsoft:V1 --lookup-policy=none --gpu-policy=off \

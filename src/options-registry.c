@@ -541,6 +541,67 @@
         }, NULL, 0ULL \
     }
 
+/* Thread-plan rows bind to the process-wide threading policy store. */
+#define SIXEL_REGISTRY_THREADING_UINT( \
+    optflag_, base_, name_, short_, env_, minimum_, maximum_, message_, \
+    scope_, field_, override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), \
+        (short_), (env_), NULL, NULL, \
+        SIXEL_SUBOPTION_VALUE_UINT, NULL, 0u, NULL, 0u, (minimum_), \
+        (maximum_), 1, 1, 0, SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG, \
+        (message_), NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_THREADING, SIXEL_SUBOPTION_STORAGE_UINT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, field_, unsigned int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
+#define SIXEL_REGISTRY_THREADING_CHOICE( \
+    optflag_, base_, name_, short_, env_, choices_, scope_, field_, \
+    override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), \
+        (short_), (env_), NULL, NULL, SIXEL_SUBOPTION_VALUE_CHOICE, \
+        (choices_), SIXEL_REGISTRY_ARRAY_LENGTH(choices_), NULL, 0u, \
+        0.0, 0.0, 0, 0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_THREADING, SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
+#define SIXEL_REGISTRY_THREADING_BOOLEAN( \
+    optflag_, base_, name_, short_, env_, scope_, field_, override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), \
+        (short_), (env_), NULL, NULL, SIXEL_SUBOPTION_VALUE_BOOLEAN, NULL, \
+        0u, NULL, 0u, 0.0, 1.0, 1, 1, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, \
+        NULL, NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_THREADING, SIXEL_SUBOPTION_STORAGE_INT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, field_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
 #define SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN( \
     optflag_, base_, name_, short_, env_, scope_, field_, override_) \
     { \
@@ -1302,8 +1363,11 @@ static sixel_option_value_schema_t const g_precision_values[] = {
     }
 };
 
-static sixel_option_value_schema_t const g_threads_values[] = {
-    { "auto", 0, 0u }
+/* A decimal base is the total budget; the parser handles it before these
+ * names are matched. */
+static sixel_option_value_schema_t const g_threading_policy_values[] = {
+    { "auto", SIXEL_THREADING_POLICY_AUTO, 0u },
+    { "serial", SIXEL_THREADING_POLICY_SERIAL, 0u }
 };
 
 static sixel_option_value_schema_t const g_gpu_policy_values[] = {
@@ -1356,6 +1420,16 @@ g_clipboard_policy_environment_choices[] = {
 static sixel_option_value_schema_t const g_terminal_policy_values[] = {
     { "0", 0, 0u },
     { "1", 1, 0u }
+};
+
+static sixel_suboption_choice_t const g_threading_frame_choices[] = {
+    { "serial", SIXEL_THREADING_FRAME_SERIAL },
+    { "ahead", SIXEL_THREADING_FRAME_AHEAD }
+};
+
+static sixel_suboption_choice_t const g_threading_palette_choices[] = {
+    { "frame", SIXEL_THREADING_PALETTE_FRAME },
+    { "latest", SIXEL_THREADING_PALETTE_LATEST }
 };
 
 static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
@@ -1895,6 +1969,56 @@ static sixel_suboption_key_t const g_suboptions[] = {
         scale_parallel_min_bytes,
         scale_parallel_min_bytes_override),
 
+    SIXEL_REGISTRY_THREADING_CHOICE(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "load", 'L', "SIXEL_THREADING_LOAD", g_threading_frame_choices,
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, load, load_override),
+    SIXEL_REGISTRY_THREADING_UINT(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "load_depth", 'Q', "SIXEL_THREADING_LOAD_DEPTH",
+        1.0, (double)SIXEL_THREADING_LOAD_DEPTH_MAX,
+        "threading load_depth must be in range 1..16.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        load_depth, load_depth_override),
+    SIXEL_REGISTRY_THREADING_CHOICE(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "prepare", 'P', "SIXEL_THREADING_PREPARE", g_threading_frame_choices,
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, prepare, prepare_override),
+    SIXEL_REGISTRY_THREADING_CHOICE(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "palette", 'C', "SIXEL_THREADING_PALETTE",
+        g_threading_palette_choices,
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, palette, palette_override),
+    SIXEL_REGISTRY_THREADING_UINT(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "dither", 'D', "SIXEL_THREADING_DITHER", 1.0, (double)INT_MAX,
+        "threading dither must be a positive integer.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        dither_threads, dither_threads_override),
+    SIXEL_REGISTRY_THREADING_UINT(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "encode", 'E', "SIXEL_THREADING_ENCODE", 1.0, (double)INT_MAX,
+        "threading encode must be a positive integer.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        encode_threads, encode_threads_override),
+    SIXEL_REGISTRY_THREADING_UINT(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "prepare_workers", 'W', "SIXEL_THREADING_PREPARE_WORKERS",
+        1.0, (double)INT_MAX,
+        "threading prepare_workers must be a positive integer.",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
+        prepare_threads, prepare_threads_override),
+    SIXEL_REGISTRY_THREADING_UINT(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "decode", 'S', "SIXEL_THREADING_DECODE", 1.0, (double)INT_MAX,
+        "threading decode must be a positive integer.",
+        SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE,
+        decode_threads, decode_threads_override),
+    SIXEL_REGISTRY_THREADING_BOOLEAN(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "pin", 'I', "SIXEL_THREADING_PIN",
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, pin, pin_override),
+
     SIXEL_REGISTRY_ENCODER_SIZE(
         SIXEL_OPTION_SCHEMA_GPU_POLICY, NULL,
         "palette_threshold", 'P', "SIXEL_GPU_PALETTE_THRESHOLD",
@@ -1962,17 +2086,6 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-d band_width must be in range 1-2147483647.",
         dither_parallel_band_width,
         dither_parallel_band_width_override),
-    SIXEL_REGISTRY_ENCODER_UINT_ENV_CLAMP_MAXIMUM_SIGNED(
-        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
-        "threads_max", 'J', "SIXEL_DITHER_PARALLEL_THREADS_MAX",
-        NULL, NULL, 1.0, (double)INT_MAX, 0,
-        "-d threads_max must be in range 1-2147483647.",
-        dither_parallel_threads_max,
-        dither_parallel_threads_max_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_DIFFUSION, NULL,
-        "pin_threads", 'I', "SIXEL_DITHER_PIN_THREADS", NULL, NULL,
-        dither_pin_threads, dither_pin_threads_override),
     SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_SIERRA,
@@ -2558,13 +2671,6 @@ static sixel_suboption_key_t const g_suboptions[] = {
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_LUT_POLICY,
         g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
-        "pin_threads", 'P', "SIXEL_LOOKUP_FHEDT_PIN_THREADS",
-        NULL, "SIXEL_FHEDT_PIN_THREADS",
-        lut_policy_fhedt_pin_threads,
-        lut_policy_fhedt_pin_threads_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_LUT_POLICY,
-        g_lookup_values + SIXEL_LOOKUP_BASE_FHEDT,
         "refine", 'F', "SIXEL_LOOKUP_FHEDT_REFINE", NULL, NULL,
         lut_policy_fhedt_refine,
         lut_policy_fhedt_refine_override),
@@ -3116,31 +3222,14 @@ static sixel_option_argument_schema_t const g_options[] = {
         "precision-policy accepts auto, 8bit, or float32.",
         SIXEL_OPTION_PRECISION_AUTO,
         g_precision_values),
-    SIXEL_REGISTRY_SCALAR_INT(
-        SIXEL_OPTION_SCHEMA_THREADS,
+    SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY,
         SIXEL_OPTION_SCOPE_ALL,
-        SIXEL_OPTFLAG_THREADS,
-        "threads",
-        SIXEL_OPTION_MATCH_CASE_INSENSITIVE,
-        SIXEL_OPTION_MATCH_CASE_INSENSITIVE,
-        "SIXEL_THREADS",
-        1.0,
-        (double)INT_MAX,
-        1,
-        1,
-        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM |
-            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM |
-            SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG,
-        "threads accepts positive integers or 'auto'.",
-        "threads must be a positive integer or 'auto'.",
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        SIXEL_OPTION_DEFAULT_OWNER,
-        0,
-        g_threads_values,
-        SIXEL_REGISTRY_ARRAY_LENGTH(g_threads_values)),
+        SIXEL_OPTFLAG_THREADING_POLICY,
+        "threading-policy",
+        SIXEL_THREADING_POLICY_AUTO,
+        g_threading_policy_values,
+        "SIXEL_THREADING_POLICY"),
     SIXEL_REGISTRY_SCALAR_UINT(
         SIXEL_OPTION_SCHEMA_COLORS,
         SIXEL_OPTION_SCOPE_ENCODER,
@@ -3711,6 +3800,20 @@ sixel_option_registry_resolve_process_binding(
         return SIXEL_OPTION_ENVIRONMENT_MATCH;
     }
 
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_CHOICE) {
+        /* Choice names are the documented spelling; numeric aliases remain
+         * accepted below only where the row opts into them. */
+        while (index < key->choice_count) {
+            if (sixel_compat_strcasecmp(text,
+                                        key->choices[index].name) == 0) {
+                value->int_value = key->choices[index].value;
+                return SIXEL_OPTION_ENVIRONMENT_MATCH;
+            }
+            ++index;
+        }
+        index = 0u;
+    }
+
     errno = 0;
     parsed_int = strtol(text, &endptr, 10);
     if (endptr == text || endptr == NULL) {
@@ -3801,6 +3904,46 @@ sixel_option_registry_resolve_process_binding(
     return SIXEL_OPTION_ENVIRONMENT_INVALID;
 }
 
+/* Shared by the CLI parser and the budget resolvers in small link units. */
+int
+sixel_option_parse_threading_policy_base(
+    char const *text,
+    int *budget,
+    int *serial)
+{
+    char *endptr;
+    long parsed;
+
+    endptr = NULL;
+    parsed = 0L;
+    if (text == NULL || budget == NULL || serial == NULL ||
+        text[0] == '\0') {
+        return 0;
+    }
+    if (sixel_compat_strcasecmp(text, "auto") == 0) {
+        *budget = 0;
+        *serial = 0;
+        return 1;
+    }
+    if (sixel_compat_strcasecmp(text, "serial") == 0) {
+        *budget = 1;
+        *serial = 1;
+        return 1;
+    }
+    if (text[0] < '0' || text[0] > '9') {
+        return 0;
+    }
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == NULL || endptr[0] != '\0' || errno == ERANGE ||
+        parsed < 1L || parsed > (long)INT_MAX) {
+        return 0;
+    }
+    *budget = (int)parsed;
+    *serial = 0;
+    return 1;
+}
+
 /* Keep strict boolean parsing in the registry link unit. Quick Look and
  * other small consumers intentionally do not link the full options parser. */
 int
@@ -3829,6 +3972,19 @@ sixel_option_registry_resolve_runtime_binding(
 {
     return sixel_option_registry_resolve_process_binding(
         SIXEL_OPTION_SCHEMA_RUNTIME_POLICY,
+        binding_identifier,
+        expected_kind,
+        value);
+}
+
+SIXEL_INTERNAL_API sixel_option_environment_result_t
+sixel_option_registry_resolve_threading_binding(
+    char const *binding_identifier,
+    sixel_suboption_value_kind_t expected_kind,
+    sixel_suboption_value_t *value)
+{
+    return sixel_option_registry_resolve_process_binding(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY,
         binding_identifier,
         expected_kind,
         value);
@@ -4224,6 +4380,7 @@ sixel_option_registry_binding_scope_is_valid(
         allowed_scope = SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE;
         break;
     case SIXEL_SUBOPTION_TARGET_RUNTIME:
+    case SIXEL_SUBOPTION_TARGET_THREADING:
     case SIXEL_SUBOPTION_TARGET_DIAGNOSTICS:
     case SIXEL_SUBOPTION_TARGET_CLIPBOARD:
         allowed_scope = SIXEL_OPTION_SCOPE_ALL;

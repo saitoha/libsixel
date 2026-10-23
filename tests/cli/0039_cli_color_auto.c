@@ -316,7 +316,7 @@ color_auto_child(char const *name, char const *binary, char const *fixture,
     }
     count = 0;
     arguments[count++] = (char *)binary;
-    arguments[count++] = "--threads=1";
+    arguments[count++] = "--threading-policy=1";
     arguments[count++] = "-7";
     arguments[count++] = "-z0";
     arguments[count++] =

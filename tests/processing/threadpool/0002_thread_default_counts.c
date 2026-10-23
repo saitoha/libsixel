@@ -48,8 +48,8 @@ test_threadpool_0002_thread_default_counts(int argc, char **argv)
     processing_expected = 1;
 #endif
 
-    if (sixel_compat_setenv("SIXEL_THREADS", "") != 0) {
-        fprintf(stderr, "failed to clear SIXEL_THREADS\n");
+    if (sixel_compat_setenv("SIXEL_THREADING_POLICY", "") != 0) {
+        fprintf(stderr, "failed to clear SIXEL_THREADING_POLICY\n");
         return EXIT_FAILURE;
     }
 

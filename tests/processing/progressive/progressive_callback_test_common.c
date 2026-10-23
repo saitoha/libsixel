@@ -65,7 +65,7 @@ test_progressive_callback_mode(char const *path, int worker)
         return EXIT_FAILURE;
     }
 #endif
-    ok = sixel_encoder_setopt(probe.encoder, SIXEL_OPTFLAG_THREADS,
+    ok = sixel_encoder_setopt(probe.encoder, SIXEL_OPTFLAG_THREADING_POLICY,
                               worker ? "4" : "1") == SIXEL_OK &&
         sixel_encoder_setopt(probe.encoder, SIXEL_OPTFLAG_LOADERS,
                               "builtin:cms_engine=none!") == SIXEL_OK &&

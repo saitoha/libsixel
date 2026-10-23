@@ -83,7 +83,7 @@ static fuzz_cli_option_t const g_cli_options[] = {
     { "-n", "--macro-number", 1 },
     { "-@", "--drcs", 1 },
     { "-%", "--env", 1 },
-    { "-=", "--threads", 1 },
+    { "-=", "--threading-policy", 1 },
     { "-.", "--precision-policy", 1 },
     { "-e", "--monochrome", 0 },
     { "-i", "--invert", 0 },

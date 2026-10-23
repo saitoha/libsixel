@@ -149,12 +149,14 @@ The default value is 0.
 Decode the SIXEL stream into an RGBA surface.
 The alpha channel starts at zero so untouched pixels remain transparent.
 .TP 5
-.B \-= COUNT, \-\-threads=COUNT|auto
-Override the decoder worker count.  Provide a positive integer COUNT to
-keep deterministic band ordering while enabling multi-band parallelism.
-Use "auto" to match the detected hardware thread count.
-When SIXEL_THREADS is unset or empty, the sixel2png frontend defaults to
-"auto".
+.B \-= POLICY[:decode=COUNT], \-\-threading\-policy=POLICY[:decode=COUNT]
+Plan worker threads.  POLICY is the total thread budget: "auto" matches the
+detected hardware thread count, "serial" uses one thread, and a positive
+COUNT uses at most that many threads.  The \fBdecode=COUNT\fP key (short form
+\fB:SCOUNT\fP) limits parallel SIXEL parsing; a limit above the budget shrinks
+to fit it.
+When SIXEL_THREADING_POLICY is unset or empty, the sixel2png frontend
+defaults to "auto".
 .TP 5
 .B \-G POLICY[:KEY=VALUE], \-\-gpu\-policy=POLICY[:KEY=VALUE]
 Choose the decoder accelerator policy.  \fBoff\fP keeps the CPU path,
@@ -268,11 +270,15 @@ enabled default. The \fB\-x *:abort_trace=0|1\fP suboption (short form
 write the shared JSON timeline log when set. The
 \fB\-J/\-\-log\-path\fP option takes precedence.
 .TP 5
-.B SIXEL_THREADS
+.B SIXEL_THREADING_POLICY
 .br
-Override the decoder worker count using the same syntax as the
-\-=/\-\-threads option.  Accepts positive integers or "auto" to match the
-hardware thread count. Empty or unset values make sixel2png use "auto".
+Total thread budget using the base syntax of the
+\-=/\-\-threading\-policy option: "auto", "serial", or a positive count.
+Empty or unset values make sixel2png use "auto".
+.TP 5
+.B SIXEL_THREADING_DECODE
+.br
+Default for the \fB\-= *:decode=COUNT\fP key.
 .TP 5
 .B SIXEL_SIMD_LEVEL
 .br

@@ -47,7 +47,8 @@ timeline_0009_encode(char const *threads)
     }
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS, threads);
+        status = sixel_encoder_setopt(encoder,
+                                      SIXEL_OPTFLAG_THREADING_POLICY, threads);
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder, 'p', "16");

@@ -20,7 +20,7 @@ set -v
 # Every output below is consumed by the decoded-pixel comparison.
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-export SIXEL_DITHER_PARALLEL_THREADS_MAX=
+export SIXEL_THREADING_DITHER=
 export SIXEL_DITHER_PARALLEL_BAND_WIDTH=
 export SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=
 

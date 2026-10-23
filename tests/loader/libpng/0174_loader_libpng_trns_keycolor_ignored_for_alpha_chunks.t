@@ -22,7 +22,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn4a08.png"
 out_default="${ARTIFACT_LOCAL_DIR}/trns-keycolor-alpha-default-basn4a08.six"
 out_off="${ARTIFACT_LOCAL_DIR}/trns-keycolor-alpha-env0-basn4a08.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
@@ -31,7 +31,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              --env SIXEL_THREADS=4 \
+              --env SIXEL_THREADING_POLICY=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {

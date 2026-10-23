@@ -19,7 +19,7 @@ echo "1..1"
 set -v
 
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 -L"libtiff:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
+    --threading-policy=1 -L"libtiff:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
     -jscalar:resize_precision=float --precision-policy=float -Qkmeans:seed=1 \
     -Xlinear -Wlinear -Udisplay-p3 -Fnone -aoff -_none '-~none' -dnone -trgb \
     --binning-policy=none --sampling-policy=full-frame \

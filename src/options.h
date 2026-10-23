@@ -99,6 +99,7 @@ typedef enum sixel_suboption_target_class {
     SIXEL_SUBOPTION_TARGET_LOADER,
     SIXEL_SUBOPTION_TARGET_DEQUANTIZE,
     SIXEL_SUBOPTION_TARGET_RUNTIME,
+    SIXEL_SUBOPTION_TARGET_THREADING,
     SIXEL_SUBOPTION_TARGET_DIAGNOSTICS,
     SIXEL_SUBOPTION_TARGET_CLIPBOARD,
     SIXEL_SUBOPTION_TARGET_OUTPUT_COLOR_FILE,
@@ -176,7 +177,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_LUT_POLICY,
     SIXEL_OPTION_SCHEMA_LOADERS,
     SIXEL_OPTION_SCHEMA_PRECISION,
-    SIXEL_OPTION_SCHEMA_THREADS,
+    SIXEL_OPTION_SCHEMA_THREADING_POLICY,
     SIXEL_OPTION_SCHEMA_COLORS,
     SIXEL_OPTION_SCHEMA_START_FRAME,
     SIXEL_OPTION_SCHEMA_GPU_POLICY,
@@ -455,6 +456,55 @@ typedef struct sixel_runtime_policy_options {
     int scale_parallel_min_bytes_override;
 } sixel_runtime_policy_options_t;
 
+/*
+ * Process-wide thread plan. The base value is the total budget; stage counts
+ * are upper bounds that the planner shrinks to fit that budget. Frame keys
+ * select which stages of consecutive frames may run concurrently.
+ */
+typedef struct sixel_threading_policy_options {
+    int budget;                 /* 0 selects the hardware thread count */
+    int budget_override;
+    int serial;                 /* base "serial": serial frame defaults */
+    int load;
+    int load_override;
+    unsigned int load_depth;
+    int load_depth_override;
+    int prepare;
+    int prepare_override;
+    int palette;
+    int palette_override;
+    unsigned int dither_threads;
+    int dither_threads_override;
+    unsigned int encode_threads;
+    int encode_threads_override;
+    unsigned int prepare_threads;
+    int prepare_threads_override;
+    unsigned int decode_threads;
+    int decode_threads_override;
+    int pin;
+    int pin_override;
+} sixel_threading_policy_options_t;
+
+typedef enum sixel_threading_frame_mode {
+    SIXEL_THREADING_FRAME_SERIAL = 0,
+    SIXEL_THREADING_FRAME_AHEAD
+} sixel_threading_frame_mode_t;
+
+/* LATEST is reserved for applying the newest completed palette to a frame
+ * while its own palette is still being built. */
+typedef enum sixel_threading_palette_mode {
+    SIXEL_THREADING_PALETTE_FRAME = 0,
+    SIXEL_THREADING_PALETTE_LATEST
+} sixel_threading_palette_mode_t;
+
+typedef enum sixel_threading_policy_base {
+    SIXEL_THREADING_POLICY_AUTO = 0,
+    SIXEL_THREADING_POLICY_SERIAL = 1
+} sixel_threading_policy_base_t;
+
+#define SIXEL_THREADING_LOAD_DEPTH_DEFAULT 4
+#define SIXEL_THREADING_LOAD_DEPTH_MAX 16
+
 typedef enum sixel_runtime_resize_precision {
     SIXEL_RUNTIME_RESIZE_PRECISION_PRESERVE = 1,
     SIXEL_RUNTIME_RESIZE_PRECISION_LINEAR32,
@@ -713,6 +763,22 @@ sixel_option_apply_runtime_policy_argument(
     unsigned int consumer_scope,
     char *diagnostic,
     size_t diagnostic_size);
+
+/* Parse -=/--threading-policy. The base is auto, serial, or a positive
+ * total thread budget; it is followed by optional suboptions. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_apply_threading_policy_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+/* Parse the base value alone, as used by SIXEL_THREADING_POLICY. */
+SIXEL_INTERNAL_API int
+sixel_option_parse_threading_policy_base(
+    char const *text,
+    int *budget,
+    int *serial);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_apply_diagnostics_argument(

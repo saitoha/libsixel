@@ -145,6 +145,31 @@ SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
 SIXEL_INTERNAL_API void sixel_set_threads(int threads);
 SIXEL_INTERNAL_API int sixel_threads_resolve(void);
 
+struct sixel_threading_policy_options;
+
+typedef enum sixel_threading_stage {
+    SIXEL_THREADING_STAGE_DITHER = 0,
+    SIXEL_THREADING_STAGE_ENCODE,
+    SIXEL_THREADING_STAGE_PREPARE,
+    SIXEL_THREADING_STAGE_DECODE
+} sixel_threading_stage_t;
+
+SIXEL_INTERNAL_API void sixel_threading_policy_load(
+    struct sixel_threading_policy_options *options);
+SIXEL_INTERNAL_API void sixel_threading_policy_store(
+    struct sixel_threading_policy_options const *options);
+/* Returns true when -= or SIXEL_THREADING_POLICY names the budget. */
+SIXEL_INTERNAL_API int sixel_threading_policy_explicit_budget(int *threads);
+/* Frame-level modes return sixel_threading_frame_mode_t values. */
+SIXEL_INTERNAL_API int sixel_threading_policy_load_mode(void);
+SIXEL_INTERNAL_API int sixel_threading_policy_prepare_mode(void);
+SIXEL_INTERNAL_API int sixel_threading_policy_load_depth(void);
+/* Returns true with an explicit stage limit; the caller fits it to the
+ * resolved budget. */
+SIXEL_INTERNAL_API int sixel_threading_policy_stage_threads(
+    sixel_threading_stage_t stage, unsigned int *count);
+SIXEL_INTERNAL_API int sixel_threading_policy_pin(int fallback);
+
 SIXEL_INTERNAL_API void sixel_runtime_policy_load(
     struct sixel_runtime_policy_options *options);
 SIXEL_INTERNAL_API void sixel_runtime_policy_store(

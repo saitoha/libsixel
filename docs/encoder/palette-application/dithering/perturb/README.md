@@ -26,7 +26,7 @@ The runtime revision is `d88905ace2ae7fa7a2655cb908f83369e104322b`. The study wa
 | Main conditions | Raster FS and serpentine FS, each at `P=0` and `P=0.5` |
 | Precision | Requested `8bit`; every encoder diagnostic verified `work=rgb888` |
 | Working/output space | Gamma RGB |
-| Execution | One encoder thread, `threads_max=1`, GPU off, direct lookup (`none`) |
+| Execution | One encoder thread, `-= *:dither=1`, GPU off, direct lookup (`none`) |
 | Seed | `0`, except the labelled seed comparison |
 | Environment | Inherited `SIXEL_*` variables removed |
 | Output under inspection | Actual SIXEL output decoded through `sixel2png` |

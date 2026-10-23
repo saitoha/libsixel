@@ -14,7 +14,7 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 status=0
-log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
     --precision-policy=8bit -Udisplay-p3 -p16 \
     -o/dev/null "${input_image}" 2>&1) || status=$?
 test "${status}" -ne 0 || {

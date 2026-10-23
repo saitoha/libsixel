@@ -198,7 +198,7 @@ final class Constants
     public const SIXEL_OPTFLAG_8BIT_MODE = '8';
     public const SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R';
     public const SIXEL_OPTFLAG_PRECISION_POLICY = '.';
-    public const SIXEL_OPTFLAG_THREADS = '=';
+    public const SIXEL_OPTFLAG_THREADING_POLICY = '=';
     public const SIXEL_OPTFLAG_COLORS = 'p';
     public const SIXEL_OPTFLAG_MAPFILE = 'm';
     public const SIXEL_OPTFLAG_MAPFILE_OUTPUT = 'M';

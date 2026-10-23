@@ -1,6 +1,6 @@
 # Runtime execution policy
 
-`-j` / `--runtime-policy` configures the SIMD ceiling and selected scheduling/resize controls. It is accepted by both converters, with different suboption consumers. It does not select a quantizer or set the worker count. Use `-=` / `--threads` for the worker budget and `-G` for GPU policy.
+`-j` / `--runtime-policy` configures the SIMD ceiling and selected scheduling/resize controls. It is accepted by both converters, with different suboption consumers. It does not select a quantizer or set the worker count. Use `-=` / `--threading-policy` for the worker budget and `-G` for GPU policy.
 
 ## SIMD ceiling
 
@@ -35,7 +35,7 @@ img2sixel -j scalar:resize_precision=linear -w 50% image.png
 
 # Native SIMD, but avoid scheduling tiny resize tasks.
 img2sixel -j auto:scale_min_bytes=1048576:parallel_factor=32 \
-    --threads=4 -w 50% image.png
+    --threading-policy=4 -w 50% image.png
 ```
 
 ## Precision, quality, and performance

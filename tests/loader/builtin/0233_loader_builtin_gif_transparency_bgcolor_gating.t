@@ -22,7 +22,7 @@ nl='
 '
 
 default_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=1 \
               -A composite -Lbuiltin! \
               -ldisable -S -T 1 -d fs:scan=raster \
               "${input_gif}"
@@ -32,7 +32,7 @@ default_output=$(
 }
 
 bgcolor_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=1 \
               --env SIXEL_BGCOLOR=white \
               -A composite -Lbuiltin! \
               -ldisable -S -T 1 -d fs:scan=raster \

@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
     --env SIXEL_BINNING_POLICY=hard --binning-policy=soft \
     -Qauto -dnone -p16 "-~none" -Lbuiltin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1 >/dev/null) || {

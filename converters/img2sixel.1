@@ -96,14 +96,53 @@ painting. \(dqpng:-\(dq writes to standard output, while
 \(dqpng:\fIpath\fP\(dq stores the PNG alongside the SIXEL output. Using
 \(dq\-o output.png\(dq writes the PNG directly to that path.
 .TP 5
-.B \-= \fICOUNT|auto\fP, \-\-threads=\fICOUNT|auto\fP
-select the encoder thread count used for band parallelism.
-The special value \fBauto\fP matches the hardware thread count.
-Positive integers keep deterministic ordering with \fICOUNT\fP greater
-than one enabling multi-threaded encoding while \fICOUNT\fP of one
-preserves the sequential fallback path.
-When \fBSIXEL_THREADS\fP is unset or empty, the \fBimg2sixel\fP frontend
-defaults to \fBauto\fP.
+.B \-= \fIPOLICY\fP[:\fIKEY\fP=\fIVALUE\fP...], \-\-threading\-policy=\fIPOLICY\fP[:\fIKEY\fP=\fIVALUE\fP...]
+plan where worker threads go.
+\fIPOLICY\fP is the total thread budget: \fBauto\fP matches the hardware
+thread count, \fBserial\fP uses one thread and keeps frame loading and
+preparation serial, and a positive \fICOUNT\fP uses at most that many threads.
+Stage limits that exceed the budget shrink to fit it; they are never an
+error.
+Frame keys and \fBprepare_workers\fP never change the output; the dither
+worker count selects the parallel band split.
+.RS
+.TP 5
+.B load=serial|ahead
+decode frames ahead of encoding (default \fBahead\fP; short form \fB:L\fP).
+.TP 5
+.B load_depth=1..16
+frames decoded ahead (default 4; short form \fB:Q\fP).
+.TP 5
+.B prepare=serial|ahead
+prepare frame n+1 while frame n is emitted (default \fBahead\fP; short form
+\fB:P\fP).
+.TP 5
+.B palette=frame|latest
+palette source of each frame (default \fBframe\fP; short form \fB:C\fP).
+\fBlatest\fP is reserved for applying the newest completed palette and is
+not implemented yet.
+.TP 5
+.B dither=COUNT
+palette application workers (short form \fB:D\fP).
+.TP 5
+.B encode=COUNT
+SIXEL encode workers (short form \fB:E\fP).
+.TP 5
+.B prepare_workers=COUNT
+scale, colorspace, sampling and palette construction workers (short form
+\fB:W\fP).
+.TP 5
+.B pin=0|1
+bind workers to CPUs; dither workers default to 1 and FHEDT workers to 0
+(short form \fB:I\fP).
+.RE
+.IP
+Compact suboption names use one uppercase letter plus the value:
+load=L, load_depth=Q, prepare=P, palette=C, dither=D, encode=E,
+prepare_workers=W, pin=I.
+.IP
+When \fBSIXEL_THREADING_POLICY\fP is unset or empty, the \fBimg2sixel\fP
+frontend defaults to \fBauto\fP.
 .TP 5
 .B \-. \fIPOLICY\fP, \-\-precision\-policy=\fIPOLICY\fP
 select the sample precision of palette application.
@@ -594,13 +633,7 @@ For example: \fBfs:perturb=0.5:scan=serpentine\fP.
 .br
 \fBBLINES\fP -> short form of \fBband_width\fP
 .br
-\fBthreads_max=COUNT\fP -> cap parallel dither workers
-.br
-\fBJCOUNT\fP -> short form of \fBthreads_max\fP
-.br
-\fBpin_threads=0|1\fP -> disable or enable worker affinity
-.br
-\fBI0|I1\fP -> short form of \fBpin_threads\fP
+worker counts and affinity: see \fB\-=\fP/\fB\-\-threading\-policy\fP
 .br
 \fIDIFFUSION\fP is one of them:
 .br
@@ -697,8 +730,8 @@ sub-option:
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default serpentine)
 .br
 Compact diffusion suboption names use one uppercase letter plus the value:
-all methods scan=N, band_overwrap=O, band_width=B, threads_max=J,
-pin_threads=I, deadzone=D, perturb=U, perturb_seed=R;
+all methods scan=N, band_overwrap=O, band_width=B, deadzone=D,
+perturb=U, perturb_seed=R;
 sierra variant=V; a_dither/x_dither strength=T;
 bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
 channel=C, size=Z.
@@ -883,7 +916,7 @@ fhedt    -> Voronoi grid built via a 3-pass 3D EDT with optional
 .br
              first_touch=0|1, short form O0 or O1
 .br
-             pin_threads=0|1, short form P0 or P1
+             worker affinity: \fB\-= *:pin=0|1\fP
 .br
 delaunay -> Exact Delaunay graph walk; lowest index at distance ties.
 .br
@@ -995,12 +1028,8 @@ use them.  Legacy SIXEL_FHEDT_FIRST_TOUCH remains accepted for compatibility.
 The matching sub-option is \fBfirst_touch=0|1\fP
 (short form \fBO0|O1\fP).
 .br
-SIXEL_LOOKUP_FHEDT_PIN_THREADS (0 or 1; default 0) pins FHEDT worker threads
-once at startup to reduce migration; errors are ignored so portability is
-preserved.  Legacy SIXEL_FHEDT_PIN_THREADS remains accepted for compatibility.
-.br
-The matching sub-option is \fBpin_threads=0|1\fP
-(short form \fBP0|P1\fP).
+FHEDT worker affinity follows \fB\-= *:pin=0|1\fP (default 0 for FHEDT);
+pinning errors are ignored so portability is preserved.
 .br
 SIXEL_LOG_PATH writes the shared JSON timeline log consumed by
 tools/timeline.py
@@ -1902,25 +1931,21 @@ the precision and working-colorspace choices described under
 Overridden by \fB\-j *:resize_precision=VALUE\fP
 (short form \fB:RVALUE\fP).
 .TP 5
-.B SIXEL_THREADS
+.B SIXEL_THREADING_POLICY
 .br
-override the encoder thread count used for band processing.
-.br
-Accept positive integers or the string \(dqauto\(dq to match the
-hardware thread count. Empty or unset values make \fBimg2sixel\fP use
-\(dqauto\(dq.
+total thread budget: \(dqauto\(dq, \(dqserial\(dq, or a positive count.
+Suboptions are not accepted here. Empty or unset values make
+\fBimg2sixel\fP use \(dqauto\(dq. \fB\-=\fP takes precedence.
 .TP 5
-.B SIXEL_DITHER_PIN_THREADS
+.B SIXEL_THREADING_LOAD\fR, \fBSIXEL_THREADING_LOAD_DEPTH\fR, \fBSIXEL_THREADING_PREPARE\fR, \fBSIXEL_THREADING_PALETTE
 .br
-pin pipeline worker threads to their initial CPUs (0 or 1; default 1).
-The \fB-d\fP suboption \fBpin_threads=0|1\fP
-(short form \fB:I0\fP or \fB:I1\fP) takes precedence.
+defaults for the \fB\-=\fP keys \fBload\fP, \fBload_depth\fP,
+\fBprepare\fP and \fBpalette\fP.
 .TP 5
-.B SIXEL_DITHER_PARALLEL_THREADS_MAX
+.B SIXEL_THREADING_DITHER\fR, \fBSIXEL_THREADING_ENCODE\fR, \fBSIXEL_THREADING_PREPARE_WORKERS\fR, \fBSIXEL_THREADING_PIN
 .br
-cap the number of dither workers when band parallelism is active. Accepts
-positive integers. The \fB-d\fP suboption \fBthreads_max=COUNT\fP
-(short form \fB:JCOUNT\fP) takes precedence.
+defaults for the \fB\-=\fP keys \fBdither\fP, \fBencode\fP,
+\fBprepare_workers\fP and \fBpin\fP.
 .TP 5
 .B SIXEL_DITHER_PARALLEL_BAND_WIDTH
 .br
@@ -2707,10 +2732,6 @@ set FHEDT tile depth; follows the same adaptive policy as
 zero FHEDT tiles before the EDT so NUMA systems can place pages on the worker
 that will consume them (0 or 1; default 0).
 .TP 5
-.B SIXEL_LOOKUP_FHEDT_PIN_THREADS
-.br
-pin FHEDT worker threads at startup to reduce migration (0 or 1; default 0).
-.TP 5
 .B SIXEL_FHEDT_TILE_XY
 .br
 compatibility alias for \fBSIXEL_LOOKUP_FHEDT_TILE_XY\fP with identical
@@ -2724,11 +2745,6 @@ behaviour and adaptive defaults.
 .B SIXEL_FHEDT_FIRST_TOUCH
 .br
 compatibility alias for \fBSIXEL_LOOKUP_FHEDT_FIRST_TOUCH\fP with identical
-behaviour and defaults.
-.TP 5
-.B SIXEL_FHEDT_PIN_THREADS
-.br
-compatibility alias for \fBSIXEL_LOOKUP_FHEDT_PIN_THREADS\fP with identical
 behaviour and defaults.
 .TP 5
 .B SIXEL_LOG_PATH

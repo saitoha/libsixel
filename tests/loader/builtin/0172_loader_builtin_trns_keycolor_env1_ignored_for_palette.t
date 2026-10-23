@@ -18,7 +18,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn3p08.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin_trns_keycolor_palette_default_tbbn3p08.six"
 out_env1="${ARTIFACT_LOCAL_DIR}/builtin_trns_keycolor_palette_env1_tbbn3p08.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=4 \
               -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
@@ -27,7 +27,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              --env SIXEL_THREADS=4 \
+              --env SIXEL_THREADING_POLICY=4 \
               -Lbuiltin:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_env1}" || {

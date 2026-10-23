@@ -12,12 +12,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=bogus \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=bogus \
     2>&1) && {
     echo "not ok 1 - img2sixel accepts an invalid thread token"
     exit 0
 }
-case "${msg}" in *threads*accepts*positive*integers*or*[\']auto[\'].*) true ;; *) false ;; esac || {
+case "${msg}" in *threading-policy\ accepts\ auto,\ serial,\ or\ a\ positive\ thread\ budget.*) true ;; *) false ;; esac || {
     echo "not ok 1 - img2sixel thread diagnostic changed"
     printf '%s\n' "${msg}" >&2
     exit 0

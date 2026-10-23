@@ -21,12 +21,12 @@ input_webp_icc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedde
 output_default="${ARTIFACT_LOCAL_DIR}/webp-icc-default-static.sixel"
 output_cms1="${ARTIFACT_LOCAL_DIR}/webp-icc-cms1-static.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --lookup-policy=none -Llibwebp! "${input_webp_icc}" >"${output_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 --lookup-policy=none -Llibwebp! "${input_webp_icc}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp default decode failed for ICC input (static)"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp_icc}" >"${output_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp_icc}" >"${output_cms1}" || {
     echo "not ok" 1 - "libwebp cms=1 decode failed for ICC input (static)"
     exit 0
 }

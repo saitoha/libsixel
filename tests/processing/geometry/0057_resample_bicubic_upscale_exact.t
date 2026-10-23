@@ -10,7 +10,7 @@ fixture_root="${TOP_SRCDIR}/tests/data/inputs/resampling-exact"
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=scalar \
-    --env SIXEL_THREADS=1 \
+    --env SIXEL_THREADING_POLICY=1 \
     geometry/resampling_exact \
     bicubic \
     "${fixture_root}/bicubic-upscale-input.ppm" \

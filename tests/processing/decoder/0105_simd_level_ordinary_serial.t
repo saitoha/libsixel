@@ -23,12 +23,12 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -w181 -o "${stream}" \
     echo "not ok 1 - img2sixel failed"
     exit 0
 }
-SIXEL_THREADS=1 SIXEL_SIMD_LEVEL=none \
+SIXEL_THREADING_POLICY=1 SIXEL_SIMD_LEVEL=none \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" <"${stream}" >"${scalar_png}" || {
     echo "not ok 1 - scalar decode failed"
     exit 0
 }
-SIXEL_THREADS=1 \
+SIXEL_THREADING_POLICY=1 \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" <"${stream}" >"${vector_png}" || {
     echo "not ok 1 - decode at the detected SIMD level failed"
     exit 0

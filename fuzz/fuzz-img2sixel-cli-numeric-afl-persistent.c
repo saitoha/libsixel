@@ -497,7 +497,7 @@ fuzz_build_and_run(unsigned char const *data,
     if (fuzz_append_concat3(argv,
                             &argc,
                             storage,
-                            "--threads=",
+                            "--threading-policy=",
                             threads,
                             "") != 0 ||
         fuzz_append_concat3(argv,

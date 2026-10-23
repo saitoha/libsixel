@@ -388,8 +388,6 @@ positional_encoder_test(int method, int mode, int space)
         encoder->dither_parallel_band_width = 6;
         encoder->dither_parallel_band_overwrap_override = 1;
         encoder->dither_parallel_band_overwrap = 2;
-        encoder->dither_parallel_threads_max_override = 1;
-        encoder->dither_parallel_threads_max = 2;
         for (n = 0; n < 162; ++n) {
             pixels[n] = n < 72 ? 0.0f : n < 144 ? 1.0f
                 : (float)((n * 7) % 13 + 494) / 1000.0f;
@@ -397,8 +395,10 @@ positional_encoder_test(int method, int mode, int space)
     }
     for (pass = 0; pass < (mode == 3 ? 2 : 1); ++pass) {
         memset(&capture, 0, sizeof(capture));
+        /* Mode 3 caps the dither stage through the threading policy. */
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                pass ? "4" : "1")) ||
+                mode == 3 ? (pass ? "4:dither=2" : "1:dither=2")
+                          : (pass ? "4" : "1"))) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame,
                     mode == 2 ? (void *)bytes : (void *)pixels,

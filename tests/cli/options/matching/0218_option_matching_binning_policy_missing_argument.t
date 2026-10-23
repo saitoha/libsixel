@@ -13,7 +13,7 @@ set -v
 
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --binning-policy --threads=1 2>&1) || status=$?
+    --binning-policy --threading-policy=1 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
     echo "not ok 1 - missing binning-policy argument exit status mismatch"

@@ -55,7 +55,7 @@ test_or_enc_0029(int argc, char **argv)
     decoded = NULL;
     stream[0] = '\0';
     ok = 0;
-    if (sixel_compat_setenv("SIXEL_THREADS", "2") ||
+    if (sixel_compat_setenv("SIXEL_THREADING_POLICY", "2") ||
             sixel_threads_resolve() != 2) {
         goto end;
     }
@@ -101,7 +101,7 @@ test_or_enc_0029(int argc, char **argv)
     }
     ok = 1;
 end:
-    (void)sixel_compat_setenv("SIXEL_THREADS", "1");
+    (void)sixel_compat_setenv("SIXEL_THREADING_POLICY", "1");
     if (output != NULL) {
         sixel_output_unref(output);
     }

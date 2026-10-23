@@ -64,7 +64,7 @@ pal8_retention_encode(unsigned char *pixels, int pixelformat,
     memset(buffer, 0, sizeof(*buffer));
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS,
+        status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
                                       threads);
     }
     if (SIXEL_SUCCEEDED(status)) {

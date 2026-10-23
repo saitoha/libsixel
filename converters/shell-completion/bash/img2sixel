@@ -45,7 +45,7 @@ _img2sixel()
     opt_short_show="-1"
     opt_short_install="-2"
     opt_short_uninstall="-3"
-    opt_threads="--threads"
+    opt_threads="--threading-policy"
     opt_short_threads="-="
     opt_precision="--precision-policy"
     opt_short_precision="-."
@@ -739,8 +739,8 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
         return 0
         ;;
-    -=|--threads)
-        COMPREPLY=( $( compgen -W 'auto' -- "$cur" ) )
+    -=|--threading-policy)
+        COMPREPLY=( $( compgen -W 'auto serial' -- "$cur" ) )
         return 0
         ;;
     -.|--precision-policy)
@@ -1093,7 +1093,7 @@ _img2sixel()
         # Keep this option list aligned with `img2sixel -H` output.
         COMPREPLY=( $( compgen -W '
                                    -o --outfile \
-                                   -= --threads \
+                                   -= --threading-policy \
                                    -. --precision-policy \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \

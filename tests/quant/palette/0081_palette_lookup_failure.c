@@ -73,7 +73,8 @@ lookup_failure_encode(char const *threads, char const *precision,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS,
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
+                                         SIXEL_OPTFLAG_THREADING_POLICY,
                                          threads)) ||
         SIXEL_FAILED(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_PRECISION_POLICY,
                                          precision)) ||

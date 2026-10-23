@@ -1884,69 +1884,73 @@ sixel_decoder_threads_normalize(int requested)
     return normalized;
 }
 
+/* Decoding stays serial unless the threading policy names a budget or a
+ * decode limit; a decode limit never exceeds an explicit budget. */
 static int
-sixel_decoder_threads_resolve_env(void)
+sixel_decoder_threads_resolve_policy(void)
 {
-    sixel_suboption_value_t value;
+    unsigned int decode_threads;
+    int budget;
+    int explicit_budget;
 
-    memset(&value, 0, sizeof(value));
-    if (sixel_option_resolve_scalar_environment(
-            SIXEL_OPTION_SCHEMA_THREADS,
-            &value,
-            NULL,
-            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        return sixel_decoder_threads_normalize(value.int_value);
+    decode_threads = 0u;
+    budget = 1;
+    explicit_budget = sixel_threading_policy_explicit_budget(&budget);
+    if (sixel_threading_policy_stage_threads(SIXEL_THREADING_STAGE_DECODE,
+                                             &decode_threads)) {
+        if (decode_threads > (unsigned int)INT_MAX) {
+            decode_threads = (unsigned int)INT_MAX;
+        }
+        if (explicit_budget && (int)decode_threads > budget) {
+            return budget;
+        }
+        return sixel_decoder_threads_normalize((int)decode_threads);
+    }
+    if (explicit_budget) {
+        return budget;
     }
 
     return 1;
 }
 
+/* Test hook: pin the decoder count independently of the threading policy. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_override_threads(char const *text)
 {
-    SIXELSTATUS status;
-    sixel_suboption_value_t value;
+    int budget;
+    int serial;
 
-    status = SIXEL_BAD_ARGUMENT;
-    memset(&value, 0, sizeof(value));
-    if (text == NULL || text[0] == '\0') {
+    budget = 0;
+    serial = 0;
+    if (!sixel_option_parse_threading_policy_base(text, &budget, &serial)) {
         sixel_helper_set_additional_message(
-            "decoder: missing thread count after -=/--threads.");
-        goto end;
-    }
-    if (SIXEL_FAILED(sixel_option_parse_scalar_argument(
-            SIXEL_OPTION_SCHEMA_THREADS,
-            SIXEL_OPTION_SCOPE_DECODER,
-            text,
-            &value,
-            NULL,
-            0u))) {
-        goto end;
+            "decoder: thread count must be auto or a positive integer.");
+        return SIXEL_BAD_ARGUMENT;
     }
     sixel_decoder_threads_lock();
     g_decoder_threads.override_active = 1;
     g_decoder_threads.override_threads =
-        sixel_decoder_threads_normalize(value.int_value);
+        sixel_decoder_threads_normalize(budget);
     sixel_decoder_threads_unlock();
-    status = SIXEL_OK;
-end:
-    return status;
+    return SIXEL_OK;
 }
 
 SIXEL_INTERNAL_API int
 sixel_decoder_parallel_resolve_threads(void)
 {
     int threads;
+    int override_active;
 
     threads = 1;
     sixel_decoder_threads_lock();
-    if (g_decoder_threads.override_active) {
-        threads = sixel_decoder_threads_normalize(
-            g_decoder_threads.override_threads);
-    } else {
-        threads = sixel_decoder_threads_resolve_env();
-    }
+    override_active = g_decoder_threads.override_active;
+    threads = g_decoder_threads.override_threads;
     sixel_decoder_threads_unlock();
+    if (override_active) {
+        threads = sixel_decoder_threads_normalize(threads);
+    } else {
+        threads = sixel_decoder_threads_resolve_policy();
+    }
     if (threads < 1) {
         threads = 1;
     }

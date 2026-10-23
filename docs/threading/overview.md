@@ -18,7 +18,7 @@ image into horizontal strips.
 
 ## Worker budget is not a process thread limit
 
-`--threads=N` supplies a worker budget to the current operation. It is not a
+`--threading-policy=N` supplies a worker budget to the current operation. It is not a
 strict upper bound on all operating-system threads in the process. Depending
 on the path, the process can also contain:
 

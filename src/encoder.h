@@ -130,10 +130,6 @@ struct sixel_encoder {
     unsigned int dither_parallel_band_overwrap;
     int dither_parallel_band_width_override;
     unsigned int dither_parallel_band_width;
-    int dither_parallel_threads_max_override;
-    unsigned int dither_parallel_threads_max;
-    int dither_pin_threads_override;
-    int dither_pin_threads;
     int a_dither_strength_override;
     float a_dither_strength;
     int x_dither_strength_override;
@@ -324,8 +320,6 @@ struct sixel_encoder {
     unsigned int lut_policy_fhedt_tile_depth;
     int lut_policy_fhedt_first_touch_override;
     int lut_policy_fhedt_first_touch;
-    int lut_policy_fhedt_pin_threads_override;
-    int lut_policy_fhedt_pin_threads;
     int gpu_policy;
     int gpu_palette_threshold_override;
     size_t gpu_palette_threshold;

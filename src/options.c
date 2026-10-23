@@ -3525,6 +3525,134 @@ sixel_option_apply_runtime_policy_argument(
 }
 
 SIXELSTATUS
+sixel_option_apply_threading_policy_argument(
+    char const *argument,
+    unsigned int consumer_scope,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_argument_resolution_t resolution;
+    sixel_threading_policy_options_t options;
+    char *work;
+    char const *rest;
+    size_t base_length;
+    size_t length;
+    int budget;
+    int serial;
+    int numeric;
+
+    status = SIXEL_OK;
+    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_THREADING_POLICY);
+    memset(&resolution, 0, sizeof(resolution));
+    memset(&options, 0, sizeof(options));
+    work = NULL;
+    rest = NULL;
+    base_length = 0u;
+    length = 0u;
+    budget = 0;
+    serial = 0;
+    numeric = 0;
+    if (schema == NULL || argument == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /* The schema matches named bases only. Rewrite a decimal budget to
+     * "auto" so its suboptions still go through the shared parser. */
+    rest = strchr(argument, ':');
+    base_length = rest != NULL ? (size_t)(rest - argument)
+                               : strlen(argument);
+    if (base_length > 0u && argument[0] >= '0' && argument[0] <= '9') {
+        numeric = 1;
+        work = (char *)malloc(base_length + 1u);
+        if (work == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(work, argument, base_length);
+        work[base_length] = '\0';
+        if (!sixel_option_parse_threading_policy_base(work,
+                                                      &budget,
+                                                      &serial)) {
+            free(work);
+            sixel_helper_set_additional_message(
+                "threading-policy accepts auto, serial, or a positive "
+                "thread budget.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        free(work);
+        length = sizeof("auto") + (rest != NULL ? strlen(rest) : 0u);
+        work = (char *)malloc(length);
+        if (work == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        (void)sixel_compat_strcpy(work, length, "auto");
+        if (rest != NULL) {
+            (void)sixel_compat_strcpy(work + 4, length - 4u, rest);
+        }
+        argument = work;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        argument,
+        schema,
+        consumer_scope,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    free(work);
+    if (SIXEL_FAILED(status)) {
+        if (!numeric && resolution.base_def == NULL) {
+            /* The schema lists named bases only; mention the budget. */
+            sixel_helper_set_additional_message(
+                "threading-policy accepts auto, serial, or a positive "
+                "thread budget.");
+        }
+        return status;
+    }
+    if (!numeric) {
+        serial = resolution.resolved_base_value ==
+            SIXEL_THREADING_POLICY_SERIAL;
+        budget = serial ? 1 : 0;
+    }
+
+    sixel_threading_policy_load(&options);
+    sixel_option_reset_suboption_overrides(
+        schema,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_THREADING);
+    sixel_option_apply_suboption_environment(
+        schema,
+        resolution.base_def,
+        consumer_scope,
+        &options,
+        SIXEL_SUBOPTION_TARGET_THREADING);
+    options.budget = budget;
+    options.budget_override = 1;
+    options.serial = serial;
+    if (!sixel_option_apply_suboption_assignments(
+            &resolution,
+            &options,
+            SIXEL_SUBOPTION_TARGET_THREADING)) {
+        sixel_helper_set_additional_message(
+            "failed to apply threading policy suboptions.");
+        status = SIXEL_BAD_ARGUMENT;
+    } else if (options.palette_override &&
+               options.palette == SIXEL_THREADING_PALETTE_LATEST) {
+        /* Reserved: frames would use the newest completed palette while
+         * their own palette is still being built. */
+        sixel_helper_set_additional_message(
+            "threading-policy palette=latest is not implemented yet.");
+        status = SIXEL_NOT_IMPLEMENTED;
+    } else {
+        sixel_threading_policy_store(&options);
+    }
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
+}
+
+SIXELSTATUS
 sixel_option_apply_diagnostics_argument(
     char const *argument,
     unsigned int consumer_scope,

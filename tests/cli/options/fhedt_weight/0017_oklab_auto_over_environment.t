@@ -12,7 +12,7 @@ set -v
 
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 --env SIXEL_LOOKUP_FHEDT_WEIGHTS=1/1/1 -Woklab -~fhedt:Wauto "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 --env SIXEL_LOOKUP_FHEDT_WEIGHTS=1/1/1 -Woklab -~fhedt:Wauto "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - FHEDT conversion failed"
     exit 0
 }

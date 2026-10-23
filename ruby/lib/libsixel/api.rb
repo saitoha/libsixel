@@ -127,7 +127,7 @@ module Libsixel
     SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R' unless const_defined?(:SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT)
     SIXEL_OPTFLAG_PRECISION_POLICY = '.' unless const_defined?(:SIXEL_OPTFLAG_PRECISION_POLICY)
     # Thread override mirrors img2sixel's -= switch for bindings.
-    SIXEL_OPTFLAG_THREADS = '=' unless const_defined?(:SIXEL_OPTFLAG_THREADS)
+    SIXEL_OPTFLAG_THREADING_POLICY = '=' unless const_defined?(:SIXEL_OPTFLAG_THREADING_POLICY)
     SIXEL_OPTFLAG_LUT_POLICY = '~' unless const_defined?(:SIXEL_OPTFLAG_LUT_POLICY)
     SIXEL_OPTFLAG_GPU_POLICY = 'G' unless const_defined?(:SIXEL_OPTFLAG_GPU_POLICY)
     SIXEL_OPTFLAG_RUNTIME_POLICY = 'j' unless const_defined?(:SIXEL_OPTFLAG_RUNTIME_POLICY)

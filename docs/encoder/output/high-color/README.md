@@ -91,7 +91,7 @@ Rewinding uses the number of source rows actually present in that band, which ca
 
 The high-color front end in [`sixel_encode_highcolor()`](../../../../src/encoder-core-highcolor.c) walks pixels and chooses register replacements serially. `rgbhit`, `rgb2pal`, palette representatives, and six-row `marks` carry information between passes; a pass can cover several bands and then return to an unfinished band. Clearing `palstate` and hit counters at `next:` is a **pass reset**, not an independently initialized image band.
 
-The common [`sixel_encode_body()`](../../../../src/encoder-core-encode.c) can already send a prepared pass through its band workers when there is more than one band and more than one requested thread. Thus, there is some parallel serialization inside `-I`; the complete high-color operation is not independently parallelized by band. Many short passes, serial register assignment, and repeated scheduling limit the benefit. Merely increasing `--threads` does not remove that dependency.
+The common [`sixel_encode_body()`](../../../../src/encoder-core-encode.c) can already send a prepared pass through its band workers when there is more than one band and more than one requested thread. Thus, there is some parallel serialization inside `-I`; the complete high-color operation is not independently parallelized by band. Many short passes, serial register assignment, and repeated scheduling limit the benefit. Merely increasing `--threading-policy` does not remove that dependency.
 
 ### Required encoder direction: reset state at each band
 

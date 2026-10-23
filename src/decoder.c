@@ -2917,8 +2917,12 @@ sixel_decoder_setopt(
         decoder->direct_color = 1;
         break;
 
-    case SIXEL_OPTFLAG_THREADS:  /* = */
-        status = sixel_decoder_parallel_override_threads(value);
+    case SIXEL_OPTFLAG_THREADING_POLICY:  /* = */
+        status = sixel_option_apply_threading_policy_argument(
+            value,
+            SIXEL_OPTION_SCOPE_DECODER,
+            NULL,
+            0u);
         if (SIXEL_FAILED(status)) {
             goto end;
         }

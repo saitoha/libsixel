@@ -54,7 +54,7 @@ allocation_runtime_encode(allocation_runtime_expected_t const *expected,
         goto end;
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
-            SIXEL_OPTFLAG_THREADS, threads)) ||
+            SIXEL_OPTFLAG_THREADING_POLICY, threads)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'p', "16")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'E', "fast")) ||
@@ -265,7 +265,7 @@ allocation_runtime_cases(allocation_runtime_expected_t const *expected,
     (void)remove(path);
     if (sixel_compat_setenv("SIXEL_LOG_PATH", path) != 0 ||
             sixel_compat_setenv("SIXEL_TRACE_TOPIC", "dither_contract") != 0 ||
-            sixel_compat_setenv("SIXEL_DITHER_PARALLEL_THREADS_MAX", "") != 0 ||
+            sixel_compat_setenv("SIXEL_THREADING_DITHER", "") != 0 ||
             sixel_compat_setenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH", "") != 0 ||
             sixel_compat_setenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP", "")
                 != 0) {

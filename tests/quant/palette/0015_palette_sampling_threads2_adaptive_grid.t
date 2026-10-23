@@ -18,7 +18,7 @@ set -v
 
 # Keep this scheduling contract free of loader color-conversion work.
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=2 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=2 \
     -Qheckbert -d none -p 16 "-~none" --cms-engine=none -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - two-thread palette encode failed"

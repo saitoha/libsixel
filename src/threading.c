@@ -806,23 +806,15 @@ sixel_get_hw_threads(void)
 #define SIXEL_PROCESSING_THREADS_DEFAULT 2
 
 /*
- * Thread configuration keeps the precedence rules centralized:
- *   1. Library callers may override via `sixel_set_threads`.
- *   2. Otherwise, `SIXEL_THREADS` from the environment is honored.
+ * The threading policy keeps the budget precedence rules centralized:
+ *   1. -=/--threading-policy or `sixel_set_threads` set the budget.
+ *   2. Otherwise, the base of `SIXEL_THREADING_POLICY` is honored.
  *   3. Fallback gives encoder/dequantize paths a minimal two-stage pipeline.
  *
- * Direct SIXEL parsing has its own resolver in decoder-parallel.c so decoding
- * can stay serial by default while image post-processing still gets two slots.
+ * Direct SIXEL parsing resolves its own count in decoder-parallel.c so
+ * decoding can stay serial by default while post-processing gets two slots.
  */
-typedef struct sixel_thread_config_state {
-    int requested_threads;
-    int override_active;
-} sixel_thread_config_state_t;
-
-static sixel_thread_config_state_t g_thread_config = {
-    SIXEL_PROCESSING_THREADS_DEFAULT,
-    0
-};
+static sixel_threading_policy_options_t g_threading_policy;
 
 static sixel_runtime_policy_options_t g_runtime_policy;
 static sixel_diagnostics_policy_options_t g_diagnostics_policy;
@@ -946,15 +938,17 @@ sixel_threads_resolve_default(void)
 static int
 sixel_threads_resolve_env(void)
 {
-    sixel_suboption_value_t value;
+    int budget;
+    int serial;
 
-    memset(&value, 0, sizeof(value));
-    if (sixel_option_resolve_scalar_environment(
-            SIXEL_OPTION_SCHEMA_THREADS,
-            &value,
-            NULL,
-            0u) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        return sixel_threads_normalize(value.int_value);
+    budget = 0;
+    serial = 0;
+    if (sixel_option_parse_threading_policy_base(
+            sixel_option_resolve_argument_environment(
+                SIXEL_OPTION_SCHEMA_THREADING_POLICY),
+            &budget,
+            &serial)) {
+        return sixel_threads_normalize(budget);
     }
 
     return sixel_threads_resolve_default();
@@ -1005,8 +999,8 @@ sixel_threads_resolve_limit(int ceiling)
     owner = sixel_thread_identity_current();
     sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
-    if (g_thread_config.override_active) {
-        resolved = g_thread_config.requested_threads;
+    if (g_threading_policy.budget_override) {
+        resolved = sixel_threads_normalize(g_threading_policy.budget);
     } else {
         resolved = sixel_threads_resolve_env();
     }
@@ -1088,13 +1082,241 @@ sixel_set_threads(int threads)
 {
     sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
-    g_thread_config.requested_threads = sixel_threads_normalize(threads);
+    g_threading_policy.budget = threads > 0 ? threads : 0;
 #else
     (void)threads;
-    g_thread_config.requested_threads = 1;
+    g_threading_policy.budget = 1;
 #endif
-    g_thread_config.override_active = 1;
+    g_threading_policy.budget_override = 1;
     sixel_thread_config_unlock();
+}
+
+void
+sixel_threading_policy_load(sixel_threading_policy_options_t *options)
+{
+    if (options == NULL) {
+        return;
+    }
+    sixel_thread_config_lock();
+    *options = g_threading_policy;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_threading_policy_store(
+    sixel_threading_policy_options_t const *options)
+{
+    if (options == NULL) {
+        return;
+    }
+    sixel_thread_config_lock();
+    g_threading_policy = *options;
+    sixel_thread_config_unlock();
+}
+
+/* The serial base changes only the defaults of frame-level keys. Explicit
+ * keys and their environment variables still take precedence. */
+static int
+sixel_threading_policy_serial_base(
+    sixel_threading_policy_options_t const *options)
+{
+    int budget;
+    int serial;
+
+    if (options->budget_override) {
+        return options->serial;
+    }
+    budget = 0;
+    serial = 0;
+    if (sixel_option_parse_threading_policy_base(
+            sixel_option_resolve_argument_environment(
+                SIXEL_OPTION_SCHEMA_THREADING_POLICY),
+            &budget,
+            &serial)) {
+        return serial;
+    }
+    return 0;
+}
+
+static int
+sixel_threading_policy_choice(char const *binding,
+                              int configured,
+                              int override_active,
+                              int fallback)
+{
+    sixel_suboption_value_t value;
+
+    memset(&value, 0, sizeof(value));
+    if (override_active) {
+        return configured;
+    }
+    if (sixel_option_registry_resolve_threading_binding(
+            binding,
+            SIXEL_SUBOPTION_VALUE_CHOICE,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value;
+    }
+    return fallback;
+}
+
+static int
+sixel_threading_policy_count(char const *binding,
+                             unsigned int configured,
+                             int override_active,
+                             unsigned int *count)
+{
+    sixel_suboption_value_t value;
+
+    memset(&value, 0, sizeof(value));
+    if (override_active) {
+        *count = configured;
+        return 1;
+    }
+    if (sixel_option_registry_resolve_threading_binding(
+            binding,
+            SIXEL_SUBOPTION_VALUE_UINT,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        *count = value.uint_value;
+        return 1;
+    }
+    return 0;
+}
+
+int
+sixel_threading_policy_explicit_budget(int *threads)
+{
+    sixel_threading_policy_options_t options;
+    int budget;
+    int serial;
+
+    budget = 0;
+    serial = 0;
+    sixel_threading_policy_load(&options);
+    if (options.budget_override) {
+        budget = options.budget;
+    } else if (!sixel_option_parse_threading_policy_base(
+                   sixel_option_resolve_argument_environment(
+                       SIXEL_OPTION_SCHEMA_THREADING_POLICY),
+                   &budget,
+                   &serial)) {
+        return 0;
+    }
+    if (threads != NULL) {
+        *threads = sixel_threads_normalize(budget);
+    }
+    return 1;
+}
+
+int
+sixel_threading_policy_load_mode(void)
+{
+    sixel_threading_policy_options_t options;
+
+    sixel_threading_policy_load(&options);
+    return sixel_threading_policy_choice(
+        SIXEL_SUBOPTION_BINDING_ID_2(load, load_override),
+        options.load,
+        options.load_override,
+        sixel_threading_policy_serial_base(&options)
+            ? SIXEL_THREADING_FRAME_SERIAL
+            : SIXEL_THREADING_FRAME_AHEAD);
+}
+
+int
+sixel_threading_policy_prepare_mode(void)
+{
+    sixel_threading_policy_options_t options;
+
+    sixel_threading_policy_load(&options);
+    return sixel_threading_policy_choice(
+        SIXEL_SUBOPTION_BINDING_ID_2(prepare, prepare_override),
+        options.prepare,
+        options.prepare_override,
+        sixel_threading_policy_serial_base(&options)
+            ? SIXEL_THREADING_FRAME_SERIAL
+            : SIXEL_THREADING_FRAME_AHEAD);
+}
+
+int
+sixel_threading_policy_load_depth(void)
+{
+    sixel_threading_policy_options_t options;
+    unsigned int depth;
+
+    depth = SIXEL_THREADING_LOAD_DEPTH_DEFAULT;
+    sixel_threading_policy_load(&options);
+    (void)sixel_threading_policy_count(
+        SIXEL_SUBOPTION_BINDING_ID_2(load_depth, load_depth_override),
+        options.load_depth,
+        options.load_depth_override,
+        &depth);
+    if (depth < 1u) {
+        depth = 1u;
+    }
+    if (depth > SIXEL_THREADING_LOAD_DEPTH_MAX) {
+        depth = SIXEL_THREADING_LOAD_DEPTH_MAX;
+    }
+    return (int)depth;
+}
+
+int
+sixel_threading_policy_stage_threads(sixel_threading_stage_t stage,
+                                     unsigned int *count)
+{
+    sixel_threading_policy_options_t options;
+
+    if (count == NULL) {
+        return 0;
+    }
+    sixel_threading_policy_load(&options);
+    switch (stage) {
+    case SIXEL_THREADING_STAGE_DITHER:
+        return sixel_threading_policy_count(
+            SIXEL_SUBOPTION_BINDING_ID_2(dither_threads,
+                                         dither_threads_override),
+            options.dither_threads, options.dither_threads_override,
+            count);
+    case SIXEL_THREADING_STAGE_ENCODE:
+        return sixel_threading_policy_count(
+            SIXEL_SUBOPTION_BINDING_ID_2(encode_threads,
+                                         encode_threads_override),
+            options.encode_threads, options.encode_threads_override,
+            count);
+    case SIXEL_THREADING_STAGE_PREPARE:
+        return sixel_threading_policy_count(
+            SIXEL_SUBOPTION_BINDING_ID_2(prepare_threads,
+                                         prepare_threads_override),
+            options.prepare_threads, options.prepare_threads_override,
+            count);
+    case SIXEL_THREADING_STAGE_DECODE:
+        return sixel_threading_policy_count(
+            SIXEL_SUBOPTION_BINDING_ID_2(decode_threads,
+                                         decode_threads_override),
+            options.decode_threads, options.decode_threads_override,
+            count);
+    default:
+        return 0;
+    }
+}
+
+int
+sixel_threading_policy_pin(int fallback)
+{
+    sixel_threading_policy_options_t options;
+    sixel_suboption_value_t value;
+
+    memset(&value, 0, sizeof(value));
+    sixel_threading_policy_load(&options);
+    if (options.pin_override) {
+        return options.pin != 0;
+    }
+    if (sixel_option_registry_resolve_threading_binding(
+            SIXEL_SUBOPTION_BINDING_ID_2(pin, pin_override),
+            SIXEL_SUBOPTION_VALUE_BOOLEAN,
+            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
+        return value.int_value != 0;
+    }
+    return fallback;
 }
 
 void

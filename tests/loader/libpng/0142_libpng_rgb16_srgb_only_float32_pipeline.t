@@ -23,7 +23,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64_rgb16_srgb_only_float32.sixel"
 
 planner_log=$(
     set +xv
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 -v \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=4 -v \
                   -Llibpng:cms_engine=none! \
                   -o "${output_sixel}" "${input_png}" 2>&1
 ) || {

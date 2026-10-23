@@ -340,19 +340,10 @@ sixel_parallel_dither_configure(int height,
     /* Resolve each request-bound control before consulting its registered
      * environment. The pure allocator sees identical precedence in the
      * early planner and this post-palette execution path. */
-    if (dither->dither_parallel_threads_max_override != 0) {
-        request.threads_max = dither->dither_parallel_threads_max;
-        request.threads_max_set = 1;
-    } else {
-        request.threads_max_set =
-            sixel_option_resolve_registered_uint_binding(
-                SIXEL_OPTION_SCHEMA_DIFFUSION,
-                NULL,
-                SIXEL_SUBOPTION_BINDING_ID_2(
-                    dither_parallel_threads_max,
-                    dither_parallel_threads_max_override),
-                &request.threads_max);
-    }
+    request.threads_max_set = sixel_threading_policy_stage_threads(
+        SIXEL_THREADING_STAGE_DITHER, &request.threads_max);
+    request.encode_threads_max_set = sixel_threading_policy_stage_threads(
+        SIXEL_THREADING_STAGE_ENCODE, &request.encode_threads_max);
     if (dither->dither_parallel_band_width_override != 0) {
         request.band_height = dither->dither_parallel_band_width;
         request.band_height_set = 1;

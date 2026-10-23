@@ -580,7 +580,7 @@ currently selects Heckbert compatibility behavior;
 The controlled command shape is:
 
 ```text
-img2sixel --threads=1 --precision-policy=auto --quality=full \
+img2sixel --threading-policy=1 --precision-policy=auto --quality=full \
   --loaders=libpng! --quantize-model=CONFIG -Xoklab -Wgamma \
   --diffusion=none --gpu-policy=off --lookup-policy=none \
   -p K images/snake.png

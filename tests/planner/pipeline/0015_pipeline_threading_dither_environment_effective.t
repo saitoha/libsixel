@@ -19,30 +19,30 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 threads_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_THREADS=6" \
-    --env "SIXEL_DITHER_PARALLEL_THREADS_MAX=1" -v -d fs \
+    --env "SIXEL_THREADING_POLICY=6" \
+    --env "SIXEL_THREADING_DITHER=1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "threads max environment conversion failed"
+    echo "not ok" 1 - "threading dither environment conversion failed"
     exit 0
 }
 
 case "${threads_trace}" in *threads:\ dither=1\ encode=5**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "threads max did not cap the dither workers"
+    echo "not ok" 1 - "threading dither did not cap the dither workers"
     exit 0
 }
 
 negative_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_THREADS=6" \
-    --env "SIXEL_DITHER_PARALLEL_THREADS_MAX=-1" -v -d fs \
+    --env "SIXEL_THREADING_POLICY=6" \
+    --env "SIXEL_THREADING_DITHER=-1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
-    echo "not ok" 1 - "negative threads max conversion failed"
+    echo "not ok" 1 - "negative threading dither conversion failed"
     exit 0
 }
 
 case "${negative_trace}" in *threads:\ dither=4\ encode=2**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "negative threads max changed the default"
+    echo "not ok" 1 - "negative threading dither changed the default"
     exit 0
 }
 
-echo "ok" 1 - "threads max environment controls the worker split"
+echo "ok" 1 - "threading dither environment controls the worker split"
 exit 0

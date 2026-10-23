@@ -65,7 +65,7 @@ sigint_run_status=0
 trace_summary=$(
     # shellcheck disable=SC2086
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-        --env "SIXEL_THREADS=4" \
+        --env "SIXEL_THREADING_POLICY=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
         --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
         --sigint-run-until \

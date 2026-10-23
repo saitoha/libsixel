@@ -14,7 +14,7 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
     -L 'builtin:cms_engine=none!' --precision-policy=8bit -Xoklab \
     -Qkmeans:seed=1 -p16 -o/dev/null "${input_image}" 2>&1) || {
     echo "not ok 1 - 8bit OKLab clustering conversion failed"

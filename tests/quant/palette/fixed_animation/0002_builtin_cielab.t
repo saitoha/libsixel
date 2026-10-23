@@ -6,7 +6,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_TRACE_TOPIC=dither_contract SIXEL_THREADS=1 \
+SIXEL_TRACE_TOPIC=dither_contract SIXEL_THREADING_POLICY=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/fixed_animation/0002_builtin_cielab || {
     echo "not ok 1 - fixed animation builtin cielab"

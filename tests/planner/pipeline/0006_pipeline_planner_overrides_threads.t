@@ -16,10 +16,10 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ppm_tall="${TOP_SRCDIR}/tests/data/inputs/tall.ppm"
 
 pipeline_log=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_DITHER=1 \
                   --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
                   --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
-                  --env SIXEL_THREADS=6 \
+                  --env SIXEL_THREADING_POLICY=6 \
                   -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" 2>&1) || {
     echo "not ok" 1 - "override thread split run failed"
     exit 0

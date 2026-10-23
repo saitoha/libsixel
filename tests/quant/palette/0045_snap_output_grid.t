@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 \
+stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
     --precision-policy=float32 --quality=full --sampling-policy=full-frame \
     --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
     --merge-policy=none --cover-policy=off --lookup-policy=none \

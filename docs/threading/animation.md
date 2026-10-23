@@ -44,7 +44,7 @@ or output work.
 
 As a result:
 
-- `--threads=N` does not cap caller, loader-handoff, and writer threads;
+- `--threading-policy=N` does not cap caller, loader-handoff, and writer threads;
 - a palette worker can temporarily overlap main work;
 - each new frame can create a fresh internal worker pool with the configured
   budget; and

@@ -26,7 +26,7 @@ test "$result" -eq 0 || {
     echo "not ok 1 - numeric route qualification failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 --threads=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 --threading-policy=1 \
     -L 'libjpeg:cms_engine=lcms2:cms_intent=relative!!' \
     "${TOP_SRCDIR}/tests/data/color-numeric/jpeg-precision-8bit-ycck-seq444-affine.jpg" \
     | ${SIXEL_RUNTIME-} "${LSQA_PATH}" --cms-engine=none \

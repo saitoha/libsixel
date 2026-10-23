@@ -69,7 +69,7 @@ For CPU spatial diffusion and positional dither with budgets two through four, t
 | 10 | Pipeline D7 + E3 | Pipeline D7 + E3 |
 | 14 | Pipeline D10 + E4 | Pipeline D10 + E4 |
 
-Explicit `threads_max` disables automatic staging and retains the existing minimum encoder reservations. CLI-bound `threads_max`, `band_width` and `band_overwrap` take precedence over their registered environment controls, which take precedence over defaults. Geometry overrides alone do not disable staging; a work-band count can differ from its worker reservation. Default band height is the image height divided by D, rounded upward and aligned to six rows. Spatial diffusion retains six warm-up rows when the completed palette has at most 32 colors, capped at half a band, and zero above 32 colors. Stateless `none`, A/X positional dither and blue noise use zero automatic overlap. Explicit overlap, including zero, remains meaningful for every method. A GPU application claim reserves no CPU dither slots and assigns the full CPU budget to encode with six-row geometry. The earlier palette/preprocessing overlap is independent of this allocation.
+An explicit `-=` `dither` or `encode` limit disables automatic staging. A `dither` limit alone retains the minimum encoder reservation; an `encode` limit alone gives the dither stage the rest of the budget. When both limits together exceed the budget, both shrink in proportion until they fit; this is never an error. Threading-policy keys and the CLI-bound `band_width` and `band_overwrap` take precedence over their registered environment controls, which take precedence over defaults. Geometry overrides alone do not disable staging; a work-band count can differ from its worker reservation. Default band height is the image height divided by D, rounded upward and aligned to six rows. Spatial diffusion retains six warm-up rows when the completed palette has at most 32 colors, capped at half a band, and zero above 32 colors. Stateless `none`, A/X positional dither and blue noise use zero automatic overlap. Explicit overlap, including zero, remains meaningful for every method. A GPU application claim reserves no CPU dither slots and assigns the full CPU budget to encode with six-row geometry. The earlier palette/preprocessing overlap is independent of this allocation.
 
 Changing the dither reservation changes the independent error histories and can change decoded pixels even at the same total budget. Staging preserves the existing band algorithm; it does not promise serial-equivalent diffusion. The [band-seam quality guidance](measurement.md#band-seam-quality-protocol) describes the required comparison. Stateless methods retain exact pixels across these automatic geometry choices.
 
@@ -83,7 +83,7 @@ The measured automatic allocation for `N = 1..12` is shown below. These runs
 use `img2sixel` to resize the controlled 900 by 675 source to a 1920 by 1080
 processed raster before encoding:
 
-| `--threads` | Planned dither | Planned encode | Runtime interpretation |
+| `--threading-policy` | Planned dither | Planned encode | Runtime interpretation |
 | ---: | ---: | ---: | --- |
 | 1 | 0 | 0 | Serial palette application and encoding |
 | 2 | 1 | 1 | Pipeline gate rejects one encode worker; stages serialize, then two encode workers run |
@@ -178,7 +178,7 @@ operation; the short worker intervals at its end are the six-row jobs.
 
 ![Two-worker encoder timeline](measurements/encoder-thread2-timeline.png)
 
-*Figure: Single `img2sixel --threads=2` diagnostic run. The builtin loader
+*Figure: Single `img2sixel --threading-policy=2` diagnostic run. The builtin loader
 decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
 back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
@@ -189,7 +189,7 @@ the configured worker budget.
 
 ![Four-worker encoder timeline](measurements/encoder-thread4-timeline.png)
 
-*Figure: Single `img2sixel --threads=4` diagnostic run. The builtin loader
+*Figure: Single `img2sixel --threading-policy=4` diagnostic run. The builtin loader
 decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
 back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
@@ -200,7 +200,7 @@ previous 900 by 675 timeline.
 
 ![Eight-worker encoder timeline](measurements/encoder-thread8-timeline.png)
 
-*Figure: Single `img2sixel --threads=8` diagnostic run. The builtin loader
+*Figure: Single `img2sixel --threading-policy=8` diagnostic run. The builtin loader
 decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
 back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
@@ -210,7 +210,7 @@ identity across separate runs.
 
 ## Worker-budget scaling
 
-The following experiment varies `img2sixel --threads` from one through
+The following experiment varies `img2sixel --threading-policy` from one through
 sixteen while keeping the Full HD processed raster and all non-threading
 policies fixed. The horizontal axis is a configured worker budget, not a
 reservation of physical cores. Workers are unpinned, the host is not isolated,
@@ -267,7 +267,7 @@ planner observations, output size and hash, and exact schedule positions.
 The next experiment keeps the Full HD fixture and controlled encoder policies
 above, but varies the requested palette size with `-p K`. The twelve requested
 values are 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, and 256. Each panel fixes
-`--threads` at 2, 4, 6, or 8. These are configured worker budgets, not reserved
+`--threading-policy` at 2, 4, 6, or 8. These are configured worker budgets, not reserved
 physical cores. The shared horizontal axis uses a log2 scale so the low-color
 region and the 32-color policy boundary remain legible.
 
@@ -281,7 +281,7 @@ and shading shows inclusive IQR.*
 The complete interval grows with requested palette size at every budget, but
 the worker budget changes the magnitude. The measured endpoints were:
 
-| `--threads` | 2 colors | 256 colors | 256/2 time ratio |
+| `--threading-policy` | 2 colors | 256 colors | 256/2 time ratio |
 | ---: | ---: | ---: | ---: |
 | 2 | 213.542 ms | 801.259 ms | 3.75 |
 | 4 | 150.663 ms | 463.076 ms | 3.07 |
@@ -320,7 +320,7 @@ causes automatic quantizer resolution to choose a weighted-point-capable
 K-means implementation.
 
 A focused check on the same Full HD processed fixture at 256 requested colors
-and `--threads=8` illustrates why the distinction matters. After two warm-ups,
+and `--threading-policy=8` illustrates why the distinction matters. After two warm-ups,
 nine runs gave a 71.009 ms median palette-build interval for the measured
 K-means/hard profile. Explicit `heckbert:profile=compat` with compatible
 automatic binning gave 17.315 ms, about 4.10 times faster; the corresponding

@@ -26,7 +26,7 @@ ahead_full="${ARTIFACT_LOCAL_DIR}/0019-prepare-ahead-ahead-full-$$.six"
 # palette depend on the keep key that the first frame's history decides; a
 # small palette makes that one reserved entry change the output.
 ahead_trace=$(set +xv; SIXEL_TRACE_TOPIC=encode_handoff \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable -=4 -d fs -p16 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable -=4:prepare=ahead -d fs -p16 \
     -Z delta -o "${ahead_delta}" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok 1 - prepare-ahead delta playback failed"
     exit 0
@@ -35,8 +35,8 @@ case "${ahead_trace}" in *event=callback_handoff_decide\ handoff=pipeline*) true
     echo "not ok 1 - animation playback did not select the frame pipeline"
     exit 0
 }
-_SIXEL_PREPARE_AHEAD=0 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable \
-    -=4 -d fs -p16 -Z delta -o "${serial_delta}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable \
+    -=4:prepare=serial -d fs -p16 -Z delta -o "${serial_delta}" "${input_image}" || {
     echo "not ok 1 - serial delta playback failed"
     exit 0
 }
@@ -44,13 +44,13 @@ cmp -s "${serial_delta}" "${ahead_delta}" || {
     echo "not ok 1 - prepare-ahead delta playback changed the output"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable -=4 -d fs -p16 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable -=4:prepare=ahead -d fs -p16 \
     -o "${ahead_full}" "${input_image}" || {
     echo "not ok 1 - prepare-ahead full playback failed"
     exit 0
 }
-_SIXEL_PREPARE_AHEAD=0 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable \
-    -=4 -d fs -p16 -o "${serial_full}" "${input_image}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable \
+    -=4:prepare=serial -d fs -p16 -o "${serial_full}" "${input_image}" || {
     echo "not ok 1 - serial full playback failed"
     exit 0
 }

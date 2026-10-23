@@ -1,5 +1,5 @@
 #!/bin/sh
-# Preserve SIXEL_THREADS equivalence with -= during migration.
+# Preserve SIXEL_THREADING_POLICY equivalence with -= during migration.
 
 set -eux
 
@@ -21,7 +21,7 @@ ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -= 1 -D <"${input}" \
     echo "not ok 1 - threads CLI conversion failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADS=1 -D \
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_POLICY=1 -D \
     <"${input}" >"${env_output}" || {
     echo "not ok 1 - threads environment conversion failed"
     exit 0

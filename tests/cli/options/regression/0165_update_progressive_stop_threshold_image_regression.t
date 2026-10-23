@@ -21,7 +21,7 @@ short_output="${artifact_dir}/0172-stop_threshold-short-$$.six"
 env_output="${artifact_dir}/0172-stop_threshold-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=1 \
     -Z progressive:S2:M0 "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok 1 - short stop_threshold conversion failed"
     exit 0
@@ -36,7 +36,7 @@ case "${short_trace}" in *"progressive: stop=converged passes=1"*) true ;; *) fa
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=1 \
     --env "SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD=2" -Z progressive:M0 "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok 1 - env stop_threshold conversion failed"
     exit 0
@@ -51,7 +51,7 @@ case "${env_trace}" in *"progressive: stop=converged passes=1"*) true ;; *) fals
 }
 
 delta_short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=1 \
     -Z delta:P1:S2:M0 "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok 1 - delta_short stop_threshold conversion failed"
     exit 0
@@ -66,7 +66,7 @@ case "${delta_short_trace}" in *"progressive: stop=converged passes=1"*) true ;;
 }
 
 delta_env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threads=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=1 \
     --env "SIXEL_UPDATE_PROGRESSIVE_STOP_THRESHOLD=2" -Z delta:P1:M0 "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok 1 - delta_env stop_threshold conversion failed"
     exit 0

@@ -45,8 +45,10 @@ typedef struct sixel_dither_encode_request {
     int method_for_diffuse;
     int gpu_encode_only;
     int prefer_staged;
-    unsigned int threads_max;
+    unsigned int threads_max;           /* threading-policy dither=N */
     int threads_max_set;
+    unsigned int encode_threads_max;    /* threading-policy encode=N */
+    int encode_threads_max_set;
     unsigned int band_height;
     int band_height_set;
     unsigned int overlap;
@@ -102,6 +104,7 @@ typedef struct sixel_planner_edge {
 
 typedef struct sixel_encoding_planner {
     int total_threads;
+    int prepare_threads;   /* total, capped by threading prepare_workers */
     int main_threads;
     int palette_threads;
     int allow_palette_async;

@@ -182,18 +182,20 @@ static cli_option_help_t const g_option_help_table[] = {
     },
     {
         '=',
-        "threads",
-        "-= COUNT, --threads=COUNT|auto\n"
-        "                           override decoder worker\n"
-        "                           count. COUNT>=1 keeps\n"
-        "                           deterministic ordering\n"
-        "                           while larger values enable\n"
-        "                           band parallelism. Use\n"
-        "                           'auto' to match the\n"
-        "                           hardware thread count.\n"
-        "                           sixel2png defaults to 'auto'\n"
-        "                           when SIXEL_THREADS is unset\n"
-        "                           or empty.\n"
+        "threading-policy",
+        "-= POLICY[:decode=COUNT], "
+        "--threading-policy=POLICY[:decode=COUNT]\n"
+        "                           plan worker threads. POLICY\n"
+        "                           is the total budget: auto\n"
+        "                           (hardware thread count),\n"
+        "                           serial, or COUNT. decode=\n"
+        "                           COUNT (short SCOUNT) limits\n"
+        "                           parallel SIXEL parsing and\n"
+        "                           shrinks to fit the budget.\n"
+        "                           sixel2png\n"
+        "                           defaults to 'auto' when\n"
+        "                           SIXEL_THREADING_POLICY is\n"
+        "                           unset or empty.\n"
     },
     {
         'G',
@@ -600,7 +602,7 @@ main(int argc, char *argv[])
         {"size",             required_argument,  NULL, 's'},
         {"edge",             required_argument,  NULL, 'e'},
         {"direct",           no_argument,        NULL, 'D'},
-        {"threads",          required_argument,  NULL, '='},
+        {"threading-policy", required_argument,  NULL, '='},
         {"gpu-policy",       required_argument,  NULL, 'G'},
         {"runtime-policy",   required_argument,  NULL, 'j'},
         {"diagnostics",      required_argument,  NULL, 'x'},
@@ -703,12 +705,13 @@ main(int argc, char *argv[])
 
     /*
      * The sixel2png tool can own the process-level policy, so prefer hardware
-     * concurrency when the user has not supplied SIXEL_THREADS through the
-     * environment or --env.
+     * concurrency when the user has not supplied SIXEL_THREADING_POLICY
+     * through the environment or --env.
      */
-    if (cli_apply_env_default("SIXEL_THREADS", "auto") != 0) {
+    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "auto") != 0) {
         sixel_helper_set_additional_message(
-            "failed to set default environment variable 'SIXEL_THREADS'.");
+            "failed to set default environment variable "
+            "'SIXEL_THREADING_POLICY'.");
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }

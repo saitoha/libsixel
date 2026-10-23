@@ -637,9 +637,6 @@ sixel_dither_prepare_lookup_policy(
         request.fhedt_first_touch = dither->lut_policy_fhedt_first_touch;
         request.fhedt_first_touch_override =
             dither->lut_policy_fhedt_first_touch_override;
-        request.fhedt_pin_threads = dither->lut_policy_fhedt_pin_threads;
-        request.fhedt_pin_threads_override =
-            dither->lut_policy_fhedt_pin_threads_override;
     }
     request.reuse_policy = reuse_policy;
     request.reuse_policy_slot = reuse_policy_slot;
@@ -2164,10 +2161,6 @@ sixel_dither_new(
     (*ppdither)->dither_parallel_band_overwrap = 0u;
     (*ppdither)->dither_parallel_band_width_override = 0;
     (*ppdither)->dither_parallel_band_width = 0u;
-    (*ppdither)->dither_parallel_threads_max_override = 0;
-    (*ppdither)->dither_parallel_threads_max = 0u;
-    (*ppdither)->dither_pin_threads_override = 0;
-    (*ppdither)->dither_pin_threads = 1;
     (*ppdither)->a_dither_strength_override = 0;
     (*ppdither)->a_dither_strength = 0.150f;
     (*ppdither)->x_dither_strength_override = 0;
@@ -2228,8 +2221,6 @@ sixel_dither_new(
     (*ppdither)->lut_policy_fhedt_tile_depth = 0u;
     (*ppdither)->lut_policy_fhedt_first_touch_override = 0;
     (*ppdither)->lut_policy_fhedt_first_touch = 0;
-    (*ppdither)->lut_policy_fhedt_pin_threads_override = 0;
-    (*ppdither)->lut_policy_fhedt_pin_threads = 0;
     (*ppdither)->gpu_policy = SIXEL_GPU_POLICY_OFF;
     (*ppdither)->gpu_palette_threshold =
         (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;

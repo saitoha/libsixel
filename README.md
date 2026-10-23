@@ -439,12 +439,15 @@ Options:
 -  Choice-valued arguments accept unique prefixes.  For example,
    `-s ave` resolves to `average`, but `-s a` is rejected because it
    matches both `auto` and `average`.
--= COUNT, --threads=COUNT|auto
-                          choose the encoder thread count. `auto`
-                          matches the hardware thread count while
-                          integers >=1 keep deterministic output
-                          ordering. img2sixel defaults to `auto`
-                          when SIXEL_THREADS is unset or empty.
+-= POLICY[:KEY=VALUE...], --threading-policy=POLICY[:KEY=VALUE...]
+                          plan the thread budget (`auto`, `serial`,
+                          or a count), per-stage limits (dither,
+                          encode, prepare_workers), affinity (pin)
+                          and frame concurrency (load, load_depth,
+                          prepare, palette). Stage limits shrink to
+                          fit the budget. img2sixel defaults to
+                          `auto` when SIXEL_THREADING_POLICY is
+                          unset or empty.
 -., --precision-policy=POLICY
                           select the sample precision of palette
                           application.
@@ -846,14 +849,10 @@ safe distance.
   grid before the EDT so that NUMA systems can place pages on the thread
   that will use them (0 or 1; default 0 so behaviour is unchanged unless
   opted in).
-* `SIXEL_LOOKUP_FHEDT_PIN_THREADS` pins the FHEDT worker threads once at
-  startup to reduce migration on NUMA systems (0 or 1; default 0; failures
-  are ignored so portability is preserved).
-* `SIXEL_DITHER_PIN_THREADS` pins PaletteApply and encode pipeline workers
-  (0 or 1; default 1; failures are ignored so portability is preserved).
-  The planner applies the same preference to both palette workers and the
-  encoder-side band workers (including the non-pipeline parallel encoder);
-  set this to 0 to allow the OS to migrate those jobs.
+* `SIXEL_THREADING_PIN` (or `-= *:pin=0|1`) pins worker threads to reduce
+  migration (0 or 1; failures are ignored so portability is preserved).
+  Unset, PaletteApply and encode pipeline workers are pinned and FHEDT
+  workers are not; set it to 0 to allow the OS to migrate those jobs.
 * `SIXEL_LOG_PATH` writes a JSON timeline log that can be consumed
   by `tools/timeline.py`; the log is silent when unset.
 * `SIXEL_LOG_LINES` controls per-line logging when `SIXEL_LOG_PATH` is set. Unset or empty disables line events; use a positive integer to log every Nth line. Legacy zero, negative, and invalid values enable every-line logging, which can be expensive.
@@ -1044,11 +1043,10 @@ SIXEL_ANIMATION_HIDE_CURSOR
                            img2sixel enables it only when the
                            variable is unset. -z/--terminal-policy
                            takes precedence.
-SIXEL_THREADS              override encoder thread count.
-                           Accepts positive integers or the word
-                           'auto' to match the hardware thread
-                           count. img2sixel sets empty/unset values
-                           to 'auto'.
+SIXEL_THREADING_POLICY     total thread budget: auto, serial, or
+                           a positive count. Suboptions use the
+                           SIXEL_THREADING_* variables. img2sixel
+                           sets empty/unset values to 'auto'.
 SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            defer RGBFLOAT32 colorspace fan-out
                            until the frame reaches this pixel

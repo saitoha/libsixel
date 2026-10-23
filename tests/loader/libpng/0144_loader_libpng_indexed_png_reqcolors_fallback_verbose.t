@@ -23,7 +23,7 @@ image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8.png"
 
 planner_log=$(
     set +xv
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 -v \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=1 -v \
                   -Llibpng! -p"${reqcolors}" \
                   "${image_path}" 2>&1 >/dev/null
 ) || {

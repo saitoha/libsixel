@@ -22,7 +22,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 expected="${ARTIFACT_LOCAL_DIR}/palette-post-build-reference-$$.six"
 actual="${ARTIFACT_LOCAL_DIR}/palette-post-build-actual-$$.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=8 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=8 \
     -4 full-frame -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${expected}" || {
     echo "not ok 1 - reference full-frame fallback failed"
@@ -31,7 +31,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=8 \
 
 message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_JOB_FAILURE=worker-post-build \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=8 -4 auto \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=8 -4 auto \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >"${actual}") || {
     echo "not ok 1 - post-build palette failure stopped encoding"

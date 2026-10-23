@@ -23,7 +23,7 @@ out_invalid="${ARTIFACT_LOCAL_DIR}/apng-trns-keycolor-env2.six"
 out_default="${ARTIFACT_LOCAL_DIR}/apng-trns-keycolor-env1.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
-              --env SIXEL_THREADS=4 \
+              --env SIXEL_THREADING_POLICY=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_invalid}" || {
@@ -32,7 +32,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              --env SIXEL_THREADS=4 \
+              --env SIXEL_THREADING_POLICY=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {

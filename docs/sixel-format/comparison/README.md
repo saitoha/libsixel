@@ -217,9 +217,9 @@ The generation experiment decodes GIF/SIXEL into its index plane and palette and
 This indexed path reflects ordinary `img2sixel` SIXEL-to-SIXEL conversion. The [encoder](../../../src/encoder.c) enables palette retention for ordinary input without resizing or a color override, and the SIXEL loader in [loader-builtin.c](../../../src/loader-builtin.c) returns PAL8 pixels with their palette when the requested palette capacity suffices. The command sequence is:
 
 ```sh
-img2sixel --threads=1 -o generation1.six photo.png
-img2sixel --threads=1 -o generation2.six generation1.six
-img2sixel --threads=1 -o generation3.six generation2.six
+img2sixel --threading-policy=1 -o generation1.six photo.png
+img2sixel --threading-policy=1 -o generation2.six generation1.six
+img2sixel --threading-policy=1 -o generation3.six generation2.six
 ```
 
 A separate CLI verification using a libsixel source build repeated this operation through generation eight for photographs and charts. Every generation's decoded RGB pixels matched generation one exactly. This verifies the actual file-loader/encoder path; the graphed timings remain the in-memory API measurements described above and do not include CLI startup or file I/O.

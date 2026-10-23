@@ -32,7 +32,7 @@ session_id=
 MSYS_NO_PATHCONV=1 \
 MSYS2_ARG_CONV_EXCL='*' \
 SIXEL_LOG_PATH="${log_path}" \
-SIXEL_THREADS=1 \
+SIXEL_THREADING_POLICY=1 \
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0002_timeline_parallel_encode_decode" || {
     status=$?

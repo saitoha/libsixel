@@ -59,13 +59,13 @@ set +x
 } >"${high_map}"
 set -x
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threads=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=1 \
     --gpu-policy=off -Wgamma -Ugamma -m "${low_map}" \
     -M pal-jasc:"${low_palette}" -o /dev/null "${input_image}" || {
     echo "not ok" 1 - "low-value weighted image mapfile failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threads=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=1 \
     --gpu-policy=off -Wgamma -Ugamma -m "${high_map}" \
     -M pal-jasc:"${high_palette}" -o /dev/null "${input_image}" || {
     echo "not ok" 1 - "high-value weighted image mapfile failed"

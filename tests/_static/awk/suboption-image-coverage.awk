@@ -48,7 +48,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         range_policy = "parse-signed-choice-prefix"
     } else if (macro == "SIXEL_REGISTRY_RUNTIME_SIZE") {
         range_policy = "clamp-size-width"
-    } else if (macro == "SIXEL_REGISTRY_RUNTIME_UINT") {
+    } else if (macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
+               macro == "SIXEL_REGISTRY_THREADING_UINT") {
         range_policy = "parse-signed-long"
     } else if (macro == "SIXEL_REGISTRY_RUNTIME_INT") {
         range_policy = "clamp-both"
@@ -80,8 +81,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     if (option_id == "SIXEL_OPTION_SCHEMA_DIFFUSION" &&
             ((fields[2] == "NULL" &&
               (name == "scan" || name == "band_overwrap" ||
-               name == "band_width" || name == "threads_max" ||
-               name == "pin_threads" || name == "perturb" ||
+               name == "band_width" || name == "perturb" ||
                name == "perturb_seed" || name == "deadzone")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
@@ -178,7 +178,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         binding_override = fields[count]
     } else if (macro ~ /DEQUANTIZE_|LOADER_/) {
         binding = fields[count]
-    } else if (macro ~ /RUNTIME_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_|COLOR_STRING/) {
+    } else if (macro ~ /RUNTIME_|THREADING_|DIAGNOSTICS_|CLIPBOARD_|COMPLETION_|COLOR_STRING/) {
         binding = fields[count - 1] "|" fields[count]
         binding_value = fields[count - 1]
         binding_override = fields[count]

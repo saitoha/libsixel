@@ -6,7 +6,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_THREADS=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+SIXEL_THREADING_POLICY=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_byte/0004_weighted_grid || {
     echo "not ok 1 - byte FHEDT weighted discrete grid"
     exit 0

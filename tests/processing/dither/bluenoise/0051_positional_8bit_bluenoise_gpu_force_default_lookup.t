@@ -25,7 +25,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_GPU_POLICY=force \
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=1 \
         --env SIXEL_GPU_POLICY=force \
         --env SIXEL_DITHER_BLUENOISE_STRENGTH=0.4 \
         -d bluenoise -p 256 -o /dev/null "${input_image}" || {
@@ -33,7 +33,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=6 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=6 \
         --env SIXEL_GPU_POLICY=force \
         --env SIXEL_DITHER_BLUENOISE_STRENGTH=0.4 \
         -d bluenoise -p 256 -o /dev/null "${input_image}" || {

@@ -51,7 +51,8 @@ timeline_0008_encode(char const *policy)
     }
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS, "4");
+        status = sixel_encoder_setopt(encoder,
+                                      SIXEL_OPTFLAG_THREADING_POLICY, "4");
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder, '4', policy);

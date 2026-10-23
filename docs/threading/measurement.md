@@ -104,13 +104,13 @@ The encoder scaling sweep records the complete `main/encoder` interval,
 palette construction, and the dither/encode tail. Timed rounds alternate
 between ascending and descending worker-count order. The plot reports medians
 and inclusive interquartile ranges, and the CSV retains output SIXEL size and
-hash for every execution. `--threads` is a worker budget rather than a
+hash for every execution. `--threading-policy` is a worker budget rather than a
 physical-core reservation because no affinity or exclusive-host control is
 applied.
 
 The encoder color-count sweep changes only `-p K` from that controlled encoder
 configuration. It uses K = 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, and 256
-at `--threads=2`, 4, 6, and 8. These values remain worker budgets rather than
+at `--threading-policy=2`, 4, 6, and 8. These values remain worker budgets rather than
 physical-core reservations. Each of the 48 conditions receives two warm-ups
 and nine timed runs. Whole rounds traverse the Cartesian condition list in
 alternating directions. The chart shares both axes across its four panels and

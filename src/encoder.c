@@ -534,8 +534,8 @@ static SIXELSTATUS sixel_encoder_promote_pal8_transparent_for_geometry(
     sixel_encoder_t *encoder,
     sixel_frame_t *frame);
 
-#define SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY 4
-/* Queue storage; playback admission may hold more frames than the loader. */
+/* Queue storage; playback admission may hold more frames than the loader,
+ * whose depth comes from the threading policy's load_depth key. */
 #define SIXEL_ENCODER_FRAME_PIPELINE_SLOTS SIXEL_PLAYBACK_CAPACITY_MAX
 #define SIXEL_TRACE_TOPIC_ENCODE_HANDOFF "encode_handoff"
 
@@ -1093,9 +1093,15 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
 {
     sixel_dither_t const *dither;
     int first;
+    unsigned int threads_max;
+    int threads_max_set;
+    sixel_threading_policy_options_t threading;
 
     dither = NULL;
     first = 1;
+    threads_max = 0u;
+    threads_max_set = 0;
+    memset(&threading, 0, sizeof(threading));
     if (encoder == NULL) {
         return;
     }
@@ -1110,6 +1116,9 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
     if (dither == NULL) {
         return;
     }
+    threads_max_set = sixel_threading_policy_stage_threads(
+        SIXEL_THREADING_STAGE_DITHER, &threads_max);
+    sixel_threading_policy_load(&threading);
 
     fprintf(stderr,
             "LSXDTH1|rc=%d|diffuse=%s|scan=%s|shared=%d|"
@@ -1144,10 +1153,10 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->dither_parallel_band_width_override,
             dither->pipeline_last_dither_threads,
             dither->pipeline_last_encode_threads,
-            dither->dither_parallel_threads_max,
-            dither->dither_parallel_threads_max_override,
+            threads_max,
+            threads_max_set,
             dither->pipeline_pin_threads,
-            dither->dither_pin_threads_override,
+            threading.pin_override,
             dither->gpu_palette_threshold,
             encoder->gpu_palette_threshold_override,
             (double)dither->diffusion_perturb,
@@ -4691,10 +4700,6 @@ sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
         encoder->lut_policy_fhedt_first_touch_override;
     dither->lut_policy_fhedt_first_touch =
         encoder->lut_policy_fhedt_first_touch;
-    dither->lut_policy_fhedt_pin_threads_override =
-        encoder->lut_policy_fhedt_pin_threads_override;
-    dither->lut_policy_fhedt_pin_threads =
-        encoder->lut_policy_fhedt_pin_threads;
 }
 
 
@@ -5554,14 +5559,6 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->dither_parallel_band_width_override;
     context->dither->dither_parallel_band_width =
         context->encoder->dither_parallel_band_width;
-    context->dither->dither_parallel_threads_max_override =
-        context->encoder->dither_parallel_threads_max_override;
-    context->dither->dither_parallel_threads_max =
-        context->encoder->dither_parallel_threads_max;
-    context->dither->dither_pin_threads_override =
-        context->encoder->dither_pin_threads_override;
-    context->dither->dither_pin_threads =
-        context->encoder->dither_pin_threads;
     context->dither->a_dither_strength_override =
         context->encoder->a_dither_strength_override;
     context->dither->a_dither_strength =
@@ -9122,9 +9119,6 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.fhedt_first_touch = dither->lut_policy_fhedt_first_touch;
     lookup_config.fhedt_first_touch_override =
         dither->lut_policy_fhedt_first_touch_override;
-    lookup_config.fhedt_pin_threads = dither->lut_policy_fhedt_pin_threads;
-    lookup_config.fhedt_pin_threads_override =
-        dither->lut_policy_fhedt_pin_threads_override;
     lookup_config.pixelformat = dither->pixelformat;
     if (policy == SIXEL_LUT_POLICY_FHEDT) {
         /* Samples can retain their source representation after the palette
@@ -9743,9 +9737,13 @@ sixel_encoder_frame_job_prepare(
     sixel_palette_quantizer_selection_t quantizer_preflight;
     sixel_palette_binning_policy_t binning_policy;
     sixel_palette_policy_origin_t binning_origin;
+    sixel_thread_budget_scope_t prepare_budget;
+    int prepare_scoped;
 
     job->active = 0;
     job->frame = frame;
+    prepare_scoped = 0;
+    memset(&prepare_budget, 0, sizeof(prepare_budget));
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -10081,9 +10079,19 @@ sixel_encoder_frame_job_prepare(
     job->nodes[SIXEL_DAG_NODE_OUTPUT].done = 0u;
     job->nodes[SIXEL_DAG_NODE_OUTPUT].run = sixel_encode_dag_node_output;
 
+    /* prepare_workers bounds this half only; the emit half resolves its
+     * dither/encode reservation outside this scope. */
+    prepare_scoped = planner != NULL
+        && planner->prepare_threads < planner->total_threads;
+    if (prepare_scoped) {
+        sixel_thread_budget_enter(&prepare_budget, planner->prepare_threads);
+    }
     status = sixel_encode_dag_run_nodes(&job->context,
                                         job->nodes,
                                         SIXEL_DAG_NODE_PALETTE_COLLECT + 1);
+    if (prepare_scoped) {
+        sixel_thread_budget_leave(&prepare_budget);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -10450,10 +10458,6 @@ sixel_encoder_new(
     (*ppencoder)->dither_parallel_band_overwrap = 0u;
     (*ppencoder)->dither_parallel_band_width_override = 0;
     (*ppencoder)->dither_parallel_band_width = 0u;
-    (*ppencoder)->dither_parallel_threads_max_override = 0;
-    (*ppencoder)->dither_parallel_threads_max = 0u;
-    (*ppencoder)->dither_pin_threads_override = 0;
-    (*ppencoder)->dither_pin_threads = 1;
     (*ppencoder)->a_dither_strength_override = 0;
     (*ppencoder)->a_dither_strength = 0.150f;
     (*ppencoder)->x_dither_strength_override = 0;
@@ -10660,8 +10664,6 @@ sixel_encoder_new(
     (*ppencoder)->lut_policy_fhedt_tile_depth = 0u;
     (*ppencoder)->lut_policy_fhedt_first_touch_override = 0;
     (*ppencoder)->lut_policy_fhedt_first_touch = 0;
-    (*ppencoder)->lut_policy_fhedt_pin_threads_override = 0;
-    (*ppencoder)->lut_policy_fhedt_pin_threads = 0;
     (*ppencoder)->gpu_policy            = SIXEL_GPU_POLICY_OFF;
     (*ppencoder)->gpu_palette_threshold_override = 0;
     (*ppencoder)->gpu_palette_threshold =
@@ -11699,8 +11701,6 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->diffusion_perturb_seed = 0;
     encoder->dither_parallel_band_overwrap = 0u;
     encoder->dither_parallel_band_width = 0u;
-    encoder->dither_parallel_threads_max = 0u;
-    encoder->dither_pin_threads = 1;
     encoder->a_dither_strength = 0.150f;
     encoder->x_dither_strength = 0.100f;
     encoder->bluenoise_strength = 0.055f;
@@ -11912,7 +11912,6 @@ sixel_encoder_apply_lut_policy_argument(
     encoder->lut_policy_fhedt_tile_xy = 0u;
     encoder->lut_policy_fhedt_tile_depth = 0u;
     encoder->lut_policy_fhedt_first_touch = 0;
-    encoder->lut_policy_fhedt_pin_threads = 0;
     sixel_option_reset_suboption_overrides(
         schema,
         SIXEL_OPTION_SCOPE_ENCODER,
@@ -12060,27 +12059,6 @@ sixel_encoder_parse_choice_argument(
     }
 
     return SIXEL_BAD_ARGUMENT;
-}
-
-static SIXELSTATUS
-sixel_encoder_apply_threads_option(char const *value)
-{
-    SIXELSTATUS status;
-    sixel_suboption_value_t parsed;
-
-    memset(&parsed, 0, sizeof(parsed));
-    status = sixel_option_parse_scalar_argument(
-        SIXEL_OPTION_SCHEMA_THREADS,
-        SIXEL_OPTION_SCOPE_ENCODER,
-        value,
-        &parsed,
-        NULL,
-        0u);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    sixel_set_threads(parsed.int_value);
-    return SIXEL_OK;
 }
 
 
@@ -13434,7 +13412,7 @@ sixel_encoder_setopt_owned(
             goto end;
         }
         break;
-    case SIXEL_OPTFLAG_THREADS:
+    case SIXEL_OPTFLAG_THREADING_POLICY:
         external_option = arg;
         break;
     case SIXEL_OPTFLAG_RUNTIME_POLICY:
@@ -14091,8 +14069,12 @@ sixel_encoder_setopt_owned(
             encoder->outfd = destination->outfd;
         }
         break;
-    case SIXEL_OPTFLAG_THREADS:  /* = */
-        status = sixel_encoder_apply_threads_option(value);
+    case SIXEL_OPTFLAG_THREADING_POLICY:  /* = */
+        status = sixel_option_apply_threading_policy_argument(
+            value,
+            SIXEL_OPTION_SCOPE_ENCODER,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -14502,21 +14484,17 @@ sixel_encoder_pipeline_prepare_ahead_eligible(
     sixel_encoder_frame_pipeline_t const *pipeline)
 {
     sixel_encoder_t const *encoder;
-    char const *env;
 
     encoder = NULL;
-    env = NULL;
 #if defined(__PCC__) || defined(__TINYC__)
     /* These compilers keep palette application serial as well. */
     (void)encoder;
-    (void)env;
     (void)pipeline;
     return 0;
 #else
     encoder = pipeline->encoder;
-    /* Internal switch for comparing against serial playback. */
-    env = sixel_compat_getenv("_SIXEL_PREPARE_AHEAD");
-    if (env != NULL && env[0] == '0' && env[1] == '\0') {
+    if (sixel_threading_policy_prepare_mode() !=
+            SIXEL_THREADING_FRAME_AHEAD) {
         return 0;
     }
     if (pipeline->presentation != NULL
@@ -15187,7 +15165,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->initialized = 0;
     pipeline->started = 0;
     pipeline->loader_done = 0;
-    pipeline->queue_limit = SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY;
+    pipeline->queue_limit = sixel_threading_policy_load_depth();
     pipeline->worker_exited = 0;
     pipeline->playback = NULL;
     pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_UNDECIDED;

@@ -12,7 +12,7 @@ set -v
 
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Lbuiltin -.8bit -Wgamma -Xgamma -~fhedt:weights=3/1/1 "${TOP_SRCDIR}/tests/data/inputs/small.ppm" >/dev/null 2>&1
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 -Lbuiltin -.8bit -Wgamma -Xgamma -~fhedt:weights=3/1/1 "${TOP_SRCDIR}/tests/data/inputs/small.ppm" >/dev/null 2>&1
 status=$?
 set -e
 test "${status}" -ne 0 || {

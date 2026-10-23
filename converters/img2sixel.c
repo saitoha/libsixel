@@ -187,12 +187,35 @@ static cli_option_help_t const g_option_help_table[] = {
     },
     {
         '=',
-        "threads",
-        "-= COUNT|auto, --threads=COUNT|auto\n"
-        "    choose the encoder thread count. COUNT>=1 keeps deterministic order while values\n"
-        "    above one enable band parallelism. Use 'auto' to match the hardware thread count.\n"
-        "    img2sixel defaults to 'auto' when SIXEL_THREADS is unset or\n"
-        "    empty.\n"
+        "threading-policy",
+        "-= POLICY[:KEY=VALUE...], --threading-policy=POLICY[:KEY=VALUE...]\n"
+        "    plan where threads go. POLICY is the total thread budget:\n"
+        "      auto     -> match the hardware thread count (default)\n"
+        "      serial   -> one thread; frames load and prepare serially\n"
+        "      COUNT    -> use at most COUNT threads\n"
+        "    Frame keys and prepare_workers never change the output; the\n"
+        "    dither worker count selects the parallel band split. Stage\n"
+        "    limits that exceed the budget shrink to fit it.\n"
+        "    frame concurrency:\n"
+        "      load=serial|ahead    -> decode frames ahead of encoding\n"
+        "                              (default ahead; short Lahead)\n"
+        "      load_depth=1..16     -> frames decoded ahead (default 4; Q)\n"
+        "      prepare=serial|ahead -> prepare frame n+1 while frame n is\n"
+        "                              emitted (default ahead; P)\n"
+        "      palette=frame|latest -> palette source of each frame\n"
+        "                              (default frame; latest is reserved\n"
+        "                              and not implemented yet; C)\n"
+        "    per-stage limits:\n"
+        "      dither=COUNT         -> palette application workers (D)\n"
+        "      encode=COUNT         -> SIXEL encode workers (E)\n"
+        "      prepare_workers=COUNT -> scale, colorspace, sampling and\n"
+        "                              palette workers (W)\n"
+        "      pin=0|1              -> bind workers to CPUs (I)\n"
+        "    compact suboption names (uppercase letter + value):\n"
+        "      load=L, load_depth=Q, prepare=P, palette=C, dither=D,\n"
+        "      encode=E, prepare_workers=W, pin=I\n"
+        "    img2sixel defaults to 'auto' when SIXEL_THREADING_POLICY is\n"
+        "    unset or empty.\n"
     },
     {
         '.',
@@ -588,10 +611,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      band_width=LINES    -> set the parallel dither band height\n"
         "                              (rounded to a multiple of six)\n"
         "      BLINES              -> short form of band_width\n"
-        "      threads_max=COUNT   -> cap parallel dither workers\n"
-        "      JCOUNT              -> short form of threads_max\n"
-        "      pin_threads=0|1     -> disable or enable worker affinity\n"
-        "      I0|I1               -> short form of pin_threads\n"
+        "      worker counts and affinity: see -=/--threading-policy\n"
         "    DIFFUSION is one of them:\n"
         "      auto       -> choose diffusion type automatically (default)\n"
         "        sub-option:\n"
@@ -657,8 +677,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                 (default serpentine)\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
-        "                     threads_max=J, pin_threads=I, deadzone=D, perturb=U,\n"
-        "                     perturb_seed=R\n"
+        "                     deadzone=D, perturb=U, perturb_seed=R\n"
         "        sierra: variant=V\n"
         "        a_dither, x_dither: strength=T\n"
         "        bluenoise: strength=T, gradient_factor=G, phase=P,\n"
@@ -784,7 +803,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :tile_xy=1..1024 (:Xvalue)\n"
         "          :tile_depth=1..1024 (:Tvalue)\n"
         "          :first_touch=0|1 (:O0 or :O1)\n"
-        "          :pin_threads=0|1 (:P0 or :P1)\n"
+        "          worker affinity: -= *:pin=0|1\n"
         "      delaunay  -> exact Delaunay graph walk lookup\n"
         "      blockcull -> exact scan after per-block candidate culling\n"
         "      vptree    -> VP-tree lookup built from palette entries\n"
@@ -1576,10 +1595,48 @@ static cli_env_help_t const g_env_help_table[] = {
         "choices. Overridden by -j *:resize_precision=VALUE (:RVALUE)."
     },
     {
-        "SIXEL_THREADS",
-        "override encoder thread count.\n"
-        "Accepts positive integers or the word 'auto' to match the\n"
-        "hardware thread count. img2sixel sets empty/unset values to 'auto'."
+        "SIXEL_THREADING_POLICY",
+        "total thread budget: auto, serial, or a positive count. Suboptions\n"
+        "are not accepted here; use the SIXEL_THREADING_* variables below.\n"
+        "img2sixel sets empty/unset values to 'auto'. -= takes precedence."
+    },
+    {
+        "SIXEL_THREADING_LOAD",
+        "default for -= *:load. Accepts serial or ahead."
+    },
+    {
+        "SIXEL_THREADING_LOAD_DEPTH",
+        "default for -= *:load_depth. Accepts 1..16."
+    },
+    {
+        "SIXEL_THREADING_PREPARE",
+        "default for -= *:prepare. Accepts serial or ahead."
+    },
+    {
+        "SIXEL_THREADING_PALETTE",
+        "default for -= *:palette. Accepts frame; latest is reserved."
+    },
+    {
+        "SIXEL_THREADING_DITHER",
+        "default for -= *:dither. Accepts positive integers."
+    },
+    {
+        "SIXEL_THREADING_ENCODE",
+        "default for -= *:encode. Accepts positive integers."
+    },
+    {
+        "SIXEL_THREADING_PREPARE_WORKERS",
+        "default for -= *:prepare_workers. Accepts positive integers."
+    },
+    {
+        "SIXEL_THREADING_PIN",
+        "default for -= *:pin. Accepts 0 or 1; dither workers default to\n"
+        "1 and FHEDT workers to 0."
+    },
+    {
+        "SIXEL_THREADING_DECODE",
+        "default for -= *:decode when img2sixel decodes SIXEL input.\n"
+        "Accepts positive integers."
     },
     {
         "SIXEL_SAMPLING_POLICY",
@@ -1592,18 +1649,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "select how sampled colors become weighted quantizer input. Accepts\n"
         "auto, none, exact, hard, or soft. The -5/--binning-policy option\n"
         "takes precedence."
-    },
-    {
-        "SIXEL_DITHER_PIN_THREADS",
-        "pin pipeline worker threads to their initial CPUs (0 or 1;\n"
-        "default 1). The -d suboption pin_threads (short form IVALUE)\n"
-        "takes precedence."
-    },
-    {
-        "SIXEL_DITHER_PARALLEL_THREADS_MAX",
-        "cap the number of dither workers when band parallelism is active.\n"
-        "Accepts positive integers. The -d suboption threads_max (short\n"
-        "form JVALUE) takes precedence."
     },
     {
         "SIXEL_DITHER_PARALLEL_BAND_WIDTH",
@@ -2398,11 +2443,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "the worker that will consume them (0 or 1; default 0)."
     },
     {
-        "SIXEL_LOOKUP_FHEDT_PIN_THREADS",
-        "pin FHEDT worker threads at startup to reduce migration\n"
-        "(0 or 1; default 0)."
-    },
-    {
         "SIXEL_FHEDT_TILE_XY",
         "compatibility alias for SIXEL_LOOKUP_FHEDT_TILE_XY. Shares the same\n"
         "semantics and adaptive defaults."
@@ -2415,11 +2455,6 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_FHEDT_FIRST_TOUCH",
         "compatibility alias for SIXEL_LOOKUP_FHEDT_FIRST_TOUCH. Same\n"
-        "behaviour and defaults."
-    },
-    {
-        "SIXEL_FHEDT_PIN_THREADS",
-        "compatibility alias for SIXEL_LOOKUP_FHEDT_PIN_THREADS. Same\n"
         "behaviour and defaults."
     },
     {
@@ -3455,7 +3490,7 @@ img2sixel_main(int argc, char *argv[])
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",               required_argument,  &long_opt, 'o'},
-        {"threads",               required_argument,  &long_opt, '='},
+        {"threading-policy",      required_argument,  &long_opt, '='},
         {"precision-policy",      required_argument,  &long_opt, '.'},
         {"7bit-mode",             no_argument,        &long_opt, '7'},
         {"8bit-mode",             no_argument,        &long_opt, '8'},
@@ -3709,9 +3744,10 @@ img2sixel_main(int argc, char *argv[])
      * concurrency by default.  User environment and --env assignments were
      * already applied above and continue to override this application default.
      */
-    if (cli_apply_env_default("SIXEL_THREADS", "auto") != 0) {
+    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "auto") != 0) {
         sixel_helper_set_additional_message(
-            "failed to set default environment variable 'SIXEL_THREADS'.");
+            "failed to set default environment variable "
+            "'SIXEL_THREADING_POLICY'.");
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }

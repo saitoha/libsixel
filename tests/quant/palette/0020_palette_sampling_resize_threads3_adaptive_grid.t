@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=3 -w 64 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=3 -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - three-thread resized palette encode failed"

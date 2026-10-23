@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 ppm_small="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=4 -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" \
         >"${ARTIFACT_LOCAL_DIR}/small.out" || {
     printf 'not ok 1 - pipeline run failed (baseline)\n'
     exit 0

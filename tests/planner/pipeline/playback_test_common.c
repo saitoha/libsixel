@@ -87,7 +87,8 @@ playback_test_encoder(int delta, char const *threads)
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL))) {
         return NULL;
     }
-    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADS, threads);
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_THREADING_POLICY, threads);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "fs");
     }

@@ -115,10 +115,6 @@ struct sixel_dither {
     unsigned int dither_parallel_band_overwrap; /* requested overlap */
     int dither_parallel_band_width_override; /* explicit height flag */
     unsigned int dither_parallel_band_width; /* requested band height */
-    int dither_parallel_threads_max_override; /* explicit thread cap flag */
-    unsigned int dither_parallel_threads_max; /* requested thread cap */
-    int dither_pin_threads_override; /* explicit affinity flag */
-    int dither_pin_threads;          /* requested affinity policy */
     int a_dither_strength_override; /* CLI A-dither strength flag */
     float a_dither_strength;       /* parsed A-dither strength */
     int x_dither_strength_override; /* CLI X-dither strength flag */
@@ -179,8 +175,6 @@ struct sixel_dither {
     unsigned int lut_policy_fhedt_tile_depth;
     int lut_policy_fhedt_first_touch_override;
     int lut_policy_fhedt_first_touch;
-    int lut_policy_fhedt_pin_threads_override;
-    int lut_policy_fhedt_pin_threads;
     int gpu_policy;                 /* upper-level GPU accelerator policy */
     size_t gpu_palette_threshold;   /* AUTO policy pixel threshold */
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */

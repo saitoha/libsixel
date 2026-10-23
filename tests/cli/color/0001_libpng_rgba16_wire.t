@@ -22,7 +22,7 @@ set -v
 # One CLI invocation owns the conversion. The checker reads its captured wire
 # and actual loader/CMS records; it never launches a second image conversion.
 trace=$(SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 -L"libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
+    --threading-policy=1 -L"libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!" \
     -jscalar:resize_precision=float --precision-policy=float -aoff -Qheckbert \
     -Xgamma -Wgamma -Ugamma -Fnone -_none '-~none' -dnone -trgb \
     -Akeep -Bblack -w8 -h4 -rnearest \

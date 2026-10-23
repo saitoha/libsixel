@@ -206,7 +206,42 @@ sixel_encoding_planner_resolve_band_width(
         value);
 }
 
-/* Resolve the request-local dither worker cap before the environment. */
+/* prepare_workers caps scale, colorspace, sampling and palette workers.
+ * It never reduces the dither/encode reservation planned later. */
+static int
+sixel_encoding_planner_prepare_threads(int total)
+{
+    unsigned int limit;
+
+    limit = 0u;
+    if (total < 1) {
+        total = 1;
+    }
+    if (sixel_threading_policy_stage_threads(SIXEL_THREADING_STAGE_PREPARE,
+                                             &limit) &&
+            limit >= 1u && limit < (unsigned int)total) {
+        return (int)limit;
+    }
+    return total;
+}
+
+/* Threads left to the caller beside the early palette worker. This is the
+ * uncapped main reservation, so prepare_workers never disables loading
+ * ahead. */
+static int
+sixel_encoding_planner_loader_threads(
+    sixel_encoding_planner_t const *planner)
+{
+    int total;
+
+    total = planner->total_threads > 0 ? planner->total_threads : 1;
+    if (planner->allow_palette_async != 0) {
+        return total - total / 2;
+    }
+    return total;
+}
+
+/* The dither worker cap comes from the process-wide threading policy. */
 static int
 sixel_encoding_planner_resolve_threads_max(
     sixel_encoder_t const *encoder,
@@ -215,39 +250,18 @@ sixel_encoding_planner_resolve_threads_max(
     if (encoder == NULL || value == NULL) {
         return 0;
     }
-    if (encoder->dither_parallel_threads_max_override != 0) {
-        *value = encoder->dither_parallel_threads_max;
-        return 1;
-    }
 
-    return sixel_option_resolve_registered_uint_binding(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        NULL,
-        SIXEL_SUBOPTION_BINDING_ID_2(
-            dither_parallel_threads_max,
-            dither_parallel_threads_max_override),
-        value);
+    return sixel_threading_policy_stage_threads(
+        SIXEL_THREADING_STAGE_DITHER, value);
 }
 
-/* Resolve request-local affinity before the registered environment. */
+/* Dither workers stay pinned unless the threading policy says otherwise. */
 static int
 sixel_encoding_planner_resolve_pin_threads(
     sixel_encoder_t const *encoder)
 {
-    if (encoder == NULL) {
-        return 1;
-    }
-    if (encoder->dither_pin_threads_override != 0) {
-        return encoder->dither_pin_threads != 0;
-    }
-
-    return sixel_option_resolve_registered_boolean_binding(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        NULL,
-        SIXEL_SUBOPTION_BINDING_ID_2(
-            dither_pin_threads,
-            dither_pin_threads_override),
-        1);
+    (void)encoder;
+    return sixel_threading_policy_pin(1);
 }
 
 static void
@@ -532,6 +546,7 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     }
 
     planner->total_threads = 1;
+    planner->prepare_threads = 1;
     planner->main_threads = 1;
     planner->palette_threads = 0;
     planner->allow_palette_async = 0;
@@ -670,9 +685,10 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
      */
     total = sixel_threads_resolve();
     planner->total_threads = total;
+    planner->prepare_threads = sixel_encoding_planner_prepare_threads(total);
     planner->palette_threads = 0;
     planner->allow_palette_async = 0;
-    planner->main_threads = (total > 0) ? total : 1;
+    planner->main_threads = planner->prepare_threads;
     planner->clip_active = (encoder->clipwidth > 0 && encoder->clipheight > 0)
         ? 1
         : 0;
@@ -824,7 +840,10 @@ sixel_encoding_planner_schedule(
              sampling_policy != SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID)) {
         return SIXEL_BAD_ARGUMENT;
     }
-    total = planner->total_threads;
+    /* The early palette overlap splits the prepare reservation only. */
+    planner->prepare_threads =
+        sixel_encoding_planner_prepare_threads(planner->total_threads);
+    total = planner->prepare_threads;
     async_eligible = sixel_encoding_palette_job_eligible(encoder, frame);
     planner->palette_threads = 0;
     planner->allow_palette_async = 0;
@@ -965,6 +984,7 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
     int band_height;
     int overlap;
     int staged;
+    long long requested_total;
 
     if (allocation == NULL) {
         return;
@@ -985,13 +1005,19 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
     if (request->gpu_encode_only) {
         /* GPU application has no CPU producer reservation. Preserve the
          * full encode budget, independently of CPU geometry overrides. */
+        if (request->encode_threads_max_set &&
+                request->encode_threads_max >= 1u &&
+                request->encode_threads_max < (unsigned int)threads) {
+            allocation->encode_threads = (int)request->encode_threads_max;
+        }
         allocation->mode = SIXEL_DITHER_ENCODE_PIPELINE;
         allocation->dither_threads = 0;
         allocation->band_height = 6;
         return;
     }
 
-    staged = request->prefer_staged && !request->threads_max_set;
+    staged = request->prefer_staged && !request->threads_max_set
+        && !request->encode_threads_max_set;
     /* Only the spatial policies support independent work bands. A staged
      * unknown policy would lose overlap without gaining parallel
      * application. Keep its existing reservation instead. */
@@ -1027,7 +1053,11 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
         dither_threads = (threads / 10) * 7
             + ((threads % 10) * 7 + 9) / 10;
         if (request->threads_max_set) {
-            dither_threads = (int)request->threads_max;
+            dither_threads = request->threads_max > (unsigned int)INT_MAX
+                ? INT_MAX : (int)request->threads_max;
+        } else if (request->encode_threads_max_set &&
+                   request->encode_threads_max < (unsigned int)threads) {
+            dither_threads = threads - (int)request->encode_threads_max;
         }
         if (dither_threads < 1) {
             dither_threads = 1;
@@ -1035,15 +1065,38 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
         if (dither_threads > threads) {
             dither_threads = threads;
         }
-        encode_threads = threads - dither_threads;
-        /* Explicit caps retain the existing minimum encode reservation. */
-        if (encode_threads < 2 && threads > 2) {
-            encode_threads = 2;
-            dither_threads = threads - encode_threads;
-        }
-        if (encode_threads < 1) {
-            encode_threads = 1;
-            dither_threads = threads - encode_threads;
+        if (request->encode_threads_max_set) {
+            encode_threads = request->encode_threads_max > (unsigned int)INT_MAX
+                ? INT_MAX : (int)request->encode_threads_max;
+            if (encode_threads < 1) {
+                encode_threads = 1;
+            }
+            requested_total = (long long)dither_threads + encode_threads;
+            if (requested_total > threads) {
+                /* Stage limits never fail the plan. Shrink both in
+                 * proportion so their sum fits the total budget. */
+                dither_threads = (int)((long long)dither_threads * threads
+                                       / requested_total);
+                if (dither_threads < 1) {
+                    dither_threads = 1;
+                }
+                if (dither_threads > threads - 1) {
+                    dither_threads = threads - 1;
+                }
+                encode_threads = threads - dither_threads;
+            }
+        } else {
+            encode_threads = threads - dither_threads;
+            /* Explicit caps retain the existing minimum encode
+             * reservation. */
+            if (encode_threads < 2 && threads > 2) {
+                encode_threads = 2;
+                dither_threads = threads - encode_threads;
+            }
+            if (encode_threads < 1) {
+                encode_threads = 1;
+                dither_threads = threads - encode_threads;
+            }
         }
         if (encode_threads <= 1) {
             /* The legacy fallback applies serially, then lets the encoder
@@ -1167,6 +1220,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         encoder->method_for_scan, pixel_count);
     request.threads_max_set = sixel_encoding_planner_resolve_threads_max(
         encoder, &request.threads_max);
+    request.encode_threads_max_set = sixel_threading_policy_stage_threads(
+        SIXEL_THREADING_STAGE_ENCODE, &request.encode_threads_max);
     request.band_height_set = sixel_encoding_planner_resolve_band_width(
         encoder, &request.band_height);
     request.overlap_set = sixel_encoding_planner_resolve_band_overwrap(
@@ -1212,9 +1267,10 @@ sixel_encoding_planner_set_loader_metadata(sixel_encoding_planner_t *planner,
      * the loader reports multiframe metadata. Restrict the handoff pipeline to
      * runs where the main path can spare at least one extra thread.
      */
-    allow_pipeline = planner->main_threads > 1
+    allow_pipeline = sixel_encoding_planner_loader_threads(planner) > 1
         && planner->loader_multiframe_known != 0
-        && planner->loader_multiframe != 0;
+        && planner->loader_multiframe != 0
+        && sixel_threading_policy_load_mode() == SIXEL_THREADING_FRAME_AHEAD;
     planner->loader_pipeline_active = allow_pipeline ? 1 : 0;
 }
 
@@ -1340,6 +1396,17 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
             planner->main_threads,
             planner->palette_threads,
             planner->heavy_ops);
+    fprintf(stream,
+            "  threading: load=%s load_depth=%d prepare=%s "
+            "prepare_workers=%d pin=%d\n",
+            sixel_threading_policy_load_mode() == SIXEL_THREADING_FRAME_AHEAD
+                ? "ahead" : "serial",
+            sixel_threading_policy_load_depth(),
+            sixel_threading_policy_prepare_mode() ==
+                    SIXEL_THREADING_FRAME_AHEAD
+                ? "ahead" : "serial",
+            planner->prepare_threads,
+            planner->pipeline_pin_threads);
     fprintf(stream,
             "  formats: source=%s work=%s scale_out=%s\n",
             sixel_encoding_planner_pixelformat_label(

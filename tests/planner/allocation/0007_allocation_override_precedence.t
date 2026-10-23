@@ -18,11 +18,11 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=4 -p16 \
-    --env SIXEL_DITHER_PARALLEL_THREADS_MAX=2 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=4:dither=1 -p16 \
+    --env SIXEL_THREADING_DITHER=2 \
     --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=18 \
     --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=6 \
-    -d 'fs:threads_max=1:band_width=9:band_overwrap=0' \
+    -d 'fs:band_width=9:band_overwrap=0' \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - explicit allocation conversion failed"
     exit 0

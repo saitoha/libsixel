@@ -10,7 +10,7 @@ Measurements were made on 2026-09-13 JST (2026-09-12 UTC), macOS arm64, with 14 
 
 Three requested policies are compared: 256 colors without diffusion, 256 colors with Floyd–Steinberg diffusion, and `-I` without diffusion. They share 8-bit precision, high quality, GPU off, RGB palette definitions, and `-E fast`; other policies retain that revision's defaults. FS is included because comparing only against undithered 256 colors would omit a useful quality alternative. The generator also verifies that requesting `-I -d fs` produces identical bytes to `-I -d none` on every fixture: the current easy-encoder path bypasses that diffusion request.
 
-Each PNG fixture is encoded through `img2sixel`, decoded with `sixel2png -D --threads=1`, and assessed with `lsqa`. Images and stream sizes in the quality tables use one encode thread. The PNGs are direct RGBA reconstructions, not screenshots from a receiving terminal. View the original-resolution images for pixel inspection; browser scaling, display calibration, and terminal-specific palette behavior are outside this experiment.
+Each PNG fixture is encoded through `img2sixel`, decoded with `sixel2png -D --threading-policy=1`, and assessed with `lsqa`. Images and stream sizes in the quality tables use one encode thread. The PNGs are direct RGBA reconstructions, not screenshots from a receiving terminal. View the original-resolution images for pixel inspection; browser scaling, display calibration, and terminal-specific palette behavior are outside this experiment.
 
 The reference fixtures are:
 

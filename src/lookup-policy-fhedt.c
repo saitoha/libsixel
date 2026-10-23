@@ -35,6 +35,7 @@
 #include "lookup-fhedt-float32.h"
 #include "lookup-policy-fhedt.h"
 #include "options.h"
+#include "threading.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
@@ -335,15 +336,11 @@ sixel_lookup_policy_fhedt_resolve_settings(
                 lut_policy_fhedt_first_touch,
                 lut_policy_fhedt_first_touch_override),
             0);
+    /* Affinity belongs to the threading policy; direct callers may still
+     * pin an explicit value in the request. */
     settings->pin_threads = request->fhedt_pin_threads_override != 0
         ? request->fhedt_pin_threads
-        : sixel_option_resolve_registered_boolean_binding(
-            SIXEL_OPTION_SCHEMA_LUT_POLICY,
-            "fhedt",
-            SIXEL_SUBOPTION_BINDING_ID_2(
-                lut_policy_fhedt_pin_threads,
-                lut_policy_fhedt_pin_threads_override),
-            0);
+        : sixel_threading_policy_pin(0);
 }
 
 /* Ratios scale nominal-range-normalized coordinates before squaring.

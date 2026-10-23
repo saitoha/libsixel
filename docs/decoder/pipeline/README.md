@@ -208,7 +208,7 @@ The second obligation is an explicit presentation choice. Dequantization may mak
 
 The decoding APIs are part of the library build. The `sixel2png` utility is enabled by default but can be omitted with Autotools `--disable-sixel2png` or the Meson `-Dsixel2png=disabled` feature setting. Tests that require the utility report a skip when it is not built.
 
-Thread support is selected independently. Autotools `--disable-threads` or Meson `-Dthreads=disabled` leaves the serial decoder available. When a supported thread backend is enabled, `--threads=N` supplies a decoder worker budget; it is not a process-wide operating-system thread limit. The platform and compiler matrix is maintained in [Build, Runtime, and Platform Support](../../platform-support.md), while [Threading Overview](../../threading/overview.md) defines the worker-budget vocabulary.
+Thread support is selected independently. Autotools `--disable-threads` or Meson `-Dthreads=disabled` leaves the serial decoder available. When a supported thread backend is enabled, `--threading-policy=N` supplies a decoder worker budget; it is not a process-wide operating-system thread limit. The platform and compiler matrix is maintained in [Build, Runtime, and Platform Support](../../platform-support.md), while [Threading Overview](../../threading/overview.md) defines the worker-budget vocabulary.
 
 PNG output does not require an external libpng because the repository includes a builtin writer. Clipboard and other platform destinations do depend on their configured backend. Windows binary-mode handling, WebAssembly launch arrangements, OpenVMS command execution, and optional platform services belong to the platform layer; they do not define different SIXEL paint semantics.
 

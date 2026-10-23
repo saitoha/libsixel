@@ -29,7 +29,7 @@ env_output="${artifact_dir}/0099-loader-png-trns-keycolor-env-$$.six"
 control_output="${artifact_dir}/0099-loader-png-trns-keycolor-control-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 -Goff -dnone \
     --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0" \
     "-Llibpng:K1:cms_engine=none!" "${input_image}" \
     2>&1 >"${short_output}") || {
@@ -43,7 +43,7 @@ case "${short_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trn
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 -Goff -dnone \
     --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1" \
     "-Llibpng:cms_engine=none!" "${input_image}" \
     2>&1 >"${env_output}") || {
@@ -57,7 +57,7 @@ case "${env_trace}" in *LSXSUB1\|*key=trns_keycolor\|stored=1\|binding=png_trns_
 }
 
 control_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threads=1 -Goff -dnone \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 -Goff -dnone \
     --env "SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1" \
     "-Llibpng:K0:cms_engine=none!" "${input_image}" \
     2>&1 >"${control_output}") || {
