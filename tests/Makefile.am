@@ -1533,21 +1533,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0029_OPTION_NAN \
     -DBUILD_TEST_0030_OPTION_MINIMUM \
     -DBUILD_TEST_0031_OPTION_MAXIMUM \
-    -DBUILD_TEST_0033_LSO2_OKLAB_LIGHTNESS \
-    -DBUILD_TEST_0034_LSO2_CIELAB_LIGHTNESS \
-    -DBUILD_TEST_0035_LSO2_DIN99D_LIGHTNESS \
+    -DBUILD_TEST_0032_LSO2_OKLAB_LIGHTNESS \
+    -DBUILD_TEST_0033_LSO2_CIELAB_LIGHTNESS \
+    -DBUILD_TEST_0034_LSO2_DIN99D_LIGHTNESS \
     -DBUILD_CLAMP_TEST_COMMON \
-    -DBUILD_TEST_0036_API_INVALID \
-    -DBUILD_TEST_0037_DITHER_INSTANCES \
-    -DBUILD_TEST_0038_ENCODER_INSTANCES \
-    -DBUILD_TEST_0041_FS_VERTICAL_RESIDUAL \
-    -DBUILD_TEST_0042_FS_SERPENTINE_RESIDUAL \
-    -DBUILD_TEST_0043_PARALLEL_OVERLAP \
-    -DBUILD_TEST_0047_SNAPSHOT_ALLOCATION \
-    -DBUILD_TEST_0065_SRGB_GAMMA_UNSNAPPED_LOOKUP \
-    -DBUILD_TEST_0066_SRGB_LINEAR_UNSNAPPED_LOOKUP \
-    -DBUILD_TEST_0067_SRGB_GAMMA_EXTENDED_SOURCE \
-    -DBUILD_TEST_0068_SRGB_LINEAR_EXTENDED_SOURCE \
+    -DBUILD_TEST_0035_API_INVALID \
+    -DBUILD_TEST_0036_DITHER_INSTANCES \
+    -DBUILD_TEST_0037_ENCODER_INSTANCES \
+    -DBUILD_TEST_0038_FS_VERTICAL_RESIDUAL \
+    -DBUILD_TEST_0039_FS_SERPENTINE_RESIDUAL \
+    -DBUILD_TEST_0040_PARALLEL_OVERLAP \
+    -DBUILD_TEST_0044_SNAPSHOT_ALLOCATION \
+    -DBUILD_TEST_0064_SRGB_GAMMA_UNSNAPPED_LOOKUP \
+    -DBUILD_TEST_0065_SRGB_LINEAR_UNSNAPPED_LOOKUP \
+    -DBUILD_TEST_0066_SRGB_GAMMA_EXTENDED_SOURCE \
+    -DBUILD_TEST_0067_SRGB_LINEAR_EXTENDED_SOURCE \
     -DBUILD_SRGB_CONTRACT_COMMON \
     -DBUILD_MAP_FLOAT_COMMON \
     -DBUILD_MAP_PRECISION_COMMON \
@@ -1936,9 +1936,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0034_PALETTE_STAGE_RESOLVERS \
     -DBUILD_TEST_0037_PALETTE_SAMPLING_INDEXED_FRAME \
     -DBUILD_TEST_0001_PALETTE_INVARIANCE \
-    -DBUILD_TEST_0080_SAMPLING_SMALL_SOLID \
-    -DBUILD_TEST_0081_SAMPLING_AUTO_PAL8_RETENTION \
-    -DBUILD_TEST_0082_PALETTE_LOOKUP_FAILURE \
+    -DBUILD_TEST_0079_SAMPLING_SMALL_SOLID \
+    -DBUILD_TEST_0080_SAMPLING_AUTO_PAL8_RETENTION \
+    -DBUILD_TEST_0081_PALETTE_LOOKUP_FAILURE \
     -DBUILD_TEST_0040_PALETTE_BUILD_ATTEMPT_ISOLATION \
     -DBUILD_TEST_0041_KCENTER_BINNING_FILTER \
     -DBUILD_TEST_0042_KCENTER_LARGE_BUFFER \
@@ -2178,13 +2178,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0017_HECKBERT_SSE_FLOAT_PCA \
     -DBUILD_TEST_0018_HECKBERT_ORDER_SSE \
     -DBUILD_TEST_0032_HECKBERT_LLOYD_REASSIGNMENT \
-    -DBUILD_TEST_0069_HECKBERT_BUCKET_RGB_MEAN \
-    -DBUILD_TEST_0070_HECKBERT_BUCKET_RGBA_MEAN \
-    -DBUILD_TEST_0071_HECKBERT_BUCKET_GRAY_MEAN \
-    -DBUILD_TEST_0072_HECKBERT_BUCKET_NONE_EXACT \
-    -DBUILD_TEST_0073_HECKBERT_BUCKET_REVERSIBLE_MEAN \
-    -DBUILD_TEST_0074_HECKBERT_BUCKET_FRACTIONAL_AXIS \
-    -DBUILD_TEST_0075_HECKBERT_BUCKET_SPARSE_RGBA \
+    -DBUILD_TEST_0068_HECKBERT_BUCKET_RGB_MEAN \
+    -DBUILD_TEST_0069_HECKBERT_BUCKET_RGBA_MEAN \
+    -DBUILD_TEST_0070_HECKBERT_BUCKET_GRAY_MEAN \
+    -DBUILD_TEST_0071_HECKBERT_BUCKET_NONE_EXACT \
+    -DBUILD_TEST_0072_HECKBERT_BUCKET_REVERSIBLE_MEAN \
+    -DBUILD_TEST_0073_HECKBERT_BUCKET_FRACTIONAL_AXIS \
+    -DBUILD_TEST_0074_HECKBERT_BUCKET_SPARSE_RGBA \
     -DBUILD_HECKBERT_POLICY_COMMON \
     -DBUILD_HECKBERT_DEFAULTS_COMMON \
     -DBUILD_TEST_0033_HECKBERT_API_INITIAL \
@@ -2216,8 +2216,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0051_P3_PALETTE_CONTRACT \
     -DBUILD_TEST_0054_P3_ENCODER_CONTRACT \
     -DBUILD_TEST_0055_P3_MAPFILE_CONTRACT \
-    -DBUILD_TEST_0059_P3_PRECISION_CONTRACT \
-    -DBUILD_TEST_0062_P3_FS_ERROR_CONTRACT \
+    -DBUILD_TEST_0058_P3_PRECISION_CONTRACT \
+    -DBUILD_TEST_0061_P3_FS_ERROR_CONTRACT \
     -DBUILD_TEST_0001_SPATIAL_CONTRACT \
     -DBUILD_TEST_0001_SPACE_CONTRACT \
     -DBUILD_TEST_0001_SAMPLING_CONTRACT \
@@ -5348,16 +5348,16 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/clamp/0014_kernel_sierra2.c \
     processing/dither/clamp/0015_kernel_sierra3.c \
     processing/dither/clamp/0016_kernel_lso2.c \
-    processing/dither/clamp/0033_lso2_oklab_lightness.c \
-    processing/dither/clamp/0034_lso2_cielab_lightness.c \
-    processing/dither/clamp/0035_lso2_din99d_lightness.c \
-    processing/dither/clamp/0036_api_invalid.c \
-    processing/dither/clamp/0037_dither_instances.c \
-    processing/dither/clamp/0038_encoder_instances.c \
-    processing/dither/clamp/0041_fs_vertical_residual.c \
-    processing/dither/clamp/0042_fs_serpentine_residual.c \
-    processing/dither/clamp/0043_parallel_overlap.c \
-    processing/dither/clamp/0047_snapshot_allocation.c \
+    processing/dither/clamp/0032_lso2_oklab_lightness.c \
+    processing/dither/clamp/0033_lso2_cielab_lightness.c \
+    processing/dither/clamp/0034_lso2_din99d_lightness.c \
+    processing/dither/clamp/0035_api_invalid.c \
+    processing/dither/clamp/0036_dither_instances.c \
+    processing/dither/clamp/0037_encoder_instances.c \
+    processing/dither/clamp/0038_fs_vertical_residual.c \
+    processing/dither/clamp/0039_fs_serpentine_residual.c \
+    processing/dither/clamp/0040_parallel_overlap.c \
+    processing/dither/clamp/0044_snapshot_allocation.c \
     processing/dither/clamp/clamp_test_common.c \
     processing/dither/clamp/clamp_test_common.h \
     processing/dither/clamp/0017_keep_fs.c \
@@ -6636,9 +6636,9 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0034_palette_stage_resolvers.c \
     quant/palette/0037_palette_sampling_indexed_frame.c \
     quant/palette/sampling_threads/0001_palette_invariance.c \
-    quant/palette/0080_sampling_small_solid.c \
-    quant/palette/0081_sampling_auto_pal8_retention.c \
-    quant/palette/0082_palette_lookup_failure.c \
+    quant/palette/0079_sampling_small_solid.c \
+    quant/palette/0080_sampling_auto_pal8_retention.c \
+    quant/palette/0081_palette_lookup_failure.c \
     quant/palette/0040_palette_build_attempt_isolation.c \
     quant/palette/0041_kcenter_binning_filter.c \
     quant/palette/0042_kcenter_large_buffer.c \
@@ -6683,13 +6683,13 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.c \
     quant/palette/heckbert_policy/0018_heckbert_order_sse.c \
     quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.c \
-    quant/palette/heckbert_policy/0069_heckbert_bucket_rgb_mean.c \
-    quant/palette/heckbert_policy/0070_heckbert_bucket_rgba_mean.c \
-    quant/palette/heckbert_policy/0071_heckbert_bucket_gray_mean.c \
-    quant/palette/heckbert_policy/0072_heckbert_bucket_none_exact.c \
-    quant/palette/heckbert_policy/0073_heckbert_bucket_reversible_mean.c \
-    quant/palette/heckbert_policy/0074_heckbert_bucket_fractional_axis.c \
-    quant/palette/heckbert_policy/0075_heckbert_bucket_sparse_rgba.c \
+    quant/palette/heckbert_policy/0068_heckbert_bucket_rgb_mean.c \
+    quant/palette/heckbert_policy/0069_heckbert_bucket_rgba_mean.c \
+    quant/palette/heckbert_policy/0070_heckbert_bucket_gray_mean.c \
+    quant/palette/heckbert_policy/0071_heckbert_bucket_none_exact.c \
+    quant/palette/heckbert_policy/0072_heckbert_bucket_reversible_mean.c \
+    quant/palette/heckbert_policy/0073_heckbert_bucket_fractional_axis.c \
+    quant/palette/heckbert_policy/0074_heckbert_bucket_sparse_rgba.c \
     quant/palette/heckbert_policy/heckbert_policy_common.c \
     quant/palette/heckbert_policy/heckbert_defaults_common.c \
     quant/palette/heckbert_policy/0033_heckbert_api_initial.c \
@@ -6772,12 +6772,12 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0051_p3_palette_contract.c \
     quant/palette/0054_p3_encoder_contract.c \
     quant/palette/0055_p3_mapfile_contract.c \
-    quant/palette/0059_p3_precision_contract.c \
-    quant/palette/0062_p3_fs_error_contract.c \
-    quant/palette/0065_srgb_gamma_unsnapped_lookup.c \
-    quant/palette/0066_srgb_linear_unsnapped_lookup.c \
-    quant/palette/0067_srgb_gamma_extended_source.c \
-    quant/palette/0068_srgb_linear_extended_source.c \
+    quant/palette/0058_p3_precision_contract.c \
+    quant/palette/0061_p3_fs_error_contract.c \
+    quant/palette/0064_srgb_gamma_unsnapped_lookup.c \
+    quant/palette/0065_srgb_linear_unsnapped_lookup.c \
+    quant/palette/0066_srgb_gamma_extended_source.c \
+    quant/palette/0067_srgb_linear_extended_source.c \
     quant/palette/rgb101_diffusion/0001_spatial_contract.c \
     quant/palette/color_space/0001_space_contract.c \
     quant/palette/sampling_float/0001_sampling_contract.c \

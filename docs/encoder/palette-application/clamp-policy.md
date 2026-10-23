@@ -110,22 +110,22 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 | DC-29 | option nan | [tests/processing/dither/clamp/0029_option_nan.t](../../../tests/processing/dither/clamp/0029_option_nan.t) |
 | DC-30 | option minimum | [tests/processing/dither/clamp/0030_option_minimum.t](../../../tests/processing/dither/clamp/0030_option_minimum.t) |
 | DC-31 | option maximum | [tests/processing/dither/clamp/0031_option_maximum.t](../../../tests/processing/dither/clamp/0031_option_maximum.t) |
-| DC-33 | LSO2 oklab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0033_lso2_oklab_lightness.t](../../../tests/processing/dither/clamp/0033_lso2_oklab_lightness.t) |
-| DC-34 | LSO2 cielab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0034_lso2_cielab_lightness.t](../../../tests/processing/dither/clamp/0034_lso2_cielab_lightness.t) |
-| DC-35 | LSO2 din99d limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0035_lso2_din99d_lightness.t](../../../tests/processing/dither/clamp/0035_lso2_din99d_lightness.t) |
-| DC-36 | Invalid low-level updates preserve both settings. | [tests/processing/dither/clamp/0036_api_invalid.t](../../../tests/processing/dither/clamp/0036_api_invalid.t) |
-| DC-37 | Low-level dither settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0037_dither_instances.t](../../../tests/processing/dither/clamp/0037_dither_instances.t) |
-| DC-38 | Encoder clamp settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0038_encoder_instances.t](../../../tests/processing/dither/clamp/0038_encoder_instances.t) |
-| DC-41 | FS vertical taps propagate the limited residual in raster order. | [tests/processing/dither/clamp/0041_fs_vertical_residual.t](../../../tests/processing/dither/clamp/0041_fs_vertical_residual.t) |
-| DC-42 | FS reverses horizontal taps while propagating limited residuals in serpentine order. | [tests/processing/dither/clamp/0042_fs_serpentine_residual.t](../../../tests/processing/dither/clamp/0042_fs_serpentine_residual.t) |
-| DC-43 | Native float soft-clamp FS bands match independent raster indexes after overlap warm-up, with a short final band and two/three workers. | [tests/processing/dither/clamp/0043_parallel_overlap.t](../../../tests/processing/dither/clamp/0043_parallel_overlap.t) |
-| DC-44 | FS with odd overlap preserves absolute-row serpentine parity while each worker rebuilds private limiter history. | [tests/processing/dither/clamp/0044_parallel_serpentine_overlap.t](../../../tests/processing/dither/clamp/0044_parallel_serpentine_overlap.t) |
-| DC-45 | FS with a requested two-row work band uses the effective six-row geometry for soft-clamp feedback. | [tests/processing/dither/clamp/0045_parallel_minimum_band.t](../../../tests/processing/dither/clamp/0045_parallel_minimum_band.t) |
-| DC-46 | FS with a requested seven-row work band rounds to twelve rows and excessive overlap is capped at six before soft-clamp application. | [tests/processing/dither/clamp/0046_parallel_overlap_cap.t](../../../tests/processing/dither/clamp/0046_parallel_overlap_cap.t) |
-| DC-47 | Soft allocates one independent exact-size snapshot and frees it once. | [tests/processing/dither/clamp/0047_soft_snapshot.t](../../../tests/processing/dither/clamp/0047_soft_snapshot.t) |
-| DC-48 | Source-containing hard has the same snapshot size and ownership contract. | [tests/processing/dither/clamp/0048_hard_snapshot.t](../../../tests/processing/dither/clamp/0048_hard_snapshot.t) |
-| DC-49 | None allocates no source snapshot. | [tests/processing/dither/clamp/0049_none_no_snapshot.t](../../../tests/processing/dither/clamp/0049_none_no_snapshot.t) |
-| DC-50 | Snapshot allocation failure permits safe finish and a successful retry. | [tests/processing/dither/clamp/0050_snapshot_failure.t](../../../tests/processing/dither/clamp/0050_snapshot_failure.t) |
+| DC-33 | LSO2 oklab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0032_lso2_oklab_lightness.t](../../../tests/processing/dither/clamp/0032_lso2_oklab_lightness.t) |
+| DC-34 | LSO2 cielab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0033_lso2_cielab_lightness.t](../../../tests/processing/dither/clamp/0033_lso2_cielab_lightness.t) |
+| DC-35 | LSO2 din99d limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0034_lso2_din99d_lightness.t](../../../tests/processing/dither/clamp/0034_lso2_din99d_lightness.t) |
+| DC-36 | Invalid low-level updates preserve both settings. | [tests/processing/dither/clamp/0035_api_invalid.t](../../../tests/processing/dither/clamp/0035_api_invalid.t) |
+| DC-37 | Low-level dither settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0036_dither_instances.t](../../../tests/processing/dither/clamp/0036_dither_instances.t) |
+| DC-38 | Encoder clamp settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0037_encoder_instances.t](../../../tests/processing/dither/clamp/0037_encoder_instances.t) |
+| DC-41 | FS vertical taps propagate the limited residual in raster order. | [tests/processing/dither/clamp/0038_fs_vertical_residual.t](../../../tests/processing/dither/clamp/0038_fs_vertical_residual.t) |
+| DC-42 | FS reverses horizontal taps while propagating limited residuals in serpentine order. | [tests/processing/dither/clamp/0039_fs_serpentine_residual.t](../../../tests/processing/dither/clamp/0039_fs_serpentine_residual.t) |
+| DC-43 | Native float soft-clamp FS bands match independent raster indexes after overlap warm-up, with a short final band and two/three workers. | [tests/processing/dither/clamp/0040_parallel_overlap.t](../../../tests/processing/dither/clamp/0040_parallel_overlap.t) |
+| DC-44 | FS with odd overlap preserves absolute-row serpentine parity while each worker rebuilds private limiter history. | [tests/processing/dither/clamp/0041_parallel_serpentine_overlap.t](../../../tests/processing/dither/clamp/0041_parallel_serpentine_overlap.t) |
+| DC-45 | FS with a requested two-row work band uses the effective six-row geometry for soft-clamp feedback. | [tests/processing/dither/clamp/0042_parallel_minimum_band.t](../../../tests/processing/dither/clamp/0042_parallel_minimum_band.t) |
+| DC-46 | FS with a requested seven-row work band rounds to twelve rows and excessive overlap is capped at six before soft-clamp application. | [tests/processing/dither/clamp/0043_parallel_overlap_cap.t](../../../tests/processing/dither/clamp/0043_parallel_overlap_cap.t) |
+| DC-47 | Soft allocates one independent exact-size snapshot and frees it once. | [tests/processing/dither/clamp/0044_soft_snapshot.t](../../../tests/processing/dither/clamp/0044_soft_snapshot.t) |
+| DC-48 | Source-containing hard has the same snapshot size and ownership contract. | [tests/processing/dither/clamp/0045_hard_snapshot.t](../../../tests/processing/dither/clamp/0045_hard_snapshot.t) |
+| DC-49 | None allocates no source snapshot. | [tests/processing/dither/clamp/0046_none_no_snapshot.t](../../../tests/processing/dither/clamp/0046_none_no_snapshot.t) |
+| DC-50 | Snapshot allocation failure permits safe finish and a successful retry. | [tests/processing/dither/clamp/0047_snapshot_failure.t](../../../tests/processing/dither/clamp/0047_snapshot_failure.t) |
 | DC-51 | No clamp policy promotes byte diffusion to float arithmetic, for any error-diffusion kernel. | [tests/processing/precision/0016_clamp_keeps_byte_application.t](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) |
 | DC-52 | The palette-application planner does not use the clamp policy to select arithmetic precision. | [tests/_static/sh/staticcheck-dither-clamp-precision.sh](../../../tests/_static/sh/staticcheck-dither-clamp-precision.sh) |
 
@@ -141,7 +141,7 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DCQ-01 | Short and environment thresholds reach the consumer, produce identical SIXEL, and retain the fixture quality floor. | [tests/cli/options/regression/0168_clamp_threshold_image_regression.t](../../../tests/cli/options/regression/0168_clamp_threshold_image_regression.t) |
+| DCQ-01 | Short and environment thresholds reach the consumer, produce identical SIXEL, and retain the fixture quality floor. | [tests/cli/options/regression/0158_clamp_threshold_image_regression.t](../../../tests/cli/options/regression/0158_clamp_threshold_image_regression.t) |
 
 ### Coverage boundary
 

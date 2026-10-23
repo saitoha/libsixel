@@ -645,15 +645,15 @@ int test_clamp_0028(int argc, char **argv);
 int test_clamp_0029(int argc, char **argv);
 int test_clamp_0030(int argc, char **argv);
 int test_clamp_0031(int argc, char **argv);
+int test_clamp_0032(int argc, char **argv);
 int test_clamp_0033(int argc, char **argv);
 int test_clamp_0034(int argc, char **argv);
 int test_clamp_0035(int argc, char **argv);
 int test_clamp_0036(int argc, char **argv);
 int test_clamp_0037(int argc, char **argv);
 int test_clamp_0038(int argc, char **argv);
-int test_clamp_0041(int argc, char **argv);
-int test_clamp_0042(int argc, char **argv);
-int test_clamp_0043(int argc, char **argv);
+int test_clamp_0039(int argc, char **argv);
+int test_clamp_0040(int argc, char **argv);
 int test_or_native_0030(int argc, char **argv);
 int test_or_native_0031(int argc, char **argv);
 int test_or_native_0032(int argc, char **argv);
@@ -1132,7 +1132,7 @@ int test_cluster_precision_0012(int argc, char **argv);
 int test_cluster_precision_0013(int argc, char **argv);
 int test_cluster_precision_0014(int argc, char **argv);
 
-int test_clamp_0047(int argc, char **argv);
+int test_clamp_0044(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
 int test_perturb_0002_api(int argc, char **argv);
 int test_perturb_0001_weights(int argc, char **argv);
@@ -1450,9 +1450,9 @@ int test_cli_0040_color_job(int argc, char **argv);
 int test_cli_stdin_interrupt(int argc, char **argv);
 int test_rgb101_spatial(int argc, char **argv);
 int test_palette_space(int argc, char **argv);
-int test_palette_0080_sampling_small_solid(int argc, char **argv);
-int test_palette_0081_sampling_auto_pal8_retention(int argc, char **argv);
-int test_palette_0082_lookup_failure(int argc, char **argv);
+int test_palette_0079_sampling_small_solid(int argc, char **argv);
+int test_palette_0080_sampling_auto_pal8_retention(int argc, char **argv);
+int test_palette_0081_lookup_failure(int argc, char **argv);
 int test_palette_sampling_threads(int argc, char **argv);
 int test_palette_sampling_float(int argc, char **argv);
 int test_palette_binning_float(int argc, char **argv);
@@ -2183,10 +2183,10 @@ int test_mah_palette_0011(int argc, char **argv);
 int test_mah_palette_0012(int argc, char **argv);
 int test_lookup_palette(int argc, char **argv);
 int test_palette_solvers_float(int argc, char **argv);
+int test_srgb_0064(int argc, char **argv);
 int test_srgb_0065(int argc, char **argv);
 int test_srgb_0066(int argc, char **argv);
 int test_srgb_0067(int argc, char **argv);
-int test_srgb_0068(int argc, char **argv);
 int test_palette_direct_float(int argc, char **argv);
 int test_palette_retention_kcenter_boundary(int argc, char **argv);
 int test_palette_retention_extended_read(int argc, char **argv);
@@ -2305,8 +2305,8 @@ int test_palette_retention_heckbert(int argc, char **argv);
 int test_palette_0051_p3_contract(int argc, char **argv);
 int test_palette_0054_p3_encoder(int argc, char **argv);
 int test_palette_0055_p3_mapfile(int argc, char **argv);
-int test_palette_0059_p3_precision(int argc, char **argv);
-int test_palette_0062_p3_fs_error(int argc, char **argv);
+int test_palette_0058_p3_precision(int argc, char **argv);
+int test_palette_0061_p3_fs_error(int argc, char **argv);
 int test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
                                                                 char **argv);
 
@@ -4126,15 +4126,15 @@ static test_entry_t const test_entries[] = {
     { "dither/clamp/0029_option_nan", test_clamp_0029 },
     { "dither/clamp/0030_option_minimum", test_clamp_0030 },
     { "dither/clamp/0031_option_maximum", test_clamp_0031 },
-    { "dither/clamp/0033_lso2_oklab_lightness", test_clamp_0033 },
-    { "dither/clamp/0034_lso2_cielab_lightness", test_clamp_0034 },
-    { "dither/clamp/0035_lso2_din99d_lightness", test_clamp_0035 },
-    { "dither/clamp/0036_api_invalid", test_clamp_0036 },
-    { "dither/clamp/0037_dither_instances", test_clamp_0037 },
-    { "dither/clamp/0038_encoder_instances", test_clamp_0038 },
-    { "dither/clamp/0041_fs_vertical_residual", test_clamp_0041 },
-    { "dither/clamp/0042_fs_serpentine_residual", test_clamp_0042 },
-    { "dither/clamp/0043_parallel_overlap", test_clamp_0043 },
+    { "dither/clamp/0032_lso2_oklab_lightness", test_clamp_0032 },
+    { "dither/clamp/0033_lso2_cielab_lightness", test_clamp_0033 },
+    { "dither/clamp/0034_lso2_din99d_lightness", test_clamp_0034 },
+    { "dither/clamp/0035_api_invalid", test_clamp_0035 },
+    { "dither/clamp/0036_dither_instances", test_clamp_0036 },
+    { "dither/clamp/0037_encoder_instances", test_clamp_0037 },
+    { "dither/clamp/0038_fs_vertical_residual", test_clamp_0038 },
+    { "dither/clamp/0039_fs_serpentine_residual", test_clamp_0039 },
+    { "dither/clamp/0040_parallel_overlap", test_clamp_0040 },
     { "encoder-core/0030_or_float_srgb_center",
       test_or_native_0030 },
     { "encoder-core/0031_or_float_p3_center",
@@ -4935,7 +4935,7 @@ static test_entry_t const test_entries[] = {
     { "palette/cluster_precision/0014_linear_output",
       test_cluster_precision_0014 },
 
-    { "dither/clamp/0047_snapshot_allocation", test_clamp_0047 },
+    { "dither/clamp/0044_snapshot_allocation", test_clamp_0044 },
     { "filter/0015_filter_dither_6delta_lso2",
       test_filter_0015_filter_dither_6delta_lso2 },
     { "filter/0016_filter_dither_6delta_jajuni",
@@ -7646,22 +7646,22 @@ static test_entry_t const test_entries[] = {
       test_palette_merge_float },
     { "palette/solvers_float/0001_solver_contract",
       test_palette_solvers_float },
-    { "palette/0080_sampling_small_solid",
-      test_palette_0080_sampling_small_solid },
-    { "palette/0081_sampling_auto_pal8_retention",
-      test_palette_0081_sampling_auto_pal8_retention },
-    { "palette/0082_palette_lookup_failure",
-      test_palette_0082_lookup_failure },
+    { "palette/0079_sampling_small_solid",
+      test_palette_0079_sampling_small_solid },
+    { "palette/0080_sampling_auto_pal8_retention",
+      test_palette_0080_sampling_auto_pal8_retention },
+    { "palette/0081_palette_lookup_failure",
+      test_palette_0081_lookup_failure },
     { "palette/sampling_threads/0001_palette_invariance",
       test_palette_sampling_threads },
     { "palette/sampling_float/0001_sampling_contract",
       test_palette_sampling_float },
     { "palette/rgb101_diffusion/0001_spatial_contract",
       test_rgb101_spatial },
-    { "palette/0065_srgb_gamma_unsnapped_lookup", test_srgb_0065 },
-    { "palette/0066_srgb_linear_unsnapped_lookup", test_srgb_0066 },
-    { "palette/0067_srgb_gamma_extended_source", test_srgb_0067 },
-    { "palette/0068_srgb_linear_extended_source", test_srgb_0068 },
+    { "palette/0064_srgb_gamma_unsnapped_lookup", test_srgb_0064 },
+    { "palette/0065_srgb_linear_unsnapped_lookup", test_srgb_0065 },
+    { "palette/0066_srgb_gamma_extended_source", test_srgb_0066 },
+    { "palette/0067_srgb_linear_extended_source", test_srgb_0067 },
     { "palette/direct_float", test_palette_direct_float },
     { "palette/retention_kcenter_boundary",
       test_palette_retention_kcenter_boundary },
@@ -7859,8 +7859,8 @@ static test_entry_t const test_entries[] = {
     { "palette/0051_p3_palette_contract", test_palette_0051_p3_contract },
     { "palette/0054_p3_encoder_contract", test_palette_0054_p3_encoder },
     { "palette/0055_p3_mapfile", test_palette_0055_p3_mapfile },
-    { "palette/0059_p3_precision_contract", test_palette_0059_p3_precision },
-    { "palette/0062_p3_fs_error_contract", test_palette_0062_p3_fs_error },
+    { "palette/0058_p3_precision_contract", test_palette_0058_p3_precision },
+    { "palette/0061_p3_fs_error_contract", test_palette_0061_p3_fs_error },
     { "loader/0008_loader_coregraphics_pixelformat",
       test_loader_0008_loader_coregraphics_pixelformat },
     { "loader/0009_loader_wic_pixelformat",

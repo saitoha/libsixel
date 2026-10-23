@@ -1151,7 +1151,7 @@ The positional migration is covered by the following focused value and dispatch 
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DOPT-01 | Unknown `-d` base values are rejected. | [tests/cli/options/matching/0132_option_matching_diffusion_unknown_base_value_rejected.t](../../../../tests/cli/options/matching/0132_option_matching_diffusion_unknown_base_value_rejected.t) |
+| DOPT-01 | Unknown `-d` base values are rejected. | [tests/cli/options/matching/0127_option_matching_diffusion_unknown_base_value_rejected.t](../../../../tests/cli/options/matching/0127_option_matching_diffusion_unknown_base_value_rejected.t) |
 
 ### Quality regression tests
 
@@ -1195,7 +1195,7 @@ These tests cover opaque three-channel CPU candidates and the selected native fl
 | BC-16 | Gray sierra1. | [tests/processing/dither/carry/0016_carry_gray_sierra1.t](../../../../tests/processing/dither/carry/0016_carry_gray_sierra1.t) |
 | BC-17 | Gray sierra2. | [tests/processing/dither/carry/0017_carry_gray_sierra2.t](../../../../tests/processing/dither/carry/0017_carry_gray_sierra2.t) |
 | BC-18 | Gray sierra3. | [tests/processing/dither/carry/0018_carry_gray_sierra3.t](../../../../tests/processing/dither/carry/0018_carry_gray_sierra3.t) |
-| BC-19 | Deadzone CLI, compact spelling and environment produce identical output; explicit CLI wins. | [tests/cli/options/regression/0188_diffusion_deadzone_image_regression.t](../../../../tests/cli/options/regression/0188_diffusion_deadzone_image_regression.t) |
+| BC-19 | Deadzone CLI, compact spelling and environment produce identical output; explicit CLI wins. | [tests/cli/options/regression/0178_diffusion_deadzone_image_regression.t](../../../../tests/cli/options/regression/0178_diffusion_deadzone_image_regression.t) |
 | BC-20 | All spatial option scopes accept decimals, reject invalid values and reset defaults. | [tests/processing/dither/carry/0019_carry_option_scope.t](../../../../tests/processing/dither/carry/0019_carry_option_scope.t) |
 | BC-21 | Carry allocation failure returns an error before output or source changes. | [tests/processing/dither/carry/0020_carry_allocation_failure.t](../../../../tests/processing/dither/carry/0020_carry_allocation_failure.t) |
 | BC-22 | Retained feedback with incoming carry (keep_early_incoming). | [tests/processing/dither/carry/0021_carry_keep_early_incoming.t](../../../../tests/processing/dither/carry/0021_carry_keep_early_incoming.t) |

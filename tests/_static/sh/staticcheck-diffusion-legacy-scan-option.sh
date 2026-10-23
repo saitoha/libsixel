@@ -10,7 +10,7 @@ echo "1..1"
 
 src_root=$1
 tests_dir=$src_root/tests
-allow_test="$tests_dir/cli/options/matching/0147_option_matching_diffusion_legacy_scan_option_rejected.t"
+allow_test="$tests_dir/cli/options/matching/0135_option_matching_diffusion_legacy_scan_option_rejected.t"
 
 if test ! -d "$tests_dir"; then
     echo "ok 1 # SKIP missing tests directory"

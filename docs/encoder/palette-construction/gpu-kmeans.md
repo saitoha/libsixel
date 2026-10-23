@@ -60,7 +60,7 @@ The exact numeric fixtures use representable integer or binary-fraction coordina
 | GK-12 | An unavailable Metal device retains CPU execution. | [tests/quant/palette/gpu_kmeans/0012_platform_fallback.t](../../../tests/quant/palette/gpu_kmeans/0012_platform_fallback.t) |
 | GK-14 | Convergence state is isolated between requests. | [tests/quant/palette/gpu_kmeans/0014_request_isolation.t](../../../tests/quant/palette/gpu_kmeans/0014_request_isolation.t) |
 | GK-15 | Native float Oklab palette generation executes Metal. | [tests/quant/palette/gpu_kmeans/0015_native_float_dispatch.t](../../../tests/quant/palette/gpu_kmeans/0015_native_float_dispatch.t) |
-| GK-16 | Compact and environment backend settings reach the same stored option and image output. | [tests/cli/options/regression/0178_quantize_kmeans_backend_image_regression.t](../../../tests/cli/options/regression/0178_quantize_kmeans_backend_image_regression.t) |
+| GK-16 | Compact and environment backend settings reach the same stored option and image output. | [tests/cli/options/regression/0168_quantize_kmeans_backend_image_regression.t](../../../tests/cli/options/regression/0168_quantize_kmeans_backend_image_regression.t) |
 | GK-17 | CLI OFF vetoes the GPU backend and a FORCE environment default. | [tests/quant/palette/gpu_kmeans/0016_policy_off.t](../../../tests/quant/palette/gpu_kmeans/0016_policy_off.t) |
 | GK-18 | FORCE rejects feedback without a byte median-cut fallback. | [tests/quant/palette/gpu_kmeans/0017_force_feedback.t](../../../tests/quant/palette/gpu_kmeans/0017_force_feedback.t) |
 | GK-19 | FORCE rejects an unavailable GPU without a byte median-cut fallback. | [tests/quant/palette/gpu_kmeans/0018_force_platform.t](../../../tests/quant/palette/gpu_kmeans/0018_force_platform.t) |

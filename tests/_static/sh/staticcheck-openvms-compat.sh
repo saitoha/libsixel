@@ -203,8 +203,8 @@ require_fixed "tr -d '\\n' <\"\${out_file}\" | \"\${CKSUM:-cksum}\"" \
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' \
     tests/security/issue/0012_issue220_dcs_signed_integer_overflow.t
 for retry_test in \
-    tests/cli/options/matching/0263_option_matching_palette_exact_float_retry_rejected.t \
-    tests/cli/options/matching/0266_option_matching_palette_kcenter_exact_retry_rejected.t
+    tests/cli/options/matching/0231_option_matching_palette_exact_float_retry_rejected.t \
+    tests/cli/options/matching/0234_option_matching_palette_kcenter_exact_retry_rejected.t
 do
     require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' "$retry_test"
 done
@@ -225,8 +225,8 @@ require_fixed 'tests/data/inputs/mapfile/* -text' .gitattributes
 # Captures used by quality assertions must retain every byte even when a
 # SIXEL packet exceeds the GNV shell-created RMS record-size limit.
 for capture_test in \
-    tests/cli/options/regression/0082_lookup_5bit_shared_instance_image_regression.t \
-    tests/cli/options/regression/0083_lookup_6bit_shared_instance_image_regression.t
+    tests/cli/options/regression/0072_lookup_5bit_shared_instance_image_regression.t \
+    tests/cli/options/regression/0073_lookup_6bit_shared_instance_image_regression.t
 do
     # Match shell source, not values from this checker environment.
     # shellcheck disable=SC2016

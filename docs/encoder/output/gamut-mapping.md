@@ -175,4 +175,4 @@ The scalar reference generator and stored vectors are [gamut-reference.py](../..
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| GMQ-01 | Compact and environment suboptions bind the same mapper and emit identical images, with separate sRGB image sanity. | [tests/cli/options/regression/0173_output_gamut_image_regression.t](../../../tests/cli/options/regression/0173_output_gamut_image_regression.t) |
+| GMQ-01 | Compact and environment suboptions bind the same mapper and emit identical images, with separate sRGB image sanity. | [tests/cli/options/regression/0163_output_gamut_image_regression.t](../../../tests/cli/options/regression/0163_output_gamut_image_regression.t) |

@@ -66,8 +66,8 @@ Exact full names remain the reproducible form for scripts because they communica
 | PFX-01 | A unique choice-value prefix succeeds without an error diagnostic. | [tests/cli/options/matching/0001_option_matching_prefix_unique.t](../../tests/cli/options/matching/0001_option_matching_prefix_unique.t) |
 | PFX-02 | A prefix matching different semantic values fails with exit status 2 and an ambiguity diagnostic. | [tests/cli/options/matching/0002_option_matching_prefix_ambiguous.t](../../tests/cli/options/matching/0002_option_matching_prefix_ambiguous.t) |
 | PFX-03 | Long suboption keys do not inherit value-prefix matching. | [tests/cli/options/matching/0026_option_matching_loader_suboption_prefix_rejected.t](../../tests/cli/options/matching/0026_option_matching_loader_suboption_prefix_rejected.t) |
-| PFX-04 | An environment choice can retain exact lowercase matching even when the CLI offers prefixes. | [tests/cli/options/matching/0239_option_matching_diag_mode_environment_exact.t](../../tests/cli/options/matching/0239_option_matching_diag_mode_environment_exact.t) |
-| PFX-05 | Every registered lookup policy retains its accepted single-character initial. | [tests/cli/0035_cli_lookup_policy_initial_prefixes.c](../../tests/cli/0035_cli_lookup_policy_initial_prefixes.c), [tests/cli/options/matching/0278_option_matching_lookup_registry_initials.t](../../tests/cli/options/matching/0278_option_matching_lookup_registry_initials.t) |
+| PFX-04 | An environment choice can retain exact lowercase matching even when the CLI offers prefixes. | [tests/cli/options/matching/0207_option_matching_diag_mode_environment_exact.t](../../tests/cli/options/matching/0207_option_matching_diag_mode_environment_exact.t) |
+| PFX-05 | Every registered lookup policy retains its accepted single-character initial. | [tests/cli/0035_cli_lookup_policy_initial_prefixes.c](../../tests/cli/0035_cli_lookup_policy_initial_prefixes.c), [tests/cli/options/matching/0246_option_matching_lookup_registry_initials.t](../../tests/cli/options/matching/0246_option_matching_lookup_registry_initials.t) |
 
 ### Coverage boundary
 
