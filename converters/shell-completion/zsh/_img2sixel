@@ -46,32 +46,7 @@ _diffusiontype() {
     'bluenoise:channel=rgb[bluenoise per-channel rgb mode]' \
     'bluenoise:size=64[bluenoise tile size (embedded)]' \
     'bluenoise:channel=rgb:scan=serpentine[rgb channel mode + scan override]' \
-    'lso2[libsixel method based on variable error diffusion]' \
-    'interframe[interframe error diffusion (palette path only)]' \
-    'interframe:scan=serpentine[interframe with serpentine scan]' \
-    'interframe:diffusion=atkinson[interframe with Atkinson kernel]' \
-    'interframe:diffusion=sierra2[interframe with Sierra Two-row kernel]' \
-    'interframe:diffusion=sierra2:scan=serpentine[interframe kernel + scan override]' \
-    'stbn[interframe STBN source selector (default source=hash)]' \
-    'stbn:scan=serpentine[STBN with serpentine scan override]' \
-    'stbn:diffusion=atkinson[STBN with Atkinson kernel]' \
-    'stbn:source=hash[STBN hash source]' \
-    'stbn:source=mask[STBN mask-table source]' \
-    'stbn:source=pmj[PMJ source]' \
-    'stbn:source=mask:scan=serpentine[mask source + serpentine scan]' \
-    'stbn:source=mask:diffusion=sierra2[mask source + Sierra Two-row]' \
-    'stbn:source=pmj:diffusion=atkinson[pmj source + Atkinson]' \
-    'stbn:source=pmj:diffusion=atkinson:scan=serpentine[pmj source + Atkinson + scan override]' \
-    'stbn:strength=0.055[STBN/PMJ noise strength override]' \
-    'stbn:source=hash:strength=0.055[hash source + noise override]' \
-    'stbn:source=mask:strength=0.50[mask source + noise override]' \
-    'stbn:source=pmj:strength=0.50[pmj source + noise override]' \
-    'stbn:motion_adapt=1[enable motion adaptive stbn strength]' \
-    'stbn:scene_cut_reset=1[reset stbn carry at frame boundaries]' \
-    'stbn:scene_detect=1[reset stbn carry on detected scene changes]' \
-    'stbn:alpha_guard=1[suppress stbn near alpha edges]' \
-    'stbn:perceptual_weight=1[enable perceptual channel weighting]' \
-    'stbn:fastpath=1[enable pmj fast path]'
+    'lso2[libsixel method based on variable error diffusion]'
 }
 
 _findtype() {

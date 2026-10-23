@@ -655,44 +655,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "        sub-option:\n"
         "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
         "                                 (default serpentine)\n"
-        "      interframe -> interframe error diffusion (palette path only)\n"
-        "        sub-option:\n"
-        "          diffusion=KERNEL  -> auto, none, fs, atkinson, jajuni,\n"
-        "                               stucki, burkes, sierra1, sierra2,\n"
-        "                               or sierra3\n"
-        "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
-        "                                 (default raster)\n"
-        "      stbn       -> interframe STBN/PMJ source selection\n"
-        "        sub-option:\n"
-        "          source=SOURCE         -> hash, mask, or pmj (default hash)\n"
-        "          diffusion=KERNEL      -> auto, none, fs, atkinson, jajuni,\n"
-        "                                   stucki, burkes, sierra1, sierra2,\n"
-        "                                   or sierra3 (default none)\n"
-        "          strength=VALUE        -> float in 0.0-2.0 (default 0.055)\n"
-        "          motion_adapt=0|1      -> enable motion adaptive strength\n"
-        "                                   (default 0)\n"
-        "          scene_cut_reset=0|1   -> reset carry at frame boundaries\n"
-        "                                   (default 0)\n"
-        "          scene_detect=0|1      -> reset on scene-change detection\n"
-        "                                   (default 0)\n"
-        "          alpha_guard=0|1       -> suppress stbn near alpha edges\n"
-        "                                   (default 0)\n"
-        "          perceptual_weight=0|1 -> apply perceptual channel weights\n"
-        "                                   (default 0)\n"
-        "          fastpath=0|1          -> enable pmj fast path (bit-exact)\n"
-        "                                   (default 0)\n"
-        "          scan=SCANTYPE         -> auto, raster, or serpentine\n"
-        "                                   (default raster)\n"
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
         "                     threads_max=J, pin_threads=I, deadzone=D, perturb=U,\n"
         "                     perturb_seed=R\n"
         "        sierra: variant=V\n"
         "        a_dither, x_dither: strength=T\n"
-        "        interframe: diffusion=D\n"
-        "        stbn: source=S, diffusion=D, strength=T, motion_adapt=M,\n"
-        "          scene_cut_reset=C, scene_detect=E, alpha_guard=A,\n"
-        "          perceptual_weight=P, fastpath=F\n"
         "        bluenoise: strength=T, gradient_factor=G, phase=P,\n"
         "          seed=S, channel=C, size=Z\n"
     },
@@ -1279,7 +1247,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    none/CPU spatial or positional diffusion/auto;\n"
         "    none/ward merge; cover auto/off or soft/hard\n"
         "    destination-aware palette snap; no high-color snap\n"
-        "    -m with the admitted solvers; -M exports sRGB8; no interframe\n"
+        "    -m with the admitted solvers; -M exports sRGB8\n"
     },
     {
         '1',
@@ -1599,62 +1567,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_SIERRA_VARIANT",
         "default Sierra family variant. Accepts 1, 2, or 3.\n"
         "Overridden by -d sierra:variant=LEVEL."
-    },
-    {
-        "SIXEL_DITHER_STBN_SOURCE",
-        "internal STBN source override used by -d stbn.\n"
-        "Accepts stbn-hash (default), stbn-mask, or pmj."
-    },
-    {
-        "SIXEL_DITHER_INTERFRAME_DIFFUSION",
-        "set interframe spatial diffusion kernel for -d interframe.\n"
-        "Accepts auto, none, fs, atkinson, jajuni, stucki, burkes,\n"
-        "sierra1, sierra2, or sierra3.\n"
-        "When unset, -d interframe defaults to fs."
-    },
-    {
-        "SIXEL_DITHER_STBN_DIFFUSION",
-        "set STBN spatial diffusion kernel for -d stbn.\n"
-        "Accepts auto, none, fs, atkinson, jajuni, stucki, burkes,\n"
-        "sierra1, sierra2, or sierra3.\n"
-        "When unset, -d stbn defaults to none.\n"
-        "Overridden by -d stbn:diffusion=KERNEL."
-    },
-    {
-        "SIXEL_DITHER_STBN_STRENGTH",
-        "set interframe STBN/PMJ noise strength for -d stbn.\n"
-        "Accepts 0.0-2.0; defaults to 0.055.\n"
-        "Overridden by -d stbn:strength=VALUE."
-    },
-    {
-        "SIXEL_DITHER_STBN_MOTION_ADAPT",
-        "toggle stbn motion adaptation for -d stbn (0 or 1).\n"
-        "Overridden by -d stbn:motion_adapt=0|1."
-    },
-    {
-        "SIXEL_DITHER_STBN_SCENE_CUT_RESET",
-        "toggle stbn scene-cut reset for -d stbn (0 or 1).\n"
-        "Overridden by -d stbn:scene_cut_reset=0|1."
-    },
-    {
-        "SIXEL_DITHER_STBN_SCENE_DETECT",
-        "toggle stbn scene detection for -d stbn (0 or 1).\n"
-        "Overridden by -d stbn:scene_detect=0|1."
-    },
-    {
-        "SIXEL_DITHER_STBN_ALPHA_GUARD",
-        "toggle stbn alpha-edge guard for -d stbn (0 or 1).\n"
-        "Overridden by -d stbn:alpha_guard=0|1."
-    },
-    {
-        "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT",
-        "toggle stbn perceptual channel weighting for -d stbn (0 or 1).\n"
-        "Overridden by -d stbn:perceptual_weight=0|1."
-    },
-    {
-        "SIXEL_DITHER_STBN_FASTPATH",
-        "toggle stbn pmj fast path for -d stbn (0 or 1).\n"
-        "Overridden by -d stbn:fastpath=0|1."
     },
     {
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE",

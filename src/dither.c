@@ -47,7 +47,6 @@
 
 #include "dither.h"
 #include "cms.h"
-#include "dither-interframe-method.h"
 #include "palette-common-snap.h"
 #include "palette-factory.h"
 #include "compat_stub.h"
@@ -94,26 +93,7 @@ sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
                                     unsigned char const *background);
 
 static void
-sixel_dither_interframe_state_init(sixel_dither_t *dither);
-
-static void
-sixel_dither_interframe_state_reset_with_reason(sixel_dither_t *dither,
-                                                int reason);
-
-static void
-sixel_dither_interframe_state_dispose(sixel_dither_t *dither);
-
-static int
-sixel_dither_interframe_resolve_apply_mode(int apply_mode);
-
-static void
-sixel_dither_interframe_begin_apply(sixel_dither_t *dither,
-                                  int apply_mode);
-
-static void
-sixel_dither_interframe_finish_apply(sixel_dither_t *dither,
-                                   int apply_mode,
-                                   SIXELSTATUS status);
+sixel_dither_apply_record_init(sixel_dither_t *dither);
 
 static void
 sixel_dither_cleanup_apply_hints(sixel_dither_t *dither);
@@ -334,9 +314,9 @@ sixel_dither_logger_set_frame_context(sixel_timeline_logger_t *logger,
 
 /*
  * Determine whether the selected diffusion method can reuse the float32
- * pipeline. Positional, variable-coefficient, fixed-kernel, and interframe
- * methods all have float-capable backends, so only the diffusion token
- * controls eligibility.
+ * pipeline. Positional, variable-coefficient, and fixed-kernel methods all
+ * have float-capable backends, so only the diffusion token controls
+ * eligibility.
  */
 static int
 sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
@@ -362,8 +342,6 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     case SIXEL_DIFFUSE_X_DITHER:
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
     case SIXEL_DIFFUSE_LSO2:
-        return 1;
-    case SIXEL_DIFFUSE_INTERFRAME:
         return 1;
     default:
         return 0;
@@ -2190,25 +2168,6 @@ sixel_dither_new(
     (*ppdither)->dither_parallel_threads_max = 0u;
     (*ppdither)->dither_pin_threads_override = 0;
     (*ppdither)->dither_pin_threads = 1;
-    (*ppdither)->interframe_strategy_override = 0;
-    (*ppdither)->interframe_strategy_token
-        = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
-    (*ppdither)->interframe_spatial_diffuse_override = 0;
-    (*ppdither)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
-    (*ppdither)->interframe_noise_strength_override = 0;
-    (*ppdither)->interframe_noise_strength_u8 = 0;
-    (*ppdither)->stbn_motion_adapt_override = 0;
-    (*ppdither)->stbn_motion_adapt_enabled = 0;
-    (*ppdither)->stbn_scene_cut_reset_override = 0;
-    (*ppdither)->stbn_scene_cut_reset_enabled = 0;
-    (*ppdither)->stbn_scene_detect_override = 0;
-    (*ppdither)->stbn_scene_detect_enabled = 0;
-    (*ppdither)->stbn_alpha_guard_override = 0;
-    (*ppdither)->stbn_alpha_guard_enabled = 0;
-    (*ppdither)->stbn_perceptual_weight_override = 0;
-    (*ppdither)->stbn_perceptual_weight_enabled = 0;
-    (*ppdither)->stbn_fastpath_override = 0;
-    (*ppdither)->stbn_fastpath_enabled = 0;
     (*ppdither)->a_dither_strength_override = 0;
     (*ppdither)->a_dither_strength = 0.150f;
     (*ppdither)->x_dither_strength_override = 0;
@@ -2310,7 +2269,7 @@ sixel_dither_new(
     (*ppdither)->bluenoise_gradient_width = 0;
     (*ppdither)->bluenoise_gradient_height = 0;
     (*ppdither)->pipeline_logger = NULL;
-    sixel_dither_interframe_state_init(*ppdither);
+    sixel_dither_apply_record_init(*ppdither);
 
     status = sixel_palette_create_from_factory(&(*ppdither)->palette,
                                                allocator);
@@ -2403,7 +2362,6 @@ sixel_dither_destroy(
         sixel_dither_release_pipeline_accumulation_result_mask(dither);
         sixel_dither_release_pipeline_accumulation_result_rgb(dither);
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
-        sixel_dither_interframe_state_dispose(dither);
         sixel_cdef_free(dither->highcolor_icc);
         sixel_allocator_free(allocator, dither);
         sixel_allocator_unref(allocator);
@@ -2898,7 +2856,6 @@ sixel_dither_initialize(
          quantizer == SIXEL_QUANTIZE_MODEL_MEDIANCUT) &&
         dither->gpu_policy == SIXEL_GPU_POLICY_OFF &&
         quality_mode != SIXEL_QUALITY_HIGHCOLOR &&
-        dither->method_for_diffuse != SIXEL_DIFFUSE_INTERFRAME &&
         !sixel_palette_snap_is_enabled();
     if (native && (count / (size_t)width != (size_t)height ||
             count > UINT_MAX / (3U * sizeof(float)))) {
@@ -3250,8 +3207,7 @@ sixel_dither_prepare_standalone_palette(sixel_dither_t *dither)
             return status;
         }
     }
-    if (dither->gpu_policy != SIXEL_GPU_POLICY_OFF ||
-            dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
+    if (dither->gpu_policy != SIXEL_GPU_POLICY_OFF) {
         sixel_helper_set_additional_message(
             "standalone float palette requires CPU spatial application.");
         return SIXEL_BAD_ARGUMENT;
@@ -3743,7 +3699,7 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
 }
 
 static void
-sixel_dither_interframe_state_init(sixel_dither_t *dither)
+sixel_dither_apply_record_init(sixel_dither_t *dither)
 {
     if (dither == NULL) {
         return;
@@ -3753,77 +3709,10 @@ sixel_dither_interframe_state_init(sixel_dither_t *dither)
     dither->frame_context.loop_no = 0;
     dither->frame_context.multiframe = 0;
     dither->frame_context.valid = 0;
-
-    dither->interframe_state.error_frame = NULL;
-    dither->interframe_state.error_frame_size = 0U;
-    dither->interframe_state.width = 0;
-    dither->interframe_state.height = 0;
-    dither->interframe_state.depth = 0;
-    dither->interframe_state.method_id = SIXEL_INTERFRAME_METHOD_NONE;
-    dither->interframe_state.method_private = NULL;
-    dither->interframe_state.method_private_size = 0U;
-    dither->interframe_state.apply_count = 0UL;
-    dither->interframe_state.consume_count = 0UL;
-    dither->interframe_state.reset_count = 0UL;
-    dither->interframe_state.reset_frame_boundary_count = 0UL;
-    dither->interframe_state.reset_size_change_count = 0UL;
-    dither->interframe_state.reset_clear_count = 0UL;
-    dither->interframe_state.last_apply_status = SIXEL_FALSE;
-    dither->interframe_state.last_apply_consumed = 0;
-}
-
-SIXEL_INTERNAL_API void
-sixel_dither_note_interframe_reset_reason(sixel_dither_t *dither,
-                                          int reason)
-{
-    if (dither == NULL) {
-        return;
-    }
-
-    dither->interframe_state.reset_count += 1UL;
-    if (reason == SIXEL_DITHER_INTERFRAME_RESET_REASON_FRAME_BOUNDARY) {
-        dither->interframe_state.reset_frame_boundary_count += 1UL;
-    } else if (reason == SIXEL_DITHER_INTERFRAME_RESET_REASON_SIZE_CHANGE) {
-        dither->interframe_state.reset_size_change_count += 1UL;
-    } else if (reason == SIXEL_DITHER_INTERFRAME_RESET_REASON_CLEAR) {
-        dither->interframe_state.reset_clear_count += 1UL;
-    }
-}
-
-static void
-sixel_dither_interframe_state_reset_with_reason(sixel_dither_t *dither,
-                                                int reason)
-{
-    if (dither == NULL) {
-        return;
-    }
-
-    sixel_dither_note_interframe_reset_reason(dither, reason);
-    sixel_interframe_release_shared_frame(dither);
-    dither->interframe_state.last_apply_status = SIXEL_FALSE;
-    dither->interframe_state.last_apply_consumed = 0;
-}
-
-static void
-sixel_dither_interframe_state_dispose(sixel_dither_t *dither)
-{
-    if (dither == NULL) {
-        return;
-    }
-
-    sixel_dither_interframe_state_reset_with_reason(
-        dither,
-        SIXEL_DITHER_INTERFRAME_RESET_REASON_NONE);
-    dither->frame_context.frame_no = 0;
-    dither->frame_context.loop_no = 0;
-    dither->frame_context.multiframe = 0;
-    dither->frame_context.valid = 0;
-    dither->interframe_state.apply_count = 0UL;
-    dither->interframe_state.consume_count = 0UL;
-    dither->interframe_state.reset_count = 0UL;
-    dither->interframe_state.reset_frame_boundary_count = 0UL;
-    dither->interframe_state.reset_size_change_count = 0UL;
-    dither->interframe_state.reset_clear_count = 0UL;
+    dither->apply_count = 0UL;
+    dither->apply_success_count = 0UL;
+    dither->last_apply_status = SIXEL_FALSE;
+    dither->last_apply_depth = 0;
 }
 
 SIXEL_INTERNAL_API void
@@ -3837,9 +3726,6 @@ sixel_dither_clear_frame_context(sixel_dither_t *dither)
     dither->frame_context.loop_no = 0;
     dither->frame_context.multiframe = 0;
     dither->frame_context.valid = 0;
-    sixel_dither_interframe_state_reset_with_reason(
-        dither,
-        SIXEL_DITHER_INTERFRAME_RESET_REASON_CLEAR);
 }
 
 SIXEL_INTERNAL_API void
@@ -3848,78 +3734,14 @@ sixel_dither_set_frame_context(sixel_dither_t *dither,
                                int loop_no,
                                int multiframe)
 {
-    int needs_reset;
-
     if (dither == NULL) {
         return;
-    }
-
-    needs_reset = 0;
-    if (dither->frame_context.valid == 0) {
-        needs_reset = 1;
-    } else if (dither->frame_context.multiframe == 0 || multiframe == 0) {
-        needs_reset = 1;
-    } else if (dither->frame_context.loop_no != loop_no) {
-        needs_reset = 1;
-    } else if (frame_no == 0 && dither->frame_context.frame_no != 0) {
-        needs_reset = 1;
     }
 
     dither->frame_context.frame_no = frame_no;
     dither->frame_context.loop_no = loop_no;
     dither->frame_context.multiframe = multiframe;
     dither->frame_context.valid = 1;
-
-    if (needs_reset) {
-        /*
-         * Interframe buffers are reserved for future diffusion modes. Reset
-         * state at timeline boundaries so capture and encode paths stay in
-         * sync even before interframe diffusion is enabled.
-         */
-        sixel_dither_interframe_state_reset_with_reason(
-            dither,
-            SIXEL_DITHER_INTERFRAME_RESET_REASON_FRAME_BOUNDARY);
-    }
-}
-
-static int
-sixel_dither_interframe_resolve_apply_mode(int apply_mode)
-{
-    if (apply_mode == SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE) {
-        return SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE;
-    }
-    return SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
-}
-
-static void
-sixel_dither_interframe_begin_apply(sixel_dither_t *dither,
-                                  int apply_mode)
-{
-    if (dither == NULL) {
-        return;
-    }
-
-    if (apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
-        dither->interframe_state.apply_count += 1UL;
-    }
-    dither->interframe_state.last_apply_consumed =
-        (apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) ? 1 : 0;
-}
-
-static void
-sixel_dither_interframe_finish_apply(sixel_dither_t *dither,
-                                   int apply_mode,
-                                   SIXELSTATUS status)
-{
-    if (dither == NULL) {
-        return;
-    }
-
-    dither->interframe_state.last_apply_status = status;
-    if (status == SIXEL_OK
-            && apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
-        dither->interframe_state.consume_count += 1UL;
-    }
 }
 
 static void
@@ -4239,14 +4061,13 @@ sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
 }
 
 
-/* apply palette with optional interframe-state consumption */
+/* apply palette */
 SIXEL_INTERNAL_API sixel_index_t *
-sixel_dither_apply_palette_with_mode(
+sixel_dither_apply_palette(
     sixel_dither_t  /* in */ *dither,
     unsigned char   /* in */ *pixels,
     int             /* in */ width,
-    int             /* in */ height,
-    int             /* in */ apply_mode)
+    int             /* in */ height)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t bufsize;
@@ -4287,9 +4108,6 @@ sixel_dither_apply_palette_with_mode(
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_timeline_logger_t *logger = NULL;
     int logger_owned = 0;
-    int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
-    int needs_size_reset = 0;
-    int pipeline_depth = 0;
     int supports_parallel_bands;
     sixel_dither_policy_interface_t *dither_policy;
     size_t palette_entry_capacity;
@@ -4314,8 +4132,6 @@ sixel_dither_apply_palette_with_mode(
         goto end;
     }
 
-    resolved_apply_mode =
-        sixel_dither_interframe_resolve_apply_mode(apply_mode);
     sixel_dither_ref(dither);
     status = sixel_dither_prepare_standalone_palette(dither);
     if (SIXEL_FAILED(status)) {
@@ -4323,24 +4139,7 @@ sixel_dither_apply_palette_with_mode(
     }
     sixel_dither_clear_pipeline_accumulation_result_mask(dither);
     sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
-    if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
-        /*
-         * Keep size-change resets observable in diagnostics even when
-         * timeline-boundary resets have already been applied.
-         */
-        if (dither->interframe_state.width > 0
-                && dither->interframe_state.height > 0
-                && (dither->interframe_state.width != width
-                    || dither->interframe_state.height != height)) {
-            needs_size_reset = 1;
-        }
-        if (needs_size_reset != 0) {
-            sixel_dither_interframe_state_reset_with_reason(
-                dither,
-                SIXEL_DITHER_INTERFRAME_RESET_REASON_SIZE_CHANGE);
-        }
-    }
-    sixel_dither_interframe_begin_apply(dither, resolved_apply_mode);
+    dither->apply_count += 1UL;
 
     palette = dither->palette;
     if (palette == NULL) {
@@ -4703,8 +4502,8 @@ sixel_dither_apply_palette_with_mode(
         dither_policy->vtbl->supports_parallel_bands(dither_policy);
     if (parallel_active && supports_parallel_bands == 0) {
         /*
-         * The selected dither class requires frame-global state and
-         * cannot process overlapped bands in parallel.
+         * The selected dither class cannot process overlapped bands in
+         * parallel.
          */
         parallel_active = 0;
     }
@@ -5062,12 +4861,8 @@ sixel_dither_apply_palette_with_mode(
             goto end;
         }
     }
-    if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
-        pipeline_depth = sixel_helper_compute_depth(pipeline_pixelformat);
-        dither->interframe_state.width = width;
-        dither->interframe_state.height = height;
-        dither->interframe_state.depth = pipeline_depth;
-    }
+    dither->last_apply_depth =
+        sixel_helper_compute_depth(pipeline_pixelformat);
 
 end:
     if (!parallel_active && logger != NULL) {
@@ -5097,9 +4892,10 @@ end:
             }
             dest = NULL;
         }
-        sixel_dither_interframe_finish_apply(dither,
-                                           resolved_apply_mode,
-                                           status);
+        dither->last_apply_status = status;
+        if (status == SIXEL_OK) {
+            dither->apply_success_count += 1UL;
+        }
         if (normalized_pixels != NULL) {
             sixel_allocator_free(dither->allocator, normalized_pixels);
         }
@@ -5126,21 +4922,6 @@ end:
         sixel_dither_unref(dither);
     }
     return dest;
-}
-
-SIXEL_INTERNAL_API sixel_index_t *
-sixel_dither_apply_palette(
-    sixel_dither_t  /* in */ *dither,
-    unsigned char   /* in */ *pixels,
-    int             /* in */ width,
-    int             /* in */ height)
-{
-    return sixel_dither_apply_palette_with_mode(
-        dither,
-        pixels,
-        width,
-        height,
-        SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE);
 }
 
 

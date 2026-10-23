@@ -18,7 +18,7 @@ The controls use the same [suboption and environment precedence](suboptions.md#e
 
 ## Ambiguous-prefix candidates
 
-The [prefix matcher](prefix-matching.md) already knows the spellings matched by an ambiguous token. When prefix suggestions are enabled, human diagnostics append that candidate set to the `ambiguous prefix` error. For example, `-d st` can explain that it matches both `stucki` and `stbn`. When disabled, the ambiguity is still reported and the command still fails, but the candidate list is omitted.
+The [prefix matcher](prefix-matching.md) already knows the spellings matched by an ambiguous token. When prefix suggestions are enabled, human diagnostics append that candidate set to the `ambiguous prefix` error. For example, `-d s` can explain that it matches both `stucki` and `sierra`. When disabled, the ambiguity is still reported and the command still fails, but the candidate list is omitted.
 
 Code diagnostic mode suppresses the human-oriented matched-name list while retaining the stable `AMBIGUOUS_PREFIX` category and detail. Automation should branch on the category rather than parse candidate prose whose contents can evolve with the registry.
 

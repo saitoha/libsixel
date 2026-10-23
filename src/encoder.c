@@ -107,7 +107,6 @@
 #include "options.h"
 #include "options-registry.h"
 #include "dither.h"
-#include "dither-interframe-method.h"
 #include "palette.h"
 #include "palette-heckbert.h"
 #include "palette-kcenter.h"
@@ -1013,32 +1012,6 @@ sixel_encoder_update_diagnostic_dither(sixel_encoder_t *encoder,
     }
 }
 
-static char const *
-sixel_encoder_dither_source_name(unsigned int source_id)
-{
-    if (source_id == SIXEL_INTERFRAME_STBN_SOURCE_MASK) {
-        return "mask";
-    }
-    if (source_id == SIXEL_INTERFRAME_STBN_SOURCE_PMJ) {
-        return "pmj";
-    }
-
-    return "hash";
-}
-
-static char const *
-sixel_encoder_dither_spatial_name(int method_for_diffuse)
-{
-    if (method_for_diffuse == SIXEL_DIFFUSE_NONE) {
-        return "none";
-    }
-    if (method_for_diffuse == SIXEL_DIFFUSE_ATKINSON) {
-        return "atkinson";
-    }
-
-    return "fs";
-}
-
 /* Keep the trace independent of numeric diffusion ABI values. */
 static char const *
 sixel_encoder_dither_diffuse_name(int method_for_diffuse)
@@ -1066,8 +1039,6 @@ sixel_encoder_dither_diffuse_name(int method_for_diffuse)
         return "bluenoise";
     case SIXEL_DIFFUSE_LSO2:
         return "lso2";
-    case SIXEL_DIFFUSE_INTERFRAME:
-        return "interframe";
     case SIXEL_DIFFUSE_SIERRA1:
         return "sierra1";
     case SIXEL_DIFFUSE_SIERRA2:
@@ -1098,11 +1069,9 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
                                    SIXELSTATUS status)
 {
     sixel_dither_t const *dither;
-    unsigned int source_id;
     int first;
 
     dither = NULL;
-    source_id = SIXEL_INTERFRAME_STBN_SOURCE_HASH;
     first = 1;
     if (encoder == NULL) {
         return;
@@ -1118,20 +1087,10 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
     if (dither == NULL) {
         return;
     }
-    source_id = sixel_interframe_stbn_source_id_from_token(
-        dither->interframe_strategy_token);
 
     fprintf(stderr,
             "LSXDTH1|rc=%d|diffuse=%s|scan=%s|shared=%d|"
-            "shared_override=%d|apply=%lu|consume=%lu|reset=%lu|"
-            "reset_boundary=%lu|reset_size=%lu|source=%s|"
-            "source_override=%d|spatial=%s|spatial_override=%d|"
-            "strength=%d|strength_override=%d|motion=%d|"
-            "motion_override=%d|scene_reset=%d|"
-            "scene_reset_override=%d|scene_detect=%d|"
-            "scene_detect_override=%d|alpha=%d|alpha_override=%d|"
-            "perceptual=%d|perceptual_override=%d|fastpath=%d|"
-            "fastpath_override=%d|a_strength=%.9g|"
+            "shared_override=%d|apply=%lu|apply_ok=%lu|a_strength=%.9g|"
             "a_strength_override=%d|x_strength=%.9g|"
             "x_strength_override=%d|band_height=%d|band_overlap=%d|"
             "band_overwrap=%u|band_overwrap_override=%d|"
@@ -1148,30 +1107,8 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             sixel_encoder_dither_scan_name(dither->method_for_scan),
             dither->lut_policy_shared_instance,
             dither->lut_policy_shared_instance_override,
-            dither->interframe_state.apply_count,
-            dither->interframe_state.consume_count,
-            dither->interframe_state.reset_count,
-            dither->interframe_state.reset_frame_boundary_count,
-            dither->interframe_state.reset_size_change_count,
-            sixel_encoder_dither_source_name(source_id),
-            dither->interframe_strategy_override,
-            sixel_encoder_dither_spatial_name(
-                dither->interframe_spatial_diffuse),
-            dither->interframe_spatial_diffuse_override,
-            dither->interframe_noise_strength_u8,
-            dither->interframe_noise_strength_override,
-            dither->stbn_motion_adapt_enabled,
-            dither->stbn_motion_adapt_override,
-            dither->stbn_scene_cut_reset_enabled,
-            dither->stbn_scene_cut_reset_override,
-            dither->stbn_scene_detect_enabled,
-            dither->stbn_scene_detect_override,
-            dither->stbn_alpha_guard_enabled,
-            dither->stbn_alpha_guard_override,
-            dither->stbn_perceptual_weight_enabled,
-            dither->stbn_perceptual_weight_override,
-            dither->stbn_fastpath_enabled,
-            dither->stbn_fastpath_override,
+            dither->apply_count,
+            dither->apply_success_count,
             (double)dither->a_dither_strength,
             dither->a_dither_strength_override,
             (double)dither->x_dither_strength,
@@ -1203,28 +1140,6 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
             dither->pipeline_last_mode == SIXEL_DITHER_ENCODE_PIPELINE
                 ? "pipeline" : dither->pipeline_last_mode ==
                     SIXEL_DITHER_ENCODE_STAGED ? "staged" : "serial");
-    if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
-        sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
-    }
-    if (source_id == SIXEL_INTERFRAME_STBN_SOURCE_PMJ) {
-        sixel_encoder_emit_contract_code(stderr, &first, "STRATEGY_SOURCE_PMJ");
-    }
-    if (dither->stbn_alpha_guard_override != 0
-            && dither->stbn_alpha_guard_enabled != 0) {
-        sixel_encoder_emit_contract_code(stderr, &first, "ALPHA_GUARD_ON");
-    } else if (dither->stbn_alpha_guard_override != 0) {
-        sixel_encoder_emit_contract_code(stderr, &first, "ALPHA_GUARD_OFF");
-    }
-    if (dither->interframe_state.reset_frame_boundary_count > 0UL) {
-        sixel_encoder_emit_contract_code(stderr,
-                                         &first,
-                                         "RESET_BETWEEN_INPUTS");
-    }
-    if (dither->interframe_state.reset_size_change_count > 0UL) {
-        sixel_encoder_emit_contract_code(stderr,
-                                         &first,
-                                         "RESET_ON_SIZE_CHANGE");
-    }
     if (first != 0) {
         fprintf(stderr, "DTH_OK");
     }
@@ -5540,8 +5455,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     if (context->encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
         /*
          * High-color output does not quantize pixels through a palette.
-         * Treat palette-space diffusion requests as no-ops here so unsupported
-         * interframe policies do not reach the high-color encoder.
+         * Treat palette-space diffusion requests as no-ops here.
          */
         skip_palette_diffusion = 1;
     } else if (context->encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
@@ -5592,42 +5506,6 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->dither_pin_threads_override;
     context->dither->dither_pin_threads =
         context->encoder->dither_pin_threads;
-    context->dither->interframe_strategy_override =
-        context->encoder->interframe_strategy_override;
-    context->dither->interframe_strategy_token =
-        context->encoder->interframe_strategy_token;
-    context->dither->interframe_spatial_diffuse_override =
-        context->encoder->interframe_spatial_diffuse_override;
-    context->dither->interframe_spatial_diffuse =
-        context->encoder->interframe_spatial_diffuse;
-    context->dither->interframe_noise_strength_override =
-        context->encoder->interframe_noise_strength_override;
-    context->dither->interframe_noise_strength_u8 =
-        context->encoder->interframe_noise_strength_u8;
-    context->dither->stbn_motion_adapt_override =
-        context->encoder->stbn_motion_adapt_override;
-    context->dither->stbn_motion_adapt_enabled =
-        context->encoder->stbn_motion_adapt_enabled;
-    context->dither->stbn_scene_cut_reset_override =
-        context->encoder->stbn_scene_cut_reset_override;
-    context->dither->stbn_scene_cut_reset_enabled =
-        context->encoder->stbn_scene_cut_reset_enabled;
-    context->dither->stbn_scene_detect_override =
-        context->encoder->stbn_scene_detect_override;
-    context->dither->stbn_scene_detect_enabled =
-        context->encoder->stbn_scene_detect_enabled;
-    context->dither->stbn_alpha_guard_override =
-        context->encoder->stbn_alpha_guard_override;
-    context->dither->stbn_alpha_guard_enabled =
-        context->encoder->stbn_alpha_guard_enabled;
-    context->dither->stbn_perceptual_weight_override =
-        context->encoder->stbn_perceptual_weight_override;
-    context->dither->stbn_perceptual_weight_enabled =
-        context->encoder->stbn_perceptual_weight_enabled;
-    context->dither->stbn_fastpath_override =
-        context->encoder->stbn_fastpath_override;
-    context->dither->stbn_fastpath_enabled =
-        context->encoder->stbn_fastpath_enabled;
     context->dither->a_dither_strength_override =
         context->encoder->a_dither_strength_override;
     context->dither->a_dither_strength =
@@ -7500,7 +7378,7 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
     /* These CPU spatial kernels consume the unrounded float palette and
      * propagate residuals without byte projection. Positional methods keep
      * their coordinate bias in the same extended lookup space. AUTO resolves
-     * to Atkinson or FS; temporal history remains outside this path. */
+     * to Atkinson or FS. */
     switch (encoder->method_for_diffuse) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:
@@ -10435,25 +10313,6 @@ sixel_encoder_new(
     (*ppencoder)->dither_parallel_threads_max = 0u;
     (*ppencoder)->dither_pin_threads_override = 0;
     (*ppencoder)->dither_pin_threads = 1;
-    (*ppencoder)->interframe_strategy_override = 0;
-    (*ppencoder)->interframe_strategy_token
-        = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
-    (*ppencoder)->interframe_spatial_diffuse_override = 0;
-    (*ppencoder)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
-    (*ppencoder)->interframe_noise_strength_override = 0;
-    (*ppencoder)->interframe_noise_strength_u8 = 0;
-    (*ppencoder)->stbn_motion_adapt_override = 0;
-    (*ppencoder)->stbn_motion_adapt_enabled = 0;
-    (*ppencoder)->stbn_scene_cut_reset_override = 0;
-    (*ppencoder)->stbn_scene_cut_reset_enabled = 0;
-    (*ppencoder)->stbn_scene_detect_override = 0;
-    (*ppencoder)->stbn_scene_detect_enabled = 0;
-    (*ppencoder)->stbn_alpha_guard_override = 0;
-    (*ppencoder)->stbn_alpha_guard_enabled = 0;
-    (*ppencoder)->stbn_perceptual_weight_override = 0;
-    (*ppencoder)->stbn_perceptual_weight_enabled = 0;
-    (*ppencoder)->stbn_fastpath_override = 0;
-    (*ppencoder)->stbn_fastpath_enabled = 0;
     (*ppencoder)->a_dither_strength_override = 0;
     (*ppencoder)->a_dither_strength = 0.150f;
     (*ppencoder)->x_dither_strength_override = 0;
@@ -11690,8 +11549,7 @@ sixel_encoder_apply_diffusion_resolution(
 
     /*
      * Reset every option-owned field before applying environment and CLI
-     * values.  The base policy below is the only non-scalar initialization;
-     * individual suboption names never enter this application path.
+     * values.  Individual suboption names never enter this application path.
      */
     encoder->method_for_diffuse = resolution->resolved_base_value;
     encoder->method_for_scan = SIXEL_SCAN_AUTO;
@@ -11702,16 +11560,6 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->dither_parallel_band_width = 0u;
     encoder->dither_parallel_threads_max = 0u;
     encoder->dither_pin_threads = 1;
-    encoder->interframe_strategy_token =
-        SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
-    encoder->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
-    encoder->interframe_noise_strength_u8 = 0;
-    encoder->stbn_motion_adapt_enabled = 0;
-    encoder->stbn_scene_cut_reset_enabled = 0;
-    encoder->stbn_scene_detect_enabled = 0;
-    encoder->stbn_alpha_guard_enabled = 0;
-    encoder->stbn_perceptual_weight_enabled = 0;
-    encoder->stbn_fastpath_enabled = 0;
     encoder->a_dither_strength = 0.150f;
     encoder->x_dither_strength = 0.100f;
     encoder->bluenoise_strength = 0.055f;
@@ -11726,20 +11574,6 @@ sixel_encoder_apply_diffusion_resolution(
         SIXEL_OPTION_SCOPE_ENCODER,
         encoder,
         SIXEL_SUBOPTION_TARGET_ENCODER);
-
-    if (resolution->base_def->base_policy ==
-        SIXEL_OPTION_BASE_POLICY_DIFFUSION_INTERFRAME) {
-        encoder->interframe_strategy_override = 1;
-        encoder->interframe_strategy_token =
-            SIXEL_INTERFRAME_STRATEGY_TOKEN_DIFFUSION;
-    } else if (resolution->base_def->base_policy ==
-               SIXEL_OPTION_BASE_POLICY_DIFFUSION_STBN) {
-        encoder->interframe_strategy_override = 1;
-        encoder->interframe_strategy_token =
-            SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH;
-        encoder->interframe_spatial_diffuse_override = 1;
-        encoder->interframe_spatial_diffuse = SIXEL_DIFFUSE_NONE;
-    }
 
     return sixel_encoder_apply_bound_suboptions(
         encoder,

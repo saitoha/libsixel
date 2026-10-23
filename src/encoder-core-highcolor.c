@@ -947,14 +947,6 @@ sixel_encode_highcolor(
     }
     output->transparent_mask = source_mask;
 
-    if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
-        sixel_helper_set_additional_message(
-            "sixel_encode_highcolor: interframe is not supported "
-            "with high-color mode.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto error;
-    }
-
     pixelformat = dither->pixelformat;
     stride = 3;
     use_float = 0;

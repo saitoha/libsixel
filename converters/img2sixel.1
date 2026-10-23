@@ -696,48 +696,11 @@ sub-option:
 .br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default serpentine)
 .br
-\fBinterframe\fP -> interframe error diffusion (palette path only)
-.br
-sub-option:
-.br
-\fBdiffusion=KERNEL\fP -> \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP,
-\fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP
-.br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
-.br
-\fBstbn\fP -> interframe STBN/PMJ source selection
-.br
-sub-option:
-.br
-\fBsource=SOURCE\fP -> \fBhash\fP, \fBmask\fP, or \fBpmj\fP (default hash)
-.br
-\fBdiffusion=KERNEL\fP -> \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP,
-\fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP (default none)
-.br
-\fBstrength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
-.br
-\fBmotion_adapt=0|1\fP -> enable motion adaptive strength (default 0)
-.br
-\fBscene_cut_reset=0|1\fP -> reset carry at frame boundaries (default 0)
-.br
-\fBscene_detect=0|1\fP -> reset on scene-change detection (default 0)
-.br
-\fBalpha_guard=0|1\fP -> suppress stbn near alpha edges (default 0)
-.br
-\fBperceptual_weight=0|1\fP -> apply perceptual channel weights (default 0)
-.br
-\fBfastpath=0|1\fP -> enable pmj fast path (bit-exact, default 0)
-.br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
-.br
 Compact diffusion suboption names use one uppercase letter plus the value:
 all methods scan=N, band_overwrap=O, band_width=B, threads_max=J,
 pin_threads=I, deadzone=D, perturb=U, perturb_seed=R;
 sierra variant=V; a_dither/x_dither strength=T;
-interframe diffusion=D;
-stbn source=S, diffusion=D, strength=T, motion_adapt=M,
-scene_cut_reset=C, scene_detect=E, alpha_guard=A, perceptual_weight=P,
-fastpath=F; bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
+bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
 channel=C, size=Z.
 
 .br
@@ -776,8 +739,8 @@ occurrence-weighted mean. Byte representatives round to nearest with halves
 rounded up. Extended float representatives remain fractional.
 Auto uses average with any enabled dither and histogram with none, including
 after Ward and Lloyd. Auto diffusion resolves to FS above 16 colors and
-Atkinson otherwise; both are enabled dithers. Positional and interframe
-dithering also use average. Other solvers retain their representatives with auto;
+Atkinson otherwise; both are enabled dithers. Positional
+dithering also uses average. Other solvers retain their representatives with auto;
 explicit center, average and histogram are rejected for kmeans, medoids and
 center solvers. Ward and Lloyd still use weighted centroids internally.
 Structured external palettes (-m), builtin palettes (-b), preserved PAL8
@@ -1558,8 +1521,7 @@ K-means accepts any binning policy; K-center accepts none, exact, hard
 or auto; K-medoids and Heckbert accept none or auto.
 A zero snap approach rate selects the same path as snap none.
 Supported spatial methods are FS, Atkinson, JJN, Stucki, Burkes, the Sierra
-variants, and LSO2. Positional a_dither, x_dither, and bluenoise are supported;
-interframe dithering remains unsupported.
+variants, and LSO2. Positional a_dither, x_dither, and bluenoise are supported.
 The P3 float requirement overrides an explicit byte preference.
 For high-color \fB-I\fP, P3 accepts RGB input with optional separated
 alpha-zero masks and ordinary RGB/HLS SIXEL output. Gamma, linear, Oklab, CIELAB and DIN99d working coordinates
@@ -1989,62 +1951,6 @@ takes precedence.
 set overlap between adjacent dither bands to smooth seams. Accepts non-negative
 integers. The \fB-d\fP suboption \fBband_overwrap=LINES\fP (short form
 \fB:OLINES\fP) takes precedence.
-.TP 5
-.B SIXEL_DITHER_STBN_SOURCE
-.br
-set STBN source override for \fB\-d stbn\fP.
-Accepts stbn-hash (default), stbn-mask, or pmj.
-.TP 5
-.B SIXEL_DITHER_INTERFRAME_DIFFUSION
-.br
-set interframe spatial diffusion kernel for \fB\-d interframe\fP.
-Accepts auto, none, fs, atkinson, jajuni, stucki, burkes, sierra1,
-sierra2, or sierra3.
-When unset, \fB\-d interframe\fP defaults to fs.
-.TP 5
-.B SIXEL_DITHER_STBN_DIFFUSION
-.br
-set STBN spatial diffusion kernel for \fB\-d stbn\fP.
-Accepts auto, none, fs, atkinson, jajuni, stucki, burkes, sierra1,
-sierra2, or sierra3.
-When unset, \fB\-d stbn\fP defaults to none.
-Overridden by \fB\-d stbn:diffusion=KERNEL\fP.
-.TP 5
-.B SIXEL_DITHER_STBN_STRENGTH
-.br
-set interframe STBN/PMJ noise strength for \fB\-d stbn\fP.
-Accepts 0.0-2.0; defaults to 0.055.
-Overridden by \fB\-d stbn:strength=VALUE\fP.
-.TP 5
-.B SIXEL_DITHER_STBN_MOTION_ADAPT
-.br
-toggle stbn motion adaptation for \fB\-d stbn\fP (0 or 1).
-Overridden by \fB\-d stbn:motion_adapt=0|1\fP.
-.TP 5
-.B SIXEL_DITHER_STBN_SCENE_CUT_RESET
-.br
-toggle stbn scene-cut reset for \fB\-d stbn\fP (0 or 1).
-Overridden by \fB\-d stbn:scene_cut_reset=0|1\fP.
-.TP 5
-.B SIXEL_DITHER_STBN_SCENE_DETECT
-.br
-toggle stbn scene detection for \fB\-d stbn\fP (0 or 1).
-Overridden by \fB\-d stbn:scene_detect=0|1\fP.
-.TP 5
-.B SIXEL_DITHER_STBN_ALPHA_GUARD
-.br
-toggle stbn alpha-edge guard for \fB\-d stbn\fP (0 or 1).
-Overridden by \fB\-d stbn:alpha_guard=0|1\fP.
-.TP 5
-.B SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT
-.br
-toggle stbn perceptual channel weighting for \fB\-d stbn\fP (0 or 1).
-Overridden by \fB\-d stbn:perceptual_weight=0|1\fP.
-.TP 5
-.B SIXEL_DITHER_STBN_FASTPATH
-.br
-toggle stbn PMJ fast path for \fB\-d stbn\fP (0 or 1).
-Overridden by \fB\-d stbn:fastpath=0|1\fP.
 .TP 5
 .B SIXEL_DITHER_BLUENOISE_STRENGTH
 .br

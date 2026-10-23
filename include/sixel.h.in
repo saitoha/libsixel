@@ -121,10 +121,9 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_BLUENOISE_DITHER 0x9  /* positionally stable bluenoise dither */
 #define SIXEL_DIFFUSE_LSO2        0xa  /* libsixel method based on
                                           variable error diffusion */
-#define SIXEL_DIFFUSE_INTERFRAME  0xb  /* interframe error diffusion */
-#define SIXEL_DIFFUSE_SIERRA1     0xc  /* diffuse with Sierra Lite method */
-#define SIXEL_DIFFUSE_SIERRA2     0xd  /* diffuse with Sierra Two-row method */
-#define SIXEL_DIFFUSE_SIERRA3     0xe  /* diffuse with Sierra-3 method */
+#define SIXEL_DIFFUSE_SIERRA1     0xb  /* diffuse with Sierra Lite method */
+#define SIXEL_DIFFUSE_SIERRA2     0xc  /* diffuse with Sierra Two-row method */
+#define SIXEL_DIFFUSE_SIERRA3     0xd  /* diffuse with Sierra-3 method */
 #define SIXEL_SCAN_AUTO           0x0  /* choose scan order automatically */
 #define SIXEL_SCAN_RASTER         0x1  /* scan from left to right on each line */
 #define SIXEL_SCAN_SERPENTINE     0x2  /* alternate scan direction per line */
@@ -370,15 +369,6 @@ typedef int SIXELSTATUS;
                                                     lso2         -> libsixel method based on
                                                                     variable error diffusion
                                                                     tables, optimized for size
-                                                    interframe
-                                                                 -> interframe
-                                                                 error
-                                                                 diffusion
-                                                                 (palette
-                                                                 path;
-                                                                 not
-                                                                 available
-                                                                 with -I)
                                                 */
 #define SIXEL_OPTFLAG_FIND_LARGEST      ('f')  /* -f FINDTYPE, --find-largest=FINDTYPE:
                                                   choose method for finding the largest
@@ -912,10 +902,9 @@ enum methodForDiffuse {
     DIFFUSE_BLUENOISE_DITHER = 9,  /* positionally stable bluenoise */
     DIFFUSE_LSO2     = 10, /* libsixel method based on variable
                               error diffusion */
-    DIFFUSE_INTERFRAME = 11, /* interframe error diffusion */
-    DIFFUSE_SIERRA1  = 12, /* diffuse with Sierra Lite method */
-    DIFFUSE_SIERRA2  = 13, /* diffuse with Sierra Two-row method */
-    DIFFUSE_SIERRA3  = 14  /* diffuse with Sierra-3 method */
+    DIFFUSE_SIERRA1  = 11, /* diffuse with Sierra Lite method */
+    DIFFUSE_SIERRA2  = 12, /* diffuse with Sierra Two-row method */
+    DIFFUSE_SIERRA3  = 13  /* diffuse with Sierra-3 method */
 };
 
 /* scan order for diffusing */

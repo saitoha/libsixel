@@ -69,7 +69,6 @@ typedef enum sixel_suboption_value_kind {
     SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE,
     SIXEL_SUBOPTION_VALUE_INT_PAIR,
     SIXEL_SUBOPTION_VALUE_RATIO3,
-    SIXEL_SUBOPTION_VALUE_SCALED_U8,
     SIXEL_SUBOPTION_VALUE_STRING,
     SIXEL_SUBOPTION_VALUE_STRUCTURED
 } sixel_suboption_value_kind_t;
@@ -256,23 +255,11 @@ typedef enum sixel_option_environment_result {
     SIXEL_OPTION_ENVIRONMENT_MATCH = 1
 } sixel_option_environment_result_t;
 
-/*
- * Base policies describe initialization which cannot be represented by a
- * single suboption binding.  Keeping the policy beside the base definition
- * prevents encoder code from dispatching on option names.
- */
-typedef enum sixel_option_base_policy {
-    SIXEL_OPTION_BASE_POLICY_NONE = 0,
-    SIXEL_OPTION_BASE_POLICY_DIFFUSION_INTERFRAME,
-    SIXEL_OPTION_BASE_POLICY_DIFFUSION_STBN
-} sixel_option_base_policy_t;
-
 typedef struct sixel_option_value_schema {
     char const *name;
     int value;
     /* Insert option-wide suboptions after this many base-specific rows. */
     size_t common_suboption_offset;
-    sixel_option_base_policy_t base_policy;
 } sixel_option_value_schema_t;
 
 typedef struct sixel_suboption_key {

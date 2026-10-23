@@ -34,17 +34,13 @@
 #include "dither-clamp.h"
 #include "timeline-logger.h"
 
-#if !defined(SIXEL_DIFFUSE_INTERFRAME)
-# define SIXEL_DIFFUSE_INTERFRAME 0xb
-#endif
-
 typedef void (*sixel_dither_pipeline_row_fn)(void *priv, int row_index);
 
 struct sixel_dither_policy_interface;
 
 /*
- * Frame metadata supplied by the encoder. Interframe dithering stages use this
- * context to decide when to keep or reset frame-to-frame state.
+ * Frame metadata supplied by the encoder. The timeline logger attaches it to
+ * the events recorded while a frame is dithered.
  */
 typedef struct sixel_dither_frame_context {
     int frame_no;
@@ -68,39 +64,6 @@ sixel_dither_initialize_with_palette_attempt(
     int method_for_rep,
     int quality_mode,
     sixel_palette_build_attempt_t *attempt);
-
-/*
- * Interframe dithering state container. The method_id identifies which
- * interframe strategy owns error_frame so future strategies (for example STBN)
- * can keep state isolated behind a shared lifecycle.
- */
-typedef struct sixel_dither_interframe_state {
-    void *error_frame;
-    size_t error_frame_size;
-    int width;
-    int height;
-    int depth;
-    int method_id;
-    void *method_private;
-    size_t method_private_size;
-    unsigned long apply_count;
-    unsigned long consume_count;
-    unsigned long reset_count;
-    unsigned long reset_frame_boundary_count;
-    unsigned long reset_size_change_count;
-    unsigned long reset_clear_count;
-    int last_apply_status;
-    int last_apply_consumed;
-} sixel_dither_interframe_state_t;
-
-#define SIXEL_DITHER_INTERFRAME_RESET_REASON_NONE 0
-#define SIXEL_DITHER_INTERFRAME_RESET_REASON_FRAME_BOUNDARY 1
-#define SIXEL_DITHER_INTERFRAME_RESET_REASON_SIZE_CHANGE 2
-#define SIXEL_DITHER_INTERFRAME_RESET_REASON_CLEAR 3
-
-/* apply mode for sixel_dither_apply_palette_with_mode() */
-#define SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE 0
-#define SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE  1
 
 /* Internal FS perturbation parameters, prepared once per policy request. */
 typedef struct sixel_dither_perturb {
@@ -156,24 +119,6 @@ struct sixel_dither {
     unsigned int dither_parallel_threads_max; /* requested thread cap */
     int dither_pin_threads_override; /* explicit affinity flag */
     int dither_pin_threads;          /* requested affinity policy */
-    int interframe_strategy_override; /* CLI strategy override enable flag */
-    int interframe_strategy_token;    /* parsed interframe strategy token */
-    int interframe_spatial_diffuse_override; /* CLI spatial diffuse flag */
-    int interframe_spatial_diffuse; /* parsed interframe spatial diffusion */
-    int interframe_noise_strength_override; /* CLI strength override flag */
-    int interframe_noise_strength_u8; /* parsed interframe noise strength */
-    int stbn_motion_adapt_override; /* CLI motion adapt override flag */
-    int stbn_motion_adapt_enabled;  /* parsed motion adapt toggle */
-    int stbn_scene_cut_reset_override; /* CLI scene-cut reset override */
-    int stbn_scene_cut_reset_enabled; /* parsed scene-cut reset toggle */
-    int stbn_scene_detect_override; /* CLI scene-detect override flag */
-    int stbn_scene_detect_enabled;  /* parsed scene-detect toggle */
-    int stbn_alpha_guard_override; /* CLI alpha guard override flag */
-    int stbn_alpha_guard_enabled;  /* parsed alpha guard toggle */
-    int stbn_perceptual_weight_override; /* CLI perceptual weight override */
-    int stbn_perceptual_weight_enabled; /* parsed perceptual weight toggle */
-    int stbn_fastpath_override;    /* CLI stbn fastpath override flag */
-    int stbn_fastpath_enabled;     /* parsed stbn fastpath toggle */
     int a_dither_strength_override; /* CLI A-dither strength flag */
     float a_dither_strength;       /* parsed A-dither strength */
     int x_dither_strength_override; /* CLI X-dither strength flag */
@@ -302,7 +247,10 @@ struct sixel_dither {
     int bluenoise_gradient_height; /* gradient map height */
     sixel_timeline_logger_t *pipeline_logger; /* parallel timeline logger */
     sixel_dither_frame_context_t frame_context; /* encoder frame metadata */
-    sixel_dither_interframe_state_t interframe_state; /* reserved interframe */
+    unsigned long apply_count;     /* palette applications started */
+    unsigned long apply_success_count; /* palette applications completed */
+    int last_apply_status;         /* status of the latest application */
+    int last_apply_depth;          /* pipeline bytes per pixel it used */
     /* Keep extended working values and separate RGB101/HLS output views.
      * This algorithm contract is independent of the output primaries. */
     int use_rgb101_palette;
@@ -340,19 +288,8 @@ sixel_dither_apply_palette(struct sixel_dither /* in */ *dither,
                            int                 /* in */ height);
 
 /*
- * Apply palette with explicit interframe-state handling mode. The default API
- * consumes interframe state; capture paths can request preserve mode.
- */
-SIXEL_INTERNAL_API sixel_index_t *
-sixel_dither_apply_palette_with_mode(struct sixel_dither /* in */ *dither,
-                                     unsigned char       /* in */ *pixels,
-                                     int                 /* in */ width,
-                                     int                 /* in */ height,
-                                     int                 /* in */ apply_mode);
-
-/*
- * Attach frame metadata from the encoder to the dither object. Interframe
- * diffusion workers read this metadata to detect loop and timeline boundaries.
+ * Attach frame metadata from the encoder to the dither object so timeline
+ * events recorded during palette application carry the frame position.
  */
 SIXEL_INTERNAL_API void
 sixel_dither_set_frame_context(sixel_dither_t *dither,
@@ -372,10 +309,6 @@ SIXEL_INTERNAL_API void
 sixel_dither_set_lut_policy_with_override(sixel_dither_t *dither,
                                            int lut_policy,
                                            int lut_policy_override);
-
-SIXEL_INTERNAL_API void
-sixel_dither_note_interframe_reset_reason(sixel_dither_t *dither,
-                                          int reason);
 
 /*
  * Set or clear a caller-provided transparent mask hint used by the

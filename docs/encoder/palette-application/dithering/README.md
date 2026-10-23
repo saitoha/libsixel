@@ -31,19 +31,17 @@ kernels. The current base methods are:
 - `fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, `sierra`, and `lso2` diffuse
   error to later pixels;
 - `a_dither`, `x_dither`, and `bluenoise` use positionally stable
-  perturbations;
-- `interframe` and `stbn` provide animation-aware temporal behavior.
+  perturbations.
 
 The [dither clamp policy](../clamp-policy.md) controls signed error-feedback headroom independently of the selected kernel.
 
 Methods have suboptions for concerns such as scan order, kernel variants,
-strength, temporal sources, and scene changes. Use `img2sixel -H` or the
+and strength. Use `img2sixel -H` or the
 [`img2sixel(1)` manual](../../../../converters/img2sixel.1) as the detailed option
 reference. The policy chapters below explain the algorithms rather than
 repeating that option inventory. As starting points, use `auto` for the normal
-compatibility rule, `none` for an undithered control, `bluenoise` when a
-stateless low-overhead spatial method is worth testing, and `interframe` or
-`stbn` only when an animation protocol can preserve and evaluate frame state.
+compatibility rule, `none` for an undithered control, and `bluenoise` when a
+stateless low-overhead spatial method is worth testing.
 The checked-in one-image sweep is evidence about those exact commands, not a
 universal ranking.
 
@@ -51,9 +49,8 @@ universal ranking.
 
 ## Mathematical model
 
-Let `x[p]` be the source color at pixel `p`, `b[p]` a position- or
-time-dependent bias, and `e[p]` error accumulated from already processed
-pixels or frames. A broad model of palette application is:
+Let `x[p]` be the source color at pixel `p`, `b[p]` a position-dependent
+bias, and `e[p]` error accumulated from already processed pixels. A broad model of palette application is:
 
 ```text
 y[p] = x[p] + b[p] + e[p]
@@ -64,7 +61,7 @@ r[p] = y[p] - palette[i[p]]
 The dither method defines `b[p]`, how `e[p]` is formed, and whether some
 fraction of residual `r[p]` is sent to future samples. The lookup policy
 implements `nearest_palette_index`. This separation is important: a dither
-method shapes the spatial or temporal spectrum of quantization error, while
+method shapes the spatial spectrum of quantization error, while
 lookup solves the nearest-neighbor problem for the current candidate.
 
 For a causal error-diffusion kernel with downstream offsets `delta` and
@@ -263,7 +260,7 @@ The forward/down pair `(7, 5)` receives opposite deltas with amplitude `5 * pert
 
 The lowbias32 coordinate hash uses the absolute image row, horizontal position, seed, and pair number. Serpentine scanning mirrors horizontal offsets while retaining the pairs. Overlapping bands therefore use the same coefficients for the same absolute pixel. Different band boundaries can still change incoming diffusion error and output; position-hash determinism does not remove that existing dependency. The 8bit path rounds amplitudes once to eight fractional bits and truncates signed deltas toward zero. The float32 path uses the same hash samples without fixed-point amplitude rounding.
 
-Zero, including an omitted `perturb`, retains the original arithmetic and output. Only FS applies these settings, including `auto` when the palette-size rule selects FS. Other kernels, positional methods, interframe policies, and GPU paths accept the settings without applying them. The public setters are `sixel_dither_set_diffusion_perturb()` and `sixel_dither_set_diffusion_perturb_seed()`; both return a status, and the amount setter rejects non-finite or out-of-range values without changing the previous setting.
+Zero, including an omitted `perturb`, retains the original arithmetic and output. Only FS applies these settings, including `auto` when the palette-size rule selects FS. Other kernels, positional methods, and GPU paths accept the settings without applying them. The public setters are `sixel_dither_set_diffusion_perturb()` and `sixel_dither_set_diffusion_perturb_seed()`; both return a status, and the amount setter rejects non-finite or out-of-range values without changing the previous setting.
 
 Use perturbation as an opt-in texture adjustment when regular FS patterns are objectionable. The [coefficient perturbation measurements](perturb/README.md) pair per-tone RAPSD curves with native-resolution and enlarged comparisons of flat fields, gradients, and photographic regions. They support weaker periodic structure in the tested cases, while also showing residual grain, scan-dependent results, and small differences in the 256-color photograph. `perturb=0.5` is a measured comparison point, not a universal optimum; larger values can introduce more conspicuous clumps. The default remains `0.0`.
 
@@ -333,7 +330,7 @@ img2sixel -d stucki ...
        1  2  4  2  1    / 42
 ```
 
-Stucki updates the same 12 positions as Jarvis--Judice--Ninke, with larger weight near the current column. The numerators sum to the denominator 42, so an interior pixel distributes the full residual. Byte, float, interframe/STBN, and high-color implementations share these coefficients.
+Stucki updates the same 12 positions as Jarvis--Judice--Ninke, with larger weight near the current column. The numerators sum to the denominator 42, so an interior pixel distributes the full residual. Byte, float, and high-color implementations share these coefficients.
 
 Peter Stucki described the underlying approach in the 1981 IBM research
 report [*MECCA: A Multiple-Error Correction Computation Algorithm for Bi-Level
@@ -400,7 +397,7 @@ Variant 2 is the seven-tap Two-row Sierra matrix:
        1  2  3  2  1    / 16
 ```
 
-Its numerators sum to 16 and it reaches only the next scanline. The byte, float, interframe/STBN, and high-color implementations use this same matrix. Historical measurements of the three-row, denominator-32 implementation do not rank this kernel against the other Sierra variants.
+Its numerators sum to 16 and it reaches only the next scanline. The byte, float, and high-color implementations use this same matrix. Historical measurements of the three-row, denominator-32 implementation do not rank this kernel against the other Sierra variants.
 
 Variant 3 uses the original full Sierra-shaped matrix:
 
@@ -568,97 +565,15 @@ pixel and the image cost is `Theta(P)`. The 64-pixel period can still become
 visible on adversarial content or under scaling; changing phase changes the
 placement, not that period.
 
-The spectral motivation follows blue-noise mask work; the later
-[Spatiotemporal Blue Noise Masks](https://research.nvidia.com/publication/2022-07_spatiotemporal-blue-noise-masks)
-paper provides useful background on why low-frequency noise and independent
-per-frame masks are undesirable. The embedded static tile is the CC0 64-by-64
-texture from [Moments in Graphics](https://momentsingraphics.de/BlueNoise.html),
-as recorded in [`bluenoise_64x64.h`](../../../../src/bluenoise_64x64.h). Static
-`bluenoise` itself is a two-dimensional tiled policy, not the temporal `stbn`
-policy described below.
+The spectral motivation follows blue-noise mask work. The embedded static tile
+is the CC0 64-by-64 texture from
+[Moments in Graphics](https://momentsingraphics.de/BlueNoise.html), as recorded
+in [`bluenoise_64x64.h`](../../../../src/bluenoise_64x64.h).
 
 In the recorded historical static sweep, `bluenoise` improves MS-SSIM over `none` at every
 measured `K`, takes 1.03x and 1.05x the baseline time at the endpoints, and
 has the smallest size overhead through `K=64`: 1.032x at `K=8`. At `K=256`
 its size is 1.045x the no-dither stream, while Atkinson is smaller at 1.013x.
-
-## `interframe`: residual feedback across frames
-
-```text
-img2sixel -d interframe:diffusion=fs animation.gif
-```
-
-`interframe` extends the error-feedback equation along time. For pixel `p` in
-frame `t`, libsixel adds the previous stored residual before lookup, then
-stores the new residual for the next frame:
-
-```text
-candidate[t,p] = limit_feedback(source[t,p], frame_error[t-1,p])
-index[t,p] = nearest_palette_index(candidate[t,p])
-frame_error[t,p] = candidate[t,p] - palette[index[t,p]]
-```
-
-The optional `diffusion=KERNEL` also sends the current residual to later
-pixels in the same frame. It accepts `none` and the fixed spatial kernels;
-the default is `fs`. Thus temporal feedback and spatial diffusion are two
-composable axes, not competing names for one operation.
-
-This policy requires `Theta(P)` persistent frame state and `Theta(FP)` work
-for `F` frames, in addition to palette lookup. Geometry, pixel depth, reset
-events, and whether the caller preserves dither state are part of the output
-contract. It is intended for animation on the palette path; a single static
-frame cannot demonstrate its purpose and is excluded from the checked-in
-static benchmark.
-
-Interframe error can turn a spatially static approximation into temporal
-flicker, while insufficient reset handling can carry an old scene's residual
-into a new scene. Evaluate it with sequences, frame cadence, temporal metrics,
-and encoded animation size rather than reusing a still-image MS-SSIM ranking.
-
-## `stbn`: temporally varied sampling with residual feedback
-
-```text
-img2sixel -d stbn:source=hash:diffusion=none animation.gif
-```
-
-`stbn` builds on the interframe residual path and can add a frame-indexed,
-position-indexed perturbation before palette lookup. For paths that enable
-that bias, its high-level candidate is:
-
-```text
-candidate[t,p] = limit_feedback(source[t,p], frame_error[t-1,p]
-                       + strength * sample(t, p, channel))
-```
-
-`source` selects `hash`, an embedded `mask`, or a progressive multi-jittered
-(`pmj`) generator. The default is `hash`; the optional spatial diffusion
-kernel defaults to `none`. PMJ uses a progressively stratified 64-by-64
-sequence with deterministic coordinate and rank permutations. Its conceptual
-background is Christensen, Kensler, and Kilpatrick's
-[*Progressive Multi-Jittered Sample Sequences*](https://doi.org/10.1111/cgf.13472),
-but libsixel's tiled sampler and scrambles are project-specific.
-
-The control surface addresses animation failure modes: `motion_adapt` scales
-noise from residual energy, `scene_cut_reset` and `scene_detect` control stale
-history, `alpha_guard` suppresses perturbation near transparent boundaries,
-and `perceptual_weight` changes RGB channel amplitudes. `fastpath` enables the
-bit-exact PMJ cached path. Each option changes the temporal output contract and
-must be recorded in a reproducible comparison.
-
-The 8-bit and float32 paths currently differ in one important detail. The
-float32 path applies the selected hash, mask, or PMJ bias. The 8-bit path
-applies explicit noise bias for mask and PMJ, while its hash selection retains
-the interframe carry behavior without that extra bias. Do not assume that the
-same `stbn` command is bit-exact or perceptually equivalent across precision
-pipelines.
-
-Like `interframe`, `stbn` requires `Theta(P)` persistent state and `Theta(FP)`
-work, with a constant-time sampler per pixel. Its goal is not to maximize a
-single-frame score: it is to control the spatial and temporal spectrum of
-error. The NVIDIA
-[*Spatiotemporal Blue Noise Masks*](https://research.nvidia.com/publication/2022-07_spatiotemporal-blue-noise-masks)
-paper explains the general objective, but libsixel's hash, mask, and PMJ
-backends are independent implementations and should be measured separately.
 
 ## Cost model and asymptotic order
 
@@ -666,7 +581,6 @@ Use these variables when discussing dither cost:
 
 - `W` and `H`: output width and height;
 - `P = W H`: processed pixels in one frame;
-- `F`: processed frame count;
 - `T`: downstream taps in an error-diffusion stencil;
 - `K`: palette entries;
 - `L(K)`: cost of one query under the selected lookup policy.
@@ -680,7 +594,6 @@ implementation. The dither-only work is therefore:
 | Fixed-stencil diffusion | `Theta(P T) = Theta(P)` | Row or band error buffers | Causal dependency on scan order |
 | `lso2` | `Theta(P)` | Error buffers plus a fixed 256-entry table | Constant-bounded, data-selected stencil |
 | `a_dither`, `x_dither`, `bluenoise` | `Theta(P)` | `O(1)` per worker plus fixed tables | Coordinate-derived bias |
-| `interframe`, `stbn` | `Theta(F P)` | `Theta(P)` frame state | Spatial and temporal history |
 
 The current `auto` rule selects Floyd-Steinberg above 16 palette colors and
 Atkinson at 16 or fewer, so it inherits the fixed-stencil `Theta(P)` dither
@@ -744,9 +657,7 @@ remove this dependency chain. Error diffusion is asymptotically linear while
 remaining harder to parallelize than positionally stable methods.
 
 Positionally stable methods are easier to split because their adjustment is
-derived from coordinates instead of mutable neighboring error. Temporal
-methods add frame history and reset rules, so frame boundaries become part of
-their reproducibility contract.
+derived from coordinates instead of mutable neighboring error.
 
 ## Quality and tests
 
@@ -929,9 +840,7 @@ better dither pattern.
 The sweep covers `none`, `fs`, `atkinson`, `jajuni`, `stucki`, `burkes`, all
 three Sierra variants, `lso2`, `a_dither`, `x_dither`, and `bluenoise`.
 `auto` is excluded because it selects another method according to palette
-size. `interframe` and `stbn` require an animation sequence, frame cadence, and
-temporal metrics; treating their first static frame as a complete comparison
-would be misleading.
+size.
 
 Thirteen overlapping lines would make exact comparisons difficult. Each
 figure therefore uses shared-scale small multiples: one panel compares one
@@ -1134,7 +1043,6 @@ interpretation together.
   SIXEL encoding. It is not an isolated kernel microbenchmark.
 - The explicit raster sweep compares kernels, not their complete default
   configurations. Scan order and positional strength need separate sweeps.
-- Animation methods require a multi-frame protocol and temporal metrics.
 
 ## Implementation and tests
 
@@ -1239,100 +1147,11 @@ The positional migration is covered by the following focused value and dispatch 
 | AX-17 | CPU/Metal x strength precedence matches independent coordinate and palette-distance oracles. | [tests/processing/gpu-palette/0017_x_strength_precedence.t](../../../../tests/processing/gpu-palette/0017_x_strength_precedence.t) |
 | POS-74 | GPU auto strength matches independently specified CPU amplitudes across palette reuse and a reserved omission entry | [tests/processing/gpu-palette/0004_auto_strength.t](../../../../tests/processing/gpu-palette/0004_auto_strength.t) |
 
-### Interframe and STBN behavioral contracts
+### Option routing
 
-The following IDs own the temporal strategy contracts. Their reciprocal `Policy:` links are checked by `staticcheck-doc-test-links`; rename or split a test by updating these links while preserving the contract ID. Static checks do not prescribe a test filename, variable name, or shell comparison spelling. Byte equality, decoded-pixel equality, successful invocation, and diagnostic-code observations are distinguished below. In particular, reset and alpha-guard diagnostics do not establish independent pixel correctness or visual temporal quality. Optional backend skips do not establish coverage on that host.
-
-| ID | Contract and observation | Owning tests |
+| ID | Contract | Owning test |
 | --- | --- | --- |
-| IF-01 | Interframe accepts serpentine scan and emits nonempty output in byte and float32 precision. | [tests/processing/dither/interframe/0001_interframe_diffusion_accepts_scan_option.t](../../../../tests/processing/dither/interframe/0001_interframe_diffusion_accepts_scan_option.t), [tests/processing/dither/interframe/0016_interframe_diffusion_float32_accepts_scan_option.t](../../../../tests/processing/dither/interframe/0016_interframe_diffusion_float32_accepts_scan_option.t) |
-| IF-02 | The retired `-Y carry` option is rejected. | [tests/processing/dither/interframe/0002_interframe_rejects_legacy_y_carry_choice.t](../../../../tests/processing/dither/interframe/0002_interframe_rejects_legacy_y_carry_choice.t) |
-| IF-03 | High-color mode accepts interframe. | [tests/processing/dither/interframe/0003_interframe_diffusion_accepts_highcolor.t](../../../../tests/processing/dither/interframe/0003_interframe_diffusion_accepts_highcolor.t) |
-| IF-04 | Interframe accepts the available animated WebP and builtin APNG paths, including float32 APNG. | [tests/processing/dither/interframe/0004_interframe_diffusion_accepts_animated_input.t](../../../../tests/processing/dither/interframe/0004_interframe_diffusion_accepts_animated_input.t), [tests/processing/dither/interframe/0018_interframe_diffusion_float32_accepts_animated_input_builtin_apng.t](../../../../tests/processing/dither/interframe/0018_interframe_diffusion_float32_accepts_animated_input_builtin_apng.t) |
-| IF-05 | A static first frame matches FS in byte and float32 precision. | [tests/processing/dither/interframe/0005_interframe_diffusion_matches_fs_for_static_start_frame.t](../../../../tests/processing/dither/interframe/0005_interframe_diffusion_matches_fs_for_static_start_frame.t), [tests/processing/dither/interframe/0017_interframe_diffusion_float32_matches_fs_for_static_start_frame.t](../../../../tests/processing/dither/interframe/0017_interframe_diffusion_float32_matches_fs_for_static_start_frame.t) |
-| IF-06 | Interframe reports the input-boundary reset contract for repeated and mixed-size inputs. | [tests/processing/dither/interframe/0006_interframe_diffusion_resets_between_inputs.t](../../../../tests/processing/dither/interframe/0006_interframe_diffusion_resets_between_inputs.t), [tests/processing/dither/interframe/0007_interframe_diffusion_resets_across_size_change.t](../../../../tests/processing/dither/interframe/0007_interframe_diffusion_resets_across_size_change.t) |
-| IF-07 | Capturing a palette with `-M` leaves interframe output unchanged on the tested WebP/APNG paths, including float32 APNG. | [tests/processing/dither/interframe/0008_interframe_diffusion_mapfile_capture_stable_output.t](../../../../tests/processing/dither/interframe/0008_interframe_diffusion_mapfile_capture_stable_output.t), [tests/processing/dither/interframe/0010_interframe_diffusion_mapfile_capture_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0010_interframe_diffusion_mapfile_capture_stable_output_builtin_apng.t), [tests/processing/dither/interframe/0019_interframe_diffusion_float32_mapfile_capture_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0019_interframe_diffusion_float32_mapfile_capture_stable_output_builtin_apng.t) |
-| IF-08 | Interframe produces identical output with one and two threads on the tested WebP/APNG paths; the byte APNG case uses histogram sampling, and float32 APNG is also covered. | [tests/processing/dither/interframe/0009_interframe_diffusion_thread_count_stable_output.t](../../../../tests/processing/dither/interframe/0009_interframe_diffusion_thread_count_stable_output.t), [tests/processing/dither/interframe/0011_interframe_diffusion_thread_count_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0011_interframe_diffusion_thread_count_stable_output_builtin_apng.t), [tests/processing/dither/interframe/0020_interframe_diffusion_float32_thread_count_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0020_interframe_diffusion_float32_thread_count_stable_output_builtin_apng.t) |
-| IF-09 | The byte internal STBN placeholder is diffusion-equivalent. | [tests/processing/dither/interframe/0012_interframe_stbn_placeholder_matches_diffusion_builtin_apng.t](../../../../tests/processing/dither/interframe/0012_interframe_stbn_placeholder_matches_diffusion_builtin_apng.t) |
-| IF-10 | An unknown environment source override falls back to diffusion in byte and float32 precision. | [tests/processing/dither/interframe/0013_interframe_strategy_override_unknown_falls_back_to_diffusion_builtin_apng.t](../../../../tests/processing/dither/interframe/0013_interframe_strategy_override_unknown_falls_back_to_diffusion_builtin_apng.t), [tests/processing/dither/interframe/0022_interframe_strategy_override_unknown_falls_back_to_diffusion_float32_builtin_apng.t](../../../../tests/processing/dither/interframe/0022_interframe_strategy_override_unknown_falls_back_to_diffusion_float32_builtin_apng.t) |
-| IF-11 | CLI mask and hash produce different animation output in byte and float32 precision. | [tests/processing/dither/interframe/0014_interframe_stbn_mask_source_changes_output_vs_hash_animated_gif.t](../../../../tests/processing/dither/interframe/0014_interframe_stbn_mask_source_changes_output_vs_hash_animated_gif.t), [tests/processing/dither/interframe/0023_interframe_stbn_mask_source_changes_output_vs_hash_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0023_interframe_stbn_mask_source_changes_output_vs_hash_float32_animated_gif.t) |
-| IF-12 | The environment `stbn-hash` alias matches `stbn` in byte and float32 precision. | [tests/processing/dither/interframe/0015_interframe_stbn_hash_alias_matches_stbn_builtin_apng.t](../../../../tests/processing/dither/interframe/0015_interframe_stbn_hash_alias_matches_stbn_builtin_apng.t), [tests/processing/dither/interframe/0024_interframe_stbn_hash_alias_matches_stbn_float32_builtin_apng.t](../../../../tests/processing/dither/interframe/0024_interframe_stbn_hash_alias_matches_stbn_float32_builtin_apng.t) |
-| IF-13 | Float32 hash differs from diffusion on the GIF animation. | [tests/processing/dither/interframe/0021_interframe_stbn_hash_changes_output_vs_diffusion_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0021_interframe_stbn_hash_changes_output_vs_diffusion_float32_animated_gif.t) |
-| IF-14 | Capturing a palette leaves float32 hash APNG output unchanged. | [tests/processing/dither/interframe/0025_interframe_stbn_hash_float32_mapfile_capture_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0025_interframe_stbn_hash_float32_mapfile_capture_stable_output_builtin_apng.t) |
-| IF-15 | Float32 hash APNG output is identical with one and two threads. | [tests/processing/dither/interframe/0026_interframe_stbn_hash_float32_thread_count_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0026_interframe_stbn_hash_float32_thread_count_stable_output_builtin_apng.t) |
-| IF-16 | Mask palette captures are nonempty and repeatable in float32 and byte precision. | [tests/processing/dither/interframe/0027_interframe_stbn_mask_float32_mapfile_capture_repeatable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0027_interframe_stbn_mask_float32_mapfile_capture_repeatable_output_builtin_apng.t), [tests/processing/dither/interframe/0029_interframe_stbn_mask_mapfile_capture_repeatable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0029_interframe_stbn_mask_mapfile_capture_repeatable_output_builtin_apng.t) |
-| IF-17 | Float32 mask produces equal decoded RGBA pixels with one and two threads. | [tests/processing/dither/interframe/0028_interframe_stbn_mask_float32_thread_count_stable_pixels_builtin_apng.t](../../../../tests/processing/dither/interframe/0028_interframe_stbn_mask_float32_thread_count_stable_pixels_builtin_apng.t) |
-| IF-18 | Byte mask APNG output is identical with one and two threads under histogram sampling. | [tests/processing/dither/interframe/0030_interframe_stbn_mask_thread_count_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0030_interframe_stbn_mask_thread_count_stable_output_builtin_apng.t) |
-| IF-19 | Float32 CLI hash selection overrides the environment source. | [tests/processing/dither/interframe/0031_interframe_strategy_cli_overrides_env_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0031_interframe_strategy_cli_overrides_env_float32_animated_gif.t) |
-| IF-20 | PMJ differs from hash on the GIF animation in float32 and byte precision. | [tests/processing/dither/interframe/0032_interframe_pmj_source_changes_output_vs_stbn_hash_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0032_interframe_pmj_source_changes_output_vs_stbn_hash_float32_animated_gif.t), [tests/processing/dither/interframe/0034_interframe_pmj_source_changes_output_vs_stbn_hash_animated_gif.t](../../../../tests/processing/dither/interframe/0034_interframe_pmj_source_changes_output_vs_stbn_hash_animated_gif.t) |
-| IF-21 | Float32 PMJ produces equal decoded pixels with one and two threads. | [tests/processing/dither/interframe/0033_interframe_pmj_float32_thread_count_stable_pixels_builtin_apng.t](../../../../tests/processing/dither/interframe/0033_interframe_pmj_float32_thread_count_stable_pixels_builtin_apng.t) |
-| IF-22 | PMJ palette captures are nonempty and repeatable in float32 and byte precision. | [tests/processing/dither/interframe/0035_interframe_pmj_float32_mapfile_capture_repeatable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0035_interframe_pmj_float32_mapfile_capture_repeatable_output_builtin_apng.t), [tests/processing/dither/interframe/0036_interframe_pmj_mapfile_capture_repeatable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0036_interframe_pmj_mapfile_capture_repeatable_output_builtin_apng.t) |
-| IF-23 | Byte PMJ APNG output is identical with one and two threads. | [tests/processing/dither/interframe/0037_interframe_pmj_thread_count_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0037_interframe_pmj_thread_count_stable_output_builtin_apng.t) |
-| IF-24 | CLI PMJ selection overrides the environment source in byte and float32 precision. | [tests/processing/dither/interframe/0038_interframe_strategy_cli_overrides_env_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0038_interframe_strategy_cli_overrides_env_8bit_animated_gif.t), [tests/processing/dither/interframe/0041_interframe_strategy_cli_overrides_env_float32_pmj_animated_gif.t](../../../../tests/processing/dither/interframe/0041_interframe_strategy_cli_overrides_env_float32_pmj_animated_gif.t) |
-| IF-25 | CLI PMJ palette captures are nonempty and repeatable in byte and float32 precision. | [tests/processing/dither/interframe/0039_interframe_pmj_cli_mapfile_capture_repeatable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0039_interframe_pmj_cli_mapfile_capture_repeatable_output_builtin_apng.t), [tests/processing/dither/interframe/0042_interframe_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0042_interframe_pmj_cli_float32_mapfile_capture_repeatable_output_builtin_apng.t) |
-| IF-26 | CLI PMJ output is identical with one and two threads in byte and float32 precision. | [tests/processing/dither/interframe/0040_interframe_pmj_cli_thread_count_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0040_interframe_pmj_cli_thread_count_stable_output_builtin_apng.t), [tests/processing/dither/interframe/0043_interframe_pmj_cli_float32_thread_count_stable_output_builtin_apng.t](../../../../tests/processing/dither/interframe/0043_interframe_pmj_cli_float32_thread_count_stable_output_builtin_apng.t) |
-| IF-27 | `-d interframe` ignores STBN source environment overrides and reports the diffusion contract in byte and float32 precision. | [tests/processing/dither/interframe/0044_interframe_strategy_cli_diffusion_matches_default_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0044_interframe_strategy_cli_diffusion_matches_default_8bit_animated_gif.t), [tests/processing/dither/interframe/0045_interframe_strategy_cli_diffusion_matches_default_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0045_interframe_strategy_cli_diffusion_matches_default_float32_animated_gif.t) |
-| IF-28 | CLI `stbn` and explicit hash have equal output and report hash in byte and float32 precision. | [tests/processing/dither/interframe/0046_interframe_strategy_cli_stbn_alias_matches_hash_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0046_interframe_strategy_cli_stbn_alias_matches_hash_8bit_animated_gif.t), [tests/processing/dither/interframe/0047_interframe_strategy_cli_stbn_alias_matches_hash_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0047_interframe_strategy_cli_stbn_alias_matches_hash_float32_animated_gif.t) |
-| IF-29 | CLI PMJ reports an input-boundary reset, without a size-change reset, for repeated same-size inputs. | [tests/processing/dither/interframe/0048_interframe_strategy_cli_pmj_resets_between_inputs_builtin_apng.t](../../../../tests/processing/dither/interframe/0048_interframe_strategy_cli_pmj_resets_between_inputs_builtin_apng.t) |
-| IF-30 | CLI mask reports its source and the input-boundary reset for mixed-size inputs. | [tests/processing/dither/interframe/0049_interframe_strategy_cli_stbn_mask_resets_across_size_change_builtin_mixed.t](../../../../tests/processing/dither/interframe/0049_interframe_strategy_cli_stbn_mask_resets_across_size_change_builtin_mixed.t) |
-| IF-31 | PMJ and hash report distinct source markers and strategy diagnostic codes in byte and float32 precision. | [tests/processing/dither/interframe/0050_interframe_pmj_source_changes_output_vs_stbn_hash_builtin_apng.t](../../../../tests/processing/dither/interframe/0050_interframe_pmj_source_changes_output_vs_stbn_hash_builtin_apng.t), [tests/processing/dither/interframe/0051_interframe_pmj_source_changes_output_vs_stbn_hash_float32_builtin_apng.t](../../../../tests/processing/dither/interframe/0051_interframe_pmj_source_changes_output_vs_stbn_hash_float32_builtin_apng.t) |
-| IF-32 | CLI PMJ reports its source and the input-boundary reset for mixed-size inputs in byte and float32 precision. | [tests/processing/dither/interframe/0052_interframe_strategy_cli_pmj_resets_across_size_change_builtin_mixed.t](../../../../tests/processing/dither/interframe/0052_interframe_strategy_cli_pmj_resets_across_size_change_builtin_mixed.t), [tests/processing/dither/interframe/0053_interframe_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t](../../../../tests/processing/dither/interframe/0053_interframe_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t) |
-| IF-33 | Zero strength makes byte mask and float32 PMJ match diffusion on the tested APNG. | [tests/processing/dither/interframe/0054_interframe_stbn_mask_strength_zero_matches_diffusion_builtin_apng.t](../../../../tests/processing/dither/interframe/0054_interframe_stbn_mask_strength_zero_matches_diffusion_builtin_apng.t), [tests/processing/dither/interframe/0055_interframe_pmj_strength_zero_matches_diffusion_float32_builtin_apng.t](../../../../tests/processing/dither/interframe/0055_interframe_pmj_strength_zero_matches_diffusion_float32_builtin_apng.t) |
-| IF-34 | CLI mask strength overrides zero environment strength on the byte path. | [tests/processing/dither/interframe/0056_interframe_strength_cli_overrides_env_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0056_interframe_strength_cli_overrides_env_8bit_animated_gif.t) |
-| IF-35 | Selecting Atkinson spatial diffusion changes interframe GIF output relative to FS in byte and float32 precision. | [tests/processing/dither/interframe/0057_interframe_diffusion_suboption_changes_output_vs_fs_animated_gif.t](../../../../tests/processing/dither/interframe/0057_interframe_diffusion_suboption_changes_output_vs_fs_animated_gif.t), [tests/processing/dither/interframe/0058_interframe_diffusion_suboption_changes_output_vs_fs_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0058_interframe_diffusion_suboption_changes_output_vs_fs_float32_animated_gif.t) |
-| IF-36 | Byte STBN defaults to spatial diffusion `none`. | [tests/processing/dither/interframe/0059_interframe_stbn_default_diffusion_matches_none_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0059_interframe_stbn_default_diffusion_matches_none_8bit_animated_gif.t) |
-| IF-37 | STBN spatial diffusion uses its own environment setting and ignores the interframe diffusion setting. | [tests/processing/dither/interframe/0060_interframe_stbn_diffusion_env_isolated_from_interframe_diffusion_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0060_interframe_stbn_diffusion_env_isolated_from_interframe_diffusion_8bit_animated_gif.t) |
-| IF-38 | Enabling PMJ motion adaptation changes the tested GIF output in byte and float32 precision. | [tests/processing/dither/interframe/0061_interframe_stbn_motion_adapt_changes_output_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0061_interframe_stbn_motion_adapt_changes_output_8bit_animated_gif.t), [tests/processing/dither/interframe/0062_interframe_stbn_motion_adapt_changes_output_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0062_interframe_stbn_motion_adapt_changes_output_float32_animated_gif.t) |
-| IF-39 | Enabling PMJ scene-cut reset changes the tested GIF output in byte and float32 precision. | [tests/processing/dither/interframe/0063_interframe_stbn_scene_cut_reset_changes_output_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0063_interframe_stbn_scene_cut_reset_changes_output_8bit_animated_gif.t), [tests/processing/dither/interframe/0064_interframe_stbn_scene_cut_reset_changes_output_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0064_interframe_stbn_scene_cut_reset_changes_output_float32_animated_gif.t) |
-| IF-40 | Mask alpha-guard enablement is reported by the contract diagnostic in byte and float32 precision. | [tests/processing/dither/interframe/0065_interframe_stbn_alpha_guard_changes_output_8bit_builtin_apng.t](../../../../tests/processing/dither/interframe/0065_interframe_stbn_alpha_guard_changes_output_8bit_builtin_apng.t), [tests/processing/dither/interframe/0066_interframe_stbn_alpha_guard_changes_output_float32_builtin_apng.t](../../../../tests/processing/dither/interframe/0066_interframe_stbn_alpha_guard_changes_output_float32_builtin_apng.t) |
-| IF-41 | Enabling PMJ perceptual weighting changes the tested GIF output in byte and float32 precision. | [tests/processing/dither/interframe/0067_interframe_stbn_perceptual_weight_changes_output_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0067_interframe_stbn_perceptual_weight_changes_output_8bit_animated_gif.t), [tests/processing/dither/interframe/0068_interframe_stbn_perceptual_weight_changes_output_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0068_interframe_stbn_perceptual_weight_changes_output_float32_animated_gif.t) |
-| IF-42 | The PMJ fast path preserves exact output in byte and float32 precision. | [tests/processing/dither/interframe/0069_interframe_stbn_pmj_fastpath_matches_default_8bit_builtin_apng.t](../../../../tests/processing/dither/interframe/0069_interframe_stbn_pmj_fastpath_matches_default_8bit_builtin_apng.t), [tests/processing/dither/interframe/0070_interframe_stbn_pmj_fastpath_matches_default_float32_builtin_apng.t](../../../../tests/processing/dither/interframe/0070_interframe_stbn_pmj_fastpath_matches_default_float32_builtin_apng.t) |
-| IF-43 | Enabling PMJ scene detection changes the tested GIF output in byte and float32 precision. | [tests/processing/dither/interframe/0071_interframe_stbn_scene_detect_changes_output_8bit_animated_gif.t](../../../../tests/processing/dither/interframe/0071_interframe_stbn_scene_detect_changes_output_8bit_animated_gif.t), [tests/processing/dither/interframe/0072_interframe_stbn_scene_detect_changes_output_float32_animated_gif.t](../../../../tests/processing/dither/interframe/0072_interframe_stbn_scene_detect_changes_output_float32_animated_gif.t) |
-
-### Interframe option routing and diagnostics
-
-These rows own accepted CLI settings, precedence, and the specific rejection diagnostics; they are not an inventory of every malformed-input specimen.
-
-| ID | Contract | Owning tests |
-| --- | --- | --- |
-| IFCLI-01 | Unknown stbn suboption keys are rejected. | [tests/cli/options/matching/0130_option_matching_diffusion_stbn_source_unknown_key.t](../../../../tests/cli/options/matching/0130_option_matching_diffusion_stbn_source_unknown_key.t) |
-| IFCLI-02 | -d stbn accepts source=pmj. | [tests/cli/options/matching/0131_option_matching_diffusion_stbn_source_pmj_success.t](../../../../tests/cli/options/matching/0131_option_matching_diffusion_stbn_source_pmj_success.t) |
-| IFCLI-03 | Unknown -d diffusion base values are rejected. | [tests/cli/options/matching/0132_option_matching_diffusion_unknown_base_value_rejected.t](../../../../tests/cli/options/matching/0132_option_matching_diffusion_unknown_base_value_rejected.t) |
-| IFCLI-04 | -d stbn accepts strength suboption. | [tests/cli/options/matching/0133_option_matching_diffusion_stbn_strength_suboption_success.t](../../../../tests/cli/options/matching/0133_option_matching_diffusion_stbn_strength_suboption_success.t) |
-| IFCLI-05 | Non-stbn diffusion rejects strength key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0134_option_matching_diffusion_non_stbn_rejects_strength_suboption.t](../../../../tests/cli/options/matching/0134_option_matching_diffusion_non_stbn_rejects_strength_suboption.t) |
-| IFCLI-06 | Invalid stbn strength values are rejected. The diagnostic states the 0.0-2.0 range. | [tests/cli/options/matching/0135_option_matching_diffusion_stbn_strength_invalid_value.t](../../../../tests/cli/options/matching/0135_option_matching_diffusion_stbn_strength_invalid_value.t) |
-| IFCLI-07 | -d interframe accepts diffusion suboption. | [tests/cli/options/matching/0136_option_matching_diffusion_interframe_diffusion_suboption_success.t](../../../../tests/cli/options/matching/0136_option_matching_diffusion_interframe_diffusion_suboption_success.t) |
-| IFCLI-08 | -d stbn accepts diffusion suboption. | [tests/cli/options/matching/0137_option_matching_diffusion_stbn_diffusion_suboption_success.t](../../../../tests/cli/options/matching/0137_option_matching_diffusion_stbn_diffusion_suboption_success.t) |
-| IFCLI-09 | Non-interframe diffusion rejects diffusion key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0138_option_matching_diffusion_non_interframe_rejects_diffusion_suboption.t](../../../../tests/cli/options/matching/0138_option_matching_diffusion_non_interframe_rejects_diffusion_suboption.t) |
-| IFCLI-10 | Unknown interframe diffusion value is rejected. The diagnostic identifies an unknown suboption value. | [tests/cli/options/matching/0139_option_matching_diffusion_interframe_diffusion_unknown_value.t](../../../../tests/cli/options/matching/0139_option_matching_diffusion_interframe_diffusion_unknown_value.t) |
-| IFCLI-11 | -d stbn accepts motion_adapt suboption. | [tests/cli/options/matching/0162_option_matching_diffusion_stbn_motion_adapt_suboption_success.t](../../../../tests/cli/options/matching/0162_option_matching_diffusion_stbn_motion_adapt_suboption_success.t) |
-| IFCLI-12 | Invalid stbn motion_adapt value is rejected. The diagnostic requires a boolean value of 0 or 1. | [tests/cli/options/matching/0163_option_matching_diffusion_stbn_motion_adapt_invalid_value.t](../../../../tests/cli/options/matching/0163_option_matching_diffusion_stbn_motion_adapt_invalid_value.t) |
-| IFCLI-13 | Non-stbn diffusion rejects motion_adapt key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0164_option_matching_diffusion_non_stbn_rejects_motion_adapt_suboption.t](../../../../tests/cli/options/matching/0164_option_matching_diffusion_non_stbn_rejects_motion_adapt_suboption.t) |
-| IFCLI-14 | -d stbn accepts scene_cut_reset suboption. | [tests/cli/options/matching/0165_option_matching_diffusion_stbn_scene_cut_reset_suboption_success.t](../../../../tests/cli/options/matching/0165_option_matching_diffusion_stbn_scene_cut_reset_suboption_success.t) |
-| IFCLI-15 | Invalid stbn scene_cut_reset value is rejected. The diagnostic requires a boolean value of 0 or 1. | [tests/cli/options/matching/0166_option_matching_diffusion_stbn_scene_cut_reset_invalid_value.t](../../../../tests/cli/options/matching/0166_option_matching_diffusion_stbn_scene_cut_reset_invalid_value.t) |
-| IFCLI-16 | Non-stbn diffusion rejects scene_cut_reset key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0167_option_matching_diffusion_non_stbn_rejects_scene_cut_reset_suboption.t](../../../../tests/cli/options/matching/0167_option_matching_diffusion_non_stbn_rejects_scene_cut_reset_suboption.t) |
-| IFCLI-17 | -d stbn accepts alpha_guard suboption. | [tests/cli/options/matching/0168_option_matching_diffusion_stbn_alpha_guard_suboption_success.t](../../../../tests/cli/options/matching/0168_option_matching_diffusion_stbn_alpha_guard_suboption_success.t) |
-| IFCLI-18 | Invalid stbn alpha_guard value is rejected. The diagnostic requires a boolean value of 0 or 1. | [tests/cli/options/matching/0169_option_matching_diffusion_stbn_alpha_guard_invalid_value.t](../../../../tests/cli/options/matching/0169_option_matching_diffusion_stbn_alpha_guard_invalid_value.t) |
-| IFCLI-19 | Non-stbn diffusion rejects alpha_guard key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0170_option_matching_diffusion_non_stbn_rejects_alpha_guard_suboption.t](../../../../tests/cli/options/matching/0170_option_matching_diffusion_non_stbn_rejects_alpha_guard_suboption.t) |
-| IFCLI-20 | -d stbn accepts perceptual_weight suboption. | [tests/cli/options/matching/0171_option_matching_diffusion_stbn_perceptual_weight_suboption_success.t](../../../../tests/cli/options/matching/0171_option_matching_diffusion_stbn_perceptual_weight_suboption_success.t) |
-| IFCLI-21 | Invalid stbn perceptual_weight value is rejected. The diagnostic requires a boolean value of 0 or 1. | [tests/cli/options/matching/0172_option_matching_diffusion_stbn_perceptual_weight_invalid_value.t](../../../../tests/cli/options/matching/0172_option_matching_diffusion_stbn_perceptual_weight_invalid_value.t) |
-| IFCLI-22 | Non-stbn rejects perceptual_weight key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0173_option_matching_diffusion_non_stbn_rejects_perceptual_weight_suboption.t](../../../../tests/cli/options/matching/0173_option_matching_diffusion_non_stbn_rejects_perceptual_weight_suboption.t) |
-| IFCLI-23 | -d stbn accepts fastpath suboption. | [tests/cli/options/matching/0174_option_matching_diffusion_stbn_fastpath_suboption_success.t](../../../../tests/cli/options/matching/0174_option_matching_diffusion_stbn_fastpath_suboption_success.t) |
-| IFCLI-24 | Invalid stbn fastpath value is rejected. The diagnostic requires a boolean value of 0 or 1. | [tests/cli/options/matching/0175_option_matching_diffusion_stbn_fastpath_invalid_value.t](../../../../tests/cli/options/matching/0175_option_matching_diffusion_stbn_fastpath_invalid_value.t) |
-| IFCLI-25 | Non-stbn diffusion rejects fastpath key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0176_option_matching_diffusion_non_stbn_rejects_fastpath_suboption.t](../../../../tests/cli/options/matching/0176_option_matching_diffusion_non_stbn_rejects_fastpath_suboption.t) |
-| IFCLI-26 | Stbn cli motion_adapt overrides invalid env value. | [tests/cli/options/matching/0177_option_matching_diffusion_stbn_cli_motion_adapt_overrides_env_invalid.t](../../../../tests/cli/options/matching/0177_option_matching_diffusion_stbn_cli_motion_adapt_overrides_env_invalid.t) |
-| IFCLI-27 | -d stbn accepts scene_detect suboption. | [tests/cli/options/matching/0178_option_matching_diffusion_stbn_scene_detect_suboption_success.t](../../../../tests/cli/options/matching/0178_option_matching_diffusion_stbn_scene_detect_suboption_success.t) |
-| IFCLI-28 | Invalid stbn scene_detect value is rejected. The diagnostic requires a boolean value of 0 or 1. | [tests/cli/options/matching/0179_option_matching_diffusion_stbn_scene_detect_invalid_value.t](../../../../tests/cli/options/matching/0179_option_matching_diffusion_stbn_scene_detect_invalid_value.t) |
-| IFCLI-29 | Non-stbn diffusion rejects scene_detect key. The diagnostic identifies an unknown suboption key. | [tests/cli/options/matching/0180_option_matching_diffusion_non_stbn_rejects_scene_detect_suboption.t](../../../../tests/cli/options/matching/0180_option_matching_diffusion_non_stbn_rejects_scene_detect_suboption.t) |
-| IFCLI-30 | CLI scene_detect override ignores invalid env value. | [tests/cli/options/matching/0181_option_matching_diffusion_stbn_cli_scene_detect_overrides_env_invalid.t](../../../../tests/cli/options/matching/0181_option_matching_diffusion_stbn_cli_scene_detect_overrides_env_invalid.t) |
-
-### Interframe source synchronization
-
-`Strategy-token:` comments in positive compatibility specimens declare the source parser tokens they exercise through exact `SIXEL_DITHER_STBN_SOURCE` assignments. The parser is authoritative: adding a token requires a declared specimen, and deleting a token makes its surviving declaration fail. Invalid-value fallback specimens are not accepted-token declarations. The behavioral tables above own precision, threads, palette capture, precedence, reset, and diagnostic observations; their assertions execute in the ordinary test suite.
-
-| ID | Repository invariant | Owning check |
-| --- | --- | --- |
-| IFS-01 | Source strategy tokens and declared positive test uses agree, supported environment names remain registered, and retired environment names and diffusion aliases do not return. | [tests/_static/sh/staticcheck-interframe-strategy-token-sync.sh](../../../../tests/_static/sh/staticcheck-interframe-strategy-token-sync.sh) |
+| DOPT-01 | Unknown `-d` base values are rejected. | [tests/cli/options/matching/0132_option_matching_diffusion_unknown_base_value_rejected.t](../../../../tests/cli/options/matching/0132_option_matching_diffusion_unknown_base_value_rejected.t) |
 
 ### Quality regression tests
 

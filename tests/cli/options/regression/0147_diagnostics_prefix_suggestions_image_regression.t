@@ -48,7 +48,7 @@ case "${env_trace}" in *LSXSUB1\|*key=prefix_suggestions\|stored=1\|binding=pref
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_OPTION_PREFIX_SUGGESTIONS=1" \
-    -xhuman:P0 -d st "${input_image}" -o/dev/null 2>&1) || status=$?
+    -xhuman:P0 -d s "${input_image}" -o/dev/null 2>&1) || status=$?
 test "${status}" -eq 2 || {
     echo "not ok" 1 - "prefix suggestions consumer exit status mismatch"
     exit 0

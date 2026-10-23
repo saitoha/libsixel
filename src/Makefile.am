@@ -207,7 +207,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy-a-dither.c \
                 $(srcdir)/dither-policy-x-dither.c \
                 $(srcdir)/dither-policy-bluenoise.c \
-                $(srcdir)/dither-policy-interframe.c \
                 $(srcdir)/dither-policy-lso2.c \
                 $(srcdir)/dither-policy-none.h \
                 $(srcdir)/dither-policy-fs.h \
@@ -222,7 +221,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy-a-dither.h \
                 $(srcdir)/dither-policy-x-dither.h \
                 $(srcdir)/dither-policy-bluenoise.h \
-                $(srcdir)/dither-policy-interframe.h \
                 $(srcdir)/dither-clamp.c \
                 $(srcdir)/dither-carry.c \
                 $(srcdir)/dither-clamp.h \
@@ -238,18 +236,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/progressive-gpu.h \
                 $(srcdir)/gpu-palette.h \
                 $(srcdir)/bluenoise_64x64.h \
-                $(srcdir)/dither-interframe-method.c \
-                $(srcdir)/dither-interframe-method.h \
-                $(srcdir)/dither-interframe-stbn-source.c \
-                $(srcdir)/dither-interframe-stbn-source.h \
-                $(srcdir)/dither-interframe-stbn-source-hash.c \
-                $(srcdir)/dither-interframe-stbn-source-hash.h \
-                $(srcdir)/dither-interframe-stbn-source-mask.c \
-                $(srcdir)/dither-interframe-stbn-source-mask.h \
-                $(srcdir)/dither-interframe-stbn-source-mask-table.c \
-                $(srcdir)/dither-interframe-stbn-source-mask-table.h \
-                $(srcdir)/dither-interframe-stbn-source-pmj.c \
-                $(srcdir)/dither-interframe-stbn-source-pmj.h \
                 $(srcdir)/timeline-logger.c \
                 $(srcdir)/timeline-logger.h \
                 $(srcdir)/timeline-writer.c \
@@ -588,8 +574,7 @@ DITHER_POLICY_CLASSID_INPUTS = \
     $(srcdir)/dither-policy-lso2.h \
     $(srcdir)/dither-policy-a-dither.h \
     $(srcdir)/dither-policy-x-dither.h \
-    $(srcdir)/dither-policy-bluenoise.h \
-    $(srcdir)/dither-policy-interframe.h
+    $(srcdir)/dither-policy-bluenoise.h
 
 LOADER_COMPONENT_CLASSID_INPUTS = \
     $(srcdir)/loader-builtin.h \

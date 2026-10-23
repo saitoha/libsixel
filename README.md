@@ -664,38 +664,6 @@ Options:
                                            -> auto, raster, or
                                               serpentine
                                               (default auto)
-                             interframe -> interframe error
-                                           diffusion (palette path only)
-                               sub-option:
-                                 diffusion=KERNEL
-                                           -> auto, none, fs,
-                                              atkinson, jajuni,
-                                              stucki, burkes,
-                                              sierra1, sierra2,
-                                              or sierra3
-                                 scan=SCANTYPE
-                                           -> auto, raster, or
-                                              serpentine
-                                              (default auto)
-                             stbn       -> interframe STBN/PMJ
-                                           source selection
-                               sub-option:
-                                 source=SOURCE
-                                           -> hash, mask, or pmj
-                                              (default hash)
-                                 diffusion=KERNEL
-                                           -> auto, none, fs,
-                                              atkinson, jajuni,
-                                              stucki, burkes,
-                                              sierra1, sierra2, or
-                                              sierra3 (default none)
-                                 strength=VALUE
-                                           -> float in 0.0-2.0
-                                              (default 0.055)
-                                 scan=SCANTYPE
-                                           -> auto, raster, or
-                                              serpentine
-                                              (default auto)
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for

@@ -47,7 +47,7 @@ case "${env_trace}" in *LSXSUB1\|*key=force_colors\|stored=1\|binding=force_colo
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_STATUS_FORCE_COLORS=0" \
-    -xhuman:C1 -d st "${input_image}" -o/dev/null 2>&1) || status=$?
+    -xhuman:C1 -d s "${input_image}" -o/dev/null 2>&1) || status=$?
 test "${status}" -eq 2 || {
     echo "not ok" 1 - "forced colors consumer exit status mismatch"
     exit 0

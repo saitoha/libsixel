@@ -546,8 +546,6 @@ def write_metadata(path: Path,
             "size_measurement": "quality-pass SIXEL stdout byte length",
             "excluded": {
                 "auto": "selector rather than a concrete method",
-                "interframe": "requires an animation protocol",
-                "stbn": "requires an animation protocol",
             },
         },
     }

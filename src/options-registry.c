@@ -50,7 +50,6 @@
 #include "cms.h"
 #include "compat_stub.h"
 #include "cpu.h"
-#include "dither-interframe-method.h"
 #include "decoder.h"
 #include "encoder.h"
 #include "gamut.h"
@@ -641,14 +640,6 @@
         optflag_, base_, name_, short_, env_, fallback_, legacy_, \
         SIXEL_SUBOPTION_VALUE_INT_PAIR, 0.0, 0.0, 0, 0, 0, message_, NULL)
 
-#define SIXEL_REGISTRY_SCALED_U8( \
-    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
-    maximum_, message_) \
-    SIXEL_REGISTRY_NUMBER( \
-        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
-        SIXEL_SUBOPTION_VALUE_SCALED_U8, minimum_, maximum_, 1, 1, 0, \
-        message_, NULL)
-
 #define SIXEL_REGISTRY_ENCODER_CHOICE( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
     field_, override_) \
@@ -706,26 +697,6 @@
             SIXEL_SUBOPTION_OFFSET_NONE, \
             SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
         }, NULL, (base_mask_) \
-    }
-
-#define SIXEL_REGISTRY_ENCODER_CHOICE_ENV( \
-    optflag_, base_, name_, short_, env_, fallback_, legacy_, choices_, \
-    environment_choices_, field_, override_) \
-    { \
-        (optflag_), (base_), SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, \
-        (name_), (short_), (env_), (fallback_), \
-        (legacy_), SIXEL_SUBOPTION_VALUE_CHOICE, (choices_), \
-        SIXEL_REGISTRY_ARRAY_LENGTH(choices_), (environment_choices_), \
-        SIXEL_REGISTRY_ARRAY_LENGTH(environment_choices_), 0.0, 0.0, 0, \
-        0, 0, SIXEL_SUBOPTION_ENV_RANGE_REJECT, NULL, NULL, \
-        { \
-            SIXEL_SUBOPTION_TARGET_ENCODER, SIXEL_SUBOPTION_STORAGE_INT, \
-            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, field_, int), \
-            SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_REGISTRY_CHECKED_OFFSET(sixel_encoder_t, override_, int), \
-            SIXEL_SUBOPTION_OFFSET_NONE, \
-            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
-        }, NULL, 0ULL \
     }
 
 #define SIXEL_REGISTRY_ENCODER_BOOLEAN( \
@@ -955,29 +926,6 @@
         SIXEL_SUBOPTION_OFFSET_NONE, override_, \
         SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
 
-#define SIXEL_REGISTRY_ENCODER_SCALED_U8( \
-    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
-    maximum_, message_, field_, override_) \
-    SIXEL_REGISTRY_ENCODER_NUMBER( \
-        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
-        SIXEL_SUBOPTION_VALUE_SCALED_U8, minimum_, maximum_, 1, 1, 0, \
-        SIXEL_SUBOPTION_ENV_RANGE_REJECT, message_, \
-        SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
-        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
-        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
-
-#define SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP( \
-    optflag_, base_, name_, short_, env_, fallback_, legacy_, minimum_, \
-    maximum_, message_, field_, override_) \
-    SIXEL_REGISTRY_ENCODER_NUMBER( \
-        optflag_, base_, name_, short_, env_, fallback_, legacy_, \
-        SIXEL_SUBOPTION_VALUE_SCALED_U8, minimum_, maximum_, 1, 1, 0, \
-        SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MINIMUM | \
-            SIXEL_SUBOPTION_ENV_RANGE_CLAMP_MAXIMUM, \
-        message_, SIXEL_SUBOPTION_STORAGE_INT, int, field_, \
-        SIXEL_SUBOPTION_OFFSET_NONE, override_, \
-        SIXEL_SUBOPTION_BINDING_ID_2(field_, override_))
-
 #define SIXEL_REGISTRY_ENCODER_RATIO3( \
     optflag_, base_, name_, short_, env_, fallback_, legacy_, message_, \
     field_, override_) \
@@ -1008,49 +956,40 @@ enum {
 };
 
 static sixel_option_value_schema_t const g_output_color_values[] = {
-    { "gamma", SIXEL_COLORSPACE_GAMMA, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "linear", SIXEL_COLORSPACE_LINEAR, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "smpte-c", SIXEL_COLORSPACE_SMPTEC, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "smptec", SIXEL_COLORSPACE_SMPTEC, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "display-p3", -SIXEL_NAMED_COLOR_DISPLAY_P3, 0u,
-      SIXEL_OPTION_BASE_POLICY_NONE },
-    { "adobe-rgb", -SIXEL_NAMED_COLOR_ADOBE_RGB, 0u,
-      SIXEL_OPTION_BASE_POLICY_NONE },
-    { "dci-p3", -SIXEL_NAMED_COLOR_DCI_P3, 0u,
-      SIXEL_OPTION_BASE_POLICY_NONE },
-    { "icc", -SIXEL_NAMED_COLOR_COUNT, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "gamma", SIXEL_COLORSPACE_GAMMA, 0u },
+    { "linear", SIXEL_COLORSPACE_LINEAR, 0u },
+    { "smpte-c", SIXEL_COLORSPACE_SMPTEC, 0u },
+    { "smptec", SIXEL_COLORSPACE_SMPTEC, 0u },
+    { "display-p3", -SIXEL_NAMED_COLOR_DISPLAY_P3, 0u },
+    { "adobe-rgb", -SIXEL_NAMED_COLOR_ADOBE_RGB, 0u },
+    { "dci-p3", -SIXEL_NAMED_COLOR_DCI_P3, 0u },
+    { "icc", -SIXEL_NAMED_COLOR_COUNT, 0u }
 };
 
 static sixel_option_value_schema_t const g_input_color_values[] = {
-    { "srgb", SIXEL_OPTION_INPUT_SRGB, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "display-p3", SIXEL_OPTION_INPUT_DISPLAY_P3, 0u,
-      SIXEL_OPTION_BASE_POLICY_NONE },
-    { "adobe-rgb", SIXEL_OPTION_INPUT_ADOBE_RGB, 0u,
-      SIXEL_OPTION_BASE_POLICY_NONE },
-    { "dci-p3", SIXEL_OPTION_INPUT_DCI_P3, 0u,
-      SIXEL_OPTION_BASE_POLICY_NONE },
-    { "icc", SIXEL_NAMED_COLOR_COUNT, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "srgb", SIXEL_OPTION_INPUT_SRGB, 0u },
+    { "display-p3", SIXEL_OPTION_INPUT_DISPLAY_P3, 0u },
+    { "adobe-rgb", SIXEL_OPTION_INPUT_ADOBE_RGB, 0u },
+    { "dci-p3", SIXEL_OPTION_INPUT_DCI_P3, 0u },
+    { "icc", SIXEL_NAMED_COLOR_COUNT, 0u }
 };
 
 /* Untagged capture interpretation is explicit, never environment-driven. */
 static sixel_option_value_schema_t const g_decode_input_values[] = {
-    { "single", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "6delta-progressive", 1, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "single", 0, 0u },
+    { "6delta-progressive", 1, 0u }
 };
 
 static sixel_option_value_schema_t const g_dequantize_values[] = {
-    { "none", SIXEL_DEQUANTIZE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "none", SIXEL_DEQUANTIZE_NONE, 0u },
     {
-        "k_undither", SIXEL_DEQUANTIZE_K_UNDITHER, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "k_undither", SIXEL_DEQUANTIZE_K_UNDITHER, 0u
     },
     {
-        "lso_undither", SIXEL_OPTION_DEQUANTIZE_LSO_BASE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "lso_undither", SIXEL_OPTION_DEQUANTIZE_LSO_BASE, 0u
     },
     {
-        "selective_blur", SIXEL_DEQUANTIZE_SELECTIVE_BLUR, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "selective_blur", SIXEL_DEQUANTIZE_SELECTIVE_BLUR, 0u
     }
 };
 
@@ -1066,9 +1005,7 @@ enum {
     SIXEL_DIFFUSION_BASE_A_DITHER,
     SIXEL_DIFFUSION_BASE_X_DITHER,
     SIXEL_DIFFUSION_BASE_BLUENOISE,
-    SIXEL_DIFFUSION_BASE_LSO2,
-    SIXEL_DIFFUSION_BASE_INTERFRAME,
-    SIXEL_DIFFUSION_BASE_STBN
+    SIXEL_DIFFUSION_BASE_LSO2
 };
 
 #define SIXEL_DIFFUSION_BASE_SET_CARRY \
@@ -1081,33 +1018,20 @@ enum {
      SIXEL_REGISTRY_BASE_BIT(SIXEL_DIFFUSION_BASE_SIERRA))
 
 static sixel_option_value_schema_t const g_diffusion_values[] = {
-    { "auto", SIXEL_DIFFUSE_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "none", SIXEL_DIFFUSE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "fs", SIXEL_DIFFUSE_FS, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "atkinson", SIXEL_DIFFUSE_ATKINSON, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "jajuni", SIXEL_DIFFUSE_JAJUNI, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "stucki", SIXEL_DIFFUSE_STUCKI, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "burkes", SIXEL_DIFFUSE_BURKES, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "sierra", SIXEL_DIFFUSE_SIERRA1, 1u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "a_dither", SIXEL_DIFFUSE_A_DITHER, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "x_dither", SIXEL_DIFFUSE_X_DITHER, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "auto", SIXEL_DIFFUSE_AUTO, 0u },
+    { "none", SIXEL_DIFFUSE_NONE, 0u },
+    { "fs", SIXEL_DIFFUSE_FS, 0u },
+    { "atkinson", SIXEL_DIFFUSE_ATKINSON, 0u },
+    { "jajuni", SIXEL_DIFFUSE_JAJUNI, 0u },
+    { "stucki", SIXEL_DIFFUSE_STUCKI, 0u },
+    { "burkes", SIXEL_DIFFUSE_BURKES, 0u },
+    { "sierra", SIXEL_DIFFUSE_SIERRA1, 1u },
+    { "a_dither", SIXEL_DIFFUSE_A_DITHER, 0u },
+    { "x_dither", SIXEL_DIFFUSE_X_DITHER, 0u },
     {
-        "bluenoise", SIXEL_DIFFUSE_BLUENOISE_DITHER, 6u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "bluenoise", SIXEL_DIFFUSE_BLUENOISE_DITHER, 6u
     },
-    { "lso2", SIXEL_DIFFUSE_LSO2, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    {
-        "interframe",
-        SIXEL_DIFFUSE_INTERFRAME,
-        1u,
-        SIXEL_OPTION_BASE_POLICY_DIFFUSION_INTERFRAME
-    },
-    {
-        "stbn",
-        SIXEL_DIFFUSE_INTERFRAME,
-        3u,
-        SIXEL_OPTION_BASE_POLICY_DIFFUSION_STBN
-    }
+    { "lso2", SIXEL_DIFFUSE_LSO2, 0u }
 };
 
 enum {
@@ -1119,115 +1043,95 @@ enum {
 };
 
 static sixel_option_value_schema_t const g_quantize_values[] = {
-    { "auto", SIXEL_QUANTIZE_MODEL_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "auto", SIXEL_QUANTIZE_MODEL_AUTO, 0u },
     {
-        "heckbert", SIXEL_QUANTIZE_MODEL_MEDIANCUT, 1u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "heckbert", SIXEL_QUANTIZE_MODEL_MEDIANCUT, 1u
     },
     {
-        "kmeans", SIXEL_QUANTIZE_MODEL_KMEANS, 18u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "kmeans", SIXEL_QUANTIZE_MODEL_KMEANS, 18u
     },
     {
-        "medoids", SIXEL_QUANTIZE_MODEL_KMEDOIDS, 17u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "medoids", SIXEL_QUANTIZE_MODEL_KMEDOIDS, 17u
     },
     {
-        "center", SIXEL_QUANTIZE_MODEL_KCENTER, 20u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "center", SIXEL_QUANTIZE_MODEL_KCENTER, 20u
     }
 };
 
 static sixel_option_value_schema_t const g_palette_sampling_values[] = {
     {
-        "auto", SIXEL_PALETTE_SAMPLING_AUTO, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "auto", SIXEL_PALETTE_SAMPLING_AUTO, 0u
     },
     {
-        "full-frame", SIXEL_PALETTE_SAMPLING_FULL_FRAME, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "full-frame", SIXEL_PALETTE_SAMPLING_FULL_FRAME, 0u
     },
     {
-        "adaptive-grid", SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "adaptive-grid", SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID, 0u
     }
 };
 
 static sixel_option_value_schema_t const g_palette_binning_values[] = {
     {
-        "auto", SIXEL_PALETTE_BINNING_AUTO, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "auto", SIXEL_PALETTE_BINNING_AUTO, 0u
     },
     {
-        "none", SIXEL_PALETTE_BINNING_NONE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "none", SIXEL_PALETTE_BINNING_NONE, 0u
     },
     {
-        "exact", SIXEL_PALETTE_BINNING_EXACT, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "exact", SIXEL_PALETTE_BINNING_EXACT, 0u
     },
     {
-        "hard", SIXEL_PALETTE_BINNING_HARD, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "hard", SIXEL_PALETTE_BINNING_HARD, 0u
     },
     {
-        "soft", SIXEL_PALETTE_BINNING_SOFT, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "soft", SIXEL_PALETTE_BINNING_SOFT, 0u
     }
 };
 
 static sixel_option_value_schema_t const g_merge_policy_values[] = {
-    { "auto", SIXEL_FINAL_MERGE_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "none", SIXEL_FINAL_MERGE_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "ward", SIXEL_FINAL_MERGE_WARD, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "auto", SIXEL_FINAL_MERGE_AUTO, 0u },
+    { "none", SIXEL_FINAL_MERGE_NONE, 0u },
+    { "ward", SIXEL_FINAL_MERGE_WARD, 0u }
 };
 
 static sixel_option_value_schema_t const g_cover_policy_values[] = {
-    { "auto", SIXEL_PALETTE_COVER_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "off", SIXEL_PALETTE_COVER_OFF, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "auto", SIXEL_PALETTE_COVER_AUTO, 0u },
+    { "off", SIXEL_PALETTE_COVER_OFF, 0u },
     {
-        "corners", SIXEL_PALETTE_COVER_CORNERS, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "corners", SIXEL_PALETTE_COVER_CORNERS, 0u
     },
     {
-        "faces", SIXEL_PALETTE_COVER_FACES, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "faces", SIXEL_PALETTE_COVER_FACES, 0u
     },
     {
-        "edges", SIXEL_PALETTE_COVER_EDGES, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "edges", SIXEL_PALETTE_COVER_EDGES, 0u
     },
     {
-        "all", SIXEL_PALETTE_COVER_EDGES, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "all", SIXEL_PALETTE_COVER_EDGES, 0u
     },
-    { "0", SIXEL_PALETTE_COVER_OFF, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "1", SIXEL_PALETTE_COVER_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "0", SIXEL_PALETTE_COVER_OFF, 0u },
+    { "1", SIXEL_PALETTE_COVER_AUTO, 0u }
 };
 
 static sixel_option_value_schema_t const g_clamp_policy_values[] = {
-    { "auto", SIXEL_DITHER_CLAMP_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "soft", SIXEL_DITHER_CLAMP_SOFT, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "hard", SIXEL_DITHER_CLAMP_HARD, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "none", SIXEL_DITHER_CLAMP_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "auto", SIXEL_DITHER_CLAMP_AUTO, 0u },
+    { "soft", SIXEL_DITHER_CLAMP_SOFT, 0u },
+    { "hard", SIXEL_DITHER_CLAMP_HARD, 0u },
+    { "none", SIXEL_DITHER_CLAMP_NONE, 0u }
 };
 
 static sixel_option_value_schema_t const g_snap_policy_values[] = {
     {
-        "none", SIXEL_PALETTE_SNAP_POLICY_NONE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "none", SIXEL_PALETTE_SNAP_POLICY_NONE, 0u
     },
     {
-        "auto", SIXEL_PALETTE_SNAP_POLICY_AUTO, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "auto", SIXEL_PALETTE_SNAP_POLICY_AUTO, 0u
     },
     {
-        "nearest", SIXEL_PALETTE_SNAP_POLICY_NEAREST, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "nearest", SIXEL_PALETTE_SNAP_POLICY_NEAREST, 0u
     },
     {
-        "reversible", SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "reversible", SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE, 0u
     }
 };
 
@@ -1249,29 +1153,25 @@ enum {
      SIXEL_REGISTRY_BASE_BIT(SIXEL_LOOKUP_BASE_6BIT))
 
 static sixel_option_value_schema_t const g_lookup_values[] = {
-    { "auto", SIXEL_LUT_POLICY_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "5bit", SIXEL_LUT_POLICY_5BIT, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "6bit", SIXEL_LUT_POLICY_6BIT, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "none", SIXEL_LUT_POLICY_NONE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "certlut", SIXEL_LUT_POLICY_CERTLUT, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "auto", SIXEL_LUT_POLICY_AUTO, 0u },
+    { "5bit", SIXEL_LUT_POLICY_5BIT, 0u },
+    { "6bit", SIXEL_LUT_POLICY_6BIT, 0u },
+    { "none", SIXEL_LUT_POLICY_NONE, 0u },
+    { "certlut", SIXEL_LUT_POLICY_CERTLUT, 0u },
     {
-        "eytzinger", SIXEL_LUT_POLICY_EYTZINGER, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "eytzinger", SIXEL_LUT_POLICY_EYTZINGER, 0u
     },
-    { "fhedt", SIXEL_LUT_POLICY_FHEDT, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "vptree", SIXEL_LUT_POLICY_VPTREE, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "rbc", SIXEL_LUT_POLICY_RBC, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "fhedt", SIXEL_LUT_POLICY_FHEDT, 0u },
+    { "vptree", SIXEL_LUT_POLICY_VPTREE, 0u },
+    { "rbc", SIXEL_LUT_POLICY_RBC, 0u },
     {
-        "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS, 0u
     },
     {
-        "delaunay", SIXEL_LUT_POLICY_DELAUNAY, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "delaunay", SIXEL_LUT_POLICY_DELAUNAY, 0u
     },
     {
-        "blockcull", SIXEL_LUT_POLICY_BLOCKCULL, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "blockcull", SIXEL_LUT_POLICY_BLOCKCULL, 0u
     }
 };
 
@@ -1335,115 +1235,100 @@ enum {
 
 static sixel_option_value_schema_t const g_loader_values[] = {
 #if HAVE_LIBPNG
-    { "libpng", SIXEL_LOADER_VALUE_LIBPNG, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "libpng", SIXEL_LOADER_VALUE_LIBPNG, 0u },
 #endif
 #if HAVE_JPEG
     {
-        "libjpeg", SIXEL_LOADER_VALUE_LIBJPEG, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "libjpeg", SIXEL_LOADER_VALUE_LIBJPEG, 0u
     },
 #endif
 #if HAVE_WEBP
     {
-        "libwebp", SIXEL_LOADER_VALUE_LIBWEBP, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "libwebp", SIXEL_LOADER_VALUE_LIBWEBP, 0u
     },
 #endif
 #if HAVE_LIBTIFF
     {
-        "libtiff", SIXEL_LOADER_VALUE_LIBTIFF, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "libtiff", SIXEL_LOADER_VALUE_LIBTIFF, 0u
     },
 #endif
 #if HAVE_LIBRSVG
     {
-        "librsvg", SIXEL_LOADER_VALUE_LIBRSVG, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "librsvg", SIXEL_LOADER_VALUE_LIBRSVG, 0u
     },
 #endif
     {
-        "builtin", SIXEL_LOADER_VALUE_BUILTIN, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "builtin", SIXEL_LOADER_VALUE_BUILTIN, 0u
     },
 #if HAVE_WIC
-    { "wic", SIXEL_LOADER_VALUE_WIC, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "wic", SIXEL_LOADER_VALUE_WIC, 0u },
 #endif
 #if HAVE_COREGRAPHICS
     {
-        "coregraphics", SIXEL_LOADER_VALUE_COREGRAPHICS, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "coregraphics", SIXEL_LOADER_VALUE_COREGRAPHICS, 0u
     },
 #endif
 #if HAVE_GDK_PIXBUF2
     {
-        "gdk-pixbuf2", SIXEL_LOADER_VALUE_GDK_PIXBUF2, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "gdk-pixbuf2", SIXEL_LOADER_VALUE_GDK_PIXBUF2, 0u
     },
 #endif
 #if HAVE_GD
-    { "gd", SIXEL_LOADER_VALUE_GD, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "gd", SIXEL_LOADER_VALUE_GD, 0u },
 #endif
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
     {
-        "quicklook", SIXEL_LOADER_VALUE_QUICKLOOK, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "quicklook", SIXEL_LOADER_VALUE_QUICKLOOK, 0u
     },
 #endif
 #if HAVE_FREEDESKTOP_THUMBNAILING
     {
         "gnome-thumbnailer",
         SIXEL_LOADER_VALUE_GNOME_THUMBNAILER,
-        0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        0u
     },
 #endif
 };
 
 static sixel_option_value_schema_t const g_precision_values[] = {
     {
-        "auto", SIXEL_OPTION_PRECISION_AUTO, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "auto", SIXEL_OPTION_PRECISION_AUTO, 0u
     },
     {
-        "8bit", SIXEL_OPTION_PRECISION_8BIT, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "8bit", SIXEL_OPTION_PRECISION_8BIT, 0u
     },
     {
-        "float32", SIXEL_OPTION_PRECISION_FLOAT32, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "float32", SIXEL_OPTION_PRECISION_FLOAT32, 0u
     }
 };
 
 static sixel_option_value_schema_t const g_threads_values[] = {
-    { "auto", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "auto", 0, 0u }
 };
 
 static sixel_option_value_schema_t const g_gpu_policy_values[] = {
-    { "off", SIXEL_GPU_POLICY_OFF, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "auto", SIXEL_GPU_POLICY_AUTO, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "force", SIXEL_GPU_POLICY_FORCE, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "off", SIXEL_GPU_POLICY_OFF, 0u },
+    { "auto", SIXEL_GPU_POLICY_AUTO, 0u },
+    { "force", SIXEL_GPU_POLICY_FORCE, 0u }
 };
 
 static sixel_option_value_schema_t const g_runtime_policy_values[] = {
-    { "auto", SIXEL_SIMD_LEVEL_NEON, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
+    { "auto", SIXEL_SIMD_LEVEL_NEON, 0u },
     {
-        "scalar", SIXEL_SIMD_LEVEL_SCALAR, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "scalar", SIXEL_SIMD_LEVEL_SCALAR, 0u
     },
-    { "none", SIXEL_SIMD_LEVEL_SCALAR, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "sse2", SIXEL_SIMD_LEVEL_SSE2, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "avx", SIXEL_SIMD_LEVEL_AVX, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "neon", SIXEL_SIMD_LEVEL_NEON, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "none", SIXEL_SIMD_LEVEL_SCALAR, 0u },
+    { "sse2", SIXEL_SIMD_LEVEL_SSE2, 0u },
+    { "avx", SIXEL_SIMD_LEVEL_AVX, 0u },
+    { "neon", SIXEL_SIMD_LEVEL_NEON, 0u }
 };
 
 static sixel_option_value_schema_t const g_diagnostics_values[] = {
     {
-        "human", SIXEL_DIAGNOSTICS_MODE_HUMAN, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "human", SIXEL_DIAGNOSTICS_MODE_HUMAN, 0u
     },
     {
-        "code", SIXEL_DIAGNOSTICS_MODE_CODE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "code", SIXEL_DIAGNOSTICS_MODE_CODE, 0u
     }
 };
 
@@ -1454,12 +1339,10 @@ enum {
 
 static sixel_option_value_schema_t const g_clipboard_policy_values[] = {
     {
-        "system", SIXEL_CLIPBOARD_BACKEND_SYSTEM, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "system", SIXEL_CLIPBOARD_BACKEND_SYSTEM, 0u
     },
     {
-        "file", SIXEL_CLIPBOARD_BACKEND_FILE, 1u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "file", SIXEL_CLIPBOARD_BACKEND_FILE, 1u
     }
 };
 
@@ -1471,8 +1354,8 @@ g_clipboard_policy_environment_choices[] = {
 };
 
 static sixel_option_value_schema_t const g_terminal_policy_values[] = {
-    { "0", 0, 0u, SIXEL_OPTION_BASE_POLICY_NONE },
-    { "1", 1, 0u, SIXEL_OPTION_BASE_POLICY_NONE }
+    { "0", 0, 0u },
+    { "1", 1, 0u }
 };
 
 static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
@@ -1483,46 +1366,37 @@ static sixel_suboption_choice_t const g_runtime_resize_choices[] = {
 
 static sixel_option_value_schema_t const g_alpha_policy_values[] = {
     {
-        "auto", SIXEL_ALPHA_POLICY_AUTO, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "auto", SIXEL_ALPHA_POLICY_AUTO, 0u
     },
     {
-        "composite", SIXEL_ALPHA_POLICY_COMPOSITE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "composite", SIXEL_ALPHA_POLICY_COMPOSITE, 0u
     },
     {
-        "clear", SIXEL_ALPHA_POLICY_CLEAR, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "clear", SIXEL_ALPHA_POLICY_CLEAR, 0u
     },
     {
-        "keep", SIXEL_ALPHA_POLICY_KEEP, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "keep", SIXEL_ALPHA_POLICY_KEEP, 0u
     }
 };
 
 static sixel_option_value_schema_t const g_background_policy_values[] = {
     {
-        "file_first", SIXEL_BACKGROUND_POLICY_FILE_FIRST, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "file_first", SIXEL_BACKGROUND_POLICY_FILE_FIRST, 0u
     },
     {
-        "explicit_first", SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "explicit_first", SIXEL_BACKGROUND_POLICY_EXPLICIT_FIRST, 0u
     }
 };
 
 static sixel_option_value_schema_t const g_update_policy_values[] = {
     {
-        "full", SIXEL_UPDATE_POLICY_FULL, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "full", SIXEL_UPDATE_POLICY_FULL, 0u
     },
     {
-        "delta", SIXEL_UPDATE_POLICY_DELTA, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "delta", SIXEL_UPDATE_POLICY_DELTA, 0u
     },
     {
-        "progressive", SIXEL_UPDATE_POLICY_PROGRESSIVE, 0u,
-        SIXEL_OPTION_BASE_POLICY_NONE
+        "progressive", SIXEL_UPDATE_POLICY_PROGRESSIVE, 0u
     }
 };
 
@@ -1545,18 +1419,6 @@ static sixel_suboption_choice_t const g_dequantize_lso_variant_choices[] = {
     { "light", SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT }
 };
 
-static sixel_suboption_choice_t const g_stbn_source_choices[] = {
-    { "hash", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH },
-    { "mask", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_MASK },
-    { "pmj", SIXEL_INTERFRAME_STRATEGY_TOKEN_PMJ }
-};
-
-static sixel_suboption_choice_t const g_stbn_source_environment_choices[] = {
-    { "stbn", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH },
-    { "stbn-hash", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH },
-    { "stbn-mask", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_MASK }
-};
-
 static sixel_suboption_choice_t const g_diffusion_scan_choices[] = {
     { "auto", SIXEL_SCAN_AUTO },
     { "serpentine", SIXEL_SCAN_SERPENTINE },
@@ -1570,19 +1432,6 @@ static sixel_suboption_choice_t const g_bluenoise_channel_choices[] = {
 
 static sixel_suboption_choice_t const g_bluenoise_size_choices[] = {
     { "64", 64 }
-};
-
-static sixel_suboption_choice_t const g_interframe_diffusion_choices[] = {
-    { "auto", SIXEL_DIFFUSE_FS },
-    { "none", SIXEL_DIFFUSE_NONE },
-    { "fs", SIXEL_DIFFUSE_FS },
-    { "atkinson", SIXEL_DIFFUSE_ATKINSON },
-    { "jajuni", SIXEL_DIFFUSE_JAJUNI },
-    { "stucki", SIXEL_DIFFUSE_STUCKI },
-    { "burkes", SIXEL_DIFFUSE_BURKES },
-    { "sierra1", SIXEL_DIFFUSE_SIERRA1 },
-    { "sierra2", SIXEL_DIFFUSE_SIERRA2 },
-    { "sierra3", SIXEL_DIFFUSE_SIERRA3 }
 };
 
 static sixel_suboption_choice_t const g_sierra_variant_choices[] = {
@@ -2141,75 +1990,6 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "strength", 'T', "SIXEL_DITHER_X_DITHER_STRENGTH", NULL, NULL,
         "-d x_dither:strength must be a floating point value.",
         x_dither_strength, x_dither_strength_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_INTERFRAME,
-        "diffusion", 'D', "SIXEL_DITHER_INTERFRAME_DIFFUSION",
-        NULL, NULL, g_interframe_diffusion_choices,
-        interframe_spatial_diffuse,
-        interframe_spatial_diffuse_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE_ENV(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "source", 'S', "SIXEL_DITHER_STBN_SOURCE",
-        NULL, NULL, g_stbn_source_choices,
-        g_stbn_source_environment_choices,
-        interframe_strategy_token,
-        interframe_strategy_override),
-    SIXEL_REGISTRY_ENCODER_CHOICE(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "diffusion", 'D', "SIXEL_DITHER_STBN_DIFFUSION",
-        NULL, NULL, g_interframe_diffusion_choices,
-        interframe_spatial_diffuse,
-        interframe_spatial_diffuse_override),
-    SIXEL_REGISTRY_ENCODER_SCALED_U8_ENV_CLAMP(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "strength", 'T', "SIXEL_DITHER_STBN_STRENGTH",
-        NULL, NULL, 0.0, 2.0,
-        "-d stbn:strength must be in range 0.0-2.0.",
-        interframe_noise_strength_u8,
-        interframe_noise_strength_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "motion_adapt", 'M', "SIXEL_DITHER_STBN_MOTION_ADAPT",
-        NULL, NULL,
-        stbn_motion_adapt_enabled, stbn_motion_adapt_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "scene_cut_reset", 'C',
-        "SIXEL_DITHER_STBN_SCENE_CUT_RESET",
-        NULL, NULL,
-        stbn_scene_cut_reset_enabled, stbn_scene_cut_reset_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "scene_detect", 'E', "SIXEL_DITHER_STBN_SCENE_DETECT",
-        NULL, NULL,
-        stbn_scene_detect_enabled, stbn_scene_detect_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "alpha_guard", 'A', "SIXEL_DITHER_STBN_ALPHA_GUARD",
-        NULL, NULL,
-        stbn_alpha_guard_enabled, stbn_alpha_guard_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "perceptual_weight", 'P',
-        "SIXEL_DITHER_STBN_PERCEPTUAL_WEIGHT",
-        NULL, NULL,
-        stbn_perceptual_weight_enabled,
-        stbn_perceptual_weight_override),
-    SIXEL_REGISTRY_ENCODER_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_DIFFUSION,
-        g_diffusion_values + SIXEL_DIFFUSION_BASE_STBN,
-        "fastpath", 'F', "SIXEL_DITHER_STBN_FASTPATH",
-        NULL, NULL,
-        stbn_fastpath_enabled, stbn_fastpath_override),
     SIXEL_REGISTRY_ENCODER_FLOAT(
         SIXEL_OPTION_SCHEMA_DIFFUSION,
         g_diffusion_values + SIXEL_DIFFUSION_BASE_BLUENOISE,
@@ -4385,7 +4165,6 @@ sixel_option_registry_binding_kind_is_valid(
     case SIXEL_SUBOPTION_VALUE_CHOICE:
     case SIXEL_SUBOPTION_VALUE_BOOLEAN:
     case SIXEL_SUBOPTION_VALUE_INT:
-    case SIXEL_SUBOPTION_VALUE_SCALED_U8:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_INT;
     case SIXEL_SUBOPTION_VALUE_CHOICE_LIST:
         return key->binding.storage_kind == SIXEL_SUBOPTION_STORAGE_UINT;
@@ -4915,8 +4694,7 @@ sixel_option_registry_validate_uncached(void)
             if (!sixel_option_registry_value_name_is_valid(
                     base_def->name) ||
                 (schema->value_kind != SIXEL_SUBOPTION_VALUE_STRUCTURED &&
-                 (base_def->common_suboption_offset != 0u ||
-                  base_def->base_policy != SIXEL_OPTION_BASE_POLICY_NONE))) {
+                 base_def->common_suboption_offset != 0u)) {
                 return 0;
             }
             previous_base_index = 0u;

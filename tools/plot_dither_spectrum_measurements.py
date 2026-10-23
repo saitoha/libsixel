@@ -748,8 +748,6 @@ def write_metadata(path: Path, source_root: Path, build_dir: Path,
             "sixel_environment_removed": clean_sixel_environment,
             "excluded": {
                 "auto": "selector rather than a concrete method",
-                "interframe": "requires an animation protocol",
-                "stbn": "requires an animation protocol",
             },
         },
     }

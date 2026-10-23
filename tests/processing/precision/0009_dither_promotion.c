@@ -162,9 +162,7 @@ promotion_case(int scenario, int method, int clamp)
         dither->pipeline_index_size = sizeof(borrowed);
         promotion_borrowed_index = borrowed;
     }
-    /* Interframe owns temporal error storage of the trapped size, so its
-     * byte work is identified by the applied depth alone. */
-    promotion_armed = !(scenario == 7 && method == SIXEL_DIFFUSE_INTERFRAME);
+    promotion_armed = 1;
     indices = sixel_dither_apply_palette(dither, pixels,
         PROMOTION_PIXELS, 1);
     if (scenario == 4 || scenario == 7) {
@@ -173,19 +171,17 @@ promotion_case(int scenario, int method, int clamp)
          * float coordinates and must not select float arithmetic for byte
          * work.  Diffusion may modify source error state; NONE has literal
          * picks. */
-        ok = promotion_hits == 0 &&
-            (promotion_armed == 1 ||
-             (scenario == 7 && method == SIXEL_DIFFUSE_INTERFRAME)) &&
+        ok = promotion_hits == 0 && promotion_armed == 1 &&
             indices != NULL && promotion_palette_unchanged(dither, 0) &&
-            dither->interframe_state.last_apply_status == SIXEL_OK &&
-            dither->interframe_state.depth == 3 &&
+            dither->last_apply_status == SIXEL_OK &&
+            dither->last_apply_depth == 3 &&
             (method != SIXEL_DIFFUSE_NONE ||
              memcmp(indices, expected_byte, sizeof(expected_byte)) == 0);
         goto end;
     }
     ok = indices == NULL && promotion_hits == 1 &&
-        dither->interframe_state.last_apply_status == SIXEL_BAD_ALLOCATION &&
-        dither->interframe_state.consume_count == 0 &&
+        dither->last_apply_status == SIXEL_BAD_ALLOCATION &&
+        dither->apply_success_count == 0 &&
         promotion_index_frees == (scenario == 6 ? 0 : 1) &&
         dither->pipeline_index_buffer == NULL &&
         dither->pipeline_index_owned == 0 &&
@@ -212,7 +208,7 @@ promotion_case(int scenario, int method, int clamp)
             PROMOTION_PIXELS, 1);
         ok = indices != NULL &&
             memcmp(indices, expected_byte, sizeof(expected_byte)) == 0 &&
-            other->interframe_state.depth == 3;
+            other->last_apply_depth == 3;
         sixel_allocator_free(allocator, indices);
         indices = NULL;
     } else {
@@ -226,9 +222,9 @@ promotion_case(int scenario, int method, int clamp)
         memcmp(indices, expected, sizeof(expected)) == 0 &&
         memcmp(pixels, source, sizeof(source)) == 0 &&
         promotion_palette_unchanged(dither, 1) &&
-        dither->interframe_state.last_apply_status == SIXEL_OK &&
-        dither->interframe_state.consume_count == 1 &&
-        dither->interframe_state.depth == 3 * sizeof(float) &&
+        dither->last_apply_status == SIXEL_OK &&
+        dither->apply_success_count == 1 &&
+        dither->last_apply_depth == 3 * sizeof(float) &&
         promotion_hits == 1 && promotion_borrowed_frees == 0;
 end:
     promotion_armed = 0;
@@ -332,8 +328,7 @@ test_precision_0009(int argc, char **argv)
     static int const diffusions[] = {
         SIXEL_DIFFUSE_FS, SIXEL_DIFFUSE_ATKINSON, SIXEL_DIFFUSE_JAJUNI,
         SIXEL_DIFFUSE_STUCKI, SIXEL_DIFFUSE_BURKES, SIXEL_DIFFUSE_SIERRA1,
-        SIXEL_DIFFUSE_SIERRA2, SIXEL_DIFFUSE_SIERRA3, SIXEL_DIFFUSE_LSO2,
-        SIXEL_DIFFUSE_INTERFRAME
+        SIXEL_DIFFUSE_SIERRA2, SIXEL_DIFFUSE_SIERRA3, SIXEL_DIFFUSE_LSO2
     };
     static int const clamps[] = {
         SIXEL_DITHER_CLAMP_AUTO, SIXEL_DITHER_CLAMP_SOFT,

@@ -15,7 +15,7 @@ set -v
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DIAG_MODE=code \
-    -d st "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -d s "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
@@ -28,7 +28,7 @@ case "${message}" in *LSXCLI1\|phase=option_parse\|*code=AMBIGUOUS_PREFIX**) tru
     exit 0
 }
 
-case "${message}" in *ambiguous\ prefix\ \"st\".**) true ;; *) false ;; esac || {
+case "${message}" in *ambiguous\ prefix\ \"s\".**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "code diagnostic detail is missing"
     exit 0
 }

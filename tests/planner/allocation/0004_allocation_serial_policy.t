@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/threading/encoder.md
-# Verify frame-global policies retain their existing pipeline reservation.
+# Verify unknown policies retain their existing pipeline reservation.
 
 set -eux
 

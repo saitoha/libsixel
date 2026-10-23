@@ -43,11 +43,11 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         comparison) needle='cmp -s'; replacement=': -s' ;;
         image-reference) needle='${TEST_RUNNER_PATH}'; replacement='${OTHER_PATH}' ;;
         legacy-*)
-            fixture="$regression_dir/0012_diffusion_stbn_alpha_guard_image_regression.t"
+            fixture="$regression_dir/0124_diffusion_x_dither_strength_image_regression.t"
             case "$sample" in
                 legacy-assignment) needle='stored=1\|binding='; replacement='stored=0\|binding=' ;;
-                legacy-binding) needle='binding=stbn_alpha_guard_enabled,'; replacement='binding=other_field,' ;;
-                legacy-consumer) needle='LSXDTH1\|*alpha=1'; replacement='LSXDTH1\|*alpha=0' ;;
+                legacy-binding) needle='binding=x_dither_strength,'; replacement='binding=other_field,' ;;
+                legacy-consumer) needle='LSXDTH1\|*diffuse=x_dither\|*x_strength=0.25'; replacement='LSXDTH1\|*diffuse=x_dither\|*x_strength=0.5' ;;
             esac
             ;;
         perceptual-*)

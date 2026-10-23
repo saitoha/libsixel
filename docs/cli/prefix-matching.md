@@ -27,8 +27,8 @@ Prefixes apply to declared CLI choice domains, including structured-option base 
 # "ser" uniquely selects the choice value "serpentine".
 img2sixel -d fs:scan=ser input.png
 
-# "st" matches both "stucki" and "stbn" and therefore fails.
-img2sixel -d st input.png
+# "s" matches both "stucki" and "sierra" and therefore fails.
+img2sixel -d s input.png
 ```
 
 They do not apply to long suboption keys, arbitrary strings, paths, integers, sizes, or floating-point values. Consequently, `scan=ser` can be valid while `sca=serpentine` is not. A registered compact key such as `Nserpentine` is an independent exact key spelling, not the result of prefix matching.

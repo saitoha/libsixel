@@ -52,16 +52,16 @@ test_palette_0054_p3_encoder(int argc, char **argv)
     size_t index;
     int phase;
     int result;
-    int flag;
     int palette_auto;
-    char const *value;
 
     encoder = NULL;
     output = NULL;
     frame = NULL;
     result = EXIT_FAILURE;
     memset(&capture, 0, sizeof(capture));
-    if (argc != 2) {
+    if (argc != 2 || (strcmp(argv[1], "palette-auto") != 0 &&
+            strcmp(argv[1], "working") != 0 &&
+            strcmp(argv[1], "reuse") != 0)) {
         return EXIT_FAILURE;
     }
     palette_auto = strcmp(argv[1], "palette-auto") == 0;
@@ -78,20 +78,9 @@ test_palette_0054_p3_encoder(int argc, char **argv)
             goto end;
         }
     }
-    if (!palette_auto && strcmp(argv[1], "reuse") != 0) {
-        flag = 0;
-        value = NULL;
-        if (strcmp(argv[1], "diffusion") == 0) {
-            flag = 'd';
-            value = "interframe";
-        } else if (strcmp(argv[1], "working") == 0) {
-            flag = 'W';
-            value = "gamma";
-        }
-        if (flag == 0 ||
-                SIXEL_FAILED(sixel_encoder_setopt(encoder, flag, value))) {
-            goto end;
-        }
+    if (strcmp(argv[1], "working") == 0 &&
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma"))) {
+        goto end;
     }
     for (phase = 0; phase < 3; ++phase) {
         capture.size = 0;
@@ -144,14 +133,6 @@ test_palette_0054_p3_encoder(int argc, char **argv)
             status = sixel_encoder_encode_frame(encoder, frame, output);
             if (SIXEL_FAILED(status) ||
                     strstr(capture.bytes, "#0;2;100;0;0") == NULL) {
-                goto end;
-            }
-            result = EXIT_SUCCESS;
-            goto end;
-        }
-        if (strcmp(argv[1], "reuse") != 0) {
-            status = sixel_encoder_encode_frame(encoder, frame, output);
-            if (status != SIXEL_BAD_ARGUMENT || capture.size != 0) {
                 goto end;
             }
             result = EXIT_SUCCESS;

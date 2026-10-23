@@ -215,7 +215,7 @@ Validate at the layer with enough context to identify the responsible option, ac
 
 ### Choice values and prefix abbreviations
 
-Choice values may use case-sensitive prefix matching inside a declared finite domain. For example, `-s ave` resolves to `average`, while `-d st` is rejected because it matches both `stucki` and `stbn`; `scan=ser` may abbreviate the value `serpentine`, but `sca=serpentine` may not abbreviate the suboption key `scan`. Exact values, aliases that share one semantic value, environment matching, ambiguity, and compatibility constraints are defined by the [choice prefix-matching policy](prefix-matching.md).
+Choice values may use case-sensitive prefix matching inside a declared finite domain. For example, `-s ave` resolves to `average`, while `-d s` is rejected because it matches both `stucki` and `sierra`; `scan=ser` may abbreviate the value `serpentine`, but `sca=serpentine` may not abbreviate the suboption key `scan`. Exact values, aliases that share one semantic value, environment matching, ambiguity, and compatibility constraints are defined by the [choice prefix-matching policy](prefix-matching.md).
 
 ## Diagnostics and suggestions
 

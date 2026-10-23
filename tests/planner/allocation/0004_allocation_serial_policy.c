@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/* Frame-global and unknown policies retain their existing overlap budget. */
+/* Unknown policies retain their existing overlap budget. */
 #include <stdlib.h>
 #include "src/planner.h"
 
@@ -16,13 +16,9 @@ test_allocation_serial_policy(int argc, char **argv)
     request.height = 480;
     request.ncolors = 16;
     request.prefer_staged = 1;
-    request.method_for_diffuse = SIXEL_DIFFUSE_INTERFRAME;
-    sixel_dither_encode_allocate(&request, &allocation);
-    ok = allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE;
-    ok &= allocation.dither_threads == 1 && allocation.encode_threads == 2;
     request.method_for_diffuse = -1;
     sixel_dither_encode_allocate(&request, &allocation);
-    ok &= allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE;
+    ok = allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE;
     ok &= allocation.dither_threads == 1 && allocation.encode_threads == 2;
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

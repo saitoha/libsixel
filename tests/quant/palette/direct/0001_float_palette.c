@@ -768,13 +768,6 @@ test_palette_direct_float(int argc, char **argv)
         ok = SIXEL_FAILED(status) &&
             direct_wire(dither, output, &capture, 0, 2);
         break;
-    case 20:
-        sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_INTERFRAME);
-        status = sixel_encode((unsigned char *)pixels, 2, 1, 0, dither, output);
-        sixel_dither_set_diffusion_type(dither, SIXEL_DIFFUSE_NONE);
-        ok = SIXEL_FAILED(status) && capture.length == 0 &&
-            direct_wire(dither, output, &capture, 0, 1);
-        break;
     case 21:
         status = sixel_dither_initialize(dither, (unsigned char *)pixels,
             2, 1, SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_LARGE_AUTO,

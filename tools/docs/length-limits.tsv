@@ -4,8 +4,8 @@ path	kind	key	limit
 *	paragraph	*	200
 *	index-entry	*	60
 docs/concepts/pixelformat-precision/README.md	paragraph	*	220
-docs/encoder/output/output-colorspace.md	paragraph	*	368
-docs/encoder/palette-application/dithering/README.md	document	*	885
+docs/encoder/output/output-colorspace.md	paragraph	*	365
+docs/encoder/palette-application/dithering/README.md	document	*	808
 docs/encoder/palette-construction/cover-policy/README.md	paragraph	*	240
 docs/encoder/palette-construction/quantization/README.md	paragraph	*	225
 docs/loader/color-management/README.md	document	*	973

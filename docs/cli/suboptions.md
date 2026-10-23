@@ -102,7 +102,7 @@ Help and manuals must publish the primary mapping, including its scope when one 
 
 ## Spatial diffusion deadzone
 
-`-d fs:deadzone=5` uses compact key `D`; the same row is shared by `auto`, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes and Sierra. The explicit base set keeps `D` unambiguous with the temporal policies' existing `diffusion` suboption. The [dithering reference](../encoder/palette-application/dithering/README.md#byte-spatial-diffusion) owns the byte RGB distance, default, environment mapping and precision scope. This is subordinate to error propagation rather than a separate pipeline stage.
+`-d fs:deadzone=5` uses compact key `D`; the same row is shared by `auto`, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes and Sierra. The [dithering reference](../encoder/palette-application/dithering/README.md#byte-spatial-diffusion) owns the byte RGB distance, default, environment mapping and precision scope. This is subordinate to error propagation rather than a separate pipeline stage.
 
 ## Diagnostics and failure behavior
 

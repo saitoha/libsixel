@@ -1921,7 +1921,6 @@ sixel_option_parse_typed_suboption_value(
     unsigned long long parsed_uint;
     char const *digit;
     double parsed_double;
-    double scaled;
     char message[256];
     int valid;
 
@@ -1932,7 +1931,6 @@ sixel_option_parse_typed_suboption_value(
     parsed_uint = 0ULL;
     digit = NULL;
     parsed_double = 0.0;
-    scaled = 0.0;
     message[0] = '\0';
     valid = 0;
     if (range_error != NULL) {
@@ -2162,7 +2160,6 @@ sixel_option_parse_typed_suboption_value(
     case SIXEL_SUBOPTION_VALUE_FLOAT:
     case SIXEL_SUBOPTION_VALUE_DOUBLE:
     case SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE:
-    case SIXEL_SUBOPTION_VALUE_SCALED_U8:
         if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE &&
                 strcmp(text, "auto") == 0) {
             value->double_value = SIXEL_OPTION_DOUBLE_AUTO;
@@ -2199,12 +2196,6 @@ sixel_option_parse_typed_suboption_value(
                     key_def->value_kind ==
                         SIXEL_SUBOPTION_VALUE_AUTO_DOUBLE)) {
             value->double_value = parsed_double;
-        } else if (valid) {
-            scaled = parsed_double * 255.0;
-            if (scaled > 255.0) {
-                scaled = 255.0;
-            }
-            value->int_value = (int)(scaled + 0.5);
         }
         break;
     case SIXEL_SUBOPTION_VALUE_RATIO3:
@@ -2580,8 +2571,7 @@ sixel_option_resolve_registered_int_binding(
     if (key_def == NULL ||
         (key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
          key_def->value_kind != SIXEL_SUBOPTION_VALUE_BOOLEAN &&
-         key_def->value_kind != SIXEL_SUBOPTION_VALUE_INT &&
-         key_def->value_kind != SIXEL_SUBOPTION_VALUE_SCALED_U8)) {
+         key_def->value_kind != SIXEL_SUBOPTION_VALUE_INT)) {
         return 0;
     }
     if (!sixel_option_resolve_suboption_environment(key_def, &parsed)) {
@@ -3188,7 +3178,6 @@ sixel_option_emit_suboption_value(
     case SIXEL_SUBOPTION_VALUE_CHOICE:
     case SIXEL_SUBOPTION_VALUE_BOOLEAN:
     case SIXEL_SUBOPTION_VALUE_INT:
-    case SIXEL_SUBOPTION_VALUE_SCALED_U8:
         fprintf(stderr, "%d", value->int_value);
         break;
     case SIXEL_SUBOPTION_VALUE_UINT:

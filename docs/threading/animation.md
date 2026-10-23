@@ -19,8 +19,8 @@ decode frame 2 ---- wait if full -----> ...
 
 There is one frame-encoder worker. It pops one frame, completes that frame's
 encoding, and only then pops the next. The current design therefore does not
-encode several frames concurrently. Frame ordering, output order, and temporal
-dither state remain straightforward at this boundary.
+encode several frames concurrently. Frame ordering, output order, and retained
+delta history remain straightforward at this boundary.
 
 The finite two-frame measurement shows frame 1 beginning after frame 0's
 frame-level encode interval finishes. Internal work within each frame is still
@@ -59,12 +59,11 @@ total-budget invariant.
 
 ## Temporal state constrains parallelism
 
-Animation is more than an ordered list of independent still images. Inter-frame
-dithering carries state across frame boundaries and can apply scene-cut reset
-policy. It currently reports that parallel dither work bands are unsupported.
-Any future parallel-frame design must define ownership of temporal state and
-commit it in display order; computing later frames against speculative or
-stale state would change the algorithm.
+Animation is more than an ordered list of independent still images. Delta
+output retains the colors left on the display plane across frame boundaries.
+Any future parallel-frame design must define ownership of that state and commit
+it in display order; computing later frames against speculative or stale state
+would change the output.
 
 Frame ownership also matters. The handoff can retain a shareable frame by reference, or clone it when later preprocessing could conflict with loader reuse. Performance changes must preserve that lifetime contract as well as visual ordering. Packed-alpha separation also counts as preprocessing that mutates storage, even if no explicit float precision, crop, resize or workspace conversion requested a copy. The existing planner marks packed-to-RGB normalization as a colorspace operation, so handoff already requires a copy; see the [generated animation contract](../encoder/output/output-colorspace.md#generated-palettes-in-animation).
 

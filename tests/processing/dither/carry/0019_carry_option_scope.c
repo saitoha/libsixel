@@ -14,7 +14,7 @@ test_carry_0019(int argc, char **argv)
     static char const *const rejected[] = {
         "fs:deadzone=-1", "fs:deadzone=nan", "fs:deadzone=inf",
         "fs:deadzone=1e999", "none:deadzone=5", "lso2:deadzone=5",
-        "interframe:deadzone=5", "stbn:deadzone=5", "bluenoise:deadzone=5"
+        "bluenoise:deadzone=5"
     };
     sixel_encoder_t *encoder;
     SIXELSTATUS status;

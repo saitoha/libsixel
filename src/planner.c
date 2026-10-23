@@ -993,8 +993,8 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
 
     staged = request->prefer_staged && !request->threads_max_set;
     /* Only the spatial policies support independent work bands. A staged
-     * frame-global or unknown policy would lose overlap without gaining
-     * parallel application. Keep its existing reservation instead. */
+     * unknown policy would lose overlap without gaining parallel
+     * application. Keep its existing reservation instead. */
     switch (request->method_for_diffuse) {
     case SIXEL_DIFFUSE_AUTO:
     case SIXEL_DIFFUSE_NONE:

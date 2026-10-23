@@ -335,8 +335,7 @@ loader_resolve_int_suboption(
         binding_identifier);
     if (key_def == NULL ||
         (key_def->value_kind != SIXEL_SUBOPTION_VALUE_CHOICE &&
-         key_def->value_kind != SIXEL_SUBOPTION_VALUE_INT &&
-         key_def->value_kind != SIXEL_SUBOPTION_VALUE_SCALED_U8) ||
+         key_def->value_kind != SIXEL_SUBOPTION_VALUE_INT) ||
         key_def->binding.target_class != SIXEL_SUBOPTION_TARGET_LOADER ||
         key_def->binding.storage_kind != SIXEL_SUBOPTION_STORAGE_INT ||
         key_def->binding.value_offset == SIXEL_SUBOPTION_OFFSET_NONE) {

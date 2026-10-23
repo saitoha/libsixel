@@ -651,8 +651,6 @@ int test_clamp_0035(int argc, char **argv);
 int test_clamp_0036(int argc, char **argv);
 int test_clamp_0037(int argc, char **argv);
 int test_clamp_0038(int argc, char **argv);
-int test_clamp_0039(int argc, char **argv);
-int test_clamp_0040(int argc, char **argv);
 int test_clamp_0041(int argc, char **argv);
 int test_clamp_0042(int argc, char **argv);
 int test_clamp_0043(int argc, char **argv);
@@ -1135,7 +1133,6 @@ int test_cluster_precision_0013(int argc, char **argv);
 int test_cluster_precision_0014(int argc, char **argv);
 
 int test_clamp_0047(int argc, char **argv);
-int test_clamp_0032(int argc, char **argv);
 int test_filter_0015_filter_dither_6delta_lso2(int argc, char **argv);
 int test_perturb_0002_api(int argc, char **argv);
 int test_perturb_0001_weights(int argc, char **argv);
@@ -2245,7 +2242,6 @@ int test_ordinary_kmeans_empty(int argc, char **argv);
 int test_ordinary_kmeans_feedback(int argc, char **argv);
 int test_ordinary_kmeans_feedback_snap(int argc, char **argv);
 int test_ordinary_kmeans_feedback_interval(int argc, char **argv);
-int test_interframe_equal_pixels(int argc, char **argv);
 int test_ordinary_kmeans_unique(int argc, char **argv);
 int test_ordinary_heckbert_sources(int argc, char **argv);
 int test_ordinary_heckbert_ward(int argc, char **argv);
@@ -4136,8 +4132,6 @@ static test_entry_t const test_entries[] = {
     { "dither/clamp/0036_api_invalid", test_clamp_0036 },
     { "dither/clamp/0037_dither_instances", test_clamp_0037 },
     { "dither/clamp/0038_encoder_instances", test_clamp_0038 },
-    { "dither/clamp/0039_temporal_history", test_clamp_0039 },
-    { "dither/clamp/0040_temporal_reset", test_clamp_0040 },
     { "dither/clamp/0041_fs_vertical_residual", test_clamp_0041 },
     { "dither/clamp/0042_fs_serpentine_residual", test_clamp_0042 },
     { "dither/clamp/0043_parallel_overlap", test_clamp_0043 },
@@ -4942,7 +4936,6 @@ static test_entry_t const test_entries[] = {
       test_cluster_precision_0014 },
 
     { "dither/clamp/0047_snapshot_allocation", test_clamp_0047 },
-    { "dither/clamp/0032_kernel_interframe", test_clamp_0032 },
     { "filter/0015_filter_dither_6delta_lso2",
       test_filter_0015_filter_dither_6delta_lso2 },
     { "filter/0016_filter_dither_6delta_jajuni",
@@ -7691,7 +7684,6 @@ static test_entry_t const test_entries[] = {
     { "palette/snap_hooks/stage_ladder", test_snap_hooks_stage_ladder },
     { "palette/snap_hooks/kmeans_once", test_snap_hooks_kmeans_once },
     { "palette/snap_hooks/kmeans_all", test_snap_hooks_kmeans_all },
-    { "dither/interframe/equal_pixels", test_interframe_equal_pixels },
     { "palette/ordinary_float/center_sources", test_ordinary_center_sources },
     { "palette/ordinary_float/medoids_sources", test_ordinary_medoids_sources },
     { "palette/ordinary_float/center_hard", test_ordinary_center_hard },

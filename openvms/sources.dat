@@ -53,7 +53,6 @@ dither-policy-sierra3.c
 dither-policy-a-dither.c
 dither-policy-x-dither.c
 dither-policy-bluenoise.c
-dither-policy-interframe.c
 dither-policy-lso2.c
 dither-common-pipeline.c
 timeline-logger.c
@@ -129,9 +128,3 @@ threadpool.c
 probe.c
 sixel_decode_pixels.c
 sixel_atomic_fallback.c
-dither-interframe-method.c
-dither-interframe-stbn-source.c
-dither-interframe-stbn-source-hash.c
-dither-interframe-stbn-source-mask.c
-dither-interframe-stbn-source-mask-table.c
-dither-interframe-stbn-source-pmj.c

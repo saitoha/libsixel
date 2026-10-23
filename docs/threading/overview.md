@@ -107,10 +107,8 @@ spatial metrics and seam-local error maps. Positional methods and `-d none` do
 not carry the same mutable cross-row residual, so they are less sensitive to
 this particular boundary mechanism.
 
-Inter-frame diffusion has an additional temporal dependency and reports that
-parallel work bands are unsupported. A policy must explicitly advertise work-
-band support; the pipeline cannot assume that every dither method is safe to
-split.
+A policy must explicitly advertise work-band support; the pipeline cannot
+assume that every dither method is safe to split.
 
 See [Measurement and reproduction](measurement.md#band-seam-quality-protocol)
 for the controlled comparison required after changing band geometry, overlap,
@@ -158,7 +156,7 @@ visible state is committed in a defined order:
 - direct decoder paint spans own disjoint rows, otherwise they fall back before
   publication;
 - animation frames are encoded in frame order; and
-- temporal dither state crosses frame boundaries only in that order.
+- retained delta history crosses frame boundaries only in that order.
 
 Performance work must not weaken these commit rules. If a new optimization
 changes the unit of work, document both its independence proof and its ordered

@@ -18,7 +18,7 @@ status=0
 
 set +x
 msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_STATUS_FORCE_COLORS=1 \
-    -d st "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -d s "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || status=$?
 set -x
 

@@ -5,5 +5,5 @@ test_clamp_0041(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
-    return clamp_test_kernel(15);
+    return clamp_test_kernel(12);
 }

@@ -16,8 +16,6 @@
 #include "src/dither-policy-sierra2.h"
 #include "src/dither-policy-sierra3.h"
 #include "src/dither-policy-lso2.h"
-#include "src/dither-policy-interframe.h"
-#include "src/dither-interframe-method.h"
 #include "clamp_test_common.h"
 
 int
@@ -150,8 +148,7 @@ clamp_test_kernel(int method)
         sixel_dither_policy_sierra1_float32_new,
         sixel_dither_policy_sierra2_float32_new,
         sixel_dither_policy_sierra3_float32_new,
-        sixel_dither_policy_lso2_float32_new,
-        sixel_dither_policy_interframe_float32_new
+        sixel_dither_policy_lso2_float32_new
     };
     static int const lab_formats[] = {
         SIXEL_PIXELFORMAT_OKLABFLOAT32, SIXEL_PIXELFORMAT_CIELABFLOAT32,
@@ -176,16 +173,12 @@ clamp_test_kernel(int method)
     int calls;
     int ok;
     int n;
-    int temporal;
-    int reset;
     int spatial;
     int serpentine;
 
     pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    temporal = method == 13 || method == 14;
-    reset = method == 14;
-    spatial = method >= 15;
-    serpentine = method == 16;
+    spatial = method >= 12;
+    serpentine = method == 13;
     if (spatial) {
         method = 0;
         for (n = 0; n < 12; ++n) {
@@ -199,11 +192,8 @@ clamp_test_kernel(int method)
             expected[n] = grid[3];
         }
     }
-    if (temporal) {
-        method = 9;
-    }
-    if (method >= 10) {
-        pixelformat = lab_formats[method - 10];
+    if (method >= 9) {
+        pixelformat = lab_formats[method - 9];
         method = 8;
         /* Extended source chroma must neither change nor reduce the L-only
          * correction. A black lookup target makes L exceed the soft bound. */
@@ -238,16 +228,6 @@ clamp_test_kernel(int method)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (temporal) {
-        /* Kernel-level invocation supplies the consuming-apply contract
-         * normally established by PaletteApply, but generates real history. */
-        dither->interframe_state.last_apply_consumed = 1;
-        dither->interframe_strategy_override = 1;
-        dither->interframe_strategy_token =
-            SIXEL_INTERFRAME_STRATEGY_TOKEN_DIFFUSION;
-        dither->interframe_spatial_diffuse_override = 1;
-        dither->interframe_spatial_diffuse = SIXEL_DIFFUSE_NONE;
-    }
     status = create[method](allocator, &object);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -263,7 +243,7 @@ clamp_test_kernel(int method)
         goto end;
     }
     request.dither = dither;
-    request.width = temporal ? 1 : 2;
+    request.width = 2;
     request.height = spatial ? 2 : 1;
     request.depth = 3;
     request.pixelformat = prepare.pixelformat;
@@ -273,31 +253,6 @@ clamp_test_kernel(int method)
     request.result = result;
     request.lookup_policy = &lookup.base;
     status = policy->vtbl->apply(policy, &request);
-    if (temporal) {
-        /* .99 rounds to byte 252. A black target retains 252/255 of
-         * temporal correction, independently of the limiter formula. */
-        if (SIXEL_FAILED(status) || calls != 1 ||
-                dither->interframe_state.error_frame == NULL ||
-                ((int32_t *)dither->interframe_state.error_frame)[0] !=
-                    252 * SIXEL_INTERFRAME_VARERR_SCALE) {
-            goto end;
-        }
-        if (reset) {
-            sixel_dither_clear_frame_context(dither);
-            dither->interframe_state.last_apply_consumed = 1;
-        }
-        for (n = 0; n < 3; ++n) {
-            pixels[n] = .99f;
-            expected[n] = reset ? .99 : 1.1;
-        }
-        status = policy->vtbl->apply(policy, &request);
-        if (SIXEL_FAILED(status) ||
-                dither->interframe_state.error_frame == NULL ||
-                ((int32_t *)dither->interframe_state.error_frame)[0] !=
-                    (reset ? 252 : 255) * SIXEL_INTERFRAME_VARERR_SCALE) {
-            goto end;
-        }
-    }
     ok = SIXEL_SUCCEEDED(status) && calls == (spatial ? 4 : 2);
     if (spatial) {
         /* Analytic FS taps: 7/16 right, 3/16 down-left, 5/16 down,

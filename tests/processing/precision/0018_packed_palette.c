@@ -183,19 +183,19 @@ packed_case(int scenario, int format, int alpha_offset)
             dither->pipeline_transparent_mask == NULL;
         if (failure) {
             ok = ok && indices == NULL && packed_fail_hits == 1 &&
-                dither->interframe_state.last_apply_status ==
+                dither->last_apply_status ==
                     SIXEL_BAD_ALLOCATION &&
-                dither->interframe_state.consume_count == 0 &&
+                dither->apply_success_count == 0 &&
                 packed_allocs[1] == 0 && packed_frees[1] == 0 &&
                 packed_frees[0] == (scenario == 6 ? 0 : 1) &&
                 (scenario != 8 ||
                  memcmp(borrowed, untouched, sizeof(borrowed)) == 0);
         } else {
             ok = ok && indices != NULL &&
-                dither->interframe_state.last_apply_status == SIXEL_OK &&
-                dither->interframe_state.depth ==
+                dither->last_apply_status == SIXEL_OK &&
+                dither->last_apply_depth ==
                     (float_palette ? 3 * (int)sizeof(float) : 3) &&
-                dither->interframe_state.consume_count == 1 &&
+                dither->apply_success_count == 1 &&
                 packed_frees[0] == 1 &&
                 packed_frees[1] == (float_palette ? 1 : 0) &&
                 (scenario != 5 || packed_fail_hits == 0) &&

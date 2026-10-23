@@ -15,11 +15,11 @@ cli_status=0
 env_status=0
 cli_message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DIAG_MODE=human \
-    -xcode -d st "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -xcode -d s "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || cli_status=$?
 env_message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DIAG_MODE=code \
-    -d st "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -d s "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || env_status=$?
 
 test "${cli_status}" -eq 2 || {

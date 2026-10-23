@@ -1533,7 +1533,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0029_OPTION_NAN \
     -DBUILD_TEST_0030_OPTION_MINIMUM \
     -DBUILD_TEST_0031_OPTION_MAXIMUM \
-    -DBUILD_TEST_0032_KERNEL_INTERFRAME \
     -DBUILD_TEST_0033_LSO2_OKLAB_LIGHTNESS \
     -DBUILD_TEST_0034_LSO2_CIELAB_LIGHTNESS \
     -DBUILD_TEST_0035_LSO2_DIN99D_LIGHTNESS \
@@ -1541,8 +1540,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0036_API_INVALID \
     -DBUILD_TEST_0037_DITHER_INSTANCES \
     -DBUILD_TEST_0038_ENCODER_INSTANCES \
-    -DBUILD_TEST_0039_TEMPORAL_HISTORY \
-    -DBUILD_TEST_0040_TEMPORAL_RESET \
     -DBUILD_TEST_0041_FS_VERTICAL_RESIDUAL \
     -DBUILD_TEST_0042_FS_SERPENTINE_RESIDUAL \
     -DBUILD_TEST_0043_PARALLEL_OVERLAP \
@@ -1555,7 +1552,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_MAP_FLOAT_COMMON \
     -DBUILD_MAP_PRECISION_COMMON \
     -DBUILD_POSITIONAL_TEST_COMMON \
-    -DBUILD_INTERFRAME_TEST_COMMON \
     -DBUILD_TEST_0059_A_BYTE_BAND \
     -DBUILD_TEST_0060_X_BYTE_BAND \
     -DBUILD_TEST_0061_BLUE_BYTE_BAND \
@@ -5358,8 +5354,6 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/clamp/0036_api_invalid.c \
     processing/dither/clamp/0037_dither_instances.c \
     processing/dither/clamp/0038_encoder_instances.c \
-    processing/dither/clamp/0039_temporal_history.c \
-    processing/dither/clamp/0040_temporal_reset.c \
     processing/dither/clamp/0041_fs_vertical_residual.c \
     processing/dither/clamp/0042_fs_serpentine_residual.c \
     processing/dither/clamp/0043_parallel_overlap.c \
@@ -5381,7 +5375,6 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/clamp/0029_option_nan.c \
     processing/dither/clamp/0030_option_minimum.c \
     processing/dither/clamp/0031_option_maximum.c \
-    processing/dither/clamp/0032_kernel_interframe.c \
     processing/filter/0015_filter_dither_6delta_lso2.c \
     processing/filter/0016_filter_dither_6delta_jajuni.c \
     processing/filter/0017_filter_dither_6delta_stucki.c \
@@ -7359,7 +7352,6 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/map_float_common.c \
     quant/palette/map_precision_common.c \
     processing/dither/positional_test_common.c \
-    processing/dither/interframe/interframe_test_common.c \
     processing/dither/positional/precision/0059_a_byte_band.c \
     processing/dither/positional/precision/0060_x_byte_band.c \
     processing/dither/positional/precision/0061_blue_byte_band.c \
@@ -7975,9 +7967,6 @@ staticcheck-loader-cms-boundary \
 	staticcheck-kcenter-suboption-env-sync \
 	staticcheck-completion-medoids-tokens \
 	staticcheck-kmeans-suboption-env-sync \
-	staticcheck-interframe-strategy-token-sync \
-	staticcheck-interframe-c-h-pair-sync \
-	staticcheck-interframe-no-compat-getenv-symbol \
 	staticcheck-aborttrace-wine-skip \
 	staticcheck-test-plan-single \
 	staticcheck-test-executable \
@@ -8060,9 +8049,6 @@ staticcheck-kcenter-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
 staticcheck-kmeans-suboption-env-sync \
 staticcheck-lookup-suboption-shared-sync \
-staticcheck-interframe-strategy-token-sync \
-staticcheck-interframe-c-h-pair-sync \
-staticcheck-interframe-no-compat-getenv-symbol \
 staticcheck-aborttrace-wine-skip \
 staticcheck-test-plan-single \
 	staticcheck-test-executable \
@@ -8662,36 +8648,6 @@ staticcheck-lookup-suboption-shared-sync:
 		--trs-file staticcheck-lookup-suboption-shared-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-suboption-shared-sync.sh" \
-		"$(abs_top_srcdir)"
-
-staticcheck-interframe-strategy-token-sync:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-interframe-strategy-token-sync" \
-		--log-file staticcheck-interframe-strategy-token-sync.log \
-		--trs-file staticcheck-interframe-strategy-token-sync.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-interframe-strategy-token-sync.sh" \
-		"$(abs_top_srcdir)"
-
-staticcheck-interframe-c-h-pair-sync:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-interframe-c-h-pair-sync" \
-		--log-file staticcheck-interframe-c-h-pair-sync.log \
-		--trs-file staticcheck-interframe-c-h-pair-sync.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-interframe-c-h-pair-sync.sh" \
-		"$(abs_top_srcdir)"
-
-staticcheck-interframe-no-compat-getenv-symbol:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-interframe-no-compat-getenv-symbol" \
-		--log-file staticcheck-interframe-no-compat-getenv-symbol.log \
-		--trs-file staticcheck-interframe-no-compat-getenv-symbol.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-aborttrace-wine-skip:
@@ -9862,9 +9818,6 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-completion-medoids-tokens.sh \
     _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
     _static/sh/staticcheck-lookup-suboption-shared-sync.sh \
-    _static/sh/staticcheck-interframe-strategy-token-sync.sh \
-    _static/sh/staticcheck-interframe-c-h-pair-sync.sh \
-    _static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh \
     _static/sh/staticcheck-aborttrace-wine-skip.sh \
     _static/sh/staticcheck-test-plan-single.sh \
     _static/sh/staticcheck-test-executable.sh \

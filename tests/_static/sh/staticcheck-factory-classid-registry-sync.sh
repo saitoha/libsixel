@@ -59,7 +59,6 @@ if ! awk -f "$generator" \
     "$src_root"/src/dither-policy-a-dither.h \
     "$src_root"/src/dither-policy-x-dither.h \
     "$src_root"/src/dither-policy-bluenoise.h \
-    "$src_root"/src/dither-policy-interframe.h \
     "$src_root"/src/loader-builtin.h \
     "$src_root"/src/loader-coregraphics.h \
     "$src_root"/src/loader-gd.h \

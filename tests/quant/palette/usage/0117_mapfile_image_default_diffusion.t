@@ -23,7 +23,7 @@ trace=$(SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} \
     exit 0
 }
 case "${trace}" in
-    *LSXDTH1\|rc=0\|diffuse=fs\|*\|apply=1\|consume=1\|*) ;;
+    *LSXDTH1\|rc=0\|diffuse=fs\|*\|apply=1\|apply_ok=1\|*) ;;
     *)
         echo "not ok 1 - default diffusion did not reach the pixel consumer"
         exit 0

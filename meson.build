@@ -2098,7 +2098,6 @@ loader_helper_sources = files(
   'src/colorspace-hls.c',
   'src/dither-common-pipeline.c',
   'src/dither.c',
-  'src/dither-interframe-method.h',
   'src/timeline-logger.c',
   'src/timeline-logger.h',
   'src/timeline-writer.c',
@@ -2235,7 +2234,6 @@ amalgamated_dither_policy_sources = files(
   'src/dither-policy-a-dither.c',
   'src/dither-policy-x-dither.c',
   'src/dither-policy-bluenoise.c',
-  'src/dither-policy-interframe.c',
   'src/dither-policy-lso2.c',
 )
 

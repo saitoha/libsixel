@@ -16,8 +16,7 @@ test_allocation_automatic_policy(int argc, char **argv)
         SIXEL_DIFFUSE_JAJUNI, SIXEL_DIFFUSE_STUCKI, SIXEL_DIFFUSE_BURKES,
         SIXEL_DIFFUSE_SIERRA1, SIXEL_DIFFUSE_SIERRA2, SIXEL_DIFFUSE_SIERRA3,
         SIXEL_DIFFUSE_LSO2, SIXEL_DIFFUSE_A_DITHER, SIXEL_DIFFUSE_X_DITHER,
-        SIXEL_DIFFUSE_BLUENOISE_DITHER, SIXEL_DIFFUSE_NONE,
-        SIXEL_DIFFUSE_INTERFRAME, -1
+        SIXEL_DIFFUSE_BLUENOISE_DITHER, SIXEL_DIFFUSE_NONE, -1
     };
     sixel_dither_encode_request_t request = {0};
     sixel_dither_encode_allocation_t allocation;
@@ -33,7 +32,7 @@ test_allocation_automatic_policy(int argc, char **argv)
     request.ncolors = 16;
     ok = 1;
     for (i = 0; i < 9; ++i) {
-        for (j = 0; j < 16; ++j) {
+        for (j = 0; j < 15; ++j) {
             request.total_threads = budgets[i];
             request.method_for_diffuse = methods[j];
             selected = sixel_dither_encode_default_staged(budgets[i],

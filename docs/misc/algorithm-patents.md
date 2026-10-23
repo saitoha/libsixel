@@ -20,7 +20,6 @@ The SIXEL format itself is covered by [SIXEL patents and royalties](../sixel-for
 | Palette lookup | No patent claim identified. | Implemented from papers; the VP-tree design was informed by libimagequant but its code is independent. |
 | Error-diffusion dithering | The relevant patents found, including Canon's variable-coefficient patents, have expired. | Implemented from published kernels. |
 | Positional and blue-noise dithering | The blue-noise mask and void-and-cluster patents have expired. | The blue-noise texture is CC0; `a_dither` is public domain. |
-| Temporal dithering (`interframe`, `stbn`) | Active NVIDIA patents concern spatiotemporal mask generation and stratified sample generation; libsixel's sources do not perform the claimed generation steps. See [temporal dithering](#temporal-dithering). | Independent implementation. |
 | SIXEL encoding and decoding | See the format document; no patent identified for libsixel's scheduling or extensions. | kmiya's code is permissive and relicensed under MIT; DRCS helpers derive from BSD-3-Clause mlterm code. |
 | Decoder dequantization (`k_undither` family) | No patent identified. | Adopts the algorithm and behavior-defining parameters of the GPL-3.0-or-later undither program; the C implementation is libsixel's own. See [decoder dequantization](#decoder-dequantization). |
 
@@ -77,18 +76,6 @@ The paired coefficient perturbation of the `fs` policy is libsixel's own; random
 - **`a_dither` and `x_dither`.** Øyvind Kolås describes [a dither](https://pippin.gimp.org/a_dither/) as public domain. No patent claim is known.
 - **`bluenoise`.** The embedded 64-by-64 texture is Christoph Peters's blue-noise texture from Moments in Graphics, released under CC0 1.0; see [`bluenoise_64x64.h`](../../src/bluenoise_64x64.h) and [`LICENSE`](../../LICENSE). Halftoning with a blue-noise mask was patented by Research Corporation Technologies in [U.S. Patent 5,111,310](https://patents.google.com/patent/US5111310A/en), filed on 4 December 1990, and DEC patented Ulichney's void-and-cluster generation in [U.S. Patent 5,535,020](https://patents.google.com/patent/US5535020A/en), filed on 15 October 1992, with continuations filed in 1996 and 1997. All of these have expired.
 
-## Temporal dithering
-
-The `interframe` policy carries quantization residuals from one animation frame to the next. Temporal error feedback for displays and video has a long patent history, and the project has not cleared that area exhaustively. No patent in force claiming libsixel's residual feedback has been identified; a 2004 Kodak application on video tone-scale reduction found in searching has passed the 20-year term in any case.
-
-The `stbn` policy adds a frame- and position-dependent perturbation from one of three sources. The name refers to the objective of spatiotemporal blue noise, which NVIDIA researchers described in *Spatiotemporal Blue Noise Masks* (2022). NVIDIA holds active patents in this area:
-
-- [U.S. Patent 11,727,621](https://patents.google.com/patent/US11727621B2/en) (priority 16 December 2021, anticipated expiry 2041) claims generating a texture by computing an energy function over pixel pairs within layers or across temporal slices and swapping pixels until the energy is minimized.
-- [U.S. Patent 12,283,028](https://patents.google.com/patent/US12283028B2/en) (priority 22 November 2021, adjusted expiry 2043) claims computing such energy values, generating a mask from them, and applying the mask over multiple frames.
-- [U.S. Patent 11,941,743](https://patents.google.com/patent/US11941743B2/en) (priority 14 December 2018, anticipated expiry 2039) claims generating sample points by tracking valid regions within elementary intervals of a stratified two-dimensional space.
-
-libsixel's `stbn` sources do not compute energy functions, optimize masks, or track valid regions within elementary intervals. The `mask` source derives temporal variation from the fixed CC0 two-dimensional texture with integer hashing. The `pmj` source, named after Christensen, Kensler, and Kilpatrick's *Progressive Multi-Jittered Sample Sequences* (Pixar, 2018), forms a Morton code over a 64-by-64 tile and applies hash-based permutations; no Pixar patent on that paper was found. The `hash` source uses Chris Wellons's public-domain lowbias32 integer hash. These differences are recorded as facts about the implementation, not as a legal conclusion that the patents do not apply. Changes that would generate optimized spatiotemporal masks, embed masks produced by such a process, or implement stratified sample generation should be reviewed against these patents first.
-
 ## SIXEL encoding and decoding
 
 - **Body encoding.** The palette-plane encoder derives from kmiya's `sixel` (2014), whose author distributed it under a permission to use, modify, and redistribute without restriction; libsixel relicensed it under MIT, as recorded in [`encoder-core-encode.c`](../../src/encoder-core-encode.c) and [`LICENSE`](../../LICENSE). Node scheduling, `-E size`, the OR-mode dialect, and delta encoding are libsixel's own. No patent on them is known.
@@ -122,8 +109,6 @@ When a new color, palette, lookup, dithering, encoding, or decoding method is ad
 
 - Victor Ostromoukhov, [*A Simple and Efficient Error-Diffusion Algorithm*](https://doi.org/10.1145/383259.383326), SIGGRAPH 2001; Canon's [U.S. Patent 5,737,453](https://patents.google.com/patent/US5737453A/en) and [U.S. Patent 6,356,362](https://patents.google.com/patent/US6356362B1/en).
 - Kevin J. Parker and Theophano Mitsa, [U.S. Patent 5,111,310](https://patents.google.com/patent/US5111310A/en); Robert Ulichney, [U.S. Patent 5,535,020](https://patents.google.com/patent/US5535020A/en).
-- Alan Wolfe et al., [*Spatiotemporal Blue Noise Masks*](https://research.nvidia.com/publication/2022-07_spatiotemporal-blue-noise-masks), 2022; NVIDIA's [U.S. Patent 11,727,621](https://patents.google.com/patent/US11727621B2/en), [U.S. Patent 12,283,028](https://patents.google.com/patent/US12283028B2/en), and [U.S. Patent 11,941,743](https://patents.google.com/patent/US11941743B2/en).
-- Per Christensen, Andrew Kensler, and Charlie Kilpatrick, [*Progressive Multi-Jittered Sample Sequences*](https://graphics.pixar.com/library/ProgressiveMultiJitteredSampling/), 2018.
 - Björn Ottosson, [*A perceptual color space for image processing*](https://bottosson.github.io/posts/oklab/), 2020.
 - Øyvind Kolås, [*a dither*](https://pippin.gimp.org/a_dither/).
 - Christoph Peters, [*Free blue noise textures*](https://momentsingraphics.de/BlueNoise.html).

@@ -68,10 +68,6 @@ static char const g_dither_policy_name_bluenoise_8bit[] =
     "dither/bluenoise.8bit";
 static char const g_dither_policy_name_bluenoise_float32[] =
     "dither/bluenoise.float32";
-static char const g_dither_policy_name_interframe_8bit[] =
-    "dither/interframe.8bit";
-static char const g_dither_policy_name_interframe_float32[] =
-    "dither/interframe.float32";
 
 static int
 sixel_dither_policy_select_prefers_float32(
@@ -176,11 +172,6 @@ sixel_dither_policy_select_name(
             return g_dither_policy_name_bluenoise_float32;
         }
         return g_dither_policy_name_bluenoise_8bit;
-    case SIXEL_DIFFUSE_INTERFRAME:
-        if (prefer_float32 != 0) {
-            return g_dither_policy_name_interframe_float32;
-        }
-        return g_dither_policy_name_interframe_8bit;
     default:
         break;
     }

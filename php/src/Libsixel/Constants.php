@@ -48,9 +48,9 @@ final class Constants
     public const SIXEL_DIFFUSE_X_DITHER = 0x8;
     public const SIXEL_DIFFUSE_BLUENOISE_DITHER = 0x9;
     public const SIXEL_DIFFUSE_LSO2 = 0xa;
-    public const SIXEL_DIFFUSE_SIERRA1 = 0xc;
-    public const SIXEL_DIFFUSE_SIERRA2 = 0xd;
-    public const SIXEL_DIFFUSE_SIERRA3 = 0xe;
+    public const SIXEL_DIFFUSE_SIERRA1 = 0xb;
+    public const SIXEL_DIFFUSE_SIERRA2 = 0xc;
+    public const SIXEL_DIFFUSE_SIERRA3 = 0xd;
 
     public const SIXEL_SCAN_AUTO = 0x0;
     public const SIXEL_SCAN_RASTER = 0x1;

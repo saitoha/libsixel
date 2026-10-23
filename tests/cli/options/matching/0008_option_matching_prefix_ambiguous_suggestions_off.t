@@ -18,7 +18,7 @@ status=0
 
 set +x
 msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
-    -d st "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -d s "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) || status=$?
 set -x
 
@@ -28,7 +28,7 @@ test "${status}" -eq 2 || {
 }
 
 case "${msg}" in
-    *'ambiguous prefix "st".'*)
+    *'ambiguous prefix "s".'*)
         ;;
     *)
         echo "not ok" 1 - "ambiguity diagnostic still contains candidate list"

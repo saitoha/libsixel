@@ -824,33 +824,6 @@ _img2sixel()
                                    bluenoise:size=64 \
                                    bluenoise:channel=rgb:scan=serpentine \
                                    lso2 \
-                                   interframe \
-                                   interframe:scan=serpentine \
-                                   interframe:diffusion=atkinson \
-                                   interframe:diffusion=sierra2 \
-                                   interframe:diffusion=atkinson:scan=serpentine \
-                                   stbn \
-                                   stbn:scan=serpentine \
-                                   stbn:diffusion=atkinson \
-                                   stbn:source=hash \
-                                   stbn:source=mask \
-                                   stbn:source=pmj \
-                                   stbn:strength=0.055 \
-                                   stbn:source=mask:scan=serpentine \
-                                   stbn:source=pmj:scan=serpentine \
-                                   stbn:source=mask:diffusion=sierra2 \
-                                   stbn:source=pmj:diffusion=atkinson \
-                                   stbn:source=mask:diffusion=sierra2:scan=serpentine \
-                                   stbn:source=hash:strength=0.055 \
-                                   stbn:source=mask:strength=0.50 \
-                                   stbn:source=pmj:strength=0.50 \
-                                   stbn:motion_adapt=1 \
-                                   stbn:scene_cut_reset=1 \
-                                   stbn:scene_detect=1 \
-                                   stbn:alpha_guard=1 \
-                                   stbn:perceptual_weight=1 \
-                                   stbn:fastpath=1 \
-                                   stbn:source=pmj:fastpath=1 \
                                    fs:perturb=0.5 \
                                    fs:deadzone=5 \
                                    fs:perturb=0.5:perturb_seed=1 \

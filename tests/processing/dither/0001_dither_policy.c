@@ -186,9 +186,7 @@ test_dither_policy_named_classes_contract(void)
         "dither/x_dither.8bit",
         "dither/x_dither.float32",
         "dither/bluenoise.8bit",
-        "dither/bluenoise.float32",
-        "dither/interframe.8bit",
-        "dither/interframe.float32"
+        "dither/bluenoise.float32"
     };
 
     status = SIXEL_FALSE;
@@ -301,20 +299,11 @@ test_dither_policy_named_classes_contract(void)
 
         supports_parallel = dither_policy->vtbl->supports_parallel_bands(
             dither_policy);
-        if (strstr(class_names[i], "dither/interframe.") != NULL) {
-            if (supports_parallel != 0) {
-                safe_unref_dither_policy(&dither_policy);
-                safe_unref_lookup_policy_dither(&lookup_policy);
-                sixel_dither_unref(dither);
-                return 0;
-            }
-        } else {
-            if (supports_parallel == 0) {
-                safe_unref_dither_policy(&dither_policy);
-                safe_unref_lookup_policy_dither(&lookup_policy);
-                sixel_dither_unref(dither);
-                return 0;
-            }
+        if (supports_parallel == 0) {
+            safe_unref_dither_policy(&dither_policy);
+            safe_unref_lookup_policy_dither(&lookup_policy);
+            sixel_dither_unref(dither);
+            return 0;
         }
 
         memset(&apply_request, 0, sizeof(apply_request));

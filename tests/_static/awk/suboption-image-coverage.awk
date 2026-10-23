@@ -54,7 +54,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
         range_policy = "clamp-both"
     } else if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_INT") {
         range_policy = "clamp-both"
-    } else if (macro ~ /SCALED_U8_ENV_CLAMP|DOUBLE_ENV_CLAMP/) {
+    } else if (macro ~ /DOUBLE_ENV_CLAMP/) {
         range_policy = "clamp-both"
     } else if (macro ~ /UINT_ENV_CLAMP_SIGNED/) {
         range_policy = "clamp-signed-uint"
@@ -85,9 +85,7 @@ function inspect_registry(row, fields, count, option_id, name, alias,
                name == "perturb_seed" || name == "deadzone")) ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_SIERRA/ ||
              fields[2] ~ /SIXEL_DIFFUSION_BASE_A_DITHER/ ||
-             fields[2] ~ /SIXEL_DIFFUSION_BASE_X_DITHER/ ||
-             fields[2] ~ /SIXEL_DIFFUSION_BASE_INTERFRAME/ ||
-             fields[2] ~ /SIXEL_DIFFUSION_BASE_STBN/)) {
+             fields[2] ~ /SIXEL_DIFFUSION_BASE_X_DITHER/)) {
         expected_dither_contract[key] = 1
     }
     if (option_id == "SIXEL_OPTION_SCHEMA_CLAMP_POLICY") {
