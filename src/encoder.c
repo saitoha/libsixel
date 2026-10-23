@@ -14964,11 +14964,7 @@ sixel_encoder_frame_pipeline_worker_body(void *priv)
     pipeline = (sixel_encoder_frame_pipeline_t *)priv;
     frame = NULL;
     work_frame = NULL;
-    metadata.frame_no = 0;
-    metadata.loop_no = 0;
-    metadata.delay = 0;
-    metadata.multiframe = 0;
-    metadata.needs_preplan_clone = 0;
+    memset(&metadata, 0, sizeof(metadata));
     status = SIXEL_OK;
     need_clone = 0;
 
