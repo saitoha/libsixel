@@ -419,6 +419,49 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     int error_mode);
 
 /*
+ * Per-row view of the retained plane for the keep tests below.  Everything
+ * that depends only on the dither state and Y is validated once per row;
+ * PIXELS stays NULL when no pixel of the row can be kept.  The row forms
+ * give the same results as the X/Y forms, which are built on them.
+ */
+typedef struct sixel_dither_6delta_row {
+    unsigned char const *pixels;   /* plane color at frame x = 0 */
+    unsigned char const *valid;    /* valid mask at frame x = 0, or NULL */
+    int x_limit;                   /* frame x must stay below this */
+    int y;
+    int threshold_uniform;         /* residual mask cannot vary along x */
+    unsigned int threshold;
+} sixel_dither_6delta_row_t;
+
+SIXEL_INTERNAL_API void
+sixel_dither_6delta_row_prepare(sixel_dither_t const *dither, int y,
+                                sixel_dither_6delta_row_t *row);
+
+SIXEL_INTERNAL_API int
+sixel_dither_6delta_row_try_keep_rgb888(
+    sixel_dither_t *dither,
+    sixel_dither_6delta_row_t const *row,
+    size_t index,
+    int x,
+    unsigned char const *rgb,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out);
+
+SIXEL_INTERNAL_API int
+sixel_dither_6delta_row_try_keep_after_lookup(
+    sixel_dither_t *dither,
+    sixel_dither_6delta_row_t const *row,
+    size_t index,
+    int x,
+    unsigned char const *rgb,
+    unsigned char const *chosen_rgb,
+    int chosen_index,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out);
+
+/*
  * INDEX addresses the frame-local result mask, while X/Y are frame-local
  * coordinates translated onto the retained plane by the stored origin.
  */

@@ -1431,89 +1431,101 @@ sixel_dither_has_compatible_accumulation_hint(
     return 1;
 }
 
-/*
- * Map a frame-local coordinate onto the retained plane.  Returns 0 when the
- * frame is not fully inside the plane, which disables the keep gate instead of
- * comparing against unrelated pixels.
- */
-static int
-sixel_dither_accumulation_plane_index(
-    sixel_dither_t const *dither,
-    int x,
-    int y,
-    size_t *plane_index_out)
+SIXEL_INTERNAL_API void
+sixel_dither_6delta_row_prepare(sixel_dither_t const *dither, int y,
+                                sixel_dither_6delta_row_t *row)
 {
-    int plane_x;
-    int plane_y;
+    sixel_delta_mask_t const *mask;
+    size_t total_pixels;
+    size_t base_index;
+    int width;
+    int height;
 
-    if (dither == NULL || plane_index_out == NULL) {
-        return 0;
+    row->pixels = NULL;
+    row->valid = NULL;
+    row->x_limit = 0;
+    row->y = y;
+    row->threshold_uniform = 1;
+    row->threshold = 0u;
+    if (dither == NULL || dither->pipeline_6delta_enabled == 0) {
+        return;
     }
-    if (x < 0 || y < 0) {
-        return 0;
+    width = dither->pipeline_accumulation_width;
+    height = dither->pipeline_accumulation_height;
+    if (width <= 0 || height <= 0) {
+        return;
     }
-    if (dither->pipeline_accumulation_frame_width > 0 &&
-        x >= dither->pipeline_accumulation_frame_width) {
-        return 0;
+    total_pixels = (size_t)width * (size_t)height;
+    if (!sixel_dither_has_compatible_accumulation_hint(
+            dither, width, height, total_pixels)) {
+        return;
+    }
+    /* Frame Y must land inside the plane below a valid origin; the frame X
+     * bound becomes x_limit. Compare against the remaining extent so the
+     * test cannot overflow for any origin the caller supplied. */
+    if (y < 0) {
+        return;
     }
     if (dither->pipeline_accumulation_frame_height > 0 &&
         y >= dither->pipeline_accumulation_frame_height) {
-        return 0;
+        return;
     }
     if (dither->pipeline_accumulation_origin_x < 0 ||
-        dither->pipeline_accumulation_origin_y < 0) {
-        return 0;
+        dither->pipeline_accumulation_origin_y < 0 ||
+        dither->pipeline_accumulation_origin_x >= width ||
+        dither->pipeline_accumulation_origin_y >= height) {
+        return;
     }
-    /*
-     * Compare against the remaining plane extent rather than adding first, so
-     * the bounds test cannot overflow for any origin the caller supplied.
-     */
-    if (dither->pipeline_accumulation_origin_x >=
-            dither->pipeline_accumulation_width ||
-        dither->pipeline_accumulation_origin_y >=
-            dither->pipeline_accumulation_height) {
-        return 0;
+    if (y >= height - dither->pipeline_accumulation_origin_y) {
+        return;
     }
-    if (x >= dither->pipeline_accumulation_width -
-            dither->pipeline_accumulation_origin_x ||
-        y >= dither->pipeline_accumulation_height -
-            dither->pipeline_accumulation_origin_y) {
-        return 0;
+    row->x_limit = width - dither->pipeline_accumulation_origin_x;
+    if (dither->pipeline_accumulation_frame_width > 0 &&
+        dither->pipeline_accumulation_frame_width < row->x_limit) {
+        row->x_limit = dither->pipeline_accumulation_frame_width;
     }
-    plane_x = dither->pipeline_accumulation_origin_x + x;
-    plane_y = dither->pipeline_accumulation_origin_y + y;
-    *plane_index_out = (size_t)plane_y *
-        (size_t)dither->pipeline_accumulation_width + (size_t)plane_x;
+    /* Every x below x_limit then lands inside the plane row. */
+    base_index = (size_t)(dither->pipeline_accumulation_origin_y + y) *
+        (size_t)width + (size_t)dither->pipeline_accumulation_origin_x;
+    row->pixels = dither->pipeline_accumulation_pixels + base_index * 3u;
+    if (dither->pipeline_accumulation_valid_mask != NULL) {
+        row->valid = dither->pipeline_accumulation_valid_mask + base_index;
+    }
+    /* sixel_delta_mask_threshold() ignores cells for such a row. */
+    mask = &dither->pipeline_residual_mask;
+    row->threshold = dither->pipeline_6delta_threshold;
+    row->threshold_uniform = mask->columns == 0 || mask->rows == 0 ||
+        y >= mask->height;
+}
 
-    return 1;
+/* Plane color of frame pixel X in ROW, or NULL when it cannot be kept. */
+static unsigned char const *
+sixel_dither_6delta_row_pixel(sixel_dither_6delta_row_t const *row, int x)
+{
+    if (row->pixels == NULL || x < 0 || x >= row->x_limit) {
+        return NULL;
+    }
+    if (row->valid != NULL && row->valid[x] == 0u) {
+        return NULL;
+    }
+
+    return row->pixels + (size_t)x * 3u;
 }
 
 SIXEL_INTERNAL_API int
-sixel_dither_pipeline_6delta_try_keep_rgb888(
+sixel_dither_6delta_row_try_keep_rgb888(
     sixel_dither_t *dither,
+    sixel_dither_6delta_row_t const *row,
     size_t index,
     int x,
-    int y,
     unsigned char const *rgb,
     int record_result,
     unsigned char const **accumulation_rgb_out,
     int *keycolor_out)
 {
-    unsigned char const *accumulation;
-    unsigned char const *valid_mask;
     unsigned char const *accumulation_pixel;
-    size_t total_pixels;
-    size_t plane_index;
-    int keycolor;
     unsigned int threshold;
 
-    accumulation = NULL;
-    valid_mask = NULL;
-    accumulation_pixel = NULL;
-    total_pixels = 0u;
-    plane_index = 0u;
-    keycolor = (-1);
-    threshold = 0u;
     if (accumulation_rgb_out != NULL) {
         *accumulation_rgb_out = NULL;
     }
@@ -1521,22 +1533,6 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
         *keycolor_out = (-1);
     }
     if (dither == NULL || rgb == NULL) {
-        return 0;
-    }
-    if (dither->pipeline_6delta_enabled == 0) {
-        return 0;
-    }
-    if (dither->pipeline_accumulation_width <= 0 ||
-        dither->pipeline_accumulation_height <= 0) {
-        return 0;
-    }
-    total_pixels = (size_t)dither->pipeline_accumulation_width *
-        (size_t)dither->pipeline_accumulation_height;
-    if (!sixel_dither_has_compatible_accumulation_hint(
-            dither,
-            dither->pipeline_accumulation_width,
-            dither->pipeline_accumulation_height,
-            total_pixels)) {
         return 0;
     }
     /*
@@ -1551,21 +1547,13 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
      * coordinates: a damage rectangle that moves between frames still lands on
      * the pixels the terminal shows at the same screen position.
      */
-    accumulation = dither->pipeline_accumulation_pixels;
-    valid_mask = dither->pipeline_accumulation_valid_mask;
-    keycolor = dither->pipeline_accumulation_keycolor;
-    threshold = sixel_delta_mask_threshold(&dither->pipeline_residual_mask,
-        x, y, dither->pipeline_6delta_threshold);
-    if (!sixel_dither_accumulation_plane_index(dither, x, y, &plane_index)) {
+    accumulation_pixel = sixel_dither_6delta_row_pixel(row, x);
+    if (accumulation_pixel == NULL) {
         return 0;
     }
-    if (plane_index >= total_pixels) {
-        return 0;
-    }
-    if (valid_mask != NULL && valid_mask[plane_index] == 0u) {
-        return 0;
-    }
-    accumulation_pixel = accumulation + plane_index * 3u;
+    threshold = row->threshold_uniform ? row->threshold
+        : sixel_delta_mask_threshold(&dither->pipeline_residual_mask,
+                                     x, row->y, row->threshold);
     if (!(dither->pipeline_6delta_metric == SIXEL_DELTA_METRIC_RGB241
             ? sixel_delta_rgb241_within(rgb, accumulation_pixel, threshold)
             : sixel_dither_rgb888_delta_within(rgb, accumulation_pixel,
@@ -1582,10 +1570,30 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
         *accumulation_rgb_out = accumulation_pixel;
     }
     if (keycolor_out != NULL) {
-        *keycolor_out = keycolor;
+        *keycolor_out = dither->pipeline_accumulation_keycolor;
     }
 
     return 1;
+}
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_try_keep_rgb888(
+    sixel_dither_t *dither,
+    size_t index,
+    int x,
+    int y,
+    unsigned char const *rgb,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out)
+{
+    sixel_dither_6delta_row_t row;
+
+    sixel_dither_6delta_row_prepare(dither, y, &row);
+    return sixel_dither_6delta_row_try_keep_rgb888(dither, &row, index, x,
+                                                   rgb, record_result,
+                                                   accumulation_rgb_out,
+                                                   keycolor_out);
 }
 
 /*
@@ -1597,37 +1605,10 @@ sixel_dither_pipeline_6delta_plane_pixel(sixel_dither_t const *dither,
                                          int x,
                                          int y)
 {
-    size_t total_pixels;
-    size_t plane_index;
+    sixel_dither_6delta_row_t row;
 
-    if (dither == NULL || dither->pipeline_6delta_enabled == 0) {
-        return NULL;
-    }
-    if (dither->pipeline_accumulation_width <= 0
-            || dither->pipeline_accumulation_height <= 0) {
-        return NULL;
-    }
-    total_pixels = (size_t)dither->pipeline_accumulation_width
-        * (size_t)dither->pipeline_accumulation_height;
-    if (!sixel_dither_has_compatible_accumulation_hint(
-            dither,
-            dither->pipeline_accumulation_width,
-            dither->pipeline_accumulation_height,
-            total_pixels)) {
-        return NULL;
-    }
-    if (!sixel_dither_accumulation_plane_index(dither, x, y, &plane_index)) {
-        return NULL;
-    }
-    if (plane_index >= total_pixels) {
-        return NULL;
-    }
-    if (dither->pipeline_accumulation_valid_mask != NULL
-            && dither->pipeline_accumulation_valid_mask[plane_index] == 0u) {
-        return NULL;
-    }
-
-    return dither->pipeline_accumulation_pixels + plane_index * 3u;
+    sixel_dither_6delta_row_prepare(dither, y, &row);
+    return sixel_dither_6delta_row_pixel(&row, x);
 }
 
 static unsigned int
@@ -1645,11 +1626,11 @@ sixel_dither_rgb888_distance_sq(unsigned char const *a, unsigned char const *b)
 }
 
 SIXEL_INTERNAL_API int
-sixel_dither_pipeline_6delta_try_keep_after_lookup(
+sixel_dither_6delta_row_try_keep_after_lookup(
     sixel_dither_t *dither,
+    sixel_dither_6delta_row_t const *row,
     size_t index,
     int x,
-    int y,
     unsigned char const *rgb,
     unsigned char const *chosen_rgb,
     int chosen_index,
@@ -1696,7 +1677,7 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     if (dither == NULL || rgb == NULL || chosen_rgb == NULL) {
         return 0;
     }
-    accumulation_pixel = sixel_dither_pipeline_6delta_plane_pixel(dither, x, y);
+    accumulation_pixel = sixel_dither_6delta_row_pixel(row, x);
     if (accumulation_pixel == NULL) {
         return 0;
     }
@@ -1745,6 +1726,27 @@ sixel_dither_pipeline_6delta_try_keep_after_lookup(
     }
 
     return 1;
+}
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_try_keep_after_lookup(
+    sixel_dither_t *dither,
+    size_t index,
+    int x,
+    int y,
+    unsigned char const *rgb,
+    unsigned char const *chosen_rgb,
+    int chosen_index,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out)
+{
+    sixel_dither_6delta_row_t row;
+
+    sixel_dither_6delta_row_prepare(dither, y, &row);
+    return sixel_dither_6delta_row_try_keep_after_lookup(
+        dither, &row, index, x, rgb, chosen_rgb, chosen_index,
+        record_result, accumulation_rgb_out, keycolor_out);
 }
 
 

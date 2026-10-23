@@ -126,6 +126,7 @@ sixel_dither_apply_none_8bit(
     size_t absolute_index;
     unsigned char const *accumulation_pixel;
     int accumulation_keycolor;
+    sixel_dither_6delta_row_t delta_row;
     int is_6delta_keep;
     int record_result;
 
@@ -203,6 +204,7 @@ sixel_dither_apply_none_8bit(
         none_sixel_dither_scanline_params_fixed_8bit(
             serpentine, absolute_y, width,
             &start, &end, &step, &direction);
+        sixel_dither_6delta_row_prepare(dither, absolute_y, &delta_row);
         for (x = start; x != end; x += step) {
             pos = y * width + x;
             base = (size_t)pos * (size_t)depth;
@@ -230,11 +232,11 @@ sixel_dither_apply_none_8bit(
             is_6delta_keep = 0;
             if (absolute_y >= 0) {
                 is_6delta_keep =
-                    sixel_dither_pipeline_6delta_try_keep_rgb888(
+                    sixel_dither_6delta_row_try_keep_rgb888(
                         dither,
+                        &delta_row,
                         absolute_index,
                         x,
-                        absolute_y,
                         source_pixel,
                         record_result,
                         &accumulation_pixel,
@@ -260,11 +262,11 @@ sixel_dither_apply_none_8bit(
              */
             if (absolute_y >= 0 && depth >= 3) {
                 is_6delta_keep =
-                    sixel_dither_pipeline_6delta_try_keep_after_lookup(
+                    sixel_dither_6delta_row_try_keep_after_lookup(
                         dither,
+                        &delta_row,
                         absolute_index,
                         x,
-                        absolute_y,
                         source_pixel,
                         palette + (size_t)color_index * (size_t)depth,
                         color_index,

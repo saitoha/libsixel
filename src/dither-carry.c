@@ -552,8 +552,8 @@ sixel_dither_carry_candidate(unsigned char const *source,
         keycolor = -1; \
         keep = 0; \
         if (delta) { \
-            keep = sixel_dither_pipeline_6delta_try_keep_rgb888(dither, \
-                absolute_index, x, absolute_y, pixel, record, \
+            keep = sixel_dither_6delta_row_try_keep_rgb888(dither, \
+                &delta_row, absolute_index, x, pixel, record, \
                 &retained, &keycolor); \
         } \
         index = keycolor; \
@@ -564,8 +564,8 @@ sixel_dither_carry_candidate(unsigned char const *source,
             } \
             hint = index; \
             if (delta) { \
-                keep = sixel_dither_pipeline_6delta_try_keep_after_lookup( \
-                    dither, absolute_index, x, absolute_y, pixel, \
+                keep = sixel_dither_6delta_row_try_keep_after_lookup( \
+                    dither, &delta_row, absolute_index, x, pixel, \
                     request->palette + (size_t)index * 3, index, \
                     record, &retained, &keycolor); \
             } \
@@ -630,6 +630,7 @@ sixel_carry_rgb_##NAME(sixel_dither_policy_apply_request_t const *request, \
     int keycolor; \
     int keep; \
     int weights[4]; \
+    sixel_dither_6delta_row_t delta_row; \
     int32_t error0; \
     int32_t error1; \
     int32_t error2; \
@@ -649,6 +650,8 @@ sixel_carry_rgb_##NAME(sixel_dither_policy_apply_request_t const *request, \
         remaining = request->height - y; \
         record = absolute_y >= request->output_start; \
         delta = dither->pipeline_6delta_enabled && absolute_y >= 0; \
+        if (delta) sixel_dither_6delta_row_prepare(dither, absolute_y, \
+                                                   &delta_row); \
         direction = request->method_for_scan == SIXEL_SCAN_SERPENTINE \
             && (absolute_y & 1) ? -1 : 1; \
         x = direction > 0 ? 0 : width - 1; \
