@@ -12,17 +12,7 @@ top_builddir=${2:-$1}
 gzip_cmd=${SIXEL_TEST_GZIP-}
 src_formats_dir="${top_srcdir}/tests/data/inputs/formats"
 dst_formats_dir="${top_builddir}/tests/data/inputs/formats"
-webp_large_fixtures="\
-webp-static-icc-overlimit-padded.webp \
-webp-static-icc-limit-padded.webp \
-snake_64_embedded_a98_icc_xmp_iccprofile_iccp_overlimit.webp \
-animated-lossy-8x8-2frame-min-embedded-srgb-icc-overlimit.webp \
-animated-lossy-8x8-2frame-min-embedded-srgb-icc-xmp-icc-displayp3-overlimit.webp \
-orientation_exif_o6_vp8_static_12x8_exif_limit.webp \
-orientation_exif_o6_vp8_static_12x8_exif_overlimit.webp \
-orientation_exif_o6_vp8_static_12x8_xmp_o3_exif_overlimit.webp \
-animated-lossy-8x8-2frame-min-exif-o6-limit.webp \
-animated-lossy-8x8-2frame-min-exif-o6-overlimit.webp"
+webp_large_fixtures="webp-static-icc-overlimit-padded.webp"
 
 mkdir -p "${dst_formats_dir}"
 
