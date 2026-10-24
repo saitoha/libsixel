@@ -12,13 +12,13 @@ $bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
 require_once $bindingRoot . '/src/autoload.php';
 
 try {
-    $acceptedZero = true;
+    $rejectedZero = false;
     $rejectedNegative = false;
 
     try {
         API::setEncoderThreads(0);
     } catch (InvalidArgumentException $e) {
-        $acceptedZero = false;
+        $rejectedZero = true;
     }
 
     try {
@@ -29,8 +29,8 @@ try {
 
     API::setEncoderThreads(1);
 
-    if ($acceptedZero && $rejectedNegative) {
-        echo "ok 1 - set_encoder_threads accepts zero-as-auto and rejects negative numeric input\n";
+    if ($rejectedZero && $rejectedNegative) {
+        echo "ok 1 - set_encoder_threads rejects zero and negative numeric inputs\n";
     } else {
         echo "not ok 1 - set_encoder_threads numeric validation path was unexpected\n";
     }

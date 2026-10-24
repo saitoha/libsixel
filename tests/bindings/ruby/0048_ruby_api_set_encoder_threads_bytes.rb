@@ -7,7 +7,7 @@ begin
   require 'libsixel'
 
   Libsixel.set_encoder_threads('2'.b)
-  Libsixel.set_encoder_threads('auto'.b)
+  Libsixel.set_encoder_threads('all'.b)
 
   begin
     Libsixel.set_encoder_threads('bad'.b)

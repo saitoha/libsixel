@@ -16,10 +16,9 @@ if (!$loaded) {
 plan tests => 1;
 
 my $ok = eval {
-    local $SIG{__WARN__} = sub { };
-    Image::LibSIXEL::sixel_set_encoder_threads('AUTO');
+    Image::LibSIXEL::sixel_set_encoder_threads(pack('C*', unpack('C*', '  all  ')));
     1;
 };
 
-ok($ok, 'set_encoder_threads accepts uppercase auto string path');
+ok($ok, 'set_encoder_threads accepts whitespace-padded all bytes-like input');
 diag($@) if !$ok && $@ ne '';

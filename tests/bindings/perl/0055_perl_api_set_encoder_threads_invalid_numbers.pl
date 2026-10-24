@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+# Policy: docs/cli/threading-policy.md
 
 use strict;
 use warnings;
@@ -16,11 +17,17 @@ if (!$loaded) {
 plan tests => 1;
 
 my $ok = eval {
-    Image::LibSIXEL::sixel_set_encoder_threads(0);
-    Image::LibSIXEL::sixel_set_encoder_threads(-1);
-    Image::LibSIXEL::sixel_set_encoder_threads(1);
+    for my $setter (\&Image::LibSIXEL::sixel_set_encoder_threads,
+                    \&Image::LibSIXEL::sixel_set_decoder_threads) {
+        for my $value (0, -1) {
+            my $accepted = eval { $setter->($value); 1 };
+            die "thread budget API accepted non-positive numeric inputs\n" if $accepted;
+            die "unexpected validation error: $@" if
+                $@ !~ /\Athreads must be a positive integer or 'all'/;
+        }
+    }
     1;
 };
 
-ok($ok, 'set_encoder_threads handles non-positive numeric inputs in current perl path');
+ok($ok, 'both thread budget setters reject non-positive numeric inputs');
 diag($@) if !$ok && $@ ne '';

@@ -9,8 +9,8 @@ sub attach_all {
     $ffi->type('(opaque,opaque)->int' => 'sixel_loader_callback_t');
     $ffi->type('(opaque,int,opaque)->int' => 'sixel_write_callback_t');
 
-    $ffi->attach(['sixel_set_encoder_threads' => 'Image::LibSIXEL::sixel_set_encoder_threads'] => ['int'] => 'void');
-    $ffi->attach(['sixel_set_decoder_threads' => 'Image::LibSIXEL::sixel_set_decoder_threads'] => ['int'] => 'void');
+    $ffi->attach(['sixel_set_encoder_threads' => 'Image::LibSIXEL::_sixel_set_encoder_threads'] => ['int'] => 'void');
+    $ffi->attach(['sixel_set_decoder_threads' => 'Image::LibSIXEL::_sixel_set_decoder_threads'] => ['int'] => 'void');
     $ffi->attach(['sixel_allocator_new' => 'Image::LibSIXEL::sixel_allocator_new'] => ['opaque*', 'opaque', 'opaque', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_allocator_ref' => 'Image::LibSIXEL::sixel_allocator_ref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_allocator_unref' => 'Image::LibSIXEL::sixel_allocator_unref'] => ['opaque'] => 'void');

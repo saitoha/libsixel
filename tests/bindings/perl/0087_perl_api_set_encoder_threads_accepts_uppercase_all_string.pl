@@ -16,10 +16,9 @@ if (!$loaded) {
 plan tests => 1;
 
 my $ok = eval {
-    local $SIG{__WARN__} = sub { };
-    Image::LibSIXEL::sixel_set_encoder_threads('   ');
+    Image::LibSIXEL::sixel_set_encoder_threads('ALL');
     1;
 };
 
-ok($ok, 'set_encoder_threads whitespace-only string path is handled in current perl binding');
+ok($ok, 'set_encoder_threads accepts uppercase all string path');
 diag($@) if !$ok && $@ ne '';

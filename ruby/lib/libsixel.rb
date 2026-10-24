@@ -17,15 +17,17 @@ require_relative "libsixel/helper"
 require_relative "libsixel/frame"
 
 module Libsixel
+  # Only 'all' (or :all) maps to the C API's zero sentinel. Numeric budgets
+  # must be positive.
   def self.set_encoder_threads(value)
-    auto_requested = false
+    all_requested = false
     text = nil
     count = 0
 
     if value.is_a?(String)
       text = value.strip
-      if %w[auto all].include?(text.downcase)
-        auto_requested = true
+      if text.downcase == 'all'
+        all_requested = true
         count = 0
       else
         begin
@@ -35,8 +37,8 @@ module Libsixel
                 "threads must be a positive integer or 'all'"
         end
       end
-    elsif [:auto, :all].include?(value)
-      auto_requested = true
+    elsif value == :all
+      all_requested = true
       count = 0
     else
       begin
@@ -47,7 +49,7 @@ module Libsixel
       end
     end
 
-    if auto_requested == false && count < 1
+    if all_requested == false && count < 1
       raise ArgumentError,
             "threads must be a positive integer or 'all'"
     end
@@ -57,14 +59,14 @@ module Libsixel
   end
 
   def self.set_decoder_threads(value)
-    auto_requested = false
+    all_requested = false
     text = nil
     count = 0
 
     if value.is_a?(String)
       text = value.strip
-      if %w[auto all].include?(text.downcase)
-        auto_requested = true
+      if text.downcase == 'all'
+        all_requested = true
         count = 0
       else
         begin
@@ -74,8 +76,8 @@ module Libsixel
                 "threads must be a positive integer or 'all'"
         end
       end
-    elsif [:auto, :all].include?(value)
-      auto_requested = true
+    elsif value == :all
+      all_requested = true
       count = 0
     else
       begin
@@ -86,7 +88,7 @@ module Libsixel
       end
     end
 
-    if auto_requested == false && count < 1
+    if all_requested == false && count < 1
       raise ArgumentError,
             "threads must be a positive integer or 'all'"
     end

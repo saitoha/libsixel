@@ -15,7 +15,7 @@ def test_0048_python_api_set_encoder_threads_bytes() -> None:
         raise SystemExit(2)
 
     sixel_set_encoder_threads(b"2")
-    sixel_set_encoder_threads(b"auto")
+    sixel_set_encoder_threads(b"all")
 
     rejected = False
     try:

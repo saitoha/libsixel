@@ -13,7 +13,7 @@ require_once $bindingRoot . '/src/autoload.php';
 
 try {
     API::setEncoderThreads('2');
-    API::setEncoderThreads('auto');
+    API::setEncoderThreads('all');
 
     try {
         API::setEncoderThreads('bad');

@@ -17,11 +17,16 @@ plan tests => 1;
 
 my $ok = eval {
     Image::LibSIXEL::sixel_set_encoder_threads('2');
-    Image::LibSIXEL::sixel_set_encoder_threads('auto');
-    local $SIG{__WARN__} = sub { };
-    Image::LibSIXEL::sixel_set_encoder_threads('bad');
+    Image::LibSIXEL::sixel_set_encoder_threads('all');
+    my $accepted = eval {
+        Image::LibSIXEL::sixel_set_encoder_threads('bad');
+        1;
+    };
+    die "set_encoder_threads accepted invalid bytes\n" if $accepted;
+    die "unexpected validation error: $@" if
+        $@ !~ /\Athreads must be a positive integer or 'all'/;
     1;
 };
 
-ok($ok, 'set_encoder_threads accepts byte-like scalar inputs in current perl path');
+ok($ok, 'set_encoder_threads accepts valid bytes and rejects invalid bytes');
 diag($@) if !$ok && $@ ne '';

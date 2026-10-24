@@ -236,6 +236,9 @@ module Libsixel
     extern "int sixel_decode(char *, int, char *, int, int, char *, int, void *)"
     extern "int sixel_decode_direct(char *, int, void *, void *, void *, void *)"
 
+    # Raw C defaults use non-positive budgets for all logical CPUs. Use the
+    # Libsixel setters for positive integers or case-insensitive 'all' input;
+    # those wrappers reject 'auto' and non-positive numeric values.
     extern "void sixel_set_encoder_threads(int)"
     extern "void sixel_set_decoder_threads(int)"
 

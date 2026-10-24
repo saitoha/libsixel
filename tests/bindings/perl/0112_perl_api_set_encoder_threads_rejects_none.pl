@@ -16,11 +16,17 @@ if (!$loaded) {
 plan tests => 1;
 
 my $ok = eval {
-    local $SIG{__WARN__} = sub { };
-    Image::LibSIXEL::sixel_set_encoder_threads(undef);
-    Image::LibSIXEL::sixel_set_encoder_threads(1);
+    for my $setter (\&Image::LibSIXEL::sixel_set_encoder_threads,
+                    \&Image::LibSIXEL::sixel_set_decoder_threads) {
+        for my $value (undef) {
+            my $accepted = eval { $setter->($value); 1 };
+            die "thread budget API accepted undefined input\n" if $accepted;
+            die "unexpected validation error: $@" if
+                $@ !~ /\Athreads must be a positive integer or 'all'/;
+        }
+    }
     1;
 };
 
-ok($ok, 'set_encoder_threads none input path is handled in current perl binding');
+ok($ok, 'both thread budget setters reject undefined input');
 diag($@) if !$ok && $@ ne '';

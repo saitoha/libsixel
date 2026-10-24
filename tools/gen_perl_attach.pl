@@ -32,6 +32,8 @@ my %callback_signatures = (
 );
 
 my %alias_override = (
+    sixel_set_encoder_threads => '_sixel_set_encoder_threads',
+    sixel_set_decoder_threads => '_sixel_set_decoder_threads',
     sixel_helper_format_error => '_sixel_helper_format_error',
     sixel_encoder_new         => '_sixel_encoder_new',
     sixel_encoder_setopt      => '_sixel_encoder_setopt',

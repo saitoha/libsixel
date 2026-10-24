@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
+use Encode qw(decode FB_CROAK);
 use FFI::Platypus 2.00;
 use FFI::Platypus::Buffer qw(scalar_to_buffer);
 use FFI::Platypus::Closure ();
@@ -78,6 +79,39 @@ sub _validate_output_setter_argument {
     my ($name, $value) = @_;
 
     defined $value || croak "Bad argument: missing value for ${name}";
+}
+
+# Validate before FFI conversion: arbitrary strings otherwise become zero,
+# which the C API interprets as all logical CPUs. Only 'all' selects zero here.
+sub _validate_thread_budget {
+    my ($value) = @_;
+    my $text;
+    my $error = "threads must be a positive integer or 'all'";
+
+    defined $value && !ref($value) || croak $error;
+    $text = "$value";
+    if (!utf8::is_utf8($text)) {
+        $text = eval { decode('UTF-8', $text, FB_CROAK) };
+        croak $error if $@;
+    }
+    $text =~ s/\A\s+|\s+\z//g;
+    return 0 if lc($text) eq 'all';
+    $text =~ /\A[+-]?[0-9]+\z/ && $text > 0 || croak $error;
+    return 0 + $text;
+}
+
+sub sixel_set_encoder_threads {
+    my ($value) = @_;
+
+    _sixel_set_encoder_threads(_validate_thread_budget($value));
+    return;
+}
+
+sub sixel_set_decoder_threads {
+    my ($value) = @_;
+
+    _sixel_set_decoder_threads(_validate_thread_budget($value));
+    return;
 }
 
 sub _coerce_loader_int_option_value {

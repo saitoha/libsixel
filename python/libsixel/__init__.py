@@ -1306,9 +1306,10 @@ def sixel_dither_set_transparent(dither, transparent):
     _sixel.sixel_dither_set_transparent(dither, transparent)
 
 
-# configure the encoder thread count for band parallelism
+# Configure process defaults with a positive count or case-insensitive 'all'.
+# Only 'all' maps to the C API's zero sentinel.
 def sixel_set_encoder_threads(threads):
-    auto_requested = False
+    all_requested = False
     value = 0
     text = None
 
@@ -1325,8 +1326,8 @@ def sixel_set_encoder_threads(threads):
         text = None
 
     if text is not None:
-        if text.lower() in ('auto', 'all'):
-            auto_requested = True
+        if text.lower() == 'all':
+            all_requested = True
             value = 0
         else:
             try:
@@ -1343,7 +1344,7 @@ def sixel_set_encoder_threads(threads):
                 "threads must be a positive integer or 'all'"
             ) from exc
 
-    if auto_requested is False and value < 1:
+    if all_requested is False and value < 1:
         raise ValueError("threads must be a positive integer or 'all'")
 
     _sixel.sixel_set_encoder_threads.restype = None
@@ -1352,7 +1353,7 @@ def sixel_set_encoder_threads(threads):
 
 
 def sixel_set_decoder_threads(threads):
-    auto_requested = False
+    all_requested = False
     value = 0
     text = None
 
@@ -1369,8 +1370,8 @@ def sixel_set_decoder_threads(threads):
         text = None
 
     if text is not None:
-        if text.lower() in ('auto', 'all'):
-            auto_requested = True
+        if text.lower() == 'all':
+            all_requested = True
             value = 0
         else:
             try:
@@ -1387,7 +1388,7 @@ def sixel_set_decoder_threads(threads):
                 "threads must be a positive integer or 'all'"
             ) from exc
 
-    if auto_requested is False and value < 1:
+    if all_requested is False and value < 1:
         raise ValueError("threads must be a positive integer or 'all'")
 
     _sixel.sixel_set_decoder_threads.restype = None

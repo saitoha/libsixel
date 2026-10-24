@@ -12,11 +12,10 @@ $bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
 require_once $bindingRoot . '/src/autoload.php';
 
 try {
-    API::setEncoderThreads('0');
-    API::setEncoderThreads(1);
+    API::setEncoderThreads('ALL');
 
-    echo "ok 1 - set_encoder_threads zero-byte input path is handled in current PHP binding\n";
+    echo "ok 1 - set_encoder_threads accepts uppercase all string input\n";
 } catch (Throwable $e) {
-    echo "not ok 1 - set_encoder_threads zero-byte input path check failed\n";
+    echo "not ok 1 - set_encoder_threads uppercase all string acceptance check failed\n";
     echo '# ' . get_class($e) . ': ' . preg_replace('/\\s+/', ' ', $e->getMessage()) . "\n";
 }

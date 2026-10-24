@@ -12,15 +12,15 @@ $bindingRoot = (string) getenv('SIXEL_TEST_PHP_BINDING_ROOT');
 require_once $bindingRoot . '/src/autoload.php';
 
 try {
-    $bytearrayAuto = [97, 117, 116, 111];
+    $bytearrayAll = [97, 108, 108];
 
     try {
-        API::setEncoderThreads($bytearrayAuto);
-        echo "not ok 1 - set_encoder_threads accepted bytearray-like auto input\n";
+        API::setEncoderThreads($bytearrayAll);
+        echo "not ok 1 - set_encoder_threads accepted bytearray-like all input\n";
     } catch (InvalidArgumentException $e) {
-        echo "ok 1 - set_encoder_threads rejects bytearray-like auto input\n";
+        echo "ok 1 - set_encoder_threads rejects bytearray-like all input\n";
     }
 } catch (Throwable $e) {
-    echo "not ok 1 - set_encoder_threads bytearray-like auto rejection check failed\n";
+    echo "not ok 1 - set_encoder_threads bytearray-like all rejection check failed\n";
     echo '# ' . get_class($e) . ': ' . preg_replace('/\\s+/', ' ', $e->getMessage()) . "\n";
 }

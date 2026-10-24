@@ -98,9 +98,12 @@ CDEF;
 
     public static function setEncoderThreads($value): void
     {
+        // Only the all keyword selects the C API's zero sentinel.
+        $allRequested = false;
         if (is_string($value)) {
             $text = trim($value);
-            if (in_array(strtolower($text), ['auto', 'all'], true)) {
+            if (strtolower($text) === 'all') {
+                $allRequested = true;
                 $count = 0;
             } else {
                 if (!preg_match('/^[0-9]+$/', $text)) {
@@ -118,7 +121,7 @@ CDEF;
             );
         }
 
-        if ($count < 0) {
+        if (!$allRequested && $count < 1) {
             throw new \InvalidArgumentException(
                 "threads must be a positive integer or 'all'"
             );
@@ -129,9 +132,12 @@ CDEF;
 
     public static function setDecoderThreads($value): void
     {
+        // Only the all keyword selects the C API's zero sentinel.
+        $allRequested = false;
         if (is_string($value)) {
             $text = trim($value);
-            if (in_array(strtolower($text), ['auto', 'all'], true)) {
+            if (strtolower($text) === 'all') {
+                $allRequested = true;
                 $count = 0;
             } else {
                 if (!preg_match('/^[0-9]+$/', $text)) {
@@ -149,7 +155,7 @@ CDEF;
             );
         }
 
-        if ($count < 0) {
+        if (!$allRequested && $count < 1) {
             throw new \InvalidArgumentException(
                 "threads must be a positive integer or 'all'"
             );
