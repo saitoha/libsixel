@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/threading/policy-modes.md
+# Policy: docs/cli/threading-policy.md
 # Verify threading modes, budget precedence and explicit stage overrides.
 set -eux
 

@@ -4,28 +4,22 @@ For input formats, loader support, playback controls, timing, and output-state i
 
 ## Current frame pipeline
 
-For supported multi-frame loaders, the loader callback can hand frames to one
-encoder worker through a bounded queue. The queue capacity is four frames.
-This lets loading and frame encoding overlap without allowing unbounded decoded
-frames to accumulate.
+Supported multi-frame loaders hand frames to the encoder through a bounded read-ahead queue. Its depth is `load_depth`, default 4 and maximum 16. With `load=ahead`, loading overlaps downstream work; `load=serial` keeps the loader callback synchronous. The [threading-policy reference](../cli/threading-policy.md) owns these controls and their precedence.
+
+With `prepare=ahead`, frame n+1 can be prepared while frame n is emitted. The two lanes overlap independent preparation and output work; output and retained delta history are still committed one frame at a time in order.
 
 ```text
-loader / callback thread               frame encoder thread
-------------------------               --------------------
-decode frame 0 ---- enqueue ----------> encode frame 0
-decode frame 1 ---- enqueue ----------> encode frame 1
-decode frame 2 ---- wait if full -----> ...
+loader / callback       preparation                 ordered emission
+-----------------       -----------                 ----------------
+load frame 0 ---------> prepare frame 0 -----------> emit frame 0
+load frame 1 ---------> prepare frame 1 (overlap) --> emit frame 1
+load frame 2 ---------> prepare frame 2 (overlap) --> emit frame 2
+wait when queue full                                commit in frame order
 ```
 
-There is one frame-encoder worker. It pops one frame, completes that frame's
-encoding, and only then pops the next. The current design therefore does not
-encode several frames concurrently. Frame ordering, output order, and retained
-delta history remain straightforward at this boundary.
+The public `sixel_playback_*` API has a separate admission bound: up to its configured `CAPACITY`, independently of loader `load_depth`. Reservations and submitted frames count toward that capacity. The API supplies its own frames and does not turn loader read-ahead depth into an admission limit.
 
-The finite two-frame measurement shows frame 1 beginning after frame 0's
-frame-level encode interval finishes. Internal work within each frame is still
-parallel; the repeated dither and encode worker rows belong to that frame's
-own pipeline.
+The retained two-frame timeline below records a specific measurement revision in [threading-run.json](measurements/threading-run.json). It shows serial frame-level intervals with internal dither and encode workers. It is measurement evidence for that run, not a representation of every permitted prepare/emit overlap.
 
 ![Four-worker animation timeline](measurements/animation-thread4-timeline.png)
 
@@ -35,35 +29,17 @@ neither the JSONL record nor the SIXEL output has a natural completion point.
 
 ## What is and is not shared
 
-The current concern is not that several frame encoders simultaneously spend
-the complete configured budget: frame encoding is serialized. The missing
-abstraction is broader. Each component creates an independent short-lived pool
-and resolves its own count; there is no process-wide coordinator that lends a
-bounded number of worker leases to the loader, palette builder, current frame,
-or output work.
+Preparation owns private frame and palette state; emission owns ordered output and temporal history. Caller-local budget scopes limit preprocessing, including palette/main overlap, and `prepare_workers` does not reduce the emission allocation. The [mode explanation](policy-modes.md#frame-overlap-and-ordered-publication) places these stages in the complete scheduling model.
 
-As a result:
+Each component can create an independent short-lived pool. The budget is not a process-wide scheduler: control, loader-handoff and writer threads exist outside planned work slots, and separate API clients are not jointly admitted against one root quota. [Threading overview](overview.md#worker-budget-is-not-a-process-thread-limit) defines that distinction.
 
-- `--threading-policy=balanced:global_budget=N` does not cap caller, loader-handoff, and writer threads;
-- a palette worker can temporarily overlap main work;
-- each new frame can create a fresh internal worker pool with the configured
-  budget; and
-- future frame-level parallelism would oversubscribe unless it introduced
-  hierarchical budget ownership at the same time.
-
-This is why “share the budget between frames” should not be implemented by
-dividing `N` eagerly at animation start. Only one frame may be ready, a loader
-may block, and policies may resolve incrementally. A future coordinator should
-grant and reclaim leases as stages become runnable while preserving a clear
-total-budget invariant.
+A process-wide coordinator would need to account for both prepare and emit lanes, their internal pools and other concurrent clients. Dividing a budget eagerly at animation start would not model loader stalls, temporarily empty queues or completion-driven reclamation.
 
 ## Temporal state constrains parallelism
 
 Animation is more than an ordered list of independent still images. Delta
 output retains the colors left on the display plane across frame boundaries.
-Any future parallel-frame design must define ownership of that state and commit
-it in display order; computing later frames against speculative or stale state
-would change the output.
+Emission commits that state in display order. Ahead preparation can predict whether delta output needs an alpha/keep palette entry. If committed history requires a different reservation, the worker discards the prepared result and prepares again from a pristine source copy before emission. This correctness rule applies where that reservation affects the palette; it is not a general reason to redo every prepared frame.
 
 Frame ownership also matters. The handoff can retain a shareable frame by reference, or clone it when later preprocessing could conflict with loader reuse. Performance changes must preserve that lifetime contract as well as visual ordering. Packed-alpha separation also counts as preprocessing that mutates storage, even if no explicit float precision, crop, resize or workspace conversion requested a copy. The existing planner marks packed-to-RGB normalization as a colorspace operation, so handoff already requires a copy; see the [generated animation contract](../encoder/output/output-colorspace.md#generated-palettes-in-animation).
 
@@ -80,5 +56,4 @@ change. At minimum it needs:
 6. timeline fields that record requested, granted, active, and returned
    workers.
 
-The existing timelines establish a baseline against which that design can be
-reviewed; they do not by themselves justify concurrent frame encoding.
+The retained timelines establish host-specific measurement baselines. They do not prove process-wide accounting or simultaneous publication of frames.

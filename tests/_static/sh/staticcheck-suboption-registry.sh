@@ -557,6 +557,7 @@ function macro_is_approved(macro) {
         macro == "SIXEL_REGISTRY_RUNTIME_INT" ||
         macro == "SIXEL_REGISTRY_RUNTIME_CHOICE" ||
         macro == "SIXEL_REGISTRY_THREADING_UINT" ||
+        macro == "SIXEL_REGISTRY_THREADING_BUDGET" ||
         macro == "SIXEL_REGISTRY_THREADING_CHOICE" ||
         macro == "SIXEL_REGISTRY_THREADING_BOOLEAN" ||
         macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||
@@ -754,7 +755,8 @@ function inspect(row, fields, count, name, alias, key, macro, scope,
     if (macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
         macro == "SIXEL_REGISTRY_RUNTIME_INT") scope = fields[10]
     if (macro == "SIXEL_REGISTRY_RUNTIME_CHOICE") scope = fields[8]
-    if (macro == "SIXEL_REGISTRY_THREADING_UINT") scope = fields[9]
+    if (macro == "SIXEL_REGISTRY_THREADING_UINT" ||
+        macro == "SIXEL_REGISTRY_THREADING_BUDGET") scope = fields[9]
     if (macro == "SIXEL_REGISTRY_THREADING_CHOICE") scope = fields[7]
     if (macro == "SIXEL_REGISTRY_THREADING_BOOLEAN") scope = fields[6]
     if (macro == "SIXEL_REGISTRY_DIAGNOSTICS_BOOLEAN" ||

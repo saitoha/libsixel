@@ -37,6 +37,11 @@ test_playback_0021(int argc, char **argv)
                                           &buffer, NULL))) {
         goto end;
     }
+    /* Loader depth must not replace the public playback admission bound. */
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
+            SIXEL_OPTFLAG_THREADING_POLICY, "balanced:B8:Q1"))) {
+        goto end;
+    }
     (void)sixel_playback_config_init(&config, sizeof(config));
     config.capacity = 2u;
     if (SIXEL_FAILED(sixel_playback_new(&playback, encoder, output, &config,

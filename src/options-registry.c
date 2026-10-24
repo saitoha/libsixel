@@ -563,6 +563,30 @@
         }, NULL, 0ULL \
     }
 
+/* Named UINT values bypass the numeric range, not its validation. */
+#define SIXEL_REGISTRY_THREADING_BUDGET( \
+    optflag_, base_, name_, short_, env_, minimum_, maximum_, message_, \
+    scope_, field_, override_) \
+    { \
+        (optflag_), (base_), (scope_), (name_), \
+        (short_), (env_), NULL, NULL, \
+        SIXEL_SUBOPTION_VALUE_UINT, g_threading_budget_choices, \
+        SIXEL_REGISTRY_ARRAY_LENGTH(g_threading_budget_choices), \
+        NULL, 0u, (minimum_), \
+        (maximum_), 1, 1, 0, SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG, \
+        (message_), NULL, \
+        { \
+            SIXEL_SUBOPTION_TARGET_THREADING, SIXEL_SUBOPTION_STORAGE_UINT, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, field_, unsigned int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_REGISTRY_CHECKED_OFFSET( \
+                sixel_threading_policy_options_t, override_, int), \
+            SIXEL_SUBOPTION_OFFSET_NONE, \
+            SIXEL_SUBOPTION_BINDING_ID_2(field_, override_) \
+        }, NULL, 0ULL \
+    }
+
 #define SIXEL_REGISTRY_THREADING_CHOICE( \
     optflag_, base_, name_, short_, env_, choices_, scope_, field_, \
     override_) \
@@ -1422,6 +1446,11 @@ static sixel_option_value_schema_t const g_terminal_policy_values[] = {
     { "1", 1, 0u }
 };
 
+/* Zero is the stable stored/LSXSUB1 value for the literal "all". */
+static sixel_suboption_choice_t const g_threading_budget_choices[] = {
+    { "all", 0 }
+};
+
 static sixel_suboption_choice_t const g_threading_frame_choices[] = {
     { "serial", SIXEL_THREADING_FRAME_SERIAL },
     { "ahead", SIXEL_THREADING_FRAME_AHEAD }
@@ -1969,11 +1998,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         scale_parallel_min_bytes,
         scale_parallel_min_bytes_override),
 
-    SIXEL_REGISTRY_THREADING_UINT(
+    SIXEL_REGISTRY_THREADING_BUDGET(
         SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
         "global_budget", 'B', "SIXEL_THREADING_GLOBAL_BUDGET",
         1.0, (double)INT_MAX,
-        "threading global_budget must be a positive integer.",
+        "threading global_budget must be a positive integer or all.",
         SIXEL_OPTION_SCOPE_ALL, budget, budget_override),
     SIXEL_REGISTRY_THREADING_CHOICE(
         SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
@@ -3771,6 +3800,17 @@ sixel_option_registry_resolve_process_binding(
         return SIXEL_OPTION_ENVIRONMENT_UNSET;
     }
 
+    /* Named unsigned values are shared by CLI and parser-free consumers. */
+    if (expected_kind == SIXEL_SUBOPTION_VALUE_UINT) {
+        for (index = 0u; index < key->choice_count; ++index) {
+            if (sixel_compat_strcasecmp(text, key->choices[index].name) == 0) {
+                value->uint_value = (unsigned int)key->choices[index].value;
+                return SIXEL_OPTION_ENVIRONMENT_MATCH;
+            }
+        }
+        index = 0u;
+    }
+
     if (expected_kind == SIXEL_SUBOPTION_VALUE_BOOLEAN) {
         if (text[0] == '0' && text[1] == '\0') {
             value->int_value = 0;
@@ -4861,6 +4901,30 @@ sixel_option_registry_validate_uncached(void)
                     key->binding.identifier[0] == '\0' ||
                     !sixel_option_registry_binding_kind_is_valid(key)) {
                     return 0;
+                }
+                /* Named UINT sentinels may be outside the numeric range,
+                 * but must fit unsigned storage and have unique names. */
+                if (key->value_kind == SIXEL_SUBOPTION_VALUE_UINT) {
+                    if ((key->choices == NULL) != (key->choice_count == 0u)) {
+                        return 0;
+                    }
+                    for (choice_index = 0u;
+                            choice_index < key->choice_count; ++choice_index) {
+                        if (!sixel_option_registry_value_name_is_valid(
+                                key->choices[choice_index].name) ||
+                                key->choices[choice_index].value < 0) {
+                            return 0;
+                        }
+                        for (previous_choice_index = 0u;
+                                previous_choice_index < choice_index;
+                                ++previous_choice_index) {
+                            if (strcmp(key->choices[choice_index].name,
+                                    key->choices[previous_choice_index].name)
+                                    == 0) {
+                                return 0;
+                            }
+                        }
+                    }
                 }
                 if (key->value_kind == SIXEL_SUBOPTION_VALUE_UINT &&
                     key->binding.storage_kind ==

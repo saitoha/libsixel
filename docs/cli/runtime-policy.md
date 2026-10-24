@@ -1,6 +1,6 @@
 # Runtime execution policy
 
-`-j` / `--runtime-policy` configures the SIMD ceiling and selected scheduling/resize controls. It is accepted by both converters, with different suboption consumers. It does not select a quantizer or set the worker count. Use `-=` / `--threading-policy` for the worker budget and `-G` for GPU policy.
+`-j` / `--runtime-policy` configures the SIMD ceiling and selected scheduling/resize controls. It is accepted by both converters, with different suboption consumers. It does not select a quantizer or set the worker count. Use the [threading policy](threading-policy.md) (`-=` / `--threading-policy`) for the worker budget and `-G` for GPU policy.
 
 ## SIMD ceiling
 
@@ -27,7 +27,7 @@ Accepted base values are `auto`, `none`, `scalar`, `sse2`, `avx`, and `neon`; `n
 
 The registry rejects suboptions outside the converter's consumer scope. In particular, the encoder's resize controls are not portable additions to `sixel2png -j`, and the decoder's `parallel_skew` is not an `img2sixel` setting. Explicit suboption fields override corresponding environment values. Repeated options use the shared typed-policy machinery; omitted fields are not a request to clear all existing process overrides.
 
-Without a `parallel_factor` override, resize derives the job span from rows and threads. The native extended-float palette converter currently runs serially and does not consume `colorspace_min`; the retained legacy converter (for example, explicit HLS output) owns that threshold. The minimum-work controls only determine whether a stage can benefit from parallel dispatch; they do not override memory limits or worker availability. See [threading](../threading/README.md) for the distinct encoder, decoder, and stage-local budgets.
+Without a `parallel_factor` override, resize derives the job span from rows and threads. The native extended-float palette converter currently runs serially and does not consume `colorspace_min`; the retained legacy converter (for example, explicit HLS output) owns that threshold. The minimum-work controls determine whether eligible work reaches parallel dispatch; they do not override memory limits or worker availability. [Greedy mode](../threading/policy-modes.md#performance-cpus-and-size-thresholds) overrides these size gates even when explicitly set through `-j`. The [threading-policy reference](threading-policy.md) defines the distinct encoder, decoder and stage limits.
 
 ```sh
 # Scalar arithmetic with an explicit resize representation.

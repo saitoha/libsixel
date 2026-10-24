@@ -740,7 +740,7 @@ _img2sixel()
         return 0
         ;;
     -=|--threading-policy)
-        COMPREPLY=( $( compgen -W 'lazy balanced greedy' -- "$cur" ) )
+        COMPREPLY=( $( compgen -W 'lazy balanced greedy lazy:Ball balanced:Ball greedy:Ball' -- "$cur" ) )
         return 0
         ;;
     -.|--precision-policy)

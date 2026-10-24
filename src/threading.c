@@ -895,17 +895,16 @@ sixel_get_performance_threads(void)
     return logical > 0 ? logical : 1;
 }
 
-#define SIXEL_PROCESSING_THREADS_DEFAULT 2
+#define SIXEL_PROCESSING_THREADS_DEFAULT 4
 
 /*
  * The threading policy keeps the budget precedence rules centralized:
- *   1. global_budget or `sixel_set_threads` sets the budget.
+ *   1. CLI global_budget overrides the independent API budget.
  *   2. Otherwise, SIXEL_THREADING_GLOBAL_BUDGET is honored.
- *   3. An explicit mode selects hardware concurrency; library callers
- *      without a mode retain a minimal two-stage processing pipeline.
+ *   3. Every mode defaults to min(4, performance logical CPUs).
  *
  * Direct SIXEL parsing resolves its own count in decoder-parallel.c so
- * decoding can stay serial by default while post-processing gets two slots.
+ * decoding stays serial unless a mode or budget is explicitly selected.
  */
 static sixel_threading_policy_options_t g_threading_policy;
 
@@ -1066,11 +1065,9 @@ sixel_threads_resolve_limit(int ceiling)
 #if SIXEL_ENABLE_THREADS
     if (!sixel_threading_policy_explicit_budget(&resolved)) {
         resolved = SIXEL_PROCESSING_THREADS_DEFAULT;
-        if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_BALANCED) {
-            limit = sixel_get_performance_threads();
-            if (resolved > limit) {
-                resolved = limit;
-            }
+        limit = sixel_get_performance_threads();
+        if (resolved > limit) {
+            resolved = limit;
         }
     }
 #endif
@@ -1150,12 +1147,12 @@ sixel_set_threads(int threads)
 {
     sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
-    g_threading_policy.budget = threads > 0 ? (unsigned int)threads : 0u;
+    g_threading_policy.api_budget = threads > 0 ? (unsigned int)threads : 0u;
 #else
     (void)threads;
-    g_threading_policy.budget = 1;
+    g_threading_policy.api_budget = 1;
 #endif
-    g_threading_policy.budget_override = 1;
+    g_threading_policy.api_budget_override = 1;
     sixel_thread_config_unlock();
 }
 
@@ -1286,13 +1283,23 @@ sixel_threading_policy_explicit_budget(int *threads)
     budget = 0u;
     sixel_threading_policy_load(&options);
     explicit_mode = sixel_threading_policy_resolve_mode(&options, &mode);
-    if (!sixel_threading_policy_count(
+    /* Keep API and CLI requests separate so precedence is not call order.
+     * A selected mode enables parsing but does not enlarge the default. */
+    if (sixel_threading_policy_count(
             SIXEL_SUBOPTION_BINDING_ID_2(budget, budget_override),
-            options.budget, options.budget_override, &budget) &&
-            !explicit_mode) {
-        return 0;
+            options.budget_override ? options.budget : options.api_budget,
+            options.budget_override || options.api_budget_override,
+            &budget)) {
+        resolved = sixel_threads_normalize((int)budget);
+    } else {
+        if (!explicit_mode) {
+            return 0;
+        }
+        performance = sixel_get_performance_threads();
+        resolved = performance < SIXEL_PROCESSING_THREADS_DEFAULT
+            ? performance : SIXEL_PROCESSING_THREADS_DEFAULT;
+        resolved = sixel_threads_normalize(resolved);
     }
-    resolved = sixel_threads_normalize((int)budget);
     if (mode == SIXEL_THREADING_POLICY_BALANCED) {
         performance = sixel_get_performance_threads();
         if (resolved > performance) {

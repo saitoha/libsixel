@@ -1,5 +1,7 @@
 # Encoder Threading
 
+This explanation is for users and contributors inspecting encoder scheduling, allocator details and measurements. The [threading-policy reference](../cli/threading-policy.md) owns options and defaults; [policy modes](policy-modes.md) compares mode behavior across stages.
+
 ## Execution stages
 
 The fixed-palette encoder has several opportunities for overlap. The complete
@@ -27,7 +29,7 @@ load and normalize frame
                   ordered writer thread
 ```
 
-In balanced and greedy modes, the planner splits eligible asynchronous palette work and the main pre-plan into `floor(N/2)` and `ceil(N/2)` execution slots respectively. Each side includes its calling thread. The split is the initial overlap reservation. A large float working-space conversion polls for palette completion at chunk boundaries, joins the completed palette thread, and expands its pool to use the returned slots. Palette application and final encoding use the configured budget after collection. With two slots, each overlapping side is serial. With four or more, both the sample conversion for `-X` and the full-frame conversion for `-W` can run in parallel. Lazy uses the same admission condition computed from the total budget but reserves one palette slot and one main slot; neither branch fans out.
+In balanced and greedy modes, the planner splits eligible asynchronous palette work and the main pre-plan into `floor(N/2)` and `ceil(N/2)` execution slots respectively. Each side includes its calling thread. The split is the initial overlap reservation. A large float working-space conversion polls for palette completion at chunk boundaries, joins the completed palette thread, and expands its pool to use the returned slots. Palette application and final encoding use the configured budget after collection. With two slots, each overlapping side is serial. With four or more, both the sample conversion for `-X` and the full-frame conversion for `-W` can run in parallel. [Policy modes](policy-modes.md#independent-work-and-data-fan-out) explains lazy branch reservations.
 
 ## Float colorspace transactions
 
@@ -69,7 +71,8 @@ In balanced and greedy modes, for CPU spatial diffusion and positional dither wi
 | 10 | Pipeline D7 + E3 | Pipeline D7 + E3 |
 | 14 | Pipeline D10 + E4 | Pipeline D10 + E4 |
 
-Lazy never selects staging: its default is one dither producer with the rest of the budget available to encode. The single work band preserves one-thread output; an explicit `dither` key can change that band count. An explicit `-=` `dither` or `encode` limit disables automatic staging in every mode. A `dither` limit alone retains the minimum encoder reservation; an `encode` limit alone gives the dither stage the rest of the budget in balanced and greedy modes, while lazy retains its single default producer. When both limits together exceed the budget, both shrink in proportion until they fit; this is never an error. Threading-policy keys and the CLI-bound `band_width` and `band_overwrap` take precedence over their registered environment controls, which take precedence over defaults.
+The [mode explanation](policy-modes.md#independent-work-and-data-fan-out) describes lazy's single producer and the effect of explicit stage limits. In the allocator, a `dither` limit alone retains the minimum encoder reservation. An `encode` limit alone leaves the remainder for dither in balanced and greedy modes. When both requests exceed the budget, both shrink proportionally until they fit. The [policy reference](../cli/threading-policy.md#precedence-and-interactions) owns configuration precedence; diffusion geometry belongs to the [dithering reference](../encoder/palette-application/dithering/README.md).
+
 
 Geometry overrides alone do not disable staging; a work-band count can differ from its worker reservation. Default band height is the image height divided by D, rounded upward and aligned to six rows. Spatial diffusion retains six warm-up rows when the completed palette has at most 32 colors, capped at half a band, and zero above 32 colors. Stateless `none`, A/X positional dither and blue noise use zero automatic overlap. Explicit overlap, including zero, remains meaningful for every method. A GPU application claim reserves no CPU dither slots and assigns the full CPU budget to encode with six-row geometry. The earlier palette/preprocessing overlap is independent of this allocation.
 

@@ -145,6 +145,8 @@ SIXEL_INTERNAL_API int sixel_threads_ceiling(void);
 SIXEL_INTERNAL_API int sixel_threads_reclaim(void);
 
 SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
+/* Set the API budget below an explicit policy key and above environment.
+ * Nonpositive values select all logical CPUs, with the balanced CPU cap. */
 SIXEL_INTERNAL_API void sixel_set_threads(int threads);
 SIXEL_INTERNAL_API int sixel_threads_resolve(void);
 /* Data-parallel stages stay serial in lazy mode. Pipeline totals do not. */

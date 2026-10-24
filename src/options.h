@@ -276,6 +276,7 @@ typedef struct sixel_suboption_key {
     char const *env_fallback_name;
     char const *env_legacy_name;
     sixel_suboption_value_kind_t value_kind;
+    /* UINT choices are named sentinels outside the numeric input range. */
     sixel_suboption_choice_t const *choices;
     size_t choice_count;
     /* Environment-only aliases preserve strict CLI vocabularies. */
@@ -462,8 +463,10 @@ typedef struct sixel_runtime_policy_options {
  * select which stages of consecutive frames may run concurrently.
  */
 typedef struct sixel_threading_policy_options {
-    unsigned int budget;       /* API value 0 selects hardware threads */
+    unsigned int budget;       /* Literal all stores 0, numeric 0 is invalid */
     int budget_override;
+    unsigned int api_budget;   /* Nonpositive API requests store 0 for all */
+    int api_budget_override;
     int mode;
     int mode_override;
     int load;

@@ -16,6 +16,7 @@ docs/cli/options.md	reference	user
 docs/cli/design-policy.md	reference	both	CLI contracts + design rationale and contributor review/test guidance
 docs/cli/diagnostics.md	how-to	both	diagnostic capture workflow + option reference and contributor test ledger
 docs/cli/prefix-matching.md	reference	both	choice syntax + contributor algorithm map and test ledger
+docs/cli/threading-policy.md	reference	user	option reference + usage examples
 docs/cli/runtime-policy.md	reference	both	runtime option contracts + contributor implementation map and test ledger
 docs/cli/suboptions.md	reference	both	public grammar + contributor registry architecture and test ledger
 docs/concepts/color-management/README.md	explanation	user	
@@ -144,6 +145,7 @@ docs/threading/animation.md	explanation	contributor	frame-ownership model + sche
 docs/threading/decoder.md	explanation	both	parallel decode rationale + path reference and measured scaling
 docs/threading/encoder.md	explanation	both	encoder scheduling model + budget reference and measured scaling
 docs/threading/measurement.md	how-to	contributor	measurement reproduction + artifact reference and normative band-seam protocol
+docs/threading/policy-modes.md	explanation	both	mode rationale + platform detection and test evidence
 docs/threading/overview.md	explanation	both	threading mental model + budget terminology and implementation ownership
 docs/tutorial/sixel-codec/README.md	tutorial	both	codec-implementation learning path, CLI harness and exercise skeleton + measured results and links to libsixel internals
 docs/tutorial/sixel-codec/step0-by-hand.md	tutorial	user	

@@ -1,5 +1,7 @@
 # Decoder Threading
 
+This explanation is for users and contributors inspecting parallel SIXEL parsing and its measurements. The [threading-policy reference](../cli/threading-policy.md) owns library and converter defaults and decoder limits; [policy modes](policy-modes.md) explains mode selection.
+
 ## Why decoding is split by bytes
 
 A SIXEL stream states vertical movement through control sequences in the input. Before parsing those sequences, an arbitrary byte offset cannot be mapped directly to a destination-row strip. The decoder therefore begins serially, establishes raster bounds and initial palette state, and passes the remaining payload to the parallel decoder as byte spans.
@@ -130,7 +132,7 @@ For 100 retained photographs, per-image direct-RGBA speed ratios are:
 
 No image-size threshold is added for these retained photographs; their measured serial/parallel ratios are recorded below. This does not establish a universal crossover for smaller images.
 
-The separate [palette-map control](../encoder/output/or-mode/scaling.md#thread-count-axis) is only 598 x 42 pixels. Its ordinary RGBA median rises from 0.021 ms at one worker to 0.083 ms at two and 0.169 ms at twelve. Thread startup dominates this small input; the photographic results do not imply that every image benefits from additional workers. The default decoder budget remains one worker.
+The separate [palette-map control](../encoder/output/or-mode/scaling.md#thread-count-axis) is only 598 x 42 pixels. Its ordinary RGBA median rises from 0.021 ms at one worker to 0.083 ms at two and 0.169 ms at twelve. Thread startup dominates this small input; the photographic results do not imply that every image benefits from additional workers. The [library parsing default](../cli/threading-policy.md#options) is independent of the converter application default.
 
 | Workers | After serial / parallel, median | Range |
 | ---: | ---: | ---: |

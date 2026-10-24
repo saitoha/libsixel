@@ -331,7 +331,8 @@ typedef int SIXELSTATUS;
     /* 8bit requires the gamma working colorspace. */
 #define SIXEL_OPTFLAG_THREADING_POLICY  ('=')
     /* -=, --threading-policy=POLICY[:KEY=VALUE...]: lazy, balanced or greedy
-     * spending; global_budget (B), stage limits and frame concurrency. */
+     * spending; global_budget (B) accepts a positive count or all. Library
+     * budget: min(4, performance CPUs); stage limits shrink to fit. */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
 #define SIXEL_OPTFLAG_MAPFILE_OUTPUT    ('M')  /* -M FILE, --mapfile-output=FILE: export palette file */
@@ -2198,7 +2199,11 @@ sixel_encoder_encode_frame(
  * (SIXEL_OPTFLAG_THREADING_POLICY and the SIXEL_THREADING_* environment):
  * lazy overlaps independent stages with one default dither band, balanced
  * uses size heuristics and performance CPUs, and greedy uses the full
- * global_budget without size thresholds. Explicit stage keys override mode
+ * global_budget without size thresholds. The library budget defaults to
+ * min(4, performance logical CPUs) in every mode. global_budget accepts a
+ * positive count or all (logical CPUs, capped by balanced). A mode alone
+ * does not raise that budget. CLI budget, API setter, per-key environment,
+ * then library defaults determine the count. Explicit stage keys override mode
  * defaults and shrink to fit the budget. Load and prepare default to ahead;
  * prepare selects whether the next frame is prepared during emission.
  * CAPACITY, not the policy's load_depth, bounds admission.

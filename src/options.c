@@ -1883,6 +1883,7 @@ sixel_option_parse_typed_suboption_value(
     double parsed_double;
     char message[256];
     int valid;
+    size_t choice_index;
 
     endptr = NULL;
     comma = NULL;
@@ -1975,6 +1976,16 @@ sixel_option_parse_typed_suboption_value(
         }
         break;
     case SIXEL_SUBOPTION_VALUE_UINT:
+        /* Named sentinels do not make their numeric spellings valid. */
+        for (choice_index = 0u; choice_index < key_def->choice_count;
+                ++choice_index) {
+            if (sixel_compat_strcasecmp(text,
+                    key_def->choices[choice_index].name) == 0) {
+                value->uint_value =
+                    (unsigned int)key_def->choices[choice_index].value;
+                return SIXEL_OK;
+            }
+        }
         if ((range_policy &
              SIXEL_SUBOPTION_ENV_RANGE_PARSE_SIGNED_LONG) != 0) {
             errno = 0;
@@ -3513,7 +3524,9 @@ sixel_option_apply_threading_policy_argument(
         diagnostic,
         diagnostic_size);
     if (SIXEL_FAILED(status)) {
-        if (resolution.base_def == NULL) {
+        /* Failed parsing clears the resolution, including base_def. Keep
+         * suboption diagnostics instead of mistaking them for base errors. */
+        if (status == SIXEL_BAD_ARGUMENT && strchr(argument, ':') == NULL) {
             sixel_helper_set_additional_message(
                 "threading-policy accepts lazy, balanced, or greedy.");
         }

@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/threading/policy-modes.md
 # Policy: docs/threading/encoder.md
 # Compare prepare-ahead animation playback with serial frame preparation.
 set -eux

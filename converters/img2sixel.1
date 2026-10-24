@@ -110,10 +110,13 @@ Frame keys and \fBprepare_workers\fP never change the output; the dither
 worker count selects the parallel band split.
 .RS
 .TP 5
-.B global_budget=COUNT
-positive total thread budget (short form \fB:B\fP), defaulting to hardware
-threads subject to the balanced performance-core cap. Applies to both
-encoding and decoding; sixel_set_threads() sets the same budget.
+.B global_budget=COUNT|all
+positive total thread budget or case-insensitive \fBall\fP (short form
+\fB:Ball\fP). All selects logical CPUs, subject to the balanced
+performance-core cap. The converter defaults to all; the library defaults
+to min(4, performance CPUs) in every mode. Applies to encoding and decoding.
+Precedence is the CLI key, then sixel_set_threads(), then the environment,
+then defaults. A nonpositive API count means all.
 .TP 5
 .B load=serial|ahead
 decode frames ahead of encoding (default \fBahead\fP; short form \fB:L\fP).
@@ -1946,8 +1949,9 @@ Empty or unset values make img2sixel use balanced. The CLI base wins.
 .TP 5
 .B SIXEL_THREADING_GLOBAL_BUDGET
 .br
-Positive total budget for encoding and decoding, overridden by the
-\fBglobal_budget\fP key or sixel_set_threads().
+Positive total budget or case-insensitive all for encoding and decoding.
+Empty or unset selects all in the converter. The \fBglobal_budget\fP
+key takes precedence over sixel_set_threads(), which overrides this variable.
 .TP 5
 .B SIXEL_THREADING_LOAD\fR, \fBSIXEL_THREADING_LOAD_DEPTH\fR, \fBSIXEL_THREADING_PREPARE\fR, \fBSIXEL_THREADING_PALETTE
 .br

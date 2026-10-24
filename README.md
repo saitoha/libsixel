@@ -443,8 +443,8 @@ Options:
                           spend threads with lazy (independent branches),
                           balanced (size heuristics and performance CPUs,
                           default), or greedy (full budget, no size gates).
-                          global_budget=N (B) sets the total budget;
-                          default hardware count. Explicit stage limits
+                          global_budget=N|all (B) sets the total budget;
+                          converter default all, capped by balanced. Explicit stage limits
                           (dither, encode, prepare_workers) shrink to fit.
                           Frame keys load and prepare default to ahead;
                           load_depth, palette and pin retain their controls.
@@ -1048,8 +1048,10 @@ SIXEL_THREADING_POLICY     spending mode: lazy, balanced, or greedy.
                            CLI base takes precedence. Converters set
                            empty/unset values to balanced.
 SIXEL_THREADING_GLOBAL_BUDGET
-                           positive total budget for encoder and decoder.
-                           CLI global_budget or sixel_set_threads wins.
+                           positive total budget or all (case-insensitive).
+                           Converters default to all; the library to
+                           min(4, performance CPUs), in every mode.
+                           CLI global_budget > sixel_set_threads > env.
 SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            defer RGBFLOAT32 colorspace fan-out
                            until the frame reaches this pixel

@@ -193,8 +193,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      lazy     -> independent branches and pipelines only\n"
         "      balanced -> size heuristics; cap to performance CPUs (default)\n"
         "      greedy   -> fan out; ignore -j minimum-size thresholds\n"
-        "    global_budget=COUNT (B) sets the positive total budget.\n"
-        "    Default: hardware threads, subject to the balanced CPU cap.\n"
+        "    global_budget=COUNT|all (B) sets the total budget.\n"
+        "    Default: all hardware threads, capped to performance CPUs.\n"
         "    Lazy defaults to one dither band; explicit dither wins.\n"
         "    Frame keys and prepare_workers never change the output; the\n"
         "    dither worker count selects the parallel band split. Stage\n"
@@ -1606,8 +1606,9 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_THREADING_GLOBAL_BUDGET",
-        "positive total thread budget for encoding and decoding.\n"
-        "Overridden by -= *:global_budget=COUNT (:BCOUNT) or the API."
+        "positive total thread budget or all (case-insensitive).\n"
+        "Converter default: all; library default: min(4, performance CPUs).\n"
+        "Precedence: -= *:global_budget=COUNT|all (:Ball), then the API."
     },
     {
         "SIXEL_THREADING_LOAD",
@@ -3760,6 +3761,14 @@ img2sixel_main(int argc, char *argv[])
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }
+    if (cli_apply_env_default("SIXEL_THREADING_GLOBAL_BUDGET", "all") != 0) {
+        sixel_helper_set_additional_message(
+            "failed to set default environment variable "
+            "'SIXEL_THREADING_GLOBAL_BUDGET'.");
+        status = SIXEL_RUNTIME_ERROR;
+        goto error;
+    }
+
 
     /*
      * img2sixel enables loader-side OSC11 probing by default only when the

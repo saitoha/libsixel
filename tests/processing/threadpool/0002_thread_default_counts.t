@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/threading-policy.md
 # Run the thread default count unit test via the unified runner.
 
 set -eux

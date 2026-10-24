@@ -716,6 +716,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/cli/clipboard.md \
 	docs/cli/diagnostics.md \
 	docs/cli/runtime-policy.md \
+	docs/cli/threading-policy.md \
 	docs/loader/patents.md \
 	docs/loader/libjpeg.md \
 	docs/loader/libwebp.md \
@@ -1462,6 +1463,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/threading/measurements/thread-budget.png \
 	docs/threading/measurements/threading-run.json \
 	docs/threading/overview.md \
+	docs/threading/policy-modes.md \
 	openvms/gnv-ar.sh \
 	openvms/gnv-cc.sh \
 	openvms/gnv-rm.sh \

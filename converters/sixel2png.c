@@ -187,8 +187,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           lazy: serial SIXEL parsing;\n"
         "                           balanced: performance CPU cap (default);\n"
         "                           greedy: full budget, no size thresholds.\n"
-        "                           global_budget=COUNT (:BCOUNT) sets the\n"
-        "                           budget; default hardware threads.\n"
+        "                           global_budget=COUNT|all (:Ball) sets the\n"
+        "                           budget; default all, capped by balanced.\n"
         "                           decode=COUNT (:SCOUNT) limits parsing\n"
         "                           and shrinks to fit the budget.\n"
         "                           SIXEL_THREADING_POLICY sets the base;\n"
@@ -704,8 +704,8 @@ main(int argc, char *argv[])
 
     /*
      * The sixel2png tool can own the process-level policy, so prefer hardware
-     * concurrency when the user has not supplied SIXEL_THREADING_POLICY
-     * through the environment or --env.
+     * concurrency when the user has not supplied a budget through the
+     * environment or --env. The mode default remains balanced.
      */
     if (cli_apply_env_default("SIXEL_THREADING_POLICY", "balanced") != 0) {
         sixel_helper_set_additional_message(
@@ -714,6 +714,14 @@ main(int argc, char *argv[])
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }
+    if (cli_apply_env_default("SIXEL_THREADING_GLOBAL_BUDGET", "all") != 0) {
+        sixel_helper_set_additional_message(
+            "failed to set default environment variable "
+            "'SIXEL_THREADING_GLOBAL_BUDGET'.");
+        status = SIXEL_RUNTIME_ERROR;
+        goto error;
+    }
+
 
     status = sixel_decoder_new(&decoder, NULL);
     if (SIXEL_FAILED(status)) {

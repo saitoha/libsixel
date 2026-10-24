@@ -55,9 +55,12 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
     int expected;
     int budget;
     size_t index;
+    char const *modes[] = { "lazy", "balanced", "greedy" };
+    char const *invalid_env[] = { "0", "-1", "none" };
     char const *invalid[] = {
         "auto", "serial", "4", "0", "balanced:B0", "balanced:B-1",
-        "balanced:global_budget=2147483648"
+        "balanced:global_budget=2147483648", "balanced:Bnone",
+        "balanced:global_budget=0", "balanced:global_budget=none"
     };
 
     (void)argc;
@@ -71,7 +74,7 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
     ok &= sixel_compat_setenv("SIXEL_THREADING_DECODE", "") == 0;
     hardware = sixel_threads_normalize(0);
     performance = sixel_get_performance_threads();
-    expected = performance < 2 ? performance : 2;
+    expected = performance < 4 ? performance : 4;
 #if !SIXEL_ENABLE_THREADS
     expected = 1;
 #endif
@@ -82,14 +85,45 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
     ok &= policy_expect("no explicit budget",
                          sixel_threading_policy_explicit_budget(NULL), 0);
 
+    for (index = 0u; index < sizeof(invalid_env) / sizeof(invalid_env[0]);
+            ++index) {
+        ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET",
+                                  invalid_env[index]) == 0;
+        ok &= policy_expect("invalid environment keeps default",
+                             sixel_threads_resolve(), expected);
+        ok &= policy_expect("invalid environment keeps serial parsing",
+                             sixel_decoder_parallel_resolve_threads(), 1);
+    }
+    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "") == 0;
+    ok &= sixel_compat_setenv("SIXEL_THREADING_DECODE", "99") == 0;
+    ok &= policy_expect("decode limit cannot enable parsing",
+                         sixel_decoder_parallel_resolve_threads(), 1);
+    ok &= sixel_compat_setenv("SIXEL_THREADING_DECODE", "") == 0;
+    for (index = 0u; index < sizeof(modes) / sizeof(modes[0]); ++index) {
+        ok &= policy_apply(modes[index], SIXEL_OK);
+        ok &= policy_expect("mode-only library budget",
+                             sixel_threads_resolve(), expected);
+    }
+    sixel_threading_policy_store(&options);
     ok &= sixel_compat_setenv("SIXEL_THREADING_POLICY", "greedy") == 0;
-    ok &= policy_expect("explicit mode hardware", sixel_threads_resolve(),
-                         hardware);
+    ok &= policy_expect("explicit mode default", sixel_threads_resolve(),
+                         expected);
     ok &= policy_expect("explicit mode parser",
-                         sixel_decoder_parallel_resolve_threads(), hardware);
+                         sixel_decoder_parallel_resolve_threads(), expected);
     ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "3") == 0;
     ok &= policy_expect("environment budget", sixel_threads_resolve(),
                          sixel_threads_normalize(3));
+    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "aLl") == 0;
+    ok &= policy_expect("environment all", sixel_threads_resolve(), hardware);
+    ok &= policy_expect("environment all parsing",
+                         sixel_decoder_parallel_resolve_threads(), hardware);
+    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "3") == 0;
+    sixel_set_threads(0);
+    ok &= policy_expect("API zero means all", sixel_threads_resolve(),
+                         hardware);
+    sixel_set_threads(-1);
+    ok &= policy_expect("API negative means all", sixel_threads_resolve(),
+                         hardware);
     sixel_set_threads(4);
     ok &= policy_expect("API beats environment", sixel_threads_resolve(),
                          sixel_threads_normalize(4));
@@ -111,6 +145,17 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
     ok &= policy_expect("balanced cap", sixel_threads_resolve(), expected);
     ok &= policy_expect("balanced parser cap",
                          sixel_decoder_parallel_resolve_threads(), expected);
+    ok &= policy_apply("balanced:Ball", SIXEL_OK);
+    ok &= policy_expect("balanced all cap", sixel_threads_resolve(), expected);
+    ok &= policy_apply("greedy:global_budget=ALL", SIXEL_OK);
+    ok &= policy_expect("CLI all", sixel_threads_resolve(), hardware);
+    ok &= policy_apply("greedy:B3", SIXEL_OK);
+    sixel_set_threads(1);
+    ok &= policy_expect("CLI beats later API", sixel_threads_resolve(),
+                         sixel_threads_normalize(3));
+    ok &= policy_apply("balanced", SIXEL_OK);
+    ok &= policy_expect("base preserves CLI budget", sixel_threads_resolve(),
+                         performance < 3 ? performance : 3);
     ok &= policy_apply("greedy:B8:decode=99", SIXEL_OK);
     budget = sixel_threads_normalize(8);
     ok &= policy_expect("greedy budget", sixel_threads_resolve(), budget);
@@ -144,6 +189,11 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
         (int)sixel_runtime_policy_scale_min_bytes(999u), 789);
     for (index = 0; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
         ok &= policy_apply(invalid[index], SIXEL_BAD_ARGUMENT);
+        if (strchr(invalid[index], ':') != NULL) {
+            ok &= policy_expect("budget diagnostic names all",
+                strstr(sixel_helper_get_additional_message(),
+                       "positive integer or all") != NULL, 1);
+        }
         ok &= policy_expect("failed parse is atomic",
                              sixel_threads_resolve(), 1);
     }

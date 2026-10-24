@@ -1096,7 +1096,10 @@ _threadcount() {
     'THREADINGPOLICY' \
     'lazy[overlap independent branches without data fan-out]' \
     'balanced[use size heuristics and performance CPUs]' \
-    'greedy[use the full budget without size thresholds]'
+    'greedy[use the full budget without size thresholds]' \
+    'lazy\:Ball[all logical CPUs for independent work]' \
+    'balanced\:Ball[all performance logical CPUs]' \
+    'greedy\:Ball[all logical CPUs without size thresholds]'
 }
 
 _precisionmode() {

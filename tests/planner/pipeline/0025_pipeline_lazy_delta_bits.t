@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/threading/policy-modes.md
 # Lazy delta output must retain serial dither history while encoding overlaps.
 set -eux
 

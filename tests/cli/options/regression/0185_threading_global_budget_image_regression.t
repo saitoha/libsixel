@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/threading-policy.md
 # Verify the shared global budget through both converter routes.
 # Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|global_budget
 # Registry binding: budget|budget_override
@@ -63,6 +64,44 @@ test -s "${short_output}" || {
     echo "not ok 1 - global budget output is empty"
     exit 0
 }
+all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "-=greedy:BaLl" \
+    -o "${short_output}" 2>&1) || {
+    echo "not ok 1 - IMG2SIXEL short all conversion failed"
+    exit 0
+}
+case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
+    echo "not ok 1 - IMG2SIXEL short all sentinel missing"
+    exit 0
+}
+all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" --threading-policy=greedy:global_budget=ALL \
+    -o "${env_output}" 2>&1) || {
+    echo "not ok 1 - IMG2SIXEL long all conversion failed"
+    exit 0
+}
+case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
+    echo "not ok 1 - IMG2SIXEL long all sentinel missing"
+    exit 0
+}
+cmp -s "${short_output}" "${env_output}" || {
+    echo "not ok 1 - IMG2SIXEL long all output differs"
+    exit 0
+}
+all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" --env "SIXEL_THREADING_GLOBAL_BUDGET=all" "-=greedy" \
+    -o "${env_output}" 2>&1) || {
+    echo "not ok 1 - IMG2SIXEL environment all conversion failed"
+    exit 0
+}
+case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
+    echo "not ok 1 - IMG2SIXEL environment all sentinel missing"
+    exit 0
+}
+cmp -s "${short_output}" "${env_output}" || {
+    echo "not ok 1 - IMG2SIXEL environment all output differs"
+    exit 0
+}
 
 short_output="${artifact_dir}/0185-budget-png-short-$$.png"
 env_output="${artifact_dir}/0185-budget-png-env-$$.png"
@@ -104,6 +143,44 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 test -s "${short_output}" || {
     echo "not ok 1 - global budget output is empty"
+    exit 0
+}
+all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -i "${TOP_SRCDIR}/images/map8.six" "-=greedy:BaLl" \
+    -o "${short_output}" 2>&1) || {
+    echo "not ok 1 - SIXEL2PNG short all conversion failed"
+    exit 0
+}
+case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
+    echo "not ok 1 - SIXEL2PNG short all sentinel missing"
+    exit 0
+}
+all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -i "${TOP_SRCDIR}/images/map8.six" --threading-policy=greedy:global_budget=ALL \
+    -o "${env_output}" 2>&1) || {
+    echo "not ok 1 - SIXEL2PNG long all conversion failed"
+    exit 0
+}
+case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
+    echo "not ok 1 - SIXEL2PNG long all sentinel missing"
+    exit 0
+}
+cmp -s "${short_output}" "${env_output}" || {
+    echo "not ok 1 - SIXEL2PNG long all output differs"
+    exit 0
+}
+all_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
+    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D -i "${TOP_SRCDIR}/images/map8.six" --env "SIXEL_THREADING_GLOBAL_BUDGET=all" "-=greedy" \
+    -o "${env_output}" 2>&1) || {
+    echo "not ok 1 - SIXEL2PNG environment all conversion failed"
+    exit 0
+}
+case "${all_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,budget_override\|value=0**) true ;; *) false ;; esac || {
+    echo "not ok 1 - SIXEL2PNG environment all sentinel missing"
+    exit 0
+}
+cmp -s "${short_output}" "${env_output}" || {
+    echo "not ok 1 - SIXEL2PNG environment all output differs"
     exit 0
 }
 

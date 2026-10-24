@@ -49,7 +49,8 @@ function inspect_registry(row, fields, count, option_id, name, alias,
     } else if (macro == "SIXEL_REGISTRY_RUNTIME_SIZE") {
         range_policy = "clamp-size-width"
     } else if (macro == "SIXEL_REGISTRY_RUNTIME_UINT" ||
-               macro == "SIXEL_REGISTRY_THREADING_UINT") {
+               macro == "SIXEL_REGISTRY_THREADING_UINT" ||
+               macro == "SIXEL_REGISTRY_THREADING_BUDGET") {
         range_policy = "parse-signed-long"
     } else if (macro == "SIXEL_REGISTRY_RUNTIME_INT") {
         range_policy = "clamp-both"

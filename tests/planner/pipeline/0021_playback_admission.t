@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/threading/policy-modes.md
 # Policy: docs/threading/encoder.md
 # Verify playback admission enforces capacity.
 set -eux

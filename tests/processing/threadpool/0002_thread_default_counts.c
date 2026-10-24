@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -39,11 +40,22 @@ test_threadpool_0002_thread_default_counts(int argc, char **argv)
     int processing_actual;
     int decoder_actual;
 
-    (void)argc;
-    (void)argv;
+    /* Shell regressions use the same native topology probe as the library.
+     * The ordinary entry below still asserts conservative library defaults. */
+    if (argc == 2 && strcmp(argv[1], "converter-counts") == 0) {
+        processing_expected = sixel_get_performance_threads();
+        processing_expected = sixel_threads_normalize(processing_expected);
+        printf("%d %d %d\n", processing_expected,
+               sixel_threads_normalize(0),
+               processing_expected < 2 ? processing_expected : 2);
+        return EXIT_SUCCESS;
+    }
 
 #if SIXEL_ENABLE_THREADS
-    processing_expected = 2;
+    processing_expected = sixel_get_performance_threads();
+    if (processing_expected > 4) {
+        processing_expected = 4;
+    }
 #else
     processing_expected = 1;
 #endif
@@ -70,6 +82,8 @@ test_threadpool_0002_thread_default_counts(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    printf("library-default=%d decoder-default=%d\n",
+           processing_actual, decoder_actual);
     return EXIT_SUCCESS;
 }
 

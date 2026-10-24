@@ -1884,8 +1884,8 @@ sixel_decoder_threads_normalize(int requested)
     return normalized;
 }
 
-/* Decoding stays serial unless the threading policy names a budget or a
- * decode limit; a decode limit never exceeds an explicit budget. */
+/* Decoding stays serial unless a mode or budget is explicitly selected.
+ * The decode stage limit can only reduce that budget; lazy stays serial. */
 static int
 sixel_decoder_threads_resolve_policy(void)
 {
@@ -1906,7 +1906,7 @@ sixel_decoder_threads_resolve_policy(void)
         if (decode_threads > (unsigned int)INT_MAX) {
             decode_threads = (unsigned int)INT_MAX;
         }
-        if (explicit_budget && (int)decode_threads > budget) {
+        if ((int)decode_threads > budget) {
             return budget;
         }
         budget = sixel_decoder_threads_normalize((int)decode_threads);

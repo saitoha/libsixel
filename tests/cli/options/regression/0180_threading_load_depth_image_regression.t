@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/cli/threading-policy.md
 # Verify threading-policy load_depth through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|load_depth
 # Registry binding: load_depth|load_depth_override

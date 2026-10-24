@@ -196,7 +196,9 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 - [Animation playback](encoder/animation.md) explains `-l`, `-S`, `-T`, and `-g` and how animation interacts with other output features.
 - [Threading documentation](threading/README.md) indexes the threading model, band encoding and decoding, budgets, and measurements.
 - [Threading overview](threading/overview.md) defines bands, work bands, ordered publication, and their effect on output.
+- [Threading policy modes](threading/policy-modes.md) explains lazy, balanced and greedy scheduling, topology limits, and output effects.
 - [Runtime execution policy](cli/runtime-policy.md) explains `-j`, SIMD ceilings, scheduling thresholds, and encoder and decoder differences.
+- [Threading policy](cli/threading-policy.md) defines `-=`, every stage key, budget defaults, precedence, and converter scopes.
 
 ### Diagnostics
 
