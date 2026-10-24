@@ -667,10 +667,13 @@ cat >>"${output}" <<'EOF_MACROS'
 #if !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE 700
 #endif
-/* OpenVMS needs this before any header, including those emitted ahead of
- * threading.c, to expose the timespec type used by pthread timed waits. */
+/* Read OpenVMS time types before the common preamble, then restore the
+ * namespace so X/Open network declarations do not depend on hidden BSD types.
+ * Preserve an extension mode explicitly selected by the caller. */
 #if defined(__VMS) && !defined(_XOPEN_SOURCE_EXTENDED)
 #define _XOPEN_SOURCE_EXTENDED 1
+#include <time.h>
+#undef _XOPEN_SOURCE_EXTENDED
 #endif
 
 #define SIXEL_AMALGAMATION 1

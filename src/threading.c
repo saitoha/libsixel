@@ -31,10 +31,13 @@
 # define _GNU_SOURCE
 #endif
 
-/* OpenVMS hides struct timespec in strict feature namespaces unless the
- * X/Open extensions are selected before the first system header. */
+/* OpenVMS needs X/Open extensions for time types. Limit the selection to
+ * time.h: exposing network extensions under strict POSIX hides BSD types
+ * required by those declarations. Preserve any caller-selected namespace. */
 #if defined(__VMS) && !defined(_XOPEN_SOURCE_EXTENDED)
 # define _XOPEN_SOURCE_EXTENDED 1
+# include <time.h>
+# undef _XOPEN_SOURCE_EXTENDED
 #endif
 
 /*
