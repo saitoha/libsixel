@@ -142,7 +142,7 @@ def make_command(img2sixel: str,
     """Build one command with every non-compared axis controlled."""
     command = [
         img2sixel,
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=auto",
         "--quality=full",
         f"--loaders={loader_order}",

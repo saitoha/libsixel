@@ -29,7 +29,7 @@ VARIANTS = {
 def encode(path, colors, extra):
     args = [
         SRC / "converters/.libs/img2sixel",
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=8bit",
         "--loaders=builtin!",
         "--gpu-policy=off",

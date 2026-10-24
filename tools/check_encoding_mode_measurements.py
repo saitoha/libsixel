@@ -11,6 +11,13 @@ from pathlib import Path
 from typing import Dict, List
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def read_rows(path: Path) -> List[Dict[str, str]]:
     """Read one measurement CSV."""
     with path.open("r", encoding="utf-8", newline="") as stream:
@@ -83,8 +90,8 @@ def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
         if (int(row["encode_worker_start_count"])
                 != int(row["encode_worker_done_count"])):
             raise RuntimeError(f"{family} worker events are unpaired")
-        tokens = shlex.split(row["command"])
-        threads_token = f"--threads={row['threads']}"
+        tokens = budget_tokens(shlex.split(row["command"]))
+        threads_token = f"--threading-policy={row['threads']}"
         if threads_token not in tokens:
             raise RuntimeError(f"{family} command has the wrong thread budget")
         if "-J" not in tokens or "{timeline}" not in tokens:
@@ -120,7 +127,7 @@ def validate_encode_policy(directory: Path) -> None:
         speed_rows, metadata, ["auto", "fast", "size"], "encode-policy"
     )
     for row in speed_rows:
-        tokens = shlex.split(row["command"])
+        tokens = budget_tokens(shlex.split(row["command"]))
         if tokens[tokens.index("--encode-policy") + 1] != row["variant"]:
             raise RuntimeError("encode-policy speed command has wrong policy")
     require_png(directory / "encode-policy-results.png")
@@ -152,7 +159,7 @@ def validate_high_color(directory: Path) -> None:
         speed_rows, metadata, ["fixed256", "high15"], "high-color"
     )
     for row in speed_rows:
-        tokens = shlex.split(row["command"])
+        tokens = budget_tokens(shlex.split(row["command"]))
         has_high_color = "-I" in tokens
         if has_high_color != (row["variant"] == "high15"):
             raise RuntimeError("high-color speed command has wrong mode")

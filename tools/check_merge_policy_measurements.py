@@ -26,6 +26,13 @@ PLOTS = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def fail(message: str) -> None:
     """Raise one consistently formatted validation error."""
     raise ValueError(message)
@@ -147,11 +154,11 @@ def validate_command(row: Dict[str, str], timeline: bool) -> None:
         fail("row merge option differs from the manifest")
     field = "timeline_command" if timeline else "command"
     try:
-        tokens = shlex.split(row.get(field, ""))
+        tokens = budget_tokens(shlex.split(row.get(field, "")))
     except ValueError as exc:
         raise ValueError(f"invalid {field}") from exc
     required = {
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=builtin!",

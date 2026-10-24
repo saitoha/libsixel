@@ -33,6 +33,13 @@ PLOTS = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def fail(message: str) -> None:
     """Raise one consistently formatted validation error."""
     raise ValueError(message)
@@ -151,11 +158,11 @@ def validate_command(row: Dict[str, str],
         fail(f"quantize option differs in {path}: {config}")
     field = "timeline_command" if timeline else "command"
     try:
-        tokens = shlex.split(row.get(field, ""))
+        tokens = budget_tokens(shlex.split(row.get(field, "")))
     except ValueError as exc:
         raise ValueError(f"invalid {field} in {path}: {config}") from exc
     required = {
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",

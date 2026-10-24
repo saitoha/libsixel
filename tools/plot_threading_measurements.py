@@ -87,7 +87,7 @@ def encoder_policy_arguments(threads: int,
                              ncolors: int = 256) -> List[str]:
     """Return the controlled choices shared by static encoder fixtures."""
     return [
-        f"--threads={threads}",
+        f"--threading-policy={threads}",
         "--precision-policy=auto",
         "--quality=full",
         "--sampling-policy=full-frame",
@@ -174,7 +174,7 @@ def decoder_command(sixel2png: str,
     """Build the controlled decoder command."""
     return [
         sixel2png,
-        f"--threads={threads}",
+        f"--threading-policy={threads}",
         "--gpu-policy=off",
         "-J",
         str(log_path),
@@ -816,7 +816,7 @@ def plot_budget(path: Path, rows: Sequence[Dict[str, object]]) -> None:
                 alpha=0.22,
                 linewidth=0,
             )
-    observed_ax.set_xlabel("Configured worker budget (--threads)")
+    observed_ax.set_xlabel("Configured worker budget (--threading-policy)")
     observed_ax.set_ylabel("Distinct pool threads")
     observed_ax.set_xticks(threads)
     observed_ax.grid(True, color="#D9D9D9", linewidth=0.7)
@@ -923,7 +923,7 @@ def plot_decoder_scaling(path: Path,
             color="#555555",
         )
     axis.set_title("Full HD sixel2png decoder time by worker budget")
-    axis.set_xlabel("Configured decoder worker budget (--threads)")
+    axis.set_xlabel("Configured decoder worker budget (--threading-policy)")
     axis.set_ylabel("Wall interval (ms, lower is better)")
     axis.set_xticks(threads)
     axis.set_ylim(bottom=0)
@@ -1027,7 +1027,7 @@ def plot_encoder_scaling(path: Path,
             color="#555555",
         )
     axis.set_title("Full HD img2sixel encoder time by worker budget")
-    axis.set_xlabel("Configured encoder worker budget (--threads)")
+    axis.set_xlabel("Configured encoder worker budget (--threading-policy)")
     axis.set_ylabel("Wall interval (ms, lower is better)")
     axis.set_xticks(threads)
     axis.set_ylim(bottom=0)
@@ -1115,7 +1115,7 @@ def plot_encoder_color_scaling(path: Path,
             linestyle=":",
             linewidth=1.0,
         )
-        axis.set_title(f"--threads={threads} worker budget")
+        axis.set_title(f"--threading-policy={threads} worker budget")
         axis.set_xscale("log", base=2)
         axis.set_xticks(colors_values)
         axis.set_xticklabels(
@@ -1265,7 +1265,7 @@ def measure_encoder_scaling(args: argparse.Namespace,
                 command,
                 {
                     **replacements,
-                    f"--threads={threads}": "--threads={threads}",
+                    f"--threading-policy={threads}": "--threading-policy={threads}",
                 },
             )
             proc = run_checked(command, env)
@@ -1357,7 +1357,7 @@ def measure_encoder_color_scaling(args: argparse.Namespace,
                 command,
                 {
                     **replacements,
-                    f"--threads={threads}": "--threads={threads}",
+                    f"--threading-policy={threads}": "--threading-policy={threads}",
                     str(ncolors): "{ncolors}",
                 },
             )
@@ -1434,7 +1434,7 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 command,
                 {
                     str(args.sixel2png_payload): "{sixel2png}",
-                    f"--threads={threads}": "--threads={threads}",
+                    f"--threading-policy={threads}": "--threading-policy={threads}",
                     str(sixel_path): "{decoder_sixel}",
                     str(log_path): "{log}",
                     os.devnull: "{null}",
@@ -1579,7 +1579,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
         if identifier == "1920x1080":
             probe_command = [
                 str(args.sixel2png_payload),
-                "--threads=1",
+                "--threading-policy=1",
                 "--gpu-policy=off",
                 "-i",
                 str(decoder_sixel),

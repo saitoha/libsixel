@@ -13,6 +13,13 @@ from pathlib import Path
 from typing import Dict, List, Sequence
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def literal_assignment(path: Path, name: str) -> object:
     """Read one literal assignment without importing plotting dependencies."""
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -127,10 +134,10 @@ def validate_metadata(path: Path) -> Dict[str, object]:
 
 def validate_command(command_text: str) -> None:
     """Validate controls shared by path and resize commands."""
-    command = shlex.split(command_text)
+    command = budget_tokens(shlex.split(command_text))
     required = (
         "{img2sixel}",
-        "--threads=1",
+        "--threading-policy=1",
         "--quality=full",
         "--sampling-policy=full-frame",
         "--binning-policy=hard",
@@ -222,7 +229,7 @@ def validate_resize(rows: Sequence[Dict[str, str]]) -> None:
         )
         if observed != expected:
             fail(f"resize format contract changed for {row['mode']}: {observed}")
-        command = shlex.split(row["command"])
+        command = budget_tokens(shlex.split(row["command"]))
         if ("--precision-policy=8bit" not in command
                 or "-w50%" not in command
                 or "-rbilinear" not in command):

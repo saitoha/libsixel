@@ -27,6 +27,13 @@ PLOTS = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def fail(message: str) -> None:
     """Raise one concise validation failure."""
     raise ValueError(message)
@@ -90,7 +97,7 @@ def validate_command(row: Dict[str, str]) -> None:
     binbits = int(row["binbits"])
     command_bits = binbits if policy == "hard" else 6
     required = (
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=float32",
         "--quality=full",
         "--loaders=builtin!",

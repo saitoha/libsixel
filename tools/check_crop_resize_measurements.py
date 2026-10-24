@@ -18,6 +18,13 @@ from typing import Dict, List, Optional, Sequence, Tuple
 PLOTTER = Path(__file__).with_name("plot_crop_resize_measurements.py")
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def literal_assignment(path: Path, name: str) -> object:
     """Read one literal assignment without importing plotting dependencies."""
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -155,10 +162,10 @@ def validate_svg(path: Path) -> None:
 
 def validate_command(command_text: str, input_token: str) -> None:
     """Validate controls shared by all measured encoder commands."""
-    command = shlex.split(command_text)
+    command = budget_tokens(shlex.split(command_text))
     required = (
         "{img2sixel}",
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
@@ -189,7 +196,7 @@ def validate_command(command_text: str, input_token: str) -> None:
 
 def validate_policy_runtime(command_text: str, policy: str, simd: str) -> None:
     """Validate one combined SIMD/resize policy argument."""
-    command = shlex.split(command_text)
+    command = budget_tokens(shlex.split(command_text))
     expected = f"-j{simd}:resize_precision={policy}"
     runtime = [token for token in command if token.startswith("-j")]
     if runtime != [expected]:
@@ -310,7 +317,7 @@ def validate_speed(rows: Sequence[Dict[str, str]], runs: int) -> None:
         validate_policy_runtime(
             row["command"], row["policy"], row["simd_requested"]
         )
-        command = shlex.split(row["command"])
+        command = budget_tokens(shlex.split(row["command"]))
         for token in (
                 f"-w{SPEED_TARGET_WIDTH}",
                 f"-h{SPEED_TARGET_HEIGHT}"):
@@ -354,7 +361,7 @@ def validate_boundaries(rows: Sequence[Dict[str, str]]) -> None:
     for row in rows:
         validate_command(row["command"], "{boundary_input}")
         validate_policy_runtime(row["command"], row["policy"], "auto")
-        command = shlex.split(row["command"])
+        command = budget_tokens(shlex.split(row["command"]))
         if (f"-w{BOUNDARY_WIDTH}" not in command
                 or f"-h{BOUNDARY_HEIGHT}" not in command):
             fail("boundary command geometry changed")

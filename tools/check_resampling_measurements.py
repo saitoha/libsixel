@@ -23,6 +23,13 @@ NUMERIC_BASELINES = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def literal_assignment(path: Path, name: str) -> object:
     """Read one literal assignment without importing plotting dependencies."""
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -161,10 +168,10 @@ def validate_encoder_command(
     height: int,
 ) -> None:
     """Validate controls shared by measured encoder commands."""
-    command = shlex.split(command_text)
+    command = budget_tokens(shlex.split(command_text))
     required = (
         "{img2sixel}",
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
@@ -470,7 +477,7 @@ def validate_quality(rows: Sequence[Mapping[str, str]]) -> None:
             QUALITY_TARGET_WIDTH,
             QUALITY_TARGET_HEIGHT,
         )
-        assessment = shlex.split(row["assessment_command"])
+        assessment = budget_tokens(shlex.split(row["assessment_command"]))
         if assessment != [
             "{lsqa}",
             "-Woklab",

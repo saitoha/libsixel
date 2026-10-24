@@ -44,9 +44,9 @@ test "${source_state}" = clean || {
 PATH="${TOP_SRCDIR}/.local/bin:${PATH}"
 LC_ALL=C
 TZ=UTC
-SIXEL_THREADS=1
+SIXEL_THREADING_POLICY=1
 SIXEL_SIMD_LEVEL=scalar
-export PATH LC_ALL TZ SIXEL_THREADS SIXEL_SIMD_LEVEL
+export PATH LC_ALL TZ SIXEL_THREADING_POLICY SIXEL_SIMD_LEVEL
 cd "${TOP_SRCDIR}"
 
 test -d "${measurement_dir}" || mkdir -p "${measurement_dir}"

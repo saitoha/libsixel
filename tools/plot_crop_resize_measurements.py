@@ -164,7 +164,7 @@ def encoder_command(
     """Build one fully controlled end-to-end encoder command."""
     return [
         str(img2sixel),
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",

@@ -47,6 +47,13 @@ PLOTS = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def fail(message: str) -> None:
     """Raise one consistently formatted validation error."""
     raise ValueError(message)
@@ -230,13 +237,13 @@ def require_command(
 ) -> None:
     """Validate one recorded command and matched colorspace contract."""
     try:
-        tokens = shlex.split(row["command"])
+        tokens = budget_tokens(shlex.split(row["command"]))
     except (KeyError, ValueError) as exc:
         raise ValueError(f"invalid command in {context}") from exc
     colorspace = row["colorspace"]
     required = {
         "{img2sixel}",
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=float32",
         "--quality=full",
         "--loaders=builtin!",
@@ -279,7 +286,7 @@ def require_snap_state(
         wire_export: bool = True,
 ) -> None:
     """Validate policy syntax and historical wire-export fixed points."""
-    tokens = shlex.split(row["command"])
+    tokens = budget_tokens(shlex.split(row["command"]))
     snap_tokens = [token for token in tokens if token.startswith("--snap-policy=")]
     if len(snap_tokens) != 1:
         fail(f"row lacks exactly one snap policy in {context}")

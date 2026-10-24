@@ -66,12 +66,19 @@ REQUIRED_FILES = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def expected_encoder_command(threads: object,
                              ncolors: object = 256) -> List[str]:
     """Return the canonical controlled img2sixel command tokens."""
     command = [
         "{img2sixel}",
-        f"--threads={threads}",
+        f"--threading-policy={threads}",
         *ENCODER_COMMAND_SUFFIX,
     ]
     command[command.index("-p") + 1] = str(ncolors)
@@ -159,16 +166,18 @@ def validate_budget(path: Path,
         if row["revision"] != revision:
             raise ValueError("CSV and metadata revisions differ")
         expected_command = expected_encoder_command(threads)
-        if shlex.split(row["command"]) != expected_command:
+        recorded = budget_tokens(shlex.split(row["command"]))
+        if recorded != expected_command:
             raise ValueError("encoder budget policy is stale")
-        if shlex.split(command) != expected_command:
+        recorded = budget_tokens(shlex.split(command))
+        if recorded != expected_command:
             raise ValueError("encoder budget command provenance is stale")
         if (row["fixture"] != "1920x1080"
                 or int(row["width"]) != 1920
                 or int(row["height"]) != 1080
                 or int(row["pixels"]) != 1920 * 1080):
             raise ValueError("encoder budget sweep is not Full HD")
-        if "-w" in shlex.split(row["command"]):
+        if "-w" in budget_tokens(shlex.split(row["command"])):
             raise ValueError("encoder budget command unexpectedly resizes")
         if (float(row["encoder_wall_seconds"]) <= 0.0
                 or float(row["palette_wall_seconds"]) <= 0.0
@@ -379,7 +388,8 @@ def validate_decoder_scaling(path: Path,
         ))
         if observed_counts != expected_counts:
             raise ValueError("decoder scaling span counts are stale")
-        if f"--threads={threads}" not in row["command"]:
+        if f"--threading-policy={threads}" not in budget_tokens(
+                shlex.split(row["command"])):
             raise ValueError("decoder scaling command is stale")
 
 
@@ -396,7 +406,8 @@ def validate_encoder_scaling(path: Path,
     expected_rows = len(threads_values) * total_rounds
     if len(rows) != expected_rows:
         raise ValueError("encoder scaling CSV has an unexpected row count")
-    if shlex.split(command_template) != expected_encoder_command("{threads}"):
+    recorded = budget_tokens(shlex.split(command_template))
+    if recorded != expected_encoder_command("{threads}"):
         raise ValueError("encoder scaling protocol command is stale")
     width = len(threads_values)
     for round_index in range(1, total_rounds + 1):
@@ -441,7 +452,8 @@ def validate_encoder_scaling(path: Path,
                 or int(row["height"]) != 1080
                 or int(row["pixels"]) != 1920 * 1080):
             raise ValueError("encoder scaling fixture is not Full HD")
-        if shlex.split(row["command"]) != expected_encoder_command(threads):
+        recorded = budget_tokens(shlex.split(row["command"]))
+        if recorded != expected_encoder_command(threads):
             raise ValueError("encoder scaling command provenance is stale")
         for field in (
                 "encoder_wall_seconds",
@@ -512,7 +524,8 @@ def validate_encoder_color_scaling(path: Path,
     expected_rows = len(conditions) * total_rounds
     if len(rows) != expected_rows:
         raise ValueError("encoder color scaling has an unexpected row count")
-    if shlex.split(command_template) != expected_encoder_command(
+    recorded = budget_tokens(shlex.split(command_template))
+    if recorded != expected_encoder_command(
             "{threads}", "{ncolors}"):
         raise ValueError("encoder color scaling protocol command is stale")
     width = len(conditions)
@@ -566,7 +579,8 @@ def validate_encoder_color_scaling(path: Path,
                 or int(row["height"]) != 1080
                 or int(row["pixels"]) != 1920 * 1080):
             raise ValueError("encoder color scaling fixture is not Full HD")
-        if shlex.split(row["command"]) != expected_encoder_command(
+        recorded = budget_tokens(shlex.split(row["command"]))
+        if recorded != expected_encoder_command(
                 threads, ncolors):
             raise ValueError("encoder color scaling command is stale")
         for field in (
@@ -784,8 +798,9 @@ def main() -> int:
     if encoder_scaling["worker_count_order"] != (
             "alternating ascending and descending rounds"):
         raise ValueError("encoder scaling schedule protocol changed")
-    if ("--threads={threads}" not in encoder_scaling["command"]
-            or "-w" in shlex.split(encoder_scaling["command"])):
+    if (not any(f"{flag}={{threads}}" in encoder_scaling["command"]
+                for flag in ("--threads", "--threading-policy"))
+            or "-w" in budget_tokens(shlex.split(encoder_scaling["command"]))):
         raise ValueError("encoder scaling command template changed")
     validate_encoder_scaling(
         root / "encoder-thread-scaling.csv",
@@ -842,7 +857,8 @@ def main() -> int:
     if scaling["worker_count_order"] != (
             "alternating ascending and descending rounds"):
         raise ValueError("decoder scaling schedule protocol changed")
-    if "--threads={threads}" not in scaling["command"]:
+    if not any(f"{flag}={{threads}}" in scaling["command"]
+               for flag in ("--threads", "--threading-policy")):
         raise ValueError("decoder scaling command template changed")
     repeats = int(scaling["timed_runs_per_thread"])
     if repeats != 9:

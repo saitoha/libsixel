@@ -111,7 +111,7 @@ def make_base_command(img2sixel: Path, threads: int = 1,
     """Return controls shared by both comparisons."""
     command = [
         str(img2sixel),
-        f"--threads={threads}",
+        f"--threading-policy={threads}",
         "--precision-policy=8bit",
         "--quality=high",
         "--loaders=builtin!",
@@ -536,7 +536,7 @@ def draw_encode_boxplot(axis: plt.Axes,
         legend.append(Patch(facecolor=color, edgecolor=color,
                             alpha=0.38, label=label))
     axis.set_title(title, loc="left", fontweight="bold")
-    axis.set_xlabel("Configured worker budget (--threads)")
+    axis.set_xlabel("Configured worker budget (--threading-policy)")
     axis.set_ylabel("Encode-worker window (ms, lower is better)")
     axis.set_xticks(threads)
     axis.set_xlim(min(threads) - 0.65, max(threads) + 0.65)

@@ -53,6 +53,13 @@ PLOTS = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def fail(message: str) -> None:
     """Raise one consistently formatted validation error."""
     raise ValueError(message)
@@ -351,12 +358,12 @@ def validate_command(row: Dict[str, str],
         fail(f"quantize option differs in {path}: {config}")
     try:
         colors = int(row.get("colors", ""))
-        tokens = shlex.split(row.get("command", ""))
+        tokens = budget_tokens(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}: {config}") from exc
     expected_tokens = [
         "{img2sixel}",
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=auto",
         "--quality=full",
         f"--loaders={loader_order}",
@@ -393,7 +400,7 @@ def validate_assessment_command(row: Dict[str, str],
     if not command and not required:
         return
     try:
-        tokens = shlex.split(command)
+        tokens = budget_tokens(shlex.split(command))
     except ValueError as exc:
         raise ValueError(f"invalid assessment command in {path}") from exc
     expected_tokens = ["{lsqa}"]

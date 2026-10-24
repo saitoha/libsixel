@@ -95,7 +95,7 @@ def clean_environment() -> Dict[str, str]:
     }
     environment["LC_ALL"] = "C"
     environment["TZ"] = "UTC"
-    environment["SIXEL_THREADS"] = "1"
+    environment["SIXEL_THREADING_POLICY"] = "1"
     environment["SIXEL_SIMD_LEVEL"] = "scalar"
     return environment
 
@@ -705,7 +705,7 @@ def encoder_command(
     """Return the fully controlled resampling comparison command."""
     return [
         str(img2sixel),
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
@@ -1100,7 +1100,7 @@ def main() -> int:
     environment = clean_environment()
     os.environ.update(
         {
-            "SIXEL_THREADS": "1",
+            "SIXEL_THREADING_POLICY": "1",
             "SIXEL_SIMD_LEVEL": "scalar",
             "LC_ALL": "C",
             "TZ": "UTC",

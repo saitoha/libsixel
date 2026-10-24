@@ -29,7 +29,7 @@ OUT = None
 ENV = {k: v for k, v in os.environ.items() if not k.startswith('SIXEL_')}
 ENCODER = str(ROOT / 'converters/img2sixel')
 DECODER = str(ROOT / 'converters/sixel2png')
-COMMON = ['-v', '--threads=1', '--precision-policy=8bit', '--gpu-policy=off',
+COMMON = ['-v', '--threading-policy=1', '--precision-policy=8bit', '--gpu-policy=off',
           '--lookup-policy=none', '-Wgamma', '-Ugamma']
 CONDITIONS = [
     ('fs-0', 'FS / P=0', 'raster', 0),
@@ -200,8 +200,8 @@ def encode(name, inp, pal, ident, scan, amount, seed=0):
     six = OUT / f'{stem}.six'
     png = OUT / f'{stem}.png'
     exported = OUT / f'{stem}.pal'
-    diffusion = (f'fs:scan={scan}:perturb={amount}:perturb_seed={seed}'
-                 ':threads_max=1')
+    # The one-thread budget also keeps a single dither worker.
+    diffusion = f'fs:scan={scan}:perturb={amount}:perturb_seed={seed}'
     command = [ENCODER, *COMMON, '-m', str(pal), '-M', str(exported),
                '-d', diffusion, str(inp)]
     result = run(command, stem)

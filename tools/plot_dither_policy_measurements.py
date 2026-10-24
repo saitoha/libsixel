@@ -88,7 +88,7 @@ def make_command(img2sixel: str,
     """Build one controlled dither-policy command."""
     command = [
         img2sixel,
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",

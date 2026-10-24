@@ -98,7 +98,7 @@ def make_command(img2sixel: str, diffusion: str) -> List[str]:
     """Build the fixed-palette command used for every generated tone."""
     return [
         img2sixel,
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",

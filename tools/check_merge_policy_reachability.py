@@ -37,6 +37,13 @@ PLOTS = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def fail(message: str) -> None:
     """Raise one consistently formatted validation error."""
     raise ValueError(message)
@@ -75,7 +82,7 @@ def read_csv(path: Path) -> List[Dict[str, str]]:
 def validate_command(command_text: str, name: str) -> None:
     """Require the controlled palette-build options in one command template."""
     try:
-        tokens = shlex.split(command_text)
+        tokens = budget_tokens(shlex.split(command_text))
     except ValueError as exc:
         raise ValueError(f"invalid command template for {name}") from exc
     merge_option = {
@@ -95,7 +102,7 @@ def validate_command(command_text: str, name: str) -> None:
     required = {
         "{img2sixel}",
         "{input}",
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=builtin!",

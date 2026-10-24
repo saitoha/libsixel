@@ -28,6 +28,13 @@ PLOTS = (
 )
 
 
+def budget_tokens(tokens: "list[str]") -> "list[str]":
+    """Read a recorded --threads=N budget as the equal -= spelling."""
+    return ["--threading-policy=" + token[len("--threads="):]
+            if token.startswith("--threads=") else token
+            for token in tokens]
+
+
 def fail(message: str) -> None:
     """Raise one consistently formatted validation error."""
     raise ValueError(message)
@@ -130,11 +137,11 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     if row.get("label") != label or row.get("work_format") != work_format:
         fail(f"color-space contract differs in {path}: {colorspace}")
     try:
-        tokens = shlex.split(row.get("command", ""))
+        tokens = budget_tokens(shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}") from exc
     required = {
-        "--threads=1",
+        "--threading-policy=1",
         "--precision-policy=float32",
         "--quality=full",
         "--loaders=builtin!",
