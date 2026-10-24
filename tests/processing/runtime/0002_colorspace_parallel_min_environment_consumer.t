@@ -2,7 +2,6 @@
 # Policy: docs/cli/runtime-policy.md
 # Frame conversion uses the common buffer driver owning this threshold.
 # Early snap also exercises a non-native palette-output caller.
-# Request two workers so one-CPU hosts still consult the fan-out threshold.
 # Verify the colorspace threshold environment reaches its consumer.
 
 # Balanced keeps the explicit -j minimum-work threshold observable.
@@ -20,6 +19,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+
+# Balanced cannot reach parallel threshold consumers with one eligible CPU.
+counts=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    threadpool/0002_thread_default_counts converter-counts) || {
+    echo "not ok 1 - topology probe failed"
+    exit 0
+}
+test "${counts%% *}" -gt 1 || {
+    echo "ok 1 # SKIP balanced parallel conversion needs two eligible CPUs"
+    exit 0
+}
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=runtime_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=2 \

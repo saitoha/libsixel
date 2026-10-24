@@ -164,7 +164,7 @@ test_threadpool_0006_concurrent_object_policies(int argc, char **argv)
         ok &= workers[0].ok && workers[1].ok;
     }
     if (workers[0].encoder != NULL && workers[1].encoder != NULL) {
-        printf("concurrent: API greedy budget=%d dither=%d; "
+        printf("# concurrent: API greedy budget=%d dither=%d; "
            "explicit lazy budget=%d dither=%d\n",
            workers[0].encoder->planner.total_threads,
            workers[0].encoder->planner.pipeline_dither_threads,

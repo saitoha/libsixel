@@ -36,7 +36,7 @@ case "${short_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,
 }
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=2" "-=balanced" \
+    --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=2" "-=greedy" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o "${env_output}" 2>&1) || {
     echo "not ok 1 - global budget IMG2SIXEL environment conversion failed"
     exit 0
@@ -47,7 +47,7 @@ case "${env_trace}" in *LSXSUB1\|*key=global_budget\|stored=1\|binding=budget,bu
 }
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=-1" "-=balanced" \
+    --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=-1" "-=greedy" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - invalid budget environment should fall back"
     exit 0

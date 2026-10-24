@@ -77,7 +77,7 @@ test_threadpool_0005_object_policy_isolation(int argc, char **argv)
     (void)sixel_encoder_setopt(first, '=', "lazy");
     sixel_threading_policy_resolve(&first->threading, 0, &a);
     ok &= a.budget == sixel_threads_normalize(6);
-    printf("isolation: explicit=%d independent=%d decoder=%d\n",
+    printf("# isolation: explicit=%d independent=%d decoder=%d\n",
            a.budget, b.budget, d.budget);
 end:
     sixel_encoder_unref(first);

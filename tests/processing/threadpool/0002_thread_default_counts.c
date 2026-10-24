@@ -82,7 +82,7 @@ test_threadpool_0002_thread_default_counts(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    printf("library-default=%d decoder-default=%d\n",
+    printf("# library-default=%d decoder-default=%d\n",
            processing_actual, decoder_actual);
     return EXIT_SUCCESS;
 }

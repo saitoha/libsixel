@@ -346,6 +346,8 @@ Record all such settings when comparing results.
 
 <!-- test-coverage: enforced -->
 
+The fixed-budget colorspace tests select `greedy` explicitly so their worker counts, nested limits and pool-growth assertions remain the same on small machines. They test those configured reservations rather than the default mode; [policy modes](policy-modes.md#performance-cpus-and-size-thresholds) owns the `balanced` CPU cap.
+
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | TE-01 | Frame conversions at one, two, four and eight threads preserve identical bits for all pairs among gamma, linear, CIELAB, OKLab and DIN99d, including extended coordinates. | [tests/processing/colorspace/parallel/0001_frame_bits.t](../../tests/processing/colorspace/parallel/0001_frame_bits.t) |

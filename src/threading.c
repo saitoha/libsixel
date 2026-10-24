@@ -31,6 +31,12 @@
 # define _GNU_SOURCE
 #endif
 
+/* OpenVMS hides struct timespec in strict feature namespaces unless the
+ * X/Open extensions are selected before the first system header. */
+#if defined(__VMS) && !defined(_XOPEN_SOURCE_EXTENDED)
+# define _XOPEN_SOURCE_EXTENDED 1
+#endif
+
 /*
  * OpenBSD hides BSD typedefs such as u_long when _POSIX_C_SOURCE is defined.
  * Enable the BSD namespace locally so sys/sysctl.h exposes the kernel
@@ -318,6 +324,7 @@ SIXELAPI int
 sixel_cond_timedwait(sixel_cond_t *cond, sixel_mutex_t *mutex, int timeout_ms)
 {
     struct timespec deadline;
+    struct timeval now;
     long nanoseconds;
     int rc;
 
@@ -327,12 +334,14 @@ sixel_cond_timedwait(sixel_cond_t *cond, sixel_mutex_t *mutex, int timeout_ms)
     if (timeout_ms < 0) {
         timeout_ms = 0;
     }
-    /* pthread condition variables measure against the realtime clock. */
-    if (clock_gettime(CLOCK_REALTIME, &deadline) != 0) {
+    /* Default pthread conditions use absolute wall-clock deadlines. The
+     * compatibility helper also supports libc without clock_gettime(). */
+    if (sixel_compat_gettimeofday(&now) != 0) {
         return 1;
     }
-    deadline.tv_sec += timeout_ms / 1000;
-    nanoseconds = deadline.tv_nsec + (long)(timeout_ms % 1000) * 1000000L;
+    deadline.tv_sec = now.tv_sec + timeout_ms / 1000;
+    nanoseconds = now.tv_usec * 1000L +
+        (long)(timeout_ms % 1000) * 1000000L;
     deadline.tv_sec += nanoseconds / 1000000000L;
     deadline.tv_nsec = nanoseconds % 1000000000L;
     rc = pthread_cond_timedwait(&cond->native, &mutex->native, &deadline);

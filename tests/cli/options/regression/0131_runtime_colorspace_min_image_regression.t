@@ -1,5 +1,4 @@
 #!/bin/sh
-# Request two workers so the threshold is consumed even on one-CPU hosts.
 # Verify runtime colorspace threshold through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_RUNTIME_POLICY|NULL|colorspace_min
 # Registry binding: colorspace_parallel_min_pixels|colorspace_parallel_min_pixels_override
@@ -22,6 +21,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+
+# Balanced cannot reach parallel threshold consumers with one eligible CPU.
+counts=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    threadpool/0002_thread_default_counts converter-counts) || {
+    echo "not ok 1 - topology probe failed"
+    exit 0
+}
+test "${counts%% *}" -gt 1 || {
+    echo "ok 1 # SKIP balanced parallel conversion needs two eligible CPUs"
+    exit 0
+}
 
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"

@@ -42,6 +42,7 @@ _WIN32_WINNT	platform	docs/misc/platforms/windows.md
 _WINSOCK2API_	platform	docs/misc/platforms/windows.md
 _WINSOCKAPI_	platform	docs/misc/platforms/windows.md
 _XOPEN_SOURCE	platform	docs/misc/platforms/posix-runtimes.md
+_XOPEN_SOURCE_EXTENDED	platform	docs/misc/platforms/openvms.md
 __AFL_FUZZ_INIT	tooling	-
 __AFL_FUZZ_TESTCASE_BUF	tooling	-
 __AFL_FUZZ_TESTCASE_LEN	tooling	-
@@ -94,6 +95,7 @@ __atomic_thread_fence	compiler	-
 __attribute__	compiler	-
 __builtin_prefetch	compiler	-
 __builtin_types_compatible_p	compiler	-
+__VMS	platform	docs/misc/platforms/openvms.md
 __clang__	compiler	-
 __cplusplus	language	-
 __declspec	compiler	-

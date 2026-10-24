@@ -11,6 +11,10 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 echo "1..1"
 set -v
 
+# Fixed worker counts exercise the same paths on small CI machines.
+SIXEL_ENCODER_THREADING_POLICY=greedy
+export SIXEL_ENCODER_THREADING_POLICY
+
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "encoder-core/0029_ormode_offset_disables_pipeline" || {
     echo "not ok 1 - ormode_pipeline_offset"
     exit 0
