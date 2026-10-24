@@ -67,10 +67,17 @@ REQUIRED_FILES = (
 
 
 def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Read a recorded --threads=N budget as the equal -= spelling."""
-    return ["--threading-policy=" + token[len("--threads="):]
-            if token.startswith("--threads=") else token
-            for token in tokens]
+    """Normalize both historical numeric budget spellings without data edits."""
+    result = []
+    for token in tokens:
+        if token.startswith("--threads="):
+            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
+        elif token.startswith("--threading-policy="):
+            base = token.split("=", 1)[1]
+            if base.isdecimal() or base in ("{threads}", "{count}"):
+                token = "--threading-policy=balanced:global_budget=" + base
+        result.append(token)
+    return result
 
 
 def expected_encoder_command(threads: object,
@@ -78,7 +85,7 @@ def expected_encoder_command(threads: object,
     """Return the canonical controlled img2sixel command tokens."""
     command = [
         "{img2sixel}",
-        f"--threading-policy={threads}",
+        f"--threading-policy=balanced:global_budget={threads}",
         *ENCODER_COMMAND_SUFFIX,
     ]
     command[command.index("-p") + 1] = str(ncolors)
@@ -388,7 +395,7 @@ def validate_decoder_scaling(path: Path,
         ))
         if observed_counts != expected_counts:
             raise ValueError("decoder scaling span counts are stale")
-        if f"--threading-policy={threads}" not in budget_tokens(
+        if f"--threading-policy=balanced:global_budget={threads}" not in budget_tokens(
                 shlex.split(row["command"])):
             raise ValueError("decoder scaling command is stale")
 
@@ -798,8 +805,8 @@ def main() -> int:
     if encoder_scaling["worker_count_order"] != (
             "alternating ascending and descending rounds"):
         raise ValueError("encoder scaling schedule protocol changed")
-    if (not any(f"{flag}={{threads}}" in encoder_scaling["command"]
-                for flag in ("--threads", "--threading-policy"))
+    if ("--threading-policy=balanced:global_budget={threads}" not in
+            budget_tokens(shlex.split(encoder_scaling["command"]))
             or "-w" in budget_tokens(shlex.split(encoder_scaling["command"]))):
         raise ValueError("encoder scaling command template changed")
     validate_encoder_scaling(
@@ -857,8 +864,8 @@ def main() -> int:
     if scaling["worker_count_order"] != (
             "alternating ascending and descending rounds"):
         raise ValueError("decoder scaling schedule protocol changed")
-    if not any(f"{flag}={{threads}}" in scaling["command"]
-               for flag in ("--threads", "--threading-policy")):
+    if "--threading-policy=balanced:global_budget={threads}" not in (
+            budget_tokens(shlex.split(scaling["command"]))):
         raise ValueError("decoder scaling command template changed")
     repeats = int(scaling["timed_runs_per_thread"])
     if repeats != 9:

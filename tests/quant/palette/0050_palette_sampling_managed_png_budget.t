@@ -21,7 +21,7 @@ set -v
 # The fixture's gAMA/cHRM requires float normalization with CMS enabled.
 # Two workers leave no palette worker after the color-conversion slot.
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=2 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=2 \
     --cms-engine=builtin -Qheckbert -d none -p 16 "-~none" \
     -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {

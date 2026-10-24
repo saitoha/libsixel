@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     -Lbuiltin! --cms-engine=none -Wlinear -Ugamma '-~none' -dnone \
     -m "${TOP_SRCDIR}/tests/data/inputs/mapfile/pal-two-colors-lf.pal" - <<'PPM'
 P3

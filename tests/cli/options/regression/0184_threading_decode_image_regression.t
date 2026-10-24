@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0184-threading-decode-env-$$.png"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
-    "-=auto:S2" <"${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:S2" <"${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading decode short conversion failed"
     exit 0
 }
@@ -39,7 +39,7 @@ case "${short_trace}" in *LSXSUB1\|*key=decode\|stored=1\|binding=decode_threads
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
     --env "SIXEL_THREADING_DECODE=2" \
-    "-=auto" <"${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced" <"${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading decode environment conversion failed"
     exit 0
 }
@@ -51,7 +51,7 @@ case "${env_trace}" in *LSXSUB1\|*key=decode\|stored=1\|binding=decode_threads,d
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
     --env "SIXEL_THREADING_DECODE=-1" \
-    "-=auto" <"${input_image}" 2>&1 >/dev/null) || {
+    "-=balanced" <"${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading decode out-of-range conversion failed"
     exit 0
 }

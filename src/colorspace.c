@@ -43,6 +43,7 @@
 #include "pthread-once.h"
 #include "timeline-logger.h"
 #include "threading.h"
+#include "options.h"
 #if SIXEL_ENABLE_THREADS
 # include <6cells.h>
 #endif
@@ -1769,6 +1770,9 @@ sixel_colorspace_parallel_min_pixels(void)
     static size_t threshold = 65537;
     static int initialized = 0;
 
+    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_GREEDY) {
+        return 0u;
+    }
     if (initialized != 0) {
         return threshold;
     }
@@ -2046,7 +2050,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
 
 #if SIXEL_ENABLE_THREADS
     if (pixel_total >= sixel_colorspace_parallel_min_pixels_cached()) {
-        threads = sixel_threads_resolve();
+        threads = sixel_threads_resolve_fanout();
         if (threads > 1) {
             chunk_pixels = (pixel_total + (size_t)threads - 1U)
                 / (size_t)threads;
@@ -2569,8 +2573,9 @@ sixel_convert_pixels_via_linear_float(float *pixels,
         pixel_total);
 
 #if SIXEL_ENABLE_THREADS
-    threads = sixel_threads_resolve();
-    ceiling = sixel_threads_ceiling();
+    threads = sixel_threads_resolve_fanout();
+    ceiling = sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_LAZY
+        ? 1 : sixel_threads_ceiling();
     /* Small and standalone conversions retain one chunk per execution slot.
      * Only a live donation needs finer chunks and caller-side polling. */
     adaptive = ceiling > threads && pixel_total > 16384U;

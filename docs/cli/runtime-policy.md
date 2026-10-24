@@ -35,7 +35,7 @@ img2sixel -j scalar:resize_precision=linear -w 50% image.png
 
 # Native SIMD, but avoid scheduling tiny resize tasks.
 img2sixel -j auto:scale_min_bytes=1048576:parallel_factor=32 \
-    --threading-policy=4 -w 50% image.png
+    --threading-policy=balanced:global_budget=4 -w 50% image.png
 ```
 
 ## Precision, quality, and performance

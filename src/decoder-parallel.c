@@ -1892,7 +1892,12 @@ sixel_decoder_threads_resolve_policy(void)
     unsigned int decode_threads;
     int budget;
     int explicit_budget;
+    int performance;
 
+    /* SIXEL parsing has no independent branch to overlap in lazy mode. */
+    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_LAZY) {
+        return 1;
+    }
     decode_threads = 0u;
     budget = 1;
     explicit_budget = sixel_threading_policy_explicit_budget(&budget);
@@ -1904,7 +1909,14 @@ sixel_decoder_threads_resolve_policy(void)
         if (explicit_budget && (int)decode_threads > budget) {
             return budget;
         }
-        return sixel_decoder_threads_normalize((int)decode_threads);
+        budget = sixel_decoder_threads_normalize((int)decode_threads);
+        if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_BALANCED) {
+            performance = sixel_get_performance_threads();
+            if (budget > performance) {
+                budget = performance;
+            }
+        }
+        return budget;
     }
     if (explicit_budget) {
         return budget;
@@ -1917,20 +1929,29 @@ sixel_decoder_threads_resolve_policy(void)
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_override_threads(char const *text)
 {
-    int budget;
-    int serial;
+    long budget;
+    char *end;
 
     budget = 0;
-    serial = 0;
-    if (!sixel_option_parse_threading_policy_base(text, &budget, &serial)) {
-        sixel_helper_set_additional_message(
-            "decoder: thread count must be auto or a positive integer.");
+    end = NULL;
+    if (text == NULL || text[0] == '\0') {
         return SIXEL_BAD_ARGUMENT;
+    }
+    /* This internal test hook is a count, independent of policy bases. */
+    if (sixel_compat_strcasecmp(text, "auto") != 0) {
+        errno = 0;
+        budget = strtol(text, &end, 10);
+        if (text[0] < '0' || text[0] > '9' || *end != '\0' ||
+                errno == ERANGE || budget < 1 || budget > INT_MAX) {
+            sixel_helper_set_additional_message(
+                "decoder: thread count must be auto or a positive integer.");
+            return SIXEL_BAD_ARGUMENT;
+        }
     }
     sixel_decoder_threads_lock();
     g_decoder_threads.override_active = 1;
     g_decoder_threads.override_threads =
-        sixel_decoder_threads_normalize(budget);
+        sixel_decoder_threads_normalize((int)budget);
     sixel_decoder_threads_unlock();
     return SIXEL_OK;
 }

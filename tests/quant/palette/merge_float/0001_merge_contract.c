@@ -539,7 +539,7 @@ ward_wire(int model, int x, int w, int p3, char const *mode)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q',
                 ward_quantizers[model])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                worker ? "4" : "1")) ||
+                worker ? "balanced:B4" : "balanced:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 byte ? "8bit" : "auto")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',

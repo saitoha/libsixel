@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_THREADING_POLICY=1 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gamut/0033_edge_highcolor || {
+SIXEL_THREADING_GLOBAL_BUDGET=1 SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" gamut/0033_edge_highcolor || {
     echo "not ok 1 - highcolor"
     exit 0
 }

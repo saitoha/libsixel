@@ -34,6 +34,7 @@ static int
 sampling_threads_encode(char const *policy, int quality, int geometry,
                         char const *threads, int palette[256][3])
 {
+    char threading[64];
     static struct {
         int flag;
         char const *value;
@@ -58,6 +59,7 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
     int ok;
     size_t option;
 
+    (void)snprintf(threading, sizeof(threading), "balanced:B%s", threads);
     encoder = NULL;
     frame = NULL;
     output = NULL;
@@ -86,7 +88,7 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
         goto end;
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threads)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threading)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4', policy))) {
         goto end;
     }

@@ -280,7 +280,7 @@ test_progressive_gpu_order_case(int mode)
     GPU_ORDER_REQUIRE(sixel_encoder_setopt(encoder,
         SIXEL_OPTFLAG_WORKING_COLORSPACE, "gamma") == SIXEL_OK);
     GPU_ORDER_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_THREADING_POLICY, "1") == SIXEL_OK);
+        SIXEL_OPTFLAG_THREADING_POLICY, "balanced:B1") == SIXEL_OK);
     source = gpu_order_frame(target);
     replacement = gpu_order_frame(next);
     GPU_ORDER_REQUIRE(source != NULL && replacement != NULL);

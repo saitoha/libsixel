@@ -319,7 +319,7 @@ pd_encoder(sixel_encoder_t **encoder, sixel_output_t **output,
            pd_stream_t *stream, int fixed)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
+        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
         {'F', "none"}, {'a', "off"}, {'_', "none"}, {'0', "none"},
         {'X', "gamma"}, {'W', "gamma"}, {'U', "display-p3"}, {'t', "rgb"},
         {'.', "float32"}, {'p', "4"}, {'4', "full-frame"}, {'5', "none"},
@@ -412,7 +412,7 @@ test_delta_p3_frames(int workspace, int workers)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
                 pd_spaces[workspace])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                workers ? "4" : "1"))) {
+                workers ? "balanced:B4" : "balanced:B1"))) {
         goto end;
     }
     for (pass = 0; pass < 7; ++pass) {
@@ -766,7 +766,7 @@ test_delta_output_frames(int space, int target, int workers)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
                 pd_spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                workers ? "4" : "1"))) {
+                workers ? "balanced:B4" : "balanced:B1"))) {
         goto end;
     }
     for (pass = 0; pass < 5; ++pass) {
@@ -1065,7 +1065,7 @@ test_delta_hls_frames(int target, int workspace, int workers)
                 pd_spaces[workspace])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "hls")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                workers ? "4" : "1"))) {
+                workers ? "balanced:B4" : "balanced:B1"))) {
         goto end;
     }
     for (pass = 0; pass < 5; ++pass) {

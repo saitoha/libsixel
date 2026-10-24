@@ -100,24 +100,9 @@ In particular, every point in the encoder worker-budget chart passes the
 literal argument `-p 256`. The value is a requested palette size; the protocol
 does not reinterpret it as a measured count of realized distinct entries.
 
-The encoder scaling sweep records the complete `main/encoder` interval,
-palette construction, and the dither/encode tail. Timed rounds alternate
-between ascending and descending worker-count order. The plot reports medians
-and inclusive interquartile ranges, and the CSV retains output SIXEL size and
-hash for every execution. `--threading-policy` is a worker budget rather than a
-physical-core reservation because no affinity or exclusive-host control is
-applied.
+The encoder scaling sweep records the complete `main/encoder` interval, palette construction, and the dither/encode tail. Timed rounds alternate between ascending and descending worker-count order. The plot reports medians and inclusive interquartile ranges, and the CSV retains output SIXEL size and hash for every execution. `global_budget` is a worker budget rather than a physical-core reservation because no affinity or exclusive-host control is applied.
 
-The encoder color-count sweep changes only `-p K` from that controlled encoder
-configuration. It uses K = 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, and 256
-at `--threading-policy=2`, 4, 6, and 8. These values remain worker budgets rather than
-physical-core reservations. Each of the 48 conditions receives two warm-ups
-and nine timed runs. Whole rounds traverse the Cartesian condition list in
-alternating directions. The chart shares both axes across its four panels and
-uses a log2 color-count axis. It also marks the current automatic transition
-from six overlap rows at K <= 32 to zero rows at K > 32. Because K and overlap
-change together at that boundary, this experiment must not be cited as an
-isolated overlap-cost measurement.
+The encoder color-count sweep changes only `-p K` from that controlled encoder configuration. It uses K = 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, and 256 at `--threading-policy=balanced:global_budget=2`, 4, 6, and 8. These values remain worker budgets rather than physical-core reservations. Each of the 48 conditions receives two warm-ups and nine timed runs. Whole rounds traverse the Cartesian condition list in alternating directions. The chart shares both axes across its four panels and uses a log2 color-count axis. It also marks the current automatic transition from six overlap rows at K <= 32 to zero rows at K > 32. Because K and overlap change together at that boundary, this experiment must not be cited as an isolated overlap-cost measurement.
 
 This controlled profile is intentionally distinct from the top-level automatic
 palette path, which normally retains Heckbert compatibility behavior. Its

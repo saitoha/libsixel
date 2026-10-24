@@ -216,7 +216,7 @@ test_highcolor_macro(int mode, char const *directory)
     (void)sixel_compat_snprintf(path, sizeof(path), "%s/macro.six", directory);
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'I', NULL)) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "1")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'g', NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'A', "keep")) ||

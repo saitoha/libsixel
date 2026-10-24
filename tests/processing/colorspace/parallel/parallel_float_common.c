@@ -255,7 +255,7 @@ parallel_float_pipeline(int clustering, char const *path)
                 NULL)) || SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         goto end;
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "4")) ||
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B4")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'p', "16")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "heckbert")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',

@@ -803,13 +803,106 @@ sixel_get_hw_threads(void)
 
 #endif /* SIXEL_USE_PTHREADS */
 
+/* Probe only documented hybrid-CPU interfaces. Missing or malformed
+ * topology information leaves the ordinary logical-CPU budget intact. */
+int
+sixel_get_performance_threads(void)
+{
+    int logical;
+#if defined(__APPLE__) && HAVE_SYS_SYSCTL_H
+    int levels;
+    int performance;
+    size_t size;
+#elif defined(__linux__)
+    FILE *stream;
+    char cpus[4096];
+    char *cursor;
+    char *end;
+    long first;
+    long last;
+    long previous;
+    long count;
+#endif
+
+    logical = sixel_get_hw_threads();
+#if defined(__APPLE__) && HAVE_SYS_SYSCTL_H
+    levels = 0;
+    performance = 0;
+    size = sizeof(levels);
+    if (sysctlbyname("hw.nperflevels", &levels, &size, NULL, 0) == 0 &&
+            levels > 1) {
+        size = sizeof(performance);
+        if (sysctlbyname("hw.perflevel0.logicalcpu", &performance,
+                        &size, NULL, 0) == 0 &&
+                performance > 0 && performance < logical) {
+            return performance;
+        }
+    }
+#elif defined(__linux__)
+    stream = fopen("/sys/devices/cpu_core/cpus", "r");
+    if (stream == NULL) {
+        return logical;
+    }
+    /* Require the complete line, so a truncated list cannot undercount. */
+    cursor = fgets(cpus, sizeof(cpus), stream);
+    if (cursor == NULL || fgetc(stream) != EOF || ferror(stream)) {
+        fclose(stream);
+        return logical;
+    }
+    fclose(stream);
+    count = 0;
+    previous = -1;
+    for (;;) {
+        if (*cursor < '0' || *cursor > '9') {
+            return logical;
+        }
+        errno = 0;
+        first = strtol(cursor, &end, 10);
+        if (errno == ERANGE || first > INT_MAX || first <= previous) {
+            return logical;
+        }
+        last = first;
+        cursor = end;
+        if (*cursor == '-') {
+            ++cursor;
+            if (*cursor < '0' || *cursor > '9') {
+                return logical;
+            }
+            errno = 0;
+            last = strtol(cursor, &end, 10);
+            if (errno == ERANGE || last > INT_MAX || last < first) {
+                return logical;
+            }
+            cursor = end;
+        }
+        if (last - first >= INT_MAX - count) {
+            return logical;
+        }
+        count += last - first + 1;
+        previous = last;
+        if (*cursor != ',') {
+            break;
+        }
+        ++cursor;
+    }
+    if (*cursor == '\n') {
+        ++cursor;
+    }
+    if (*cursor == '\0' && count > 0 && count < logical) {
+        return (int)count;
+    }
+#endif
+    return logical > 0 ? logical : 1;
+}
+
 #define SIXEL_PROCESSING_THREADS_DEFAULT 2
 
 /*
  * The threading policy keeps the budget precedence rules centralized:
- *   1. -=/--threading-policy or `sixel_set_threads` set the budget.
- *   2. Otherwise, the base of `SIXEL_THREADING_POLICY` is honored.
- *   3. Fallback gives encoder/dequantize paths a minimal two-stage pipeline.
+ *   1. global_budget or `sixel_set_threads` sets the budget.
+ *   2. Otherwise, SIXEL_THREADING_GLOBAL_BUDGET is honored.
+ *   3. An explicit mode selects hardware concurrency; library callers
+ *      without a mode retain a minimal two-stage processing pipeline.
  *
  * Direct SIXEL parsing resolves its own count in decoder-parallel.c so
  * decoding can stay serial by default while post-processing gets two slots.
@@ -928,33 +1021,6 @@ sixel_threads_normalize(int requested)
     return normalized;
 }
 
-#if SIXEL_ENABLE_THREADS
-static int
-sixel_threads_resolve_default(void)
-{
-    return sixel_threads_normalize(SIXEL_PROCESSING_THREADS_DEFAULT);
-}
-
-static int
-sixel_threads_resolve_env(void)
-{
-    int budget;
-    int serial;
-
-    budget = 0;
-    serial = 0;
-    if (sixel_option_parse_threading_policy_base(
-            sixel_option_resolve_argument_environment(
-                SIXEL_OPTION_SCHEMA_THREADING_POLICY),
-            &budget,
-            &serial)) {
-        return sixel_threads_normalize(budget);
-    }
-
-    return sixel_threads_resolve_default();
-}
-#endif
-
 static sixel_thread_budget_scope_t *g_thread_budget_scopes;
 
 void
@@ -997,16 +1063,18 @@ sixel_threads_resolve_limit(int ceiling)
 
     resolved = 1;
     owner = sixel_thread_identity_current();
-    sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
-    if (g_threading_policy.budget_override) {
-        resolved = sixel_threads_normalize(g_threading_policy.budget);
-    } else {
-        resolved = sixel_threads_resolve_env();
+    if (!sixel_threading_policy_explicit_budget(&resolved)) {
+        resolved = SIXEL_PROCESSING_THREADS_DEFAULT;
+        if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_BALANCED) {
+            limit = sixel_get_performance_threads();
+            if (resolved > limit) {
+                resolved = limit;
+            }
+        }
     }
-#else
-    resolved = 1;
 #endif
+    sixel_thread_config_lock();
     for (scope = g_thread_budget_scopes; scope != NULL;
             scope = scope->next) {
         limit = ceiling ? scope->ceiling : scope->threads;
@@ -1082,7 +1150,7 @@ sixel_set_threads(int threads)
 {
     sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
-    g_threading_policy.budget = threads > 0 ? threads : 0;
+    g_threading_policy.budget = threads > 0 ? (unsigned int)threads : 0u;
 #else
     (void)threads;
     g_threading_policy.budget = 1;
@@ -1114,28 +1182,51 @@ sixel_threading_policy_store(
     sixel_thread_config_unlock();
 }
 
-/* The serial base changes only the defaults of frame-level keys. Explicit
- * keys and their environment variables still take precedence. */
+/* Use the registry's base resolution, independently of budget keys. */
 static int
-sixel_threading_policy_serial_base(
-    sixel_threading_policy_options_t const *options)
+sixel_threading_policy_resolve_mode(
+    sixel_threading_policy_options_t const *options, int *mode)
 {
-    int budget;
-    int serial;
+    if (options->mode_override) {
+        *mode = options->mode;
+        return 1;
+    }
+    *mode = SIXEL_THREADING_POLICY_BALANCED;
+    return sixel_option_resolve_registered_base_environment(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, SIXEL_OPTION_SCOPE_ALL, mode);
+}
 
-    if (options->budget_override) {
-        return options->serial;
+int
+sixel_threading_policy_mode(void)
+{
+    sixel_threading_policy_options_t options;
+    int mode;
+
+    sixel_threading_policy_load(&options);
+    (void)sixel_threading_policy_resolve_mode(&options, &mode);
+    return mode;
+}
+
+char const *
+sixel_threading_policy_mode_name(void)
+{
+    switch (sixel_threading_policy_mode()) {
+    case SIXEL_THREADING_POLICY_LAZY:
+        return "lazy";
+    case SIXEL_THREADING_POLICY_GREEDY:
+        return "greedy";
+    default:
+        return "balanced";
     }
-    budget = 0;
-    serial = 0;
-    if (sixel_option_parse_threading_policy_base(
-            sixel_option_resolve_argument_environment(
-                SIXEL_OPTION_SCHEMA_THREADING_POLICY),
-            &budget,
-            &serial)) {
-        return serial;
+}
+
+int
+sixel_threads_resolve_fanout(void)
+{
+    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_LAZY) {
+        return 1;
     }
-    return 0;
+    return sixel_threads_resolve();
 }
 
 static int
@@ -1186,23 +1277,30 @@ int
 sixel_threading_policy_explicit_budget(int *threads)
 {
     sixel_threading_policy_options_t options;
-    int budget;
-    int serial;
+    unsigned int budget;
+    int mode;
+    int explicit_mode;
+    int resolved;
+    int performance;
 
-    budget = 0;
-    serial = 0;
+    budget = 0u;
     sixel_threading_policy_load(&options);
-    if (options.budget_override) {
-        budget = options.budget;
-    } else if (!sixel_option_parse_threading_policy_base(
-                   sixel_option_resolve_argument_environment(
-                       SIXEL_OPTION_SCHEMA_THREADING_POLICY),
-                   &budget,
-                   &serial)) {
+    explicit_mode = sixel_threading_policy_resolve_mode(&options, &mode);
+    if (!sixel_threading_policy_count(
+            SIXEL_SUBOPTION_BINDING_ID_2(budget, budget_override),
+            options.budget, options.budget_override, &budget) &&
+            !explicit_mode) {
         return 0;
     }
+    resolved = sixel_threads_normalize((int)budget);
+    if (mode == SIXEL_THREADING_POLICY_BALANCED) {
+        performance = sixel_get_performance_threads();
+        if (resolved > performance) {
+            resolved = performance;
+        }
+    }
     if (threads != NULL) {
-        *threads = sixel_threads_normalize(budget);
+        *threads = resolved;
     }
     return 1;
 }
@@ -1217,9 +1315,7 @@ sixel_threading_policy_load_mode(void)
         SIXEL_SUBOPTION_BINDING_ID_2(load, load_override),
         options.load,
         options.load_override,
-        sixel_threading_policy_serial_base(&options)
-            ? SIXEL_THREADING_FRAME_SERIAL
-            : SIXEL_THREADING_FRAME_AHEAD);
+        SIXEL_THREADING_FRAME_AHEAD);
 }
 
 int
@@ -1232,9 +1328,7 @@ sixel_threading_policy_prepare_mode(void)
         SIXEL_SUBOPTION_BINDING_ID_2(prepare, prepare_override),
         options.prepare,
         options.prepare_override,
-        sixel_threading_policy_serial_base(&options)
-            ? SIXEL_THREADING_FRAME_SERIAL
-            : SIXEL_THREADING_FRAME_AHEAD);
+        SIXEL_THREADING_FRAME_AHEAD);
 }
 
 int
@@ -1579,6 +1673,10 @@ sixel_runtime_policy_colorspace_min_pixels(size_t fallback)
     sixel_runtime_policy_options_t options;
     sixel_suboption_value_t value;
 
+    /* Greedy overrides even explicitly configured runtime thresholds. */
+    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_GREEDY) {
+        return 0u;
+    }
     memset(&options, 0, sizeof(options));
     memset(&value, 0, sizeof(value));
     sixel_runtime_policy_load(&options);
@@ -1602,6 +1700,10 @@ sixel_runtime_policy_sample_min_pixels(size_t fallback)
     sixel_runtime_policy_options_t options;
     sixel_suboption_value_t value;
 
+    /* Greedy overrides even explicitly configured runtime thresholds. */
+    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_GREEDY) {
+        return 0u;
+    }
     memset(&options, 0, sizeof(options));
     memset(&value, 0, sizeof(value));
     sixel_runtime_policy_load(&options);
@@ -1694,6 +1796,10 @@ sixel_runtime_policy_scale_min_bytes(size_t fallback)
     sixel_runtime_policy_options_t options;
     sixel_suboption_value_t value;
 
+    /* Greedy overrides even explicitly configured runtime thresholds. */
+    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_GREEDY) {
+        return 0u;
+    }
     memset(&options, 0, sizeof(options));
     memset(&value, 0, sizeof(value));
     sixel_runtime_policy_load(&options);

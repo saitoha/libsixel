@@ -26,7 +26,7 @@ env_output="${artifact_dir}/0113-threading-pin-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    "-=6:I0" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:I0" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading pin short conversion failed"
     exit 0
 }
@@ -42,7 +42,7 @@ case "${short_trace}" in *LSXDTH1\|*pin_threads=0\|pin_threads_override=1**) tru
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_THREADING_PIN=0" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading pin environment conversion failed"
     exit 0
 }

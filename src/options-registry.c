@@ -1363,11 +1363,11 @@ static sixel_option_value_schema_t const g_precision_values[] = {
     }
 };
 
-/* A decimal base is the total budget; the parser handles it before these
- * names are matched. */
+/* Spending policy and the numeric budget are independent controls. */
 static sixel_option_value_schema_t const g_threading_policy_values[] = {
-    { "auto", SIXEL_THREADING_POLICY_AUTO, 0u },
-    { "serial", SIXEL_THREADING_POLICY_SERIAL, 0u }
+    { "lazy", SIXEL_THREADING_POLICY_LAZY, 0u },
+    { "balanced", SIXEL_THREADING_POLICY_BALANCED, 0u },
+    { "greedy", SIXEL_THREADING_POLICY_GREEDY, 0u }
 };
 
 static sixel_option_value_schema_t const g_gpu_policy_values[] = {
@@ -1969,6 +1969,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         scale_parallel_min_bytes,
         scale_parallel_min_bytes_override),
 
+    SIXEL_REGISTRY_THREADING_UINT(
+        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
+        "global_budget", 'B', "SIXEL_THREADING_GLOBAL_BUDGET",
+        1.0, (double)INT_MAX,
+        "threading global_budget must be a positive integer.",
+        SIXEL_OPTION_SCOPE_ALL, budget, budget_override),
     SIXEL_REGISTRY_THREADING_CHOICE(
         SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
         "load", 'L', "SIXEL_THREADING_LOAD", g_threading_frame_choices,
@@ -3227,7 +3233,7 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_SCOPE_ALL,
         SIXEL_OPTFLAG_THREADING_POLICY,
         "threading-policy",
-        SIXEL_THREADING_POLICY_AUTO,
+        SIXEL_THREADING_POLICY_BALANCED,
         g_threading_policy_values,
         "SIXEL_THREADING_POLICY"),
     SIXEL_REGISTRY_SCALAR_UINT(
@@ -3902,46 +3908,6 @@ sixel_option_registry_resolve_process_binding(
     }
 
     return SIXEL_OPTION_ENVIRONMENT_INVALID;
-}
-
-/* Shared by the CLI parser and the budget resolvers in small link units. */
-int
-sixel_option_parse_threading_policy_base(
-    char const *text,
-    int *budget,
-    int *serial)
-{
-    char *endptr;
-    long parsed;
-
-    endptr = NULL;
-    parsed = 0L;
-    if (text == NULL || budget == NULL || serial == NULL ||
-        text[0] == '\0') {
-        return 0;
-    }
-    if (sixel_compat_strcasecmp(text, "auto") == 0) {
-        *budget = 0;
-        *serial = 0;
-        return 1;
-    }
-    if (sixel_compat_strcasecmp(text, "serial") == 0) {
-        *budget = 1;
-        *serial = 1;
-        return 1;
-    }
-    if (text[0] < '0' || text[0] > '9') {
-        return 0;
-    }
-    errno = 0;
-    parsed = strtol(text, &endptr, 10);
-    if (endptr == NULL || endptr[0] != '\0' || errno == ERANGE ||
-        parsed < 1L || parsed > (long)INT_MAX) {
-        return 0;
-    }
-    *budget = (int)parsed;
-    *serial = 0;
-    return 1;
 }
 
 /* Keep strict boolean parsing in the registry link unit. Quick Look and
@@ -5550,6 +5516,26 @@ sixel_option_resolve_argument_environment(
         }
     }
     return NULL;
+}
+
+/* Base environments contain a choice only. Keep this resolver independent
+ * of the full CLI/suboption parser for WIC and Quick Look link units. */
+int
+sixel_option_resolve_registered_base_environment(
+    sixel_option_schema_id_t option_id,
+    unsigned int consumer_scope,
+    int *value)
+{
+    sixel_option_argument_schema_t const *schema;
+    char const *text;
+
+    schema = sixel_option_registry_get(option_id);
+    text = sixel_option_resolve_argument_environment(option_id);
+    if (schema == NULL || value == NULL || text == NULL ||
+            (schema->scope & consumer_scope) == 0u) {
+        return 0;
+    }
+    return sixel_option_registry_match_choice(schema, text, 1, value);
 }
 
 int

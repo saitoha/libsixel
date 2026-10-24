@@ -12,10 +12,17 @@ from typing import Dict, List
 
 
 def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Read a recorded --threads=N budget as the equal -= spelling."""
-    return ["--threading-policy=" + token[len("--threads="):]
-            if token.startswith("--threads=") else token
-            for token in tokens]
+    """Normalize both historical numeric budget spellings without data edits."""
+    result = []
+    for token in tokens:
+        if token.startswith("--threads="):
+            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
+        elif token.startswith("--threading-policy="):
+            base = token.split("=", 1)[1]
+            if base.isdecimal() or base in ("{threads}", "{count}"):
+                token = "--threading-policy=balanced:global_budget=" + base
+        result.append(token)
+    return result
 
 
 def read_rows(path: Path) -> List[Dict[str, str]]:
@@ -91,7 +98,7 @@ def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
                 != int(row["encode_worker_done_count"])):
             raise RuntimeError(f"{family} worker events are unpaired")
         tokens = budget_tokens(shlex.split(row["command"]))
-        threads_token = f"--threading-policy={row['threads']}"
+        threads_token = f"--threading-policy=balanced:global_budget={row['threads']}"
         if threads_token not in tokens:
             raise RuntimeError(f"{family} command has the wrong thread budget")
         if "-J" not in tokens or "{timeline}" not in tokens:

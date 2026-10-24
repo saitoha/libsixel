@@ -2004,7 +2004,7 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
         ncolors > 0 &&
         (size_t)width <= ((size_t)-1 / (size_t)height)) {
         num_pixels = (size_t)width * (size_t)height;
-        parallel_threads = sixel_threads_resolve();
+        parallel_threads = sixel_threads_resolve_fanout();
         if (parallel_threads >= 2 && num_pixels >= 65536U) {
             rgb = (unsigned char *)sixel_allocator_malloc(
                 allocator,
@@ -2092,7 +2092,7 @@ sixel_dequantize_k_undither_rgba(unsigned char *indexed_pixels,
         output != NULL &&
         (size_t)width <= ((size_t)-1 / (size_t)height)) {
         num_pixels = (size_t)width * (size_t)height;
-        parallel_threads = sixel_threads_resolve();
+        parallel_threads = sixel_threads_resolve_fanout();
         if (parallel_threads >= 2 && num_pixels >= 65536U) {
             if (num_pixels > ((size_t)-1 / 4u)) {
                 return SIXEL_BAD_ALLOCATION;
@@ -2273,7 +2273,7 @@ sixel_dequantize_k_undither_fast4_rgba(unsigned char *indexed_pixels,
     }
 
 #if SIXEL_ENABLE_THREADS
-    parallel_threads = sixel_threads_resolve();
+    parallel_threads = sixel_threads_resolve_fanout();
     if (parallel_threads >= 2 && num_pixels >= 65536U) {
         parallel_status = sixel_kundither_filter_noedge_parallel_offsets(
             indexed_pixels,
@@ -2379,7 +2379,7 @@ sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
     }
 
 #if SIXEL_ENABLE_THREADS
-    parallel_threads = sixel_threads_resolve();
+    parallel_threads = sixel_threads_resolve_fanout();
     if (parallel_threads >= 2 && num_pixels >= 65536U) {
         parallel_status = sixel_kundither_filter_noedge_parallel_offsets(
             indexed_pixels,

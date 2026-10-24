@@ -440,14 +440,15 @@ Options:
    `-s ave` resolves to `average`, but `-s a` is rejected because it
    matches both `auto` and `average`.
 -= POLICY[:KEY=VALUE...], --threading-policy=POLICY[:KEY=VALUE...]
-                          plan the thread budget (`auto`, `serial`,
-                          or a count), per-stage limits (dither,
-                          encode, prepare_workers), affinity (pin)
-                          and frame concurrency (load, load_depth,
-                          prepare, palette). Stage limits shrink to
-                          fit the budget. img2sixel defaults to
-                          `auto` when SIXEL_THREADING_POLICY is
-                          unset or empty.
+                          spend threads with lazy (independent branches),
+                          balanced (size heuristics and performance CPUs,
+                          default), or greedy (full budget, no size gates).
+                          global_budget=N (B) sets the total budget;
+                          default hardware count. Explicit stage limits
+                          (dither, encode, prepare_workers) shrink to fit.
+                          Frame keys load and prepare default to ahead;
+                          load_depth, palette and pin retain their controls.
+                          Lazy uses one dither band unless dither is set.
 -., --precision-policy=POLICY
                           select the sample precision of palette
                           application.
@@ -1043,10 +1044,12 @@ SIXEL_ANIMATION_HIDE_CURSOR
                            img2sixel enables it only when the
                            variable is unset. -z/--terminal-policy
                            takes precedence.
-SIXEL_THREADING_POLICY     total thread budget: auto, serial, or
-                           a positive count. Suboptions use the
-                           SIXEL_THREADING_* variables. img2sixel
-                           sets empty/unset values to 'auto'.
+SIXEL_THREADING_POLICY     spending mode: lazy, balanced, or greedy.
+                           CLI base takes precedence. Converters set
+                           empty/unset values to balanced.
+SIXEL_THREADING_GLOBAL_BUDGET
+                           positive total budget for encoder and decoder.
+                           CLI global_budget or sixel_set_threads wins.
 SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            defer RGBFLOAT32 colorspace fan-out
                            until the frame reaches this pixel

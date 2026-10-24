@@ -24,7 +24,7 @@ out_invalid="${ARTIFACT_LOCAL_DIR}/trns-keycolor-env2-tbbn0g04.six"
 out_default="${ARTIFACT_LOCAL_DIR}/trns-keycolor-env1-tbbn0g04.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
-              --env SIXEL_THREADING_POLICY=4 \
+              --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_invalid}" || {
@@ -33,7 +33,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLO
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              --env SIXEL_THREADING_POLICY=4 \
+              --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {

@@ -23,7 +23,7 @@ printf '%b' '\033Pq"1;1;1;1!6~\033\057' >"${source_sixel}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=1 -rne -w200% \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B1 -rne -w200% \
     <"${source_sixel}" >"${scaled_sixel}" || {
     echo "not ok" 1 - "width scaling preserves DCS coordinates"
     exit 0

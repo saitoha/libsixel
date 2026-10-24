@@ -1094,8 +1094,9 @@ _completiontarget() {
 _threadcount() {
   _values \
     'THREADINGPOLICY' \
-    'auto[match the hardware thread count]' \
-    'serial[use one thread and serial frame stages]'
+    'lazy[overlap independent branches without data fan-out]' \
+    'balanced[use size heuristics and performance CPUs]' \
+    'greedy[use the full budget without size thresholds]'
 }
 
 _precisionmode() {

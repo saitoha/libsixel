@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 
 trace=$(SIXEL_TRACE_TOPIC=dither_contract ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threading-policy=1 -L'libpng:cms_engine=none:cms_target=gamma:prefer_8bit=1!' \
+    --threading-policy=balanced:global_budget=1 -L'libpng:cms_engine=none:cms_target=gamma:prefer_8bit=1!' \
     --precision-policy=8bit -Qkmeans:seed=1 -Xgamma -Wgamma -Ugamma \
     -Fnone -aoff -_none '-~none' -dnone -trgb \
     --binning-policy=none --sampling-policy=full-frame \

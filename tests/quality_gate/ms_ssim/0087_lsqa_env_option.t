@@ -12,13 +12,13 @@ target_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 out_env="${ARTIFACT_LOCAL_DIR}/lsqa_env_ref.txt"
 out_opt="${ARTIFACT_LOCAL_DIR}/lsqa_env_opt.txt"
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" --env SIXEL_THREADING_POLICY=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
+${SIXEL_RUNTIME-} "${LSQA_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=1 --env SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     "${reference_image}" "${target_image}" >"${out_env}" || {
     echo "not ok" 1 - "reference environment assessment failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -% SIXEL_THREADING_POLICY=1 -% SIXEL_OPTION_PATH_SUGGESTIONS=0 \
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -% SIXEL_THREADING_GLOBAL_BUDGET=1 -% SIXEL_OPTION_PATH_SUGGESTIONS=0 \
     "${reference_image}" "${target_image}" >"${out_opt}" || {
     echo "not ok" 1 - "-% assessment failed"
     exit 0

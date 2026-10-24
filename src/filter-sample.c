@@ -478,7 +478,7 @@ sixel_filter_sample_threads(int width, int height, int rows)
     sixel_trace_topic_message("runtime_contract",
         "LSXRT1|sample_min=%zu", threshold);
     if ((size_t)width * (size_t)height >= threshold) {
-        threads = sixel_threads_resolve();
+        threads = sixel_threads_resolve_fanout();
         if (threads > rows) {
             threads = rows;
         }

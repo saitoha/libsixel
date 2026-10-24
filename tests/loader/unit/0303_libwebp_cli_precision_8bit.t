@@ -8,7 +8,7 @@ test "${HAVE_WEBP-}" = 1 && test "${HAVE_IMG2SIXEL-}" = 1 || {
     echo "ok 1 # SKIP img2sixel or libwebp unavailable"
     exit 0
 }
-trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     -L 'libwebp:cms_engine=none!' -.8bit -Xgamma -Wgamma -dnone -p2 \
     -v -o/dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_64.webp" 2>&1) || {
     echo "not ok 1 - precision conversion failed"

@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=5 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=5 \
     -c 64x64+0+0 -w 32 -Qheckbert -d none -p 16 "-~none" \
     -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {

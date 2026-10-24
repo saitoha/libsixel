@@ -20,8 +20,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 parallel_indexed_1="${ARTIFACT_LOCAL_DIR}/parallel-indexed-1.png"
 parallel_indexed_4="${ARTIFACT_LOCAL_DIR}/parallel-indexed-4.png"
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_POLICY=1 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_1}"
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_POLICY=4 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_4}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=1 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_1}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 <"${TOP_SRCDIR}/images/map64.six" >"${parallel_indexed_4}"
 
 cmp -s "${parallel_indexed_1}" "${parallel_indexed_4}" >/dev/null || {
     echo "not ok" 1 - "parallel indexed diverges"

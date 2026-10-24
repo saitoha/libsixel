@@ -152,7 +152,7 @@ int
 test_delta_bw_frames(int unused)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
+        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
         {'_', "none"}, {'.', "float32"}, {'W', "gamma"}, {'U', "gamma"},
         {'t', "rgb"}, {'Z', "delta"}, {'7', NULL}, {'b', "gray1"}
     };

@@ -23,7 +23,7 @@ short_output="${artifact_dir}/0133-fhedt-tile-xy-short-$$.six"
 env_output="${artifact_dir}/0133-fhedt-tile-xy-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=1 -v --precision-policy=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=1 -v --precision-policy=8bit -Wgamma \
     "-~fhedt:X5" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "fhedt:tile_xy short conversion failed"
     exit 0
@@ -47,7 +47,7 @@ case "${short_trace}" in *LSXFHD1\|*precision=8bit\|tile_xy=5**) true ;; *) fals
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=1 -v --precision-policy=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=1 -v --precision-policy=8bit -Wgamma \
     --env "SIXEL_LOOKUP_FHEDT_TILE_XY=5" "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "fhedt:tile_xy environment conversion failed"
@@ -71,7 +71,7 @@ case "${env_trace}" in *LSXFHD1\|*precision=8bit\|tile_xy=5**) true ;; *) false 
     exit 0
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=1 -v --precision-policy=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=1 -v --precision-policy=8bit -Wgamma \
     --precision-policy=float32 "-~fhedt:X5" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt tile_xy float32 conversion failed"
@@ -88,7 +88,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 legacy_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=1 -v --precision-policy=8bit -Wgamma \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=1 -v --precision-policy=8bit -Wgamma \
     --env "SIXEL_FHEDT_TILE_XY=5" "-~fhedt" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "legacy tile_xy conversion failed"

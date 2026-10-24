@@ -49,7 +49,7 @@ space_wire(int x, int w, int p3, char const *binning, char const *snap)
         int flag;
         char const *value;
     } const options[] = {
-        { '=', "1" }, { 'p', "1" }, { '.', "float32" },
+        { '=', "balanced:B1" }, { 'p', "1" }, { '.', "float32" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
         { '~', "none" }, { 'd', "none" },
         { 't', "rgb" }, { '4', "full-frame" }

@@ -36,7 +36,8 @@ test_palette_0054_p3_encoder(int argc, char **argv)
         int flag;
         char const *value;
     } const options[] = {
-        {'=', "1"}, {'.', "float"}, {'j', "scalar:resize_precision=float"},
+        {'=', "balanced:B1"}, {'.', "float"},
+        {'j', "scalar:resize_precision=float"},
         {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'W', "linear"},
         {'U', "display-p3"}, {'F', "none"}, {'a', "off"}, {'_', "none"},
         {'~', "none"}, {'d', "none"}, {'t', "rgb"}, {'5', "none"},

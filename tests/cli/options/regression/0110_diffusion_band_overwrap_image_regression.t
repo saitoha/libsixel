@@ -28,7 +28,7 @@ short_output="${artifact_dir}/0120-diffusion-band-overwrap-short-$$.six"
 env_output="${artifact_dir}/0120-diffusion-band-overwrap-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     -d "fs:O4" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "band_overwrap short conversion failed"
     exit 0
@@ -45,7 +45,7 @@ case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|*band_overlap=4\|band_overwrap=4
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4" -d "fs" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "band_overwrap environment conversion failed"
@@ -68,7 +68,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=-1" -d "fs" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "band_overwrap negative conversion failed"
@@ -86,7 +86,7 @@ case "${range_trace}" in *LSXDTH1\|*band_overlap=0\|band_overwrap=0\|band_overwr
 }
 
 zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=-0" -d "fs" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "band_overwrap signed-zero conversion failed"

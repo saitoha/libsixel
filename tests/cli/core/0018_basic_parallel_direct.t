@@ -21,8 +21,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 parallel_direct_1="${ARTIFACT_LOCAL_DIR}/parallel-direct-1.png"
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_POLICY=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_1}"
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_POLICY=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_1}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
 
 cmp -s "${parallel_direct_1}" "${parallel_direct_4}" || {
     echo "not ok" 1 - "parallel direct diverges"

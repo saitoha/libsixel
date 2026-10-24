@@ -44,7 +44,7 @@ Palette definitions within the body, registers above 255, raster resets and unsa
 
 ## Why a PNG phase appears
 
-The threading timelines in this directory invoke `sixel2png`. The command first uses libsixel to decode the SIXEL stream and then serializes the returned raster as a PNG file. Its timeline therefore contains a downstream `png/io` interval in addition to the decoder interval. PNG wall time is retained to make the CLI measurement boundary explicit and to show end-to-end context; it is not decoder work and is not parallelized by the decoder's `--threading-policy` budget.
+The threading timelines in this directory invoke `sixel2png`. The command first uses libsixel to decode the SIXEL stream and then serializes the returned raster as a PNG file. Its timeline therefore contains a downstream `png/io` interval in addition to the decoder interval. PNG wall time is retained to make the CLI measurement boundary explicit and to show end-to-end context; it is not decoder work and is not parallelized by the decoder's `global_budget` budget.
 
 The checked-in eight-worker timeline uses a 1920 by 1080 raster. Eight parse intervals begin together. All eight gather workers then become ready at a barrier before their intervals begin as a parallel block. PNG output follows and dominates the remaining process wall time; it is not part of the decoder worker budget. Local parse is shown in light blue and gather in dark blue.
 
@@ -56,9 +56,9 @@ The [OR-mode scaling study](../encoder/output/or-mode/scaling.md) additionally m
 
 ## Worker-budget scaling
 
-The following Full HD experiment varies `--threading-policy` from one through sixteen. The horizontal axis is the configured decoder worker budget, which is the closest user-facing control to an available-core budget. It is not a count of reserved physical cores: workers have no affinity, the host is not isolated, and this arm64 macOS host reports fourteen logical CPUs.
+The following Full HD experiment varies `global_budget` from one through sixteen. The horizontal axis is the configured decoder worker budget, which is the closest user-facing control to an available-core budget. It is not a count of reserved physical cores: workers have no affinity, the host is not isolated, and this arm64 macOS host reports fourteen logical CPUs.
 
-Each point is the median of nine instrumented runs after two warm-ups. The shaded region is the inclusive interquartile range. Successive rounds traverse worker counts in alternating directions to reduce monotonic time-order bias. GPU processing is disabled. PNG serialization is excluded from the plotted lines because `--threading-policy` does not parallelize it.
+Each point is the median of nine instrumented runs after two warm-ups. The shaded region is the inclusive interquartile range. Successive rounds traverse worker counts in alternating directions to reduce monotonic time-order bias. GPU processing is disabled. PNG serialization is excluded from the plotted lines because `global_budget` does not parallelize it.
 
 ![Full HD decoder time by worker budget](measurements/decoder-thread-scaling.png)
 

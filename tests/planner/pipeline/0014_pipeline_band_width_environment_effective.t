@@ -18,7 +18,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 width_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=9" -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "band width environment conversion failed"
@@ -31,7 +31,7 @@ case "${width_trace}" in *LSXDTH1\|*diffuse=fs\|*band_height=12**) true ;; *) fa
 }
 
 negative_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=-1" -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "negative band width conversion failed"

@@ -12,7 +12,7 @@ set -v
 
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 -Wc -Qk -aoff -_none -trgb -~fhedt:weights=1/1/1 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 -Wc -Qk -aoff -_none -trgb -~fhedt:weights=1/1/1 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - FHEDT conversion failed"
     exit 0
 }

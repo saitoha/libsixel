@@ -85,7 +85,7 @@ test_map_solver_run(int mode, int space, char const *path,
                 int output_p3, int solver, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'X', "linear" },
+        { '=', "balanced:B1" }, { 'X', "linear" },
         { 'F', "none" }, { '_', "none" }, { '~', "5bit" },
         { 't', "rgb" }, { '4', "full-frame" },
         { '0', "none" }, { 'U', "gamma" }, { '.', "auto" }

@@ -426,7 +426,7 @@ sixel_lookup_fhedt_resolve_threads_float32(void)
 #if SIXEL_ENABLE_THREADS
     int threads;
 
-    threads = sixel_threads_resolve();
+    threads = sixel_threads_resolve_fanout();
     if (threads < 1) {
         threads = 1;
     }

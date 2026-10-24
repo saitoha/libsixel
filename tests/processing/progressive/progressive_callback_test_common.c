@@ -66,7 +66,8 @@ test_progressive_callback_mode(char const *path, int worker)
     }
 #endif
     ok = sixel_encoder_setopt(probe.encoder, SIXEL_OPTFLAG_THREADING_POLICY,
-                              worker ? "4" : "1") == SIXEL_OK &&
+                              worker ? "balanced:B4" : "balanced:B1")
+        == SIXEL_OK &&
         sixel_encoder_setopt(probe.encoder, SIXEL_OPTFLAG_LOADERS,
                               "builtin:cms_engine=none!") == SIXEL_OK &&
         sixel_encoder_setopt(probe.encoder, SIXEL_OPTFLAG_IGNORE_DELAY, NULL)

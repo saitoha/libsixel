@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     echo "ok 1 # SKIP img2sixel disabled"
     exit 0
 }
-actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     -Lbuiltin! --cms-engine=none --precision-policy=auto \
     --sampling-policy=full-frame --binning-policy=none \
     -Qkmeans:seed=1 -Xlinear -Wgamma -Udisplay-p3 \

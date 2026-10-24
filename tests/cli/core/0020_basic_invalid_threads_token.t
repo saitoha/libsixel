@@ -19,7 +19,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -= bogus -o/dev/null <"${TO
 }
 
 case "${msg}" in
-    *"threading-policy accepts auto, serial, or a positive thread budget."*)
+    *"threading-policy accepts lazy, balanced, or greedy."*)
         ;;
     *)
         echo "not ok" 1 - "missing invalid thread diagnostic"

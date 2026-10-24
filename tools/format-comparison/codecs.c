@@ -52,7 +52,7 @@ study_free(void *data)
 /*
  * preset 0 is the fast default row: 8-bit precision and -E fast.
  * preset 1 is the quality row, equivalent to
- * img2sixel -=N -Qk -Fw -Wc -Xc -dl with library defaults otherwise.
+ * img2sixel -=balanced:BN -Qk -Fw -Wc -Xc -dl with library defaults otherwise.
  */
 int
 study_sixel_encode(unsigned char *pixels, int width, int height,
@@ -70,7 +70,7 @@ study_sixel_encode(unsigned char *pixels, int width, int height,
     frame = NULL;
     output = NULL;
     memset(&buffer, 0, sizeof(buffer));
-    snprintf(count, sizeof(count), "%d", threads);
+    snprintf(count, sizeof(count), "balanced:B%d", threads);
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder, '=', count);

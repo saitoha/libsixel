@@ -45,6 +45,7 @@ typedef struct sixel_dither_encode_request {
     int method_for_diffuse;
     int gpu_encode_only;
     int prefer_staged;
+    int lazy;                          /* no default dither fan-out */
     unsigned int threads_max;           /* threading-policy dither=N */
     int threads_max_set;
     unsigned int encode_threads_max;    /* threading-policy encode=N */

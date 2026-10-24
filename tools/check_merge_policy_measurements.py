@@ -27,10 +27,17 @@ PLOTS = (
 
 
 def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Read a recorded --threads=N budget as the equal -= spelling."""
-    return ["--threading-policy=" + token[len("--threads="):]
-            if token.startswith("--threads=") else token
-            for token in tokens]
+    """Normalize both historical numeric budget spellings without data edits."""
+    result = []
+    for token in tokens:
+        if token.startswith("--threads="):
+            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
+        elif token.startswith("--threading-policy="):
+            base = token.split("=", 1)[1]
+            if base.isdecimal() or base in ("{threads}", "{count}"):
+                token = "--threading-policy=balanced:global_budget=" + base
+        result.append(token)
+    return result
 
 
 def fail(message: str) -> None:
@@ -158,7 +165,7 @@ def validate_command(row: Dict[str, str], timeline: bool) -> None:
     except ValueError as exc:
         raise ValueError(f"invalid {field}") from exc
     required = {
-        "--threading-policy=1",
+        "--threading-policy=balanced:global_budget=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=builtin!",

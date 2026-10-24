@@ -137,7 +137,7 @@ test_parallel_float_0008(int argc, char **argv)
             SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         goto end;
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "8")) ||
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B8")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "kmeans")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'F', "ward")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "cielab")) ||

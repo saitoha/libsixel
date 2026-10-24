@@ -37,12 +37,12 @@ LABELS = ("RGB clip", "Local MINDE", "EdgeSeeker", "Ray Trace")
 COLORS = ("#be185d", "#2563eb", "#0f766e", "#d97706")
 HUES = (0, 30, 90, 140, 190, 300)
 NAMES = ("Red", "Orange", "Yellow-green", "Green", "Cyan", "Magenta")
-FLAGS = ["--threading-policy=1", "-.float32",
+FLAGS = ["--threading-policy=balanced:global_budget=1", "-.float32",
          "-L", "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!",
          "-Q", "kmeans:seed=1", "-X", "oklab", "-W", "oklab",
          "--sampling-policy=full-frame", "--binning-policy=none",
          "-F", "none", "-a", "off", "-_", "none", "-~", "none",
-         "-0", "soft", "-t", "rgb", "-p", "256", "-=", "2"]
+         "-0", "soft", "-t", "rgb", "-p", "256", "-=", "balanced:B2"]
 
 
 def run(argv, **kwargs):

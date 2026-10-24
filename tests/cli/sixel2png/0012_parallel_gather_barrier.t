@@ -23,7 +23,7 @@ gather_start=0
 gather_finish=0
 gather_started_early=0
 
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threading-policy=2 \
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --threading-policy=balanced:global_budget=2 \
     -J "${timeline_log}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     -o /dev/null || {

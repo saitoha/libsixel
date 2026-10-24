@@ -27,11 +27,11 @@ load and normalize frame
                   ordered writer thread
 ```
 
-The planner splits eligible asynchronous palette work and the main pre-plan into `floor(N/2)` and `ceil(N/2)` execution slots respectively. Each side includes its calling thread. The split is the initial overlap reservation. A large float working-space conversion polls for palette completion at chunk boundaries, joins the completed palette thread, and expands its pool to use the returned slots. Palette application and final encoding use the configured budget after collection. With two slots, each overlapping side is serial. With four or more, both the sample conversion for `-X` and the full-frame conversion for `-W` can run in parallel.
+In balanced and greedy modes, the planner splits eligible asynchronous palette work and the main pre-plan into `floor(N/2)` and `ceil(N/2)` execution slots respectively. Each side includes its calling thread. The split is the initial overlap reservation. A large float working-space conversion polls for palette completion at chunk boundaries, joins the completed palette thread, and expands its pool to use the returned slots. Palette application and final encoding use the configured budget after collection. With two slots, each overlapping side is serial. With four or more, both the sample conversion for `-X` and the full-frame conversion for `-W` can run in parallel. Lazy uses the same admission condition computed from the total budget but reserves one palette slot and one main slot; neither branch fans out.
 
 ## Float colorspace transactions
 
-The frame API and the float path of `sixel_helper_convert_colorspace()` share the same driver in [src/colorspace.c](../../src/colorspace.c). Above `SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS`, it resolves the available budget through `sixel_threads_resolve()`, starts at most `N-1` pool workers, and includes the caller in conversion. Standalone conversions use one chunk per slot; an overlapping conversion larger than 16,384 pixels uses 16,384-pixel chunks and a bounded queue, with one caller chunk per submission batch. Every chunk converts into disjoint temporary RGB float32 storage using the same double-intermediate arithmetic as serial conversion. Only after all jobs have joined and succeeded does the controller copy the result into the original image. A nonfinite input, domain error, or float32 overflow leaves all original pixels and frame format tags unchanged; the caller receives the serial diagnostic for the earliest failing chunk.
+The frame API and the float path of `sixel_helper_convert_colorspace()` share the same driver in [src/colorspace.c](../../src/colorspace.c). Above `SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS`, it resolves the available budget through `sixel_threads_resolve_fanout()`, starts at most `N-1` pool workers, and includes the caller in conversion. Standalone conversions use one chunk per slot; an overlapping conversion larger than 16,384 pixels uses 16,384-pixel chunks and a bounded queue, with one caller chunk per submission batch. Every chunk converts into disjoint temporary RGB float32 storage using the same double-intermediate arithmetic as serial conversion. Only after all jobs have joined and succeeded does the controller copy the result into the original image. A nonfinite input, domain error, or float32 overflow leaves all original pixels and frame format tags unchanged; the caller receives the serial diagnostic for the earliest failing chunk.
 
 Scratch storage costs 12 bytes per pixel, approximately 24.9 MB for 1920×1080, plus one status per chunk. This trades memory and a final copy for one arithmetic pass instead of separate validation and write passes. Small conversions and initial scratch or pool-creation failures use the serial two-pass path without full-frame scratch storage. Failure to grow an existing pool retains its workers and completes every queued chunk; a partially successful growth is charged its entire requested reservation and is not retried. Palette elements and individual colors use the explicitly serial `sixel_color_convert_rgbf32()` utility. Frame-sized callers use `sixel_color_convert_frame_rgbf32()`.
 
@@ -45,7 +45,7 @@ Timeline `controller/colorspace` start/finish records enclose the scratch transa
 
 ## Adaptive sample extraction
 
-Sampling finishes before palette construction and preprocessing can overlap. Its grid and solid-region phases resolve the caller's budget with `sixel_threads_resolve()`, including any enclosing `sixel_thread_budget_enter()` scope. Each phase includes the caller in its budget and joins all children before returning. Thresholds, format eligibility, deterministic histogram reduction and the byte-equivalence contract belong to [parallel adaptive extraction](../encoder/palette-construction/pipeline/README.md#parallel-adaptive-extraction).
+Sampling finishes before palette construction and preprocessing can overlap. Its grid and solid-region phases resolve the caller's budget with `sixel_threads_resolve_fanout()`, including any enclosing `sixel_thread_budget_enter()` scope. Each phase includes the caller in its budget and joins all children before returning. Thresholds, format eligibility, deterministic histogram reduction and the byte-equivalence contract belong to [parallel adaptive extraction](../encoder/palette-construction/pipeline/README.md#parallel-adaptive-extraction).
 
 Within the existing `filter/worker` sample-start/sample-finish envelope, each parallel phase emits `controller/sample` start/finish and nested `worker/sample` start/finish records. Worker records include the caller's partition and identify the solid or grid phase. These events prove participation and ordering without imposing a duration or a scheduling order between independent workers.
 
@@ -55,7 +55,7 @@ Verbose `workers: total/main/palette` describes the earlier palette/preprocessin
 
 The allocator distinguishes three execution modes. In `serial` mode, one caller applies the palette before encoding uses its available budget. In `pipeline` mode, dither and encode reservations coexist and their sum is bounded by the total budget. In `staged` mode, parallel work bands finish and every dither worker joins before encoding takes its own reservation. Equal full-budget D and E counts in staged mode therefore describe successive phases. Ordered writer and controller threads remain outside these work-slot counts, as described in the [threading overview](overview.md#worker-budget-is-not-a-process-thread-limit).
 
-For CPU spatial diffusion and positional dither with budgets two through four, the automatic mode is staged: `D = N` followed by `E = N`. There is no simultaneous row pipeline during these phases. A budget of one remains serial. Effective `none`, frame-global or unknown policies, and budgets above four retain the split starting at `D0 = ceil(0.7 N)` and `E0 = N - D0`, with at least two encode slots when `N > 2`. A one-slot encode side selects serial application followed by full-budget encoding. The low-budget rule avoids leaving most of the encode reservation waiting for rows; the cutoff retains row overlap at larger budgets instead of assuming that staged execution always wins. No additional pixel-count or requested-color-count threshold is introduced. The table applies when band application is eligible: indexed inputs that bypass application, a raster with at most one six-row output band, and OR-mode output with transparent offsets retain their existing direct paths. PCC, TinyCC and builds without threading retain their existing application restrictions.
+In balanced and greedy modes, for CPU spatial diffusion and positional dither with budgets two through four, the automatic mode is staged: `D = N` followed by `E = N`. There is no simultaneous row pipeline during these phases. A budget of one remains serial. Effective `none`, frame-global or unknown policies, and budgets above four retain the split starting at `D0 = ceil(0.7 N)` and `E0 = N - D0`, with at least two encode slots when `N > 2`. A one-slot encode side selects serial application followed by full-budget encoding. The low-budget rule avoids leaving most of the encode reservation waiting for rows; the cutoff retains row overlap at larger budgets instead of assuming that staged execution always wins. No additional pixel-count or requested-color-count threshold is introduced. The table applies when band application is eligible: indexed inputs that bypass application, a raster with at most one six-row output band, and OR-mode output with transparent offsets retain their existing direct paths. PCC, TinyCC and builds without threading retain their existing application restrictions.
 
 | Budget | Spatial diffusion / positional dither | Effective `none` |
 | ---: | --- | --- |
@@ -69,7 +69,9 @@ For CPU spatial diffusion and positional dither with budgets two through four, t
 | 10 | Pipeline D7 + E3 | Pipeline D7 + E3 |
 | 14 | Pipeline D10 + E4 | Pipeline D10 + E4 |
 
-An explicit `-=` `dither` or `encode` limit disables automatic staging. A `dither` limit alone retains the minimum encoder reservation; an `encode` limit alone gives the dither stage the rest of the budget. When both limits together exceed the budget, both shrink in proportion until they fit; this is never an error. Threading-policy keys and the CLI-bound `band_width` and `band_overwrap` take precedence over their registered environment controls, which take precedence over defaults. Geometry overrides alone do not disable staging; a work-band count can differ from its worker reservation. Default band height is the image height divided by D, rounded upward and aligned to six rows. Spatial diffusion retains six warm-up rows when the completed palette has at most 32 colors, capped at half a band, and zero above 32 colors. Stateless `none`, A/X positional dither and blue noise use zero automatic overlap. Explicit overlap, including zero, remains meaningful for every method. A GPU application claim reserves no CPU dither slots and assigns the full CPU budget to encode with six-row geometry. The earlier palette/preprocessing overlap is independent of this allocation.
+Lazy never selects staging: its default is one dither producer with the rest of the budget available to encode. The single work band preserves one-thread output; an explicit `dither` key can change that band count. An explicit `-=` `dither` or `encode` limit disables automatic staging in every mode. A `dither` limit alone retains the minimum encoder reservation; an `encode` limit alone gives the dither stage the rest of the budget in balanced and greedy modes, while lazy retains its single default producer. When both limits together exceed the budget, both shrink in proportion until they fit; this is never an error. Threading-policy keys and the CLI-bound `band_width` and `band_overwrap` take precedence over their registered environment controls, which take precedence over defaults.
+
+Geometry overrides alone do not disable staging; a work-band count can differ from its worker reservation. Default band height is the image height divided by D, rounded upward and aligned to six rows. Spatial diffusion retains six warm-up rows when the completed palette has at most 32 colors, capped at half a band, and zero above 32 colors. Stateless `none`, A/X positional dither and blue noise use zero automatic overlap. Explicit overlap, including zero, remains meaningful for every method. A GPU application claim reserves no CPU dither slots and assigns the full CPU budget to encode with six-row geometry. The earlier palette/preprocessing overlap is independent of this allocation.
 
 Changing the dither reservation changes the independent error histories and can change decoded pixels even at the same total budget. Staging preserves the existing band algorithm; it does not promise serial-equivalent diffusion. The [band-seam quality guidance](measurement.md#band-seam-quality-protocol) describes the required comparison. Stateless methods retain exact pixels across these automatic geometry choices.
 
@@ -83,7 +85,7 @@ The measured automatic allocation for `N = 1..12` is shown below. These runs
 use `img2sixel` to resize the controlled 900 by 675 source to a 1920 by 1080
 processed raster before encoding:
 
-| `--threading-policy` | Planned dither | Planned encode | Runtime interpretation |
+| `global_budget` | Planned dither | Planned encode | Runtime interpretation |
 | ---: | ---: | ---: | --- |
 | 1 | 0 | 0 | Serial palette application and encoding |
 | 2 | 1 | 1 | Pipeline gate rejects one encode worker; stages serialize, then two encode workers run |
@@ -178,9 +180,7 @@ operation; the short worker intervals at its end are the six-row jobs.
 
 ![Two-worker encoder timeline](measurements/encoder-thread2-timeline.png)
 
-*Figure: Single `img2sixel --threading-policy=2` diagnostic run. The builtin loader
-decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
-back to gamma after the Full HD resize, and Oklab palette-input conversion.*
+*Figure: Single `img2sixel --threading-policy=balanced:global_budget=2` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 In the retained historical four-worker run, two dither work bands overlap two initial encode workers. The
 solid dither spans are work-band lifetimes; the thin encode marks are many
@@ -189,9 +189,7 @@ the configured worker budget.
 
 ![Four-worker encoder timeline](measurements/encoder-thread4-timeline.png)
 
-*Figure: Single `img2sixel --threading-policy=4` diagnostic run. The builtin loader
-decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
-back to gamma after the Full HD resize, and Oklab palette-input conversion.*
+*Figure: Single `img2sixel --threading-policy=balanced:global_budget=4` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 At eight workers, six dither work bands overlap two initial encode workers.
 The pool then requests the complete encode capacity after dithering ends. The
@@ -200,9 +198,7 @@ previous 900 by 675 timeline.
 
 ![Eight-worker encoder timeline](measurements/encoder-thread8-timeline.png)
 
-*Figure: Single `img2sixel --threading-policy=8` diagnostic run. The builtin loader
-decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion
-back to gamma after the Full HD resize, and Oklab palette-input conversion.*
+*Figure: Single `img2sixel --threading-policy=balanced:global_budget=8` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 These charts use `tools/timeline.py --sort-order start`. Row numbering is local
 to the rendered worker group and must not be interpreted as a stable thread
@@ -210,11 +206,7 @@ identity across separate runs.
 
 ## Worker-budget scaling
 
-The following experiment varies `img2sixel --threading-policy` from one through
-sixteen while keeping the Full HD processed raster and all non-threading
-policies fixed. The horizontal axis is a configured worker budget, not a
-reservation of physical cores. Workers are unpinned, the host is not isolated,
-and this arm64 macOS host reports fourteen logical CPUs.
+The following experiment varies `img2sixel --threading-policy=balanced:global_budget=N` from one through sixteen while keeping the Full HD processed raster and all non-threading policies fixed. The horizontal axis is a configured worker budget, not a reservation of physical cores. Workers are unpinned, the host is not isolated, and this arm64 macOS host reports fourteen logical CPUs.
 
 This is specifically a 256-color experiment. Every point passes `-p 256`;
 palette size is neither automatic nor varied in this chart. Here `256` is the
@@ -264,12 +256,7 @@ planner observations, output size and hash, and exact schedule positions.
 
 ## Palette-size scaling at selected worker budgets
 
-The next experiment keeps the Full HD fixture and controlled encoder policies
-above, but varies the requested palette size with `-p K`. The twelve requested
-values are 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, and 256. Each panel fixes
-`--threading-policy` at 2, 4, 6, or 8. These are configured worker budgets, not reserved
-physical cores. The shared horizontal axis uses a log2 scale so the low-color
-region and the 32-color policy boundary remain legible.
+The next experiment keeps the Full HD fixture and controlled encoder policies above, but varies the requested palette size with `-p K`. The twelve requested values are 2, 4, 8, 16, 24, 32, 48, 64, 96, 128, 192, and 256. Each panel fixes `global_budget` at 2, 4, 6, or 8. These are configured worker budgets, not reserved physical cores. The shared horizontal axis uses a log2 scale so the low-color region and the 32-color policy boundary remain legible.
 
 ![Full HD encoder time by requested palette size](measurements/encoder-color-scaling.png)
 
@@ -281,7 +268,7 @@ and shading shows inclusive IQR.*
 The complete interval grows with requested palette size at every budget, but
 the worker budget changes the magnitude. The measured endpoints were:
 
-| `--threading-policy` | 2 colors | 256 colors | 256/2 time ratio |
+| `global_budget` | 2 colors | 256 colors | 256/2 time ratio |
 | ---: | ---: | ---: | ---: |
 | 2 | 213.542 ms | 801.259 ms | 3.75 |
 | 4 | 150.663 ms | 463.076 ms | 3.07 |
@@ -319,16 +306,7 @@ command would not restore that path, because an explicit hard-binning request
 causes automatic quantizer resolution to choose a weighted-point-capable
 K-means implementation.
 
-A focused check on the same Full HD processed fixture at 256 requested colors
-and `--threading-policy=8` illustrates why the distinction matters. After two warm-ups,
-nine runs gave a 71.009 ms median palette-build interval for the measured
-K-means/hard profile. Explicit `heckbert:profile=compat` with compatible
-automatic binning gave 17.315 ms, about 4.10 times faster; the corresponding
-complete encoder medians were 232.411 and 179.358 ms. This is a profile
-comparison, not a one-variable quantizer comparison: Heckbert cannot consume
-the hard-binned weighted points used by the K-means condition. The spot check
-is evidence that the chart must not be extrapolated to default encoder
-latency, not a replacement for a repeated Heckbert palette-size sweep.
+A focused check on the same Full HD processed fixture at 256 requested colors and `--threading-policy=balanced:global_budget=8` illustrates why the distinction matters. After two warm-ups, nine runs gave a 71.009 ms median palette-build interval for the measured K-means/hard profile. Explicit `heckbert:profile=compat` with compatible automatic binning gave 17.315 ms, about 4.10 times faster; the corresponding complete encoder medians were 232.411 and 179.358 ms. This is a profile comparison, not a one-variable quantizer comparison: Heckbert cannot consume the hard-binned weighted points used by the K-means condition. The spot check is evidence that the chart must not be extrapolated to default encoder latency, not a replacement for a repeated Heckbert palette-size sweep.
 
 ## Image-quality boundary
 

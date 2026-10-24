@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 # Output conversion to linear RGB must not change the sRGB export bytes.
-actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     -Lbuiltin! --cms-engine=none --precision-policy=float32 \
     --sampling-policy=full-frame --binning-policy=none \
     -Qkmeans:seed=1 -Xgamma -Wgamma -Ulinear \

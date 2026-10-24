@@ -56,7 +56,7 @@ static int
 df_frames(int mode, int duplicates, char const *map, int hls)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
+        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
         {'_', "none"}, {'.', "float32"}, {'W', "gamma"}, {'U', "gamma"},
         {'t', "rgb"}, {'Z', "delta"}, {'7', NULL},
         {'Q', "heckbert"}, {'F', "none"}, {'4', "full-frame"}, {'5', "none"}
@@ -129,7 +129,7 @@ df_frames(int mode, int duplicates, char const *map, int hls)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, map ? 'm' : 'b',
             map ? map : "gray8")) ||
             ((mode == 3 || mode == 8) && SIXEL_FAILED(
-                sixel_encoder_setopt(encoder, '=', "4"))) ||
+                sixel_encoder_setopt(encoder, '=', "balanced:B4"))) ||
             (mode == 2 && SIXEL_FAILED(sixel_encoder_set_6delta_plane_size(
                 encoder, plane_width, rows)))) {
         goto end;
@@ -365,7 +365,7 @@ static int
 df_residual(int skip, int hls)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
+        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
         {'_', "none"}, {'.', "float32"}, {'W', "gamma"}, {'U', "gamma"},
         {'t', "rgb"}, {'Z', "delta"}, {'b', "gray2"}, {'7', NULL}
     };
@@ -664,7 +664,8 @@ test_delta_wire_generated(int workers)
             goto end;
         }
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', workers ? "4" : "1"))
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
+        workers ? "balanced:B4" : "balanced:B1"))
             || SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels, 256, rows,
                 SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||

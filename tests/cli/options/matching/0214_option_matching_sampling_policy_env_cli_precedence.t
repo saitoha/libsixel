@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     --env SIXEL_SAMPLING_POLICY=full-frame \
     --sampling-policy=adaptive-grid \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \

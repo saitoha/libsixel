@@ -21,7 +21,7 @@ expected="${esc}Pq\"1;1;2;1#0;2;20;24;27#1;2;4;8;12#1@#0@${esc}\\"
 reordered="${esc}Pq\"1;1;2;1#0;2;4;8;12#1;2;20;24;27#0@#1@${esc}\\"
 first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-    --gpu-policy=off --threading-policy=1 --precision-policy=8bit \
+    --gpu-policy=off --threading-policy=balanced:global_budget=1 --precision-policy=8bit \
     -Lbuiltin:cms_engine=none! -4full -5exact -_none -aoff -Fnone \
     -Qkmeans -Xgamma -Wgamma -Ugamma -dnone \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png") || {
@@ -34,7 +34,7 @@ test "$first" = "$expected" || test "$first" = "$reordered" || {
 }
 second=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=2 \
-    --gpu-policy=off --threading-policy=1 --precision-policy=8bit \
+    --gpu-policy=off --threading-policy=balanced:global_budget=1 --precision-policy=8bit \
     -Lbuiltin:cms_engine=none! -4full -5exact -_none -aoff -Fnone \
     -Qkmeans -Xgamma -Wgamma -Ugamma -dnone \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png") || {

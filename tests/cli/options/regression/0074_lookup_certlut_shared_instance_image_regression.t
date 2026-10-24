@@ -24,7 +24,7 @@ env_output="${artifact_dir}/0084-lookup-certlut-shared_instance-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threading-policy=2 -p 16 "-~certlut:S1" "${input_image}" 2>&1 >"${short_output}") || {
+    --threading-policy=balanced:global_budget=2 -p 16 "-~certlut:S1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "certlut:shared_instance short conversion failed"
     exit 0
 }
@@ -41,7 +41,7 @@ case "${short_trace}" in *LSXDTH1\|*shared=1\|shared_override=1**) true ;; *) fa
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE=1" --threading-policy=2 -p 16 "-~certlut" \
+    --env "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE=1" --threading-policy=balanced:global_budget=2 -p 16 "-~certlut" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "certlut:shared_instance env conversion failed"
     exit 0

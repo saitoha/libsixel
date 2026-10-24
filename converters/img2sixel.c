@@ -189,10 +189,13 @@ static cli_option_help_t const g_option_help_table[] = {
         '=',
         "threading-policy",
         "-= POLICY[:KEY=VALUE...], --threading-policy=POLICY[:KEY=VALUE...]\n"
-        "    plan where threads go. POLICY is the total thread budget:\n"
-        "      auto     -> match the hardware thread count (default)\n"
-        "      serial   -> one thread; frames load and prepare serially\n"
-        "      COUNT    -> use at most COUNT threads\n"
+        "    choose how the thread budget is spent:\n"
+        "      lazy     -> independent branches and pipelines only\n"
+        "      balanced -> size heuristics; cap to performance CPUs (default)\n"
+        "      greedy   -> fan out; ignore -j minimum-size thresholds\n"
+        "    global_budget=COUNT (B) sets the positive total budget.\n"
+        "    Default: hardware threads, subject to the balanced CPU cap.\n"
+        "    Lazy defaults to one dither band; explicit dither wins.\n"
         "    Frame keys and prepare_workers never change the output; the\n"
         "    dither worker count selects the parallel band split. Stage\n"
         "    limits that exceed the budget shrink to fit it.\n"
@@ -212,9 +215,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "                              palette workers (W)\n"
         "      pin=0|1              -> bind workers to CPUs (I)\n"
         "    compact suboption names (uppercase letter + value):\n"
-        "      load=L, load_depth=Q, prepare=P, palette=C, dither=D,\n"
+        "      global_budget=B, load=L, load_depth=Q, prepare=P,\n"
+        "      palette=C, dither=D,\n"
         "      encode=E, prepare_workers=W, pin=I\n"
-        "    img2sixel defaults to 'auto' when SIXEL_THREADING_POLICY is\n"
+        "    img2sixel defaults to 'balanced' when SIXEL_THREADING_POLICY is\n"
         "    unset or empty.\n"
     },
     {
@@ -1596,9 +1600,14 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_THREADING_POLICY",
-        "total thread budget: auto, serial, or a positive count. Suboptions\n"
-        "are not accepted here; use the SIXEL_THREADING_* variables below.\n"
-        "img2sixel sets empty/unset values to 'auto'. -= takes precedence."
+        "spending mode: lazy, balanced, or greedy. Suboptions are not\n"
+        "accepted here; use the SIXEL_THREADING_* variables below.\n"
+        "Empty/unset selects balanced. The -= base takes precedence."
+    },
+    {
+        "SIXEL_THREADING_GLOBAL_BUDGET",
+        "positive total thread budget for encoding and decoding.\n"
+        "Overridden by -= *:global_budget=COUNT (:BCOUNT) or the API."
     },
     {
         "SIXEL_THREADING_LOAD",
@@ -3744,7 +3753,7 @@ img2sixel_main(int argc, char *argv[])
      * concurrency by default.  User environment and --env assignments were
      * already applied above and continue to override this application default.
      */
-    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "auto") != 0) {
+    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "balanced") != 0) {
         sixel_helper_set_additional_message(
             "failed to set default environment variable "
             "'SIXEL_THREADING_POLICY'.");

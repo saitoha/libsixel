@@ -34,7 +34,7 @@ allocation_runtime_encode(allocation_runtime_expected_t const *expected,
     sixel_dither_t const *dither;
     SIXELSTATUS status;
     unsigned char pixels[ALLOCATION_WIDTH * ALLOCATION_HEIGHT * 3];
-    char threads[16];
+    char threads[40];
     int i;
     int ok;
 
@@ -48,7 +48,11 @@ allocation_runtime_encode(allocation_runtime_expected_t const *expected,
         pixels[i] = sparse ? (unsigned char)((i / 3 % 2) * 255)
             : (unsigned char)(i * 53 % 251);
     }
-    (void)snprintf(threads, sizeof(threads), "%d", expected->threads);
+    /* Exercise full budgets on the small fixture, independent of balanced
+     * CPU caps and preprocessing size thresholds. The policy resolver has
+     * separate coverage for the balanced hardware cap. */
+    (void)snprintf(threads, sizeof(threads), "greedy:B%d",
+                   expected->threads);
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;

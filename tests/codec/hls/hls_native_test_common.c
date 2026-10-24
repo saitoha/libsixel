@@ -95,7 +95,7 @@ static int
 hls_native_run(int scenario, int snapshot)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'Q', "heckbert" }, { 'F', "none" },
+        { '=', "balanced:B1" }, { 'Q', "heckbert" }, { 'F', "none" },
         { '_', "none" }, { '~', "none" }, { 'd', "none" },
         { 'E', "size" }, { 'X', "gamma" }, { 'W', "gamma" },
         { '7', NULL }, { 'g', NULL }, { 't', "hls" },
@@ -194,7 +194,7 @@ hls_native_run(int scenario, int snapshot)
                 'X', "linear")) || SIXEL_FAILED(sixel_encoder_setopt(
                     encoder, 'W', "linear")))) ||
             ((scenario == 8 || scenario == 9) && SIXEL_FAILED(
-                sixel_encoder_setopt(encoder, '=', "4"))) ||
+                sixel_encoder_setopt(encoder, '=', "balanced:B4"))) ||
             ((scenario == 9 || scenario == 11 || scenario == 12) &&
              SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'O', NULL)))) {

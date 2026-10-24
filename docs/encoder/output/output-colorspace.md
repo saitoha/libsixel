@@ -129,7 +129,7 @@ The default palette type and explicit `-tauto` resolve to RGB before capability 
 The selected loader integration tests use libpng P3 ICC RGB8/RGB16, an untagged sRGB RGB8 PNG, and a static RGB16 TIFF with orientation 6. They explicitly select builtin CMS, canonical linear output and `prefer_8bit=0`. These tests do not establish wide-gamut support for every loader, source domain, resizing filter or optional backend. The native palette stage consumes RGB888 and the five typed three-component float32 formats; packed alpha-bearing input reaches that stage through the normalization below. The selected encoder path converts source samples into the requested `-X` coordinates before palette construction.
 
 ```sh
-./converters/img2sixel --threading-policy=1 \
+./converters/img2sixel --threading-policy=balanced:global_budget=1 \
   -L 'libpng:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
   -j scalar:resize_precision=float --precision-policy=auto \
   -Q kmeans:seed=1 -X linear -W gamma -U display-p3 \
@@ -358,7 +358,7 @@ Fixed palettes bypass generated-palette snap processing. Structured-file and bui
 Run the following from the repository root, using the converter built in that checkout. It supplies a two-entry byte palette with `-Wgamma`, so quantizer choices do not obscure the output conversion:
 
 ```sh
-./converters/img2sixel --threading-policy=1 --gpu-policy=off --diffusion=none \
+./converters/img2sixel --threading-policy=balanced:global_budget=1 --gpu-policy=off --diffusion=none \
   -Wgamma -Ulinear -t rgb -m pal:- -M pal:- -o /dev/null \
   tests/data/inputs/snake_16.png <<'PAL'
 JASC-PAL

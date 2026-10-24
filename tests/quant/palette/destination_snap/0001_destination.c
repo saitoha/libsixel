@@ -127,7 +127,7 @@ destination_pipeline(int kind, int model, int space, int policy, int mode)
     static char const *const models[] = {
         "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert"};
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
+        { '=', "balanced:B1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
         { '4', "full-frame" }, { '5', "none" },
         { '.', "auto" }

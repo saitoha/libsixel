@@ -211,7 +211,7 @@ test_highcolor_drcs(int mode)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'I', NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '@',
                 mode == 2 ? "3:1" : "2:1")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "1")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "none")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'g', NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'A', "keep")) ||

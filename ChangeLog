@@ -45633,7 +45633,7 @@
 
 2026-02-12  Hayaki Saito <saitoha@me.com>
 
-	* tests/cli/core/0004_missing_input_path_suggestions.t: fix: add -=1
+	* tests/cli/core/0004_missing_input_path_suggestions.t: fix: add -=balanced:B1
 	option to img2sixel in missing path test
 
 2026-02-11  Hayaki Saito <saitoha@me.com>

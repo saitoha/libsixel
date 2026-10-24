@@ -21,12 +21,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-
 output_default="${ARTIFACT_LOCAL_DIR}/webp-bgcs-default.six"
 output_gamma="${ARTIFACT_LOCAL_DIR}/webp-bgcs-gamma.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 --lookup-policy=none -Llibwebp:cms_engine=none! -S -B#808080 "${input_webp}" >"${output_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! -S -B#808080 "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp default background colorspace decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 --lookup-policy=none --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none --env SIXEL_LOADER_BACKGROUND_COLORSPACE=gamma \
               -Llibwebp:cms_engine=none! \
               -S \
               -B#808080 "${input_webp}" >"${output_gamma}" || {

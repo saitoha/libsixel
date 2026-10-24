@@ -29,7 +29,7 @@ expected='JASC-PAL
 255 0 255
 0 255 255
 255 255 255'
-actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     -Lbuiltin:cms_engine=none! -bxterm16 -Wcielab -dnone -Udisplay-p3 \
     -Mpal:- -o/dev/null "${TOP_SRCDIR}/tests/data/inputs/snake_16.png") || {
     echo "not ok 1 - builtin P3 CIELAB palette export failed"

@@ -330,6 +330,8 @@ sixel_parallel_dither_configure(int height,
     request.total_threads = total_threads;
     request.ncolors = dither->ncolors;
     request.method_for_diffuse = dither->method_for_diffuse;
+    request.lazy = sixel_threading_policy_mode() ==
+        SIXEL_THREADING_POLICY_LAZY;
     request.prefer_staged = sixel_dither_encode_default_staged(
         total_threads, request.method_for_diffuse);
     request.gpu_encode_only = sixel_gpu_palette_policy_claims_apply_stage(

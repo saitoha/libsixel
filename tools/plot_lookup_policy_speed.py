@@ -126,7 +126,7 @@ def make_command(img2sixel: str,
     """Build the controlled single-image benchmark command."""
     return [
         img2sixel,
-        "--threading-policy=1",
+        "--threading-policy=balanced:global_budget=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",

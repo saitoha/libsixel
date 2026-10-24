@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -=1 -Goff -p32 -Qheckbert:weights=3/1/1 \
+    "${IMG2SIXEL_PATH}" -=balanced:B1 -Goff -p32 -Qheckbert:weights=3/1/1 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - explicit_weights conversion"
     exit 0

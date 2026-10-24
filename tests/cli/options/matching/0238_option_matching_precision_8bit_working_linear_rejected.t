@@ -15,7 +15,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 status=0
 planner_log=$(set +xv; SIXEL_PRECISION_POLICY=auto \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     --precision-policy=8bit -Wlinear -dnone -p16 \
     -o/dev/null "${input_image}" 2>&1) || status=$?
 test "${status}" -ne 0 || {

@@ -1271,46 +1271,6 @@ sixel_option_free_argument_resolution(
     sixel_option_reset_argument_resolution(resolution);
 }
 
-int
-sixel_option_resolve_registered_base_environment(
-    sixel_option_schema_id_t option_id,
-    unsigned int consumer_scope,
-    int *value)
-{
-    SIXELSTATUS status;
-    char const *text;
-    sixel_option_argument_schema_t const *schema;
-    sixel_option_argument_resolution_t resolution;
-
-    status = SIXEL_OK;
-    text = NULL;
-    schema = NULL;
-    memset(&resolution, 0, sizeof(resolution));
-    if (value == NULL) {
-        return 0;
-    }
-
-    schema = sixel_option_registry_get(option_id);
-    text = sixel_option_resolve_argument_environment(option_id);
-    if (schema == NULL || text == NULL || text[0] == '\0') {
-        return 0;
-    }
-    status = sixel_option_parse_argument_with_suboptions(
-        text,
-        schema,
-        consumer_scope,
-        &resolution,
-        NULL,
-        0u);
-    if (SIXEL_FAILED(status)) {
-        return 0;
-    }
-
-    *value = resolution.resolved_base_value;
-    sixel_option_free_argument_resolution(&resolution);
-    return 1;
-}
-
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument_with_options(
     char const *argument,
@@ -3535,62 +3495,14 @@ sixel_option_apply_threading_policy_argument(
     sixel_option_argument_schema_t const *schema;
     sixel_option_argument_resolution_t resolution;
     sixel_threading_policy_options_t options;
-    char *work;
-    char const *rest;
-    size_t base_length;
-    size_t length;
-    int budget;
-    int serial;
-    int numeric;
+    unsigned int saved_budget;
+    int saved_override;
 
-    status = SIXEL_OK;
     schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_THREADING_POLICY);
     memset(&resolution, 0, sizeof(resolution));
     memset(&options, 0, sizeof(options));
-    work = NULL;
-    rest = NULL;
-    base_length = 0u;
-    length = 0u;
-    budget = 0;
-    serial = 0;
-    numeric = 0;
     if (schema == NULL || argument == NULL) {
         return SIXEL_BAD_ARGUMENT;
-    }
-
-    /* The schema matches named bases only. Rewrite a decimal budget to
-     * "auto" so its suboptions still go through the shared parser. */
-    rest = strchr(argument, ':');
-    base_length = rest != NULL ? (size_t)(rest - argument)
-                               : strlen(argument);
-    if (base_length > 0u && argument[0] >= '0' && argument[0] <= '9') {
-        numeric = 1;
-        work = (char *)malloc(base_length + 1u);
-        if (work == NULL) {
-            return SIXEL_BAD_ALLOCATION;
-        }
-        memcpy(work, argument, base_length);
-        work[base_length] = '\0';
-        if (!sixel_option_parse_threading_policy_base(work,
-                                                      &budget,
-                                                      &serial)) {
-            free(work);
-            sixel_helper_set_additional_message(
-                "threading-policy accepts auto, serial, or a positive "
-                "thread budget.");
-            return SIXEL_BAD_ARGUMENT;
-        }
-        free(work);
-        length = sizeof("auto") + (rest != NULL ? strlen(rest) : 0u);
-        work = (char *)malloc(length);
-        if (work == NULL) {
-            return SIXEL_BAD_ALLOCATION;
-        }
-        (void)sixel_compat_strcpy(work, length, "auto");
-        if (rest != NULL) {
-            (void)sixel_compat_strcpy(work + 4, length - 4u, rest);
-        }
-        argument = work;
     }
 
     status = sixel_option_parse_argument_with_suboptions(
@@ -3600,23 +3512,17 @@ sixel_option_apply_threading_policy_argument(
         &resolution,
         diagnostic,
         diagnostic_size);
-    free(work);
     if (SIXEL_FAILED(status)) {
-        if (!numeric && resolution.base_def == NULL) {
-            /* The schema lists named bases only; mention the budget. */
+        if (resolution.base_def == NULL) {
             sixel_helper_set_additional_message(
-                "threading-policy accepts auto, serial, or a positive "
-                "thread budget.");
+                "threading-policy accepts lazy, balanced, or greedy.");
         }
         return status;
     }
-    if (!numeric) {
-        serial = resolution.resolved_base_value ==
-            SIXEL_THREADING_POLICY_SERIAL;
-        budget = serial ? 1 : 0;
-    }
 
     sixel_threading_policy_load(&options);
+    saved_budget = options.budget;
+    saved_override = options.budget_override;
     sixel_option_reset_suboption_overrides(
         schema,
         consumer_scope,
@@ -3628,9 +3534,12 @@ sixel_option_apply_threading_policy_argument(
         consumer_scope,
         &options,
         SIXEL_SUBOPTION_TARGET_THREADING);
-    options.budget = budget;
-    options.budget_override = 1;
-    options.serial = serial;
+    /* Resolve the budget environment live. A base-only update must not
+     * replace a previous CLI/API budget with an environment default. */
+    options.budget = saved_budget;
+    options.budget_override = saved_override;
+    options.mode = resolution.resolved_base_value;
+    options.mode_override = 1;
     if (!sixel_option_apply_suboption_assignments(
             &resolution,
             &options,

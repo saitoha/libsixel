@@ -44,7 +44,7 @@ trace_summary=$(
         "event=callback_dispatch_start" \
         0 \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env "SIXEL_THREADING_POLICY=4" \
+        --env "SIXEL_THREADING_GLOBAL_BUDGET=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
         --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
         -Lbuiltin! -lforce -o /dev/null -g "${input_gif}" 2>&1 >/dev/null

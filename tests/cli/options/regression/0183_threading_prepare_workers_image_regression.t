@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0183-threading-prepare-workers-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    "-=6:W2" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:W2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading prepare_workers short conversion failed"
     exit 0
 }
@@ -43,7 +43,7 @@ case "${short_trace}" in *prepare_workers=2\ **) true ;; *) false ;; esac || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     --env "SIXEL_THREADING_PREPARE_WORKERS=2" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading prepare_workers environment conversion failed"
     exit 0
 }
@@ -59,7 +59,7 @@ case "${env_trace}" in *prepare_workers=2\ **) true ;; *) false ;; esac || {
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     --env "SIXEL_THREADING_PREPARE_WORKERS=-1" \
-    "-=6" "${input_image}" 2>&1 >/dev/null) || {
+    "-=balanced:B6" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading prepare_workers out-of-range conversion failed"
     exit 0
 }

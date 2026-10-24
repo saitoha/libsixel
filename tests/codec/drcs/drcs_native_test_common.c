@@ -132,7 +132,7 @@ int
 drcs_native_contract(int scenario)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { '@', "2:1" }, { 'Q', "heckbert" },
+        { '=', "balanced:B1" }, { '@', "2:1" }, { 'Q', "heckbert" },
         { 'F', "none" }, { '_', "none" }, { '~', "none" },
         { 'd', "none" }, { 'E', "size" }, { 'X', "linear" },
         { 'W', "linear" }, { '7', NULL }, { 'g', NULL },
@@ -242,7 +242,7 @@ drcs_native_contract(int scenario)
             (scenario == 10 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'n', "7"))) ||
             (scenario == 12 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                '=', "4")))) {
+                '=', "balanced:B4")))) {
         goto end;
     }
     if (scenario == 3) {

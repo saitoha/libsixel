@@ -24,14 +24,14 @@ out_repeated="${ARTIFACT_LOCAL_DIR}/builtin-alpha-policy-multi-repeated.six"
 
 # Keep the policy-sensitive PNG first in the sequence.
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_ALPHA_POLICY=keep \
-              --env SIXEL_THREADING_POLICY=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
+              --env SIXEL_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_keep}" || {
     echo "not ok 1 - builtin multi-input alpha-policy=keep render failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_ALPHA_POLICY=composite \
-              --env SIXEL_THREADING_POLICY=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
+              --env SIXEL_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_composite}" || {
     echo "not ok 1 - builtin multi-input alpha-policy=composite render failed"
     exit 0
@@ -40,7 +40,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g --env SIXEL_ALPHA_POLICY=composite \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g \
               --env SIXEL_ALPHA_POLICY=keep \
               --env SIXEL_ALPHA_POLICY=composite \
-              --env SIXEL_THREADING_POLICY=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
+              --env SIXEL_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! -d fs:scan=raster -B#fff -p 2 \
               "${input_b}" "${input_a}" >"${out_repeated}" || {
     echo "not ok 1 - builtin multi-input repeated alpha-policy render failed"
     exit 0

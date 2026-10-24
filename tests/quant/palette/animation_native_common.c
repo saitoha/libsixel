@@ -37,7 +37,8 @@ int
 test_animation_feedback(int cache, int soft)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { '~', "none" }, { 'd', "fs" }, { 'W', "gamma" },
+        { '=', "balanced:B1" }, { '~', "none" }, { 'd', "fs" },
+        { 'W', "gamma" },
         { 'X', "gamma" }, { '_', "none" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
         { '4', "full-frame" }, { '5', "none" }, { 'p', "2" },
@@ -257,6 +258,7 @@ test_animation_loader_run(char const *input, char const *path,
                            char const *loader, char const *threads, int p3,
                            int fixed)
 {
+    char threading[64];
     static struct { int flag; char const *value; } const options[] = {
         { '~', "none" }, { 'd', "fs" }, { 'W', "linear" },
         { 'X', "linear" }, { '_', "none" }, { '.', "auto" },
@@ -297,6 +299,7 @@ test_animation_loader_run(char const *input, char const *path,
     int c;
     int ok;
 
+    (void)snprintf(threading, sizeof(threading), "balanced:B%s", threads);
     encoder = NULL;
     file = NULL;
     decoded = NULL;
@@ -318,7 +321,7 @@ test_animation_loader_run(char const *input, char const *path,
     if ((fixed && (SIXEL_FAILED(sixel_encoder_setopt(encoder,
                     'b', "xterm16")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', "none")))) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threads)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threading)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'L', loader)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U',
                 p3 ? "display-p3" : "gamma")) ||

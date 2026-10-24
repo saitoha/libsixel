@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0180-threading-load-depth-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    "-=6:Q2" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:Q2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading load_depth short conversion failed"
     exit 0
 }
@@ -35,7 +35,7 @@ case "${short_trace}" in *LSXSUB1\|*key=load_depth\|stored=1\|binding=load_depth
     echo "not ok" 1 - "threading load_depth short value was not stored"
     exit 0
 }
-case "${short_trace}" in *threading:\ load=ahead\ load_depth=2\ **) true ;; *) false ;; esac || {
+case "${short_trace}" in *threading:\ *load=ahead\ load_depth=2\ **) true ;; *) false ;; esac || {
     echo "not ok" 1 - "threading load_depth short did not set the loader queue depth"
     exit 0
 }
@@ -43,7 +43,7 @@ case "${short_trace}" in *threading:\ load=ahead\ load_depth=2\ **) true ;; *) f
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     --env "SIXEL_THREADING_LOAD_DEPTH=2" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading load_depth environment conversion failed"
     exit 0
 }
@@ -51,7 +51,7 @@ case "${env_trace}" in *LSXSUB1\|*key=load_depth\|stored=1\|binding=load_depth,l
     echo "not ok" 1 - "threading load_depth environment value was not stored"
     exit 0
 }
-case "${env_trace}" in *threading:\ load=ahead\ load_depth=2\ **) true ;; *) false ;; esac || {
+case "${env_trace}" in *threading:\ *load=ahead\ load_depth=2\ **) true ;; *) false ;; esac || {
     echo "not ok" 1 - "threading load_depth environment did not set the loader queue depth"
     exit 0
 }
@@ -59,7 +59,7 @@ case "${env_trace}" in *threading:\ load=ahead\ load_depth=2\ **) true ;; *) fal
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     --env "SIXEL_THREADING_LOAD_DEPTH=17" \
-    "-=6" "${input_image}" 2>&1 >/dev/null) || {
+    "-=balanced:B6" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading load_depth out-of-range conversion failed"
     exit 0
 }

@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_THREADING_POLICY=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+SIXEL_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/icc_output/0001_icc_output grid 3 \
     "icc:path=${TOP_SRCDIR}/tests/data/color-numeric/black-offset.icc" || {
     echo "not ok 1 - ICC black_cache"

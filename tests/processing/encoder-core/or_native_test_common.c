@@ -95,7 +95,7 @@ int
 or_native_encoder_case(int scenario)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'O', NULL },
+        { '=', "balanced:B1" }, { 'O', NULL },
         { 'Q', "heckbert" }, { 'F', "none" }, { '_', "none" },
         { '~', "none" }, { 'd', "none" }, { 'E', "size" },
         { 'X', "linear" }, { 'W', "linear" }, { '7', NULL },
@@ -191,7 +191,7 @@ or_native_encoder_case(int scenario)
         goto end;
     }
     if ((scenario == 4 || offset) &&
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "4"))) {
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B4"))) {
         goto end;
     }
     if (offset && SIXEL_FAILED(sixel_encoder_setopt(encoder, '+', "2,7"))) {

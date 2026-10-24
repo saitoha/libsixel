@@ -325,7 +325,7 @@ test_packed_wire_run(int space, int mode, int animated)
         "gamma", "linear", "oklab", "cielab", "din99d"
     };
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { '~', "none" }, { 'd', "none" },
+        { '=', "balanced:B1" }, { '~', "none" }, { 'd', "none" },
         { '0', "none" }, { '_', "none" }, { '.', "float32" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
         { '4', "full-frame" }, { '5', "none" }, { 'A', "keep" },

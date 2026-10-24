@@ -330,8 +330,8 @@ typedef int SIXELSTATUS;
     /* -., --precision-policy: palette application precision. */
     /* 8bit requires the gamma working colorspace. */
 #define SIXEL_OPTFLAG_THREADING_POLICY  ('=')
-    /* -=, --threading-policy=POLICY[:KEY=VALUE...]: total thread budget
-     * (auto, serial, or a count), per-stage limits, and frame concurrency. */
+    /* -=, --threading-policy=POLICY[:KEY=VALUE...]: lazy, balanced or greedy
+     * spending; global_budget (B), stage limits and frame concurrency. */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
 #define SIXEL_OPTFLAG_MAPFILE_OUTPUT    ('M')  /* -M FILE, --mapfile-output=FILE: export palette file */
@@ -2196,9 +2196,12 @@ sixel_encoder_encode_frame(
  *
  * Threads.  Playback follows the process threading policy
  * (SIXEL_OPTFLAG_THREADING_POLICY and the SIXEL_THREADING_* environment):
- * its prepare key selects whether the next admitted frame is prepared while
- * the current one is emitted, and its stage limits size each frame's
- * workers.  CAPACITY, not the policy's load_depth, bounds admission.
+ * lazy overlaps independent stages with one default dither band, balanced
+ * uses size heuristics and performance CPUs, and greedy uses the full
+ * global_budget without size thresholds. Explicit stage keys override mode
+ * defaults and shrink to fit the budget. Load and prepare default to ahead;
+ * prepare selects whether the next frame is prepared during emission.
+ * CAPACITY, not the policy's load_depth, bounds admission.
  * palette_mode is the per-object counterpart of the policy's palette key;
  * only per-frame palettes are implemented.
  */

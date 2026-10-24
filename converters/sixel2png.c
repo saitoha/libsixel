@@ -183,19 +183,18 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         '=',
         "threading-policy",
-        "-= POLICY[:decode=COUNT], "
-        "--threading-policy=POLICY[:decode=COUNT]\n"
-        "                           plan worker threads. POLICY\n"
-        "                           is the total budget: auto\n"
-        "                           (hardware thread count),\n"
-        "                           serial, or COUNT. decode=\n"
-        "                           COUNT (short SCOUNT) limits\n"
-        "                           parallel SIXEL parsing and\n"
-        "                           shrinks to fit the budget.\n"
-        "                           sixel2png\n"
-        "                           defaults to 'auto' when\n"
-        "                           SIXEL_THREADING_POLICY is\n"
-        "                           unset or empty.\n"
+        "-= POLICY[:KEY=VALUE...], --threading-policy=POLICY[:KEY=VALUE...]\n"
+        "                           lazy: serial SIXEL parsing;\n"
+        "                           balanced: performance CPU cap (default);\n"
+        "                           greedy: full budget, no size thresholds.\n"
+        "                           global_budget=COUNT (:BCOUNT) sets the\n"
+        "                           budget; default hardware threads.\n"
+        "                           decode=COUNT (:SCOUNT) limits parsing\n"
+        "                           and shrinks to fit the budget.\n"
+        "                           SIXEL_THREADING_POLICY sets the base;\n"
+        "                           SIXEL_THREADING_GLOBAL_BUDGET sets the\n"
+        "                           budget; CLI keys take precedence.\n"
+        "                           Empty/unset base defaults to balanced.\n"
     },
     {
         'G',
@@ -708,7 +707,7 @@ main(int argc, char *argv[])
      * concurrency when the user has not supplied SIXEL_THREADING_POLICY
      * through the environment or --env.
      */
-    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "auto") != 0) {
+    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "balanced") != 0) {
         sixel_helper_set_additional_message(
             "failed to set default environment variable "
             "'SIXEL_THREADING_POLICY'.");

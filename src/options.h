@@ -457,14 +457,15 @@ typedef struct sixel_runtime_policy_options {
 } sixel_runtime_policy_options_t;
 
 /*
- * Process-wide thread plan. The base value is the total budget; stage counts
+ * Process-wide thread plan. The base selects budget spending; stage counts
  * are upper bounds that the planner shrinks to fit that budget. Frame keys
  * select which stages of consecutive frames may run concurrently.
  */
 typedef struct sixel_threading_policy_options {
-    int budget;                 /* 0 selects the hardware thread count */
+    unsigned int budget;       /* API value 0 selects hardware threads */
     int budget_override;
-    int serial;                 /* base "serial": serial frame defaults */
+    int mode;
+    int mode_override;
     int load;
     int load_override;
     unsigned int load_depth;
@@ -498,8 +499,9 @@ typedef enum sixel_threading_palette_mode {
 } sixel_threading_palette_mode_t;
 
 typedef enum sixel_threading_policy_base {
-    SIXEL_THREADING_POLICY_AUTO = 0,
-    SIXEL_THREADING_POLICY_SERIAL = 1
+    SIXEL_THREADING_POLICY_BALANCED = 0,
+    SIXEL_THREADING_POLICY_LAZY,
+    SIXEL_THREADING_POLICY_GREEDY
 } sixel_threading_policy_base_t;
 
 #define SIXEL_THREADING_LOAD_DEPTH_DEFAULT 4
@@ -764,21 +766,14 @@ sixel_option_apply_runtime_policy_argument(
     char *diagnostic,
     size_t diagnostic_size);
 
-/* Parse -=/--threading-policy. The base is auto, serial, or a positive
- * total thread budget; it is followed by optional suboptions. */
+/* Parse -=/--threading-policy. The base selects lazy, balanced or greedy
+ * spending; global_budget and stage limits are optional suboptions. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_apply_threading_policy_argument(
     char const *argument,
     unsigned int consumer_scope,
     char *diagnostic,
     size_t diagnostic_size);
-
-/* Parse the base value alone, as used by SIXEL_THREADING_POLICY. */
-SIXEL_INTERNAL_API int
-sixel_option_parse_threading_policy_base(
-    char const *text,
-    int *budget,
-    int *serial);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_apply_diagnostics_argument(

@@ -87,7 +87,7 @@ def encoder_policy_arguments(threads: int,
                              ncolors: int = 256) -> List[str]:
     """Return the controlled choices shared by static encoder fixtures."""
     return [
-        f"--threading-policy={threads}",
+        f"--threading-policy=balanced:global_budget={threads}",
         "--precision-policy=auto",
         "--quality=full",
         "--sampling-policy=full-frame",
@@ -174,7 +174,7 @@ def decoder_command(sixel2png: str,
     """Build the controlled decoder command."""
     return [
         sixel2png,
-        f"--threading-policy={threads}",
+        f"--threading-policy=balanced:global_budget={threads}",
         "--gpu-policy=off",
         "-J",
         str(log_path),
@@ -1115,7 +1115,7 @@ def plot_encoder_color_scaling(path: Path,
             linestyle=":",
             linewidth=1.0,
         )
-        axis.set_title(f"--threading-policy={threads} worker budget")
+        axis.set_title(f"--threading-policy=balanced:global_budget={threads} worker budget")
         axis.set_xscale("log", base=2)
         axis.set_xticks(colors_values)
         axis.set_xticklabels(
@@ -1265,7 +1265,7 @@ def measure_encoder_scaling(args: argparse.Namespace,
                 command,
                 {
                     **replacements,
-                    f"--threading-policy={threads}": "--threading-policy={threads}",
+                    f"--threading-policy=balanced:global_budget={threads}": "--threading-policy=balanced:global_budget={threads}",
                 },
             )
             proc = run_checked(command, env)
@@ -1357,7 +1357,7 @@ def measure_encoder_color_scaling(args: argparse.Namespace,
                 command,
                 {
                     **replacements,
-                    f"--threading-policy={threads}": "--threading-policy={threads}",
+                    f"--threading-policy=balanced:global_budget={threads}": "--threading-policy=balanced:global_budget={threads}",
                     str(ncolors): "{ncolors}",
                 },
             )
@@ -1434,7 +1434,7 @@ def measure_decoder_scaling(args: argparse.Namespace,
                 command,
                 {
                     str(args.sixel2png_payload): "{sixel2png}",
-                    f"--threading-policy={threads}": "--threading-policy={threads}",
+                    f"--threading-policy=balanced:global_budget={threads}": "--threading-policy=balanced:global_budget={threads}",
                     str(sixel_path): "{decoder_sixel}",
                     str(log_path): "{log}",
                     os.devnull: "{null}",
@@ -1579,7 +1579,7 @@ def measure_auxiliary_timelines(args: argparse.Namespace,
         if identifier == "1920x1080":
             probe_command = [
                 str(args.sixel2png_payload),
-                "--threading-policy=1",
+                "--threading-policy=balanced:global_budget=1",
                 "--gpu-policy=off",
                 "-i",
                 str(decoder_sixel),

@@ -19,7 +19,7 @@ set -v
 # Keep capability initialization and real dispatch in one timed process.
 status=0
 
-SIXEL_THREADING_POLICY=1 \
+SIXEL_THREADING_GLOBAL_BUDGET=1 \
 SIXEL_DITHER_BLUENOISE_STRENGTH=0.4 \
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --require-gpu-palette \
     dither/bluenoise/0052_keep_offset >/dev/null || status=$?

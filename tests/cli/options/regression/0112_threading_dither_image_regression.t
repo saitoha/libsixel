@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0112-threading-dither-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    "-=6:D1" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:D1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading dither short conversion failed"
     exit 0
 }
@@ -43,7 +43,7 @@ case "${short_trace}" in *LSXDTH1\|*dither_threads=1\|encode_threads=5**) true ;
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_THREADING_DITHER=1" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading dither environment conversion failed"
     exit 0
 }
@@ -59,7 +59,7 @@ case "${env_trace}" in *LSXDTH1\|*dither_threads=1\|encode_threads=5**) true ;; 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_THREADING_DITHER=-1" \
-    "-=6" "${input_image}" 2>&1 >/dev/null) || {
+    "-=balanced:B6" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading dither out-of-range conversion failed"
     exit 0
 }

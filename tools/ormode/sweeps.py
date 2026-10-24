@@ -54,7 +54,7 @@ def decode_pair(paths, name, threads):
     arrays = []
     commands = []
     for path in paths:
-        args = [base.DEC, f"--threading-policy={threads}", "--direct", "-i", path, "-o", "-"]
+        args = [base.DEC, f"--threading-policy=balanced:global_budget={threads}", "--direct", "-i", path, "-o", "-"]
         png = base.run(args).stdout
         arrays.append(base.rgba(png))
         commands.append([str(x) for x in args[:-1] + [os.devnull]])

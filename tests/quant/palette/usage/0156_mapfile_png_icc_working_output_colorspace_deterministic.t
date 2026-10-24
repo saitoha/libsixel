@@ -33,7 +33,7 @@ expected_palette='JASC-PAL
 191 191 191'
 
 actual_palette=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none --threading-policy=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --cms-engine=none --threading-policy=balanced:global_budget=1 \
         --quantize-model=heckbert --binning-policy=none \
         --sampling-policy=full-frame --snap-policy=none --diffusion=none \
         -L builtin! --working-colorspace=linear --output-colorspace=linear \

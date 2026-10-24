@@ -18,9 +18,11 @@ image into horizontal strips.
 
 ## Worker budget is not a process thread limit
 
-`--threading-policy=N` supplies a worker budget to the current operation. It is not a
-strict upper bound on all operating-system threads in the process. Depending
-on the path, the process can also contain:
+`--threading-policy=balanced:global_budget=N` supplies the worker budget for the current operation. The base selects how that budget is spent on still images and animations: `lazy` overlaps independent branches and pipelines, with one default dither band and serial colorspace, sampling, scaling, FHEDT construction and SIXEL parsing; `balanced` retains size heuristics and caps the effective budget to performance logical CPUs on hybrid hardware; `greedy` uses the full budget and makes `colorspace_min`, `sample_min` and `scale_min_bytes` zero even when `-j` explicitly sets them. The default base is `balanced`. Explicit stage keys override mode defaults and shrink to fit the budget; lazy SIXEL parsing remains serial.
+
+`global_budget` (`B`) and `sixel_set_threads()` take precedence over `SIXEL_THREADING_GLOBAL_BUDGET`. An explicitly selected CLI base or `SIXEL_THREADING_POLICY=lazy|balanced|greedy` defaults to hardware concurrency. Without an explicit budget or mode, library processing retains two slots and direct SIXEL parsing one. The converters supply `balanced` when the base environment is empty or unset, so their default uses hardware concurrency subject to the performance-core cap. On macOS the cap uses `hw.perflevel0.logicalcpu` only when `hw.nperflevels > 1`; on Linux it counts `/sys/devices/cpu_core/cpus` ranges. Missing or invalid topology falls back to the logical count.
+
+The budget bounds planned work slots rather than all operating-system threads in the process. Depending on the path, the process can also contain:
 
 - the caller or controller thread;
 - an encoder writer thread that commits finished SIXEL bands in order;

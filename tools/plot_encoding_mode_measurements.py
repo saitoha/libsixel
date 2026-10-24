@@ -111,7 +111,7 @@ def make_base_command(img2sixel: Path, threads: int = 1,
     """Return controls shared by both comparisons."""
     command = [
         str(img2sixel),
-        f"--threading-policy={threads}",
+        f"--threading-policy=balanced:global_budget={threads}",
         "--precision-policy=8bit",
         "--quality=high",
         "--loaders=builtin!",

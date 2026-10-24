@@ -128,7 +128,9 @@ end:
 int
 test_palette_0081_lookup_failure(int argc, char **argv)
 {
-    char const *threads[] = {"1", "2", "4", "8"};
+    char const *threads[] = {
+        "balanced:B1", "balanced:B2", "balanced:B4", "balanced:B8"
+    };
     char const *precision[] = {"8bit", "float32"};
     char const *lookup[] = {"fhedt", "vptree"};
     int t;

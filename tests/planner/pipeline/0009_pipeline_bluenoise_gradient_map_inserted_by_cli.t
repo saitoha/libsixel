@@ -13,7 +13,7 @@ set -v
 
 pipeline_log=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        -v -=1 \
+        -v -=balanced:B1 \
         -d bluenoise:G1.0 \
         -o /dev/null \
         "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1

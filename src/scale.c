@@ -58,6 +58,7 @@
 #include "compat_stub.h"
 #include "scale.h"
 #include "threading.h"
+#include "options.h"
 
 #if SIXEL_ENABLE_THREADS
 # include <6cells.h>
@@ -1084,6 +1085,9 @@ sixel_scale_parallel_min_bytes(void)
     static int initialized = 0;
     static size_t threshold = 0;
 
+    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_GREEDY) {
+        return 0u;
+    }
     if (initialized) {
         return threshold;
     }
@@ -1276,9 +1280,9 @@ sixel_scale_create_pool(sixel_thread_pool_t **pool,
 
 /*
  * Parallel path mirrors the encoder and dither thread selection through
- * sixel_threads_resolve(). Rows are batched into jobs for both passes so the
- * caller can saturate the threadpool without altering the filtering math while
- * reducing queue overhead.
+ * sixel_threads_resolve_fanout(). Rows are batched into jobs for both
+ * passes so the caller can saturate the pool without altering the filtering
+ * math, while reducing queue overhead.
  */
 static int
 scale_with_resampling_parallel(
@@ -1318,7 +1322,7 @@ scale_with_resampling_parallel(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    threads = sixel_threads_resolve();
+    threads = sixel_threads_resolve_fanout();
     if (threads < 2) {
         if (logger != NULL) {
             sixel_timeline_logger_logf(logger,

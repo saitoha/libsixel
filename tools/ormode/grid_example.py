@@ -92,7 +92,7 @@ def generate(library, decoder):
             LD_LIBRARY_PATH=str(library.parent),
         )
         decoded = subprocess.run(
-            [str(decoder), "--direct", "--threading-policy=1"],
+            [str(decoder), "--direct", "--threading-policy=balanced:global_budget=1"],
             input=stream,
             capture_output=True,
             env=env,

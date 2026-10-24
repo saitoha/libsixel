@@ -26,7 +26,7 @@ env_output="${artifact_dir}/0181-threading-prepare-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    "-=6:Pserial" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:Pserial" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading prepare short conversion failed"
     exit 0
 }
@@ -42,7 +42,7 @@ case "${short_trace}" in *threading:\ *prepare=serial\ **) true ;; *) false ;; e
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     --env "SIXEL_THREADING_PREPARE=serial" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading prepare environment conversion failed"
     exit 0
 }

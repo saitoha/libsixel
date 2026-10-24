@@ -113,6 +113,9 @@ SIXEL_INTERNAL_API int sixel_thread_create(sixel_thread_t *thread,
 SIXEL_INTERNAL_API void sixel_thread_join(sixel_thread_t *thread);
 SIXEL_INTERNAL_API int sixel_thread_pin_self(int cpu_index);
 SIXEL_INTERNAL_API int sixel_get_hw_threads(void);
+/* Heterogeneous CPUs expose only performance logical CPUs; failures return
+ * the complete hardware count, preserving homogeneous/VM behavior. */
+SIXEL_INTERNAL_API int sixel_get_performance_threads(void);
 
 /* Stack-owned, caller-local limits for overlapping stages. Enter/leave must
  * be paired on the same thread; nested scopes can only reduce the budget.
@@ -144,6 +147,10 @@ SIXEL_INTERNAL_API int sixel_threads_reclaim(void);
 SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
 SIXEL_INTERNAL_API void sixel_set_threads(int threads);
 SIXEL_INTERNAL_API int sixel_threads_resolve(void);
+/* Data-parallel stages stay serial in lazy mode. Pipeline totals do not. */
+SIXEL_INTERNAL_API int sixel_threads_resolve_fanout(void);
+SIXEL_INTERNAL_API int sixel_threading_policy_mode(void);
+SIXEL_INTERNAL_API char const *sixel_threading_policy_mode_name(void);
 
 struct sixel_threading_policy_options;
 
@@ -158,7 +165,8 @@ SIXEL_INTERNAL_API void sixel_threading_policy_load(
     struct sixel_threading_policy_options *options);
 SIXEL_INTERNAL_API void sixel_threading_policy_store(
     struct sixel_threading_policy_options const *options);
-/* Returns true when -= or SIXEL_THREADING_POLICY names the budget. */
+/* Explicit means a CLI/API/environment budget or a selected base mode.
+ * The returned budget includes the balanced performance-core cap. */
 SIXEL_INTERNAL_API int sixel_threading_policy_explicit_budget(int *threads);
 /* Frame-level modes return sixel_threading_frame_mode_t values. */
 SIXEL_INTERNAL_API int sixel_threading_policy_load_mode(void);

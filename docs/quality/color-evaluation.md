@@ -44,7 +44,7 @@ The encoder's `-Udisplay-p3` selects an output definition; the corresponding eva
 
 ```sh
 input=tests/data/color-numeric/png-p3-16-rgb.png
-converters/img2sixel "$input" --threading-policy=1 \
+converters/img2sixel "$input" --threading-policy=balanced:global_budget=1 \
     -L'builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \
     -Udisplay-p3 -_none > output.six
 assessment/lsqa -L'builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!' \

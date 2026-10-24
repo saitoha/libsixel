@@ -98,14 +98,22 @@ painting. \(dqpng:-\(dq writes to standard output, while
 .TP 5
 .B \-= \fIPOLICY\fP[:\fIKEY\fP=\fIVALUE\fP...], \-\-threading\-policy=\fIPOLICY\fP[:\fIKEY\fP=\fIVALUE\fP...]
 plan where worker threads go.
-\fIPOLICY\fP is the total thread budget: \fBauto\fP matches the hardware
-thread count, \fBserial\fP uses one thread and keeps frame loading and
-preparation serial, and a positive \fICOUNT\fP uses at most that many threads.
+\fIPOLICY\fP selects budget spending: \fBlazy\fP overlaps independent
+branches and pipelines with one default dither band; \fBbalanced\fP
+uses size heuristics and caps the budget to performance logical CPUs on
+hybrid hardware (default); \fBgreedy\fP uses the full budget and ignores
+colorspace_min, sample_min and scale_min_bytes, including explicit -j values.
+Explicit stage keys override mode defaults.
 Stage limits that exceed the budget shrink to fit it; they are never an
 error.
 Frame keys and \fBprepare_workers\fP never change the output; the dither
 worker count selects the parallel band split.
 .RS
+.TP 5
+.B global_budget=COUNT
+positive total thread budget (short form \fB:B\fP), defaulting to hardware
+threads subject to the balanced performance-core cap. Applies to both
+encoding and decoding; sixel_set_threads() sets the same budget.
 .TP 5
 .B load=serial|ahead
 decode frames ahead of encoding (default \fBahead\fP; short form \fB:L\fP).
@@ -138,11 +146,11 @@ bind workers to CPUs; dither workers default to 1 and FHEDT workers to 0
 .RE
 .IP
 Compact suboption names use one uppercase letter plus the value:
-load=L, load_depth=Q, prepare=P, palette=C, dither=D, encode=E,
+global_budget=B, load=L, load_depth=Q, prepare=P, palette=C, dither=D, encode=E,
 prepare_workers=W, pin=I.
 .IP
 When \fBSIXEL_THREADING_POLICY\fP is unset or empty, the \fBimg2sixel\fP
-frontend defaults to \fBauto\fP.
+frontend defaults to \fBbalanced\fP.
 .TP 5
 .B \-. \fIPOLICY\fP, \-\-precision\-policy=\fIPOLICY\fP
 select the sample precision of palette application.
@@ -1933,9 +1941,13 @@ Overridden by \fB\-j *:resize_precision=VALUE\fP
 .TP 5
 .B SIXEL_THREADING_POLICY
 .br
-total thread budget: \(dqauto\(dq, \(dqserial\(dq, or a positive count.
-Suboptions are not accepted here. Empty or unset values make
-\fBimg2sixel\fP use \(dqauto\(dq. \fB\-=\fP takes precedence.
+spending mode: lazy, balanced, or greedy. Suboptions are not accepted here.
+Empty or unset values make img2sixel use balanced. The CLI base wins.
+.TP 5
+.B SIXEL_THREADING_GLOBAL_BUDGET
+.br
+Positive total budget for encoding and decoding, overridden by the
+\fBglobal_budget\fP key or sixel_set_threads().
 .TP 5
 .B SIXEL_THREADING_LOAD\fR, \fBSIXEL_THREADING_LOAD_DEPTH\fR, \fBSIXEL_THREADING_PREPARE\fR, \fBSIXEL_THREADING_PALETTE
 .br

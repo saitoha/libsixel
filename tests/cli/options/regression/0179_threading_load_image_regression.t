@@ -26,7 +26,7 @@ env_output="${artifact_dir}/0179-threading-load-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    "-=6:Lserial" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:Lserial" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading load short conversion failed"
     exit 0
 }
@@ -34,7 +34,7 @@ case "${short_trace}" in *LSXSUB1\|*key=load\|stored=1\|binding=load,load_overri
     echo "not ok" 1 - "threading load short value was not stored"
     exit 0
 }
-case "${short_trace}" in *threading:\ load=serial\ **) true ;; *) false ;; esac || {
+case "${short_trace}" in *threading:\ *load=serial\ **) true ;; *) false ;; esac || {
     echo "not ok" 1 - "threading load short did not keep frame loading serial"
     exit 0
 }
@@ -42,7 +42,7 @@ case "${short_trace}" in *threading:\ load=serial\ **) true ;; *) false ;; esac 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
     --env "SIXEL_THREADING_LOAD=serial" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading load environment conversion failed"
     exit 0
 }
@@ -50,7 +50,7 @@ case "${env_trace}" in *LSXSUB1\|*key=load\|stored=1\|binding=load,load_override
     echo "not ok" 1 - "threading load environment value was not stored"
     exit 0
 }
-case "${env_trace}" in *threading:\ load=serial\ **) true ;; *) false ;; esac || {
+case "${env_trace}" in *threading:\ *load=serial\ **) true ;; *) false ;; esac || {
     echo "not ok" 1 - "threading load environment did not keep frame loading serial"
     exit 0
 }

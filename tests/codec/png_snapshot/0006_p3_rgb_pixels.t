@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 set +e
 SIXEL_DECODER_INPUT_COLORSPACE=srgb \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! --cms-engine=none \
-    --threading-policy=1 -.f -Qheckbert -Fnone -aoff -_none '-~none' -dnone \
+    --threading-policy=balanced:global_budget=1 -.f -Qheckbert -Fnone -aoff -_none '-~none' -dnone \
     -Xgamma -Wgamma -Udisplay-p3 -trgb -p3 -o png:- - <<'PPM' | \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" codec/png_snapshot/0006_p3_rgb_pixels
 P3

@@ -862,6 +862,11 @@ sixel_encoding_planner_schedule(
         planner->palette_threads = total / 2;
         planner->allow_palette_async = 1;
         planner->main_threads = total - planner->palette_threads;
+        if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_LAZY) {
+            /* Independent branches may overlap without data fan-out. */
+            planner->palette_threads = 1;
+            planner->main_threads = 1;
+        }
     }
 
     sixel_encoding_planner_set_loader_metadata(
@@ -1016,7 +1021,8 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
         return;
     }
 
-    staged = request->prefer_staged && !request->threads_max_set
+    staged = !request->lazy && request->prefer_staged
+        && !request->threads_max_set
         && !request->encode_threads_max_set;
     /* Only the spatial policies support independent work bands. A staged
      * unknown policy would lose overlap without gaining parallel
@@ -1055,6 +1061,8 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
         if (request->threads_max_set) {
             dither_threads = request->threads_max > (unsigned int)INT_MAX
                 ? INT_MAX : (int)request->threads_max;
+        } else if (request->lazy) {
+            dither_threads = 1;
         } else if (request->encode_threads_max_set &&
                    request->encode_threads_max < (unsigned int)threads) {
             dither_threads = threads - (int)request->encode_threads_max;
@@ -1212,6 +1220,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     /* This pre-palette estimate uses the request. Runtime invokes the same
      * allocator with the completed palette and effective diffusion method. */
     request.method_for_diffuse = encoder->method_for_diffuse;
+    request.lazy = sixel_threading_policy_mode() ==
+        SIXEL_THREADING_POLICY_LAZY;
     request.prefer_staged = sixel_dither_encode_default_staged(
         threads, request.method_for_diffuse);
     request.gpu_encode_only = sixel_gpu_palette_policy_claims_apply_stage(
@@ -1397,8 +1407,11 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
             planner->palette_threads,
             planner->heavy_ops);
     fprintf(stream,
-            "  threading: load=%s load_depth=%d prepare=%s "
+            "  threading: mode=%s budget=%d "
+            "load=%s load_depth=%d prepare=%s "
             "prepare_workers=%d pin=%d\n",
+            sixel_threading_policy_mode_name(),
+            planner->total_threads,
             sixel_threading_policy_load_mode() == SIXEL_THREADING_FRAME_AHEAD
                 ? "ahead" : "serial",
             sixel_threading_policy_load_depth(),

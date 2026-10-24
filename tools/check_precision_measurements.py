@@ -28,10 +28,17 @@ DOMAIN_ORDER = (
 
 
 def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Read a recorded --threads=N budget as the equal -= spelling."""
-    return ["--threading-policy=" + token[len("--threads="):]
-            if token.startswith("--threads=") else token
-            for token in tokens]
+    """Normalize both historical numeric budget spellings without data edits."""
+    result = []
+    for token in tokens:
+        if token.startswith("--threads="):
+            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
+        elif token.startswith("--threading-policy="):
+            base = token.split("=", 1)[1]
+            if base.isdecimal() or base in ("{threads}", "{count}"):
+                token = "--threading-policy=balanced:global_budget=" + base
+        result.append(token)
+    return result
 
 
 def fail(message: str) -> None:
@@ -200,7 +207,7 @@ def require_command_contract(row: Dict[str, str]) -> None:
     command = budget_tokens(shlex.split(row["command"]))
     required = (
         "{img2sixel}",
-        "--threading-policy=1",
+        "--threading-policy=balanced:global_budget=1",
         f"--precision-policy={row['precision']}",
         "--quality=full",
         "--loaders=builtin!",

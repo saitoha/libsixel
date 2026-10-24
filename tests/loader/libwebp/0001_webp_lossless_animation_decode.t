@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -=1 -ldisable \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -=balanced:B1 -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp" \
     >"${ARTIFACT_LOCAL_DIR}/webp_loop_disable.six" || {
     echo "not ok" 1 - "libwebp lossless animation decode failed"

@@ -38,7 +38,7 @@ test_map_precision_run(int mode, int space, char const *precision,
                    char const *path, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'X', "linear" }, { 'F', "none" },
+        { '=', "balanced:B1" }, { 'X', "linear" }, { 'F', "none" },
         { '_', "none" }, { '~', "5bit" }, { 't', "rgb" },
         { '4', "full-frame" }, { '5', "none" }, { '0', "hard" },
         { 'd', "none" }, { 'U', "gamma" }

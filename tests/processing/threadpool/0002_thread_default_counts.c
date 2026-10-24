@@ -53,6 +53,9 @@ test_threadpool_0002_thread_default_counts(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    if (sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "") != 0) {
+        return EXIT_FAILURE;
+    }
     processing_actual = sixel_threads_resolve();
     decoder_actual = sixel_decoder_parallel_resolve_threads();
 

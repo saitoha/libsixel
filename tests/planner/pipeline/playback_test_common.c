@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "playback_test_common.h"
@@ -80,6 +81,7 @@ playback_test_frame(int index)
 sixel_encoder_t *
 playback_test_encoder(int delta, char const *threads)
 {
+    char policy[64];
     sixel_encoder_t *encoder;
     SIXELSTATUS status;
 
@@ -87,8 +89,9 @@ playback_test_encoder(int delta, char const *threads)
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL))) {
         return NULL;
     }
+    (void)snprintf(policy, sizeof(policy), "balanced:B%s", threads);
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_THREADING_POLICY, threads);
+                                  SIXEL_OPTFLAG_THREADING_POLICY, policy);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "fs");
     }

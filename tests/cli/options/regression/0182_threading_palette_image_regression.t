@@ -26,7 +26,7 @@ env_output="${artifact_dir}/0182-threading-palette-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    "-=6:Cframe" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:Cframe" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading palette short conversion failed"
     exit 0
 }
@@ -38,7 +38,7 @@ case "${short_trace}" in *LSXSUB1\|*key=palette\|stored=1\|binding=palette,palet
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_THREADING_PALETTE=frame" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading palette environment conversion failed"
     exit 0
 }
@@ -49,7 +49,7 @@ case "${env_trace}" in *LSXSUB1\|*key=palette\|stored=1\|binding=palette,palette
 
 # The latest mode is reserved; it must fail instead of falling back.
 status=0
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-=6:Clatest" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "-=balanced:B6:Clatest" \
     -o /dev/null "${input_image}" 2>/dev/null || status=$?
 test "${status}" -ne 0 || {
     echo "not ok" 1 - "threading palette=latest was accepted"

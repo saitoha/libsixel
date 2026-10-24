@@ -25,7 +25,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/lookup-none.jsonl" \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L builtin:cms_engine=none! --threading-policy=8 --precision-policy=8bit -0hard \
+    -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=8 --precision-policy=8bit -0hard \
     -w 64 -h 64 -d none '-~' auto -o/dev/null \
     "${TOP_SRCDIR}/images/snake.png" || {
     echo "not ok 1 - none CLI"
@@ -39,7 +39,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "lookup/0016_auto_dither" \
 
 SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/lookup-fs.jsonl" \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L builtin:cms_engine=none! --threading-policy=8 --precision-policy=8bit -0hard \
+    -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=8 --precision-policy=8bit -0hard \
     -w 64 -h 64 -d fs '-~' auto -o/dev/null \
     "${TOP_SRCDIR}/images/snake.png" || {
     echo "not ok 1 - fs CLI"
@@ -53,7 +53,7 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "lookup/0016_auto_dither" \
 
 SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/lookup-lso2.jsonl" \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -L builtin:cms_engine=none! --threading-policy=8 --precision-policy=8bit -0hard \
+    -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=8 --precision-policy=8bit -0hard \
     -w 64 -h 64 -d lso2 '-~' auto -o/dev/null \
     "${TOP_SRCDIR}/images/snake.png" || {
     echo "not ok 1 - lso2 CLI"

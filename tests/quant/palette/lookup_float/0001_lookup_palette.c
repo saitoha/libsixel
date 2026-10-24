@@ -57,7 +57,7 @@ lookup_encode(int policy, int space, int p3, int byte,
               char const *solver)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'p', "2" }, { 'Q', "kmeans:seed=1" },
+        { '=', "balanced:B1" }, { 'p', "2" }, { 'Q', "kmeans:seed=1" },
         { 'F', "none" }, { 'a', "off" }, { '_', "none" },
         { 'd', "none" }, { 't', "rgb" }, { '5', "none" },
         { '4', "full-frame" }, { 'X', "gamma" }

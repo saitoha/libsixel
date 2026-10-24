@@ -303,7 +303,7 @@ The byte and float32 filtered paths have scalar implementations plus eligible SS
 
 SIMD selection does not change the method, coordinate equations, kernel radius, or normalization contract. It can change final rounding because vector paths accumulate in float lanes while the scalar byte path uses double accumulators before flooring. Code requiring exact cross-platform pixels should request `-jscalar` and fix every downstream palette and encoding control as well.
 
-When threading is enabled and the buffer is eligible, the scaler submits horizontal and vertical row bands to the shared thread pool. The horizontal pass must complete before the vertical pass begins because the second pass reads the intermediate. `--threading-policy=1` removes this scheduling variable; `:scale_min_bytes=BYTES` and the corresponding environment override can defer parallel scaling for smaller buffers.
+When threading is enabled and the buffer is eligible, the scaler submits horizontal and vertical row bands to the shared thread pool. The horizontal pass must complete before the vertical pass begins because the second pass reads the intermediate. `--threading-policy=balanced:global_budget=1` removes this scheduling variable; `:scale_min_bytes=BYTES` and the corresponding environment override can defer parallel scaling for smaller buffers.
 
 The resize precision policy is a separate planner decision. `preserve` sends gamma-coded byte RGB through the byte scaler, while `linear` and `float` normally promote gamma input to linear RGB float32 before calling the float scaler. Details and measured consequences are in [Crop and Resize](../crop-resize/README.md).
 

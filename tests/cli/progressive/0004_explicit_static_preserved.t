@@ -14,13 +14,13 @@ set -v
 # Captures below are compared; create their per-test directory lazily.
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -= 1 -Z full -S \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -= balanced:B1 -Z full -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-dispose3.gif" \
     >"${ARTIFACT_LOCAL_DIR}/0004_explicit_static_preserved-reference.six" || {
     echo "not ok 1 - reference conversion failed"
     exit 0
 }
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -= 1 -Z progressive -S -Z full \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -= balanced:B1 -Z progressive -S -Z full \
     "${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-dispose3.gif" \
     >"${ARTIFACT_LOCAL_DIR}/0004_explicit_static_preserved-actual.six" || {
     echo "not ok 1 - selected conversion failed"

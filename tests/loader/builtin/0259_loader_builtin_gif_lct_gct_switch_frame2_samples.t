@@ -20,7 +20,7 @@ reference_png="${TOP_SRCDIR}/tests/data/inputs/formats/gif-lct-gct-switch-frame2
 output_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_lct_gct_switch_frame2.six"
 normalized_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_lct_gct_switch_frame2_norm.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
               --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=1 \
               -Lbuiltin! -ldisable -d none:scan=raster -p 256 -g \
               "${input_gif}" >"${output_six}" || {

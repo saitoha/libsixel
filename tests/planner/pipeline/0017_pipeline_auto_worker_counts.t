@@ -18,7 +18,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 # The original image provides six substantial dither jobs and 75 encode jobs.
 # Keep geometry unchanged so the pre-scale plan describes the same raster.
 plan=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_THREADING_POLICY=8 \
+    --env SIXEL_THREADING_GLOBAL_BUDGET=8 \
     --env SIXEL_LOG_PATH="${ARTIFACT_LOCAL_DIR}/pipeline.jsonl" \
     -4 auto -v -d fs "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {

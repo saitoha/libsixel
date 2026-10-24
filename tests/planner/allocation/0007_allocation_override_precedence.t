@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=4:dither=1 -p16 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=balanced:B4:dither=1 -p16 \
     --env SIXEL_THREADING_DITHER=2 \
     --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=18 \
     --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=6 \

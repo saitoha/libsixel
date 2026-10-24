@@ -64,7 +64,7 @@ export_options(sixel_encoder_t *encoder, int native, char const *path,
                int builtin)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "1"}, {'b', "gray2"}, {'~', "none"}, {'d', "none"},
+        {'=', "balanced:B1"}, {'b', "gray2"}, {'~', "none"}, {'d', "none"},
         {'Q', "heckbert"},
         {'F', "none"}, {'_', "none"}, {'E', "size"},
         {'X', "gamma"}, {'W', "gamma"}, {'t', "rgb"}, {'7', NULL},

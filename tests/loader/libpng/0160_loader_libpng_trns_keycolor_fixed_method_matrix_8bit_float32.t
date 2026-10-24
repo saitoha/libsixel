@@ -20,7 +20,7 @@ set -v
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 output_six="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-a-dither-8bit-tbbn0g04.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              --env SIXEL_THREADING_POLICY=4 \
+              --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! \
               --precision-policy=8bit \
               -d a_dither:scan=raster \

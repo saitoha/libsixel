@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=1 -v --precision-policy=8bit -Wgamma -0hard \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=none! --threading-policy=balanced:global_budget=1 -v --precision-policy=8bit -Wgamma -0hard \
     --env "SIXEL_FHEDT_FIRST_TOUCH=0" \
     --env "SIXEL_LOOKUP_FHEDT_FIRST_TOUCH=1" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {

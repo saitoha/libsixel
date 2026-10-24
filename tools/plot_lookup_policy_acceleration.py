@@ -105,7 +105,7 @@ def make_command(img2sixel: str,
         lookup_policy += f":shared_instance={variant.shared_instance}"
     command = [
         img2sixel,
-        f"--threading-policy={variant.threads}",
+        f"--threading-policy=balanced:global_budget={variant.threads}",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",

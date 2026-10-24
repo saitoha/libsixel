@@ -174,7 +174,7 @@ sampling_wire(int space, int p3, char const *mode, char const *precision,
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '5', binning)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                worker ? "4" : "1")) ||
+                worker ? "balanced:B4" : "balanced:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.', precision)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4', automatic
                 ? "auto" : "adaptive-grid")) ||

@@ -6,7 +6,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_THREADING_POLICY=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+SIXEL_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_byte/0001_y_labels || {
     echo "not ok 1 - byte FHEDT Y-pass labels"
     exit 0

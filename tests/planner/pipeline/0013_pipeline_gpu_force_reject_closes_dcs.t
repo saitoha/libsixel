@@ -23,7 +23,7 @@ expected="2638293190 15"
 
 # Soft diffusion promotes the buffer; GPU force must still reject it.
 set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_POLICY=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
         --env SIXEL_GPU_POLICY=force -0soft \
         "${probe_image}" >"${out_file}" 2>/dev/null
 rc=$?

@@ -26,7 +26,7 @@ dispatch_seen=0
 serial_fallback_seen=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_THREADING_POLICY=1 \
+    --env SIXEL_THREADING_GLOBAL_BUDGET=1 \
     -L builtin -d none -p 16 -+ 3,3 -o "${serial_output}" "${input_image}" || {
     echo "not ok 1 - transparent-offset serial encode failed"
     exit 0
@@ -34,7 +34,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOG_PATH="${log_file}" \
-    --env SIXEL_THREADING_POLICY=4 \
+    --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
     --env SIXEL_THREADING_DITHER=2 \
     --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=6 \
     --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=0 \

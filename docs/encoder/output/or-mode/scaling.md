@@ -61,7 +61,7 @@ Untimed [worker observations](sweeps/thread-observations.json) confirm serial ex
 | --- | --- | --- | --- |
 | RGBA decoder API | `sixel_decode_direct` | SIXEL parsing, validation, worker setup/join as applicable, output allocation, serial band-word accumulation or parallel paint, and final materialization | File I/O, correctness comparison, output freeing, PNG encoding |
 | Indexed decoder API | `sixel_decode_raw` | SIXEL parsing, validation, worker setup/join as applicable, output allocation, index/palette construction | File I/O, conversion to RGBA for checking, correctness comparison, freeing, PNG encoding |
-| RGBA PNG CLI | `sixel2png --direct --threading-policy=N -i stream.six -o /dev/null` | Process startup, cached input-file I/O, decoding, PNG generation and writes to `/dev/null` | Terminal rendering, network transport |
+| RGBA PNG CLI | `sixel2png --direct --threading-policy=balanced:global_budget=N -i stream.six -o /dev/null` | Process startup, cached input-file I/O, decoding, PNG generation and writes to `/dev/null` | Terminal rendering, network transport |
 
 Each API configuration has 21 timed calls after two warmup pairs; each CLI configuration has 11 timed processes after two warmup pairs. Streams are loaded into memory before API timing. Every API result is compared outside the timed call with the baseline, including palette expansion for the indexed path. The timer includes allocation of a new result, but not releasing that result after validation. The CLI's PNG generation is deliberately retained in its own metric rather than being described as pure decoding.
 

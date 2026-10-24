@@ -69,7 +69,7 @@ sample_case(int format, int clipped, int mode)
     unsigned char working_palette[768];
     unsigned char *mask;
     float *floats;
-    char thread_text[8];
+    char thread_text[32];
     char target_text[40];
     size_t expected_size;
     size_t size;
@@ -233,7 +233,8 @@ sample_case(int format, int clipped, int mode)
                     &encoded, allocator))) {
             goto end;
         }
-        (void)snprintf(thread_text, sizeof(thread_text), "%d", thread);
+        (void)snprintf(thread_text, sizeof(thread_text),
+                       "balanced:B%d", thread);
         /* Encoding itself retains thread-dependent band boundaries and
          * diffusion. Compare extraction modes at each fixed encoder budget. */
         runtime.sample_parallel_min_pixels = attempt % 2 == 0 ? SIZE_MAX : 1;

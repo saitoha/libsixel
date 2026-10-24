@@ -144,7 +144,7 @@ test_highcolor_png(int mode, char const *directory)
                 mode == 0 ? "8bit" : "float32")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', "gamma")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "none")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "1")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'A', "keep")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't',
                 mode == 3 ? "hls" : "rgb"))) {

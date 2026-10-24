@@ -42,7 +42,7 @@ static int
 dn_frames(int mode, char const *positional, int workspace)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
+        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
         {'F', "none"}, {'a', "off"}, {'_', "none"}, {'0', "none"},
         {'X', "gamma"}, {'W', "gamma"}, {'U', "gamma"}, {'t', "rgb"},
         {'.', "float32"}, {'p', "4"}, {'4', "full-frame"}, {'5', "none"},
@@ -120,7 +120,7 @@ dn_frames(int mode, char const *positional, int workspace)
     }
     if ((mode == 1 && SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
             "8bit"))) || (mode == 4 && SIXEL_FAILED(sixel_encoder_setopt(
-            encoder, '=', "4"))) || (mode == 2 && SIXEL_FAILED(
+            encoder, '=', "balanced:B4"))) || (mode == 2 && SIXEL_FAILED(
             sixel_encoder_set_6delta_plane_size(encoder, 6, 1)))) {
         goto end;
     }
@@ -439,7 +439,7 @@ int
 test_delta_native_scope(int unused)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
+        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'Q', "heckbert"},
         {'F', "none"}, {'a', "off"}, {'_', "none"}, {'X', "gamma"},
         {'W', "gamma"}, {'U', "display-p3"}, {'t', "rgb"},
         {'.', "float32"}, {'p', "4"}, {'Z', "delta"}

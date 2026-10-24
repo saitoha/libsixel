@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0118-threading-encode-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    "-=6:E3" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=balanced:B6:E3" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading encode short conversion failed"
     exit 0
 }
@@ -43,7 +43,7 @@ case "${short_trace}" in *LSXDTH1\|*dither_threads=3\|encode_threads=3**) true ;
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_THREADING_ENCODE=3" \
-    "-=6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading encode environment conversion failed"
     exit 0
 }
@@ -59,7 +59,7 @@ case "${env_trace}" in *LSXDTH1\|*dither_threads=3\|encode_threads=3**) true ;; 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
     --env "SIXEL_THREADING_ENCODE=-1" \
-    "-=6" "${input_image}" 2>&1 >/dev/null) || {
+    "-=balanced:B6" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading encode out-of-range conversion failed"
     exit 0
 }

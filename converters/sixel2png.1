@@ -149,14 +149,15 @@ The default value is 0.
 Decode the SIXEL stream into an RGBA surface.
 The alpha channel starts at zero so untouched pixels remain transparent.
 .TP 5
-.B \-= POLICY[:decode=COUNT], \-\-threading\-policy=POLICY[:decode=COUNT]
-Plan worker threads.  POLICY is the total thread budget: "auto" matches the
-detected hardware thread count, "serial" uses one thread, and a positive
-COUNT uses at most that many threads.  The \fBdecode=COUNT\fP key (short form
-\fB:SCOUNT\fP) limits parallel SIXEL parsing; a limit above the budget shrinks
-to fit it.
-When SIXEL_THREADING_POLICY is unset or empty, the sixel2png frontend
-defaults to "auto".
+.B \-= POLICY[:KEY=VALUE...], \-\-threading\-policy=POLICY[:KEY=VALUE...]
+Choose lazy (serial SIXEL parsing), balanced (size heuristics with a
+performance logical-CPU cap on hybrid hardware, the default), or greedy
+(full budget with runtime minimum-size thresholds ignored).
+The positive \fBglobal_budget=COUNT\fP key (short \fB:BCOUNT\fP) sets the
+budget for encoding and decoding; it defaults to hardware concurrency.
+The \fBdecode=COUNT\fP key (short \fB:SCOUNT\fP) limits SIXEL parsing
+and shrinks to fit the budget. Lazy keeps SIXEL parsing serial.
+Empty or unset SIXEL_THREADING_POLICY makes sixel2png use balanced.
 .TP 5
 .B \-G POLICY[:KEY=VALUE], \-\-gpu\-policy=POLICY[:KEY=VALUE]
 Choose the decoder accelerator policy.  \fBoff\fP keeps the CPU path,
@@ -272,9 +273,13 @@ write the shared JSON timeline log when set. The
 .TP 5
 .B SIXEL_THREADING_POLICY
 .br
-Total thread budget using the base syntax of the
-\-=/\-\-threading\-policy option: "auto", "serial", or a positive count.
-Empty or unset values make sixel2png use "auto".
+Spending mode: lazy, balanced, or greedy. Empty or unset selects balanced.
+The CLI base takes precedence.
+.TP 5
+.B SIXEL_THREADING_GLOBAL_BUDGET
+.br
+Positive total budget for encoding and decoding. The global_budget key
+or sixel_set_threads() takes precedence.
 .TP 5
 .B SIXEL_THREADING_DECODE
 .br

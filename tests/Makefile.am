@@ -2014,6 +2014,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_PATH_TO_LIBC_RUNTIME \
     -DBUILD_TEST_0001_THREADPOOL_SERVICE \
     -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
+    -DBUILD_TEST_0003_THREAD_POLICY \
     -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
     -DBUILD_TEST_0002_PARALLEL_MIN_BYTES_ENVIRONMENT \
     -DBUILD_TEST_0003_RESAMPLE_ALLOCATION_FAILURE \
@@ -5555,6 +5556,7 @@ test_runner_SOURCES = test_runner.c \
     platform/path/0001_path_to_libc_runtime.c \
     processing/threadpool/0001_threadpool_service.c \
     processing/threadpool/0002_thread_default_counts.c \
+    processing/threadpool/0003_thread_policy.c \
     processing/scale/0001_parallel_factor_environment.c \
     processing/scale/0002_parallel_min_bytes_environment.c \
     processing/scale/0003_resample_allocation_failure.c \

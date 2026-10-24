@@ -18,7 +18,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 pin_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_THREADING_PIN=0" -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading pin environment conversion failed"
@@ -31,7 +31,7 @@ case "${pin_trace}" in *LSXDTH1\|*pin_threads=0**) true ;; *) false ;; esac || {
 }
 
 invalid_trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_POLICY=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_THREADING_PIN=off" -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "invalid threading pin conversion failed"

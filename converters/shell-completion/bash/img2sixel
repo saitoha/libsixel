@@ -740,7 +740,7 @@ _img2sixel()
         return 0
         ;;
     -=|--threading-policy)
-        COMPREPLY=( $( compgen -W 'auto serial' -- "$cur" ) )
+        COMPREPLY=( $( compgen -W 'lazy balanced greedy' -- "$cur" ) )
         return 0
         ;;
     -.|--precision-policy)

@@ -22,7 +22,7 @@ short_output="${artifact_dir}/0134-fhedt-cache-short-$$.six"
 env_output="${artifact_dir}/0134-fhedt-cache-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     "-~fhedt:C1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "fhedt:cache short conversion failed"
     exit 0
@@ -37,7 +37,7 @@ case "${short_trace}" in *LSXLUT1\|*policy=fhedt\|*cache=1**) true ;; *) false ;
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     --env "SIXEL_LOOKUP_FHEDT_USE_CACHE=1" "-~fhedt" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "fhedt:cache environment conversion failed"
@@ -52,7 +52,7 @@ case "${env_trace}" in *LSXLUT1\|*policy=fhedt\|*cache=1**) true ;; *) false ;; 
     exit 0
 }
 float_trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     --precision-policy=float32 "-~fhedt:C1" "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "fhedt cache float32 conversion failed"

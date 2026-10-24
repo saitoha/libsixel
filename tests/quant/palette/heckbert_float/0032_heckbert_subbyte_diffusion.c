@@ -17,7 +17,7 @@ int
 test_heckbert_native_0032(int argc, char **argv)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'p', "2" }, { '.', "float32" },
+        { '=', "balanced:B1" }, { 'p', "2" }, { '.', "float32" },
         { 'Q', "heckbert" }, { 'F', "none" }, { 'a', "off" },
         { '_', "none" }, { '~', "none" }, { 'd', "fs" },
         { 'X', "gamma" }, { 'W', "gamma" }, { 'U', "gamma" },

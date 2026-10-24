@@ -33,7 +33,7 @@ int
 test_map_cluster(int mode, char const *path)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "1" }, { 'F', "none" }, { '_', "none" },
+        { '=', "balanced:B1" }, { 'F', "none" }, { '_', "none" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
         { '4', "full-frame" }, { '5', "none" }, { 'W', "gamma" },
         { 'L', "builtin:cms_engine=none!" }, { '0', "hard" }

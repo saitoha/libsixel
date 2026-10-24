@@ -34,7 +34,7 @@ while test "$#" -gt 0; do
     kernel=${1%% *}
     precision=${1#* }
     shift
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=1 -p16 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=balanced:B1 -p16 \
         "${precision}" -d "${kernel}" \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         >"${ARTIFACT_LOCAL_DIR}/allocation-serial.six" || {
@@ -42,7 +42,7 @@ while test "$#" -gt 0; do
         exit 0
     }
     trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=4 -p16 \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=balanced:B4 -p16 \
         "${precision}" -d "${kernel}" \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         2>&1 >"${ARTIFACT_LOCAL_DIR}/allocation-default.six") || {
@@ -57,7 +57,7 @@ while test "$#" -gt 0; do
         exit 0
     }
     trace=$(set +xv; SIXEL_TRACE_TOPIC=dither_contract \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=4 -p16 \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -Efast -=balanced:B4 -p16 \
         "${precision}" -d "${kernel}:band_overwrap=6" \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         2>&1 >"${ARTIFACT_LOCAL_DIR}/allocation-explicit.six") || {

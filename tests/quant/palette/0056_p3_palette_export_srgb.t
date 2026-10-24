@@ -13,7 +13,7 @@ set -v
 
 # This source is not on the RGB101 grid. Export must preserve its pre-wire
 # sRGB values even when the separate output copy rounds to P3 wire colors.
-actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=1 \
+actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
     -Lbuiltin! --cms-engine=none --precision-policy=float32 \
     --sampling-policy=full-frame --binning-policy=none \
     -Qkmeans:seed=1 -Xlinear -Wlinear -Udisplay-p3 \

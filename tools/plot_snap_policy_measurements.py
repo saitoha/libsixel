@@ -205,7 +205,7 @@ def make_command(
     """Build one completely controlled snap-policy command."""
     command = [
         img2sixel,
-        "--threading-policy=1",
+        "--threading-policy=balanced:global_budget=1",
         "--precision-policy=float32",
         "--quality=full",
         "--loaders=builtin!",
