@@ -70,7 +70,7 @@ precision_frame_samples(int mode, int linear)
         }
         status = sixel_encoder_setopt(encoder,
                                       SIXEL_OPTFLAG_THREADING_POLICY,
-                                          "balanced:B1");
+                                          "greedy:B1");
         if (SIXEL_FAILED(status)) {
             failed = 1;
             goto cleanup;

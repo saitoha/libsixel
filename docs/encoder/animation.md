@@ -124,7 +124,7 @@ Macro replay freezes the first-pass encoded images. Combining macros with `-T` a
 
 Generated palettes can use the [selected native float/P3 path](output/output-colorspace.md#generated-palettes-in-animation) with spatial or positional dithering. That contract preserves frame-local palette precision and masks and defines the remaining temporal boundaries; selecting animation does not by itself promote byte input. Fixed palettes use a [separate immutable source cache](output/output-colorspace.md#fixed-palettes-in-animation). Its [numeric animation coverage](output/output-colorspace.md#generated-animation-contracts) is distinct from playback cadence and receiver behavior.
 
-Loading can overlap encoding through a bounded four-frame queue, but one frame-encoder worker consumes frames in order. `--threading-policy=balanced:global_budget=N` does not mean that `N` complete animation frames are encoded concurrently, nor does it promise an overall process thread cap. [Animation threading](../threading/animation.md) describes the queue, frame lifetime, and temporal-state constraints.
+Loading can overlap encoding through a bounded four-frame queue, but one frame-encoder worker consumes frames in order. `--threading-policy=greedy:global_budget=N` does not mean that `N` complete animation frames are encoded concurrently, nor does it promise an overall process thread cap. [Animation threading](../threading/animation.md) describes the queue, frame lifetime, and temporal-state constraints.
 
 ## Diagnosing an unexpected result
 

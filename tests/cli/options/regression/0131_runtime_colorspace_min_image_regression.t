@@ -7,6 +7,7 @@
 # Runtime contract: trace=colorspace_min=257
 
 # Image assertion: option-values-and-output-equivalence
+# Balanced keeps the explicit -j minimum-work threshold observable.
 set -eux
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {

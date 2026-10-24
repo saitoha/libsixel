@@ -107,7 +107,8 @@ class Codecs:
 
     def decode(self, data, codec, threads, indexed=False):
         if codec.startswith('SIXEL'):
-            os.environ['SIXEL_THREADING_GLOBAL_BUDGET'] = str(threads)
+            os.environ['SIXEL_DECODER_THREADING_POLICY'] = 'greedy'
+            os.environ['SIXEL_DECODER_THREADING_GLOBAL_BUDGET'] = str(threads)
             if indexed:
                 pixels, palette, w, h, colors = P(), P(), I(), I(), I()
                 status = self.s.sixel_decode_raw(buffer(data), len(data), C.byref(pixels), C.byref(w), C.byref(h), C.byref(palette), C.byref(colors), None)
@@ -235,7 +236,7 @@ def quality(reference, image, lsqa, work):
     path = work / 'decoded.png'
     image.convert('RGB').save(path)
     env = os.environ.copy()
-    env.update(LSQA_VERBOSE='0', LSQA_PREFIX=str(work / 'lsqa'), SIXEL_THREADING_GLOBAL_BUDGET='1')
+    env.update(LSQA_VERBOSE='0', LSQA_PREFIX=str(work / 'lsqa'), SIXEL_ENCODER_THREADING_POLICY='greedy', SIXEL_ENCODER_THREADING_GLOBAL_BUDGET='1')
     p = subprocess.run([str(lsqa), str(reference), str(path)], capture_output=True, env=env, check=True)
     q = json.loads(p.stdout)
     q = q.get('quality', q)

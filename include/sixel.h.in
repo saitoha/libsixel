@@ -1015,6 +1015,15 @@ typedef struct sixel_allocator sixel_allocator_t;
 extern "C" {
 #endif
 
+/* Set process low-level budgets independently for encoding and decoding.
+ * Call before processing starts. Budget <= 0 selects all logical CPUs;
+ * balanced mode applies its performance-CPU cap. An object's explicit
+ * threading global_budget takes precedence; these defaults take precedence
+ * over type-specific environment values. In-flight work keeps its snapshot.
+ * These setters select budgets only, never modes or stage limits. */
+SIXELAPI void sixel_set_encoder_threads(int budget);
+SIXELAPI void sixel_set_decoder_threads(int budget);
+
 /* create allocator object */
 SIXELAPI SIXELSTATUS
 sixel_allocator_new(
@@ -2195,20 +2204,20 @@ sixel_encoder_encode_frame(
  * Progressive repair contexts, DRCS output and paired presentation are not
  * supported by playback.
  *
- * Threads.  Playback follows the process threading policy
- * (SIXEL_OPTFLAG_THREADING_POLICY and the SIXEL_THREADING_* environment):
- * lazy overlaps independent stages with one default dither band, balanced
- * uses size heuristics and performance CPUs, and greedy uses the full
- * global_budget without size thresholds. The library budget defaults to
- * min(4, performance logical CPUs) in every mode. global_budget accepts a
- * positive count or all (logical CPUs, capped by balanced). A mode alone
- * does not raise that budget. CLI budget, API setter, per-key environment,
- * then library defaults determine the count. Explicit stage keys override mode
- * defaults and shrink to fit the budget. Load and prepare default to ahead;
- * prepare selects whether the next frame is prepared during emission.
- * CAPACITY, not the policy's load_depth, bounds admission.
- * palette_mode is the per-object counterpart of the policy's palette key;
- * only per-frame palettes are implemented.
+ * Threads.  Playback follows the owning encoder threading policy
+ * (SIXEL_OPTFLAG_THREADING_POLICY and the SIXEL_ENCODER_THREADING_*
+ * environment): lazy overlaps independent stages with one default dither band,
+ * balanced uses size heuristics and performance CPUs, and greedy uses the full
+ * global_budget without size thresholds. The library budget defaults to min(4,
+ * performance logical CPUs) in every mode. global_budget accepts a positive
+ * count or all (logical CPUs, capped by balanced). A mode alone does not raise
+ * that budget. CLI budget, API setter, per-key environment, then library
+ * defaults determine the count. Explicit stage keys override mode defaults and
+ * shrink to fit the budget. Load and prepare default to ahead; prepare selects
+ * whether the next frame is prepared during emission. CAPACITY, not the
+ * policy's load_depth, bounds admission. palette_mode is the per-object
+ * counterpart of the policy's palette key; only per-frame palettes are
+ * implemented.
  */
 #define SIXEL_HAVE_PLAYBACK 1
 

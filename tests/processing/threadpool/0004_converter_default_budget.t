@@ -24,7 +24,7 @@ ${counts}
 EOF_COUNTS
 
 # Empty application variables must receive the converter defaults.
-trace=$(set +xv; SIXEL_THREADING_POLICY='' SIXEL_THREADING_GLOBAL_BUDGET='' \
+trace=$(set +xv; SIXEL_ENCODER_THREADING_POLICY='' SIXEL_ENCODER_THREADING_GLOBAL_BUDGET='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
     echo "not ok 1 - default conversion failed"
@@ -34,7 +34,7 @@ case "${trace}" in *"threading: mode=balanced budget=${expected} "*) true ;; *) 
     echo "not ok 1 - converter default did not resolve all performance CPUs"
     exit 0
 }
-trace=$(set +xv; SIXEL_THREADING_GLOBAL_BUDGET='' \
+trace=$(set +xv; SIXEL_ENCODER_THREADING_GLOBAL_BUDGET='' \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -=lazy \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
     echo "not ok 1 - lazy conversion failed"
@@ -44,7 +44,7 @@ case "${trace}" in *"threading: mode=lazy budget=${hardware} "*) true ;; *) fals
     echo "not ok 1 - lazy converter lost its all budget"
     exit 0
 }
-trace=$(set +xv; SIXEL_THREADING_POLICY='' SIXEL_THREADING_GLOBAL_BUDGET=2 \
+trace=$(set +xv; SIXEL_ENCODER_THREADING_POLICY='' SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=2 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
     echo "not ok 1 - environment conversion failed"
@@ -54,9 +54,9 @@ case "${trace}" in *"threading: mode=balanced budget=${limited} "*) true ;; *) f
     echo "not ok 1 - converter replaced the user environment"
     exit 0
 }
-trace=$(set +xv; SIXEL_THREADING_GLOBAL_BUDGET=all \
+trace=$(set +xv; SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=all \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
-    --env SIXEL_THREADING_GLOBAL_BUDGET=1 -=greedy \
+    --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 -=greedy \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o /dev/null 2>&1) || {
     echo "not ok 1 - --env conversion failed"
     exit 0
@@ -70,7 +70,7 @@ case "${trace}" in *"threading: mode=greedy budget=1 "*) true ;; *) false ;; esa
 # The fixture has enough payload for every ordinary host's logical CPUs.
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 timeline="${ARTIFACT_LOCAL_DIR}/0004-default-decode-$$.jsonl"
-SIXEL_THREADING_POLICY='' SIXEL_THREADING_GLOBAL_BUDGET='' \
+SIXEL_DECODER_THREADING_POLICY='' SIXEL_DECODER_THREADING_GLOBAL_BUDGET='' \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -J "${timeline}" \
     -i "${TOP_SRCDIR}/tests/data/inputs/snake_64.six" -o /dev/null || {
     echo "not ok 1 - default decoder failed"

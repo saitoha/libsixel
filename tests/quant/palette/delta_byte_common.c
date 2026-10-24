@@ -307,7 +307,7 @@ test_delta_byte_repeat(int workers)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-        workers ? "balanced:B4" : "balanced:B1"))) {
+        workers ? "greedy:B4" : "greedy:B1"))) {
         goto end;
     }
     for (pass = 0; pass < 3; ++pass) {
@@ -562,7 +562,7 @@ test_delta_byte_hls_frames(int mode)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-            mode == 1 ? "balanced:B4" : "balanced:B1")) ||
+            mode == 1 ? "greedy:B4" : "greedy:B1")) ||
             SIXEL_FAILED(sixel_encoder_set_6delta_plane_size(encoder,
                 plane_width, rows))) {
         goto end;

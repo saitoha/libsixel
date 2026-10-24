@@ -14,10 +14,12 @@
 
 #include <sixel.h>
 #include <6cells.h>
+#include "src/threading.h"
 
 typedef struct sixel_thread_pool_test_context {
     int seen[8];
     int pool_id;
+    int mode;
 } sixel_thread_pool_test_context_t;
 
 typedef struct sixel_thread_pool_test_workspace {
@@ -33,6 +35,7 @@ sixel_thread_pool_test_worker(sixel_thread_pool_job_t job,
 {
     sixel_thread_pool_test_context_t *context;
     sixel_thread_pool_test_workspace_t *local;
+    sixel_threading_snapshot_t snapshot;
 
     context = (sixel_thread_pool_test_context_t *)userdata;
     local = (sixel_thread_pool_test_workspace_t *)workspace;
@@ -41,6 +44,11 @@ sixel_thread_pool_test_worker(sixel_thread_pool_job_t job,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (!sixel_threading_policy_capture(&snapshot, 0) ||
+            sixel_threading_policy_mode() != context->mode ||
+            sixel_threads_resolve() != 1) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     local->touched = 1;
     context->seen[job.band_index] = context->pool_id;
     return SIXEL_OK;
@@ -77,6 +85,7 @@ static int
 sixel_thread_pool_test_service_component(void)
 {
     SIXELSTATUS status;
+    sixel_threading_policy_options_t policy;
     sixel_threadpool_service_t *service;
     sixel_thread_pool_t *pool1;
     sixel_thread_pool_t *pool2;
@@ -86,10 +95,16 @@ sixel_thread_pool_test_service_component(void)
     sixel_thread_pool_job_t job;
     void *service_object;
 #if SIXEL_ENABLE_THREADS
+    sixel_thread_budget_scope_t scope;
     int index;
 #endif
     int resolved;
 
+    memset(&policy, 0, sizeof(policy));
+    policy.mode_override = 1;
+    policy.mode = SIXEL_THREADING_POLICY_LAZY;
+    context1.mode = SIXEL_THREADING_POLICY_LAZY;
+    context2.mode = SIXEL_THREADING_POLICY_GREEDY;
     status = SIXEL_FALSE;
     service = NULL;
     pool1 = NULL;
@@ -130,12 +145,19 @@ sixel_thread_pool_test_service_component(void)
     request.workspace_cleanup = sixel_thread_pool_test_workspace_cleanup;
 
 #if SIXEL_ENABLE_THREADS
+    context1.mode = SIXEL_THREADING_POLICY_LAZY;
+    sixel_threading_object_enter(&scope, &policy, 0);
     status = service->vtbl->create_pool(service, &request, &pool1);
+    sixel_thread_budget_leave(&scope);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     request.userdata = &context2;
+    policy.mode = SIXEL_THREADING_POLICY_GREEDY;
+    context2.mode = SIXEL_THREADING_POLICY_GREEDY;
+    sixel_threading_object_enter(&scope, &policy, 0);
     status = service->vtbl->create_pool(service, &request, &pool2);
+    sixel_thread_budget_leave(&scope);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

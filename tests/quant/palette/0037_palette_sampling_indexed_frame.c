@@ -101,7 +101,7 @@ indexed_adaptive_encode_is_valid(void)
         goto cleanup;
     }
     status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
-        "balanced:B1");
+        "greedy:B1");
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

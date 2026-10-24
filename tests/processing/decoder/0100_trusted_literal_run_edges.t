@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0100_trusted_literal_run_edges" || {
+SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "decoder/0100_trusted_literal_run_edges" || {
     echo "not ok 1 - trusted literal run edges"
     exit 0
 }

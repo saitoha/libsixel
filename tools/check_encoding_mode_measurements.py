@@ -11,18 +11,6 @@ from pathlib import Path
 from typing import Dict, List
 
 
-def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Normalize both historical numeric budget spellings without data edits."""
-    result = []
-    for token in tokens:
-        if token.startswith("--threads="):
-            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
-        elif token.startswith("--threading-policy="):
-            base = token.split("=", 1)[1]
-            if base.isdecimal() or base in ("{threads}", "{count}"):
-                token = "--threading-policy=balanced:global_budget=" + base
-        result.append(token)
-    return result
 
 
 def read_rows(path: Path) -> List[Dict[str, str]]:
@@ -97,8 +85,8 @@ def validate_speed_rows(rows: List[Dict[str, str]], metadata: dict,
         if (int(row["encode_worker_start_count"])
                 != int(row["encode_worker_done_count"])):
             raise RuntimeError(f"{family} worker events are unpaired")
-        tokens = budget_tokens(shlex.split(row["command"]))
-        threads_token = f"--threading-policy=balanced:global_budget={row['threads']}"
+        tokens = (shlex.split(row["command"]))
+        threads_token = f"--threading-policy=greedy:global_budget={row['threads']}"
         if threads_token not in tokens:
             raise RuntimeError(f"{family} command has the wrong thread budget")
         if "-J" not in tokens or "{timeline}" not in tokens:
@@ -134,7 +122,7 @@ def validate_encode_policy(directory: Path) -> None:
         speed_rows, metadata, ["auto", "fast", "size"], "encode-policy"
     )
     for row in speed_rows:
-        tokens = budget_tokens(shlex.split(row["command"]))
+        tokens = (shlex.split(row["command"]))
         if tokens[tokens.index("--encode-policy") + 1] != row["variant"]:
             raise RuntimeError("encode-policy speed command has wrong policy")
     require_png(directory / "encode-policy-results.png")
@@ -166,7 +154,7 @@ def validate_high_color(directory: Path) -> None:
         speed_rows, metadata, ["fixed256", "high15"], "high-color"
     )
     for row in speed_rows:
-        tokens = budget_tokens(shlex.split(row["command"]))
+        tokens = (shlex.split(row["command"]))
         has_high_color = "-I" in tokens
         if has_high_color != (row["variant"] == "high15"):
             raise RuntimeError("high-color speed command has wrong mode")

@@ -46,7 +46,7 @@ timeline_0009_encode(char const *threads)
     for (i = 0; i < TIMELINE_0009_WIDTH * TIMELINE_0009_HEIGHT * 3; i++) {
         pixels[i] = (unsigned char)(i * 53 % 251);
     }
-    (void)snprintf(policy, sizeof(policy), "balanced:B%s", threads);
+    (void)snprintf(policy, sizeof(policy), "greedy:B%s", threads);
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder,

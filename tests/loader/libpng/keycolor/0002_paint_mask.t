@@ -14,7 +14,7 @@ echo "1..1"
 set -v
 
 output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threading-policy=balanced:global_budget=1 -Goff -dnone -Llibpng:K1:cms_engine=none! \
+    --threading-policy=greedy:global_budget=1 -Goff -dnone -Llibpng:K1:cms_engine=none! \
     "${TOP_SRCDIR}/images/pngsuite/transparency/tbrn2c08.png") || {
     echo "not ok 1 - keycolor CLI conversion"
     exit 0

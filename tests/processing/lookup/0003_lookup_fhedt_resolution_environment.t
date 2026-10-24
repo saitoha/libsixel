@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     --env "SIXEL_LOOKUP_FHEDT_RESOLUTION=+128" -p 16 "-~fhedt" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "FHEDT resolution environment conversion failed"

@@ -20,7 +20,7 @@ reference_png="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-disp
 output_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_dispose3_frame2.six"
 normalized_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_dispose3_frame2_norm.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               --env SIXEL_LOADER_ANIMATION_START_FRAME_NO=2 \
               -Lbuiltin! \
               -ldisable -d none:scan=raster -p 256 -g \

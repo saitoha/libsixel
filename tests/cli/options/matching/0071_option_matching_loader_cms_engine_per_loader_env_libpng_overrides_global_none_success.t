@@ -23,17 +23,17 @@ output_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libpng_ref_cms1.six"
 output_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libpng_ref_cms0.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libpng_override.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none -Llibpng:cms_engine=auto! "${input_png}" >"${output_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibpng:cms_engine=auto! "${input_png}" >"${output_cms1}" || {
     echo "not ok" 1 - "libpng cms=1 reference decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none -Llibpng:cms_engine=none! "${input_png}" >"${output_cms0}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibpng:cms_engine=none! "${input_png}" >"${output_cms0}" || {
     echo "not ok" 1 - "libpng cms=0 reference decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBPNG_CMS_ENGINE=auto" \
     -Llibpng! "${input_png}" >"${output_override}" || {

@@ -22,7 +22,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn3p08.png"
 out_default="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_palette_default.six"
 out_off="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-libpng_trns_keycolor_palette_env0.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_default}" || {
@@ -31,7 +31,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
-              --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
+              --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster \
               "${input_png}" >"${out_off}" || {

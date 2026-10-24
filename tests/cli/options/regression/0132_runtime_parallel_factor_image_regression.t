@@ -27,7 +27,7 @@ short_output="${artifact_dir}/0142-parallel-factor-short-$$.six"
 env_output="${artifact_dir}/0142-parallel-factor-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B2 --lookup-policy=none \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B2 --lookup-policy=none \
     "-jauto:F3" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "parallel factor short conversion failed"
     exit 0
@@ -38,7 +38,7 @@ case "${short_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1\|binding=paral
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B2 --lookup-policy=none \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B2 --lookup-policy=none \
     --env "SIXEL_PARALLEL_FACTOR=3" -jauto \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "parallel factor environment conversion failed"
@@ -50,7 +50,7 @@ case "${env_trace}" in *LSXSUB1\|*key=parallel_factor\|stored=1\|binding=paralle
 }
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B2 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B2 \
     --env "SIXEL_PARALLEL_FACTOR=0" -jauto \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "parallel factor zero conversion failed"

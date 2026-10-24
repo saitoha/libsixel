@@ -77,7 +77,7 @@ test_emit_run_stream(int limited, int packet)
     body_length = strlen(body);
     ok = 0;
     saved_threads = sixel_threads_resolve();
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -155,6 +155,6 @@ end:
     sixel_allocator_unref(allocator);
     free(pixels);
     free(expected);
-    sixel_set_threads(saved_threads);
+    sixel_set_encoder_threads(saved_threads);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

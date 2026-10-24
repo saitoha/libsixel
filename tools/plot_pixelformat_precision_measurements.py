@@ -148,7 +148,7 @@ def encoder_command(img2sixel: Path,
     """Build one fully controlled encoder command."""
     command = [
         str(img2sixel),
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         f"--precision-policy={precision}",
         "--quality=full",
         f"--loaders={loader_option(loader_kind)}",

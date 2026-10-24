@@ -115,7 +115,7 @@ positive total thread budget or case-insensitive \fBall\fP (short form
 \fB:Ball\fP). All selects logical CPUs, subject to the balanced
 performance-core cap. The converter defaults to all; the library defaults
 to min(4, performance CPUs) in every mode. Applies to encoding and decoding.
-Precedence is the CLI key, then sixel_set_threads(), then the environment,
+Precedence is the CLI key, then sixel_set_encoder_threads(), then the environment,
 then defaults. A nonpositive API count means all.
 .TP 5
 .B load=serial|ahead
@@ -150,9 +150,9 @@ bind workers to CPUs; dither workers default to 1 and FHEDT workers to 0
 .IP
 Compact suboption names use one uppercase letter plus the value:
 global_budget=B, load=L, load_depth=Q, prepare=P, palette=C, dither=D, encode=E,
-prepare_workers=W, pin=I.
+prepare_workers=W, decode=S, pin=I.
 .IP
-When \fBSIXEL_THREADING_POLICY\fP is unset or empty, the \fBimg2sixel\fP
+When \fBSIXEL_ENCODER_THREADING_POLICY\fP is unset or empty, the \fBimg2sixel\fP
 frontend defaults to \fBbalanced\fP.
 .TP 5
 .B \-. \fIPOLICY\fP, \-\-precision\-policy=\fIPOLICY\fP
@@ -1942,26 +1942,31 @@ the precision and working-colorspace choices described under
 Overridden by \fB\-j *:resize_precision=VALUE\fP
 (short form \fB:RVALUE\fP).
 .TP 5
-.B SIXEL_THREADING_POLICY
+.B SIXEL_ENCODER_THREADING_POLICY
 .br
 spending mode: lazy, balanced, or greedy. Suboptions are not accepted here.
 Empty or unset values make img2sixel use balanced. The CLI base wins.
 .TP 5
-.B SIXEL_THREADING_GLOBAL_BUDGET
+.B SIXEL_ENCODER_THREADING_GLOBAL_BUDGET
 .br
-Positive total budget or case-insensitive all for encoding and decoding.
+Positive encoder budget or case-insensitive all.
 Empty or unset selects all in the converter. The \fBglobal_budget\fP
-key takes precedence over sixel_set_threads(), which overrides this variable.
+key takes precedence over sixel_set_encoder_threads(), which overrides this variable.
 .TP 5
-.B SIXEL_THREADING_LOAD\fR, \fBSIXEL_THREADING_LOAD_DEPTH\fR, \fBSIXEL_THREADING_PREPARE\fR, \fBSIXEL_THREADING_PALETTE
+.B SIXEL_ENCODER_THREADING_LOAD\fR, \fBSIXEL_ENCODER_THREADING_LOAD_DEPTH\fR, \fBSIXEL_ENCODER_THREADING_PREPARE\fR, \fBSIXEL_ENCODER_THREADING_PALETTE
 .br
 defaults for the \fB\-=\fP keys \fBload\fP, \fBload_depth\fP,
 \fBprepare\fP and \fBpalette\fP.
 .TP 5
-.B SIXEL_THREADING_DITHER\fR, \fBSIXEL_THREADING_ENCODE\fR, \fBSIXEL_THREADING_PREPARE_WORKERS\fR, \fBSIXEL_THREADING_PIN
+.B SIXEL_ENCODER_THREADING_DITHER\fR, \fBSIXEL_ENCODER_THREADING_ENCODE\fR, \fBSIXEL_ENCODER_THREADING_PREPARE_WORKERS\fR, \fBSIXEL_ENCODER_THREADING_PIN
 .br
 defaults for the \fB\-=\fP keys \fBdither\fP, \fBencode\fP,
 \fBprepare_workers\fP and \fBpin\fP.
+.TP 5
+.B SIXEL_ENCODER_THREADING_DECODE
+.br
+Default for the encoder \fBdecode\fP key when loading SIXEL input.
+The parsing count shrinks to the encoder budget; lazy parses serially.
 .TP 5
 .B SIXEL_DITHER_PARALLEL_BAND_WIDTH
 .br

@@ -33,18 +33,6 @@ PLOTS = (
 )
 
 
-def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Normalize both historical numeric budget spellings without data edits."""
-    result = []
-    for token in tokens:
-        if token.startswith("--threads="):
-            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
-        elif token.startswith("--threading-policy="):
-            base = token.split("=", 1)[1]
-            if base.isdecimal() or base in ("{threads}", "{count}"):
-                token = "--threading-policy=balanced:global_budget=" + base
-        result.append(token)
-    return result
 
 
 def fail(message: str) -> None:
@@ -165,11 +153,11 @@ def validate_command(row: Dict[str, str],
         fail(f"quantize option differs in {path}: {config}")
     field = "timeline_command" if timeline else "command"
     try:
-        tokens = budget_tokens(shlex.split(row.get(field, "")))
+        tokens = (shlex.split(row.get(field, "")))
     except ValueError as exc:
         raise ValueError(f"invalid {field} in {path}: {config}") from exc
     required = {
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",

@@ -6,7 +6,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_TRACE_TOPIC=dither_contract SIXEL_THREADING_GLOBAL_BUDGET=1 \
+SIXEL_TRACE_TOPIC=dither_contract SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     quant/palette/fixed_animation/0001_builtin_gamma || {
     echo "not ok 1 - fixed animation builtin gamma"

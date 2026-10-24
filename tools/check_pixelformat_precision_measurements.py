@@ -13,18 +13,6 @@ from pathlib import Path
 from typing import Dict, List, Sequence
 
 
-def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Normalize both historical numeric budget spellings without data edits."""
-    result = []
-    for token in tokens:
-        if token.startswith("--threads="):
-            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
-        elif token.startswith("--threading-policy="):
-            base = token.split("=", 1)[1]
-            if base.isdecimal() or base in ("{threads}", "{count}"):
-                token = "--threading-policy=balanced:global_budget=" + base
-        result.append(token)
-    return result
 
 
 def literal_assignment(path: Path, name: str) -> object:
@@ -141,10 +129,10 @@ def validate_metadata(path: Path) -> Dict[str, object]:
 
 def validate_command(command_text: str) -> None:
     """Validate controls shared by path and resize commands."""
-    command = budget_tokens(shlex.split(command_text))
+    command = (shlex.split(command_text))
     required = (
         "{img2sixel}",
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--quality=full",
         "--sampling-policy=full-frame",
         "--binning-policy=hard",
@@ -236,7 +224,7 @@ def validate_resize(rows: Sequence[Dict[str, str]]) -> None:
         )
         if observed != expected:
             fail(f"resize format contract changed for {row['mode']}: {observed}")
-        command = budget_tokens(shlex.split(row["command"]))
+        command = (shlex.split(row["command"]))
         if ("--precision-policy=8bit" not in command
                 or "-w50%" not in command
                 or "-rbilinear" not in command):

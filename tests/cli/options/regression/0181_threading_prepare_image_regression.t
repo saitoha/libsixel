@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify threading-policy prepare through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|prepare
+# Registry row: SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY|NULL|prepare
 # Registry binding: prepare|prepare_override
 
 # Image assertion: option-values-and-output-equivalence
@@ -26,7 +26,7 @@ env_output="${artifact_dir}/0181-threading-prepare-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    "-=balanced:B6:Pserial" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=greedy:B6:Pserial" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading prepare short conversion failed"
     exit 0
 }
@@ -41,8 +41,8 @@ case "${short_trace}" in *threading:\ *prepare=serial\ **) true ;; *) false ;; e
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    --env "SIXEL_THREADING_PREPARE=serial" \
-    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
+    --env "SIXEL_ENCODER_THREADING_PREPARE=serial" \
+    "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading prepare environment conversion failed"
     exit 0
 }

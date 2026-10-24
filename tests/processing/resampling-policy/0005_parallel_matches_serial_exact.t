@@ -24,7 +24,7 @@ set -- --precision-policy=8bit --quality=full \
     -m "${fixture_root}/safe-gray.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
-    --threading-policy=balanced:global_budget=1 -w4 -h4 -rbilinear \
+    --threading-policy=greedy:global_budget=1 -w4 -h4 -rbilinear \
     -jscalar:resize_precision=preserve \
     -o "${serial_sixel}" \
     "${fixture_root}/bilinear-thread-input.ppm" || {
@@ -32,7 +32,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "$@" \
-    --threading-policy=balanced:global_budget=4 --env SIXEL_SCALE_PARALLEL_MIN_BYTES=0 \
+    --threading-policy=greedy:global_budget=4 --env SIXEL_SCALE_PARALLEL_MIN_BYTES=0 \
     -w4 -h4 -rbilinear -jscalar:resize_precision=preserve \
     -o "${parallel_sixel}" \
     "${fixture_root}/bilinear-thread-input.ppm" || {

@@ -422,7 +422,7 @@ static int
 cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "2" }, { 'F', "none" },
+        { '=', "greedy:B1" }, { 'p', "2" }, { 'F', "none" },
         { '_', "none" }, { '~', "none" }, { 'd', "none" },
         { 't', "rgb" }, { '4', "full-frame" }, { '5', "none" }
     };
@@ -489,7 +489,7 @@ cover_native_wire(sixel_allocator_t *allocator, int model, int space, int mode)
         goto end;
     }
     if (mode == 7 || mode == 10) {
-        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B4")) ||
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B4")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',
                     "adaptive-grid"))) {
             goto end;

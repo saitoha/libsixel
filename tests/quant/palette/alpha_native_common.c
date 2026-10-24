@@ -138,7 +138,7 @@ static int
 test_alpha_native_run(int space, int mode, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { '~', "none" }, { 'd', "none" },
+        { '=', "greedy:B1" }, { '~', "none" }, { 'd', "none" },
         { '0', "none" }, { '_', "none" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
         { '4', "full-frame" }, { '5', "none" }, { 'p', "3" },

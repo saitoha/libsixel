@@ -993,7 +993,7 @@ Every spatial method uses explicit raster order so the figure compares kernels u
 
 ```text
 img2sixel \
-  --threading-policy=balanced:global_budget=1 --precision-policy=auto --quality=full \
+  --threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full \
   --loaders=libpng! \
   --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma \
   --diffusion=METHOD:scan=raster \

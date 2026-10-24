@@ -19,8 +19,8 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 threads_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
-    --env "SIXEL_THREADING_DITHER=1" -v -d fs \
+    --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
+    --env "SIXEL_ENCODER_THREADING_DITHER=1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading dither environment conversion failed"
     exit 0
@@ -32,8 +32,8 @@ case "${threads_trace}" in *threads:\ dither=1\ encode=5**) true ;; *) false ;; 
 }
 
 negative_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
-    --env "SIXEL_THREADING_DITHER=-1" -v -d fs \
+    --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
+    --env "SIXEL_ENCODER_THREADING_DITHER=-1" -v -d fs \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "negative threading dither conversion failed"
     exit 0

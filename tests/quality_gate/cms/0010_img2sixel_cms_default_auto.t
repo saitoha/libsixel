@@ -9,15 +9,15 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 printf '1..1\n'
 set -v
 input="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.jpg"
-expected=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L "builtin!" --threading-policy=balanced:global_budget=1 -d fs:scan=raster --cms-engine=auto "$input") || {
+expected=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L "builtin!" --threading-policy=greedy:global_budget=1 -d fs:scan=raster --cms-engine=auto "$input") || {
     echo "not ok 1 - CMS comparison command failed"
     exit 0
 }
-actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L "builtin!" --threading-policy=balanced:global_budget=1 -d fs:scan=raster --env SIXEL_LOADER_CMS_ENGINE= "$input") || {
+actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L "builtin!" --threading-policy=greedy:global_budget=1 -d fs:scan=raster --env SIXEL_LOADER_CMS_ENGINE= "$input") || {
     echo "not ok 1 - CMS comparison command failed"
     exit 0
 }
-disabled=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L "builtin!" --threading-policy=balanced:global_budget=1 -d fs:scan=raster --cms-engine=none "$input") || {
+disabled=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L "builtin!" --threading-policy=greedy:global_budget=1 -d fs:scan=raster --cms-engine=none "$input") || {
     echo "not ok 1 - CMS comparison command failed"
     exit 0
 }

@@ -16,12 +16,12 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
 plain_output=''
 limited_output=''
 
-plain_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B1 "${input_image}") || {
+plain_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B1 "${input_image}") || {
     echo "not ok" 1 - "img2sixel plain encode failed"
     exit 0
 }
 
-limited_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B1 --gri-limit "${input_image}") || {
+limited_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B1 --gri-limit "${input_image}") || {
     echo "not ok" 1 - "img2sixel --gri-limit encode failed"
     exit 0
 }

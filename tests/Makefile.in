@@ -1690,6 +1690,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/threadpool/0001_threadpool_service.c \
 	processing/threadpool/0002_thread_default_counts.c \
 	processing/threadpool/0003_thread_policy.c \
+	processing/threadpool/0005_object_policy_isolation.c \
+	processing/threadpool/0006_concurrent_object_policies.c \
 	processing/scale/0001_parallel_factor_environment.c \
 	processing/scale/0002_parallel_min_bytes_environment.c \
 	processing/scale/0003_resample_allocation_failure.c \
@@ -5494,6 +5496,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0001_threadpool_service.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0002_thread_default_counts.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0003_thread_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0005_object_policy_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0006_concurrent_object_policies.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0001_parallel_factor_environment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0002_parallel_min_bytes_environment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/scale/test_runner-0003_resample_allocation_failure.$(OBJEXT) \
@@ -10614,6 +10618,8 @@ am__depfiles_remade =  \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0002_thread_default_counts.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0003_thread_policy.Po \
+	processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po \
+	processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po \
@@ -14048,6 +14054,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_THREADPOOL_SERVICE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_THREAD_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_OBJECT_POLICY_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_CONCURRENT_OBJECT_POLICIES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PARALLEL_FACTOR_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_PARALLEL_MIN_BYTES_ENVIRONMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_RESAMPLE_ALLOCATION_FAILURE \
@@ -17622,6 +17630,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0001_threadpool_service.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0002_thread_default_counts.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0003_thread_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0005_object_policy_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0006_concurrent_object_policies.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0001_parallel_factor_environment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0002_parallel_min_bytes_environment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/scale/0003_resample_allocation_failure.c \
@@ -25001,6 +25011,12 @@ processing/threadpool/test_runner-0002_thread_default_counts.$(OBJEXT):  \
 	processing/threadpool/$(am__dirstamp) \
 	processing/threadpool/$(DEPDIR)/$(am__dirstamp)
 processing/threadpool/test_runner-0003_thread_policy.$(OBJEXT):  \
+	processing/threadpool/$(am__dirstamp) \
+	processing/threadpool/$(DEPDIR)/$(am__dirstamp)
+processing/threadpool/test_runner-0005_object_policy_isolation.$(OBJEXT):  \
+	processing/threadpool/$(am__dirstamp) \
+	processing/threadpool/$(DEPDIR)/$(am__dirstamp)
+processing/threadpool/test_runner-0006_concurrent_object_policies.$(OBJEXT):  \
 	processing/threadpool/$(am__dirstamp) \
 	processing/threadpool/$(DEPDIR)/$(am__dirstamp)
 processing/scale/$(am__dirstamp):
@@ -35182,6 +35198,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0002_thread_default_counts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0003_thread_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po@am__quote@ # am--include-marker
@@ -57554,6 +57572,34 @@ processing/threadpool/test_runner-0003_thread_policy.obj: processing/threadpool/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/threadpool/0003_thread_policy.c' object='processing/threadpool/test_runner-0003_thread_policy.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/threadpool/test_runner-0003_thread_policy.obj `if test -f 'processing/threadpool/0003_thread_policy.c'; then $(CYGPATH_W) 'processing/threadpool/0003_thread_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/threadpool/0003_thread_policy.c'; fi`
+
+processing/threadpool/test_runner-0005_object_policy_isolation.o: processing/threadpool/0005_object_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/threadpool/test_runner-0005_object_policy_isolation.o -MD -MP -MF processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Tpo -c -o processing/threadpool/test_runner-0005_object_policy_isolation.o `test -f 'processing/threadpool/0005_object_policy_isolation.c' || echo '$(srcdir)/'`processing/threadpool/0005_object_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Tpo processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/threadpool/0005_object_policy_isolation.c' object='processing/threadpool/test_runner-0005_object_policy_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/threadpool/test_runner-0005_object_policy_isolation.o `test -f 'processing/threadpool/0005_object_policy_isolation.c' || echo '$(srcdir)/'`processing/threadpool/0005_object_policy_isolation.c
+
+processing/threadpool/test_runner-0005_object_policy_isolation.obj: processing/threadpool/0005_object_policy_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/threadpool/test_runner-0005_object_policy_isolation.obj -MD -MP -MF processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Tpo -c -o processing/threadpool/test_runner-0005_object_policy_isolation.obj `if test -f 'processing/threadpool/0005_object_policy_isolation.c'; then $(CYGPATH_W) 'processing/threadpool/0005_object_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/threadpool/0005_object_policy_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Tpo processing/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/threadpool/0005_object_policy_isolation.c' object='processing/threadpool/test_runner-0005_object_policy_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/threadpool/test_runner-0005_object_policy_isolation.obj `if test -f 'processing/threadpool/0005_object_policy_isolation.c'; then $(CYGPATH_W) 'processing/threadpool/0005_object_policy_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/threadpool/0005_object_policy_isolation.c'; fi`
+
+processing/threadpool/test_runner-0006_concurrent_object_policies.o: processing/threadpool/0006_concurrent_object_policies.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/threadpool/test_runner-0006_concurrent_object_policies.o -MD -MP -MF processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Tpo -c -o processing/threadpool/test_runner-0006_concurrent_object_policies.o `test -f 'processing/threadpool/0006_concurrent_object_policies.c' || echo '$(srcdir)/'`processing/threadpool/0006_concurrent_object_policies.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Tpo processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/threadpool/0006_concurrent_object_policies.c' object='processing/threadpool/test_runner-0006_concurrent_object_policies.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/threadpool/test_runner-0006_concurrent_object_policies.o `test -f 'processing/threadpool/0006_concurrent_object_policies.c' || echo '$(srcdir)/'`processing/threadpool/0006_concurrent_object_policies.c
+
+processing/threadpool/test_runner-0006_concurrent_object_policies.obj: processing/threadpool/0006_concurrent_object_policies.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/threadpool/test_runner-0006_concurrent_object_policies.obj -MD -MP -MF processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Tpo -c -o processing/threadpool/test_runner-0006_concurrent_object_policies.obj `if test -f 'processing/threadpool/0006_concurrent_object_policies.c'; then $(CYGPATH_W) 'processing/threadpool/0006_concurrent_object_policies.c'; else $(CYGPATH_W) '$(srcdir)/processing/threadpool/0006_concurrent_object_policies.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Tpo processing/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/threadpool/0006_concurrent_object_policies.c' object='processing/threadpool/test_runner-0006_concurrent_object_policies.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/threadpool/test_runner-0006_concurrent_object_policies.obj `if test -f 'processing/threadpool/0006_concurrent_object_policies.c'; then $(CYGPATH_W) 'processing/threadpool/0006_concurrent_object_policies.c'; else $(CYGPATH_W) '$(srcdir)/processing/threadpool/0006_concurrent_object_policies.c'; fi`
 
 processing/scale/test_runner-0001_parallel_factor_environment.o: processing/scale/0001_parallel_factor_environment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/scale/test_runner-0001_parallel_factor_environment.o -MD -MP -MF processing/scale/$(DEPDIR)/test_runner-0001_parallel_factor_environment.Tpo -c -o processing/scale/test_runner-0001_parallel_factor_environment.o `test -f 'processing/scale/0001_parallel_factor_environment.c' || echo '$(srcdir)/'`processing/scale/0001_parallel_factor_environment.c

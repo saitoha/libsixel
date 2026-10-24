@@ -50,7 +50,7 @@ timeline_0007_encode(char const *policy)
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder,
                                       SIXEL_OPTFLAG_THREADING_POLICY,
-                                          "balanced:B1");
+                                          "greedy:B1");
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder, '4', policy);

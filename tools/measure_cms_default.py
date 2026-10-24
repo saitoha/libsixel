@@ -40,7 +40,7 @@ def main():
             commands = {}
             results = {}
             for engine in ['none', 'auto']:
-                command = [str(args.img2sixel), '--threading-policy=balanced:global_budget=1',
+                command = [str(args.img2sixel), '--threading-policy=greedy:global_budget=1',
                            '-L', 'builtin!', '-d', 'fs:scan=raster',
                            '--cms-engine=' + engine, str(source)]
                 commands[engine] = command

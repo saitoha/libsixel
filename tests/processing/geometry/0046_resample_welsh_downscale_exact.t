@@ -10,7 +10,7 @@ fixture_root="${TOP_SRCDIR}/tests/data/inputs/resampling-exact"
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     --env SIXEL_SIMD_LEVEL=scalar \
-    --env SIXEL_THREADING_GLOBAL_BUDGET=1 \
+    --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 \
     geometry/resampling_exact \
     welsh \
     "${fixture_root}/welsh-downscale-input.ppm" \

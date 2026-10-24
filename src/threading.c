@@ -897,16 +897,12 @@ sixel_get_performance_threads(void)
 
 #define SIXEL_PROCESSING_THREADS_DEFAULT 4
 
-/*
- * The threading policy keeps the budget precedence rules centralized:
- *   1. CLI global_budget overrides the independent API budget.
- *   2. Otherwise, SIXEL_THREADING_GLOBAL_BUDGET is honored.
- *   3. Every mode defaults to min(4, performance logical CPUs).
- *
- * Direct SIXEL parsing resolves its own count in decoder-parallel.c so
- * decoding stays serial unless a mode or budget is explicitly selected.
- */
-static sixel_threading_policy_options_t g_threading_policy;
+/* Only low-level budgets are process defaults. Object policy never writes
+ * this store; both sides are protected by the configuration mutex. */
+static unsigned int g_encoder_budget;
+static int g_encoder_budget_set;
+static unsigned int g_decoder_budget;
+static int g_decoder_budget_set;
 
 static sixel_runtime_policy_options_t g_runtime_policy;
 static sixel_diagnostics_policy_options_t g_diagnostics_policy;
@@ -1023,16 +1019,44 @@ sixel_threads_normalize(int requested)
 static sixel_thread_budget_scope_t *g_thread_budget_scopes;
 
 void
-sixel_thread_budget_enter(sixel_thread_budget_scope_t *scope, int threads)
+sixel_threading_policy_enter(sixel_thread_budget_scope_t *scope,
+                              sixel_threading_snapshot_t const *snapshot)
 {
     scope->owner = sixel_thread_identity_current();
-    scope->threads = threads > 0 ? threads : 1;
+    scope->policy = *snapshot;
+    scope->policy_root = 1;
+    scope->threads = snapshot->budget;
     scope->ceiling = scope->threads;
     scope->reclaim = NULL;
     scope->reclaim_context = NULL;
     sixel_thread_config_lock();
     scope->next = g_thread_budget_scopes;
     g_thread_budget_scopes = scope;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_threading_object_enter(sixel_thread_budget_scope_t *scope,
+                              sixel_threading_policy_options_t const *options,
+                              int decoder)
+{
+    sixel_threading_snapshot_t snapshot;
+
+    sixel_threading_policy_resolve(options, decoder, &snapshot);
+    sixel_threading_policy_enter(scope, &snapshot);
+}
+
+void
+sixel_thread_budget_enter(sixel_thread_budget_scope_t *scope, int threads)
+{
+    sixel_threading_snapshot_t snapshot;
+
+    (void)sixel_threading_policy_capture(&snapshot, 0);
+    sixel_threading_policy_enter(scope, &snapshot);
+    sixel_thread_config_lock();
+    scope->policy_root = 0;
+    scope->threads = threads > 0 ? threads : 1;
+    scope->ceiling = scope->threads;
     sixel_thread_config_unlock();
 }
 
@@ -1060,24 +1084,22 @@ sixel_threads_resolve_limit(int ceiling)
     sixel_thread_budget_scope_t *scope;
     sixel_thread_identity_t owner;
 
-    resolved = 1;
+    sixel_threading_snapshot_t snapshot;
+
+    (void)sixel_threading_policy_capture(&snapshot, 0);
+    resolved = snapshot.budget;
     owner = sixel_thread_identity_current();
-#if SIXEL_ENABLE_THREADS
-    if (!sixel_threading_policy_explicit_budget(&resolved)) {
-        resolved = SIXEL_PROCESSING_THREADS_DEFAULT;
-        limit = sixel_get_performance_threads();
-        if (resolved > limit) {
-            resolved = limit;
-        }
-    }
-#endif
     sixel_thread_config_lock();
     for (scope = g_thread_budget_scopes; scope != NULL;
             scope = scope->next) {
         limit = ceiling ? scope->ceiling : scope->threads;
-        if (limit < resolved &&
-                sixel_thread_identity_equal(scope->owner, owner)) {
-            resolved = limit;
+        if (sixel_thread_identity_equal(scope->owner, owner)) {
+            if (limit < resolved) {
+                resolved = limit;
+            }
+            if (scope->policy_root) {
+                break;
+            }
         }
     }
     sixel_thread_config_unlock();
@@ -1120,9 +1142,14 @@ sixel_threads_reclaim(void)
         sixel_thread_config_lock();
         for (scope = g_thread_budget_scopes; scope != NULL;
                 scope = scope->next) {
-            if (scope->reclaim != NULL &&
-                    sixel_thread_identity_equal(scope->owner, owner)) {
-                break;
+            if (sixel_thread_identity_equal(scope->owner, owner)) {
+                if (scope->reclaim != NULL) {
+                    break;
+                }
+                if (scope->policy_root) {
+                    scope = NULL;
+                    break;
+                }
             }
         }
         sixel_thread_config_unlock();
@@ -1139,69 +1166,143 @@ sixel_threads_reclaim(void)
     return sixel_threads_resolve();
 }
 
-/*
- * Public setter so CLI/bindings may override the runtime thread preference.
- */
+/* Set these defaults before processing; in-flight snapshots stay fixed. */
 SIXELAPI void
-sixel_set_threads(int threads)
+sixel_set_encoder_threads(int budget)
 {
     sixel_thread_config_lock();
-#if SIXEL_ENABLE_THREADS
-    g_threading_policy.api_budget = threads > 0 ? (unsigned int)threads : 0u;
-#else
-    (void)threads;
-    g_threading_policy.api_budget = 1;
-#endif
-    g_threading_policy.api_budget_override = 1;
+    g_encoder_budget = budget > 0 ? (unsigned int)budget : 0u;
+    g_encoder_budget_set = 1;
     sixel_thread_config_unlock();
+}
+
+SIXELAPI void
+sixel_set_decoder_threads(int budget)
+{
+    sixel_thread_config_lock();
+    g_decoder_budget = budget > 0 ? (unsigned int)budget : 0u;
+    g_decoder_budget_set = 1;
+    sixel_thread_config_unlock();
+}
+
+void
+sixel_threading_policy_resolve(sixel_threading_policy_options_t const *input,
+                               int decoder,
+                               sixel_threading_snapshot_t *snapshot)
+{
+    sixel_option_argument_schema_t const *schema;
+    sixel_option_schema_id_t id;
+    sixel_threading_policy_options_t *options;
+    unsigned int consumer;
+    unsigned int api_budget;
+    int api_set;
+    int performance;
+
+    memset(snapshot, 0, sizeof(*snapshot));
+    snapshot->decoder = decoder;
+    options = &snapshot->options;
+    consumer = decoder ? SIXEL_OPTION_SCOPE_DECODER
+                       : SIXEL_OPTION_SCOPE_ENCODER;
+    id = decoder ? SIXEL_OPTION_SCHEMA_DECODER_THREADING_POLICY
+                 : SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY;
+    schema = sixel_option_registry_get(id);
+    options->mode = SIXEL_THREADING_POLICY_BALANCED;
+    options->mode_override = sixel_option_resolve_registered_base_environment(
+        id, consumer, &options->mode);
+    options->load = SIXEL_THREADING_FRAME_AHEAD;
+    options->prepare = SIXEL_THREADING_FRAME_AHEAD;
+    options->load_depth = SIXEL_THREADING_LOAD_DEPTH_DEFAULT;
+    sixel_option_apply_suboption_environment(schema, NULL, consumer, options,
+                                             SIXEL_SUBOPTION_TARGET_THREADING);
+    sixel_thread_config_lock();
+    api_budget = decoder ? g_decoder_budget : g_encoder_budget;
+    api_set = decoder ? g_decoder_budget_set : g_encoder_budget_set;
+    sixel_thread_config_unlock();
+    if (api_set) {
+        options->budget = api_budget;
+        options->budget_override = 1;
+    }
+    /* Merge only explicit object fields, above the API and environment.
+     * Keeping override bits allows automatic dither/encode allocation and
+     * the distinct default pin choices of dither and FHEDT consumers. */
+#define SIXEL_COPY_THREADING_FIELD(field) \
+    if (input != NULL && input->field##_override) { \
+        options->field = input->field; \
+        options->field##_override = 1; \
+    }
+    SIXEL_COPY_THREADING_FIELD(mode)
+    SIXEL_COPY_THREADING_FIELD(budget)
+    if (!decoder) {
+        SIXEL_COPY_THREADING_FIELD(load)
+        SIXEL_COPY_THREADING_FIELD(load_depth)
+        SIXEL_COPY_THREADING_FIELD(prepare)
+        SIXEL_COPY_THREADING_FIELD(palette)
+        SIXEL_COPY_THREADING_FIELD(dither_threads)
+        SIXEL_COPY_THREADING_FIELD(encode_threads)
+        SIXEL_COPY_THREADING_FIELD(prepare_threads)
+        SIXEL_COPY_THREADING_FIELD(decode_threads)
+        SIXEL_COPY_THREADING_FIELD(pin)
+    }
+#undef SIXEL_COPY_THREADING_FIELD
+    performance = sixel_get_performance_threads();
+    snapshot->explicit_budget = options->budget_override
+                                || options->mode_override;
+    if (options->budget_override) {
+        snapshot->budget = sixel_threads_normalize((int)options->budget);
+    } else if (decoder && !snapshot->explicit_budget) {
+        snapshot->budget = 1;
+    } else {
+        snapshot->budget = performance < SIXEL_PROCESSING_THREADS_DEFAULT
+            ? performance : SIXEL_PROCESSING_THREADS_DEFAULT;
+        snapshot->budget = sixel_threads_normalize(snapshot->budget);
+    }
+    if (options->mode == SIXEL_THREADING_POLICY_BALANCED &&
+            snapshot->budget > performance) {
+        snapshot->budget = performance;
+    }
+}
+
+int
+sixel_threading_policy_capture(sixel_threading_snapshot_t *snapshot,
+                                int decoder)
+{
+    sixel_thread_budget_scope_t *scope;
+    sixel_thread_identity_t owner;
+    int found;
+
+    found = 0;
+    owner = sixel_thread_identity_current();
+    sixel_thread_config_lock();
+    for (scope = g_thread_budget_scopes; scope != NULL; scope = scope->next) {
+        if (sixel_thread_identity_equal(scope->owner, owner)) {
+            *snapshot = scope->policy;
+            found = 1;
+            break;
+        }
+    }
+    sixel_thread_config_unlock();
+    if (!found) {
+        sixel_threading_policy_resolve(NULL, decoder, snapshot);
+    }
+    return found;
 }
 
 void
 sixel_threading_policy_load(sixel_threading_policy_options_t *options)
 {
-    if (options == NULL) {
-        return;
-    }
-    sixel_thread_config_lock();
-    *options = g_threading_policy;
-    sixel_thread_config_unlock();
-}
+    sixel_threading_snapshot_t snapshot;
 
-void
-sixel_threading_policy_store(
-    sixel_threading_policy_options_t const *options)
-{
-    if (options == NULL) {
-        return;
-    }
-    sixel_thread_config_lock();
-    g_threading_policy = *options;
-    sixel_thread_config_unlock();
-}
-
-/* Use the registry's base resolution, independently of budget keys. */
-static int
-sixel_threading_policy_resolve_mode(
-    sixel_threading_policy_options_t const *options, int *mode)
-{
-    if (options->mode_override) {
-        *mode = options->mode;
-        return 1;
-    }
-    *mode = SIXEL_THREADING_POLICY_BALANCED;
-    return sixel_option_resolve_registered_base_environment(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, SIXEL_OPTION_SCOPE_ALL, mode);
+    (void)sixel_threading_policy_capture(&snapshot, 0);
+    *options = snapshot.options;
 }
 
 int
 sixel_threading_policy_mode(void)
 {
     sixel_threading_policy_options_t options;
-    int mode;
 
     sixel_threading_policy_load(&options);
-    (void)sixel_threading_policy_resolve_mode(&options, &mode);
-    return mode;
+    return options.mode;
 }
 
 char const *
@@ -1226,90 +1327,16 @@ sixel_threads_resolve_fanout(void)
     return sixel_threads_resolve();
 }
 
-static int
-sixel_threading_policy_choice(char const *binding,
-                              int configured,
-                              int override_active,
-                              int fallback)
-{
-    sixel_suboption_value_t value;
-
-    memset(&value, 0, sizeof(value));
-    if (override_active) {
-        return configured;
-    }
-    if (sixel_option_registry_resolve_threading_binding(
-            binding,
-            SIXEL_SUBOPTION_VALUE_CHOICE,
-            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        return value.int_value;
-    }
-    return fallback;
-}
-
-static int
-sixel_threading_policy_count(char const *binding,
-                             unsigned int configured,
-                             int override_active,
-                             unsigned int *count)
-{
-    sixel_suboption_value_t value;
-
-    memset(&value, 0, sizeof(value));
-    if (override_active) {
-        *count = configured;
-        return 1;
-    }
-    if (sixel_option_registry_resolve_threading_binding(
-            binding,
-            SIXEL_SUBOPTION_VALUE_UINT,
-            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        *count = value.uint_value;
-        return 1;
-    }
-    return 0;
-}
-
 int
 sixel_threading_policy_explicit_budget(int *threads)
 {
-    sixel_threading_policy_options_t options;
-    unsigned int budget;
-    int mode;
-    int explicit_mode;
-    int resolved;
-    int performance;
+    sixel_threading_snapshot_t snapshot;
 
-    budget = 0u;
-    sixel_threading_policy_load(&options);
-    explicit_mode = sixel_threading_policy_resolve_mode(&options, &mode);
-    /* Keep API and CLI requests separate so precedence is not call order.
-     * A selected mode enables parsing but does not enlarge the default. */
-    if (sixel_threading_policy_count(
-            SIXEL_SUBOPTION_BINDING_ID_2(budget, budget_override),
-            options.budget_override ? options.budget : options.api_budget,
-            options.budget_override || options.api_budget_override,
-            &budget)) {
-        resolved = sixel_threads_normalize((int)budget);
-    } else {
-        if (!explicit_mode) {
-            return 0;
-        }
-        performance = sixel_get_performance_threads();
-        resolved = performance < SIXEL_PROCESSING_THREADS_DEFAULT
-            ? performance : SIXEL_PROCESSING_THREADS_DEFAULT;
-        resolved = sixel_threads_normalize(resolved);
-    }
-    if (mode == SIXEL_THREADING_POLICY_BALANCED) {
-        performance = sixel_get_performance_threads();
-        if (resolved > performance) {
-            resolved = performance;
-        }
-    }
+    (void)sixel_threading_policy_capture(&snapshot, 0);
     if (threads != NULL) {
-        *threads = resolved;
+        *threads = snapshot.budget;
     }
-    return 1;
+    return snapshot.explicit_budget;
 }
 
 int
@@ -1318,11 +1345,7 @@ sixel_threading_policy_load_mode(void)
     sixel_threading_policy_options_t options;
 
     sixel_threading_policy_load(&options);
-    return sixel_threading_policy_choice(
-        SIXEL_SUBOPTION_BINDING_ID_2(load, load_override),
-        options.load,
-        options.load_override,
-        SIXEL_THREADING_FRAME_AHEAD);
+    return options.load;
 }
 
 int
@@ -1331,33 +1354,16 @@ sixel_threading_policy_prepare_mode(void)
     sixel_threading_policy_options_t options;
 
     sixel_threading_policy_load(&options);
-    return sixel_threading_policy_choice(
-        SIXEL_SUBOPTION_BINDING_ID_2(prepare, prepare_override),
-        options.prepare,
-        options.prepare_override,
-        SIXEL_THREADING_FRAME_AHEAD);
+    return options.prepare;
 }
 
 int
 sixel_threading_policy_load_depth(void)
 {
     sixel_threading_policy_options_t options;
-    unsigned int depth;
 
-    depth = SIXEL_THREADING_LOAD_DEPTH_DEFAULT;
     sixel_threading_policy_load(&options);
-    (void)sixel_threading_policy_count(
-        SIXEL_SUBOPTION_BINDING_ID_2(load_depth, load_depth_override),
-        options.load_depth,
-        options.load_depth_override,
-        &depth);
-    if (depth < 1u) {
-        depth = 1u;
-    }
-    if (depth > SIXEL_THREADING_LOAD_DEPTH_MAX) {
-        depth = SIXEL_THREADING_LOAD_DEPTH_MAX;
-    }
-    return (int)depth;
+    return (int)options.load_depth;
 }
 
 int
@@ -1372,29 +1378,17 @@ sixel_threading_policy_stage_threads(sixel_threading_stage_t stage,
     sixel_threading_policy_load(&options);
     switch (stage) {
     case SIXEL_THREADING_STAGE_DITHER:
-        return sixel_threading_policy_count(
-            SIXEL_SUBOPTION_BINDING_ID_2(dither_threads,
-                                         dither_threads_override),
-            options.dither_threads, options.dither_threads_override,
-            count);
+        *count = options.dither_threads;
+        return options.dither_threads_override;
     case SIXEL_THREADING_STAGE_ENCODE:
-        return sixel_threading_policy_count(
-            SIXEL_SUBOPTION_BINDING_ID_2(encode_threads,
-                                         encode_threads_override),
-            options.encode_threads, options.encode_threads_override,
-            count);
+        *count = options.encode_threads;
+        return options.encode_threads_override;
     case SIXEL_THREADING_STAGE_PREPARE:
-        return sixel_threading_policy_count(
-            SIXEL_SUBOPTION_BINDING_ID_2(prepare_threads,
-                                         prepare_threads_override),
-            options.prepare_threads, options.prepare_threads_override,
-            count);
+        *count = options.prepare_threads;
+        return options.prepare_threads_override;
     case SIXEL_THREADING_STAGE_DECODE:
-        return sixel_threading_policy_count(
-            SIXEL_SUBOPTION_BINDING_ID_2(decode_threads,
-                                         decode_threads_override),
-            options.decode_threads, options.decode_threads_override,
-            count);
+        *count = options.decode_threads;
+        return options.decode_threads_override;
     default:
         return 0;
     }
@@ -1404,20 +1398,9 @@ int
 sixel_threading_policy_pin(int fallback)
 {
     sixel_threading_policy_options_t options;
-    sixel_suboption_value_t value;
 
-    memset(&value, 0, sizeof(value));
     sixel_threading_policy_load(&options);
-    if (options.pin_override) {
-        return options.pin != 0;
-    }
-    if (sixel_option_registry_resolve_threading_binding(
-            SIXEL_SUBOPTION_BINDING_ID_2(pin, pin_override),
-            SIXEL_SUBOPTION_VALUE_BOOLEAN,
-            &value) == SIXEL_OPTION_ENVIRONMENT_MATCH) {
-        return value.int_value != 0;
-    }
-    return fallback;
+    return options.pin_override ? options.pin != 0 : fallback;
 }
 
 void

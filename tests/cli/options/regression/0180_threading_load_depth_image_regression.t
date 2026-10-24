@@ -1,7 +1,7 @@
 #!/bin/sh
 # Policy: docs/cli/threading-policy.md
 # Verify threading-policy load_depth through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|load_depth
+# Registry row: SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY|NULL|load_depth
 # Registry binding: load_depth|load_depth_override
 # Environment range: parse-signed-long
 
@@ -28,7 +28,7 @@ env_output="${artifact_dir}/0180-threading-load-depth-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    "-=balanced:B6:Q2" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=greedy:B6:Q2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading load_depth short conversion failed"
     exit 0
 }
@@ -43,8 +43,8 @@ case "${short_trace}" in *threading:\ *load=ahead\ load_depth=2\ **) true ;; *) 
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    --env "SIXEL_THREADING_LOAD_DEPTH=2" \
-    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
+    --env "SIXEL_ENCODER_THREADING_LOAD_DEPTH=2" \
+    "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading load_depth environment conversion failed"
     exit 0
 }
@@ -59,8 +59,8 @@ case "${env_trace}" in *threading:\ *load=ahead\ load_depth=2\ **) true ;; *) fa
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs \
-    --env "SIXEL_THREADING_LOAD_DEPTH=17" \
-    "-=balanced:B6" "${input_image}" 2>&1 >/dev/null) || {
+    --env "SIXEL_ENCODER_THREADING_LOAD_DEPTH=17" \
+    "-=greedy:B6" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading load_depth out-of-range conversion failed"
     exit 0
 }

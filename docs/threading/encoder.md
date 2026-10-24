@@ -39,7 +39,7 @@ Scratch storage costs 12 bytes per pixel, approximately 24.9 MB for 1920×1080, 
 
 Each pool worker owns a small zero-initialized workspace record and lazily allocates an optional 16384-entry float memo at its first substantial chunk. The pool also allocates a fresh workspace for each worker added by `grow()`. A worker reuses successful exact conversions across its chunks; the controller owns another memo for its own chunks. Memos are private to one transaction and source/target pair. Pool cleanup releases worker tables after joining, and the controller releases its table before returning. Allocation failure disables that owner's memo without failing conversion or repeatedly retrying. Serial calls own a memo through validation and writeback. The [float arithmetic policy](../concepts/pixelformat-precision/README.md#float-conversion-arithmetic) owns the exact-key and numeric contracts.
 
-The encoder registers stack-owned, caller-local budget scopes around the palette worker and the main pre-plan. Scope registration and lookup use the thread-configuration mutex and live thread identities, without compiler-specific TLS or changing the process-wide requested count. Nested scopes compose by minimum. A reclaimable scope raises its own limit only after the donor has exited, and still respects enclosing limits. The callback runs on the owner outside the configuration mutex. Palette child pools do not submit to or wait for the parent palette job, so the parent can participate in conversion and join its children without a pool dependency cycle. Scope removal restores the previous budget even when preprocessing fails. These scopes partition a single encoder's overlapping stages; independent concurrent API clients still share a configured preference, not a process-wide admission scheduler.
+The encoder registers stack-owned, caller-local budget scopes around the palette worker and the main pre-plan. Scope registration and lookup use the thread-configuration mutex and live thread identities, without compiler-specific TLS. Each scope carries the resolved object policy snapshot; nested stage scopes compose their limits by minimum. Public work entries and the palette, preparation and frame-pipeline workers enter that snapshot, while threadpool jobs inherit the policy with one reserved slot. A reclaimable scope raises its own limit only after the donor has exited, and still respects enclosing limits. The callback runs on the owner outside the configuration mutex. Palette child pools do not submit to or wait for the parent palette job, so the parent can participate in conversion and join its children without a pool dependency cycle. Scope removal restores the previous budget even when preprocessing fails. These scopes partition a single encoder's overlapping stages; independent concurrent API clients resolve their own policies and have no shared admission scheduler.
 
 Palette `budget-return` records follow palette completion and native-thread join; colorspace `grow` records show the newly available reservation (thread creation can still fail). Existing workers may drain the queue before newly created workers are scheduled, so distinct worker identities do not measure the returned reservation. This completion-driven handoff keeps the palette critical path independent of conversion and requires no estimate of either stage's runtime.
 
@@ -183,7 +183,7 @@ operation; the short worker intervals at its end are the six-row jobs.
 
 ![Two-worker encoder timeline](measurements/encoder-thread2-timeline.png)
 
-*Figure: Single `img2sixel --threading-policy=balanced:global_budget=2` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
+*Figure: Single `img2sixel --threading-policy=greedy:global_budget=2` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 In the retained historical four-worker run, two dither work bands overlap two initial encode workers. The
 solid dither spans are work-band lifetimes; the thin encode marks are many
@@ -192,7 +192,7 @@ the configured worker budget.
 
 ![Four-worker encoder timeline](measurements/encoder-thread4-timeline.png)
 
-*Figure: Single `img2sixel --threading-policy=balanced:global_budget=4` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
+*Figure: Single `img2sixel --threading-policy=greedy:global_budget=4` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 At eight workers, six dither work bands overlap two initial encode workers.
 The pool then requests the complete encode capacity after dithering ends. The
@@ -201,7 +201,7 @@ previous 900 by 675 timeline.
 
 ![Eight-worker encoder timeline](measurements/encoder-thread8-timeline.png)
 
-*Figure: Single `img2sixel --threading-policy=balanced:global_budget=8` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
+*Figure: Single `img2sixel --threading-policy=greedy:global_budget=8` diagnostic run. The builtin loader decodes the 900 by 675 PNG; colorspace rows then show linearization, conversion back to gamma after the Full HD resize, and Oklab palette-input conversion.*
 
 These charts use `tools/timeline.py --sort-order start`. Row numbering is local
 to the rendered worker group and must not be interpreted as a stable thread
@@ -209,7 +209,7 @@ identity across separate runs.
 
 ## Worker-budget scaling
 
-The following experiment varies `img2sixel --threading-policy=balanced:global_budget=N` from one through sixteen while keeping the Full HD processed raster and all non-threading policies fixed. The horizontal axis is a configured worker budget, not a reservation of physical cores. Workers are unpinned, the host is not isolated, and this arm64 macOS host reports fourteen logical CPUs.
+The following experiment varies `img2sixel --threading-policy=greedy:global_budget=N` from one through sixteen while keeping the Full HD processed raster and all non-threading policies fixed. The horizontal axis is a configured worker budget, not a reservation of physical cores. Workers are unpinned, the host is not isolated, and this arm64 macOS host reports fourteen logical CPUs.
 
 This is specifically a 256-color experiment. Every point passes `-p 256`;
 palette size is neither automatic nor varied in this chart. Here `256` is the
@@ -309,7 +309,7 @@ command would not restore that path, because an explicit hard-binning request
 causes automatic quantizer resolution to choose a weighted-point-capable
 K-means implementation.
 
-A focused check on the same Full HD processed fixture at 256 requested colors and `--threading-policy=balanced:global_budget=8` illustrates why the distinction matters. After two warm-ups, nine runs gave a 71.009 ms median palette-build interval for the measured K-means/hard profile. Explicit `heckbert:profile=compat` with compatible automatic binning gave 17.315 ms, about 4.10 times faster; the corresponding complete encoder medians were 232.411 and 179.358 ms. This is a profile comparison, not a one-variable quantizer comparison: Heckbert cannot consume the hard-binned weighted points used by the K-means condition. The spot check is evidence that the chart must not be extrapolated to default encoder latency, not a replacement for a repeated Heckbert palette-size sweep.
+A focused check on the same Full HD processed fixture at 256 requested colors and `--threading-policy=greedy:global_budget=8` illustrates why the distinction matters. After two warm-ups, nine runs gave a 71.009 ms median palette-build interval for the measured K-means/hard profile. Explicit `heckbert:profile=compat` with compatible automatic binning gave 17.315 ms, about 4.10 times faster; the corresponding complete encoder medians were 232.411 and 179.358 ms. This is a profile comparison, not a one-variable quantizer comparison: Heckbert cannot consume the hard-binned weighted points used by the K-means condition. The spot check is evidence that the chart must not be extrapolated to default encoder latency, not a replacement for a repeated Heckbert palette-size sweep.
 
 ## Image-quality boundary
 

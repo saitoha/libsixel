@@ -21,7 +21,7 @@ test_parallel_float_0009(int argc, char **argv)
     (void)argc;
     (void)argv;
     ready = 0;
-    sixel_set_threads(8);
+    sixel_set_encoder_threads(8);
     sixel_thread_budget_enter(&donor, 4);
     sixel_thread_budget_set_reclaim(&donor, 8, reclaim_ready, &ready);
     ok = sixel_threads_resolve() == 4 && sixel_threads_ceiling() == 8;

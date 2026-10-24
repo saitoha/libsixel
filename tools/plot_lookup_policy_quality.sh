@@ -14,9 +14,9 @@ input_name=${input_image##*/}
 
 mkdir -p "${output_dir}"
 
-heckbert_common='{img2sixel} --threading-policy=balanced:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=heckbert --cover-policy=off --merge-policy=none --diffusion=none --gpu-policy=off'
-modern_common='{img2sixel} --threading-policy=balanced:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=none --gpu-policy=off'
-modern_fs_common='{img2sixel} --threading-policy=balanced:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs --gpu-policy=off'
+heckbert_common='{img2sixel} --threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=heckbert --cover-policy=off --merge-policy=none --diffusion=none --gpu-policy=off'
+modern_common='{img2sixel} --threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=none --gpu-policy=off'
+modern_fs_common='{img2sixel} --threading-policy=greedy:global_budget=1 --precision-policy=auto --quality=full --loaders=libpng! --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs --gpu-policy=off'
 
 plot_quality_curve()
 {

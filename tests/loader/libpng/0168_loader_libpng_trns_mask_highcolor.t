@@ -17,14 +17,14 @@ set -v
 
 keycolor_header="$(printf '\033P0;1q')"
 out_on_payload="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -I \
-    --threading-policy=balanced:global_budget=1 --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
+    --threading-policy=greedy:global_budget=1 --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
     -Llibpng:cms_engine=none! \
     "${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png")" || {
     echo "not ok 1 - highcolor opt-in render failed"
     exit 0
 }
 out_off_payload="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep -I \
-    --threading-policy=balanced:global_budget=1 --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+    --threading-policy=greedy:global_budget=1 --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
     -Llibpng:cms_engine=none! \
     "${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png")" || {
     echo "not ok 1 - highcolor opt-out render failed"

@@ -78,7 +78,7 @@ kundither_parallel_decode(unsigned char const *indexed,
 {
     SIXELSTATUS status;
 
-    sixel_set_threads(threads);
+    sixel_set_decoder_threads(threads);
     status = sixel_dequantize_k_undither(
         (unsigned char *)indexed,
         KUNDITHER_PARALLEL_WIDTH,
@@ -110,7 +110,7 @@ kundither_parallel_decode_rgba(unsigned char const *indexed,
 {
     SIXELSTATUS status;
 
-    sixel_set_threads(threads);
+    sixel_set_decoder_threads(threads);
     status = sixel_dequantize_k_undither_rgba(
         (unsigned char *)indexed,
         paint_mask,

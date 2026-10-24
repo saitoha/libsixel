@@ -158,9 +158,8 @@ case-insensitive all (short \fB:Ball\fP). All selects logical CPUs,
 subject to the balanced performance-core cap. The converter defaults to all;
 the library defaults to min(4, performance CPUs) in every mode.
 Direct library SIXEL parsing stays serial without an explicit budget or mode.
-The \fBdecode=COUNT\fP key (short \fB:SCOUNT\fP) limits SIXEL parsing
-and shrinks to fit the budget. Lazy keeps SIXEL parsing serial.
-Empty or unset SIXEL_THREADING_POLICY makes sixel2png use balanced.
+The budget limits the whole decoder. Lazy keeps SIXEL parsing serial.
+Empty or unset SIXEL_DECODER_THREADING_POLICY makes sixel2png use balanced.
 .TP 5
 .B \-G POLICY[:KEY=VALUE], \-\-gpu\-policy=POLICY[:KEY=VALUE]
 Choose the decoder accelerator policy.  \fBoff\fP keeps the CPU path,
@@ -274,21 +273,17 @@ enabled default. The \fB\-x *:abort_trace=0|1\fP suboption (short form
 write the shared JSON timeline log when set. The
 \fB\-J/\-\-log\-path\fP option takes precedence.
 .TP 5
-.B SIXEL_THREADING_POLICY
+.B SIXEL_DECODER_THREADING_POLICY
 .br
 Spending mode: lazy, balanced, or greedy. Empty or unset selects balanced.
 The CLI base takes precedence.
 .TP 5
-.B SIXEL_THREADING_GLOBAL_BUDGET
+.B SIXEL_DECODER_THREADING_GLOBAL_BUDGET
 .br
-Positive total budget or case-insensitive all for encoding and decoding.
+Positive decoder budget or case-insensitive all.
 Empty or unset selects all in the converter. Precedence is the global_budget
-key, then sixel_set_threads(), then this variable, then library defaults.
+key, then sixel_set_decoder_threads(), then this variable, then library defaults.
 A nonpositive API count means all.
-.TP 5
-.B SIXEL_THREADING_DECODE
-.br
-Default for the \fB\-= *:decode=COUNT\fP key.
 .TP 5
 .B SIXEL_SIMD_LEVEL
 .br

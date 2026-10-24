@@ -46,7 +46,7 @@ test_classify_stream(int scenario, char const *expected)
     output = NULL;
     ok = 0;
     saved_threads = sixel_threads_resolve();
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     memset(mask, 0, sizeof(mask));
     memset(palstate, 1, sizeof(palstate));
     width = 2;
@@ -128,7 +128,7 @@ test_classify_stream(int scenario, char const *expected)
 end:
     sixel_output_unref(output);
     sixel_allocator_unref(allocator);
-    sixel_set_threads(saved_threads);
+    sixel_set_encoder_threads(saved_threads);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
@@ -148,7 +148,7 @@ test_classify_bounds(int color_plane)
     output = NULL;
     ok = 0;
     saved_threads = sixel_threads_resolve();
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     width = color_plane ? INT_MAX / 256 + 1 : 2;
     height = color_plane ? 1 : INT_MAX / 2 + 1;
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -167,6 +167,6 @@ test_classify_bounds(int color_plane)
 end:
     sixel_output_unref(output);
     sixel_allocator_unref(allocator);
-    sixel_set_threads(saved_threads);
+    sixel_set_encoder_threads(saved_threads);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

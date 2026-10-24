@@ -81,7 +81,7 @@ def measure(args):
                     "PNG24:" + str(converted)], check=True)
     inputs = {"snake": source / "images/snake.png", "egret": converted,
               "vimperator3": source / "images/vimperator3.png"}
-    common = [str(exe), "--threading-policy=balanced:global_budget=1", "--precision-policy=auto", "--quality=full",
+    common = [str(exe), "--threading-policy=greedy:global_budget=1", "--precision-policy=auto", "--quality=full",
               "--loaders=libpng!", "--quantize-model=kmeans:seed=1",
               "--merge-policy=ward", "-Wgamma", "--gpu-policy=off"]
     payload = {
@@ -220,7 +220,7 @@ def load_validated(directory):
             raise ValueError("summary statistics differ from raw samples")
         command = row["command"]
         required = [f"--lookup-policy={policy}", f"--diffusion={diffusion}",
-                    "--threading-policy=balanced:global_budget=1", "--gpu-policy=off", "--loaders=libpng!",
+                    "--threading-policy=greedy:global_budget=1", "--gpu-policy=off", "--loaders=libpng!",
                     "--precision-policy=auto", "--quality=full",
                     "--quantize-model=kmeans:seed=1", "--merge-policy=ward", "-Wgamma"]
         required += ["--cms-engine=none"] if rep == "8bit" else ["-Xoklab"]

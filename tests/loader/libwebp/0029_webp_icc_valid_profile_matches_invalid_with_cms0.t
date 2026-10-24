@@ -22,12 +22,12 @@ input_webp_invalid_icc="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless
 output_valid_icc="${ARTIFACT_LOCAL_DIR}/webp-valid-icc-cms0.sixel"
 output_invalid_icc="${ARTIFACT_LOCAL_DIR}/webp-invalid-icc-cms0.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! "${input_webp_valid_icc}" >"${output_valid_icc}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! "${input_webp_valid_icc}" >"${output_valid_icc}" || {
     echo "not ok" 1 - "libwebp decode failed for valid ICC input (cms=0)"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! "${input_webp_invalid_icc}" >"${output_invalid_icc}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=none! "${input_webp_invalid_icc}" >"${output_invalid_icc}" || {
     echo "not ok" 1 - "libwebp decode failed for invalid ICC input (cms=0)"
     exit 0
 }

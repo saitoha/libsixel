@@ -35,11 +35,6 @@ $ffi->lib($bundled_lib);
 
 Image::LibSIXEL::GeneratedAttach::attach_all($ffi);
 
-# sixel_set_threads is currently exported from the shared library but not
-# declared in include/sixel.h(.in), so keep this one explicit attach.
-$ffi->attach(['sixel_set_threads' => 'Image::LibSIXEL::sixel_set_threads']
-    => ['int'] => 'void');
-
 my $_raw_sixel_encode = \&Image::LibSIXEL::sixel_encode;
 my $_raw_sixel_output_set_8bit_availability =
     \&Image::LibSIXEL::sixel_output_set_8bit_availability;

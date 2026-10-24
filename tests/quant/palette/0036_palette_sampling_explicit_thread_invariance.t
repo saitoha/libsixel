@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-serial_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+serial_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     --sampling-policy=adaptive-grid -Qauto \
     -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
@@ -20,7 +20,7 @@ serial_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanc
     exit 0
 }
 
-parallel_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=4 \
+parallel_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=4 \
     --sampling-policy=adaptive-grid -Qauto \
     -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \

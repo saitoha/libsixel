@@ -241,7 +241,7 @@ sixel_encoding_planner_loader_threads(
     return total;
 }
 
-/* The dither worker cap comes from the process-wide threading policy. */
+/* The active object snapshot supplies the dither worker cap. */
 static int
 sixel_encoding_planner_resolve_threads_max(
     sixel_encoder_t const *encoder,

@@ -32,7 +32,8 @@ void sixel_loader_unref(sixel_loader_t *loader);
 SIXELSTATUS sixel_loader_setopt(sixel_loader_t *loader, int option, void const *value);
 
 const char *sixel_helper_format_error(SIXELSTATUS status);
-void sixel_set_threads(int nthreads);
+void sixel_set_encoder_threads(int budget);
+void sixel_set_decoder_threads(int budget);
 CDEF;
 
     private const LIB_NAMES = [
@@ -95,16 +96,16 @@ CDEF;
         return (($status & Constants::SIXEL_FALSE) !== 0);
     }
 
-    public static function setThreads($value): void
+    public static function setEncoderThreads($value): void
     {
         if (is_string($value)) {
             $text = trim($value);
-            if (strcasecmp($text, 'auto') === 0) {
+            if (in_array(strtolower($text), ['auto', 'all'], true)) {
                 $count = 0;
             } else {
                 if (!preg_match('/^[0-9]+$/', $text)) {
                     throw new \InvalidArgumentException(
-                        "threads must be a positive integer or 'auto'"
+                        "threads must be a positive integer or 'all'"
                     );
                 }
                 $count = (int)$text;
@@ -113,17 +114,48 @@ CDEF;
             $count = $value;
         } else {
             throw new \InvalidArgumentException(
-                "threads must be a positive integer or 'auto'"
+                "threads must be a positive integer or 'all'"
             );
         }
 
         if ($count < 0) {
             throw new \InvalidArgumentException(
-                "threads must be a positive integer or 'auto'"
+                "threads must be a positive integer or 'all'"
             );
         }
 
-        self::ffi()->sixel_set_threads($count);
+        self::ffi()->sixel_set_encoder_threads($count);
+    }
+
+    public static function setDecoderThreads($value): void
+    {
+        if (is_string($value)) {
+            $text = trim($value);
+            if (in_array(strtolower($text), ['auto', 'all'], true)) {
+                $count = 0;
+            } else {
+                if (!preg_match('/^[0-9]+$/', $text)) {
+                    throw new \InvalidArgumentException(
+                        "threads must be a positive integer or 'all'"
+                    );
+                }
+                $count = (int)$text;
+            }
+        } elseif (is_int($value)) {
+            $count = $value;
+        } else {
+            throw new \InvalidArgumentException(
+                "threads must be a positive integer or 'all'"
+            );
+        }
+
+        if ($count < 0) {
+            throw new \InvalidArgumentException(
+                "threads must be a positive integer or 'all'"
+            );
+        }
+
+        self::ffi()->sixel_set_decoder_threads($count);
     }
 
     public static function encoderNew()

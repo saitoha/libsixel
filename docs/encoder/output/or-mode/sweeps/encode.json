@@ -21,7 +21,7 @@
         "rgba_sha256": "e7dcd78398294fc34c5f5136f006343f6482804f92715b5a3c733ae96aa7a6b1",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -39,7 +39,7 @@
         "rgba_sha256": "e7dcd78398294fc34c5f5136f006343f6482804f92715b5a3c733ae96aa7a6b1",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -202,7 +202,7 @@
         "rgba_sha256": "b70fc0e726a5240299e5b9f7f329207fe5464292138492ad1295b1a17969d92c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -220,7 +220,7 @@
         "rgba_sha256": "b70fc0e726a5240299e5b9f7f329207fe5464292138492ad1295b1a17969d92c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -383,7 +383,7 @@
         "rgba_sha256": "b8c273d119b36191c9574d8ec0dff2b44b3b106d597ff418be5b1a13d40fceab",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -401,7 +401,7 @@
         "rgba_sha256": "b8c273d119b36191c9574d8ec0dff2b44b3b106d597ff418be5b1a13d40fceab",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -564,7 +564,7 @@
         "rgba_sha256": "c53db0ec1579837bc19fc316be134b4bd1e1614f17220c3e987c5492ccfb0878",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -582,7 +582,7 @@
         "rgba_sha256": "c53db0ec1579837bc19fc316be134b4bd1e1614f17220c3e987c5492ccfb0878",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -745,7 +745,7 @@
         "rgba_sha256": "96f60b341b4d0a3c26a60867ee07b525e6265c46f3b1cc0422cda3aafdad2878",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -763,7 +763,7 @@
         "rgba_sha256": "96f60b341b4d0a3c26a60867ee07b525e6265c46f3b1cc0422cda3aafdad2878",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -926,7 +926,7 @@
         "rgba_sha256": "a32390a3f434d9dd58c5b1f80dd5cd67864c5985fe4f7589ae9fedd5a2f45872",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -944,7 +944,7 @@
         "rgba_sha256": "a32390a3f434d9dd58c5b1f80dd5cd67864c5985fe4f7589ae9fedd5a2f45872",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1107,7 +1107,7 @@
         "rgba_sha256": "d335709140db41b60a3dc2211787e769b98140f440dc902a6bd90dac3a15c96d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1125,7 +1125,7 @@
         "rgba_sha256": "d335709140db41b60a3dc2211787e769b98140f440dc902a6bd90dac3a15c96d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1288,7 +1288,7 @@
         "rgba_sha256": "464e75f0c0e8ab25ff5e9db7568b79e772590dd20e433c8bdd465be17fd411d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1306,7 +1306,7 @@
         "rgba_sha256": "464e75f0c0e8ab25ff5e9db7568b79e772590dd20e433c8bdd465be17fd411d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1469,7 +1469,7 @@
         "rgba_sha256": "e5dbf288e772669efdfbd255f7f25858cc5ad7c36e2b4fc29c5747c688fa3e3d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1487,7 +1487,7 @@
         "rgba_sha256": "e5dbf288e772669efdfbd255f7f25858cc5ad7c36e2b4fc29c5747c688fa3e3d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1650,7 +1650,7 @@
         "rgba_sha256": "997df1e53e66ec06c92a7fbd5f22f4892b4c64d6cb0a6261fbf69eb6fb64943f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1668,7 +1668,7 @@
         "rgba_sha256": "997df1e53e66ec06c92a7fbd5f22f4892b4c64d6cb0a6261fbf69eb6fb64943f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1831,7 +1831,7 @@
         "rgba_sha256": "b9612f3d2735fc4db4585fa0fda909c3885d3aa9d777d51726b1761955192c51",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -1849,7 +1849,7 @@
         "rgba_sha256": "b9612f3d2735fc4db4585fa0fda909c3885d3aa9d777d51726b1761955192c51",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2012,7 +2012,7 @@
         "rgba_sha256": "5c20e5038346131d9631f30166beb4849dcdd1391115e66e052e9b149dfa20b8",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2030,7 +2030,7 @@
         "rgba_sha256": "5c20e5038346131d9631f30166beb4849dcdd1391115e66e052e9b149dfa20b8",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2193,7 +2193,7 @@
         "rgba_sha256": "5ffae349b0a088339fbe63fdb1d09b40f764ec2db69b476ce4168c0b25be3b3e",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2211,7 +2211,7 @@
         "rgba_sha256": "5ffae349b0a088339fbe63fdb1d09b40f764ec2db69b476ce4168c0b25be3b3e",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2374,7 +2374,7 @@
         "rgba_sha256": "b6b867f02e9a609f00c42104474efd781bc2b0955e5b08488e9089ea8bbc0757",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2392,7 +2392,7 @@
         "rgba_sha256": "b6b867f02e9a609f00c42104474efd781bc2b0955e5b08488e9089ea8bbc0757",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2555,7 +2555,7 @@
         "rgba_sha256": "1268cec474fbeb73345bb58360ec03ab6bd4cd3d4ecf6718ba91e037efc3020f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2573,7 +2573,7 @@
         "rgba_sha256": "1268cec474fbeb73345bb58360ec03ab6bd4cd3d4ecf6718ba91e037efc3020f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2736,7 +2736,7 @@
         "rgba_sha256": "f1cfcdf986e799f1d5aca62b12af80b09f1aa8f3cca3f64669c86a3d1be30e7c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2754,7 +2754,7 @@
         "rgba_sha256": "f1cfcdf986e799f1d5aca62b12af80b09f1aa8f3cca3f64669c86a3d1be30e7c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2917,7 +2917,7 @@
         "rgba_sha256": "c3f971eb9169e40c20e05db611650cce16d64cd03a804894d3f56e75c0e33ed0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -2935,7 +2935,7 @@
         "rgba_sha256": "c3f971eb9169e40c20e05db611650cce16d64cd03a804894d3f56e75c0e33ed0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3098,7 +3098,7 @@
         "rgba_sha256": "0c44a90669acb718984a3642e7d55daac702e2f877664896d009a139f8e85017",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3116,7 +3116,7 @@
         "rgba_sha256": "0c44a90669acb718984a3642e7d55daac702e2f877664896d009a139f8e85017",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3279,7 +3279,7 @@
         "rgba_sha256": "7b86ae3836de9719e16a486041a8a8250565acf2f3527beeee1a5d63ce5b037a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3297,7 +3297,7 @@
         "rgba_sha256": "7b86ae3836de9719e16a486041a8a8250565acf2f3527beeee1a5d63ce5b037a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3460,7 +3460,7 @@
         "rgba_sha256": "03ccd2e1d2a354cafe60de1d5070ac8b23de6ee8906134e95c492554474896f2",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3478,7 +3478,7 @@
         "rgba_sha256": "03ccd2e1d2a354cafe60de1d5070ac8b23de6ee8906134e95c492554474896f2",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3641,7 +3641,7 @@
         "rgba_sha256": "f915672b32eef5dd1e13ae0e8395cd9061a02e8d41140fc9cff3525b0bafba1d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3659,7 +3659,7 @@
         "rgba_sha256": "f915672b32eef5dd1e13ae0e8395cd9061a02e8d41140fc9cff3525b0bafba1d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3822,7 +3822,7 @@
         "rgba_sha256": "29f04e40a795eb6f8abcd67d762a3ac7648f857d569c96860089adc4ab509c73",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -3840,7 +3840,7 @@
         "rgba_sha256": "29f04e40a795eb6f8abcd67d762a3ac7648f857d569c96860089adc4ab509c73",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4003,7 +4003,7 @@
         "rgba_sha256": "614680ffde3c65e877ca1cf30d4d9d13e3c465e33e05becbdeaf0c8fe7c3f371",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4021,7 +4021,7 @@
         "rgba_sha256": "614680ffde3c65e877ca1cf30d4d9d13e3c465e33e05becbdeaf0c8fe7c3f371",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4184,7 +4184,7 @@
         "rgba_sha256": "f6cd0820d9f58eafa278e97ffd4738e34a84eccfce33a541d32b0960910023c7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4202,7 +4202,7 @@
         "rgba_sha256": "f6cd0820d9f58eafa278e97ffd4738e34a84eccfce33a541d32b0960910023c7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4365,7 +4365,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4383,7 +4383,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4546,7 +4546,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4564,7 +4564,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4727,7 +4727,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4745,7 +4745,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4908,7 +4908,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -4926,7 +4926,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5089,7 +5089,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5107,7 +5107,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5270,7 +5270,7 @@
         "rgba_sha256": "ce040c3d9baf4befc4cbae68b3d8774cd0dd94801f6f21a143635b6f86cfdb56",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5288,7 +5288,7 @@
         "rgba_sha256": "ce040c3d9baf4befc4cbae68b3d8774cd0dd94801f6f21a143635b6f86cfdb56",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5451,7 +5451,7 @@
         "rgba_sha256": "7c5b7abbd2f148a8b8bb222967736677ef66f16024ce05e5de0ef4571cc1d9e6",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5469,7 +5469,7 @@
         "rgba_sha256": "7c5b7abbd2f148a8b8bb222967736677ef66f16024ce05e5de0ef4571cc1d9e6",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5632,7 +5632,7 @@
         "rgba_sha256": "5e24bbae240bb4d148a79d8f1159bdb57a427e93a2b4f2794955beb21b087426",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5650,7 +5650,7 @@
         "rgba_sha256": "5e24bbae240bb4d148a79d8f1159bdb57a427e93a2b4f2794955beb21b087426",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5813,7 +5813,7 @@
         "rgba_sha256": "083a93d9601d5eb9b4be1fbf4f1ba1d61c60cf5657e711fe94166eec7838661c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5831,7 +5831,7 @@
         "rgba_sha256": "083a93d9601d5eb9b4be1fbf4f1ba1d61c60cf5657e711fe94166eec7838661c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -5994,7 +5994,7 @@
         "rgba_sha256": "eb311e2d115ad1c0bc8a8a8b563f2ebc40cdafc87564d4ec1cd76a8e323ed011",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6012,7 +6012,7 @@
         "rgba_sha256": "eb311e2d115ad1c0bc8a8a8b563f2ebc40cdafc87564d4ec1cd76a8e323ed011",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6175,7 +6175,7 @@
         "rgba_sha256": "4674a4f4cad085e0cc64f5e1c7e8e43abf58905a4311d31f68f839312c3aaaeb",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6193,7 +6193,7 @@
         "rgba_sha256": "4674a4f4cad085e0cc64f5e1c7e8e43abf58905a4311d31f68f839312c3aaaeb",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6356,7 +6356,7 @@
         "rgba_sha256": "806aecfec4f059f22fc03533e5b7b20c6ca266222fb50949bd4c7ee5cb8c8d3b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6374,7 +6374,7 @@
         "rgba_sha256": "806aecfec4f059f22fc03533e5b7b20c6ca266222fb50949bd4c7ee5cb8c8d3b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6537,7 +6537,7 @@
         "rgba_sha256": "b59d9529dbbc5f1192493cb7c25a9333e3886ecab26dab3e615a53feddfec762",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6555,7 +6555,7 @@
         "rgba_sha256": "b59d9529dbbc5f1192493cb7c25a9333e3886ecab26dab3e615a53feddfec762",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6718,7 +6718,7 @@
         "rgba_sha256": "3317d5e71b1a61fcd9cb230199ed45a448ec0e8f06f2ed7fb1b37a843418696f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6736,7 +6736,7 @@
         "rgba_sha256": "3317d5e71b1a61fcd9cb230199ed45a448ec0e8f06f2ed7fb1b37a843418696f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6899,7 +6899,7 @@
         "rgba_sha256": "b2c3ab1ea02b2df1dfa5bede1710909951c07232ebebc5fac10f5c556dca896a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -6917,7 +6917,7 @@
         "rgba_sha256": "b2c3ab1ea02b2df1dfa5bede1710909951c07232ebebc5fac10f5c556dca896a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7080,7 +7080,7 @@
         "rgba_sha256": "6cde390087c1edaefa7c7d13a868df626b690a85f2be7ad5c2d8c19df7b4a5c6",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7098,7 +7098,7 @@
         "rgba_sha256": "6cde390087c1edaefa7c7d13a868df626b690a85f2be7ad5c2d8c19df7b4a5c6",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7261,7 +7261,7 @@
         "rgba_sha256": "308e9dc424e2c1a0baad102c67d3c960dc6c05233d55fd6bde0004f2c916c155",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7279,7 +7279,7 @@
         "rgba_sha256": "308e9dc424e2c1a0baad102c67d3c960dc6c05233d55fd6bde0004f2c916c155",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7442,7 +7442,7 @@
         "rgba_sha256": "2c337af0513df805f56e0fe817d6d60e0c185d3edcc526e4159101ee59db0534",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7460,7 +7460,7 @@
         "rgba_sha256": "2c337af0513df805f56e0fe817d6d60e0c185d3edcc526e4159101ee59db0534",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7623,7 +7623,7 @@
         "rgba_sha256": "bec5df04077e90aab35c7addb9ede573caa1c637ed3e78a2e819624def67b48b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7641,7 +7641,7 @@
         "rgba_sha256": "bec5df04077e90aab35c7addb9ede573caa1c637ed3e78a2e819624def67b48b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7804,7 +7804,7 @@
         "rgba_sha256": "a823d04fb511d65f02034577c35428a6c2970664f38b1e2ed48990009df5386c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7822,7 +7822,7 @@
         "rgba_sha256": "a823d04fb511d65f02034577c35428a6c2970664f38b1e2ed48990009df5386c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -7985,7 +7985,7 @@
         "rgba_sha256": "dd7c0075dae183aa4934d6def368a436c7741fecdfcdd74ca692d8a246efc764",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8003,7 +8003,7 @@
         "rgba_sha256": "dd7c0075dae183aa4934d6def368a436c7741fecdfcdd74ca692d8a246efc764",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8166,7 +8166,7 @@
         "rgba_sha256": "b52acc4f7011c3390867562f171f5ffa6961d621c5accca13d8cbd80c2f6ec87",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8184,7 +8184,7 @@
         "rgba_sha256": "b52acc4f7011c3390867562f171f5ffa6961d621c5accca13d8cbd80c2f6ec87",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8347,7 +8347,7 @@
         "rgba_sha256": "6a2ac867fe8b9e4b483854ffda49a3c9da0555902aa856ccbfcf74dc8371bea6",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8365,7 +8365,7 @@
         "rgba_sha256": "6a2ac867fe8b9e4b483854ffda49a3c9da0555902aa856ccbfcf74dc8371bea6",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8528,7 +8528,7 @@
         "rgba_sha256": "9173e8528aea3b6ade87e372dd92c0c03c347d17ab4313324633a9cd9f0c97c5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8546,7 +8546,7 @@
         "rgba_sha256": "9173e8528aea3b6ade87e372dd92c0c03c347d17ab4313324633a9cd9f0c97c5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8709,7 +8709,7 @@
         "rgba_sha256": "2e675bd33b1033ca0c147e122ed2be2734f0161a76027d356ab113ed16fef64b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8727,7 +8727,7 @@
         "rgba_sha256": "2e675bd33b1033ca0c147e122ed2be2734f0161a76027d356ab113ed16fef64b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8828,7 +8828,7 @@
         "rgba_sha256": "2e675bd33b1033ca0c147e122ed2be2734f0161a76027d356ab113ed16fef64b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8846,7 +8846,7 @@
         "rgba_sha256": "2e675bd33b1033ca0c147e122ed2be2734f0161a76027d356ab113ed16fef64b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8947,7 +8947,7 @@
         "rgba_sha256": "239208a0eb618faa8657344b421c8236e47f3263c6a7140fc298ee1e1a5748e2",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -8965,7 +8965,7 @@
         "rgba_sha256": "239208a0eb618faa8657344b421c8236e47f3263c6a7140fc298ee1e1a5748e2",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9066,7 +9066,7 @@
         "rgba_sha256": "53046f4e71c93f0d37601a8ea54a3523ad23785f47881b06ce9ec8beb9a8863b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9084,7 +9084,7 @@
         "rgba_sha256": "53046f4e71c93f0d37601a8ea54a3523ad23785f47881b06ce9ec8beb9a8863b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9185,7 +9185,7 @@
         "rgba_sha256": "bee26c1c2a2e5c440b4c1538650c39ea036c01ec94a5b4eef54bb86283a0c0d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9203,7 +9203,7 @@
         "rgba_sha256": "bee26c1c2a2e5c440b4c1538650c39ea036c01ec94a5b4eef54bb86283a0c0d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9304,7 +9304,7 @@
         "rgba_sha256": "8e7faf342aa8644d8438b32e3a3ee504054d9c386bf8ec0bc9f15a24347b9239",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9322,7 +9322,7 @@
         "rgba_sha256": "8e7faf342aa8644d8438b32e3a3ee504054d9c386bf8ec0bc9f15a24347b9239",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9423,7 +9423,7 @@
         "rgba_sha256": "28a90f14404ef20abcf69106985c23465d597b5b0f5f08e4239840a236dd2908",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9441,7 +9441,7 @@
         "rgba_sha256": "28a90f14404ef20abcf69106985c23465d597b5b0f5f08e4239840a236dd2908",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9542,7 +9542,7 @@
         "rgba_sha256": "b6936914930f5292b9e1e63061e3202896fb5f1e48192fad59d7cb3dc3fe81d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9560,7 +9560,7 @@
         "rgba_sha256": "b6936914930f5292b9e1e63061e3202896fb5f1e48192fad59d7cb3dc3fe81d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9661,7 +9661,7 @@
         "rgba_sha256": "b6936914930f5292b9e1e63061e3202896fb5f1e48192fad59d7cb3dc3fe81d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9679,7 +9679,7 @@
         "rgba_sha256": "b6936914930f5292b9e1e63061e3202896fb5f1e48192fad59d7cb3dc3fe81d0",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9780,7 +9780,7 @@
         "rgba_sha256": "beddaf45ad592ad3b5e945e71ffba4b661d4c97a0c364a024d1198e10e7fcdc4",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9798,7 +9798,7 @@
         "rgba_sha256": "beddaf45ad592ad3b5e945e71ffba4b661d4c97a0c364a024d1198e10e7fcdc4",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9899,7 +9899,7 @@
         "rgba_sha256": "3321e3a92498876ad1d307081a87cfb4941c7a5b40a2089150942bc75f465ce7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -9917,7 +9917,7 @@
         "rgba_sha256": "3321e3a92498876ad1d307081a87cfb4941c7a5b40a2089150942bc75f465ce7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10018,7 +10018,7 @@
         "rgba_sha256": "42f59dfabfd3d7c3a1f383b825683df030566b4bae6179ef9f347b0878378f9e",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10036,7 +10036,7 @@
         "rgba_sha256": "42f59dfabfd3d7c3a1f383b825683df030566b4bae6179ef9f347b0878378f9e",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10137,7 +10137,7 @@
         "rgba_sha256": "14673023e77e3d2dbdbac41fea2c092a720ba70d0988b7439e08aec13f0bf404",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10155,7 +10155,7 @@
         "rgba_sha256": "14673023e77e3d2dbdbac41fea2c092a720ba70d0988b7439e08aec13f0bf404",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10256,7 +10256,7 @@
         "rgba_sha256": "d3861d78121a617737996a834f63397f71c5fc541f5afa4c099af4e4052a8506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10274,7 +10274,7 @@
         "rgba_sha256": "d3861d78121a617737996a834f63397f71c5fc541f5afa4c099af4e4052a8506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10375,7 +10375,7 @@
         "rgba_sha256": "d3861d78121a617737996a834f63397f71c5fc541f5afa4c099af4e4052a8506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10393,7 +10393,7 @@
         "rgba_sha256": "d3861d78121a617737996a834f63397f71c5fc541f5afa4c099af4e4052a8506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10494,7 +10494,7 @@
         "rgba_sha256": "db0bce711135f82c5586b0db5989cebe9d533e55cb889d428bc712ed4270f747",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10512,7 +10512,7 @@
         "rgba_sha256": "db0bce711135f82c5586b0db5989cebe9d533e55cb889d428bc712ed4270f747",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10613,7 +10613,7 @@
         "rgba_sha256": "0a906cd5a4d7608d40ec6e098bc80555eec3def2072f0d6792c7f0d6698aa58c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10631,7 +10631,7 @@
         "rgba_sha256": "0a906cd5a4d7608d40ec6e098bc80555eec3def2072f0d6792c7f0d6698aa58c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10732,7 +10732,7 @@
         "rgba_sha256": "c26790cf071962ed0ed9a8926cfb604d7f189aa1b9de82d61dd55ed3dc0e6c62",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10750,7 +10750,7 @@
         "rgba_sha256": "c26790cf071962ed0ed9a8926cfb604d7f189aa1b9de82d61dd55ed3dc0e6c62",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10851,7 +10851,7 @@
         "rgba_sha256": "1a83acd45d562720395b65e2bc1afc2877e49b0ab72730c25fefa25400697be2",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10869,7 +10869,7 @@
         "rgba_sha256": "1a83acd45d562720395b65e2bc1afc2877e49b0ab72730c25fefa25400697be2",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10970,7 +10970,7 @@
         "rgba_sha256": "b0f9df81c4291ae04719c6343d0891a47ff5a08b99ee2fd1eb8d73c6aa862f22",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -10988,7 +10988,7 @@
         "rgba_sha256": "b0f9df81c4291ae04719c6343d0891a47ff5a08b99ee2fd1eb8d73c6aa862f22",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11089,7 +11089,7 @@
         "rgba_sha256": "f97a65eb450b501ef57be05e1c3f30b314499f9048798c031f81d84b2cf9ebf9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11107,7 +11107,7 @@
         "rgba_sha256": "f97a65eb450b501ef57be05e1c3f30b314499f9048798c031f81d84b2cf9ebf9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11208,7 +11208,7 @@
         "rgba_sha256": "f97a65eb450b501ef57be05e1c3f30b314499f9048798c031f81d84b2cf9ebf9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11226,7 +11226,7 @@
         "rgba_sha256": "f97a65eb450b501ef57be05e1c3f30b314499f9048798c031f81d84b2cf9ebf9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11327,7 +11327,7 @@
         "rgba_sha256": "f82496e87309ce94002c64c82d1785f80eb75a465d685e7a95f25b3c79236cf3",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11345,7 +11345,7 @@
         "rgba_sha256": "f82496e87309ce94002c64c82d1785f80eb75a465d685e7a95f25b3c79236cf3",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11446,7 +11446,7 @@
         "rgba_sha256": "f82496e87309ce94002c64c82d1785f80eb75a465d685e7a95f25b3c79236cf3",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11464,7 +11464,7 @@
         "rgba_sha256": "f82496e87309ce94002c64c82d1785f80eb75a465d685e7a95f25b3c79236cf3",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11565,7 +11565,7 @@
         "rgba_sha256": "9b37d39d319f0335adb8a44f0a0592973286d2c0d3ebafecd44a64a24327b568",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11583,7 +11583,7 @@
         "rgba_sha256": "9b37d39d319f0335adb8a44f0a0592973286d2c0d3ebafecd44a64a24327b568",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11684,7 +11684,7 @@
         "rgba_sha256": "ed56e0d35f899bf0efbcaeaf7d2cd0eceb09579703055afc378295dd7f990a63",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11702,7 +11702,7 @@
         "rgba_sha256": "ed56e0d35f899bf0efbcaeaf7d2cd0eceb09579703055afc378295dd7f990a63",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11803,7 +11803,7 @@
         "rgba_sha256": "a127299423b4004b8d2d25cb8513d7a67361d9ec04d8e10286fc6bbe8b0e6747",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11821,7 +11821,7 @@
         "rgba_sha256": "a127299423b4004b8d2d25cb8513d7a67361d9ec04d8e10286fc6bbe8b0e6747",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11922,7 +11922,7 @@
         "rgba_sha256": "fd5cd9d449caf80422ef580648fc3cc1757b80dd352572c01f6e7f533e44325f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -11940,7 +11940,7 @@
         "rgba_sha256": "fd5cd9d449caf80422ef580648fc3cc1757b80dd352572c01f6e7f533e44325f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12041,7 +12041,7 @@
         "rgba_sha256": "d2576f0834beee4cbf76ad900f75139a38f2e3b41a9ef227575e74d12355a48c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12059,7 +12059,7 @@
         "rgba_sha256": "d2576f0834beee4cbf76ad900f75139a38f2e3b41a9ef227575e74d12355a48c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12160,7 +12160,7 @@
         "rgba_sha256": "ad7374041ce442e79b943008d94bfa086997386d7595bec6e00fe28e8b840506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12178,7 +12178,7 @@
         "rgba_sha256": "ad7374041ce442e79b943008d94bfa086997386d7595bec6e00fe28e8b840506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12279,7 +12279,7 @@
         "rgba_sha256": "ad7374041ce442e79b943008d94bfa086997386d7595bec6e00fe28e8b840506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12297,7 +12297,7 @@
         "rgba_sha256": "ad7374041ce442e79b943008d94bfa086997386d7595bec6e00fe28e8b840506",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12398,7 +12398,7 @@
         "rgba_sha256": "dace30f68748465d500e86c670d5134218958c82ee315791603c406d3e01819d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12416,7 +12416,7 @@
         "rgba_sha256": "dace30f68748465d500e86c670d5134218958c82ee315791603c406d3e01819d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12517,7 +12517,7 @@
         "rgba_sha256": "8d52fb34e9825f64829cded9c6892fd7bbb69b76db8f3fb4b7e0f7dc37ac20c7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12535,7 +12535,7 @@
         "rgba_sha256": "8d52fb34e9825f64829cded9c6892fd7bbb69b76db8f3fb4b7e0f7dc37ac20c7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12636,7 +12636,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12654,7 +12654,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12755,7 +12755,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12773,7 +12773,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12874,7 +12874,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12892,7 +12892,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -12993,7 +12993,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13011,7 +13011,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13112,7 +13112,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13130,7 +13130,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13231,7 +13231,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13249,7 +13249,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13350,7 +13350,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13368,7 +13368,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13469,7 +13469,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13487,7 +13487,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13588,7 +13588,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13606,7 +13606,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13707,7 +13707,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13725,7 +13725,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13826,7 +13826,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13844,7 +13844,7 @@
         "rgba_sha256": "7ed385933b6b3aac28a23b6ce9344ed9acbf5736bb6f0a2965bab3a8c39763a5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13945,7 +13945,7 @@
         "rgba_sha256": "416321228eeb40fb4583ae002ff59e36689452ebe487c5e99ca5f571295c855a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -13963,7 +13963,7 @@
         "rgba_sha256": "416321228eeb40fb4583ae002ff59e36689452ebe487c5e99ca5f571295c855a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14064,7 +14064,7 @@
         "rgba_sha256": "416321228eeb40fb4583ae002ff59e36689452ebe487c5e99ca5f571295c855a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14082,7 +14082,7 @@
         "rgba_sha256": "416321228eeb40fb4583ae002ff59e36689452ebe487c5e99ca5f571295c855a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14183,7 +14183,7 @@
         "rgba_sha256": "359f5131b47e3d00cc21cfec6a7078bb3afed14df45327dcec7f2fa89b17d1a7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14201,7 +14201,7 @@
         "rgba_sha256": "359f5131b47e3d00cc21cfec6a7078bb3afed14df45327dcec7f2fa89b17d1a7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14302,7 +14302,7 @@
         "rgba_sha256": "7574c90712654f3afcd7f3b582f2675257429cfe03f1bf28352f5ef7eaeec68c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14320,7 +14320,7 @@
         "rgba_sha256": "7574c90712654f3afcd7f3b582f2675257429cfe03f1bf28352f5ef7eaeec68c",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14421,7 +14421,7 @@
         "rgba_sha256": "e8111f61802f2c45113b2357db6f5d02d415a48c699879fcb9aea7cfee940586",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14439,7 +14439,7 @@
         "rgba_sha256": "e8111f61802f2c45113b2357db6f5d02d415a48c699879fcb9aea7cfee940586",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14540,7 +14540,7 @@
         "rgba_sha256": "90dc20694eca6bc1982abfb55f1f3058b85b4af0a9ea2c2491c4c941e87ea0f7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14558,7 +14558,7 @@
         "rgba_sha256": "90dc20694eca6bc1982abfb55f1f3058b85b4af0a9ea2c2491c4c941e87ea0f7",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14659,7 +14659,7 @@
         "rgba_sha256": "2f9fad7a24a514238eba15733535a47fadfaf7f9076d86015fb03c25125541c9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14677,7 +14677,7 @@
         "rgba_sha256": "2f9fad7a24a514238eba15733535a47fadfaf7f9076d86015fb03c25125541c9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14778,7 +14778,7 @@
         "rgba_sha256": "0c5f1c80ec8295b6bb155440073686c472f8310dd88cacde6f69693f76de5cd9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14796,7 +14796,7 @@
         "rgba_sha256": "0c5f1c80ec8295b6bb155440073686c472f8310dd88cacde6f69693f76de5cd9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14897,7 +14897,7 @@
         "rgba_sha256": "0c5f1c80ec8295b6bb155440073686c472f8310dd88cacde6f69693f76de5cd9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -14915,7 +14915,7 @@
         "rgba_sha256": "0c5f1c80ec8295b6bb155440073686c472f8310dd88cacde6f69693f76de5cd9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15016,7 +15016,7 @@
         "rgba_sha256": "91b856e8f835f647803f5f2e5a6b4cd657cb3b57d8785bceaca90e9817733ccc",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15034,7 +15034,7 @@
         "rgba_sha256": "91b856e8f835f647803f5f2e5a6b4cd657cb3b57d8785bceaca90e9817733ccc",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15135,7 +15135,7 @@
         "rgba_sha256": "f4765e5ed4b33acf5445adc5f5e45f6a968df4763e585d201204726f8a926f6f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15153,7 +15153,7 @@
         "rgba_sha256": "f4765e5ed4b33acf5445adc5f5e45f6a968df4763e585d201204726f8a926f6f",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15254,7 +15254,7 @@
         "rgba_sha256": "c7aecb037e1fa1f807eddad3e161d46958acb07bc8bde9945c01a91184afc0dd",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15272,7 +15272,7 @@
         "rgba_sha256": "c7aecb037e1fa1f807eddad3e161d46958acb07bc8bde9945c01a91184afc0dd",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15373,7 +15373,7 @@
         "rgba_sha256": "ed8023560489eb4b87617835f58d28c80440ba9cba011f1d7e26cabe4daa801a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15391,7 +15391,7 @@
         "rgba_sha256": "ed8023560489eb4b87617835f58d28c80440ba9cba011f1d7e26cabe4daa801a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15492,7 +15492,7 @@
         "rgba_sha256": "a1188b537a0b09e9f1a485b4f4cfea3023fd3a795f2f0c9cd4be236d994e7b21",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15510,7 +15510,7 @@
         "rgba_sha256": "a1188b537a0b09e9f1a485b4f4cfea3023fd3a795f2f0c9cd4be236d994e7b21",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15611,7 +15611,7 @@
         "rgba_sha256": "a1188b537a0b09e9f1a485b4f4cfea3023fd3a795f2f0c9cd4be236d994e7b21",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15629,7 +15629,7 @@
         "rgba_sha256": "a1188b537a0b09e9f1a485b4f4cfea3023fd3a795f2f0c9cd4be236d994e7b21",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15730,7 +15730,7 @@
         "rgba_sha256": "078650f854c28ee453a7ed40121fabe7448ae567bfb26a538a1fd0aaf4214e3a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15748,7 +15748,7 @@
         "rgba_sha256": "078650f854c28ee453a7ed40121fabe7448ae567bfb26a538a1fd0aaf4214e3a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15849,7 +15849,7 @@
         "rgba_sha256": "5e4f34592fa42b2757317fedaa41afb8efe3c3bd00d8985a2986fa531daf7dd9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15867,7 +15867,7 @@
         "rgba_sha256": "5e4f34592fa42b2757317fedaa41afb8efe3c3bd00d8985a2986fa531daf7dd9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15968,7 +15968,7 @@
         "rgba_sha256": "14ae057133f05d743b37c1c31c4388c60231e8723bbb9984f3bd0ea646e33925",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -15986,7 +15986,7 @@
         "rgba_sha256": "14ae057133f05d743b37c1c31c4388c60231e8723bbb9984f3bd0ea646e33925",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16087,7 +16087,7 @@
         "rgba_sha256": "a43951481ade60ab8d6a5aef880f59da26c347f47be18a1e3c07ce72db65fe31",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16105,7 +16105,7 @@
         "rgba_sha256": "a43951481ade60ab8d6a5aef880f59da26c347f47be18a1e3c07ce72db65fe31",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16206,7 +16206,7 @@
         "rgba_sha256": "59ffcc8325493830670f1cf50b770bcc35a0ea22c8a1cbf9e8ebe4ac2bf888eb",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16224,7 +16224,7 @@
         "rgba_sha256": "59ffcc8325493830670f1cf50b770bcc35a0ea22c8a1cbf9e8ebe4ac2bf888eb",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16325,7 +16325,7 @@
         "rgba_sha256": "76f598dcd87e09bf62597eac2d01b78178f9abc51f097e83b45baddc9ca3ac2d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16343,7 +16343,7 @@
         "rgba_sha256": "76f598dcd87e09bf62597eac2d01b78178f9abc51f097e83b45baddc9ca3ac2d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16444,7 +16444,7 @@
         "rgba_sha256": "76f598dcd87e09bf62597eac2d01b78178f9abc51f097e83b45baddc9ca3ac2d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16462,7 +16462,7 @@
         "rgba_sha256": "76f598dcd87e09bf62597eac2d01b78178f9abc51f097e83b45baddc9ca3ac2d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16562,7 +16562,7 @@
         "rgba_sha256": "d1f16cd5922ae2b7a5b613d8c5568f3ab1fe5b7c6e80614c6227af176667d43a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16580,7 +16580,7 @@
         "rgba_sha256": "d1f16cd5922ae2b7a5b613d8c5568f3ab1fe5b7c6e80614c6227af176667d43a",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=1",
+          "--threading-policy=greedy:global_budget=1",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16742,7 +16742,7 @@
         "rgba_sha256": "952965967fd1a0611c27bf987a38f9cbebdb1c1491a669abb3af2aedf1e5c7b5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16760,7 +16760,7 @@
         "rgba_sha256": "952965967fd1a0611c27bf987a38f9cbebdb1c1491a669abb3af2aedf1e5c7b5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=2",
+          "--threading-policy=greedy:global_budget=2",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16860,7 +16860,7 @@
         "rgba_sha256": "952965967fd1a0611c27bf987a38f9cbebdb1c1491a669abb3af2aedf1e5c7b5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16878,7 +16878,7 @@
         "rgba_sha256": "952965967fd1a0611c27bf987a38f9cbebdb1c1491a669abb3af2aedf1e5c7b5",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=3",
+          "--threading-policy=greedy:global_budget=3",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16978,7 +16978,7 @@
         "rgba_sha256": "1be0f0ddf21791a509430045c96b89630a9cbc71b2623ed143579a4988357c4d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -16996,7 +16996,7 @@
         "rgba_sha256": "1be0f0ddf21791a509430045c96b89630a9cbc71b2623ed143579a4988357c4d",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=4",
+          "--threading-policy=greedy:global_budget=4",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17096,7 +17096,7 @@
         "rgba_sha256": "4c25bad99eb6dc75f9052a2ded92c7144704c8988b160946c4947799770b9cdb",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17114,7 +17114,7 @@
         "rgba_sha256": "4c25bad99eb6dc75f9052a2ded92c7144704c8988b160946c4947799770b9cdb",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=5",
+          "--threading-policy=greedy:global_budget=5",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17214,7 +17214,7 @@
         "rgba_sha256": "9f0d1e39a211aa6b6665edc05703c6925acf8bd993143335f61ace0f4b0c8ad9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17232,7 +17232,7 @@
         "rgba_sha256": "9f0d1e39a211aa6b6665edc05703c6925acf8bd993143335f61ace0f4b0c8ad9",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=6",
+          "--threading-policy=greedy:global_budget=6",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17332,7 +17332,7 @@
         "rgba_sha256": "549a92f302cd61ec174b66a2476201c6e13cd61e3f0cfc709a0ad2acf9c16e08",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17350,7 +17350,7 @@
         "rgba_sha256": "549a92f302cd61ec174b66a2476201c6e13cd61e3f0cfc709a0ad2acf9c16e08",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=7",
+          "--threading-policy=greedy:global_budget=7",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17450,7 +17450,7 @@
         "rgba_sha256": "43e203035c427c973f46efda6891e83ba8e2629066dd62ea19215987ac2ee8ab",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17468,7 +17468,7 @@
         "rgba_sha256": "43e203035c427c973f46efda6891e83ba8e2629066dd62ea19215987ac2ee8ab",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=8",
+          "--threading-policy=greedy:global_budget=8",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17568,7 +17568,7 @@
         "rgba_sha256": "2a8aff96f4636f0b468554662e900c2f26a8aad9921829fb4a47aaa547546534",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17586,7 +17586,7 @@
         "rgba_sha256": "2a8aff96f4636f0b468554662e900c2f26a8aad9921829fb4a47aaa547546534",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=9",
+          "--threading-policy=greedy:global_budget=9",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17686,7 +17686,7 @@
         "rgba_sha256": "2a8aff96f4636f0b468554662e900c2f26a8aad9921829fb4a47aaa547546534",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17704,7 +17704,7 @@
         "rgba_sha256": "2a8aff96f4636f0b468554662e900c2f26a8aad9921829fb4a47aaa547546534",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=10",
+          "--threading-policy=greedy:global_budget=10",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17804,7 +17804,7 @@
         "rgba_sha256": "62794c6c38c4a92980111b127ad7a20fc8dcaded46e7e8790b8a4badabbd4732",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17822,7 +17822,7 @@
         "rgba_sha256": "62794c6c38c4a92980111b127ad7a20fc8dcaded46e7e8790b8a4badabbd4732",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=11",
+          "--threading-policy=greedy:global_budget=11",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17922,7 +17922,7 @@
         "rgba_sha256": "4f65c4ecdd637afc68de47582a5535620acb39b73d420531cb926ce10e250f2b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",
@@ -17940,7 +17940,7 @@
         "rgba_sha256": "4f65c4ecdd637afc68de47582a5535620acb39b73d420531cb926ce10e250f2b",
         "command": [
           "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/converters/.libs/img2sixel",
-          "--threads=12",
+          "--threading-policy=greedy:global_budget=12",
           "--precision=8bit",
           "--loaders=builtin!",
           "--gpu-policy=off",

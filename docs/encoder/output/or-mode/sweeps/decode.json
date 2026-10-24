@@ -144,7 +144,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p2-t1.0.six",
@@ -153,7 +153,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p2-t1.1.six",
@@ -346,7 +346,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p4-t1.0.six",
@@ -355,7 +355,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p4-t1.1.six",
@@ -548,7 +548,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p8-t1.0.six",
@@ -557,7 +557,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p8-t1.1.six",
@@ -750,7 +750,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p16-t1.0.six",
@@ -759,7 +759,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p16-t1.1.six",
@@ -952,7 +952,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p32-t1.0.six",
@@ -961,7 +961,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p32-t1.1.six",
@@ -1154,7 +1154,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p64-t1.0.six",
@@ -1163,7 +1163,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p64-t1.1.six",
@@ -1356,7 +1356,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p128-t1.0.six",
@@ -1365,7 +1365,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p128-t1.1.six",
@@ -1558,7 +1558,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -1567,7 +1567,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -1760,7 +1760,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -1769,7 +1769,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -1962,7 +1962,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p128-t1.0.six",
@@ -1971,7 +1971,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p128-t1.1.six",
@@ -2164,7 +2164,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p64-t1.0.six",
@@ -2173,7 +2173,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p64-t1.1.six",
@@ -2366,7 +2366,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p32-t1.0.six",
@@ -2375,7 +2375,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p32-t1.1.six",
@@ -2568,7 +2568,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p16-t1.0.six",
@@ -2577,7 +2577,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p16-t1.1.six",
@@ -2770,7 +2770,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p8-t1.0.six",
@@ -2779,7 +2779,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p8-t1.1.six",
@@ -2972,7 +2972,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p4-t1.0.six",
@@ -2981,7 +2981,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p4-t1.1.six",
@@ -3174,7 +3174,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p2-t1.0.six",
@@ -3183,7 +3183,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p2-t1.1.six",
@@ -3376,7 +3376,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p2-t1.0.six",
@@ -3385,7 +3385,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p2-t1.1.six",
@@ -3578,7 +3578,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p4-t1.0.six",
@@ -3587,7 +3587,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p4-t1.1.six",
@@ -3780,7 +3780,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p8-t1.0.six",
@@ -3789,7 +3789,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p8-t1.1.six",
@@ -3982,7 +3982,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p16-t1.0.six",
@@ -3991,7 +3991,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p16-t1.1.six",
@@ -4184,7 +4184,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p32-t1.0.six",
@@ -4193,7 +4193,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p32-t1.1.six",
@@ -4386,7 +4386,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p64-t1.0.six",
@@ -4395,7 +4395,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p64-t1.1.six",
@@ -4588,7 +4588,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p128-t1.0.six",
@@ -4597,7 +4597,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p128-t1.1.six",
@@ -4790,7 +4790,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -4799,7 +4799,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -4992,7 +4992,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -5001,7 +5001,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -5194,7 +5194,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p128-t1.0.six",
@@ -5203,7 +5203,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p128-t1.1.six",
@@ -5396,7 +5396,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p64-t1.0.six",
@@ -5405,7 +5405,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p64-t1.1.six",
@@ -5598,7 +5598,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p32-t1.0.six",
@@ -5607,7 +5607,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p32-t1.1.six",
@@ -5800,7 +5800,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p16-t1.0.six",
@@ -5809,7 +5809,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p16-t1.1.six",
@@ -6002,7 +6002,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p8-t1.0.six",
@@ -6011,7 +6011,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p8-t1.1.six",
@@ -6204,7 +6204,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p4-t1.0.six",
@@ -6213,7 +6213,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p4-t1.1.six",
@@ -6406,7 +6406,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p2-t1.0.six",
@@ -6415,7 +6415,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p2-t1.1.six",
@@ -6608,7 +6608,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p2-t1.0.six",
@@ -6617,7 +6617,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p2-t1.1.six",
@@ -6810,7 +6810,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p4-t1.0.six",
@@ -6819,7 +6819,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p4-t1.1.six",
@@ -7012,7 +7012,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p8-t1.0.six",
@@ -7021,7 +7021,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p8-t1.1.six",
@@ -7214,7 +7214,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p16-t1.0.six",
@@ -7223,7 +7223,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p16-t1.1.six",
@@ -7416,7 +7416,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p32-t1.0.six",
@@ -7425,7 +7425,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p32-t1.1.six",
@@ -7618,7 +7618,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p64-t1.0.six",
@@ -7627,7 +7627,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p64-t1.1.six",
@@ -7820,7 +7820,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p128-t1.0.six",
@@ -7829,7 +7829,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p128-t1.1.six",
@@ -8022,7 +8022,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -8031,7 +8031,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -8224,7 +8224,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -8233,7 +8233,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -8426,7 +8426,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p128-t1.0.six",
@@ -8435,7 +8435,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p128-t1.1.six",
@@ -8628,7 +8628,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p64-t1.0.six",
@@ -8637,7 +8637,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p64-t1.1.six",
@@ -8830,7 +8830,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p32-t1.0.six",
@@ -8839,7 +8839,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p32-t1.1.six",
@@ -9032,7 +9032,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p16-t1.0.six",
@@ -9041,7 +9041,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p16-t1.1.six",
@@ -9234,7 +9234,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p8-t1.0.six",
@@ -9243,7 +9243,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p8-t1.1.six",
@@ -9436,7 +9436,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p4-t1.0.six",
@@ -9445,7 +9445,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p4-t1.1.six",
@@ -9638,7 +9638,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p2-t1.0.six",
@@ -9647,7 +9647,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p2-t1.1.six",
@@ -9840,7 +9840,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -9849,7 +9849,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -10042,7 +10042,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -10051,7 +10051,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -10244,7 +10244,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -10253,7 +10253,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -10446,7 +10446,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -10455,7 +10455,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -10648,7 +10648,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -10657,7 +10657,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -10850,7 +10850,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -10859,7 +10859,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -11052,7 +11052,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -11061,7 +11061,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -11254,7 +11254,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -11263,7 +11263,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -11456,7 +11456,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -11465,7 +11465,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -11658,7 +11658,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -11667,7 +11667,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -11860,7 +11860,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.0.six",
@@ -11869,7 +11869,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-p256-t1.1.six",
@@ -12062,7 +12062,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -12071,7 +12071,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -12264,7 +12264,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -12273,7 +12273,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -12466,7 +12466,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -12475,7 +12475,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -12668,7 +12668,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -12677,7 +12677,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -12870,7 +12870,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -12879,7 +12879,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -13072,7 +13072,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -13081,7 +13081,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -13274,7 +13274,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -13283,7 +13283,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -13476,7 +13476,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -13485,7 +13485,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -13678,7 +13678,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -13687,7 +13687,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -13880,7 +13880,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -13889,7 +13889,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -14082,7 +14082,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.0.six",
@@ -14091,7 +14091,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/egret-p256-t1.1.six",
@@ -14284,7 +14284,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -14293,7 +14293,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -14486,7 +14486,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -14495,7 +14495,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -14688,7 +14688,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -14697,7 +14697,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -14890,7 +14890,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -14899,7 +14899,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -15092,7 +15092,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -15101,7 +15101,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -15294,7 +15294,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -15303,7 +15303,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -15496,7 +15496,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -15505,7 +15505,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -15698,7 +15698,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -15707,7 +15707,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -15900,7 +15900,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -15909,7 +15909,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -16102,7 +16102,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -16111,7 +16111,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -16304,7 +16304,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.0.six",
@@ -16313,7 +16313,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/vimperator3-p256-t1.1.six",
@@ -16506,7 +16506,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -16515,7 +16515,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -16708,7 +16708,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -16717,7 +16717,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -16910,7 +16910,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -16919,7 +16919,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -17112,7 +17112,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -17121,7 +17121,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -17314,7 +17314,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -17323,7 +17323,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -17516,7 +17516,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -17525,7 +17525,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -17718,7 +17718,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -17727,7 +17727,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -17920,7 +17920,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -17929,7 +17929,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -18122,7 +18122,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -18131,7 +18131,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -18324,7 +18324,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -18333,7 +18333,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -18526,7 +18526,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.0.six",
@@ -18535,7 +18535,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/map16-p256-t1.1.six",
@@ -18728,7 +18728,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -18737,7 +18737,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -18930,7 +18930,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -18939,7 +18939,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -19132,7 +19132,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -19141,7 +19141,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -19334,7 +19334,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -19343,7 +19343,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -19536,7 +19536,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -19545,7 +19545,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -19738,7 +19738,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -19747,7 +19747,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -19940,7 +19940,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -19949,7 +19949,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -20142,7 +20142,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -20151,7 +20151,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -20344,7 +20344,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -20353,7 +20353,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -20546,7 +20546,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -20555,7 +20555,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -20748,7 +20748,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.0.six",
@@ -20757,7 +20757,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/smooth-gradient-600x450-p256-t1.1.six",
@@ -20950,7 +20950,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -20959,7 +20959,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -21152,7 +21152,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -21161,7 +21161,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -21354,7 +21354,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -21363,7 +21363,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -21556,7 +21556,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -21565,7 +21565,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -21758,7 +21758,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -21767,7 +21767,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -21960,7 +21960,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -21969,7 +21969,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -22162,7 +22162,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -22171,7 +22171,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -22364,7 +22364,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -22373,7 +22373,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -22566,7 +22566,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -22575,7 +22575,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -22768,7 +22768,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -22777,7 +22777,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -22970,7 +22970,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.0.six",
@@ -22979,7 +22979,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/rare-colors-600x450-p256-t1.1.six",
@@ -23172,7 +23172,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -23181,7 +23181,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -23374,7 +23374,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -23383,7 +23383,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=2",
+        "--threading-policy=greedy:global_budget=2",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -23576,7 +23576,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -23585,7 +23585,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=3",
+        "--threading-policy=greedy:global_budget=3",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -23778,7 +23778,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -23787,7 +23787,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=4",
+        "--threading-policy=greedy:global_budget=4",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -23980,7 +23980,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -23989,7 +23989,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=5",
+        "--threading-policy=greedy:global_budget=5",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -24182,7 +24182,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -24191,7 +24191,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=6",
+        "--threading-policy=greedy:global_budget=6",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -24384,7 +24384,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -24393,7 +24393,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=7",
+        "--threading-policy=greedy:global_budget=7",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -24586,7 +24586,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -24595,7 +24595,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=8",
+        "--threading-policy=greedy:global_budget=8",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -24788,7 +24788,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -24797,7 +24797,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=9",
+        "--threading-policy=greedy:global_budget=9",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -24990,7 +24990,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -24999,7 +24999,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=10",
+        "--threading-policy=greedy:global_budget=10",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -25192,7 +25192,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -25201,7 +25201,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=11",
+        "--threading-policy=greedy:global_budget=11",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -25394,7 +25394,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.0.six",
@@ -25403,7 +25403,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=12",
+        "--threading-policy=greedy:global_budget=12",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/sweeps/encode/snake-fullhd-p256-t1.1.six",
@@ -25596,7 +25596,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-0-p256-t1.0.six",
@@ -25605,7 +25605,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-0-p256-t1.1.six",
@@ -25798,7 +25798,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-1-p256-t1.0.six",
@@ -25807,7 +25807,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-1-p256-t1.1.six",
@@ -26000,7 +26000,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-2-p256-t1.0.six",
@@ -26009,7 +26009,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-2-p256-t1.1.six",
@@ -26202,7 +26202,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-3-p256-t1.0.six",
@@ -26211,7 +26211,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-3-p256-t1.1.six",
@@ -26404,7 +26404,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-4-p256-t1.0.six",
@@ -26413,7 +26413,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-4-p256-t1.1.six",
@@ -26606,7 +26606,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-5-p256-t1.0.six",
@@ -26615,7 +26615,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-5-p256-t1.1.six",
@@ -26808,7 +26808,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-6-p256-t1.0.six",
@@ -26817,7 +26817,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-6-p256-t1.1.six",
@@ -27010,7 +27010,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-7-p256-t1.0.six",
@@ -27019,7 +27019,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-7-p256-t1.1.six",
@@ -27212,7 +27212,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-8-p256-t1.0.six",
@@ -27221,7 +27221,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-8-p256-t1.1.six",
@@ -27414,7 +27414,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-9-p256-t1.0.six",
@@ -27423,7 +27423,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-9-p256-t1.1.six",
@@ -27616,7 +27616,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-10-p256-t1.0.six",
@@ -27625,7 +27625,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-10-p256-t1.1.six",
@@ -27818,7 +27818,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-11-p256-t1.0.six",
@@ -27827,7 +27827,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-11-p256-t1.1.six",
@@ -28020,7 +28020,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-12-p256-t1.0.six",
@@ -28029,7 +28029,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-12-p256-t1.1.six",
@@ -28222,7 +28222,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-13-p256-t1.0.six",
@@ -28231,7 +28231,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-13-p256-t1.1.six",
@@ -28424,7 +28424,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-14-p256-t1.0.six",
@@ -28433,7 +28433,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-14-p256-t1.1.six",
@@ -28626,7 +28626,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-15-p256-t1.0.six",
@@ -28635,7 +28635,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-15-p256-t1.1.six",
@@ -28828,7 +28828,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-16-p256-t1.0.six",
@@ -28837,7 +28837,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-16-p256-t1.1.six",
@@ -29030,7 +29030,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-17-p256-t1.0.six",
@@ -29039,7 +29039,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-17-p256-t1.1.six",
@@ -29232,7 +29232,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-18-p256-t1.0.six",
@@ -29241,7 +29241,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-18-p256-t1.1.six",
@@ -29434,7 +29434,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-19-p256-t1.0.six",
@@ -29443,7 +29443,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-19-p256-t1.1.six",
@@ -29636,7 +29636,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-20-p256-t1.0.six",
@@ -29645,7 +29645,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-20-p256-t1.1.six",
@@ -29838,7 +29838,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-21-p256-t1.0.six",
@@ -29847,7 +29847,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-21-p256-t1.1.six",
@@ -30040,7 +30040,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-22-p256-t1.0.six",
@@ -30049,7 +30049,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-22-p256-t1.1.six",
@@ -30242,7 +30242,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-23-p256-t1.0.six",
@@ -30251,7 +30251,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-23-p256-t1.1.six",
@@ -30444,7 +30444,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-24-p256-t1.0.six",
@@ -30453,7 +30453,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-24-p256-t1.1.six",
@@ -30646,7 +30646,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-25-p256-t1.0.six",
@@ -30655,7 +30655,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-25-p256-t1.1.six",
@@ -30848,7 +30848,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-26-p256-t1.0.six",
@@ -30857,7 +30857,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-26-p256-t1.1.six",
@@ -31050,7 +31050,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-27-p256-t1.0.six",
@@ -31059,7 +31059,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-27-p256-t1.1.six",
@@ -31252,7 +31252,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-28-p256-t1.0.six",
@@ -31261,7 +31261,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-28-p256-t1.1.six",
@@ -31454,7 +31454,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-29-p256-t1.0.six",
@@ -31463,7 +31463,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-29-p256-t1.1.six",
@@ -31656,7 +31656,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-30-p256-t1.0.six",
@@ -31665,7 +31665,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-30-p256-t1.1.six",
@@ -31858,7 +31858,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-31-p256-t1.0.six",
@@ -31867,7 +31867,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-31-p256-t1.1.six",
@@ -32060,7 +32060,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-32-p256-t1.0.six",
@@ -32069,7 +32069,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-32-p256-t1.1.six",
@@ -32262,7 +32262,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-33-p256-t1.0.six",
@@ -32271,7 +32271,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-33-p256-t1.1.six",
@@ -32464,7 +32464,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-34-p256-t1.0.six",
@@ -32473,7 +32473,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-34-p256-t1.1.six",
@@ -32666,7 +32666,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-35-p256-t1.0.six",
@@ -32675,7 +32675,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-35-p256-t1.1.six",
@@ -32868,7 +32868,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-36-p256-t1.0.six",
@@ -32877,7 +32877,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-36-p256-t1.1.six",
@@ -33070,7 +33070,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-37-p256-t1.0.six",
@@ -33079,7 +33079,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-37-p256-t1.1.six",
@@ -33272,7 +33272,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-38-p256-t1.0.six",
@@ -33281,7 +33281,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-38-p256-t1.1.six",
@@ -33474,7 +33474,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-39-p256-t1.0.six",
@@ -33483,7 +33483,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-39-p256-t1.1.six",
@@ -33676,7 +33676,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-40-p256-t1.0.six",
@@ -33685,7 +33685,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-40-p256-t1.1.six",
@@ -33878,7 +33878,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-41-p256-t1.0.six",
@@ -33887,7 +33887,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-41-p256-t1.1.six",
@@ -34080,7 +34080,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-42-p256-t1.0.six",
@@ -34089,7 +34089,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-42-p256-t1.1.six",
@@ -34282,7 +34282,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-43-p256-t1.0.six",
@@ -34291,7 +34291,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-43-p256-t1.1.six",
@@ -34484,7 +34484,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-44-p256-t1.0.six",
@@ -34493,7 +34493,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-44-p256-t1.1.six",
@@ -34686,7 +34686,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-45-p256-t1.0.six",
@@ -34695,7 +34695,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-45-p256-t1.1.six",
@@ -34888,7 +34888,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-46-p256-t1.0.six",
@@ -34897,7 +34897,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-46-p256-t1.1.six",
@@ -35090,7 +35090,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-47-p256-t1.0.six",
@@ -35099,7 +35099,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-47-p256-t1.1.six",
@@ -35292,7 +35292,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-48-p256-t1.0.six",
@@ -35301,7 +35301,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-48-p256-t1.1.six",
@@ -35494,7 +35494,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-49-p256-t1.0.six",
@@ -35503,7 +35503,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-49-p256-t1.1.six",
@@ -35696,7 +35696,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-50-p256-t1.0.six",
@@ -35705,7 +35705,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-50-p256-t1.1.six",
@@ -35898,7 +35898,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-51-p256-t1.0.six",
@@ -35907,7 +35907,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-51-p256-t1.1.six",
@@ -36100,7 +36100,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-52-p256-t1.0.six",
@@ -36109,7 +36109,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-52-p256-t1.1.six",
@@ -36302,7 +36302,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-53-p256-t1.0.six",
@@ -36311,7 +36311,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-53-p256-t1.1.six",
@@ -36504,7 +36504,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-54-p256-t1.0.six",
@@ -36513,7 +36513,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-54-p256-t1.1.six",
@@ -36706,7 +36706,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-55-p256-t1.0.six",
@@ -36715,7 +36715,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-55-p256-t1.1.six",
@@ -36908,7 +36908,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-56-p256-t1.0.six",
@@ -36917,7 +36917,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-56-p256-t1.1.six",
@@ -37110,7 +37110,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-57-p256-t1.0.six",
@@ -37119,7 +37119,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-57-p256-t1.1.six",
@@ -37312,7 +37312,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-58-p256-t1.0.six",
@@ -37321,7 +37321,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-58-p256-t1.1.six",
@@ -37514,7 +37514,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-59-p256-t1.0.six",
@@ -37523,7 +37523,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-59-p256-t1.1.six",
@@ -37716,7 +37716,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-60-p256-t1.0.six",
@@ -37725,7 +37725,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-60-p256-t1.1.six",
@@ -37918,7 +37918,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-61-p256-t1.0.six",
@@ -37927,7 +37927,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-61-p256-t1.1.six",
@@ -38120,7 +38120,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-62-p256-t1.0.six",
@@ -38129,7 +38129,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-62-p256-t1.1.six",
@@ -38322,7 +38322,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-63-p256-t1.0.six",
@@ -38331,7 +38331,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-63-p256-t1.1.six",
@@ -38524,7 +38524,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-64-p256-t1.0.six",
@@ -38533,7 +38533,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-64-p256-t1.1.six",
@@ -38726,7 +38726,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-65-p256-t1.0.six",
@@ -38735,7 +38735,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-65-p256-t1.1.six",
@@ -38928,7 +38928,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-66-p256-t1.0.six",
@@ -38937,7 +38937,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-66-p256-t1.1.six",
@@ -39130,7 +39130,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-67-p256-t1.0.six",
@@ -39139,7 +39139,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-67-p256-t1.1.six",
@@ -39332,7 +39332,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-68-p256-t1.0.six",
@@ -39341,7 +39341,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-68-p256-t1.1.six",
@@ -39534,7 +39534,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-69-p256-t1.0.six",
@@ -39543,7 +39543,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-69-p256-t1.1.six",
@@ -39736,7 +39736,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-70-p256-t1.0.six",
@@ -39745,7 +39745,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-70-p256-t1.1.six",
@@ -39938,7 +39938,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-71-p256-t1.0.six",
@@ -39947,7 +39947,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-71-p256-t1.1.six",
@@ -40140,7 +40140,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-72-p256-t1.0.six",
@@ -40149,7 +40149,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-72-p256-t1.1.six",
@@ -40342,7 +40342,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-73-p256-t1.0.six",
@@ -40351,7 +40351,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-73-p256-t1.1.six",
@@ -40544,7 +40544,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-74-p256-t1.0.six",
@@ -40553,7 +40553,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-74-p256-t1.1.six",
@@ -40746,7 +40746,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-75-p256-t1.0.six",
@@ -40755,7 +40755,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-75-p256-t1.1.six",
@@ -40948,7 +40948,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-76-p256-t1.0.six",
@@ -40957,7 +40957,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-76-p256-t1.1.six",
@@ -41150,7 +41150,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-77-p256-t1.0.six",
@@ -41159,7 +41159,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-77-p256-t1.1.six",
@@ -41352,7 +41352,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-78-p256-t1.0.six",
@@ -41361,7 +41361,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-78-p256-t1.1.six",
@@ -41554,7 +41554,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-79-p256-t1.0.six",
@@ -41563,7 +41563,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-79-p256-t1.1.six",
@@ -41756,7 +41756,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-80-p256-t1.0.six",
@@ -41765,7 +41765,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-80-p256-t1.1.six",
@@ -41958,7 +41958,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-81-p256-t1.0.six",
@@ -41967,7 +41967,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-81-p256-t1.1.six",
@@ -42160,7 +42160,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-82-p256-t1.0.six",
@@ -42169,7 +42169,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-82-p256-t1.1.six",
@@ -42362,7 +42362,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-83-p256-t1.0.six",
@@ -42371,7 +42371,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-83-p256-t1.1.six",
@@ -42564,7 +42564,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-84-p256-t1.0.six",
@@ -42573,7 +42573,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-84-p256-t1.1.six",
@@ -42766,7 +42766,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-85-p256-t1.0.six",
@@ -42775,7 +42775,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-85-p256-t1.1.six",
@@ -42968,7 +42968,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-87-p256-t1.0.six",
@@ -42977,7 +42977,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-87-p256-t1.1.six",
@@ -43170,7 +43170,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-88-p256-t1.0.six",
@@ -43179,7 +43179,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-88-p256-t1.1.six",
@@ -43372,7 +43372,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-89-p256-t1.0.six",
@@ -43381,7 +43381,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-89-p256-t1.1.six",
@@ -43574,7 +43574,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-90-p256-t1.0.six",
@@ -43583,7 +43583,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-90-p256-t1.1.six",
@@ -43776,7 +43776,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-91-p256-t1.0.six",
@@ -43785,7 +43785,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-91-p256-t1.1.six",
@@ -43978,7 +43978,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-92-p256-t1.0.six",
@@ -43987,7 +43987,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-92-p256-t1.1.six",
@@ -44180,7 +44180,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-93-p256-t1.0.six",
@@ -44189,7 +44189,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-93-p256-t1.1.six",
@@ -44382,7 +44382,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-94-p256-t1.0.six",
@@ -44391,7 +44391,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-94-p256-t1.1.six",
@@ -44584,7 +44584,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-95-p256-t1.0.six",
@@ -44593,7 +44593,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-95-p256-t1.1.six",
@@ -44786,7 +44786,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-96-p256-t1.0.six",
@@ -44795,7 +44795,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-96-p256-t1.1.six",
@@ -44988,7 +44988,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-98-p256-t1.0.six",
@@ -44997,7 +44997,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-98-p256-t1.1.six",
@@ -45190,7 +45190,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-99-p256-t1.0.six",
@@ -45199,7 +45199,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-99-p256-t1.1.six",
@@ -45392,7 +45392,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-100-p256-t1.0.six",
@@ -45401,7 +45401,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-100-p256-t1.1.six",
@@ -45594,7 +45594,7 @@
     "cli_commands": [
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-101-p256-t1.0.six",
@@ -45603,7 +45603,7 @@
       ],
       [
         "/Users/saitoha/.codex/worktrees/decoder-parallel-columns/libsixel/converters/.libs/sixel2png",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "--direct",
         "-i",
         "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/results/picsum-101-p256-t1.1.six",

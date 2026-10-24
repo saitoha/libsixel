@@ -1,14 +1,14 @@
 #!/bin/sh
 # Verify threading-policy decode through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|decode
+# Registry row: SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY|NULL|decode
 # Registry binding: decode_threads|decode_threads_override
 # Environment range: parse-signed-long
 
 # Image assertion: option-values-and-output-equivalence
 set -eux
 
-test "${HAVE_SIXEL2PNG-}" = 1 || {
-    echo "1..0 # SKIP sixel2png is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    echo "1..0 # SKIP img2sixel is disabled in this build"
     exit 0
 }
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
@@ -22,12 +22,12 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/images/map8.six"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
-short_output="${artifact_dir}/0184-threading-decode-short-$$.png"
-env_output="${artifact_dir}/0184-threading-decode-env-$$.png"
+short_output="${artifact_dir}/0184-threading-decode-short-$$.six"
+env_output="${artifact_dir}/0184-threading-decode-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
-    "-=balanced:S2" <"${input_image}" 2>&1 >"${short_output}") || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --loaders=builtin! -d none \
+    "-=balanced:S2" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading decode short conversion failed"
     exit 0
 }
@@ -37,9 +37,9 @@ case "${short_trace}" in *LSXSUB1\|*key=decode\|stored=1\|binding=decode_threads
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
-    --env "SIXEL_THREADING_DECODE=2" \
-    "-=balanced" <"${input_image}" 2>&1 >"${env_output}") || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --loaders=builtin! -d none \
+    --env "SIXEL_ENCODER_THREADING_DECODE=2" \
+    "-=balanced" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading decode environment conversion failed"
     exit 0
 }
@@ -49,9 +49,9 @@ case "${env_trace}" in *LSXSUB1\|*key=decode\|stored=1\|binding=decode_threads,d
 }
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D \
-    --env "SIXEL_THREADING_DECODE=-1" \
-    "-=balanced" <"${input_image}" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --loaders=builtin! -d none \
+    --env "SIXEL_ENCODER_THREADING_DECODE=-1" \
+    "-=balanced" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading decode out-of-range conversion failed"
     exit 0
 }

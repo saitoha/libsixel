@@ -24,7 +24,7 @@ short_output="${artifact_dir}/0177-max_seconds-short-$$.six"
 env_output="${artifact_dir}/0177-max_seconds-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=greedy:global_budget=1 \
     -Z progressive:N1:M1e-300 "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok 1 - short max_seconds conversion failed"
     exit 0
@@ -39,7 +39,7 @@ case "${short_trace}" in *"progressive: stop=max_passes passes=1"*"max_seconds=1
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=greedy:global_budget=1 \
     --env "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS=1e-300" -Z progressive:N1 "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok 1 - env max_seconds conversion failed"
     exit 0
@@ -54,7 +54,7 @@ case "${env_trace}" in *"progressive: stop=max_passes passes=1"*"max_seconds=1e-
 }
 
 delta_short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=greedy:global_budget=1 \
     -Z delta:P1:N1:M1e-300 "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok 1 - delta_short max_seconds conversion failed"
     exit 0
@@ -69,7 +69,7 @@ case "${delta_short_trace}" in *"progressive: stop=max_passes passes=1"*"max_sec
 }
 
 delta_env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Wgamma --threading-policy=greedy:global_budget=1 \
     --env "SIXEL_UPDATE_PROGRESSIVE_MAX_SECONDS=1e-300" -Z delta:P1:N1 "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok 1 - delta_env max_seconds conversion failed"
     exit 0

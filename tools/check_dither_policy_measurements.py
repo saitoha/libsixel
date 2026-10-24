@@ -40,18 +40,6 @@ PLOTS = (
 )
 
 
-def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Normalize both historical numeric budget spellings without data edits."""
-    result = []
-    for token in tokens:
-        if token.startswith("--threads="):
-            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
-        elif token.startswith("--threading-policy="):
-            base = token.split("=", 1)[1]
-            if base.isdecimal() or base in ("{threads}", "{count}"):
-                token = "--threading-policy=balanced:global_budget=" + base
-        result.append(token)
-    return result
 
 
 def fail(message: str) -> None:
@@ -156,11 +144,11 @@ def validate_command(row: Dict[str, str], path: Path) -> None:
     if diffusion != options[method]:
         fail(f"method/diffusion mismatch in {path}: {method}")
     try:
-        tokens = budget_tokens(shlex.split(row.get("command", "")))
+        tokens = (shlex.split(row.get("command", "")))
     except ValueError as exc:
         raise ValueError(f"invalid command in {path}: {method}") from exc
     required = {
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",
@@ -286,7 +274,7 @@ def validate_size(path: Path, revision: str) -> None:
             colors = int(row.get("colors", ""))
             encoded_bytes = int(row.get("encoded_bytes", ""))
             ratio = float(row.get("bytes_vs_none", ""))
-            tokens = budget_tokens(shlex.split(row.get("command", "")))
+            tokens = (shlex.split(row.get("command", "")))
         except ValueError as exc:
             raise ValueError(f"invalid size value in {path}") from exc
         key = (method, colors)

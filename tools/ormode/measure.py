@@ -25,7 +25,10 @@ ENV = {
     if not k.startswith(("SIXEL_", "LSQA_", "DYLD_"))
 }
 ENV.update(
-    LC_ALL="C", TZ="UTC", SIXEL_THREADING_GLOBAL_BUDGET="1", DYLD_LIBRARY_PATH=str(SRC / "src/.libs")
+    LC_ALL="C", TZ="UTC", SIXEL_ENCODER_THREADING_POLICY="greedy",
+    SIXEL_ENCODER_THREADING_GLOBAL_BUDGET="1",
+    SIXEL_DECODER_THREADING_POLICY="greedy",
+    SIXEL_DECODER_THREADING_GLOBAL_BUDGET="1", DYLD_LIBRARY_PATH=str(SRC / "src/.libs")
 )
 IMG = SRC / "converters/.libs/img2sixel"
 DEC = SRC / "converters/.libs/sixel2png"
@@ -66,7 +69,7 @@ def stats(values):
 def command(path, colors, threads, mode, output="-"):
     args = [
         IMG,
-        f"--threading-policy=balanced:global_budget={threads}",
+        f"--threading-policy=greedy:global_budget={threads}",
         "--precision-policy=8bit",
         "--loaders=builtin!",
         "--gpu-policy=off",
@@ -82,7 +85,7 @@ def command(path, colors, threads, mode, output="-"):
 
 
 def decode(data):
-    return run([DEC, "--threading-policy=balanced:global_budget=1", "--direct", "-i", "-", "-o", "-"], data).stdout
+    return run([DEC, "--threading-policy=greedy:global_budget=1", "--direct", "-i", "-", "-o", "-"], data).stdout
 
 
 def measure(item, colors=256, threads=1, micro=True):
@@ -243,7 +246,8 @@ def main():
     }
     # Avoid publishing irrelevant ambient environment entries.
     metadata["env"] = {
-        k: ENV[k] for k in ["LC_ALL", "TZ", "SIXEL_THREADING_GLOBAL_BUDGET", "DYLD_LIBRARY_PATH"]
+        k: ENV[k] for k in ["LC_ALL", "TZ", "SIXEL_ENCODER_THREADING_POLICY", "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
+                              "SIXEL_DECODER_THREADING_POLICY", "SIXEL_DECODER_THREADING_GLOBAL_BUDGET", "DYLD_LIBRARY_PATH"]
     }
     previous = OUT / "metadata.json"
     if previous.exists():

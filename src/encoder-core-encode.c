@@ -330,6 +330,8 @@ sixel_parallel_dither_configure(int height,
     request.total_threads = total_threads;
     request.ncolors = dither->ncolors;
     request.method_for_diffuse = dither->method_for_diffuse;
+    /* Object encoding enters a policy scope; low-level encoding uses the
+     * encoder-side defaults. Allocation consumes that same snapshot. */
     request.lazy = sixel_threading_policy_mode() ==
         SIXEL_THREADING_POLICY_LAZY;
     request.prefer_staged = sixel_dither_encode_default_staged(

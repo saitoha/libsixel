@@ -53,6 +53,7 @@ struct sixel_thread_pool_worker {
 
 struct sixel_thread_pool_storage {
     sixel_thread_pool_vtbl_t const *vtbl;
+    sixel_threading_snapshot_t policy;
     sixel_atomic_u32_t ref;
     int nthreads;
     int qsize;
@@ -146,6 +147,8 @@ sixel_thread_pool_storage_free(sixel_thread_pool_storage_t *pool)
 static int
 sixel_thread_pool_worker_main(void *arg)
 {
+    sixel_thread_budget_scope_t policy_scope;
+    int cpu_index;
     sixel_thread_pool_worker_t *worker;
     sixel_thread_pool_storage_t *pool;
     sixel_thread_pool_job_t job;
@@ -153,6 +156,7 @@ sixel_thread_pool_worker_main(void *arg)
 
     worker = (sixel_thread_pool_worker_t *)arg;
     pool = worker->pool;
+    sixel_threading_policy_enter(&policy_scope, &pool->policy);
     for (;;) {
         sixel_mutex_lock(&pool->mutex);
         while (pool->count == 0 && !pool->shutting_down) {
@@ -170,8 +174,6 @@ sixel_thread_pool_worker_main(void *arg)
         sixel_mutex_unlock(&pool->mutex);
 
         if (pool->pin_threads && !worker->pinned && pool->hw_threads > 0) {
-            int cpu_index;
-
             cpu_index = worker->index % pool->hw_threads;
             (void)sixel_thread_pin_self(cpu_index);
             worker->pinned = 1;
@@ -189,6 +191,7 @@ sixel_thread_pool_worker_main(void *arg)
         }
         sixel_mutex_unlock(&pool->mutex);
     }
+    sixel_thread_budget_leave(&policy_scope);
     return SIXEL_OK;
 }
 
@@ -213,6 +216,10 @@ sixel_thread_pool_storage_create(int nthreads,
     if (pool == NULL) {
         return NULL;
     }
+    (void)sixel_threading_policy_capture(&pool->policy, 0);
+    /* Jobs occupy one reserved slot; nested policy reads retain the mode
+     * and keys without opening an unbudgeted child pool. */
+    pool->policy.budget = 1;
     pool->vtbl = sixel_thread_pool_get_vtbl();
     pool->ref = 1U;
     pool->nthreads = nthreads;

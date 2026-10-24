@@ -127,7 +127,7 @@ srgb_encoder_contract(int linear)
         int flag;
         char const *value;
     } const options[] = {
-        {'=', "balanced:B1"}, {'p', "1"}, {'.', "auto"}, {'U', "gamma"},
+        {'=', "greedy:B1"}, {'p', "1"}, {'.', "auto"}, {'U', "gamma"},
         {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'F', "none"},
         {'a', "off"}, {'_', "none"}, {'~', "none"}, {'d', "fs"},
         {'t', "rgb"}, {'5', "none"}, {'4', "full-frame"}

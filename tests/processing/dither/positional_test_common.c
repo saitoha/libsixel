@@ -316,7 +316,7 @@ positional_encoder_test(int method, int mode, int space)
         "gamma", "linear", "oklab", "cielab", "din99d"
     };
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "1" }, { '.', "auto" }, { 'U', "gamma" },
+        { '=', "greedy:B1" }, { 'p', "1" }, { '.', "auto" }, { 'U', "gamma" },
         { 'Q', "kmeans:seed=1" }, { 'X', "linear" }, { 'F', "none" },
         { 'a', "off" }, { '_', "none" }, { '~', "none" }, { 't', "rgb" },
         { '5', "none" }, { '4', "full-frame" }, { '0', "hard" }
@@ -397,9 +397,9 @@ positional_encoder_test(int method, int mode, int space)
         memset(&capture, 0, sizeof(capture));
         /* Mode 3 caps the dither stage through the threading policy. */
         if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                mode == 3 ? (pass ? "balanced:B4:dither=2"
-                                 : "balanced:B1:dither=2")
-                          : (pass ? "balanced:B4" : "balanced:B1"))) ||
+                mode == 3 ? (pass ? "greedy:B4:dither=2"
+                                 : "greedy:B1:dither=2")
+                          : (pass ? "greedy:B4" : "greedy:B1"))) ||
                 SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
                 SIXEL_FAILED(sixel_frame_init_borrowed(frame,
                     mode == 2 ? (void *)bytes : (void *)pixels,

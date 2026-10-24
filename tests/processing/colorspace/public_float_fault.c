@@ -438,7 +438,7 @@ test_color_public_float_fault(int argc, char **argv)
     runtime.colorspace_parallel_min_pixels = 1;
     runtime.colorspace_parallel_min_pixels_override = 1;
     sixel_runtime_policy_store(&runtime);
-    sixel_set_threads(3);
+    sixel_set_encoder_threads(3);
     for (i = 0; i < 9; ++i) {
         pixels[i] = .25f;
     }
@@ -533,7 +533,7 @@ test_color_worker_memo_lifetime(int argc, char **argv)
             float_fault_used = 0;
             memset(float_fault_memos, 0, sizeof(float_fault_memos));
             polls = 0;
-            sixel_set_threads(8);
+            sixel_set_encoder_threads(8);
             sixel_thread_budget_enter(&scope, 4);
             sixel_thread_budget_set_reclaim(&scope, 8,
                 float_fault_donate, &polls);

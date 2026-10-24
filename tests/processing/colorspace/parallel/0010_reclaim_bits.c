@@ -42,7 +42,7 @@ test_parallel_float_0010(int argc, char **argv)
         pixels[i] = (float)(i % 251) / 250.0f;
     }
     memcpy(serial, pixels, size);
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     status = sixel_helper_convert_colorspace((unsigned char *)serial, size,
         SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA,
         SIXEL_COLORSPACE_CIELAB);
@@ -52,7 +52,7 @@ test_parallel_float_0010(int argc, char **argv)
             pixels[i] = (float)(i % 251) / 250.0f;
         }
         polls = 0;
-        sixel_set_threads(8);
+        sixel_set_encoder_threads(8);
         sixel_thread_budget_enter(&scope, initial);
         sixel_thread_budget_set_reclaim(&scope, 8,
             reclaim_10_after_batch, &polls);

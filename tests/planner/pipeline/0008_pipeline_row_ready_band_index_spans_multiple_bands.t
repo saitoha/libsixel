@@ -18,8 +18,8 @@ log_file="${ARTIFACT_LOCAL_DIR}/pipeline-row-ready-span.log"
 out_file="${ARTIFACT_LOCAL_DIR}/tall-row-ready-span.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOG_PATH="${log_file}" \
-              --env SIXEL_THREADING_GLOBAL_BUDGET=6 \
-              --env SIXEL_THREADING_DITHER=1 \
+              --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6 \
+              --env SIXEL_ENCODER_THREADING_DITHER=1 \
               --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
               --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
               -v -o "${out_file}" "${ppm_tall}" || {

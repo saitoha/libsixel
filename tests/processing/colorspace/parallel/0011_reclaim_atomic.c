@@ -47,7 +47,7 @@ test_parallel_float_0011(int argc, char **argv)
     pixels[65536 * 3] = NAN;
     pixels[131072 * 3] = FLT_MAX;
     memcpy(serial, pixels, size);
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     status = sixel_helper_convert_colorspace((unsigned char *)serial, size,
         SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_COLORSPACE_GAMMA,
         SIXEL_COLORSPACE_LINEAR);
@@ -59,7 +59,7 @@ test_parallel_float_0011(int argc, char **argv)
         pixels[65536 * 3] = NAN;
         pixels[131072 * 3] = FLT_MAX;
         polls = 0;
-        sixel_set_threads(8);
+        sixel_set_encoder_threads(8);
         sixel_thread_budget_enter(&scope, initial);
         sixel_thread_budget_set_reclaim(&scope, 8,
             reclaim_11_after_batch, &polls);

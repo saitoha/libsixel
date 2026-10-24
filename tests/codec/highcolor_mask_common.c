@@ -151,7 +151,7 @@ test_highcolor_mask(int scenario)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'E', "size")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "rgb")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                scenario == 60 ? "balanced:B4" : "balanced:B1"))) {
+                scenario == 60 ? "greedy:B4" : "greedy:B1"))) {
         goto end;
     }
     if (scenario == 59 &&

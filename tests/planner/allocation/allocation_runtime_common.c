@@ -269,7 +269,7 @@ allocation_runtime_cases(allocation_runtime_expected_t const *expected,
     (void)remove(path);
     if (sixel_compat_setenv("SIXEL_LOG_PATH", path) != 0 ||
             sixel_compat_setenv("SIXEL_TRACE_TOPIC", "dither_contract") != 0 ||
-            sixel_compat_setenv("SIXEL_THREADING_DITHER", "") != 0 ||
+            sixel_compat_setenv("SIXEL_ENCODER_THREADING_DITHER", "") != 0 ||
             sixel_compat_setenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH", "") != 0 ||
             sixel_compat_setenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP", "")
                 != 0) {

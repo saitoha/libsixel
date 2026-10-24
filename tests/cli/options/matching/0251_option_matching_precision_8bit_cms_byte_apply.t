@@ -14,7 +14,7 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -L 'builtin:cms_engine=builtin!' --precision-policy=8bit \
     -v -o/dev/null "${input_image}" 2>&1) || {
     echo "not ok 1 - 8bit CMS conversion failed"

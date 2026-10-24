@@ -78,7 +78,7 @@ kundither_fast4_decode(unsigned char const *indexed,
 {
     SIXELSTATUS status;
 
-    sixel_set_threads(threads);
+    sixel_set_decoder_threads(threads);
     status = sixel_dequantize_k_undither_fast4(
         (unsigned char *)indexed,
         KUNDITHER_FAST4_WIDTH,
@@ -109,7 +109,7 @@ kundither_fast4_decode_rgba(unsigned char const *indexed,
 {
     SIXELSTATUS status;
 
-    sixel_set_threads(threads);
+    sixel_set_decoder_threads(threads);
     status = sixel_dequantize_k_undither_fast4_rgba(
         (unsigned char *)indexed,
         paint_mask,

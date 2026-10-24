@@ -21,7 +21,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 output="${ARTIFACT_LOCAL_DIR}/palette-worker-init-$$.six"
 message=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     _SIXEL_TEST_PALETTE_JOB_FAILURE=init \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=4 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=4 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" 2>&1 >"${output}") || {
     echo "not ok 1 - palette worker init failure stopped encoding"

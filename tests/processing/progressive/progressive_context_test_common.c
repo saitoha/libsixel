@@ -232,7 +232,7 @@ test_progressive_context_case(int mode)
             == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_new(&encoder, allocator) == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_THREADING_POLICY, "balanced:B1") == SIXEL_OK);
+        SIXEL_OPTFLAG_THREADING_POLICY, "greedy:B1") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         "off") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
@@ -1133,7 +1133,7 @@ test_progressive_boundary_case(int mode)
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_ALPHA_POLICY,
         "keep") == SIXEL_OK);
     CONTEXT_REQUIRE(sixel_encoder_setopt(encoder,
-        SIXEL_OPTFLAG_THREADING_POLICY, "balanced:B1") == SIXEL_OK);
+        SIXEL_OPTFLAG_THREADING_POLICY, "greedy:B1") == SIXEL_OK);
     memset(history, 0, sizeof(history));
     if (mode == 92) {
         for (i = 0; i < sizeof(history); i += 3) {

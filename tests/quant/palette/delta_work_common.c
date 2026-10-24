@@ -309,7 +309,7 @@ test_delta_work_fixed(int workers)
         }
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-        workers ? "balanced:B4" : "balanced:B1"))) {
+        workers ? "greedy:B4" : "greedy:B1"))) {
         goto end;
     }
     for (pass = 0; pass < 6; ++pass) {

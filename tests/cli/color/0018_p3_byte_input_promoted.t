@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-trace=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+trace=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -Lbuiltin:cms_engine=none! -.auto -Qk -Xgamma -Wgamma \
     -0hard -dnone -aoff -_auto:rate=0 -Udisplay-p3 -v \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || {

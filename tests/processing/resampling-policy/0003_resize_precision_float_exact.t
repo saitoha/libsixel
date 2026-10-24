@@ -14,7 +14,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 fixture_root="${TOP_SRCDIR}/tests/data/inputs/resampling-exact"
 actual_sixel="${ARTIFACT_LOCAL_DIR}/precision-float-actual.six"
 
-set -- --threading-policy=balanced:global_budget=1 --precision-policy=8bit --quality=full \
+set -- --threading-policy=greedy:global_budget=1 --precision-policy=8bit --quality=full \
     '--loaders=builtin!' --cms-engine=none \
     --sampling-policy=full-frame --binning-policy=hard \
     -Xgamma -Wgamma -Ugamma --diffusion=none \

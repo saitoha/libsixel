@@ -85,13 +85,13 @@ parallel_float_values(int frame_api)
         }
         for (dst = 0; dst < 5; ++dst) {
             memcpy(serial, input, sizeof(input));
-            sixel_set_threads(1);
+            sixel_set_encoder_threads(1);
             if (SIXEL_FAILED(parallel_convert(serial, src, dst, frame_api))) {
                 return EXIT_FAILURE;
             }
             for (budget = 2; budget <= 8; budget *= 2) {
                 memcpy(parallel, input, sizeof(input));
-                sixel_set_threads(budget);
+                sixel_set_encoder_threads(budget);
                 if (SIXEL_FAILED(parallel_convert(parallel, src, dst,
                         frame_api)) ||
                         memcmp(serial, parallel, sizeof(serial)) != 0) {
@@ -118,7 +118,7 @@ parallel_float_atomic(int frame_api)
     }
     pixels[257 * 3 - 1] = NAN;
     memcpy(saved, pixels, sizeof(saved));
-    sixel_set_threads(4);
+    sixel_set_encoder_threads(4);
     status = parallel_convert(pixels, 1, 2, frame_api);
     if (status != SIXEL_BAD_INPUT || memcmp(saved, pixels, sizeof(saved)) ||
             strcmp(sixel_helper_get_additional_message(),
@@ -255,7 +255,7 @@ parallel_float_pipeline(int clustering, char const *path)
                 NULL)) || SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         goto end;
     }
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B4")) ||
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B4")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'p', "16")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', "heckbert")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',

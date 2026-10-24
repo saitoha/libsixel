@@ -99,7 +99,7 @@ public_float_values(int mode)
         runtime.colorspace_parallel_min_pixels = 1;
         runtime.colorspace_parallel_min_pixels_override = 1;
         sixel_runtime_policy_store(&runtime);
-        sixel_set_threads(3);
+        sixel_set_encoder_threads(3);
     }
     if (SIXEL_FAILED(sixel_helper_convert_colorspace(
             (unsigned char *)pixels, count * 3 * sizeof(float), format,

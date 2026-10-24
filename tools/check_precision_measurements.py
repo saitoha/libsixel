@@ -27,18 +27,6 @@ DOMAIN_ORDER = (
 )
 
 
-def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Normalize both historical numeric budget spellings without data edits."""
-    result = []
-    for token in tokens:
-        if token.startswith("--threads="):
-            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
-        elif token.startswith("--threading-policy="):
-            base = token.split("=", 1)[1]
-            if base.isdecimal() or base in ("{threads}", "{count}"):
-                token = "--threading-policy=balanced:global_budget=" + base
-        result.append(token)
-    return result
 
 
 def fail(message: str) -> None:
@@ -204,10 +192,10 @@ def load_metadata(path: Path,
 
 def require_command_contract(row: Dict[str, str]) -> None:
     """Validate the common controlled command tokens."""
-    command = budget_tokens(shlex.split(row["command"]))
+    command = (shlex.split(row["command"]))
     required = (
         "{img2sixel}",
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         f"--precision-policy={row['precision']}",
         "--quality=full",
         "--loaders=builtin!",
@@ -224,12 +212,12 @@ def require_command_contract(row: Dict[str, str]) -> None:
         )
     if "-v" in command or "-o" in command:
         fail("quality command unexpectedly enables diagnostics or discards output")
-    speed_command = budget_tokens(shlex.split(row["speed_command"]))
+    speed_command = (shlex.split(row["speed_command"]))
     if ("-o" not in speed_command
             or "{devnull}" not in speed_command
             or "-v" in speed_command):
         fail("speed command does not discard output without instrumentation")
-    assessment = budget_tokens(shlex.split(row["assessment_command"]))
+    assessment = (shlex.split(row["assessment_command"]))
     if assessment != ["{lsqa}", "{input}", "-"]:
         fail("precision CSV has an unexpected assessment command")
 

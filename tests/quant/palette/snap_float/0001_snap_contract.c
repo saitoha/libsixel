@@ -132,7 +132,7 @@ static int
 native_snap_encode(int model, int space, int policy, int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
+        { '=', "greedy:B1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
         { '4', "full-frame" }, { '5', "none" }, { 'U', "gamma" }
     };
@@ -329,7 +329,7 @@ static int
 native_snap_cover(int model, int space, int policy, int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "1" }, { 'F', "none" }, { '~', "none" },
+        { '=', "greedy:B1" }, { 'p', "1" }, { 'F', "none" }, { '~', "none" },
         { 'd', "none" }, { 't', "rgb" }, { '4', "full-frame" },
         { '5', "none" }, { 'U', "gamma" }
     };
@@ -407,7 +407,7 @@ native_snap_cover(int model, int space, int policy, int mode)
         goto end;
     }
     if (mode == 5 &&
-            (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B4")) ||
+            (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B4")) ||
              SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',
                  "adaptive-grid")))) {
         goto end;

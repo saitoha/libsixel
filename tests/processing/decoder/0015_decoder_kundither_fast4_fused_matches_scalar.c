@@ -458,7 +458,7 @@ test_decoder_0015_decoder_kundither_fast4_fused_matches_scalar(
     kundither_fused_init_palette(image->palette, palette_rgb);
     kundither_fused_init_indexed(indexed);
 
-    sixel_set_threads(1);
+    sixel_set_decoder_threads(1);
     if (!kundither_fused_build_reference(
         indexed,
         palette_rgb,

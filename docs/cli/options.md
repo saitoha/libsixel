@@ -103,7 +103,7 @@ Defaults are chosen so that most users never need an advanced option. The [encod
 | Option | Level | Summary | Details |
 | --- | --- | --- | --- |
 | `-v`, `--verbose` | basic | Print diagnostic information and the processing plan. | [Diagnostics](diagnostics.md) |
-| `-=`, `--threading-policy` | advanced | Worker-budget, stage and frame scheduling controls. | [Threading policy](threading-policy.md) |
+| `-=`, `--threading-policy` | advanced | Object-owned worker budget, stage and frame scheduling controls. | [Threading policy](threading-policy.md) |
 | `-.`, `--precision-policy` | advanced | Precision policy: `auto`, `8bit` palette application, or `float32`. | [Encoder working precision](../encoder/precision/README.md) |
 | `-G`, `--gpu-policy` | advanced | Use the GPU for palette application where supported. | [Metal palette application](../encoder/palette-application/lookup-policy/measurements/README.md#metal-paletteapply-performance) |
 | `-j`, `--runtime-policy` | advanced | Process-wide SIMD and scheduling tuning. | [Runtime execution policy](runtime-policy.md) |
@@ -139,7 +139,7 @@ Defaults are chosen so that most users never need an advanced option. The [encod
 | `-S`, `--similarity` | advanced | Dequantization similarity bias. | [Dequantization](../decoder/dequantization/README.md) |
 | `-s`, `--size` | advanced | Dequantization neighborhood size. | [Dequantization](../decoder/dequantization/README.md) |
 | `-e`, `--edge` | advanced | Dequantization edge bias. | [Dequantization](../decoder/dequantization/README.md) |
-| `-=`, `--threading-policy` | advanced | Worker-budget and SIXEL parsing controls. | [Threading policy](threading-policy.md) |
+| `-=`, `--threading-policy` | advanced | Object-owned SIXEL parsing budget and mode. | [Threading policy](threading-policy.md) |
 | `-G`, `--gpu-policy` | advanced | Use a supported GPU for decoding. | [Dequantization](../decoder/dequantization/README.md) |
 | `-j`, `--runtime-policy` | advanced | Process-wide SIMD and scheduling tuning. | [Runtime execution policy](runtime-policy.md) |
 | `-x`, `--diagnostics` | advanced | Diagnostic presentation and trace topics. | [Diagnostics](diagnostics.md) |

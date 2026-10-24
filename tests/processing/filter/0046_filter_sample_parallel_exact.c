@@ -190,7 +190,7 @@ sample_case(int format, int clipped, int mode)
         sixel_filter_bind_sample_output(filter, &samples, pixel_format,
             sixel_frame_get_colorspace(frame));
         /* A global budget of eight must respect the caller's smaller scope. */
-        sixel_set_threads(8);
+        sixel_set_encoder_threads(8);
         sixel_thread_budget_enter(&scope, thread);
         status = sixel_filter_run(filter, allocator, NULL);
         sixel_thread_budget_leave(&scope);
@@ -234,7 +234,7 @@ sample_case(int format, int clipped, int mode)
             goto end;
         }
         (void)snprintf(thread_text, sizeof(thread_text),
-                       "balanced:B%d", thread);
+                       "greedy:B%d", thread);
         /* Encoding itself retains thread-dependent band boundaries and
          * diffusion. Compare extraction modes at each fixed encoder budget. */
         runtime.sample_parallel_min_pixels = attempt % 2 == 0 ? SIZE_MAX : 1;

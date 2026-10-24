@@ -16,7 +16,7 @@ set -v
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-unknown-subtype.gif"
 command_status=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 -Lbuiltin! \
     -lforce -d none:scan=raster -p 256 "${input_gif}" >/dev/null 2>/dev/null \
     || command_status=$?
 test "${command_status}" -eq 0 || {

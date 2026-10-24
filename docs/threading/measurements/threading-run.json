@@ -75,15 +75,15 @@
     },
     "protocol": {
       "decoder_commands": [
-        "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
-        "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'"
+        "'{sixel2png}' --threading-policy=greedy:global_budget=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+        "'{sixel2png}' --threading-policy=greedy:global_budget=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'"
       ],
       "decoder_fixture_commands": [
-        "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 900 -h 675 -o '{decoder_sixel}' '{input}'",
-        "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{decoder_sixel}' '{input}'"
+        "'{img2sixel}' --threading-policy=greedy:global_budget=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 900 -h 675 -o '{decoder_sixel}' '{input}'",
+        "'{img2sixel}' --threading-policy=greedy:global_budget=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{decoder_sixel}' '{input}'"
       ],
       "decoder_scaling": {
-        "command": "'{sixel2png}' '--threads={threads}' --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+        "command": "'{sixel2png}' '--threading-policy=greedy:global_budget={threads}' --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
         "thread_counts": [
           1,
           2,
@@ -115,7 +115,7 @@
       },
       "load_probes": {
         "img2sixel": {
-          "command": "'{img2sixel_payload}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -o '{null}' '{input}'",
+          "command": "'{img2sixel_payload}' --threading-policy=greedy:global_budget=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -o '{null}' '{input}'",
           "loaded_path": "src/.libs/libsixel.1.dylib",
           "loaded_sha256": "2d549835ee2272fc25d457a3df67cc6a100ce925ea9d40f55e8b621e13f8f57a",
           "method": "DYLD_PRINT_LIBRARIES",
@@ -127,7 +127,7 @@
           "verified": true
         },
         "sixel2png": {
-          "command": "'{sixel2png_payload}' --threads=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
+          "command": "'{sixel2png_payload}' --threading-policy=greedy:global_budget=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
           "loaded_path": "src/.libs/libsixel.1.dylib",
           "loaded_sha256": "2d549835ee2272fc25d457a3df67cc6a100ce925ea9d40f55e8b621e13f8f57a",
           "method": "DYLD_PRINT_LIBRARIES",
@@ -217,17 +217,17 @@
     }
   },
   "protocol": {
-    "animation_command": "'{img2sixel}' --threads=4 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 16 -g -w 1200 -J '{log}' -o '{output}' '{animation_input}'",
+    "animation_command": "'{img2sixel}' --threading-policy=greedy:global_budget=4 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 16 -g -w 1200 -J '{log}' -o '{output}' '{animation_input}'",
     "decoder_commands": [
-      "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
-      "'{sixel2png}' --threads=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'"
+      "'{sixel2png}' --threading-policy=greedy:global_budget=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+      "'{sixel2png}' --threading-policy=greedy:global_budget=8 --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'"
     ],
     "decoder_fixture_commands": [
-      "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 900 -h 675 -o '{decoder_sixel}' '{input}'",
-      "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{decoder_sixel}' '{input}'"
+      "'{img2sixel}' --threading-policy=greedy:global_budget=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 900 -h 675 -o '{decoder_sixel}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -w 1920 -h 1080 -o '{decoder_sixel}' '{input}'"
     ],
     "decoder_scaling": {
-      "command": "'{sixel2png}' '--threads={threads}' --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
+      "command": "'{sixel2png}' '--threading-policy=greedy:global_budget={threads}' --gpu-policy=off -J '{log}' -i '{decoder_sixel}' -o '{null}'",
       "summary": "median with inclusive interquartile range",
       "thread_counts": [
         1,
@@ -267,7 +267,7 @@
         192,
         256
       ],
-      "command": "'{img2sixel}' '--threads={threads}' --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p '{ncolors}' -v -J '{log}' -o '{output}' '{input}'",
+      "command": "'{img2sixel}' '--threading-policy=greedy:global_budget={threads}' --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p '{ncolors}' -v -J '{log}' -o '{output}' '{input}'",
       "condition_order": "alternating ascending and descending rounds",
       "summary": "median with inclusive interquartile range",
       "thread_counts": [
@@ -280,21 +280,21 @@
       "warmup_runs_per_condition": 2
     },
     "encoder_commands": [
-      "'{img2sixel}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=2 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=3 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=4 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=5 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=6 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=7 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=8 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=9 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=10 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=11 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
-      "'{img2sixel}' --threads=12 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'"
+      "'{img2sixel}' --threading-policy=greedy:global_budget=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=2 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=3 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=4 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=5 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=6 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=7 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=8 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=9 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=10 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=11 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "'{img2sixel}' --threading-policy=greedy:global_budget=12 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'"
     ],
     "encoder_scaling": {
-      "command": "'{img2sixel}' '--threads={threads}' --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
+      "command": "'{img2sixel}' '--threading-policy=greedy:global_budget={threads}' --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -J '{log}' -o '{output}' '{input}'",
       "summary": "median with inclusive interquartile range",
       "thread_counts": [
         1,
@@ -352,7 +352,7 @@
     },
     "load_probes": {
       "img2sixel": {
-        "command": "'{img2sixel_payload}' --threads=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -o '{null}' '{input}'",
+        "command": "'{img2sixel_payload}' --threading-policy=greedy:global_budget=1 --precision=8bit --quality=full --sampling-policy=full-frame --binning-policy=hard --quantize-model=kmeans:seed=1 --merge-policy=ward -Xoklab -Wgamma --diffusion=fs:scan=raster --gpu-policy=off --lookup-policy=6bit:shared_instance=1 -p 256 -v -o '{null}' '{input}'",
         "loaded_path": "src/.libs/libsixel.1.dylib",
         "loaded_sha256": "8d7886730b721f833c4af1ba6756e594b4ce8b086169919fb7d3bf83c5ffa749",
         "method": "DYLD_PRINT_LIBRARIES",
@@ -364,7 +364,7 @@
         "verified": true
       },
       "sixel2png": {
-        "command": "'{sixel2png_payload}' --threads=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
+        "command": "'{sixel2png_payload}' --threading-policy=greedy:global_budget=1 --gpu-policy=off -i '{decoder_sixel}' -o '{null}'",
         "loaded_path": "src/.libs/libsixel.1.dylib",
         "loaded_sha256": "8d7886730b721f833c4af1ba6756e594b4ce8b086169919fb7d3bf83c5ffa749",
         "method": "DYLD_PRINT_LIBRARIES",

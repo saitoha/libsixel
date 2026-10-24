@@ -19,7 +19,7 @@ set -v
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp"
 
 cms_auto_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 -ldisable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 -ldisable \
         -Llibwebp:cms_engine=auto! "${input_webp}"
 ) || {
     echo "not ok" 1 - "libwebp cms=auto reference decode failed"
@@ -27,7 +27,7 @@ cms_auto_output=$(
 }
 
 cms_none_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 -ldisable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 -ldisable \
         -Llibwebp:cms_engine=none! "${input_webp}"
 ) || {
     echo "not ok" 1 - "libwebp cms=none reference decode failed"
@@ -40,7 +40,7 @@ test "${cms_auto_output}" != "${cms_none_output}" || {
 }
 
 global_auto_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 -ldisable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 -ldisable \
         --env "SIXEL_LOADER_CMS_ENGINE=auto" \
         -Llibwebp! "${input_webp}"
 ) || {
@@ -49,7 +49,7 @@ global_auto_output=$(
 }
 
 global_none_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 -ldisable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 -ldisable \
         --env "SIXEL_LOADER_CMS_ENGINE=none" \
         -Llibwebp! "${input_webp}"
 ) || {
@@ -58,7 +58,7 @@ global_none_output=$(
 }
 
 override_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 -ldisable \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 -ldisable \
         --env "SIXEL_LOADER_CMS_ENGINE=none" \
         --env "SIXEL_LOADER_LIBWEBP_CMS_ENGINE=auto" \
         -Llibwebp! "${input_webp}"

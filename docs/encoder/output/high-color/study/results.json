@@ -5505,7 +5505,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -6458,7 +6458,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -7411,7 +7411,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -8363,7 +8363,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -9316,7 +9316,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -10269,7 +10269,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -11162,7 +11162,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -12056,7 +12056,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -12950,7 +12950,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -13870,7 +13870,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -14791,7 +14791,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -15712,7 +15712,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -16769,7 +16769,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -17827,7 +17827,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",
@@ -18885,7 +18885,7 @@
       "command": [
         "$BUILD/converters/img2sixel",
         "--loaders=builtin!",
-        "--threads=1",
+        "--threading-policy=greedy:global_budget=1",
         "-.",
         "8bit",
         "-q",

@@ -601,6 +601,7 @@ typedef enum sixel_palette_job_failure_stage {
 } sixel_palette_job_failure_stage_t;
 
 typedef struct sixel_palette_async_job {
+    sixel_threading_snapshot_t policy;
     sixel_thread_t thread;
     sixel_mutex_t mutex;
     sixel_cond_t cond;
@@ -914,6 +915,7 @@ typedef struct sixel_encoder_frame_handoff_meta {
 } sixel_encoder_frame_handoff_meta_t;
 
 typedef struct sixel_encoder_frame_pipeline {
+    sixel_threading_snapshot_t policy;
     sixel_thread_t thread;
     sixel_mutex_t mutex;
     sixel_cond_t cond;
@@ -5987,6 +5989,7 @@ sixel_encoder_sample_frame(
 static int
 sixel_encoder_palette_job_thread(void *priv)
 {
+    sixel_thread_budget_scope_t policy_scope;
     sixel_palette_async_job_t *job;
     SIXELSTATUS status;
     sixel_dither_t *local;
@@ -6013,6 +6016,7 @@ sixel_encoder_palette_job_thread(void *priv)
 
     /* Child conversions have an independent pool and never wait on this
      * parent thread. The main pre-plan owns the complementary budget. */
+    sixel_threading_policy_enter(&policy_scope, &job->policy);
     sixel_thread_budget_enter(&budget, job->threads);
     sixel_helper_set_additional_message(NULL);
     status = sixel_encoder_palette_job_build(job, &local);
@@ -6020,6 +6024,7 @@ sixel_encoder_palette_job_thread(void *priv)
         sixel_status_take_message(&job->message);
     }
     sixel_thread_budget_leave(&budget);
+    sixel_thread_budget_leave(&policy_scope);
 
     sixel_mutex_lock(&job->mutex);
     job->status = status;
@@ -6172,6 +6177,7 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    (void)sixel_threading_policy_capture(&job->policy, 0);
     sixel_sample_stream_init(&job->samples);
     memset(&job->message, 0, sizeof(job->message));
     /*
@@ -10429,6 +10435,8 @@ sixel_encoder_new(
     (*ppencoder)->configuration_revision = 1;
     (*ppencoder)->revision_exhausted = 0;
     (*ppencoder)->progressive_context = NULL;
+    memset(&(*ppencoder)->threading, 0,
+           sizeof((*ppencoder)->threading));
     (*ppencoder)->ref                   = 1U;
     (*ppencoder)->reqcolors             = (-1);
     (*ppencoder)->palette_sampling_policy = SIXEL_PALETTE_SAMPLING_AUTO;
@@ -14071,7 +14079,7 @@ sixel_encoder_setopt_owned(
         break;
     case SIXEL_OPTFLAG_THREADING_POLICY:  /* = */
         status = sixel_option_apply_threading_policy_argument(
-            value,
+            &encoder->threading, value,
             SIXEL_OPTION_SCOPE_ENCODER,
             match_detail,
             sizeof(match_detail));
@@ -14463,6 +14471,7 @@ typedef struct sixel_encoder_pipeline_slot {
 } sixel_encoder_pipeline_slot_t;
 
 typedef struct sixel_encoder_prepare_ahead {
+    sixel_threading_snapshot_t policy;
     sixel_thread_t thread;
     sixel_mutex_t mutex;
     sixel_cond_t cond;
@@ -14626,11 +14635,13 @@ sixel_encoder_pipeline_slot_bind(sixel_encoder_frame_pipeline_t *pipeline,
 static int
 sixel_encoder_prepare_ahead_main(void *arg)
 {
+    sixel_thread_budget_scope_t policy_scope;
     sixel_encoder_prepare_ahead_t *ahead;
     sixel_encoder_pipeline_slot_t *slot;
     SIXELSTATUS status;
 
     ahead = (sixel_encoder_prepare_ahead_t *)arg;
+    sixel_threading_policy_enter(&policy_scope, &ahead->policy);
     for (;;) {
         sixel_mutex_lock(&ahead->mutex);
         while (ahead->requested == 0 && ahead->exiting == 0) {
@@ -14682,6 +14693,7 @@ sixel_encoder_prepare_ahead_main(void *arg)
         sixel_mutex_unlock(&ahead->mutex);
     }
 
+    sixel_thread_budget_leave(&policy_scope);
     return 0;
 }
 
@@ -14729,6 +14741,7 @@ sixel_encoder_prepare_ahead_start(sixel_encoder_prepare_ahead_t *ahead,
                                   sixel_encoder_frame_pipeline_t *pipeline)
 {
     memset(ahead, 0, sizeof(*ahead));
+    (void)sixel_threading_policy_capture(&ahead->policy, 0);
     ahead->pipeline = pipeline;
     ahead->encoder = pipeline->encoder;
     ahead->output = pipeline->output;
@@ -15119,11 +15132,14 @@ frame_encoded:
 static int
 sixel_encoder_frame_pipeline_worker(void *priv)
 {
+    sixel_thread_budget_scope_t policy_scope;
     sixel_encoder_frame_pipeline_t *pipeline;
     int result;
 
     pipeline = (sixel_encoder_frame_pipeline_t *)priv;
+    sixel_threading_policy_enter(&policy_scope, &pipeline->policy);
     result = sixel_encoder_frame_pipeline_worker_body(priv);
+    sixel_thread_budget_leave(&policy_scope);
     if (pipeline != NULL && pipeline->initialized != 0) {
         sixel_mutex_lock(&pipeline->mutex);
         pipeline->worker_exited = 1;
@@ -15156,6 +15172,10 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
         pipeline->queue[i] = NULL;
         memset(&pipeline->queue_meta[i], 0, sizeof(pipeline->queue_meta[i]));
     }
+    if (!sixel_threading_policy_capture(&pipeline->policy, 0)) {
+        sixel_threading_policy_resolve(&encoder->threading, 0,
+                                       &pipeline->policy);
+    }
     pipeline->encoder = encoder;
     pipeline->output = output;
     pipeline->worker_status = SIXEL_OK;
@@ -15165,7 +15185,7 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->initialized = 0;
     pipeline->started = 0;
     pipeline->loader_done = 0;
-    pipeline->queue_limit = sixel_threading_policy_load_depth();
+    pipeline->queue_limit = (int)pipeline->policy.options.load_depth;
     pipeline->worker_exited = 0;
     pipeline->playback = NULL;
     pipeline->handoff_mode = SIXEL_ENCODER_HANDOFF_UNDECIDED;
@@ -17941,13 +17961,16 @@ SIXELAPI SIXELSTATUS
 sixel_encoder_encode_frame(sixel_encoder_t *encoder, sixel_frame_t *frame,
     sixel_output_t *output)
 {
+    sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status;
 
     status = sixel_encoder_operation_enter(encoder, 0);
     if (status != SIXEL_OK) {
         return status;
     }
+    sixel_threading_object_enter(&policy_scope, &encoder->threading, 0);
     status = sixel_encoder_encode_frame_owned(encoder, frame, output);
+    sixel_thread_budget_leave(&policy_scope);
     sixel_encoder_operation_leave(encoder);
     return status;
 }
@@ -17957,14 +17980,17 @@ sixel_encoder_encode_bytes(sixel_encoder_t *encoder, unsigned char *bytes,
     int width,
     int height, int pixelformat, unsigned char *palette, int ncolors)
 {
+    sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status;
 
     status = sixel_encoder_operation_enter(encoder, 0);
     if (status != SIXEL_OK) {
         return status;
     }
+    sixel_threading_object_enter(&policy_scope, &encoder->threading, 0);
     status = sixel_encoder_encode_bytes_owned(encoder, bytes, width, height,
         pixelformat, palette, ncolors);
+    sixel_thread_budget_leave(&policy_scope);
     sixel_encoder_operation_leave(encoder);
     return status;
 }
@@ -17972,6 +17998,7 @@ sixel_encoder_encode_bytes(sixel_encoder_t *encoder, unsigned char *bytes,
 SIXELAPI SIXELSTATUS
 sixel_encoder_encode(sixel_encoder_t *encoder, char const *filename)
 {
+    sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status;
     int created;
 
@@ -17988,10 +18015,13 @@ sixel_encoder_encode(sixel_encoder_t *encoder, char const *filename)
         encoder->operation_playback = 1;
         encoder->playback_owner = sixel_thread_identity_current();
         sixel_encoder_operation_unlock(encoder);
+        sixel_threading_object_enter(&policy_scope,
+                                      &encoder->threading, 0);
         status = sixel_encoder_encode_owned(encoder, filename);
         sixel_encoder_operation_lock(encoder);
         encoder->operation_playback = 0;
         sixel_encoder_operation_unlock(encoder);
+        sixel_thread_budget_leave(&policy_scope);
         sixel_encoder_operation_leave(encoder);
     }
     if (created) {
@@ -18063,6 +18093,7 @@ sixel_playback_new(sixel_playback_t **playback,
                    sixel_playback_config_t const *config,
                    sixel_allocator_t *allocator)
 {
+    sixel_thread_budget_scope_t policy_scope;
     sixel_playback_config_t defaults;
     sixel_playback_t *object;
     SIXELSTATUS status;
@@ -18142,8 +18173,10 @@ sixel_playback_new(sixel_playback_t **playback,
         sixel_output_ref(output);
     }
 
+    sixel_threading_object_enter(&policy_scope, &encoder->threading, 0);
     status = sixel_encoder_frame_pipeline_init(&object->pipeline, encoder,
                                                output);
+    sixel_thread_budget_leave(&policy_scope);
     if (SIXEL_FAILED(status)) {
         sixel_playback_destroy(object);
         return status;
@@ -18288,6 +18321,7 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
                                sixel_frame_t *frame,
                                sixel_playback_options_t const *options)
 {
+    sixel_thread_budget_scope_t policy_scope;
     sixel_encoder_frame_handoff_meta_t metadata;
     sixel_playback_options_t defaults;
     SIXELSTATUS status;
@@ -18328,6 +18362,8 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
         status = sixel_encoder_operation_enter(playback->encoder,
             SIXEL_ENCODER_OPERATION_PLAYBACK);
         if (status == SIXEL_OK) {
+            sixel_threading_policy_enter(&policy_scope,
+                                         &playback->pipeline.policy);
             status = sixel_encoder_playback_frame_begin(&playback->pipeline,
                                                         &metadata);
             if (status == SIXEL_OK) {
@@ -18336,6 +18372,7 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
             }
             sixel_encoder_playback_frame_done(&playback->pipeline,
                                               &metadata, status, 1);
+            sixel_thread_budget_leave(&policy_scope);
             sixel_encoder_operation_leave(playback->encoder);
         } else {
             sixel_encoder_playback_frame_done(&playback->pipeline,

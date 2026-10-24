@@ -183,9 +183,9 @@ test_palette_0080_sampling_auto_pal8_retention(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    if (!pal8_retention_holds("balanced:B1") ||
-            !pal8_retention_holds("balanced:B2") ||
-            !pal8_retention_holds("balanced:B8")) {
+    if (!pal8_retention_holds("greedy:B1") ||
+            !pal8_retention_holds("greedy:B2") ||
+            !pal8_retention_holds("greedy:B8")) {
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;

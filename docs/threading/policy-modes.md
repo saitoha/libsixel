@@ -14,7 +14,7 @@ The table follows a frame from preparation to output. Every reservation still fi
 | Colorspace, scaling and sample extraction | Serial within each branch | Eligible work fans out above its size threshold | Eligible work fans out with minimum-size thresholds set to zero |
 | Palette application and SIXEL encoding | One default dither producer can overlap independent encode jobs | Automatic small-budget staging or larger-budget row pipeline | Same allocation rules |
 | FHEDT lookup-table construction | Serial | Uses eligible parallel build work within the budget | Same budgeted build work |
-| SIXEL parsing | Serial even with a `decode` limit | Uses the resolved parsing budget | Uses the resolved parsing budget |
+| SIXEL parsing | Serial | Uses the resolved parsing budget | Uses the resolved parsing budget |
 | Loader and next-frame preparation | Can overlap current emission | Can overlap current emission | Can overlap current emission |
 
 Palette overlap requires independent work, such as an eligible adaptive sample whose palette can be built while the full image is transformed. It is not unconditional frame-level parallelism. In balanced and greedy modes the initial palette reservation is `floor(N/2)` and the main reservation is the remainder. A main colorspace conversion can reclaim completed palette slots after joining the palette worker. [Encoder threading](encoder.md#float-colorspace-transactions) explains that lifetime boundary.
@@ -58,7 +58,7 @@ Preparation of the next frame can run during current emission, while output stil
 
 ## In libsixel
 
-The mode is process configuration shared by library consumers. The converters apply their application defaults before resolving it. Thread pools remain local to operations; a configured budget is not a global operating-system thread quota. [Threading overview](overview.md) distinguishes planned slots from control threads and concurrent clients.
+Each encoder and decoder owns its mode. A work entry resolves a policy snapshot and helper threads inherit it; concurrent objects retain independent policies. The converters apply their type-specific application defaults before resolution. Thread pools remain local to operations; a configured budget is not a global operating-system thread quota. [Threading overview](overview.md) distinguishes planned slots from control threads and concurrent clients.
 
 ## Implementation map
 
@@ -84,6 +84,8 @@ The mode is process configuration shared by library consumers. The converters ap
 | PM-06 | Preparation worker limits preserve output through CLI and environment routes. | [tests/cli/options/regression/0183_threading_prepare_workers_image_regression.t](../../tests/cli/options/regression/0183_threading_prepare_workers_image_regression.t) |
 | PM-07 | Load concurrency routes preserve output. | [tests/cli/options/regression/0179_threading_load_image_regression.t](../../tests/cli/options/regression/0179_threading_load_image_regression.t) |
 | PM-08 | Playback admits its configured capacity independently of loader read-ahead depth. | [tests/planner/pipeline/0021_playback_admission.t](../../tests/planner/pipeline/0021_playback_admission.t) |
+| PM-09 | Object settings and encoder/decoder defaults stay independent. | [tests/processing/threadpool/0005_object_policy_isolation.t](../../tests/processing/threadpool/0005_object_policy_isolation.t) |
+| PM-10 | Concurrent encode and playback calls preserve their own budgets and dither plans. | [tests/processing/threadpool/0006_concurrent_object_policies.t](../../tests/processing/threadpool/0006_concurrent_object_policies.t) |
 
 ### Coverage boundary
 

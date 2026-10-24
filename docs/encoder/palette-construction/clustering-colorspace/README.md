@@ -281,7 +281,7 @@ The checked-in experiment compares all five spaces at
 [`images/snake.png`](../../../../images/snake.png) fixture. Its controlled command is:
 
 ```text
-img2sixel --threading-policy=balanced:global_budget=1 --precision-policy=float32 --quality=full \
+img2sixel --threading-policy=greedy:global_budget=1 --precision-policy=float32 --quality=full \
   --loaders=builtin! --sampling-policy=full-frame \
   --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
   -F none -a off -X COLORSPACE -Wgamma --diffusion=none \

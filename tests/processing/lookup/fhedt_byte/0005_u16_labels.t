@@ -6,7 +6,7 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     lookup/fhedt_byte/0005_u16_labels || {
     echo "not ok 1 - byte FHEDT 16-bit labels and duplicate seeds"
     exit 0

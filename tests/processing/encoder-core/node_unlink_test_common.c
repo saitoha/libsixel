@@ -87,7 +87,7 @@ test_node_unlink_stream(int policy, unsigned long serial,
         palstate[i] = 1;
     }
     for (threads = 1; threads <= max_threads; ++threads) {
-        sixel_set_threads(threads);
+        sixel_set_encoder_threads(threads);
         hash.value = UINT32_C(2166136261);
         hash.bytes = 0;
         for (key = 0; key < 2; ++key) {
@@ -159,6 +159,6 @@ test_node_unlink_stream(int policy, unsigned long serial,
 end:
     sixel_output_unref(output);
     sixel_allocator_unref(allocator);
-    sixel_set_threads(saved_threads);
+    sixel_set_encoder_threads(saved_threads);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -21,7 +21,7 @@ set -v
 
 trace_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env "SIXEL_THREADING_GLOBAL_BUDGET=4" \
+        --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
         -Lcoregraphics! -lauto -g \
         "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \

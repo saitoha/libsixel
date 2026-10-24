@@ -32,7 +32,7 @@ p3_snap_pipeline(int model, int space, int policy, int mode)
     static char const *const models[] = {
         "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert"};
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
+        { '=', "greedy:B1" }, { 'p', "1" }, { 'F', "none" }, { 'a', "off" },
         { '~', "none" }, { 'd', "none" }, { 't', "rgb" },
         { '4', "full-frame" }, { '5', "none" }, { 'U', "display-p3" },
         { '.', "auto" }
@@ -141,7 +141,7 @@ p3_snap_stage(char const *timing, int model)
         "kmeans:seed=1:iter=1:miniter=1:polish_iter=0", "center:seed=1",
         "medoids:seed=1:histbits=6:prune_mass=1:rare_keep=4", "heckbert"};
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "2" }, { 'a', "off" }, { '~', "none" },
+        { '=', "greedy:B1" }, { 'p', "2" }, { 'a', "off" }, { '~', "none" },
         { 'd', "none" }, { 't', "rgb" }, { '4', "full-frame" },
         { '5', "none" }, { 'U', "display-p3" },
         { 'X', "gamma" }, { 'W', "gamma" }
@@ -260,7 +260,7 @@ static int
 p3_snap_cover_values(int partial)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "16" }, { 'F', "none" },
+        { '=', "greedy:B1" }, { 'p', "16" }, { 'F', "none" },
         { 'a', "corners:Whard:V1" }, { '~', "none" }, { 'd', "none" },
         { 't', "rgb" }, { 'Q', "kmeans:seed=1" }, { 'U', "display-p3" },
         { '4', "full-frame" }, { '5', "none" },

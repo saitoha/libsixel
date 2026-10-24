@@ -21,12 +21,12 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 output_default="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-default.sixel"
 output_cms1="${ARTIFACT_LOCAL_DIR}/webp-lossy-icc-cms1-default-check.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none -Llibwebp! "${input_webp}" >"${output_default}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp! "${input_webp}" >"${output_default}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed with default cms"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 --lookup-policy=none -Llibwebp:cms_engine=auto! "${input_webp}" >"${output_cms1}" || {
     echo "not ok" 1 - "libwebp lossy ICC decode failed with cms=1"
     exit 0
 }

@@ -18,18 +18,6 @@ from typing import Dict, List, Optional, Sequence, Tuple
 PLOTTER = Path(__file__).with_name("plot_crop_resize_measurements.py")
 
 
-def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Normalize both historical numeric budget spellings without data edits."""
-    result = []
-    for token in tokens:
-        if token.startswith("--threads="):
-            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
-        elif token.startswith("--threading-policy="):
-            base = token.split("=", 1)[1]
-            if base.isdecimal() or base in ("{threads}", "{count}"):
-                token = "--threading-policy=balanced:global_budget=" + base
-        result.append(token)
-    return result
 
 
 def literal_assignment(path: Path, name: str) -> object:
@@ -169,10 +157,10 @@ def validate_svg(path: Path) -> None:
 
 def validate_command(command_text: str, input_token: str) -> None:
     """Validate controls shared by all measured encoder commands."""
-    command = budget_tokens(shlex.split(command_text))
+    command = (shlex.split(command_text))
     required = (
         "{img2sixel}",
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
@@ -203,7 +191,7 @@ def validate_command(command_text: str, input_token: str) -> None:
 
 def validate_policy_runtime(command_text: str, policy: str, simd: str) -> None:
     """Validate one combined SIMD/resize policy argument."""
-    command = budget_tokens(shlex.split(command_text))
+    command = (shlex.split(command_text))
     expected = f"-j{simd}:resize_precision={policy}"
     runtime = [token for token in command if token.startswith("-j")]
     if runtime != [expected]:
@@ -324,7 +312,7 @@ def validate_speed(rows: Sequence[Dict[str, str]], runs: int) -> None:
         validate_policy_runtime(
             row["command"], row["policy"], row["simd_requested"]
         )
-        command = budget_tokens(shlex.split(row["command"]))
+        command = (shlex.split(row["command"]))
         for token in (
                 f"-w{SPEED_TARGET_WIDTH}",
                 f"-h{SPEED_TARGET_HEIGHT}"):
@@ -368,7 +356,7 @@ def validate_boundaries(rows: Sequence[Dict[str, str]]) -> None:
     for row in rows:
         validate_command(row["command"], "{boundary_input}")
         validate_policy_runtime(row["command"], row["policy"], "auto")
-        command = budget_tokens(shlex.split(row["command"]))
+        command = (shlex.split(row["command"]))
         if (f"-w{BOUNDARY_WIDTH}" not in command
                 or f"-h{BOUNDARY_HEIGHT}" not in command):
             fail("boundary command geometry changed")

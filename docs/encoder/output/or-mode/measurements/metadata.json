@@ -7,7 +7,10 @@
   "env": {
     "LC_ALL": "C",
     "TZ": "UTC",
-    "SIXEL_THREADS": "1",
+    "SIXEL_ENCODER_THREADING_POLICY": "greedy",
+    "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET": "1",
+    "SIXEL_DECODER_THREADING_POLICY": "greedy",
+    "SIXEL_DECODER_THREADING_GLOBAL_BUDGET": "1",
     "DYLD_LIBRARY_PATH": "/Users/saitoha/Documents/Codex/2026-09-11/libsixel-or-mode/source/src/.libs"
   },
   "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",

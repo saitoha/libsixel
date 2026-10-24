@@ -15,7 +15,7 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_16.png"
 
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -bxterm256 --snap-policy=reversible -o/dev/null "${input_image}" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "built-in palette conversion with snap policy failed"

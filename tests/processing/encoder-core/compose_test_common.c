@@ -40,7 +40,7 @@ test_compose_stream(int scenario, char const *expected)
     width = 12;
     height = 1;
     saved_threads = sixel_threads_resolve();
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     memset(pixels, 2, sizeof(pixels));
     if (scenario < 2) {
         /* The middle color makes a changed node boundary observable:
@@ -90,6 +90,6 @@ test_compose_stream(int scenario, char const *expected)
 end:
     sixel_output_unref(output);
     sixel_allocator_unref(allocator);
-    sixel_set_threads(saved_threads);
+    sixel_set_encoder_threads(saved_threads);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -13,7 +13,7 @@ set -v
 # Force byte-source sampling to differ from the float working frame.
 unset SIXEL_LOOKUP_FHEDT_WEIGHTS
 trace=$(set +xv; SIXEL_TRACE_TOPIC=lookup_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --loaders builtin! --threading-policy=balanced:global_budget=1 -Woklab -~fhedt:weights=4.5/1/.75 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --loaders builtin! --threading-policy=greedy:global_budget=1 -Woklab -~fhedt:weights=4.5/1/.75 "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - FHEDT conversion failed"
     exit 0
 }

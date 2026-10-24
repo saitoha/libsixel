@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+"""TAP test that set_encoder_threads rejects None input."""
+
+from __future__ import annotations
+
+from _taptest import run_embedded_tap_test
+
+
+DESCRIPTION = 'set_encoder_threads rejects None input'
+
+
+def test_0112_python_api_set_encoder_threads_rejects_none() -> None:
+    try:
+        from libsixel_wheel import sixel_set_encoder_threads
+    except (ModuleNotFoundError, OSError) as exc:
+        print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+        raise SystemExit(2)
+
+    try:
+        sixel_set_encoder_threads(None)
+    except ValueError:
+        print('set_encoder_threads None rejection verified')
+        return
+
+    raise SystemExit('set_encoder_threads accepted None input')
+
+
+if __name__ == '__main__':
+    raise SystemExit(run_embedded_tap_test(
+        DESCRIPTION,
+        test_0112_python_api_set_encoder_threads_rejects_none,
+    ))

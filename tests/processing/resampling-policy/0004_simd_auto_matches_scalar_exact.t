@@ -15,7 +15,7 @@ fixture_root="${TOP_SRCDIR}/tests/data/inputs/resampling-exact"
 scalar_sixel="${ARTIFACT_LOCAL_DIR}/simd-scalar.six"
 auto_sixel="${ARTIFACT_LOCAL_DIR}/simd-auto.six"
 
-set -- --threading-policy=balanced:global_budget=1 --precision-policy=8bit --quality=full \
+set -- --threading-policy=greedy:global_budget=1 --precision-policy=8bit --quality=full \
     '--loaders=builtin!' --cms-engine=none \
     --sampling-policy=full-frame --binning-policy=hard \
     -Xgamma -Wgamma -Ugamma --diffusion=none \

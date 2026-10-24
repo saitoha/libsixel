@@ -353,7 +353,7 @@ solver_wire(int model, int x, int w, int p3, char const *mode)
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q', model
                 ? "medoids:seed=1" : "center:seed=1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                worker ? "balanced:B4" : "balanced:B1")) ||
+                worker ? "greedy:B4" : "greedy:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '.',
                 byte ? "8bit" : "auto")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '4',

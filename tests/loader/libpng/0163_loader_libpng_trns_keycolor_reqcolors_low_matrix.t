@@ -21,7 +21,7 @@ input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 out="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-reqcolors-p1-on-tbbn0g04.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
+              --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster -p 1 \
               "${input_png}" >"${out}" || {

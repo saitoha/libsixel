@@ -117,7 +117,7 @@ test_delta_drcs_recovery(int mode)
 {
 #if defined(TIOCGWINSZ) && !defined(__EMSCRIPTEN__)
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
+        {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "none"},
         {'_', "none"}, {'W', "gamma"}, {'t', "rgb"},
         {'Z', "full"}, {'7', NULL}, {'b', "gray1"}, {'@', "2:1"}
     };

@@ -191,7 +191,7 @@ int
 test_mono_lookup_encoder(int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { '~', "auto" }, { '.', "float32" },
+        { '=', "greedy:B1" }, { '~', "auto" }, { '.', "float32" },
         { 'W', "gamma" }, { 'd', "none" }, { '0', "none" },
         { '_', "nearest" }, { 'A', "keep" }, { 'e', NULL }
     };

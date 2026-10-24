@@ -45,7 +45,7 @@ The `rc` field is a library status, not necessarily the process exit code. On th
 ## Recording and reading a timeline
 
 ```sh
-img2sixel -S --threading-policy=balanced:global_budget=4 -J run.jsonl -o /dev/null image.png
+img2sixel -S --threading-policy=greedy:global_budget=4 -J run.jsonl -o /dev/null image.png
 python3 tools/timeline.py run.jsonl --output timeline.png
 ```
 

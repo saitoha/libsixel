@@ -28,7 +28,7 @@ short_output="${artifact_dir}/0121-diffusion-band-width-short-$$.six"
 env_output="${artifact_dir}/0121-diffusion-band-width-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     -d "fs:B9" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "band_width short conversion failed"
     exit 0
@@ -45,7 +45,7 @@ case "${short_trace}" in *LSXDTH1\|*diffuse=fs\|*band_height=12\|*band_width=9\|
 }
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=9" -d "fs" \
     "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "band_width environment conversion failed"
@@ -68,7 +68,7 @@ cmp -s "${short_output}" "${env_output}" || {
 }
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=-1" -d "fs" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "negative band_width conversion failed"
@@ -86,7 +86,7 @@ case "${range_trace}" in *LSXDTH1\|*band_height=18\|*band_width=0\|band_width_ov
 }
 
 zero_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_THREADING_GLOBAL_BUDGET=6" \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6" \
     --env "SIXEL_DITHER_PARALLEL_BAND_WIDTH=0" -d "fs" \
     "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "zero band_width conversion failed"

@@ -130,7 +130,7 @@ test_highcolor_packed(int scenario)
                 scenario == 73 ? "float32" : "8bit")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W', spaces[layout])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 't', "rgb")) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B1")) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B1")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '_', "none"))) {
         goto end;
     }

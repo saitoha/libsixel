@@ -30,7 +30,7 @@ quality_output="${artifact_dir}/0107-loader-libwebp-max-frames-quality-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibwebp:M2!" -=balanced:B1 -ldisable "${input_image}" \
+    "-Llibwebp:M2!" -=greedy:B1 -ldisable "${input_image}" \
     2>&1 >"${short_output}") || {
     echo "not ok" 1 - "libwebp:max_output_frames short conversion failed"
     exit 0
@@ -44,7 +44,7 @@ case "${short_trace}" in *LSXSUB1\|*key=max_output_frames\|stored=1\|binding=lib
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=2" \
-    "-Llibwebp!" -=balanced:B1 -ldisable "${input_image}" \
+    "-Llibwebp!" -=greedy:B1 -ldisable "${input_image}" \
     2>&1 >"${env_output}") || {
     echo "not ok" 1 - "libwebp:max_output_frames env conversion failed"
     exit 0
@@ -58,7 +58,7 @@ case "${env_trace}" in *LSXSUB1\|*key=max_output_frames\|stored=1\|binding=libwe
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_LIBWEBP_MAX_OUTPUT_FRAMES=262145" \
-    "-Llibwebp!" -=balanced:B1 -ldisable "${input_image}" 2>&1 >/dev/null) || {
+    "-Llibwebp!" -=greedy:B1 -ldisable "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "max_output_frames upper conversion failed"
     exit 0
 }
@@ -69,7 +69,7 @@ case "${range_trace}" in *LSXSUB1\|*key=max_output_frames\|stored=1\|binding=lib
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibwebp:M1!" -=balanced:B1 -ldisable "${input_image}" >/dev/null 2>&1 && {
+    "-Llibwebp:M1!" -=greedy:B1 -ldisable "${input_image}" >/dev/null 2>&1 && {
     echo "not ok" 1 - "max_output_frames=1 did not stop the second frame"
     exit 0
 }
@@ -85,7 +85,7 @@ cmp -s "${reference_sixel}" "${short_output}" || {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibwebp:M2!" -=balanced:B1 -S "${input_image}" >"${quality_output}" || {
+    "-Llibwebp:M2!" -=greedy:B1 -S "${input_image}" >"${quality_output}" || {
     echo "not ok" 1 - "max_output_frames static quality conversion failed"
     exit 0
 }

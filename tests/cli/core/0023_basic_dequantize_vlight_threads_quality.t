@@ -30,7 +30,7 @@ set -v
 thread1_png="${artifact_dir}/vlight-thread1-$$.png"
 thread4_png="${artifact_dir}/vlight-thread4-$$.png"
 
-SIXEL_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
+SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -D -dl:Vl \
         -i "${TOP_SRCDIR}/tests/data/inputs/snake_256.six" \
         -o "${thread1_png}" || {
@@ -38,7 +38,7 @@ SIXEL_THREADING_GLOBAL_BUDGET=1 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
     exit 0
 }
 
-SIXEL_THREADING_GLOBAL_BUDGET=4 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
+SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=4 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -D -dl:Vl \
         -i "${TOP_SRCDIR}/tests/data/inputs/snake_256.six" \
         -o "${thread4_png}" || {

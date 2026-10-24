@@ -88,7 +88,7 @@ Existing image mapfiles keep their image-to-palette meaning. In the P3 path, a m
 The other selected-path restrictions still apply, including the supported lookup policies, [CPU spatial/positional dithering or none](../output/output-colorspace.md#display-p3-selected-cpu-float-path), and static RGB source images, optionally with a complete [separate alpha-zero mask](../output/output-colorspace.md#separate-alpha-zero-masks), including [normalized packed alpha input](../output/output-colorspace.md#packed-alpha-normalization). Explicit cover-policy options conflict with fixed palettes, so omit `-a` (including `-aoff`); fixed palettes bypass cover. For example:
 
 ```sh
-img2sixel --threading-policy=balanced:global_budget=1 --gpu-policy=off --precision-policy=auto \
+img2sixel --threading-policy=greedy:global_budget=1 --gpu-policy=off --precision-policy=auto \
   -Qkmeans:seed=1 -Xlinear -Wlinear -Fnone -_none '-~none' \
   --sampling-policy=full-frame --binning-policy=none \
   -d fs -t rgb -U display-p3 -m colors.pal input.png

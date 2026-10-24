@@ -12,7 +12,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -=balanced:B1 -W oklab -w 99% -o/dev/null << 'PPM' || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -=greedy:B1 -W oklab -w 99% -o/dev/null << 'PPM' || {
 P3
 4 4
 255

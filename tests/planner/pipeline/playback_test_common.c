@@ -89,7 +89,7 @@ playback_test_encoder(int delta, char const *threads)
     if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL))) {
         return NULL;
     }
-    (void)snprintf(policy, sizeof(policy), "balanced:B%s", threads);
+    (void)snprintf(policy, sizeof(policy), "greedy:B%s", threads);
     status = sixel_encoder_setopt(encoder,
                                   SIXEL_OPTFLAG_THREADING_POLICY, policy);
     if (SIXEL_SUCCEEDED(status)) {

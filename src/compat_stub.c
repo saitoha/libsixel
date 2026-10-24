@@ -894,7 +894,7 @@ sixel_compat_getenv(const char *name)
         /*
          * Do not free the previous value.  Callers receive pointers into this
          * cache, and another thread may still be consuming the old snapshot
-         * after a later SIXEL_LOG_PATH/SIXEL_THREADING_POLICY refresh.
+         * after a later SIXEL_LOG_PATH/SIXEL_ENCODER_THREADING_POLICY refresh.
          */
         entry->value = value_copy;
         result = entry->value;

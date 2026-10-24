@@ -31,7 +31,7 @@
           "managed_reference_ms_ssim": 0.988798,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",
@@ -66,7 +66,7 @@
           "managed_reference_ms_ssim": 0.990314,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",
@@ -107,7 +107,7 @@
           "managed_reference_ms_ssim": 0.99044,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",
@@ -142,7 +142,7 @@
           "managed_reference_ms_ssim": 0.990493,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",
@@ -183,7 +183,7 @@
           "managed_reference_ms_ssim": 0.77841,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",
@@ -218,7 +218,7 @@
           "managed_reference_ms_ssim": 0.997297,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",
@@ -259,7 +259,7 @@
           "managed_reference_ms_ssim": 0.98931,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",
@@ -294,7 +294,7 @@
           "managed_reference_ms_ssim": 0.996289,
           "command": [
             "/Users/saitoha/repo/libsixel/converters/img2sixel",
-            "--threads=1",
+            "--threading-policy=greedy:global_budget=1",
             "-L",
             "builtin!",
             "-d",

@@ -54,7 +54,7 @@ timeline_0006_encode_twice(void)
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder,
                                       SIXEL_OPTFLAG_THREADING_POLICY,
-                                          "balanced:B1");
+                                          "greedy:B1");
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_output_new(&output, timeline_0006_discard, NULL, NULL);

@@ -23,18 +23,6 @@ NUMERIC_BASELINES = (
 )
 
 
-def budget_tokens(tokens: "list[str]") -> "list[str]":
-    """Normalize both historical numeric budget spellings without data edits."""
-    result = []
-    for token in tokens:
-        if token.startswith("--threads="):
-            token = "--threading-policy=balanced:global_budget=" + token.split("=", 1)[1]
-        elif token.startswith("--threading-policy="):
-            base = token.split("=", 1)[1]
-            if base.isdecimal() or base in ("{threads}", "{count}"):
-                token = "--threading-policy=balanced:global_budget=" + base
-        result.append(token)
-    return result
 
 
 def literal_assignment(path: Path, name: str) -> object:
@@ -175,10 +163,10 @@ def validate_encoder_command(
     height: int,
 ) -> None:
     """Validate controls shared by measured encoder commands."""
-    command = budget_tokens(shlex.split(command_text))
+    command = (shlex.split(command_text))
     required = (
         "{img2sixel}",
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
@@ -484,7 +472,7 @@ def validate_quality(rows: Sequence[Mapping[str, str]]) -> None:
             QUALITY_TARGET_WIDTH,
             QUALITY_TARGET_HEIGHT,
         )
-        assessment = budget_tokens(shlex.split(row["assessment_command"]))
+        assessment = (shlex.split(row["assessment_command"]))
         if assessment != [
             "{lsqa}",
             "-Woklab",

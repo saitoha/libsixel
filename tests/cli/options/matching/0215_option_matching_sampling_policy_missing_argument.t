@@ -13,7 +13,7 @@ set -v
 
 status=0
 message=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --sampling-policy --threading-policy=balanced:global_budget=1 2>&1) || status=$?
+    --sampling-policy --threading-policy=greedy:global_budget=1 2>&1) || status=$?
 
 test "${status}" -eq 2 || {
     echo "not ok 1 - missing sampling-policy argument exit status mismatch"

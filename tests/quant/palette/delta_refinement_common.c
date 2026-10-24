@@ -23,7 +23,7 @@ int
 test_delta_refinement(int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "balanced:B1"}, {'~', "none"}, {'d', "none"}, {'0', "hard"},
+        {'=', "greedy:B1"}, {'~', "none"}, {'d', "none"}, {'0', "hard"},
         {'_', "none"}, {'W', "gamma"}, {'U', "gamma"}, {'t', "rgb"},
         {'Q', "heckbert"}, {'a', "off"}, {'F', "none"}, {'7', NULL},
         {'Z', "delta:T8:Eskip"}, {'G', "off"}, {'.', "8bit"}

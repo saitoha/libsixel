@@ -70,7 +70,7 @@ test_highcolor_band(int scenario, int width, int height)
     w = h = 0;
     ok = 0;
     previous_threads = sixel_threads_resolve();
-    sixel_set_threads(scenario == 46 ? 4 : 1);
+    sixel_set_encoder_threads(scenario == 46 ? 4 : 1);
     left = scenario == 44 ? 3 : scenario == 45 ? 2 : 0;
     top = scenario == 44 || scenario == 49 ? 5 : scenario == 45 ? 11 : 0;
     format = scenario == 43 ? SIXEL_PIXELFORMAT_RGBFLOAT32 :
@@ -172,6 +172,6 @@ end:
     free(stream);
     free(source);
     free(samples);
-    sixel_set_threads(previous_threads);
+    sixel_set_encoder_threads(previous_threads);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

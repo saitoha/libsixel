@@ -184,7 +184,7 @@ static int
 cm_wire(int mode)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { '~', "none" }, { 'd', "none" },
+        { '=', "greedy:B1" }, { '~', "none" }, { 'd', "none" },
         { '0', "none" }, { '_', "none" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" },
         { '4', "full-frame" }, { '5', "none" }, { 'A', "keep" },
@@ -256,7 +256,7 @@ cm_wire(int mode)
              SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'U', "display-p3"))) ||
             (mode == 12 && SIXEL_FAILED(sixel_encoder_setopt(encoder,
-                '=', "balanced:B4")))) {
+                '=', "greedy:B4")))) {
         goto end;
     }
     for (pass = 0; pass < passes; ++pass) {

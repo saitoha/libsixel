@@ -60,12 +60,12 @@ test_threadpool_0002_thread_default_counts(int argc, char **argv)
     processing_expected = 1;
 #endif
 
-    if (sixel_compat_setenv("SIXEL_THREADING_POLICY", "") != 0) {
-        fprintf(stderr, "failed to clear SIXEL_THREADING_POLICY\n");
+    if (sixel_compat_setenv("SIXEL_ENCODER_THREADING_POLICY", "") != 0) {
+        fprintf(stderr, "failed to clear SIXEL_ENCODER_THREADING_POLICY\n");
         return EXIT_FAILURE;
     }
 
-    if (sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "") != 0) {
+    if (sixel_compat_setenv("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET", "") != 0) {
         return EXIT_FAILURE;
     }
     processing_actual = sixel_threads_resolve();

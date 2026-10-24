@@ -18,12 +18,12 @@ vector_png="${ARTIFACT_LOCAL_DIR}/decoder_0108_auto.png"
 printf '\033P0;1q"1;1;40;12#1;2;100;0;0#2;2;0;100;0' >"${stream}"
 printf '#1!20~#2@A?BC!8?DE$#2!17?NN!5~-#1A!30?~~$#2!40N\033\134' \
     >>"${stream}"
-SIXEL_THREADING_GLOBAL_BUDGET=1 SIXEL_SIMD_LEVEL=none \
+SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 SIXEL_SIMD_LEVEL=none \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D <"${stream}" >"${scalar_png}" || {
     echo "not ok 1 - scalar decode failed"
     exit 0
 }
-SIXEL_THREADING_GLOBAL_BUDGET=1 \
+SIXEL_DECODER_THREADING_POLICY=greedy SIXEL_DECODER_THREADING_GLOBAL_BUDGET=1 \
     ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -D <"${stream}" >"${vector_png}" || {
     echo "not ok 1 - decode at the detected SIMD level failed"
     exit 0

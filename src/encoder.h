@@ -102,6 +102,7 @@ struct sixel_encoder {
     int option_clear_cache;
     int option_invalidate_history;
     int reqcolors;
+    sixel_threading_policy_options_t threading;
     int palette_sampling_policy;  /* requested sampling-stage policy */
     int palette_sampling_override; /* non-zero when explicitly configured */
     int palette_binning_policy;   /* requested binning-stage policy */

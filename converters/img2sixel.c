@@ -199,6 +199,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    Frame keys and prepare_workers never change the output; the\n"
         "    dither worker count selects the parallel band split. Stage\n"
         "    limits that exceed the budget shrink to fit it.\n"
+        "    decode=COUNT (S) caps builtin SIXEL input parsing.\n"
+        "    Each encoder owns its policy independently.\n"
         "    frame concurrency:\n"
         "      load=serial|ahead    -> decode frames ahead of encoding\n"
         "                              (default ahead; short Lahead)\n"
@@ -217,9 +219,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "    compact suboption names (uppercase letter + value):\n"
         "      global_budget=B, load=L, load_depth=Q, prepare=P,\n"
         "      palette=C, dither=D,\n"
-        "      encode=E, prepare_workers=W, pin=I\n"
-        "    img2sixel defaults to 'balanced' when SIXEL_THREADING_POLICY is\n"
-        "    unset or empty.\n"
+        "      encode=E, prepare_workers=W, decode=S, pin=I\n"
+        "    img2sixel defaults to 'balanced' when\n"
+        "    SIXEL_ENCODER_THREADING_POLICY is unset or empty.\n"
     },
     {
         '.',
@@ -1599,52 +1601,61 @@ static cli_env_help_t const g_env_help_table[] = {
         "choices. Overridden by -j *:resize_precision=VALUE (:RVALUE)."
     },
     {
-        "SIXEL_THREADING_POLICY",
+        "SIXEL_DECODER_THREADING_POLICY",
+        "decoder mode: lazy, balanced, or greedy. The decoder base wins."
+    },
+    {
+        "SIXEL_DECODER_THREADING_GLOBAL_BUDGET",
+        "decoder budget: positive integer or all. Object budget wins over\n"
+        "sixel_set_decoder_threads(), then this environment default."
+    },
+    {
+        "SIXEL_ENCODER_THREADING_POLICY",
         "spending mode: lazy, balanced, or greedy. Suboptions are not\n"
-        "accepted here; use the SIXEL_THREADING_* variables below.\n"
+        "accepted here; use the SIXEL_ENCODER_THREADING_* variables below.\n"
         "Empty/unset selects balanced. The -= base takes precedence."
     },
     {
-        "SIXEL_THREADING_GLOBAL_BUDGET",
+        "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
         "positive total thread budget or all (case-insensitive).\n"
         "Converter default: all; library default: min(4, performance CPUs).\n"
         "Precedence: -= *:global_budget=COUNT|all (:Ball), then the API."
     },
     {
-        "SIXEL_THREADING_LOAD",
+        "SIXEL_ENCODER_THREADING_LOAD",
         "default for -= *:load. Accepts serial or ahead."
     },
     {
-        "SIXEL_THREADING_LOAD_DEPTH",
+        "SIXEL_ENCODER_THREADING_LOAD_DEPTH",
         "default for -= *:load_depth. Accepts 1..16."
     },
     {
-        "SIXEL_THREADING_PREPARE",
+        "SIXEL_ENCODER_THREADING_PREPARE",
         "default for -= *:prepare. Accepts serial or ahead."
     },
     {
-        "SIXEL_THREADING_PALETTE",
+        "SIXEL_ENCODER_THREADING_PALETTE",
         "default for -= *:palette. Accepts frame; latest is reserved."
     },
     {
-        "SIXEL_THREADING_DITHER",
+        "SIXEL_ENCODER_THREADING_DITHER",
         "default for -= *:dither. Accepts positive integers."
     },
     {
-        "SIXEL_THREADING_ENCODE",
+        "SIXEL_ENCODER_THREADING_ENCODE",
         "default for -= *:encode. Accepts positive integers."
     },
     {
-        "SIXEL_THREADING_PREPARE_WORKERS",
+        "SIXEL_ENCODER_THREADING_PREPARE_WORKERS",
         "default for -= *:prepare_workers. Accepts positive integers."
     },
     {
-        "SIXEL_THREADING_PIN",
+        "SIXEL_ENCODER_THREADING_PIN",
         "default for -= *:pin. Accepts 0 or 1; dither workers default to\n"
         "1 and FHEDT workers to 0."
     },
     {
-        "SIXEL_THREADING_DECODE",
+        "SIXEL_ENCODER_THREADING_DECODE",
         "default for -= *:decode when img2sixel decodes SIXEL input.\n"
         "Accepts positive integers."
     },
@@ -3754,17 +3765,19 @@ img2sixel_main(int argc, char *argv[])
      * concurrency by default.  User environment and --env assignments were
      * already applied above and continue to override this application default.
      */
-    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "balanced") != 0) {
+    if (cli_apply_env_default("SIXEL_ENCODER_THREADING_POLICY",
+                              "balanced") != 0) {
         sixel_helper_set_additional_message(
             "failed to set default environment variable "
-            "'SIXEL_THREADING_POLICY'.");
+            "'SIXEL_ENCODER_THREADING_POLICY'.");
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }
-    if (cli_apply_env_default("SIXEL_THREADING_GLOBAL_BUDGET", "all") != 0) {
+    if (cli_apply_env_default("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
+                              "all") != 0) {
         sixel_helper_set_additional_message(
             "failed to set default environment variable "
-            "'SIXEL_THREADING_GLOBAL_BUDGET'.");
+            "'SIXEL_ENCODER_THREADING_GLOBAL_BUDGET'.");
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }

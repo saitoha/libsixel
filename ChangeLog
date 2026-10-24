@@ -25488,7 +25488,7 @@
 	tests/bindings/php/0031_php_api_loader_lifecycle.php,
 	tests/bindings/php/0033_php_api_dither_lifecycle.php,
 	tests/bindings/php/0034_php_api_dither_builtin_get.php,
-	tests/bindings/php/0035_php_api_set_threads.php,
+	tests/bindings/php/0035_php_api_thread_budget_setters.php,
 	tests/bindings/php/0036_php_api_sixel_encode_writes_payload.php,
 	tests/bindings/php/0037_php_api_output_lifecycle.php,
 	tests/bindings/php/0038_php_api_output_setters.php,
@@ -25502,13 +25502,13 @@
 	tests/bindings/php/0045_php_api_output_get_8bit.php,
 	tests/bindings/php/0046_php_api_dither_destroy.php,
 	tests/bindings/php/0047_php_api_dither_palette_roundtrip.php,
-	tests/bindings/php/0048_php_api_set_threads_bytes.php,
+	tests/bindings/php/0048_php_api_set_encoder_threads_bytes.php,
 	tests/bindings/php/0051_php_api_encoder_encode_missing_path.php,
 	tests/bindings/php/0052_php_api_encoder_setopt_int_flag.php,
 	tests/bindings/php/0053_php_api_decoder_setopt_char_flag.php,
 	tests/bindings/php/0054_php_api_encoder_encode_bytes_rejects_invali
 	d_pixelformat.php,
-	tests/bindings/php/0055_php_api_set_threads_invalid_numbers.php,
+	tests/bindings/php/0055_php_api_set_encoder_threads_invalid_numbers.php,
 	tests/bindings/php/0058_php_api_dither_palette_color_count.php,
 	tests/bindings/php/0059_php_api_decoder_decode_without_infile.php,
 	tests/bindings/php/0061_php_api_helper_compute_depth_rejects_invali
@@ -25529,29 +25529,29 @@
 	tests/bindings/php/0072_php_api_decoder_setopt_invalid_flag_length.
 	php,
 	tests/bindings/php/0073_php_api_decoder_decode_infile_argument.php,
-	tests/bindings/php/0074_php_api_set_threads_zero_bytes_path.php,
-	tests/bindings/php/0075_php_api_set_threads_accepts_auto_bytes.php,
-	tests/bindings/php/0076_php_api_set_threads_non_utf8_bytes_path.php
+	tests/bindings/php/0074_php_api_set_encoder_threads_zero_bytes_path.php,
+	tests/bindings/php/0075_php_api_set_encoder_threads_accepts_auto_bytes.php,
+	tests/bindings/php/0076_php_api_set_encoder_threads_non_utf8_bytes_path.php
 	,
 	tests/bindings/php/0077_php_api_encoder_setopt_invalid_flag_length.
 	php,
-	tests/bindings/php/0079_php_api_set_threads_accepts_whitespace_auto
+	tests/bindings/php/0079_php_api_set_encoder_threads_accepts_whitespace_auto
 	_bytes.php,
 	tests/bindings/php/0080_php_api_encoder_setopt_rejects_negative_int
 	_flag.php,
-	tests/bindings/php/0081_php_api_set_threads_accepts_whitespace_nume
+	tests/bindings/php/0081_php_api_set_encoder_threads_accepts_whitespace_nume
 	ric_bytes.php,
 	tests/bindings/php/0082_php_api_loader_load_file_rejects_missing_ca
 	llback.php,
-	tests/bindings/php/0083_php_api_set_threads_whitespace_only_bytes_p
+	tests/bindings/php/0083_php_api_set_encoder_threads_whitespace_only_bytes_p
 	ath.php,
 	tests/bindings/php/0084_php_api_encoder_setopt_rejects_oversized_in
 	t_flag.php,
 	tests/bindings/php/0085_php_api_encoder_setopt_rejects_empty_flag.p
 	hp,
-	tests/bindings/php/0086_php_api_set_threads_whitespace_only_string_
+	tests/bindings/php/0086_php_api_set_encoder_threads_whitespace_only_string_
 	path.php,
-	tests/bindings/php/0087_php_api_set_threads_accepts_uppercase_auto_
+	tests/bindings/php/0087_php_api_set_encoder_threads_accepts_uppercase_auto_
 	string.php,
 	tests/bindings/php/0088_php_api_encoder_setopt_rejects_none_flag.ph
 	p,
@@ -25601,7 +25601,7 @@
 	tes_flag.php,
 	tests/bindings/php/0111_php_api_encoder_encode_bytes_rejects_string
 	_buffer.php,
-	tests/bindings/php/0112_php_api_set_threads_rejects_none.php,
+	tests/bindings/php/0112_php_api_set_encoder_threads_rejects_none.php,
 	tests/bindings/php/0113_php_api_loader_load_file_rejects_bytearray_
 	filename.php,
 	tests/bindings/php/0114_php_api_decoder_decode_rejects_bytearray_in
@@ -25614,7 +25614,7 @@
 	.php,
 	tests/bindings/php/0119_php_api_loader_load_file_rejects_memoryview
 	_filename.php,
-	tests/bindings/php/0120_php_api_set_threads_rejects_bytearray_auto.
+	tests/bindings/php/0120_php_api_set_encoder_threads_rejects_bytearray_auto.
 	php,
 	tests/bindings/php/0121_php_api_encoder_encode_bytes_rejects_string
 	_palette.php,
@@ -25626,7 +25626,7 @@
 	e_with_non_integer_component.php,
 	tests/bindings/php/0128_php_api_encoder_encode_bytes_rejects_palett
 	e_with_none_component.php,
-	tests/bindings/php/0129_php_api_set_threads_rejects_decimal_string.
+	tests/bindings/php/0129_php_api_set_encoder_threads_rejects_decimal_string.
 	php, tests/bindings/php/0130_php_bindings_smoke.php,
 	tests/bindings/php/0131_php_api_encoder_encode_bytes_requires_width
 	_argument.php,
@@ -27243,7 +27243,7 @@
 	tests/bindings/perl/0032_perl_api_loader_setopt_accepts_integer_and
 	_string.pl, tests/bindings/perl/0033_perl_api_dither_lifecycle.pl,
 	tests/bindings/perl/0034_perl_api_dither_builtin_get.pl,
-	tests/bindings/perl/0035_perl_api_set_threads.pl,
+	tests/bindings/perl/0035_perl_api_thread_budget_setters.pl,
 	tests/bindings/perl/0036_perl_api_sixel_encode_writes_payload.pl,
 	tests/bindings/perl/0037_perl_api_output_lifecycle.pl,
 	tests/bindings/perl/0038_perl_api_output_setters.pl,
@@ -27257,7 +27257,7 @@
 	tests/bindings/perl/0045_perl_api_output_get_8bit.pl,
 	tests/bindings/perl/0046_perl_api_dither_destroy.pl,
 	tests/bindings/perl/0047_perl_api_dither_palette_roundtrip.pl,
-	tests/bindings/perl/0048_perl_api_set_threads_bytes.pl,
+	tests/bindings/perl/0048_perl_api_set_encoder_threads_bytes.pl,
 	tests/bindings/perl/0049_perl_api_loader_setopt_rejects_unknown_opt
 	ion.pl,
 	tests/bindings/perl/0051_perl_api_encoder_encode_missing_path.pl,
@@ -27265,7 +27265,7 @@
 	tests/bindings/perl/0053_perl_api_decoder_setopt_char_flag.pl,
 	tests/bindings/perl/0054_perl_api_encoder_encode_bytes_rejects_inva
 	lid_pixelformat.pl,
-	tests/bindings/perl/0055_perl_api_set_threads_invalid_numbers.pl,
+	tests/bindings/perl/0055_perl_api_set_encoder_threads_invalid_numbers.pl,
 	tests/bindings/perl/0056_perl_api_loader_setopt_bgcolor_validation.
 	pl,
 	tests/bindings/perl/0057_perl_api_loader_setopt_loader_order_accept
@@ -27297,32 +27297,32 @@
 	tests/bindings/perl/0072_perl_api_decoder_setopt_invalid_flag_lengt
 	h.pl,
 	tests/bindings/perl/0073_perl_api_decoder_decode_infile_argument.pl
-	, tests/bindings/perl/0074_perl_api_set_threads_zero_bytes_path.pl,
-	tests/bindings/perl/0075_perl_api_set_threads_accepts_auto_bytes.pl
+	, tests/bindings/perl/0074_perl_api_set_encoder_threads_zero_bytes_path.pl,
+	tests/bindings/perl/0075_perl_api_set_encoder_threads_accepts_auto_bytes.pl
 	,
-	tests/bindings/perl/0076_perl_api_set_threads_non_utf8_bytes_path.p
+	tests/bindings/perl/0076_perl_api_set_encoder_threads_non_utf8_bytes_path.p
 	l,
 	tests/bindings/perl/0077_perl_api_encoder_setopt_invalid_flag_lengt
 	h.pl,
 	tests/bindings/perl/0078_perl_api_loader_setopt_loader_order_string
 	_path.pl,
-	tests/bindings/perl/0079_perl_api_set_threads_accepts_whitespace_au
+	tests/bindings/perl/0079_perl_api_set_encoder_threads_accepts_whitespace_au
 	to_bytes.pl,
 	tests/bindings/perl/0080_perl_api_encoder_setopt_rejects_negative_i
 	nt_flag.pl,
-	tests/bindings/perl/0081_perl_api_set_threads_accepts_whitespace_nu
+	tests/bindings/perl/0081_perl_api_set_encoder_threads_accepts_whitespace_nu
 	meric_bytes.pl,
 	tests/bindings/perl/0082_perl_api_loader_load_file_rejects_missing_
 	callback.pl,
-	tests/bindings/perl/0083_perl_api_set_threads_whitespace_only_bytes
+	tests/bindings/perl/0083_perl_api_set_encoder_threads_whitespace_only_bytes
 	_path.pl,
 	tests/bindings/perl/0084_perl_api_encoder_setopt_rejects_oversized_
 	int_flag.pl,
 	tests/bindings/perl/0085_perl_api_encoder_setopt_rejects_empty_flag
 	.pl,
-	tests/bindings/perl/0086_perl_api_set_threads_whitespace_only_strin
+	tests/bindings/perl/0086_perl_api_set_encoder_threads_whitespace_only_strin
 	g_path.pl,
-	tests/bindings/perl/0087_perl_api_set_threads_accepts_uppercase_aut
+	tests/bindings/perl/0087_perl_api_set_encoder_threads_accepts_uppercase_aut
 	o_string.pl,
 	tests/bindings/perl/0088_perl_api_encoder_setopt_rejects_none_flag.
 	pl,
@@ -27372,7 +27372,7 @@
 	bytes_flag.pl,
 	tests/bindings/perl/0111_perl_api_encoder_encode_bytes_rejects_stri
 	ng_buffer.pl,
-	tests/bindings/perl/0112_perl_api_set_threads_rejects_none.pl,
+	tests/bindings/perl/0112_perl_api_set_encoder_threads_rejects_none.pl,
 	tests/bindings/perl/0113_perl_api_loader_load_file_rejects_bytearra
 	y_filename.pl,
 	tests/bindings/perl/0114_perl_api_decoder_decode_rejects_bytearray_
@@ -27387,7 +27387,7 @@
 	le.pl,
 	tests/bindings/perl/0119_perl_api_loader_load_file_rejects_memoryvi
 	ew_filename.pl,
-	tests/bindings/perl/0120_perl_api_set_threads_rejects_bytearray_aut
+	tests/bindings/perl/0120_perl_api_set_encoder_threads_rejects_bytearray_aut
 	o.pl,
 	tests/bindings/perl/0121_perl_api_encoder_encode_bytes_rejects_stri
 	ng_palette.pl,
@@ -27405,7 +27405,7 @@
 	_option.pl,
 	tests/bindings/perl/0128_perl_api_encoder_encode_bytes_rejects_pale
 	tte_with_none_component.pl,
-	tests/bindings/perl/0129_perl_api_set_threads_rejects_decimal_strin
+	tests/bindings/perl/0129_perl_api_set_encoder_threads_rejects_decimal_strin
 	g.pl,
 	tests/bindings/perl/0131_perl_api_encoder_encode_bytes_requires_wid
 	th_argument.pl,
@@ -36304,7 +36304,7 @@
 2026-02-28  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/ruby/0120_ruby_api_set_threads_rejects_bytearray_aut
+	tests/bindings/ruby/0120_ruby_api_set_encoder_threads_rejects_bytearray_aut
 	o.rb,
 	tests/bindings/ruby/0122_ruby_api_loader_setopt_bgcolor_rejects_ove
 	rflow_component.rb,
@@ -36316,19 +36316,19 @@
 
 2026-02-28  Hayaki Saito <saitoha@me.com>
 
-	* tests/bindings/ruby/0048_ruby_api_set_threads_bytes.rb,
-	tests/bindings/ruby/0074_ruby_api_set_threads_rejects_zero_bytes.rb
+	* tests/bindings/ruby/0048_ruby_api_set_encoder_threads_bytes.rb,
+	tests/bindings/ruby/0074_ruby_api_set_encoder_threads_rejects_zero_bytes.rb
 	,
-	tests/bindings/ruby/0075_ruby_api_set_threads_accepts_auto_bytes.rb
+	tests/bindings/ruby/0075_ruby_api_set_encoder_threads_accepts_auto_bytes.rb
 	,
-	tests/bindings/ruby/0076_ruby_api_set_threads_rejects_non_utf8_byte
+	tests/bindings/ruby/0076_ruby_api_set_encoder_threads_rejects_non_utf8_byte
 	s.rb,
-	tests/bindings/ruby/0079_ruby_api_set_threads_accepts_whitespace_au
+	tests/bindings/ruby/0079_ruby_api_set_encoder_threads_accepts_whitespace_au
 	to_bytes.rb,
-	tests/bindings/ruby/0081_ruby_api_set_threads_accepts_whitespace_nu
+	tests/bindings/ruby/0081_ruby_api_set_encoder_threads_accepts_whitespace_nu
 	meric_bytes.rb,
-	tests/bindings/ruby/0083_ruby_api_set_threads_rejects_whitespace_on
-	ly_bytes.rb: tests: port set_threads byte-input tests from python to
+	tests/bindings/ruby/0083_ruby_api_set_encoder_threads_rejects_whitespace_on
+	ly_bytes.rb: tests: port set_encoder_threads byte-input tests from python to
 	ruby
 
 2026-02-28  Hayaki Saito <saitoha@me.com>
@@ -37301,13 +37301,13 @@
 2026-02-28  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/ruby/0086_ruby_api_set_threads_rejects_whitespace_on
+	tests/bindings/ruby/0086_ruby_api_set_encoder_threads_rejects_whitespace_on
 	ly_string.rb,
-	tests/bindings/ruby/0087_ruby_api_set_threads_accepts_uppercase_aut
+	tests/bindings/ruby/0087_ruby_api_set_encoder_threads_accepts_uppercase_aut
 	o_string.rb,
 	tests/bindings/ruby/0088_ruby_api_encoder_setopt_rejects_none_flag.
-	rb, tests/bindings/ruby/0112_ruby_api_set_threads_rejects_none.rb: 
-	tests/ruby: port set_threads and setopt nil/auto cases from Python
+	rb, tests/bindings/ruby/0112_ruby_api_set_encoder_threads_rejects_none.rb:
+	tests/ruby: port set_encoder_threads and setopt nil/auto cases from Python
 
 2026-02-28  Hayaki Saito <saitoha@me.com>
 
@@ -37377,8 +37377,8 @@
 	tests/bindings/ruby/0033_ruby_api_dither_lifecycle.rb,
 	tests/bindings/ruby/0037_ruby_api_output_lifecycle.rb,
 	tests/bindings/ruby/0045_ruby_api_output_get_8bit.rb,
-	tests/bindings/ruby/0055_ruby_api_set_threads_invalid_numbers.rb,
-	tests/bindings/ruby/0129_ruby_api_set_threads_rejects_decimal_strin
+	tests/bindings/ruby/0055_ruby_api_set_encoder_threads_invalid_numbers.rb,
+	tests/bindings/ruby/0129_ruby_api_set_encoder_threads_rejects_decimal_strin
 	g.rb: tests: port selected python binding tests
 
 2026-02-28  Hayaki Saito <saitoha@me.com>
@@ -37396,8 +37396,8 @@
 	0027_ruby_api_helper_compute_depth.rb},
 	tests/bindings/ruby/{0006_ruby_api_module_function_exports.rb =>
 	0030_ruby_api_module_function_exports.rb},
-	tests/bindings/ruby/{0002_ruby_api_set_threads.rb =>
-	0035_ruby_api_set_threads.rb},
+	tests/bindings/ruby/{0002_ruby_api_set_encoder_threads.rb =>
+	0035_ruby_api_thread_budget_setters.rb},
 	tests/bindings/ruby/{0005_ruby_api_encoder_encode_missing_path.rb
 	=> 0051_ruby_api_encoder_encode_missing_path.rb},
 	tests/bindings/ruby/{0001_ruby_bindings_smoke.rb =>
@@ -37546,7 +37546,7 @@
 	eric_option.py,
 	tests/bindings/python/0128_python_api_encoder_encode_bytes_rejects_
 	palette_with_none_component.py,
-	tests/bindings/python/0129_python_api_set_threads_rejects_decimal_s
+	tests/bindings/python/0129_python_api_set_encoder_threads_rejects_decimal_s
 	tring.py: tests: align function names in 0126-0129
 
 2026-02-27  Hayaki Saito <saitoha@me.com>
@@ -37564,7 +37564,7 @@
 	yte_bytes_flag.py,
 	tests/bindings/python/0111_python_api_encoder_encode_bytes_rejects_
 	string_buffer.py,
-	tests/bindings/python/0112_python_api_set_threads_rejects_none.py,
+	tests/bindings/python/0112_python_api_set_encoder_threads_rejects_none.py,
 	tests/bindings/python/0113_python_api_loader_load_file_rejects_byte
 	array_filename.py,
 	tests/bindings/python/0114_python_api_decoder_decode_rejects_bytear
@@ -37579,7 +37579,7 @@
 	infile.py,
 	tests/bindings/python/0119_python_api_loader_load_file_rejects_memo
 	ryview_filename.py,
-	tests/bindings/python/0120_python_api_set_threads_rejects_bytearray
+	tests/bindings/python/0120_python_api_set_encoder_threads_rejects_bytearray
 	_auto.py,
 	tests/bindings/python/0121_python_api_encoder_encode_bytes_rejects_
 	string_palette.py,
@@ -37604,9 +37604,9 @@
 2026-02-27  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/python/0086_python_api_set_threads_rejects_whitespac
+	tests/bindings/python/0086_python_api_set_encoder_threads_rejects_whitespac
 	e_only_string.py,
-	tests/bindings/python/0087_python_api_set_threads_accepts_uppercase
+	tests/bindings/python/0087_python_api_set_encoder_threads_accepts_uppercase
 	_auto_string.py,
 	tests/bindings/python/0088_python_api_encoder_setopt_rejects_none_f
 	lag.py,
@@ -37658,25 +37658,25 @@
 	ength.py,
 	tests/bindings/python/0073_python_api_decoder_decode_infile_argumen
 	t.py,
-	tests/bindings/python/0074_python_api_set_threads_rejects_zero_byte
+	tests/bindings/python/0074_python_api_set_encoder_threads_rejects_zero_byte
 	s.py,
-	tests/bindings/python/0075_python_api_set_threads_accepts_auto_byte
+	tests/bindings/python/0075_python_api_set_encoder_threads_accepts_auto_byte
 	s.py,
-	tests/bindings/python/0076_python_api_set_threads_rejects_non_utf8_
+	tests/bindings/python/0076_python_api_set_encoder_threads_rejects_non_utf8_
 	bytes.py,
 	tests/bindings/python/0077_python_api_encoder_setopt_invalid_flag_l
 	ength.py,
 	tests/bindings/python/0078_python_api_loader_setopt_loader_order_nu
 	mber.py,
-	tests/bindings/python/0079_python_api_set_threads_accepts_whitespac
+	tests/bindings/python/0079_python_api_set_encoder_threads_accepts_whitespac
 	e_auto_bytes.py,
 	tests/bindings/python/0080_python_api_encoder_setopt_rejects_negati
 	ve_int_flag.py,
-	tests/bindings/python/0081_python_api_set_threads_accepts_whitespac
+	tests/bindings/python/0081_python_api_set_encoder_threads_accepts_whitespac
 	e_numeric_bytes.py,
 	tests/bindings/python/0082_python_api_loader_load_file_rejects_miss
 	ing_callback.py,
-	tests/bindings/python/0083_python_api_set_threads_rejects_whitespac
+	tests/bindings/python/0083_python_api_set_encoder_threads_rejects_whitespac
 	e_only_bytes.py,
 	tests/bindings/python/0084_python_api_encoder_setopt_rejects_large_
 	int_flag.py,
@@ -37810,7 +37810,7 @@
 	infile.py,
 	tests/bindings/python/0119_python_api_loader_load_file_rejects_memo
 	ryview_filename.py,
-	tests/bindings/python/0120_python_api_set_threads_rejects_bytearray
+	tests/bindings/python/0120_python_api_set_encoder_threads_rejects_bytearray
 	_auto.py,
 	tests/bindings/python/0121_python_api_encoder_encode_bytes_rejects_
 	string_palette.py,
@@ -37831,8 +37831,8 @@
 	_palette_with_none_component.py =>
 	0128_python_api_encoder_encode_bytes_rejects_palette_with_none_comp
 	onent.py},
-	tests/bindings/python/{0132_python_api_set_threads_rejects_decimal_
-	string.py => 0129_python_api_set_threads_rejects_decimal_string.py}: 
+	tests/bindings/python/{0132_python_api_set_encoder_threads_rejects_decimal_
+	string.py => 0129_python_api_set_encoder_threads_rejects_decimal_string.py}:
 	tests/python: align tap checks for 0121-0132
 
 2026-02-27  Hayaki Saito <saitoha@me.com>
@@ -37868,7 +37868,7 @@
 	yte_bytes_flag.py,
 	tests/bindings/python/0111_python_api_encoder_encode_bytes_rejects_
 	string_buffer.py,
-	tests/bindings/python/0112_python_api_set_threads_rejects_none.py,
+	tests/bindings/python/0112_python_api_set_encoder_threads_rejects_none.py,
 	tests/bindings/python/0113_python_api_loader_load_file_rejects_byte
 	array_filename.py,
 	tests/bindings/python/0114_python_api_decoder_decode_rejects_bytear
@@ -37897,9 +37897,9 @@
 	name_type.py,
 	tests/bindings/python/0073_python_api_decoder_decode_infile_argumen
 	t.py,
-	tests/bindings/python/0074_python_api_set_threads_rejects_zero_byte
+	tests/bindings/python/0074_python_api_set_encoder_threads_rejects_zero_byte
 	s.py,
-	tests/bindings/python/0076_python_api_set_threads_rejects_non_utf8_
+	tests/bindings/python/0076_python_api_set_encoder_threads_rejects_non_utf8_
 	bytes.py,
 	tests/bindings/python/0077_python_api_encoder_setopt_invalid_flag_l
 	ength.py,
@@ -38021,7 +38021,7 @@
 	tests/bindings/python/0032_python_api_loader_setopt.py,
 	tests/bindings/python/0033_python_api_dither_lifecycle.py,
 	tests/bindings/python/0034_python_api_dither_builtin_get.py,
-	tests/bindings/python/0035_python_api_set_threads.py,
+	tests/bindings/python/0035_python_api_thread_budget_setters.py,
 	tests/bindings/python/0036_python_api_sixel_encode_function.py,
 	tests/bindings/python/0037_python_api_output_lifecycle.py,
 	tests/bindings/python/0038_python_api_output_setters.py,
@@ -38034,7 +38034,7 @@
 	tests/bindings/python/0045_python_api_output_get_8bit.py,
 	tests/bindings/python/0046_python_api_dither_destroy.py,
 	tests/bindings/python/0047_python_api_loader_setopt_variants.py,
-	tests/bindings/python/0048_python_api_set_threads_bytes.py,
+	tests/bindings/python/0048_python_api_set_encoder_threads_bytes.py,
 	tests/bindings/python/0049_python_api_loader_setopt_invalid_option.
 	py,
 	tests/bindings/python/0050_python_api_loader_load_file_requires_cal
@@ -38045,7 +38045,7 @@
 	tests/bindings/python/0053_python_api_decoder_setopt_char_flag.py,
 	tests/bindings/python/0054_python_api_encoder_encode_bytes_invalid_
 	pixelformat.py,
-	tests/bindings/python/0055_python_api_set_threads_invalid_numbers.p
+	tests/bindings/python/0055_python_api_set_encoder_threads_invalid_numbers.p
 	y,
 	tests/bindings/python/0056_python_api_loader_setopt_bgcolor_validat
 	ion.py,
@@ -38082,33 +38082,33 @@
 	ength.py,
 	tests/bindings/python/0073_python_api_decoder_decode_infile_argumen
 	t.py,
-	tests/bindings/python/0074_python_api_set_threads_rejects_zero_byte
+	tests/bindings/python/0074_python_api_set_encoder_threads_rejects_zero_byte
 	s.py,
-	tests/bindings/python/0075_python_api_set_threads_accepts_auto_byte
+	tests/bindings/python/0075_python_api_set_encoder_threads_accepts_auto_byte
 	s.py,
-	tests/bindings/python/0076_python_api_set_threads_rejects_non_utf8_
+	tests/bindings/python/0076_python_api_set_encoder_threads_rejects_non_utf8_
 	bytes.py,
 	tests/bindings/python/0077_python_api_encoder_setopt_invalid_flag_l
 	ength.py,
 	tests/bindings/python/0078_python_api_loader_setopt_loader_order_nu
 	mber.py,
-	tests/bindings/python/0079_python_api_set_threads_accepts_whitespac
+	tests/bindings/python/0079_python_api_set_encoder_threads_accepts_whitespac
 	e_auto_bytes.py,
 	tests/bindings/python/0080_python_api_encoder_setopt_rejects_negati
 	ve_int_flag.py,
-	tests/bindings/python/0081_python_api_set_threads_accepts_whitespac
+	tests/bindings/python/0081_python_api_set_encoder_threads_accepts_whitespac
 	e_numeric_bytes.py,
 	tests/bindings/python/0082_python_api_loader_load_file_rejects_miss
 	ing_callback.py,
-	tests/bindings/python/0083_python_api_set_threads_rejects_whitespac
+	tests/bindings/python/0083_python_api_set_encoder_threads_rejects_whitespac
 	e_only_bytes.py,
 	tests/bindings/python/0084_python_api_encoder_setopt_rejects_large_
 	int_flag.py,
 	tests/bindings/python/0085_python_api_encoder_setopt_rejects_empty_
 	flag.py,
-	tests/bindings/python/0086_python_api_set_threads_rejects_whitespac
+	tests/bindings/python/0086_python_api_set_encoder_threads_rejects_whitespac
 	e_only_string.py,
-	tests/bindings/python/0087_python_api_set_threads_accepts_uppercase
+	tests/bindings/python/0087_python_api_set_encoder_threads_accepts_uppercase
 	_auto_string.py,
 	tests/bindings/python/0088_python_api_encoder_setopt_rejects_none_f
 	lag.py,
@@ -38158,7 +38158,7 @@
 	yte_bytes_flag.py,
 	tests/bindings/python/0111_python_api_encoder_encode_bytes_rejects_
 	string_buffer.py,
-	tests/bindings/python/0112_python_api_set_threads_rejects_none.py,
+	tests/bindings/python/0112_python_api_set_encoder_threads_rejects_none.py,
 	tests/bindings/python/0113_python_api_loader_load_file_rejects_byte
 	array_filename.py,
 	tests/bindings/python/0114_python_api_decoder_decode_rejects_bytear
@@ -38173,7 +38173,7 @@
 	infile.py,
 	tests/bindings/python/0119_python_api_loader_load_file_rejects_memo
 	ryview_filename.py,
-	tests/bindings/python/0120_python_api_set_threads_rejects_bytearray
+	tests/bindings/python/0120_python_api_set_encoder_threads_rejects_bytearray
 	_auto.py,
 	tests/bindings/python/0121_python_api_encoder_encode_bytes_rejects_
 	string_palette.py,
@@ -38191,7 +38191,7 @@
 	eric_option.py,
 	tests/bindings/python/0131_python_api_encoder_encode_bytes_rejects_
 	palette_with_none_component.py,
-	tests/bindings/python/0132_python_api_set_threads_rejects_decimal_s
+	tests/bindings/python/0132_python_api_set_encoder_threads_rejects_decimal_s
 	tring.py: tests/python: prune redundant cases and clarify test
 	intents
 
@@ -38215,44 +38215,44 @@
 	0072_python_api_decoder_setopt_invalid_flag_length.py},
 	tests/bindings/python/{0077_python_api_decoder_decode_infile_argume
 	nt.py => 0073_python_api_decoder_decode_infile_argument.py},
-	tests/bindings/python/{0078_python_api_set_threads_rejects_zero_byt
-	es.py => 0074_python_api_set_threads_rejects_zero_bytes.py},
-	tests/bindings/python/{0079_python_api_set_threads_accepts_auto_byt
-	es.py => 0075_python_api_set_threads_accepts_auto_bytes.py},
-	tests/bindings/python/{0080_python_api_set_threads_rejects_non_utf8
+	tests/bindings/python/{0078_python_api_set_encoder_threads_rejects_zero_byt
+	es.py => 0074_python_api_set_encoder_threads_rejects_zero_bytes.py},
+	tests/bindings/python/{0079_python_api_set_encoder_threads_accepts_auto_byt
+	es.py => 0075_python_api_set_encoder_threads_accepts_auto_bytes.py},
+	tests/bindings/python/{0080_python_api_set_encoder_threads_rejects_non_utf8
 	_bytes.py =>
-	0076_python_api_set_threads_rejects_non_utf8_bytes.py},
+	0076_python_api_set_encoder_threads_rejects_non_utf8_bytes.py},
 	tests/bindings/python/{0081_python_api_encoder_setopt_invalid_flag_
 	length.py =>
 	0077_python_api_encoder_setopt_invalid_flag_length.py},
 	tests/bindings/python/{0082_python_api_loader_setopt_loader_order_n
 	umber.py => 0078_python_api_loader_setopt_loader_order_number.py},
-	tests/bindings/python/{0083_python_api_set_threads_accepts_whitespa
+	tests/bindings/python/{0083_python_api_set_encoder_threads_accepts_whitespa
 	ce_auto_bytes.py =>
-	0079_python_api_set_threads_accepts_whitespace_auto_bytes.py},
+	0079_python_api_set_encoder_threads_accepts_whitespace_auto_bytes.py},
 	tests/bindings/python/{0084_python_api_encoder_setopt_rejects_negat
 	ive_int_flag.py =>
 	0080_python_api_encoder_setopt_rejects_negative_int_flag.py},
-	tests/bindings/python/{0085_python_api_set_threads_accepts_whitespa
+	tests/bindings/python/{0085_python_api_set_encoder_threads_accepts_whitespa
 	ce_numeric_bytes.py =>
-	0081_python_api_set_threads_accepts_whitespace_numeric_bytes.py},
+	0081_python_api_set_encoder_threads_accepts_whitespace_numeric_bytes.py},
 	tests/bindings/python/{0086_python_api_loader_load_file_rejects_mis
 	sing_callback.py =>
 	0082_python_api_loader_load_file_rejects_missing_callback.py},
-	tests/bindings/python/{0087_python_api_set_threads_rejects_whitespa
+	tests/bindings/python/{0087_python_api_set_encoder_threads_rejects_whitespa
 	ce_only_bytes.py =>
-	0083_python_api_set_threads_rejects_whitespace_only_bytes.py},
+	0083_python_api_set_encoder_threads_rejects_whitespace_only_bytes.py},
 	tests/bindings/python/{0088_python_api_encoder_setopt_rejects_large
 	_int_flag.py =>
 	0084_python_api_encoder_setopt_rejects_large_int_flag.py},
 	tests/bindings/python/{0089_python_api_encoder_setopt_rejects_empty
 	_flag.py => 0085_python_api_encoder_setopt_rejects_empty_flag.py},
-	tests/bindings/python/{0090_python_api_set_threads_rejects_whitespa
+	tests/bindings/python/{0090_python_api_set_encoder_threads_rejects_whitespa
 	ce_only_string.py =>
-	0086_python_api_set_threads_rejects_whitespace_only_string.py},
-	tests/bindings/python/{0091_python_api_set_threads_accepts_uppercas
+	0086_python_api_set_encoder_threads_rejects_whitespace_only_string.py},
+	tests/bindings/python/{0091_python_api_set_encoder_threads_accepts_uppercas
 	e_auto_string.py =>
-	0087_python_api_set_threads_accepts_uppercase_auto_string.py},
+	0087_python_api_set_encoder_threads_accepts_uppercase_auto_string.py},
 	tests/bindings/python/{0092_python_api_encoder_setopt_rejects_none_
 	flag.py => 0088_python_api_encoder_setopt_rejects_none_flag.py},
 	tests/bindings/python/{0093_python_api_encoder_encode_rejects_none_
@@ -38319,8 +38319,8 @@
 	tests/bindings/python/{0114_python_api_encoder_encode_bytes_rejects
 	_string_buffer.py =>
 	0111_python_api_encoder_encode_bytes_rejects_string_buffer.py},
-	tests/bindings/python/{0115_python_api_set_threads_rejects_none.py
-	=> 0112_python_api_set_threads_rejects_none.py},
+	tests/bindings/python/{0115_python_api_set_encoder_threads_rejects_none.py
+	=> 0112_python_api_set_encoder_threads_rejects_none.py},
 	tests/bindings/python/{0116_python_api_loader_load_file_rejects_byt
 	earray_filename.py =>
 	0113_python_api_loader_load_file_rejects_bytearray_filename.py},
@@ -38342,9 +38342,9 @@
 	tests/bindings/python/{0122_python_api_loader_load_file_rejects_mem
 	oryview_filename.py =>
 	0119_python_api_loader_load_file_rejects_memoryview_filename.py},
-	tests/bindings/python/{0123_python_api_set_threads_rejects_bytearra
+	tests/bindings/python/{0123_python_api_set_encoder_threads_rejects_bytearra
 	y_auto.py =>
-	0120_python_api_set_threads_rejects_bytearray_auto.py},
+	0120_python_api_set_encoder_threads_rejects_bytearray_auto.py},
 	tests/bindings/python/{0124_python_api_encoder_encode_bytes_rejects
 	_string_palette.py =>
 	0121_python_api_encoder_encode_bytes_rejects_string_palette.py},
@@ -38391,7 +38391,7 @@
 	eric_option.py,
 	tests/bindings/python/0131_python_api_encoder_encode_bytes_rejects_
 	palette_with_none_component.py,
-	tests/bindings/python/0132_python_api_set_threads_rejects_decimal_s
+	tests/bindings/python/0132_python_api_set_encoder_threads_rejects_decimal_s
 	tring.py: tests/python: add more __init__.py validation coverage
 
 2026-02-27  Hayaki Saito <saitoha@me.com>
@@ -38507,7 +38507,7 @@
 	infile.py,
 	tests/bindings/python/0122_python_api_loader_load_file_rejects_memo
 	ryview_filename.py,
-	tests/bindings/python/0123_python_api_set_threads_rejects_bytearray
+	tests/bindings/python/0123_python_api_set_encoder_threads_rejects_bytearray
 	_auto.py: tests/python: add 0121-0123 for extra __init__ coverage
 
 2026-02-26  Hayaki Saito <saitoha@me.com>
@@ -38543,7 +38543,7 @@
 2026-02-26  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/python/0115_python_api_set_threads_rejects_none.py,
+	tests/bindings/python/0115_python_api_set_encoder_threads_rejects_none.py,
 	tests/bindings/python/0116_python_api_loader_load_file_rejects_byte
 	array_filename.py,
 	tests/bindings/python/0117_python_api_decoder_decode_rejects_bytear
@@ -38763,7 +38763,7 @@
 
 2026-02-26  Hayaki Saito <saitoha@me.com>
 
-	* tests/bindings/ruby/0002_ruby_api_set_threads.rb,
+	* tests/bindings/ruby/0002_ruby_api_set_encoder_threads.rb,
 	tests/bindings/ruby/0003_ruby_api_encoder_setopt_invalid_option.rb,
 	tests/bindings/ruby/0004_ruby_api_helper_compute_depth.rb,
 	tests/bindings/ruby/0005_ruby_api_encoder_encode_missing_path.rb,
@@ -38922,10 +38922,10 @@
 2026-02-26  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/python/0091_python_api_set_threads_accepts_uppercase
+	tests/bindings/python/0091_python_api_set_encoder_threads_accepts_uppercase
 	_auto_string.py,
 	tests/bindings/python/0092_python_api_encoder_setopt_rejects_none_f
-	lag.py: tests/python: continue __init__.py coverage for set_threads
+	lag.py: tests/python: continue __init__.py coverage for set_encoder_threads
 	and setopt
 
 2026-02-26  Hayaki Saito <saitoha@me.com>
@@ -38960,7 +38960,7 @@
 	*
 	tests/bindings/python/0089_python_api_encoder_setopt_rejects_empty_
 	flag.py,
-	tests/bindings/python/0090_python_api_set_threads_rejects_whitespac
+	tests/bindings/python/0090_python_api_set_encoder_threads_rejects_whitespac
 	e_only_string.py: tests/python: continue __init__ coverage for empty
 	encoder flags and thread string parsing
 
@@ -38989,7 +38989,7 @@
 2026-02-26  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/python/0087_python_api_set_threads_rejects_whitespac
+	tests/bindings/python/0087_python_api_set_encoder_threads_rejects_whitespac
 	e_only_bytes.py,
 	tests/bindings/python/0088_python_api_encoder_setopt_rejects_large_
 	int_flag.py: tests: continue __init__ coverage for thread parsing
@@ -39012,7 +39012,7 @@
 2026-02-26  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/python/0085_python_api_set_threads_accepts_whitespac
+	tests/bindings/python/0085_python_api_set_encoder_threads_accepts_whitespac
 	e_numeric_bytes.py,
 	tests/bindings/python/0086_python_api_loader_load_file_rejects_miss
 	ing_callback.py: tests/python: continue __init__ coverage for
@@ -39043,7 +39043,7 @@
 2026-02-25  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/python/0083_python_api_set_threads_accepts_whitespac
+	tests/bindings/python/0083_python_api_set_encoder_threads_accepts_whitespac
 	e_auto_bytes.py,
 	tests/bindings/python/0084_python_api_encoder_setopt_rejects_negati
 	ve_int_flag.py: tests/python: add more __init__ coverage for thread
@@ -39195,10 +39195,10 @@
 2026-02-25  Hayaki Saito <saitoha@me.com>
 
 	*
-	tests/bindings/python/0079_python_api_set_threads_accepts_auto_byte
+	tests/bindings/python/0079_python_api_set_encoder_threads_accepts_auto_byte
 	s.py,
-	tests/bindings/python/0080_python_api_set_threads_rejects_non_utf8_
-	bytes.py: tests/python: add set_threads byte-input coverage
+	tests/bindings/python/0080_python_api_set_encoder_threads_rejects_non_utf8_
+	bytes.py: tests/python: add set_encoder_threads byte-input coverage
 
 2026-02-25  Hayaki Saito <saitoha@me.com>
 
@@ -39229,7 +39229,7 @@
 	ength.py,
 	tests/bindings/python/0077_python_api_decoder_decode_infile_argumen
 	t.py,
-	tests/bindings/python/0078_python_api_set_threads_rejects_zero_byte
+	tests/bindings/python/0078_python_api_set_encoder_threads_rejects_zero_byte
 	s.py: tests/python: add more __init__ coverage for decoder and
 	threads
 
@@ -39384,7 +39384,7 @@
 2026-02-24  Hayaki Saito <saitoha@me.com>
 
 	* src/loader-registry.c,
-	tests/bindings/python/0055_python_api_set_threads_invalid_numbers.p
+	tests/bindings/python/0055_python_api_set_encoder_threads_invalid_numbers.p
 	y,
 	tests/bindings/python/0056_python_api_loader_setopt_bgcolor_validat
 	ion.py,
@@ -39420,7 +39420,7 @@
 	tests/bindings/python/0045_python_api_output_get_8bit.py,
 	tests/bindings/python/0046_python_api_dither_destroy.py,
 	tests/bindings/python/0047_python_api_loader_setopt_variants.py,
-	tests/bindings/python/0048_python_api_set_threads_bytes.py: tests:
+	tests/bindings/python/0048_python_api_set_encoder_threads_bytes.py: tests:
 	expand __init__ api coverage with ref/output variants
 
 2026-02-24  Hayaki Saito <saitoha@me.com>
@@ -39429,7 +39429,7 @@
 	tests/bindings/python/0032_python_api_loader_setopt.py,
 	tests/bindings/python/0033_python_api_dither_lifecycle.py,
 	tests/bindings/python/0034_python_api_dither_builtin_get.py,
-	tests/bindings/python/0035_python_api_set_threads.py,
+	tests/bindings/python/0035_python_api_thread_budget_setters.py,
 	tests/bindings/python/0036_python_api_sixel_encode_function.py,
 	tests/bindings/python/0037_python_api_output_lifecycle.py,
 	tests/bindings/python/0038_python_api_output_setters.py,

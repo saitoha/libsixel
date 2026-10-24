@@ -1307,7 +1307,7 @@ def sixel_dither_set_transparent(dither, transparent):
 
 
 # configure the encoder thread count for band parallelism
-def sixel_set_threads(threads):
+def sixel_set_encoder_threads(threads):
     auto_requested = False
     value = 0
     text = None
@@ -1317,7 +1317,7 @@ def sixel_set_threads(threads):
             text = threads.decode('utf-8').strip()
         except UnicodeDecodeError as exc:
             raise ValueError(
-                "threads must be a positive integer or 'auto'"
+                "threads must be a positive integer or 'all'"
             ) from exc
     elif isinstance(threads, str):
         text = threads.strip()
@@ -1325,7 +1325,7 @@ def sixel_set_threads(threads):
         text = None
 
     if text is not None:
-        if text.lower() == 'auto':
+        if text.lower() in ('auto', 'all'):
             auto_requested = True
             value = 0
         else:
@@ -1333,22 +1333,66 @@ def sixel_set_threads(threads):
                 value = int(text, 10)
             except ValueError as exc:
                 raise ValueError(
-                    "threads must be a positive integer or 'auto'"
+                    "threads must be a positive integer or 'all'"
                 ) from exc
     else:
         try:
             value = int(threads)
         except (TypeError, ValueError) as exc:
             raise ValueError(
-                "threads must be a positive integer or 'auto'"
+                "threads must be a positive integer or 'all'"
             ) from exc
 
     if auto_requested is False and value < 1:
-        raise ValueError("threads must be a positive integer or 'auto'")
+        raise ValueError("threads must be a positive integer or 'all'")
 
-    _sixel.sixel_set_threads.restype = None
-    _sixel.sixel_set_threads.argtypes = [c_int]
-    _sixel.sixel_set_threads(value)
+    _sixel.sixel_set_encoder_threads.restype = None
+    _sixel.sixel_set_encoder_threads.argtypes = [c_int]
+    _sixel.sixel_set_encoder_threads(value)
+
+
+def sixel_set_decoder_threads(threads):
+    auto_requested = False
+    value = 0
+    text = None
+
+    if isinstance(threads, bytes):
+        try:
+            text = threads.decode('utf-8').strip()
+        except UnicodeDecodeError as exc:
+            raise ValueError(
+                "threads must be a positive integer or 'all'"
+            ) from exc
+    elif isinstance(threads, str):
+        text = threads.strip()
+    else:
+        text = None
+
+    if text is not None:
+        if text.lower() in ('auto', 'all'):
+            auto_requested = True
+            value = 0
+        else:
+            try:
+                value = int(text, 10)
+            except ValueError as exc:
+                raise ValueError(
+                    "threads must be a positive integer or 'all'"
+                ) from exc
+    else:
+        try:
+            value = int(threads)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "threads must be a positive integer or 'all'"
+            ) from exc
+
+    if auto_requested is False and value < 1:
+        raise ValueError("threads must be a positive integer or 'all'")
+
+    _sixel.sixel_set_decoder_threads.restype = None
+    _sixel.sixel_set_decoder_threads.argtypes = [c_int]
+    _sixel.sixel_set_decoder_threads(value)
 
 
 # convert pixels into sixel format and write it to output context

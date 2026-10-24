@@ -14,7 +14,7 @@ set -v
 # In linear clustering space, nearest snap maps sRGB (128,64,32) to
 # safe bytes (128,64,31). Independent SMPTE-C matrix/gamma evaluation
 # then rounds to (51,25,14); (51,25,15) describes the unsnapped source.
-stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+stream=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     --precision-policy=float32 --quality=full --sampling-policy=full-frame \
     --binning-policy=hard --quantize-model=kmeans:seed=1:binbits=6 \
     --merge-policy=none --cover-policy=off --lookup-policy=none \

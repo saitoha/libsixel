@@ -20,8 +20,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 parallel_direct_cli="${ARTIFACT_LOCAL_DIR}/parallel-direct-cli.png"
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
-${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_cli}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
+${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_cli}"
 
 cmp -s "${parallel_direct_cli}" "${parallel_direct_4}" || {
     echo "not ok" 1 - "CLI thread override diverges"

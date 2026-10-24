@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify threading-policy dither through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|dither
+# Registry row: SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY|NULL|dither
 # Registry binding: dither_threads|dither_threads_override
 # Environment range: parse-signed-long
 
@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0112-threading-dither-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    "-=balanced:B6:D1" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=greedy:B6:D1" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading dither short conversion failed"
     exit 0
 }
@@ -42,8 +42,8 @@ case "${short_trace}" in *LSXDTH1\|*dither_threads=1\|encode_threads=5**) true ;
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    --env "SIXEL_THREADING_DITHER=1" \
-    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
+    --env "SIXEL_ENCODER_THREADING_DITHER=1" \
+    "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading dither environment conversion failed"
     exit 0
 }
@@ -58,8 +58,8 @@ case "${env_trace}" in *LSXDTH1\|*dither_threads=1\|encode_threads=5**) true ;; 
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    --env "SIXEL_THREADING_DITHER=-1" \
-    "-=balanced:B6" "${input_image}" 2>&1 >/dev/null) || {
+    --env "SIXEL_ENCODER_THREADING_DITHER=-1" \
+    "-=greedy:B6" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading dither out-of-range conversion failed"
     exit 0
 }

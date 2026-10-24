@@ -825,7 +825,7 @@ bench_cpu_fast4(bench_image_t const *image,
     SIXELSTATUS status;
 
     total = 0.0;
-    sixel_set_threads(threads);
+    sixel_set_encoder_threads(threads);
     for (i = 0; i < iterations; ++i) {
         output = NULL;
         start = now_ms();
@@ -853,7 +853,7 @@ make_cpu_reference(bench_image_t *image, sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
 
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     status = sixel_dequantize_k_undither_fast4_rgba(image->indexed,
                                                     image->mask,
                                                     image->width,

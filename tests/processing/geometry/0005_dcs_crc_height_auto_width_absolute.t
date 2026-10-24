@@ -23,7 +23,7 @@ printf '%b' '\033Pq"1;1;1;1!6~\033\057' >"${source_sixel}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=balanced:B1 -rne -hauto -w12 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=greedy:B1 -rne -hauto -w12 \
     <"${source_sixel}" >"${scaled_sixel}" || {
     echo "not ok" 1 - "DCS coordinates stayed consistent"
     exit 0

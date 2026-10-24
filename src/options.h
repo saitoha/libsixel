@@ -177,7 +177,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_LUT_POLICY,
     SIXEL_OPTION_SCHEMA_LOADERS,
     SIXEL_OPTION_SCHEMA_PRECISION,
-    SIXEL_OPTION_SCHEMA_THREADING_POLICY,
+    SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY,
     SIXEL_OPTION_SCHEMA_COLORS,
     SIXEL_OPTION_SCHEMA_START_FRAME,
     SIXEL_OPTION_SCHEMA_GPU_POLICY,
@@ -195,6 +195,7 @@ typedef enum sixel_option_schema_id {
     SIXEL_OPTION_SCHEMA_INPUT_COLORSPACE,
     SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE,
     SIXEL_OPTION_SCHEMA_DECODE_INPUT_MODE,
+    SIXEL_OPTION_SCHEMA_DECODER_THREADING_POLICY,
     SIXEL_OPTION_SCHEMA_COUNT
 } sixel_option_schema_id_t;
 
@@ -458,15 +459,13 @@ typedef struct sixel_runtime_policy_options {
 } sixel_runtime_policy_options_t;
 
 /*
- * Process-wide thread plan. The base selects budget spending; stage counts
+ * Object-owned thread plan. The base selects budget spending; stage counts
  * are upper bounds that the planner shrinks to fit that budget. Frame keys
  * select which stages of consecutive frames may run concurrently.
  */
 typedef struct sixel_threading_policy_options {
     unsigned int budget;       /* Literal all stores 0, numeric 0 is invalid */
     int budget_override;
-    unsigned int api_budget;   /* Nonpositive API requests store 0 for all */
-    int api_budget_override;
     int mode;
     int mode_override;
     int load;
@@ -773,6 +772,7 @@ sixel_option_apply_runtime_policy_argument(
  * spending; global_budget and stage limits are optional suboptions. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_apply_threading_policy_argument(
+    sixel_threading_policy_options_t *destination,
     char const *argument,
     unsigned int consumer_scope,
     char *diagnostic,

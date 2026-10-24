@@ -13,7 +13,7 @@ int
 macro_native_contract(int scenario)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "1" }, { 'Q', "heckbert" },
+        { '=', "greedy:B1" }, { 'p', "1" }, { 'Q', "heckbert" },
         { 'F', "none" }, { 'a', "off" }, { '_', "none" },
         { '~', "none" }, { 'd', "none" }, { 'E', "fast" },
         { 'X', "linear" }, { 'W', "linear" }, { '7', NULL },

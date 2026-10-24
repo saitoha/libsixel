@@ -34,7 +34,7 @@ int
 test_auto_palette(int mode, int space)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "2" }, { 'F', "none" }, { 'a', "off" },
+        { '=', "greedy:B1" }, { 'p', "2" }, { 'F', "none" }, { 'a', "off" },
         { '_', "none" }, { '~', "5bit" }, { 'd', "none" },
         { 't', "rgb" }, { '4', "full-frame" }, { '0', "hard" }
     };

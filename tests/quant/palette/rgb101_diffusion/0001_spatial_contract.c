@@ -81,7 +81,7 @@ spatial_encoder(spatial_method_t const *method, int p3, int linear)
         int flag;
         char const *value;
     } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "1" }, { '.', "auto" },
+        { '=', "greedy:B1" }, { 'p', "1" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'X', "linear" }, { 'F', "none" },
         { 'a', "off" }, { '_', "none" }, { '~', "none" },
         { 't', "rgb" }, { '5', "none" }, { '4', "full-frame" },

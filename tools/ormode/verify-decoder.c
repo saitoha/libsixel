@@ -6,7 +6,8 @@
  * output: one line per format:
  *   FORMAT WIDTH HEIGHT NCOLORS PIXEL_SHA256 PALETTE_SHA256|-
  *
- * SIXEL_THREADING_GLOBAL_BUDGET supplies the decoder worker budget. SHA-256 is
+ * SIXEL_DECODER_THREADING_GLOBAL_BUDGET supplies the decoder worker budget.
+ * SHA-256 is
  * implemented here so the tool has no dependency beyond libsixel.
  */
 #include <limits.h>

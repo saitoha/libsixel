@@ -541,7 +541,7 @@
         }, NULL, 0ULL \
     }
 
-/* Thread-plan rows bind to the process-wide threading policy store. */
+/* Thread-plan rows bind to object policy and resolved scope snapshots. */
 #define SIXEL_REGISTRY_THREADING_UINT( \
     optflag_, base_, name_, short_, env_, minimum_, maximum_, message_, \
     scope_, field_, override_) \
@@ -1999,59 +1999,66 @@ static sixel_suboption_key_t const g_suboptions[] = {
         scale_parallel_min_bytes_override),
 
     SIXEL_REGISTRY_THREADING_BUDGET(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "global_budget", 'B', "SIXEL_THREADING_GLOBAL_BUDGET",
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "global_budget", 'B', "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
         1.0, (double)INT_MAX,
         "threading global_budget must be a positive integer or all.",
-        SIXEL_OPTION_SCOPE_ALL, budget, budget_override),
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, budget, budget_override),
+    SIXEL_REGISTRY_THREADING_BUDGET(
+        SIXEL_OPTION_SCHEMA_DECODER_THREADING_POLICY, NULL,
+        "global_budget", 'B', "SIXEL_DECODER_THREADING_GLOBAL_BUDGET",
+        1.0, (double)INT_MAX,
+        "threading global_budget must be a positive integer or all.",
+        SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE, budget, budget_override),
     SIXEL_REGISTRY_THREADING_CHOICE(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "load", 'L', "SIXEL_THREADING_LOAD", g_threading_frame_choices,
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "load", 'L', "SIXEL_ENCODER_THREADING_LOAD", g_threading_frame_choices,
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, load, load_override),
     SIXEL_REGISTRY_THREADING_UINT(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "load_depth", 'Q', "SIXEL_THREADING_LOAD_DEPTH",
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "load_depth", 'Q', "SIXEL_ENCODER_THREADING_LOAD_DEPTH",
         1.0, (double)SIXEL_THREADING_LOAD_DEPTH_MAX,
         "threading load_depth must be in range 1..16.",
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         load_depth, load_depth_override),
     SIXEL_REGISTRY_THREADING_CHOICE(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "prepare", 'P', "SIXEL_THREADING_PREPARE", g_threading_frame_choices,
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "prepare", 'P', "SIXEL_ENCODER_THREADING_PREPARE",
+        g_threading_frame_choices,
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, prepare, prepare_override),
     SIXEL_REGISTRY_THREADING_CHOICE(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "palette", 'C', "SIXEL_THREADING_PALETTE",
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "palette", 'C', "SIXEL_ENCODER_THREADING_PALETTE",
         g_threading_palette_choices,
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, palette, palette_override),
     SIXEL_REGISTRY_THREADING_UINT(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "dither", 'D', "SIXEL_THREADING_DITHER", 1.0, (double)INT_MAX,
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "dither", 'D', "SIXEL_ENCODER_THREADING_DITHER", 1.0, (double)INT_MAX,
         "threading dither must be a positive integer.",
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         dither_threads, dither_threads_override),
     SIXEL_REGISTRY_THREADING_UINT(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "encode", 'E', "SIXEL_THREADING_ENCODE", 1.0, (double)INT_MAX,
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "encode", 'E', "SIXEL_ENCODER_THREADING_ENCODE", 1.0, (double)INT_MAX,
         "threading encode must be a positive integer.",
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         encode_threads, encode_threads_override),
     SIXEL_REGISTRY_THREADING_UINT(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "prepare_workers", 'W', "SIXEL_THREADING_PREPARE_WORKERS",
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "prepare_workers", 'W', "SIXEL_ENCODER_THREADING_PREPARE_WORKERS",
         1.0, (double)INT_MAX,
         "threading prepare_workers must be a positive integer.",
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         prepare_threads, prepare_threads_override),
     SIXEL_REGISTRY_THREADING_UINT(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "decode", 'S', "SIXEL_THREADING_DECODE", 1.0, (double)INT_MAX,
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "decode", 'S', "SIXEL_ENCODER_THREADING_DECODE", 1.0, (double)INT_MAX,
         "threading decode must be a positive integer.",
-        SIXEL_REGISTRY_DECODER_CONSUMER_SCOPE,
+        SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE,
         decode_threads, decode_threads_override),
     SIXEL_REGISTRY_THREADING_BOOLEAN(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY, NULL,
-        "pin", 'I', "SIXEL_THREADING_PIN",
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY, NULL,
+        "pin", 'I', "SIXEL_ENCODER_THREADING_PIN",
         SIXEL_REGISTRY_ENCODER_CONSUMER_SCOPE, pin, pin_override),
 
     SIXEL_REGISTRY_ENCODER_SIZE(
@@ -3258,13 +3265,13 @@ static sixel_option_argument_schema_t const g_options[] = {
         SIXEL_OPTION_PRECISION_AUTO,
         g_precision_values),
     SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY,
-        SIXEL_OPTION_SCOPE_ALL,
+        SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY,
+        SIXEL_OPTION_SCOPE_ENCODER,
         SIXEL_OPTFLAG_THREADING_POLICY,
         "threading-policy",
         SIXEL_THREADING_POLICY_BALANCED,
         g_threading_policy_values,
-        "SIXEL_THREADING_POLICY"),
+        "SIXEL_ENCODER_THREADING_POLICY"),
     SIXEL_REGISTRY_SCALAR_UINT(
         SIXEL_OPTION_SCHEMA_COLORS,
         SIXEL_OPTION_SCOPE_ENCODER,
@@ -3442,6 +3449,15 @@ static sixel_option_argument_schema_t const g_options[] = {
         "input-mode accepts single or 6delta-progressive.",
         0,
         g_decode_input_values),
+    SIXEL_REGISTRY_RUNTIME_OPTION_SCHEMA(
+        SIXEL_OPTION_SCHEMA_DECODER_THREADING_POLICY,
+        SIXEL_OPTION_SCOPE_DECODER,
+        SIXEL_OPTFLAG_THREADING_POLICY,
+        "threading-policy",
+        SIXEL_THREADING_POLICY_BALANCED,
+        g_threading_policy_values,
+        "SIXEL_DECODER_THREADING_POLICY"),
+
 };
 
 typedef char sixel_option_count_check[
@@ -3983,18 +3999,6 @@ sixel_option_registry_resolve_runtime_binding(
         value);
 }
 
-SIXEL_INTERNAL_API sixel_option_environment_result_t
-sixel_option_registry_resolve_threading_binding(
-    char const *binding_identifier,
-    sixel_suboption_value_kind_t expected_kind,
-    sixel_suboption_value_t *value)
-{
-    return sixel_option_registry_resolve_process_binding(
-        SIXEL_OPTION_SCHEMA_THREADING_POLICY,
-        binding_identifier,
-        expected_kind,
-        value);
-}
 
 static int
 sixel_diagnostics_boolean_value(
@@ -4529,8 +4533,10 @@ sixel_option_registry_binding_values_conflict(
         return 0;
     }
 
-    /* Alternative bases may expose exactly the same semantic binding. */
-    if (left_key->option_id == right_key->option_id &&
+    /* Alternative bases or disjoint consumers may expose the same semantic
+     * field in their independently owned settings objects. */
+    if ((left_key->option_id == right_key->option_id ||
+         (left_key->consumer_scope & right_key->consumer_scope) == 0u) &&
         left_key->name != NULL && right_key->name != NULL &&
         strcmp(left_key->name, right_key->name) == 0 &&
         left->identifier != NULL && right->identifier != NULL &&

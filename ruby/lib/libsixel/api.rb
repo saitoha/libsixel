@@ -236,7 +236,8 @@ module Libsixel
     extern "int sixel_decode(char *, int, char *, int, int, char *, int, void *)"
     extern "int sixel_decode_direct(char *, int, void *, void *, void *, void *)"
 
-    extern "void sixel_set_threads(int)"
+    extern "void sixel_set_encoder_threads(int)"
+    extern "void sixel_set_decoder_threads(int)"
 
     extern "void sixel_helper_set_additional_message(char *)"
     extern "char * sixel_helper_get_additional_message(void)"

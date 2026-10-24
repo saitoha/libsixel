@@ -20,7 +20,7 @@ echo "1..1"
 set -v
 
 pipeline_log=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
                   -G force -d none -p 16 --lookup-policy=none \
                   -v -o /dev/null "${probe_image}" 2>&1) || {
     echo "not ok" 1 - "gpu force thread split run failed"

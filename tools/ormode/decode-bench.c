@@ -41,7 +41,9 @@ main(int argc, char **argv)
     double elapsed;
     SIXELSTATUS status;
 
-    if (argc != 6 || setenv("SIXEL_THREADING_GLOBAL_BUDGET", argv[4], 1) != 0) {
+    if (argc != 6 ||
+        setenv("SIXEL_DECODER_THREADING_POLICY", "greedy", 1) != 0 ||
+        setenv("SIXEL_DECODER_THREADING_GLOBAL_BUDGET", argv[4], 1) != 0) {
         return 2;
     }
     runs = atoi(argv[3]);

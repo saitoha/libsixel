@@ -34,9 +34,9 @@
     "resampling-natural-welsh-zoom.png": "2de39bd527aec8c16d33c63c6634baf9886c6b20ab27215caa3e609ed51bd714",
     "resampling-quality-delta-e00.png": "ad1d2c188fc72241b08e37d6186f182f6e2e2b2da678ddd35769c4d9983c3863",
     "resampling-quality-ms-ssim.png": "3546ec4e8e29849e5153cee63a0833ca0dc7b63c1e65f4a725d3f7432b225fff",
-    "resampling-quality-size.csv": "9d0a3b70af59e32cfd835064bfeadd794ffcbb677462462c231e136431c49b07",
+    "resampling-quality-size.csv": "beb5cd912ab9b17047e7a08ef585ec5994c7b35e73aea78b4f851b8dbbbaeaf3",
     "resampling-size.png": "21c9557788d1e60e0c196720bde38fc29b8732e224524750842c7e7c75ad2b14",
-    "resampling-speed.csv": "701714b94cb4a3b5d16f83c0bee86e053adf799a0628d17d1fdfe30d4ec6cd34",
+    "resampling-speed.csv": "86e41df580a3917de988c6835f97788dfd496a3c9bbd717abbeeb832624720b9",
     "resampling-speed.png": "329dd846acb3e61c5cff0995ed3b3280a1b8f11e14a3680d08bc9539d2f7a20f"
   },
   "build": {

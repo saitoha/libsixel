@@ -109,7 +109,7 @@ fhedt_build_encode(int quality, int overlap, char const *path)
     }
     /* Bound palette work so the larger full-frame conversion remains live.
      * Explicit sampling retains the same asynchronous palette dependency. */
-    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B8")) ||
+    if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B8")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '~', "fhedt")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'p', "16")) ||

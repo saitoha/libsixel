@@ -151,7 +151,7 @@ def make_command(img2sixel: str,
     """Build one controlled complete-configuration command."""
     command = [
         img2sixel,
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--precision-policy=auto",
         "--quality=full",
         "--loaders=libpng!",

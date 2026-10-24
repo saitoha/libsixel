@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 ppm_tall="${TOP_SRCDIR}/tests/data/inputs/tall.ppm"
 
-SIXEL_THREADING_DITHER=1         SIXEL_DITHER_PARALLEL_BAND_WIDTH=9         SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4         SIXEL_THREADING_GLOBAL_BUDGET=6         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" >"${ARTIFACT_LOCAL_DIR}/tall.out" || {
+SIXEL_ENCODER_THREADING_DITHER=1         SIXEL_DITHER_PARALLEL_BAND_WIDTH=9         SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4         SIXEL_ENCODER_THREADING_POLICY=greedy SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=6         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" >"${ARTIFACT_LOCAL_DIR}/tall.out" || {
     echo "not ok" 1 - "pipeline run failed (overrides)"
     exit 0
 }

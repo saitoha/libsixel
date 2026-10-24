@@ -1884,45 +1884,27 @@ sixel_decoder_threads_normalize(int requested)
     return normalized;
 }
 
-/* Decoding stays serial unless a mode or budget is explicitly selected.
- * The decode stage limit can only reduce that budget; lazy stays serial. */
+/* An encoder's builtin SIXEL loader inherits the active encoder snapshot.
+ * Outside a scope, raw/direct decoding uses only decoder-side defaults. */
 static int
 sixel_decoder_threads_resolve_policy(void)
 {
-    unsigned int decode_threads;
+    sixel_threading_snapshot_t snapshot;
+    unsigned int limit;
     int budget;
-    int explicit_budget;
-    int performance;
+    int active;
 
-    /* SIXEL parsing has no independent branch to overlap in lazy mode. */
-    if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_LAZY) {
+    active = sixel_threading_policy_capture(&snapshot, 1);
+    if (snapshot.options.mode == SIXEL_THREADING_POLICY_LAZY) {
         return 1;
     }
-    decode_threads = 0u;
-    budget = 1;
-    explicit_budget = sixel_threading_policy_explicit_budget(&budget);
-    if (sixel_threading_policy_stage_threads(SIXEL_THREADING_STAGE_DECODE,
-                                             &decode_threads)) {
-        if (decode_threads > (unsigned int)INT_MAX) {
-            decode_threads = (unsigned int)INT_MAX;
-        }
-        if ((int)decode_threads > budget) {
-            return budget;
-        }
-        budget = sixel_decoder_threads_normalize((int)decode_threads);
-        if (sixel_threading_policy_mode() == SIXEL_THREADING_POLICY_BALANCED) {
-            performance = sixel_get_performance_threads();
-            if (budget > performance) {
-                budget = performance;
-            }
-        }
-        return budget;
+    budget = active ? sixel_threads_resolve() : snapshot.budget;
+    limit = snapshot.options.decode_threads;
+    if (!snapshot.decoder && snapshot.options.decode_threads_override &&
+            limit < (unsigned int)budget) {
+        budget = (int)limit;
     }
-    if (explicit_budget) {
-        return budget;
-    }
-
-    return 1;
+    return budget;
 }
 
 /* Test hook: pin the decoder count independently of the threading policy. */
@@ -1959,9 +1941,13 @@ sixel_decoder_parallel_override_threads(char const *text)
 SIXEL_INTERNAL_API int
 sixel_decoder_parallel_resolve_threads(void)
 {
+    sixel_threading_snapshot_t snapshot;
     int threads;
     int override_active;
 
+    if (sixel_threading_policy_capture(&snapshot, 1)) {
+        return sixel_decoder_threads_resolve_policy();
+    }
     threads = 1;
     sixel_decoder_threads_lock();
     override_active = g_decoder_threads.override_active;

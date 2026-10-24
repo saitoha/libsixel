@@ -37,7 +37,7 @@ int
 test_animation_feedback(int cache, int soft)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { '~', "none" }, { 'd', "fs" },
+        { '=', "greedy:B1" }, { '~', "none" }, { 'd', "fs" },
         { 'W', "gamma" },
         { 'X', "gamma" }, { '_', "none" }, { '.', "auto" },
         { 'Q', "kmeans:seed=1" }, { 'F', "none" }, { 'a', "off" },
@@ -299,7 +299,7 @@ test_animation_loader_run(char const *input, char const *path,
     int c;
     int ok;
 
-    (void)snprintf(threading, sizeof(threading), "balanced:B%s", threads);
+    (void)snprintf(threading, sizeof(threading), "greedy:B%s", threads);
     encoder = NULL;
     file = NULL;
     decoded = NULL;

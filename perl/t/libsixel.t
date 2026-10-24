@@ -31,7 +31,8 @@ subtest 'api surface' => sub {
     'sixel_dither_new',
     'sixel_dither_initialize',
     'sixel_frame_new',
-    'sixel_set_threads',
+    'sixel_set_encoder_threads',
+    'sixel_set_decoder_threads',
     'sixel_helper_compute_depth';
 };
 

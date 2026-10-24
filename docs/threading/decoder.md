@@ -4,7 +4,7 @@ This explanation is for users and contributors inspecting parallel SIXEL parsing
 
 ## Why decoding is split by bytes
 
-A SIXEL stream states vertical movement through control sequences in the input. Before parsing those sequences, an arbitrary byte offset cannot be mapped directly to a destination-row strip. The decoder therefore begins serially, establishes raster bounds and initial palette state, and passes the remaining payload to the parallel decoder as byte spans.
+A SIXEL stream states vertical movement through control sequences in the input. Before parsing those sequences, an arbitrary byte offset cannot be mapped directly to a destination-row strip. A decoder object enters its own resolved policy scope for parsing and dequantization. Object-less parsing resolves decoder defaults unless called inside an encoder scope, as in the builtin SIXEL loader. The decoder therefore begins serially, establishes raster bounds and initial palette state, and passes the remaining payload to the parallel decoder as byte spans.
 
 The serial path uses [ordinary band columns](../decoder/pipeline/README.md#ordinary-mode-band-columns). The following span design applies when a parallel request succeeds.
 

@@ -108,7 +108,8 @@ def measure(args):
 
     env = {k: v for k, v in os.environ.items()
            if not k.startswith(("SIXEL_", "LSQA_"))}
-    env.update(LC_ALL="C", SIXEL_THREADING_GLOBAL_BUDGET="1",
+    env.update(LC_ALL="C", SIXEL_ENCODER_THREADING_POLICY="greedy",
+               SIXEL_ENCODER_THREADING_GLOBAL_BUDGET="1",
                DYLD_LIBRARY_PATH=str(args.build / "src/.libs"),
                LD_LIBRARY_PATH=str(args.build / "src/.libs"))
     records = []

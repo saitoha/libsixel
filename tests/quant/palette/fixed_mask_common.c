@@ -134,7 +134,7 @@ static int
 test_fixed_mask_run(int space, int mode, char const *path, int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { '~', "none" }, { 'd', "none" },
+        { '=', "greedy:B1" }, { '~', "none" }, { 'd', "none" },
         { '0', "none" }, { '_', "none" }, { '.', "auto" },
         { 'A', "keep" }, { 'E', "size" }
     };
@@ -225,7 +225,7 @@ test_fixed_mask_run(int space, int mode, char const *path, int animated)
         }
     }
     if (((mode == 5 || mode == 6 || mode == 21) &&
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B4"))) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B4"))) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder,
                 'W', fm_spaces[space])) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, mono ? 'e' :

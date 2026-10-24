@@ -36,7 +36,7 @@ test_parallel_float_0007(int argc, char **argv)
     (void)argc;
     (void)argv;
     child_ok = 0;
-    sixel_set_threads(8);
+    sixel_set_encoder_threads(8);
     sixel_thread_budget_enter(&outer, 3);
     ok = sixel_threads_resolve() == 3;
     sixel_thread_budget_enter(&inner, 2);

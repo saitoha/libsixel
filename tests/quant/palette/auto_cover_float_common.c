@@ -142,7 +142,7 @@ int
 test_auto_cover_encoder(int hard)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { 'p', "256" }, { 'F', "none" },
+        { '=', "greedy:B1" }, { 'p', "256" }, { 'F', "none" },
         { '_', "none" }, { '~', "none" }, { 'd', "none" },
         { 't', "rgb" }, { '4', "full-frame" }, { '5', "none" },
         { 'Q', "kmeans:seed=1" }, { '.', "float" },
@@ -313,7 +313,7 @@ test_auto_cover_admission(int mode)
         /* Leave quantizer, lookup, merge, palette size, output type and cover
          * at their real defaults. Isolate palette values from diffusion. */
         encoder = encoders[i];
-        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "balanced:B1")) ||
+        if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B1")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'd', "none")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder,
                     '4', "full-frame"))) {

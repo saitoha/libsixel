@@ -98,7 +98,7 @@ test_classify_0053(int argc, char **argv)
     classify_alloc_fail = 0;
     classify_alloc_failed = 0;
     saved_threads = sixel_threads_resolve();
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     memset(pixels, 2, sizeof(pixels));
     pixels[0] = 0;
     status = sixel_allocator_new(&allocator, classify_alloc_malloc,
@@ -129,6 +129,6 @@ end:
     classify_alloc_fail = 0;
     sixel_output_unref(output);
     sixel_allocator_unref(allocator);
-    sixel_set_threads(saved_threads);
+    sixel_set_encoder_threads(saved_threads);
     return ok && classify_alloc_live == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

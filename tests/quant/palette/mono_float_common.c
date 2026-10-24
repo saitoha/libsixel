@@ -145,7 +145,7 @@ test_mono_native_run(int space, int output_kind, int invert, int mode,
                       int animated)
 {
     static struct { int flag; char const *value; } const options[] = {
-        { '=', "balanced:B1" }, { '~', "none" }, { 'd', "none" },
+        { '=', "greedy:B1" }, { '~', "none" }, { 'd', "none" },
         { '0', "none" }, { '_', "none" }, { '.', "auto" },
         { 'A', "keep" }, { 'e', NULL }
     };

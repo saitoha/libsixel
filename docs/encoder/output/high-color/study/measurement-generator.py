@@ -156,7 +156,8 @@ class Library:
 def benchmark(args):
     """A separate process per budget keeps decoder thread state isolated."""
     os.environ.update(ENV)
-    os.environ["SIXEL_THREADS"] = str(args.threads)
+    os.environ["SIXEL_ENCODER_THREADING_POLICY"] = "greedy"
+    os.environ["SIXEL_ENCODER_THREADING_GLOBAL_BUDGET"] = str(args.threads)
     lib = Library(args.library)
     metadata = json.loads((args.output / "results.json").read_text())
     fixtures = {name: rgb(args.output / f"{name}-source.png")
@@ -245,7 +246,7 @@ def measure(args):
             print(f"measure {name} {mode}", flush=True)
             stream_path = output / f"{name}-{mode}.six"
             png_path = output / f"{name}-{mode}.png"
-            command = [build / "converters/img2sixel", "--loaders=builtin!", "--threads=1"]
+            command = [build / "converters/img2sixel", "--loaders=builtin!", "--threading-policy=greedy:global_budget=1"]
             for key, value in OPTIONS + [("d", "fs" if mode == "256-fs" else "none")]:
                 command.extend(["-" + key, value])
             command.extend(["-I"] if mode == "high" else ["-p", "256"])
@@ -256,7 +257,7 @@ def measure(args):
                 fs_command[fs_command.index("-d") + 1] = "fs"
                 assert run(fs_command) == stream
             stream_path.write_bytes(stream)
-            png = run([build / "converters/sixel2png", "-D", "--threads=1", "-i", "-", "-o", "-"], stream)
+            png = run([build / "converters/sixel2png", "-D", "--threading-policy=greedy:global_budget=1", "-i", "-", "-o", "-"], stream)
             png_path.write_bytes(png)
             decoded = np.array(Image.open(io.BytesIO(png)).convert("RGBA"))
             assert decoded.shape[0] >= source.shape[0] and decoded.shape[1] >= source.shape[1]
@@ -290,9 +291,9 @@ def measure(args):
                 if threads == 1:
                     assert pixels == decoded.tobytes(), (name, mode, threads)
                 else:
-                    threaded_command = ["--threads=8" if x == "--threads=1" else x for x in command]
+                    threaded_command = ["--threading-policy=greedy:global_budget=8" if x == "--threading-policy=greedy:global_budget=1" else x for x in command]
                     threaded_stream = run(threaded_command)
-                    threaded_png = run([build / "converters/sixel2png", "-D", "--threads=1", "-i", "-", "-o", "-"], threaded_stream)
+                    threaded_png = run([build / "converters/sixel2png", "-D", "--threading-policy=greedy:global_budget=1", "-i", "-", "-o", "-"], threaded_stream)
                     threaded_pixels = np.array(Image.open(io.BytesIO(threaded_png)).convert("RGBA"))
                     assert pixels == threaded_pixels.tobytes(), (name, mode, threads)
                     threaded_assessment = io.BytesIO()

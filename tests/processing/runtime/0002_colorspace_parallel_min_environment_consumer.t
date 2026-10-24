@@ -5,6 +5,7 @@
 # Request two workers so one-CPU hosts still consult the fan-out threshold.
 # Verify the colorspace threshold environment reaches its consumer.
 
+# Balanced keeps the explicit -j minimum-work threshold observable.
 set -eux
 
 test "${SIXEL_ENABLE_THREADS-0}" = 1 || {

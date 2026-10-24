@@ -45,7 +45,7 @@ preflight_status=0
 preflight_trace=$(
     # shellcheck disable=SC2086
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env "SIXEL_THREADING_GLOBAL_BUDGET=4" \
+        --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
         --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
         -Llibwebp! -ldisable -o /dev/null -g "${input_webp}" \
@@ -75,7 +75,7 @@ trace_summary=$(
         "event=callback_handoff_decide" \
         0 \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env "SIXEL_THREADING_GLOBAL_BUDGET=4" \
+        --env "SIXEL_ENCODER_THREADING_POLICY=greedy" --env "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
         --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
         -Llibwebp! -lforce -o /dev/null -g "${input_webp}" 2>&1 >/dev/null

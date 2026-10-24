@@ -850,7 +850,7 @@ safe distance.
   grid before the EDT so that NUMA systems can place pages on the thread
   that will use them (0 or 1; default 0 so behaviour is unchanged unless
   opted in).
-* `SIXEL_THREADING_PIN` (or `-= *:pin=0|1`) pins worker threads to reduce
+* `SIXEL_ENCODER_THREADING_PIN` (or `-= *:pin=0|1`) pins worker threads to reduce
   migration (0 or 1; failures are ignored so portability is preserved).
   Unset, PaletteApply and encode pipeline workers are pinned and FHEDT
   workers are not; set it to 0 to allow the OS to migrate those jobs.
@@ -1044,14 +1044,19 @@ SIXEL_ANIMATION_HIDE_CURSOR
                            img2sixel enables it only when the
                            variable is unset. -z/--terminal-policy
                            takes precedence.
-SIXEL_THREADING_POLICY     spending mode: lazy, balanced, or greedy.
+SIXEL_DECODER_THREADING_POLICY     decoder mode: lazy, balanced, or greedy.
+SIXEL_DECODER_THREADING_GLOBAL_BUDGET
+                           Decoder budget; independent of encoder settings.
+                           Object global_budget > sixel_set_decoder_threads
+                           > decoder env > library default.
+SIXEL_ENCODER_THREADING_POLICY     spending mode: lazy, balanced, or greedy.
                            CLI base takes precedence. Converters set
                            empty/unset values to balanced.
-SIXEL_THREADING_GLOBAL_BUDGET
+SIXEL_ENCODER_THREADING_GLOBAL_BUDGET
                            positive total budget or all (case-insensitive).
                            Converters default to all; the library to
                            min(4, performance CPUs), in every mode.
-                           CLI global_budget > sixel_set_threads > env.
+                           Object global_budget > sixel_set_encoder_threads > encoder env.
 SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            defer RGBFLOAT32 colorspace fan-out
                            until the frame reaches this pixel

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Policy: docs/threading/policy-modes.md
 # Verify threading-policy load through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|load
+# Registry row: SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY|NULL|load
 # Registry binding: load|load_override
 
 # Image assertion: option-values-and-output-equivalence
@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0179-threading-load-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -g -l disable -d fs \
-    "-=balanced:B6:Lserial" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=greedy:B6:Lserial" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading load short conversion failed"
     exit 0
 }
@@ -42,8 +42,8 @@ case "${short_trace}" in *threading:\ *load=serial\ **) true ;; *) false ;; esac
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -g -l disable -d fs \
-    --env "SIXEL_THREADING_LOAD=serial" \
-    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
+    --env "SIXEL_ENCODER_THREADING_LOAD=serial" \
+    "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading load environment conversion failed"
     exit 0
 }
@@ -61,7 +61,7 @@ cmp -s "${short_output}" "${env_output}" || {
     exit 0
 }
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -l disable -d fs \
-    "-=balanced:B6:Lahead" "${input_image}" -o "${env_output}" || {
+    "-=greedy:B6:Lahead" "${input_image}" -o "${env_output}" || {
     echo "not ok 1 - read-ahead playback failed"
     exit 0
 }

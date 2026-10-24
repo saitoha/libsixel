@@ -204,7 +204,7 @@ The measurements were taken on 2026-09-11 using clean tracked source at `cf4cb34
 The primary CLI comparison uses the following controls, with only `-O` added for the OR member of each pair:
 
 ```console
-img2sixel --threading-policy=balanced:global_budget=1 --precision-policy=8bit --loaders=builtin! \
+img2sixel --threading-policy=greedy:global_budget=1 --precision-policy=8bit --loaders=builtin! \
   --gpu-policy=off --palette-type=rgb -Esize -p256 -o output.six input.jpg
 ```
 

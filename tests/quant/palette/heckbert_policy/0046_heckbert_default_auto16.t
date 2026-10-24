@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -=balanced:B1 -Goff -p32 -p16 -dauto \
+    "${IMG2SIXEL_PATH}" -=greedy:B1 -Goff -p32 -p16 -dauto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - default_auto16 conversion"
     exit 0

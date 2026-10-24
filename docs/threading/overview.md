@@ -2,6 +2,8 @@
 
 ## Why the vocabulary matters
 
+Each encoder and decoder has an independent policy; [threading-policy precedence](../cli/threading-policy.md#precedence-and-interactions) defines the type-specific environment and low-level defaults.
+
 The word *band* describes three different units in discussions of SIXEL
 threading. They are related, but they are not interchangeable.
 

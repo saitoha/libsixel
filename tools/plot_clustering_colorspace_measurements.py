@@ -85,7 +85,7 @@ def make_command(img2sixel: str,
     """Build one controlled clustering-color-space command."""
     command = [
         img2sixel,
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--precision-policy=float32",
         "--quality=full",
         "--loaders=builtin!",

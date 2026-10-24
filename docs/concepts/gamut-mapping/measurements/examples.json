@@ -124,7 +124,7 @@
     }
   ],
   "encoding_flags": [
-    "--threads=1",
+    "--threading-policy=greedy:global_budget=1",
     "-.float32",
     "-L",
     "builtin:cms_engine=builtin:cms_target=linear:prefer_8bit=0!",

@@ -6,6 +6,7 @@
 # Runtime contract: runner=scale/0002_parallel_min_bytes_environment|mode=cli,negative
 
 # Image assertion: option-values-and-output-equivalence
+# Balanced keeps the explicit -j minimum-work threshold observable.
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

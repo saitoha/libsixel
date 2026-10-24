@@ -189,11 +189,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           greedy: full budget, no size thresholds.\n"
         "                           global_budget=COUNT|all (:Ball) sets the\n"
         "                           budget; default all, capped by balanced.\n"
-        "                           decode=COUNT (:SCOUNT) limits parsing\n"
-        "                           and shrinks to fit the budget.\n"
-        "                           SIXEL_THREADING_POLICY sets the base;\n"
-        "                           SIXEL_THREADING_GLOBAL_BUDGET sets the\n"
-        "                           budget; CLI keys take precedence.\n"
+        "                           Environment: "
+        "SIXEL_DECODER_THREADING_POLICY\n"
+        "                           sets the base;\n"
+        "                           SIXEL_DECODER_THREADING_GLOBAL_BUDGET\n"
+        "                           sets the budget. "
+        "CLI keys take precedence.\n"
         "                           Empty/unset base defaults to balanced.\n"
     },
     {
@@ -707,17 +708,19 @@ main(int argc, char *argv[])
      * concurrency when the user has not supplied a budget through the
      * environment or --env. The mode default remains balanced.
      */
-    if (cli_apply_env_default("SIXEL_THREADING_POLICY", "balanced") != 0) {
+    if (cli_apply_env_default("SIXEL_DECODER_THREADING_POLICY",
+                              "balanced") != 0) {
         sixel_helper_set_additional_message(
             "failed to set default environment variable "
-            "'SIXEL_THREADING_POLICY'.");
+            "'SIXEL_DECODER_THREADING_POLICY'.");
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }
-    if (cli_apply_env_default("SIXEL_THREADING_GLOBAL_BUDGET", "all") != 0) {
+    if (cli_apply_env_default("SIXEL_DECODER_THREADING_GLOBAL_BUDGET",
+                              "all") != 0) {
         sixel_helper_set_additional_message(
             "failed to set default environment variable "
-            "'SIXEL_THREADING_GLOBAL_BUDGET'.");
+            "'SIXEL_DECODER_THREADING_GLOBAL_BUDGET'.");
         status = SIXEL_RUNTIME_ERROR;
         goto error;
     }

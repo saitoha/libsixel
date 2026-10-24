@@ -64,7 +64,7 @@ test_clear_map_stream(int threads, int ncolors)
     output = NULL;
     ok = 0;
     saved_threads = sixel_threads_resolve();
-    sixel_set_threads(threads);
+    sixel_set_encoder_threads(threads);
     for (band = 0; band < 9; band++) {
         for (row = 0; row < 6; row++) {
             offset = (band * 6 + row) * 4;
@@ -107,6 +107,6 @@ test_clear_map_stream(int threads, int ncolors)
 end:
     sixel_output_unref(output);
     sixel_allocator_unref(allocator);
-    sixel_set_threads(saved_threads);
+    sixel_set_encoder_threads(saved_threads);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

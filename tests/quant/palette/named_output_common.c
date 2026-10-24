@@ -113,7 +113,7 @@ test_named_output(int kind, int space, int model, int mode)
         "kmeans:seed=1", "center:seed=1", "medoids:seed=1", "heckbert"
     };
     static struct { int flag; char const *value; } const options[] = {
-        {'=', "balanced:B1"}, {'F', "none"}, {'_', "none"}, {'~', "none"},
+        {'=', "greedy:B1"}, {'F', "none"}, {'_', "none"}, {'~', "none"},
         {'d', "none"}, {'t', "rgb"}, {'4', "full-frame"}, {'5', "none"},
         {'.', "auto"}, {'p', "2"}, {'a', "off"}
     };

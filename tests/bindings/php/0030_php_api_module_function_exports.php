@@ -32,7 +32,7 @@ try {
     foreach ([
         'succeeded',
         'failed',
-        'setThreads',
+        'setEncoderThreads',
         'formatError',
         'encoderNew',
         'encoderSetopt',

@@ -36,7 +36,7 @@ test_palette_0058_p3_precision(int argc, char **argv)
         int flag;
         char const *value;
     } const options[] = {
-        {'=', "balanced:B1"}, {'p', "1"},
+        {'=', "greedy:B1"}, {'p', "1"},
         {'j', "scalar:resize_precision=float"},
         {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'W', "gamma"},
         {'U', "display-p3"}, {'F', "none"}, {'a', "off"}, {'_', "none"},

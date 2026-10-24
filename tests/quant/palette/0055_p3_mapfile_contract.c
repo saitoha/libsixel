@@ -36,7 +36,7 @@ test_palette_0055_p3_mapfile(int argc, char **argv)
         int flag;
         char const *value;
     } const options[] = {
-        {'=', "balanced:B1"}, {'.', "auto"}, {'U', "display-p3"},
+        {'=', "greedy:B1"}, {'.', "auto"}, {'U', "display-p3"},
         {'Q', "kmeans:seed=1"}, {'X', "linear"}, {'F', "none"},
         {'_', "none"}, {'~', "none"}, {'t', "rgb"}, {'5', "none"},
         {'4', "full-frame"}, {'G', "off"}, {'0', "none"}

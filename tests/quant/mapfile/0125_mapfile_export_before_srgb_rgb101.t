@@ -14,7 +14,7 @@ set -v
 
 # This source is not on the RGB101 grid. Export after inverse projection of
 # the sRGB wire palette changes it; the interchange boundary must precede that.
-actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+actual=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -Lbuiltin! --cms-engine=none --precision-policy=float32 \
     --sampling-policy=full-frame --binning-policy=none \
     -Qkmeans:seed=1 -Xlinear -Wlinear -Ugamma \

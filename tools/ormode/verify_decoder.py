@@ -56,7 +56,8 @@ def main():
             for threads in budgets:
                 proc = subprocess.run(
                     [str(tool), str(path)],
-                    env={**env, "SIXEL_THREADING_GLOBAL_BUDGET": str(threads)},
+                    env={**env, "SIXEL_DECODER_THREADING_POLICY": "greedy",
+                         "SIXEL_DECODER_THREADING_GLOBAL_BUDGET": str(threads)},
                     check=True,
                     capture_output=True,
                     text=True,

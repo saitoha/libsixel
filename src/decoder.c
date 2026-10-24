@@ -462,6 +462,8 @@ sixel_decoder_new(
         goto end;
     }
 
+    memset(&(*ppdecoder)->threading, 0,
+           sizeof((*ppdecoder)->threading));
     (*ppdecoder)->ref          = 1U;
     (*ppdecoder)->output       = strdup_with_allocator("-", allocator);
     (*ppdecoder)->input        = strdup_with_allocator("-", allocator);
@@ -1968,6 +1970,20 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
         output);
 }
 
+/* Dequantization shares an active object's snapshot. Standalone internal
+ * callers, including reconstruction tools, resolve decoder-side defaults. */
+static int
+sixel_dequantize_threads(void)
+{
+    sixel_threading_snapshot_t snapshot;
+
+    if (sixel_threading_policy_capture(&snapshot, 1)) {
+        return sixel_threads_resolve_fanout();
+    }
+    return snapshot.options.mode == SIXEL_THREADING_POLICY_LAZY
+        ? 1 : snapshot.budget;
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dequantize_k_undither(unsigned char *indexed_pixels,
                             int width,
@@ -2004,7 +2020,7 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
         ncolors > 0 &&
         (size_t)width <= ((size_t)-1 / (size_t)height)) {
         num_pixels = (size_t)width * (size_t)height;
-        parallel_threads = sixel_threads_resolve_fanout();
+        parallel_threads = sixel_dequantize_threads();
         if (parallel_threads >= 2 && num_pixels >= 65536U) {
             rgb = (unsigned char *)sixel_allocator_malloc(
                 allocator,
@@ -2092,7 +2108,7 @@ sixel_dequantize_k_undither_rgba(unsigned char *indexed_pixels,
         output != NULL &&
         (size_t)width <= ((size_t)-1 / (size_t)height)) {
         num_pixels = (size_t)width * (size_t)height;
-        parallel_threads = sixel_threads_resolve_fanout();
+        parallel_threads = sixel_dequantize_threads();
         if (parallel_threads >= 2 && num_pixels >= 65536U) {
             if (num_pixels > ((size_t)-1 / 4u)) {
                 return SIXEL_BAD_ALLOCATION;
@@ -2273,7 +2289,7 @@ sixel_dequantize_k_undither_fast4_rgba(unsigned char *indexed_pixels,
     }
 
 #if SIXEL_ENABLE_THREADS
-    parallel_threads = sixel_threads_resolve_fanout();
+    parallel_threads = sixel_dequantize_threads();
     if (parallel_threads >= 2 && num_pixels >= 65536U) {
         parallel_status = sixel_kundither_filter_noedge_parallel_offsets(
             indexed_pixels,
@@ -2379,7 +2395,7 @@ sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
     }
 
 #if SIXEL_ENABLE_THREADS
-    parallel_threads = sixel_threads_resolve_fanout();
+    parallel_threads = sixel_dequantize_threads();
     if (parallel_threads >= 2 && num_pixels >= 65536U) {
         parallel_status = sixel_kundither_filter_noedge_parallel_offsets(
             indexed_pixels,
@@ -2919,7 +2935,7 @@ sixel_decoder_setopt(
 
     case SIXEL_OPTFLAG_THREADING_POLICY:  /* = */
         status = sixel_option_apply_threading_policy_argument(
-            value,
+            &decoder->threading, value,
             SIXEL_OPTION_SCOPE_DECODER,
             NULL,
             0u);
@@ -3319,6 +3335,7 @@ sixel_decoder_decode_mapped(
     sixel_decode_options_t const *options,
     sixel_palette_transform_t const *transform, sixel_decode_result_t *result)
 {
+    sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status;
     unsigned char *workbuf;
     unsigned char *rgba_pixels;
@@ -3346,6 +3363,7 @@ sixel_decoder_decode_mapped(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    sixel_threading_object_enter(&policy_scope, &decoder->threading, 1);
     sixel_decoder_ref(decoder);
     result->pixels = NULL;
     result->width = 0;
@@ -3443,6 +3461,7 @@ sixel_decoder_decode_mapped(
 end:
     sixel_allocator_free(decoder->allocator, rgba_pixels);
     sixel_allocator_free(decoder->allocator, workbuf);
+    sixel_thread_budget_leave(&policy_scope);
     sixel_decoder_unref(decoder);
     return status;
 }
@@ -3462,6 +3481,7 @@ SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder)
 {
+    sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *raw_data = NULL;
     unsigned char *grown_data;
@@ -3506,6 +3526,7 @@ sixel_decoder_decode(
 
     sx = 0;
     sy = 0;
+    sixel_threading_object_enter(&policy_scope, &decoder->threading, 1);
     sixel_decoder_ref(decoder);
 
     frame = NULL;
@@ -4153,6 +4174,7 @@ end:
     }
 
     sixel_cdef_free(definition);
+    sixel_thread_budget_leave(&policy_scope);
     sixel_decoder_unref(decoder);
     if (logger_prepared) {
         sixel_timeline_logger_unref(logger);

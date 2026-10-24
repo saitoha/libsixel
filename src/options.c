@@ -3497,6 +3497,7 @@ sixel_option_apply_runtime_policy_argument(
 
 SIXELSTATUS
 sixel_option_apply_threading_policy_argument(
+    sixel_threading_policy_options_t *destination,
     char const *argument,
     unsigned int consumer_scope,
     char *diagnostic,
@@ -3509,10 +3510,13 @@ sixel_option_apply_threading_policy_argument(
     unsigned int saved_budget;
     int saved_override;
 
-    schema = sixel_option_registry_get(SIXEL_OPTION_SCHEMA_THREADING_POLICY);
+    schema = sixel_option_registry_get(
+        consumer_scope == SIXEL_OPTION_SCOPE_DECODER
+        ? SIXEL_OPTION_SCHEMA_DECODER_THREADING_POLICY
+        : SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY);
     memset(&resolution, 0, sizeof(resolution));
     memset(&options, 0, sizeof(options));
-    if (schema == NULL || argument == NULL) {
+    if (schema == NULL || argument == NULL || destination == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -3533,7 +3537,7 @@ sixel_option_apply_threading_policy_argument(
         return status;
     }
 
-    sixel_threading_policy_load(&options);
+    options = *destination;
     saved_budget = options.budget;
     saved_override = options.budget_override;
     sixel_option_reset_suboption_overrides(
@@ -3541,14 +3545,7 @@ sixel_option_apply_threading_policy_argument(
         consumer_scope,
         &options,
         SIXEL_SUBOPTION_TARGET_THREADING);
-    sixel_option_apply_suboption_environment(
-        schema,
-        resolution.base_def,
-        consumer_scope,
-        &options,
-        SIXEL_SUBOPTION_TARGET_THREADING);
-    /* Resolve the budget environment live. A base-only update must not
-     * replace a previous CLI/API budget with an environment default. */
+    /* A base-only update preserves the object's explicit budget. */
     options.budget = saved_budget;
     options.budget_override = saved_override;
     options.mode = resolution.resolved_base_value;
@@ -3568,7 +3565,7 @@ sixel_option_apply_threading_policy_argument(
             "threading-policy palette=latest is not implemented yet.");
         status = SIXEL_NOT_IMPLEMENTED;
     } else {
-        sixel_threading_policy_store(&options);
+        *destination = options;
     }
     sixel_option_free_argument_resolution(&resolution);
     return status;

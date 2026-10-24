@@ -482,6 +482,7 @@ sixel_repair_context_bind(sixel_repair_context_t *context,
                           sixel_frame_t *source, int x, int y,
                           uint64_t generation)
 {
+    sixel_thread_budget_scope_t policy_scope;
     SIXELSTATUS status;
 
     if (context == NULL) {
@@ -490,8 +491,11 @@ sixel_repair_context_bind(sixel_repair_context_t *context,
     status = sixel_encoder_operation_enter(context->encoder,
                                            SIXEL_ENCODER_OPERATION_NORMAL);
     if (status == SIXEL_OK) {
+        sixel_threading_object_enter(&policy_scope,
+            &context->encoder->threading, 0);
         status = sixel_repair_context_bind_owned(context, source, x, y,
                                                  generation);
+        sixel_thread_budget_leave(&policy_scope);
         sixel_encoder_operation_leave(context->encoder);
     }
     return status;
@@ -1471,6 +1475,7 @@ sixel_repair_context_step(sixel_repair_context_t *context,
     sixel_repair_work_t *work, size_t byte_limit, sixel_output_t *output,
     sixel_repair_result_t *result)
 {
+    sixel_thread_budget_scope_t policy_scope;
     sixel_encoder_t *encoder;
     sixel_writer_controls_t controls;
     sixel_encoder_core_options_t options;
@@ -1503,6 +1508,7 @@ sixel_repair_context_step(sixel_repair_context_t *context,
     if (status != SIXEL_OK) {
         return status;
     }
+    sixel_threading_object_enter(&policy_scope, &encoder->threading, 0);
     sixel_repair_measure_begin(context, work);
     /* Reserve counters for the entire requested quantum before any output.
      * This conservative check makes every subsequent increment nonfallible. */
@@ -1688,6 +1694,7 @@ end:
         context->full_selection = 0;
     }
     sixel_output_unref(default_output);
+    sixel_thread_budget_leave(&policy_scope);
     sixel_encoder_operation_leave(encoder);
     return status;
 }

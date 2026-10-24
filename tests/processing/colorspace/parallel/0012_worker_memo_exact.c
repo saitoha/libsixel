@@ -76,7 +76,7 @@ test_parallel_float_0012(int argc, char **argv)
             memcpy(pixels + i * 3U, colors[color], sizeof(colors[0]));
         }
         polls = 0;
-        sixel_set_threads(8);
+        sixel_set_encoder_threads(8);
         sixel_thread_budget_enter(&scope, 4);
         sixel_thread_budget_set_reclaim(&scope, 8,
             worker_memo_12_reclaim, &polls);

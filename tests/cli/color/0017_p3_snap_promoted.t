@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" --threading-policy=balanced:global_budget=1 \
+    "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=1 \
     -Lbuiltin:cms_engine=none! -.auto -Qk -Xlinear -Wlinear \
     -dnone -aoff -_nearest -Udisplay-p3 -v \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" 2>&1) || {

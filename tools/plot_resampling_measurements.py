@@ -95,7 +95,8 @@ def clean_environment() -> Dict[str, str]:
     }
     environment["LC_ALL"] = "C"
     environment["TZ"] = "UTC"
-    environment["SIXEL_THREADING_GLOBAL_BUDGET"] = "1"
+    environment["SIXEL_ENCODER_THREADING_POLICY"] = "greedy"
+    environment["SIXEL_ENCODER_THREADING_GLOBAL_BUDGET"] = "1"
     environment["SIXEL_SIMD_LEVEL"] = "scalar"
     return environment
 
@@ -169,10 +170,10 @@ class SixelFloatScaler:
             ctypes.c_void_p,
         ]
         self.library.sixel_helper_scale_image_float32.restype = ctypes.c_int
-        if hasattr(self.library, "sixel_set_threads"):
-            self.library.sixel_set_threads.argtypes = [ctypes.c_int]
-            self.library.sixel_set_threads.restype = None
-            self.library.sixel_set_threads(1)
+        if hasattr(self.library, "sixel_set_encoder_threads"):
+            self.library.sixel_set_encoder_threads.argtypes = [ctypes.c_int]
+            self.library.sixel_set_encoder_threads.restype = None
+            self.library.sixel_set_encoder_threads(1)
         status = self.library.sixel_allocator_new(
             ctypes.byref(self.allocator), None, None, None, None
         )
@@ -705,7 +706,7 @@ def encoder_command(
     """Return the fully controlled resampling comparison command."""
     return [
         str(img2sixel),
-        "--threading-policy=balanced:global_budget=1",
+        "--threading-policy=greedy:global_budget=1",
         "--precision-policy=8bit",
         "--quality=full",
         "--loaders=builtin!",
@@ -1100,7 +1101,8 @@ def main() -> int:
     environment = clean_environment()
     os.environ.update(
         {
-            "SIXEL_THREADING_GLOBAL_BUDGET": "1",
+            "SIXEL_ENCODER_THREADING_POLICY": "greedy",
+            "SIXEL_ENCODER_THREADING_GLOBAL_BUDGET": "1",
             "SIXEL_SIMD_LEVEL": "scalar",
             "LC_ALL": "C",
             "TZ": "UTC",

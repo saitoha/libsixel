@@ -28,9 +28,11 @@
 #include <sixel.h>
 
 #include "sixel_atomic.h"
+#include "options.h"
 
 /* Decode settings object. */
 struct sixel_decoder {
+    sixel_threading_policy_options_t threading;
     sixel_atomic_u32_t ref;
     char *input;
     char *output;

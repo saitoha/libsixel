@@ -27,6 +27,7 @@
 #define LIBSIXEL_THREADING_H
 
 #include <sixel.h>
+#include "options.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -117,12 +118,30 @@ SIXEL_INTERNAL_API int sixel_get_hw_threads(void);
  * the complete hardware count, preserving homogeneous/VM behavior. */
 SIXEL_INTERNAL_API int sixel_get_performance_threads(void);
 
-/* Stack-owned, caller-local limits for overlapping stages. Enter/leave must
- * be paired on the same thread; nested scopes can only reduce the budget.
- * Registration under the config mutex avoids compiler-specific TLS and
- * allocation failures on supported C99 thread backends. */
+/* A work entry resolves environment and API defaults once. Copies passed to
+ * helper threads preserve mode, limits and frame keys for the whole run. */
+typedef struct sixel_threading_snapshot {
+    sixel_threading_policy_options_t options;
+    int budget;
+    int explicit_budget;
+    int decoder;
+} sixel_threading_snapshot_t;
+
+SIXEL_INTERNAL_API void sixel_threading_policy_resolve(
+    sixel_threading_policy_options_t const *options, int decoder,
+    sixel_threading_snapshot_t *snapshot);
+/* Return true for an active scope; otherwise resolve the specified side. */
+SIXEL_INTERNAL_API int sixel_threading_policy_capture(
+    sixel_threading_snapshot_t *snapshot, int decoder);
+
+/* Stack-owned scopes are registered by native thread identity under the
+ * config mutex, avoiding compiler-specific TLS and allocation failures.
+ * Budget scopes inherit their parent; a policy entry starts an independent
+ * operation, so a nested call on a different object keeps its own budget. */
 typedef struct sixel_thread_budget_scope {
     sixel_thread_identity_t owner;
+    sixel_threading_snapshot_t policy;
+    int policy_root;
     int threads;
     int ceiling;
     int (*reclaim)(void *);
@@ -130,6 +149,12 @@ typedef struct sixel_thread_budget_scope {
     struct sixel_thread_budget_scope *next;
 } sixel_thread_budget_scope_t;
 
+SIXEL_INTERNAL_API void sixel_threading_policy_enter(
+    sixel_thread_budget_scope_t *scope,
+    sixel_threading_snapshot_t const *snapshot);
+SIXEL_INTERNAL_API void sixel_threading_object_enter(
+    sixel_thread_budget_scope_t *scope,
+    sixel_threading_policy_options_t const *options, int decoder);
 SIXEL_INTERNAL_API void sixel_thread_budget_enter(
     sixel_thread_budget_scope_t *scope, int threads);
 SIXEL_INTERNAL_API void sixel_thread_budget_leave(
@@ -145,9 +170,6 @@ SIXEL_INTERNAL_API int sixel_threads_ceiling(void);
 SIXEL_INTERNAL_API int sixel_threads_reclaim(void);
 
 SIXEL_INTERNAL_API int sixel_threads_normalize(int requested);
-/* Set the API budget below an explicit policy key and above environment.
- * Nonpositive values select all logical CPUs, with the balanced CPU cap. */
-SIXEL_INTERNAL_API void sixel_set_threads(int threads);
 SIXEL_INTERNAL_API int sixel_threads_resolve(void);
 /* Data-parallel stages stay serial in lazy mode. Pipeline totals do not. */
 SIXEL_INTERNAL_API int sixel_threads_resolve_fanout(void);
@@ -165,8 +187,6 @@ typedef enum sixel_threading_stage {
 
 SIXEL_INTERNAL_API void sixel_threading_policy_load(
     struct sixel_threading_policy_options *options);
-SIXEL_INTERNAL_API void sixel_threading_policy_store(
-    struct sixel_threading_policy_options const *options);
 /* Explicit means a CLI/API/environment budget or a selected base mode.
  * The returned budget includes the balanced performance-core cap. */
 SIXEL_INTERNAL_API int sixel_threading_policy_explicit_budget(int *threads);

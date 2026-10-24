@@ -38,7 +38,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -60,7 +60,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -82,7 +82,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -104,7 +104,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -126,7 +126,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -137,7 +137,8 @@
       "-M",
       "{output}/g32-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g32-source.png"
     ],
     [
@@ -150,7 +151,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -161,7 +162,8 @@
       "-M",
       "{output}/g32-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g32-source.png"
     ],
     [
@@ -174,7 +176,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -185,7 +187,8 @@
       "-M",
       "{output}/g32-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g32-source.png"
     ],
     [
@@ -198,7 +201,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -209,7 +212,8 @@
       "-M",
       "{output}/g32-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g32-source.png"
     ],
     [
@@ -222,7 +226,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -233,7 +237,8 @@
       "-M",
       "{output}/g64-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -246,7 +251,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -257,7 +262,8 @@
       "-M",
       "{output}/g64-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -270,7 +276,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -281,7 +287,8 @@
       "-M",
       "{output}/g64-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -294,7 +301,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -305,7 +312,8 @@
       "-M",
       "{output}/g64-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -318,7 +326,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -329,7 +337,8 @@
       "-M",
       "{output}/g85-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g85-source.png"
     ],
     [
@@ -342,7 +351,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -353,7 +362,8 @@
       "-M",
       "{output}/g85-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g85-source.png"
     ],
     [
@@ -366,7 +376,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -377,7 +387,8 @@
       "-M",
       "{output}/g85-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g85-source.png"
     ],
     [
@@ -390,7 +401,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -401,7 +412,8 @@
       "-M",
       "{output}/g85-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g85-source.png"
     ],
     [
@@ -414,7 +426,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -425,7 +437,8 @@
       "-M",
       "{output}/g128-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [
@@ -438,7 +451,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -449,7 +462,8 @@
       "-M",
       "{output}/g128-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [
@@ -462,7 +476,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -473,7 +487,8 @@
       "-M",
       "{output}/g128-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [
@@ -486,7 +501,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -497,7 +512,8 @@
       "-M",
       "{output}/g128-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [
@@ -510,7 +526,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -521,7 +537,8 @@
       "-M",
       "{output}/ramp-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/ramp-source.png"
     ],
     [
@@ -534,7 +551,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -545,7 +562,8 @@
       "-M",
       "{output}/ramp-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/ramp-source.png"
     ],
     [
@@ -558,7 +576,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -569,7 +587,8 @@
       "-M",
       "{output}/ramp-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/ramp-source.png"
     ],
     [
@@ -582,7 +601,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -593,7 +612,8 @@
       "-M",
       "{output}/ramp-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/ramp-source.png"
     ],
     [
@@ -606,7 +626,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -617,7 +637,8 @@
       "-M",
       "{output}/photo-16-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -630,7 +651,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -641,7 +662,8 @@
       "-M",
       "{output}/photo-16-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -654,7 +676,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -665,7 +687,8 @@
       "-M",
       "{output}/photo-16-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -678,7 +701,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -689,7 +712,8 @@
       "-M",
       "{output}/photo-16-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -702,7 +726,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -713,7 +737,8 @@
       "-M",
       "{output}/photo-256-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -726,7 +751,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -737,7 +762,8 @@
       "-M",
       "{output}/photo-256-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -750,7 +776,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -761,7 +787,8 @@
       "-M",
       "{output}/photo-256-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -774,7 +801,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -785,7 +812,8 @@
       "-M",
       "{output}/photo-256-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/photo-source.png"
     ],
     [
@@ -798,7 +826,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -809,7 +837,8 @@
       "-M",
       "{output}/color-16-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -822,7 +851,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -833,7 +862,8 @@
       "-M",
       "{output}/color-16-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -846,7 +876,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -857,7 +887,8 @@
       "-M",
       "{output}/color-16-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -870,7 +901,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -881,7 +912,8 @@
       "-M",
       "{output}/color-16-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -894,7 +926,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -905,7 +937,8 @@
       "-M",
       "{output}/color-256-fs-0.pal",
       "-d",
-      "fs:scan=raster:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -918,7 +951,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -929,7 +962,8 @@
       "-M",
       "{output}/color-256-fs-05.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -942,7 +976,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -953,7 +987,8 @@
       "-M",
       "{output}/color-256-serp-0.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -966,7 +1001,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -977,7 +1012,8 @@
       "-M",
       "{output}/color-256-serp-05.pal",
       "-d",
-      "fs:scan=serpentine:perturb=0.5:perturb_seed=0:threads_max=1",
+      "fs:scan=serpentine:perturb=0.5:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/color-source.png"
     ],
     [
@@ -990,7 +1026,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1001,7 +1037,8 @@
       "-M",
       "{output}/g64-fs-025.pal",
       "-d",
-      "fs:scan=raster:perturb=0.25:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.25:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -1014,7 +1051,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1025,7 +1062,8 @@
       "-M",
       "{output}/g64-fs-1.pal",
       "-d",
-      "fs:scan=raster:perturb=1:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=1:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -1038,7 +1076,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1049,7 +1087,8 @@
       "-M",
       "{output}/g64-fs-05-seed1.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=1:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=1",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -1062,7 +1101,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1073,7 +1112,8 @@
       "-M",
       "{output}/g64-fs-05-seed2.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=2:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=2",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g64-source.png"
     ],
     [
@@ -1086,7 +1126,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1097,7 +1137,8 @@
       "-M",
       "{output}/g128-fs-025.pal",
       "-d",
-      "fs:scan=raster:perturb=0.25:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=0.25:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [
@@ -1110,7 +1151,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1121,7 +1162,8 @@
       "-M",
       "{output}/g128-fs-1.pal",
       "-d",
-      "fs:scan=raster:perturb=1:perturb_seed=0:threads_max=1",
+      "fs:scan=raster:perturb=1:perturb_seed=0",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [
@@ -1134,7 +1176,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1145,7 +1187,8 @@
       "-M",
       "{output}/g128-fs-05-seed1.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=1:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=1",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [
@@ -1158,7 +1201,7 @@
     [
       "{img2sixel}",
       "-v",
-      "--threads=1",
+      "--threading-policy=greedy:global_budget=1",
       "--precision=8bit",
       "--gpu-policy=off",
       "--lookup-policy=none",
@@ -1169,7 +1212,8 @@
       "-M",
       "{output}/g128-fs-05-seed2.pal",
       "-d",
-      "fs:scan=raster:perturb=0.5:perturb_seed=2:threads_max=1",
+      "fs:scan=raster:perturb=0.5:perturb_seed=2",
+      "--threading-policy=greedy:global_budget=1",
       "{output}/g128-source.png"
     ],
     [

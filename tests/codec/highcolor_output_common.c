@@ -193,7 +193,7 @@ test_highcolor_output(int scenario)
         if (SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'I', NULL)) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                    "balanced:B1")) ||
+                    "greedy:B1")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, '.', "8bit")) ||
                 SIXEL_FAILED(sixel_encoder_setopt(encoder, 'W',
                     scenario == 11 ? "linear" : "gamma")) ||
@@ -346,7 +346,7 @@ test_highcolor_p3(int scenario)
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'I', NULL)) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'U', "display-p3")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=',
-                scenario == 24 ? "balanced:B4" : "balanced:B1"))) {
+                scenario == 24 ? "greedy:B4" : "greedy:B1"))) {
         goto end;
     }
     space = scenario >= 15 && scenario <= 19 ? scenario - 15 : 0;
@@ -365,7 +365,7 @@ test_highcolor_p3(int scenario)
     if (scenario == 25 &&
             (SIXEL_FAILED(sixel_encoder_new(&other, NULL)) ||
              SIXEL_FAILED(sixel_encoder_setopt(other, 'I', NULL)) ||
-             SIXEL_FAILED(sixel_encoder_setopt(other, '=', "balanced:B1")) ||
+             SIXEL_FAILED(sixel_encoder_setopt(other, '=', "greedy:B1")) ||
              SIXEL_FAILED(sixel_encoder_setopt(other, 'U', "gamma")))) {
         goto end;
     }

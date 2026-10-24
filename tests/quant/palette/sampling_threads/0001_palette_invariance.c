@@ -59,7 +59,7 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
     int ok;
     size_t option;
 
-    (void)snprintf(threading, sizeof(threading), "balanced:B%s", threads);
+    (void)snprintf(threading, sizeof(threading), "greedy:B%s", threads);
     encoder = NULL;
     frame = NULL;
     output = NULL;

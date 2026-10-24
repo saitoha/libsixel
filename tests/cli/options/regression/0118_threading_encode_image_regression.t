@@ -1,6 +1,6 @@
 #!/bin/sh
 # Verify threading-policy encode through short and environment paths.
-# Registry row: SIXEL_OPTION_SCHEMA_THREADING_POLICY|NULL|encode
+# Registry row: SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY|NULL|encode
 # Registry binding: encode_threads|encode_threads_override
 # Environment range: parse-signed-long
 
@@ -27,7 +27,7 @@ env_output="${artifact_dir}/0118-threading-encode-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    "-=balanced:B6:E3" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=greedy:B6:E3" "${input_image}" 2>&1 >"${short_output}") || {
     echo "not ok" 1 - "threading encode short conversion failed"
     exit 0
 }
@@ -42,8 +42,8 @@ case "${short_trace}" in *LSXDTH1\|*dither_threads=3\|encode_threads=3**) true ;
 
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    --env "SIXEL_THREADING_ENCODE=3" \
-    "-=balanced:B6" "${input_image}" 2>&1 >"${env_output}") || {
+    --env "SIXEL_ENCODER_THREADING_ENCODE=3" \
+    "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
     echo "not ok" 1 - "threading encode environment conversion failed"
     exit 0
 }
@@ -58,8 +58,8 @@ case "${env_trace}" in *LSXDTH1\|*dither_threads=3\|encode_threads=3**) true ;; 
 
 range_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs \
-    --env "SIXEL_THREADING_ENCODE=-1" \
-    "-=balanced:B6" "${input_image}" 2>&1 >/dev/null) || {
+    --env "SIXEL_ENCODER_THREADING_ENCODE=-1" \
+    "-=greedy:B6" "${input_image}" 2>&1 >/dev/null) || {
     echo "not ok" 1 - "threading encode out-of-range conversion failed"
     exit 0
 }

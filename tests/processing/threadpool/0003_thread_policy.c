@@ -28,23 +28,37 @@ policy_expect(char const *name, int actual, int expected)
     return 0;
 }
 
+static sixel_threading_policy_options_t policy_options;
+static sixel_thread_budget_scope_t policy_scope;
+static int policy_active;
+
+static void
+policy_reset(void)
+{
+    if (policy_active) {
+        sixel_thread_budget_leave(&policy_scope);
+        policy_active = 0;
+    }
+    memset(&policy_options, 0, sizeof(policy_options));
+}
+
 static int
 policy_apply(char const *text, SIXELSTATUS expected)
 {
     SIXELSTATUS status;
-    unsigned int scope;
-
-    scope = strstr(text, "decode=") != NULL
-        ? SIXEL_OPTION_SCOPE_DECODER : SIXEL_OPTION_SCOPE_ENCODER;
+    if (policy_active) {
+        sixel_thread_budget_leave(&policy_scope);
+    }
     status = sixel_option_apply_threading_policy_argument(
-        text, scope, NULL, 0u);
+        &policy_options, text, SIXEL_OPTION_SCOPE_ENCODER, NULL, 0u);
+    sixel_threading_object_enter(&policy_scope, &policy_options, 0);
+    policy_active = 1;
     return policy_expect(text, status, expected);
 }
 
 int
 test_threadpool_0003_thread_policy(int argc, char **argv)
 {
-    sixel_threading_policy_options_t options;
     sixel_runtime_policy_options_t runtime;
     sixel_thread_budget_scope_t scope;
     sixel_dither_encode_request_t request;
@@ -65,13 +79,13 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-    memset(&options, 0, sizeof(options));
     memset(&runtime, 0, sizeof(runtime));
     memset(&request, 0, sizeof(request));
-    sixel_threading_policy_store(&options);
-    ok = sixel_compat_setenv("SIXEL_THREADING_POLICY", "") == 0;
-    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "") == 0;
-    ok &= sixel_compat_setenv("SIXEL_THREADING_DECODE", "") == 0;
+    policy_reset();
+    ok = sixel_compat_setenv("SIXEL_ENCODER_THREADING_POLICY", "") == 0;
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
+                                  "") == 0;
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_DECODE", "") == 0;
     hardware = sixel_threads_normalize(0);
     performance = sixel_get_performance_threads();
     expected = performance < 4 ? performance : 4;
@@ -87,44 +101,48 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
 
     for (index = 0u; index < sizeof(invalid_env) / sizeof(invalid_env[0]);
             ++index) {
-        ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET",
+        ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
                                   invalid_env[index]) == 0;
         ok &= policy_expect("invalid environment keeps default",
                              sixel_threads_resolve(), expected);
         ok &= policy_expect("invalid environment keeps serial parsing",
                              sixel_decoder_parallel_resolve_threads(), 1);
     }
-    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "") == 0;
-    ok &= sixel_compat_setenv("SIXEL_THREADING_DECODE", "99") == 0;
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
+                                  "") == 0;
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_DECODE", "99") == 0;
     ok &= policy_expect("decode limit cannot enable parsing",
                          sixel_decoder_parallel_resolve_threads(), 1);
-    ok &= sixel_compat_setenv("SIXEL_THREADING_DECODE", "") == 0;
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_DECODE", "") == 0;
     for (index = 0u; index < sizeof(modes) / sizeof(modes[0]); ++index) {
         ok &= policy_apply(modes[index], SIXEL_OK);
         ok &= policy_expect("mode-only library budget",
                              sixel_threads_resolve(), expected);
     }
-    sixel_threading_policy_store(&options);
-    ok &= sixel_compat_setenv("SIXEL_THREADING_POLICY", "greedy") == 0;
+    policy_reset();
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_POLICY", "greedy") == 0;
     ok &= policy_expect("explicit mode default", sixel_threads_resolve(),
                          expected);
-    ok &= policy_expect("explicit mode parser",
-                         sixel_decoder_parallel_resolve_threads(), expected);
-    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "3") == 0;
+    ok &= policy_expect("encoder environment leaves parsing serial",
+                         sixel_decoder_parallel_resolve_threads(), 1);
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
+                                  "3") == 0;
     ok &= policy_expect("environment budget", sixel_threads_resolve(),
                          sixel_threads_normalize(3));
-    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "aLl") == 0;
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
+                                  "aLl") == 0;
     ok &= policy_expect("environment all", sixel_threads_resolve(), hardware);
-    ok &= policy_expect("environment all parsing",
-                         sixel_decoder_parallel_resolve_threads(), hardware);
-    ok &= sixel_compat_setenv("SIXEL_THREADING_GLOBAL_BUDGET", "3") == 0;
-    sixel_set_threads(0);
+    ok &= policy_expect("encoder all leaves parsing serial",
+                         sixel_decoder_parallel_resolve_threads(), 1);
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_GLOBAL_BUDGET",
+                                  "3") == 0;
+    sixel_set_encoder_threads(0);
     ok &= policy_expect("API zero means all", sixel_threads_resolve(),
                          hardware);
-    sixel_set_threads(-1);
+    sixel_set_encoder_threads(-1);
     ok &= policy_expect("API negative means all", sixel_threads_resolve(),
                          hardware);
-    sixel_set_threads(4);
+    sixel_set_encoder_threads(4);
     ok &= policy_expect("API beats environment", sixel_threads_resolve(),
                          sixel_threads_normalize(4));
     ok &= policy_apply("lazy", SIXEL_OK);
@@ -150,7 +168,7 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
     ok &= policy_apply("greedy:global_budget=ALL", SIXEL_OK);
     ok &= policy_expect("CLI all", sixel_threads_resolve(), hardware);
     ok &= policy_apply("greedy:B3", SIXEL_OK);
-    sixel_set_threads(1);
+    sixel_set_encoder_threads(1);
     ok &= policy_expect("CLI beats later API", sixel_threads_resolve(),
                          sixel_threads_normalize(3));
     ok &= policy_apply("balanced", SIXEL_OK);
@@ -219,5 +237,6 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
     sixel_dither_encode_allocate(&request, &allocation);
     ok &= policy_expect("explicit lazy dither", allocation.dither_threads, 4);
     ok &= policy_expect("explicit lazy encode", allocation.encode_threads, 4);
+    policy_reset();
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

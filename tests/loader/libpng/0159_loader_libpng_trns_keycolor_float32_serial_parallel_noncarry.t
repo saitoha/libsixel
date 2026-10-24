@@ -20,7 +20,7 @@ set -v
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn0g04.png"
 output_six="${TMPDIR:-/tmp}/libsixel-${0##*/}-$$-trns-keycolor-float32-fs-parallel-tbbn0g04.six"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Akeep --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=1 \
-              --env SIXEL_THREADING_GLOBAL_BUDGET=4 \
+              --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=4 \
               -Llibpng:cms_engine=none! \
               -d fs:scan=raster --precision-policy=float32 \
               "${input_png}" >"${output_six}" || {

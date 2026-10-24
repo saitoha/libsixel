@@ -22,7 +22,7 @@ expected_palette='JASC-PAL
 0 0 0
 255 255 255'
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=balanced:global_budget=1 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=greedy:global_budget=1 \
     -Goff -dnone --lookup-policy=none -bgray1 -M "${act_palette}" \
     -o /dev/null "${input_image}" || {
     echo "not ok" 1 - "failed to create ACT regression palette"
@@ -36,7 +36,7 @@ printf '\000\377' | dd of="${act_palette}" bs=1 seek=770 conv=notrunc \
 }
 
 actual_palette=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=balanced:global_budget=1 \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! --threading-policy=greedy:global_budget=1 \
         -Goff -dnone --lookup-policy=none -m "${act_palette}" \
         -M pal:- -o /dev/null "${input_image}"
 ) || {

@@ -133,7 +133,7 @@ test_color_float_exact(int argc, char **argv)
                     memcpy(expected, input, bytes);
                 }
                 for (budget = 0; budget < 4; ++budget) {
-                    sixel_set_threads(budgets[budget]);
+                    sixel_set_encoder_threads(budgets[budget]);
                     for (api = 0; api < 2; ++api) {
                         memcpy(actual, input, bytes);
                         if (api == 0) {
