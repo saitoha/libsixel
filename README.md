@@ -447,7 +447,14 @@ Options:
                           converter default all, capped by balanced. Explicit stage limits
                           (dither, encode, prepare_workers) shrink to fit.
                           Frame keys load and prepare default to ahead;
-                          load_depth, palette and pin retain their controls.
+                          palette=frame (C, default) waits for each palette;
+                          palette=latest reuses the newest completed palette
+                          from the current or an earlier frame. Selection is
+                          once after delay, before LUT/gradient setup. Output
+                          depends on timing; the first frame waits for its own
+                          palette. Serial and feature fallbacks keep frame
+                          behavior. Latest shares the budget across stages;
+                          it does not promise a speedup.
                           Lazy uses one dither band unless dither is set.
 -., --precision-policy=POLICY
                           select the sample precision of palette
@@ -1183,6 +1190,8 @@ SIXEL_PRECISION_POLICY     precision policy: `auto`, `8bit` or
                            `float32`, as for `-.`/`--precision-policy`.
                            The command-line option takes precedence.
 ```
+
+See [Threading policy](docs/cli/threading-policy.md) for `palette=latest` eligibility, serial and feature fallbacks, and playback `palette_mode` precedence and `palette_sequence` reporting. [Animation threading](docs/threading/animation.md) explains palette ownership and ordered completion.
 
 See [Terminal macros](docs/encoder/output/terminal-macros.md) for `-u` animation playback and `-n` preloading with DECDMAC/DECINVM, including invocation examples, receiver requirements, and static-image and animation behavior.
 

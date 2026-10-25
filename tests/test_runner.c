@@ -615,6 +615,8 @@ int test_palette_features_0067(int argc, char **argv);
 int test_palette_features_0068(int argc, char **argv);
 int test_palette_features_0069(int argc, char **argv);
 int test_palette_features_0070(int argc, char **argv);
+int test_snapshot_allocation_0072(int argc, char **argv);
+int test_latest_write_0071(int argc, char **argv);
 
 
 
@@ -5958,6 +5960,10 @@ static test_entry_t const test_entries[] = {
       test_palette_features_0069 },
     { "planner/pipeline/0070_latest_feature_fallback",
       test_palette_features_0070 },
+    { "planner/pipeline/0072_palette_snapshot_allocation",
+      test_snapshot_allocation_0072 },
+    { "planner/pipeline/0071_latest_write_failure",
+      test_latest_write_0071 },
 
 
     { "decoder/0086_multi_pass_allocation_failure",

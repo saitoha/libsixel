@@ -376,6 +376,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_PALETTE_INTEGRATION_COMMON \
     -DBUILD_PALETTE_FEATURES_COMMON \
     -DBUILD_TEST_0070_LATEST_FEATURE_FALLBACK \
+    -DBUILD_TEST_0072_PALETTE_SNAPSHOT_ALLOCATION \
+    -DBUILD_TEST_0071_LATEST_WRITE_FAILURE \
     -DBUILD_TEST_0061_LATEST_DELTA_RESERVATION \
     -DBUILD_TEST_0062_LATEST_DELTA_WIRE_HISTORY \
     -DBUILD_TEST_0063_LATEST_DELTA_HLS_HISTORY \
@@ -5028,6 +5030,8 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/palette_integration_common.c \
     planner/pipeline/palette_features_common.c \
     planner/pipeline/0070_latest_feature_fallback.c \
+    planner/pipeline/0072_palette_snapshot_allocation.c \
+    planner/pipeline/0071_latest_write_failure.c \
     planner/pipeline/palette_features_common.h \
     planner/pipeline/0061_latest_delta_reservation.c \
     planner/pipeline/0062_latest_delta_wire_history.c \

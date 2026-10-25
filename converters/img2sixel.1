@@ -106,8 +106,9 @@ colorspace_min, sample_min and scale_min_bytes, including explicit -j values.
 Explicit stage keys override mode defaults.
 Stage limits that exceed the budget shrink to fit it; they are never an
 error.
-Frame keys and \fBprepare_workers\fP never change the output; the dither
-worker count selects the parallel band split.
+With \fBpalette=frame\fP, frame keys and \fBprepare_workers\fP preserve
+output; the dither worker count selects the parallel band split. With
+\fBpalette=latest\fP, scheduling can change the selected palette.
 .RS
 .TP 5
 .B global_budget=COUNT|all
@@ -132,14 +133,24 @@ prepare frame n+1 while frame n is emitted (default \fBahead\fP; short form
 palette source of each frame (default \fBframe\fP; short form \fB:C\fP).
 \fBlatest\fP selects the newest completed palette from the current or an
 earlier frame at application start, after the display delay. Selection is
-fixed throughout that frame. Ordinary CPU animations and public playback
+fixed throughout that frame, beginning before LUT/gradient setup. Completed
+current-frame palettes are eligible; future-frame palettes never are. Output
+depends on completion timing and can differ between repeated runs. There is
+no scene-change detector. Ordinary CPU animations and public playback
 can overlap their own palette build with application; the first frame waits.
 A one-worker budget, nonthreaded execution, still images, fixed/indexed/high-color
-palettes, GPU, DRCS, presentation/repair and macros retain \fBframe\fP behavior.
+palettes, GPU-enabled paths, DRCS, presentation/repair and generated macros
+retain \fBframe\fP behavior.
 Delta/alpha reservation or color-profile mismatch waits for the current
 frame's own palette; stale prepare-ahead predictions are joined and rebuilt.
 Native color output and palette export use the selected palette. A frame's own build
-failure is reported even if output was already emitted.
+failure is reported even if output was already emitted. Serial fallbacks match
+\fBframe\fP output bytes with the same options.
+Latest shares the budget between palette construction, next preparation and
+application/encoding. Construction plus preparation also fit
+\fBprepare_workers\fP; a value of one still allows construction to overlap
+application. Load/prepare serial settings alone do not disable latest.
+Reservations can reduce application parallelism; no speedup is guaranteed.
 .TP 5
 .B dither=COUNT
 palette application workers (short form \fB:D\fP).

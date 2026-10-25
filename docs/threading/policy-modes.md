@@ -21,13 +21,15 @@ Palette overlap requires independent work, such as an eligible adaptive sample w
 
 For eligible spatial or positional dither at budgets two through four, balanced and greedy automatically finish parallel application before giving encoding its full reservation. Larger budgets normally overlap application and encoding. An explicit `dither` or `encode` limit selects a fitted allocation instead of automatic staging. [Dither/encode allocation](encoder.md#ditherencode-budget-policy) owns the formulas, geometry and exceptional paths.
 
+For `palette=latest`, eligible CPU animation and playback can overlap an owned palette build with application of a completed palette, including full-frame sampling after preprocessing. Lazy permits this independent work when both lanes receive a slot. `load=serial`, `prepare=serial` and `prepare_workers=1` do not by themselves disable it. A serial fallback uses frame behavior; the [policy reference](../cli/threading-policy.md#contract) owns eligibility and selection.
+
 ## Output depends on dither history
 
 Of the threading policy's scheduling choices, the dither band split can change output. Error diffusion carries residuals from earlier rows; independent bands start with separate histories. Warm-up rows reduce seams but do not reconstruct the complete serial history. The [work-band explanation](overview.md#work-band-seams-and-image-quality) describes this boundary.
 
-With default dither geometry, lazy output equals a one-thread run using the same image, palette and other options. Its single dither producer preserves the history while independent six-row encoding jobs publish in order. An explicit `dither` limit or diffusion geometry override can split that history even in lazy mode.
+With `palette=frame` and default dither geometry, lazy output equals a one-thread run using the same image, palette and other options. Its single dither producer preserves the history while independent six-row encoding jobs publish in order. An explicit `dither` limit or diffusion geometry override can split that history even in lazy mode.
 
-With `palette=frame`, frame controls (`load`, `load_depth` and `prepare`) and `prepare_workers` alter when independent work runs without changing output. With `palette=latest`, scheduling can change which completed palette is selected; [the policy reference](../cli/threading-policy.md#contract) owns selection and fallback. Encode worker count changes neither indexed pixels nor their publication order. SIMD and arithmetic representation are separate runtime choices and can have their own rounding behavior.
+With `palette=frame`, frame controls (`load`, `load_depth` and `prepare`) and `prepare_workers` alter when independent work runs without changing output. With `palette=latest`, scheduling can change which completed palette is selected; [the policy reference](../cli/threading-policy.md#contract) owns selection and fallback. Once a palette and dither geometry are fixed, encode worker count changes neither indexed pixels nor their publication order. SIMD and arithmetic representation are separate runtime choices and can have their own rounding behavior.
 
 ## Performance CPUs and size thresholds
 
@@ -54,7 +56,7 @@ emission:                 emit n         emit n+1       emit n+2
                           |< overlap >|
 ```
 
-Preparation of the next frame can run during current emission, while output still advances one frame at a time. Delta history is committed in order. [Animation threading](animation.md) explains the corrective re-preparation needed when the next frame's predicted alpha-key reservation disagrees with committed history.
+Preparation of the next frame can run during current emission, while output still advances one frame at a time. Latest shares the encoder budget between palette construction, next preparation and application/encoding; a reservation held by one lane reduces the slots available to the others. Slots return after join, and next preparation can be deferred when no grant is available. This accounting does not promise a speedup. Delta history is committed in order. [Animation threading](animation.md) explains the corrective re-preparation needed when the next frame's predicted alpha-key reservation disagrees with committed history.
 
 ## In libsixel
 

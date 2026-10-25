@@ -2171,11 +2171,12 @@ sixel_encoder_encode_frame(
  * Frame playback queue.
  *
  * A playback object accepts frames one at a time from the application and
- * encodes them in submission order on internal workers, producing the same
- * bytes as calling sixel_encoder_encode_frame() for each frame in turn.  In
- * thread-enabled builds the palette of the next frame is constructed while
- * the current frame is diffused and written, so frames flow faster than
- * through repeated direct calls.  Thread-disabled builds encode inside the
+ * encodes them in submission order. With PER_FRAME, output matches repeated
+ * sixel_encoder_encode_frame() calls with the same options. LATEST can select
+ * an earlier palette and produce timing-dependent output, as described below.
+ * Thread-enabled builds can overlap next-frame preparation and current
+ * emission within the applicable budgets; no speedup is guaranteed.
+ * Thread-disabled builds encode inside the
  * submitting call; there only reservations hold slots, and a wait for a
  * slot times out at once because nothing else could free one.
  *
@@ -2222,11 +2223,15 @@ sixel_encoder_encode_frame(
  * current sequence. Selection occurs once, after delay, before LUT/gradient
  * setup. CPU generated palettes can overlap their own build and application,
  * including RGB submissions with multiframe=0. The first frame waits for its
- * own palette. One-worker/nonthreaded and feature fallback use PER_FRAME.
+ * own palette. Output depends on completion timing, including across repeated
+ * runs. External/builtin, preserved indexed and high-color palettes, GPU-enabled
+ * paths and generated macros keep frame behavior. One-worker/nonthreaded or
+ * unavailable asynchronous execution produces the same bytes as PER_FRAME
+ * with the same options. Loader DRCS and presentation/attached repair also
+ * keep frame behavior (these features are not supported by playback).
  * Delta/alpha reservation or color-profile mismatch waits for the own
  * palette; stale prepare-ahead predictions are joined and rebuilt. Native
  * color output, export and retained history use the selected palette.
- * GPU and macros use PER_FRAME.
  * The requested mode is frozen for the session without changing the encoder.
  * palette_sequence identifies the selected source; zero means no selection.
  * Fixed/indexed/high-color bypass reports the current sequence on success

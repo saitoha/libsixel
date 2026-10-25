@@ -65,6 +65,7 @@ playback_0026_compare(int encoder_mode, int config_mode, int budget)
     int pass;
     int index;
     int failed;
+    int serial;
 
     memset(&state, 0, sizeof(state));
     memset(&reference, 0, sizeof(reference));
@@ -72,6 +73,10 @@ playback_0026_compare(int encoder_mode, int config_mode, int budget)
     output = NULL;
     playback = NULL;
     failed = 1;
+    serial = 1;
+#if SIXEL_ENABLE_THREADS
+    serial = budget == 1;
+#endif
     (void)snprintf(policy, sizeof(policy),
         "greedy:B%d:palette=%s:prepare=%s", budget,
         encoder_mode ? "latest" : "frame", budget == 1 ? "serial" : "ahead");
@@ -126,7 +131,8 @@ playback_0026_compare(int encoder_mode, int config_mode, int budget)
             memset(&state.buffer, 0, sizeof(state.buffer));
         }
     }
-    if ((budget == 1 || state.expected_mode == SIXEL_THREADING_PALETTE_FRAME) &&
+    if ((serial ||
+            state.expected_mode == SIXEL_THREADING_PALETTE_FRAME) &&
             (reference.size != state.buffer.size ||
              memcmp(reference.bytes, state.buffer.bytes, reference.size))) {
         fprintf(stderr, "latest frame fallback differs\n");
