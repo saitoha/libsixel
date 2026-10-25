@@ -5950,6 +5950,12 @@ test_runner_OBJECTS = $(am_test_runner_OBJECTS) $(nodist_test_runner_OBJECTS)
 test_runner$(EXEEXT): $(test_runner_OBJECTS) \
         $(test_runner_DEPENDENCIES) \
         $(EXTRA_test_runner_DEPENDENCIES)
+
+# Keep check-only archives on a separate, short prerequisite line. GNV make
+# can lose the library dependency after the thousands of runner objects;
+# the order of goals in "make test_runner libfloatlookuptests.la" does not
+# build that archive before the runner's native link command needs it.
+test_runner$(EXEEXT): $(check_LTLIBRARIES)
 SIXEL_OPENVMS_TEST_OBJECTS
           ;;
       esac

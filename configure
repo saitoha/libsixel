@@ -20109,6 +20109,7 @@ fi
 # that adding it leaves the user's compiler settings unchanged. Admit explicit
 # contract-off builds or x86-64 targets without any FMA instruction set; all
 # other builds retain memoization and the native scalar expression.
+# VP-tree and Delaunay float kernels share this isolated arithmetic gate.
 FLOAT_LOOKUP_CFLAGS=""
 sixel_float_contract=unknown
 for sixel_float_arg in $CPPFLAGS $CFLAGS; do
@@ -36898,6 +36899,12 @@ test_runner_OBJECTS = $(am_test_runner_OBJECTS) $(nodist_test_runner_OBJECTS)
 test_runner$(EXEEXT): $(test_runner_OBJECTS) \
         $(test_runner_DEPENDENCIES) \
         $(EXTRA_test_runner_DEPENDENCIES)
+
+# Keep check-only archives on a separate, short prerequisite line. GNV make
+# can lose the library dependency after the thousands of runner objects;
+# the order of goals in "make test_runner libfloatlookuptests.la" does not
+# build that archive before the runner's native link command needs it.
+test_runner$(EXEEXT): $(check_LTLIBRARIES)
 SIXEL_OPENVMS_TEST_OBJECTS
           ;;
       esac

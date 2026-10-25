@@ -4,10 +4,64 @@
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
+
+
+def check_openvms_archives(root):
+    """Check the config.status repair with a lost Automake dependency list."""
+    make = shutil.which('gmake') or shutil.which('make')
+    configure = (root / 'configure.ac').read_text()
+    repair = configure.split("<<'SIXEL_OPENVMS_TEST_OBJECTS'\n", 1)[1]
+    repair = repair.split('\nSIXEL_OPENVMS_TEST_OBJECTS', 1)[0]
+    source = (root / 'tests/Makefile.am').read_text()
+    archives = re.search(r'^check_LTLIBRARIES = (.+)$', source, re.M)
+    if not archives:
+        raise RuntimeError('the ordinary runner has no check-only archives')
+    with tempfile.TemporaryDirectory(prefix='libsixel-vms-link-') as tmp:
+        work = Path(tmp)
+        (work / 'runner.o').touch()
+        # GNV can lose the generated dependency list even though LDADD
+        # retains the archive. A later check-am goal cannot repair ordering.
+        # Use the actual config.status fragment, without compiling C.
+        (work / 'Makefile').write_text(
+            'check_LTLIBRARIES = ' + archives[1] + '\n'
+            'am_test_runner_OBJECTS = runner.o\n'
+            'test_runner_DEPENDENCIES =\n'
+            'test_runner:\n'
+            '\t@test "$(FAIL_LINK)" != yes\n'
+            '\t@for archive in $(check_LTLIBRARIES); do '
+            'test -f $$archive || exit 1; done\n'
+            '\t@touch $@\n'
+            '$(check_LTLIBRARIES):\n'
+            '\t@test "$(FAIL_ARCHIVE)" != yes\n'
+            '\t@touch $@\n' + repair + '\n')
+
+        def run(*args, success=True):
+            result = subprocess.run(
+                [make, '--no-print-directory', *args, 'test_runner',
+                 *archives[1].split()], cwd=work, text=True,
+                capture_output=True,
+                env={k: v for k, v in os.environ.items()
+                     if k not in ('MAKEFLAGS', 'MFLAGS', 'MAKELEVEL')})
+            if (result.returncode == 0) != success:
+                raise RuntimeError(result.stdout + result.stderr)
+
+        run('-n')
+        if any((work / name).exists() for name in archives[1].split()):
+            raise RuntimeError('OpenVMS dry-run built a test archive')
+        run('FAIL_ARCHIVE=yes', success=False)
+        if (work / 'test_runner').exists():
+            raise RuntimeError('failed archive creation still linked the runner')
+        run()
+        run('FAIL_LINK=yes')
+        # Library changes must invalidate the runner independently of objects.
+        os.utime(work / 'runner.o', (1, 1))
+        os.utime(work / 'test_runner', (1, 1))
+        run('FAIL_LINK=yes', success=False)
 
 
 def check(root):
@@ -105,6 +159,7 @@ def check(root):
 
 try:
     check(Path(sys.argv[1]).resolve())
+    check_openvms_archives(Path(sys.argv[1]).resolve())
 except (OSError, RuntimeError) as error:
     print(error, file=sys.stderr)
     sys.exit(1)
