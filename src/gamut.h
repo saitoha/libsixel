@@ -44,6 +44,10 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
                  int legacy_colorspace, int policy,
                  sixel_allocator_t *allocator);
 
+/* An owned copy for a palette request that can outlive its encoder. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gamut_clone(sixel_gamut_t const *source, sixel_gamut_t **out);
+
 SIXEL_INTERNAL_API int
 sixel_gamut_apply(sixel_gamut_t const *mapper, double const input[3],
                    double output[3], int colorspace);

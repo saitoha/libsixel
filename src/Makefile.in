@@ -358,7 +358,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/frombmp-parser.c $(srcdir)/frombmp.c \
 	$(srcdir)/frombmp.h $(srcdir)/frombmp-internal.h \
 	$(srcdir)/clipboard.c $(srcdir)/clipboard.h \
-	$(srcdir)/encoder.c $(srcdir)/encoder.h $(srcdir)/mapfile.c \
+	$(srcdir)/encoder.c $(srcdir)/encoder.h \
+	$(srcdir)/encoder-palette.h $(srcdir)/mapfile.c \
 	$(srcdir)/mapfile.h $(srcdir)/drcs.c $(srcdir)/drcs.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
@@ -1393,6 +1394,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/mapfile.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/mapfile.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/drcs.c $(srcdir)/drcs.h \

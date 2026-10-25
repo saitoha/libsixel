@@ -243,6 +243,7 @@ amalgamation_headers = files(
   '../src/named-color.h',
   '../src/options.h',
   '../src/encoder.h',
+  '../src/encoder-palette.h',
   '../src/decoder.h',
   '../src/decoder-image.h',
   '../src/decoder-columns.h',

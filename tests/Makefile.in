@@ -1079,6 +1079,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	planner/pipeline/0021_playback_admission.c \
 	planner/pipeline/0022_playback_cancel_failure.c \
 	planner/pipeline/0026_playback_palette_policy.c \
+	planner/pipeline/0027_palette_request_ownership.c \
+	planner/pipeline/0028_palette_snapshot_bytes.c \
+	planner/pipeline/0029_palette_snapshot_float.c \
+	planner/pipeline/0030_palette_snapshot_fhedt_bytes.c \
+	planner/pipeline/0031_palette_snapshot_fhedt_float.c \
+	planner/pipeline/0032_palette_snapshot_concurrent.c \
+	planner/pipeline/palette_stage2_common.c \
+	planner/pipeline/palette_stage2_common.h \
 	planner/pipeline/playback_test_common.c \
 	planner/pipeline/playback_test_common.h \
 	processing/colorspace/parallel/0001_frame_bits.c \
@@ -4894,6 +4902,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0021_playback_admission.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0022_playback_cancel_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0026_playback_palette_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0027_palette_request_ownership.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0028_palette_snapshot_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0029_palette_snapshot_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0032_palette_snapshot_concurrent.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-palette_stage2_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-playback_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0001_frame_bits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0002_helper_bits.$(OBJEXT) \
@@ -9420,6 +9435,13 @@ am__depfiles_remade =  \
 	planner/pipeline/$(DEPDIR)/test_runner-0021_playback_admission.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0022_playback_cancel_failure.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
@@ -12393,6 +12415,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_PLAYBACK_ADMISSION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_PLAYBACK_CANCEL_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_PLAYBACK_PALETTE_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_PALETTE_REQUEST_OWNERSHIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_PALETTE_SNAPSHOT_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_PALETTE_SNAPSHOT_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_PALETTE_SNAPSHOT_FHEDT_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_PALETTE_SNAPSHOT_FHEDT_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_PALETTE_SNAPSHOT_CONCURRENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_STAGE2_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PLAYBACK_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARALLEL_FLOAT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_BITS \
@@ -17020,6 +17049,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0021_playback_admission.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0022_playback_cancel_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0026_playback_palette_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0027_palette_request_ownership.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0028_palette_snapshot_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0029_palette_snapshot_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0030_palette_snapshot_fhedt_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0031_palette_snapshot_fhedt_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0032_palette_snapshot_concurrent.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_stage2_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_stage2_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/playback_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/playback_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0001_frame_bits.c \
@@ -23059,6 +23096,27 @@ planner/pipeline/test_runner-0022_playback_cancel_failure.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-0026_playback_palette_policy.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0027_palette_request_ownership.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0028_palette_snapshot_bytes.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0029_palette_snapshot_float.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0032_palette_snapshot_concurrent.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-palette_stage2_common.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-playback_test_common.$(OBJEXT):  \
@@ -34007,6 +34065,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0021_playback_admission.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0022_playback_cancel_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
@@ -49140,6 +49205,104 @@ planner/pipeline/test_runner-0026_playback_palette_policy.obj: planner/pipeline/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0026_playback_palette_policy.c' object='planner/pipeline/test_runner-0026_playback_palette_policy.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0026_playback_palette_policy.obj `if test -f 'planner/pipeline/0026_playback_palette_policy.c'; then $(CYGPATH_W) 'planner/pipeline/0026_playback_palette_policy.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0026_playback_palette_policy.c'; fi`
+
+planner/pipeline/test_runner-0027_palette_request_ownership.o: planner/pipeline/0027_palette_request_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0027_palette_request_ownership.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Tpo -c -o planner/pipeline/test_runner-0027_palette_request_ownership.o `test -f 'planner/pipeline/0027_palette_request_ownership.c' || echo '$(srcdir)/'`planner/pipeline/0027_palette_request_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Tpo planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0027_palette_request_ownership.c' object='planner/pipeline/test_runner-0027_palette_request_ownership.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0027_palette_request_ownership.o `test -f 'planner/pipeline/0027_palette_request_ownership.c' || echo '$(srcdir)/'`planner/pipeline/0027_palette_request_ownership.c
+
+planner/pipeline/test_runner-0027_palette_request_ownership.obj: planner/pipeline/0027_palette_request_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0027_palette_request_ownership.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Tpo -c -o planner/pipeline/test_runner-0027_palette_request_ownership.obj `if test -f 'planner/pipeline/0027_palette_request_ownership.c'; then $(CYGPATH_W) 'planner/pipeline/0027_palette_request_ownership.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0027_palette_request_ownership.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Tpo planner/pipeline/$(DEPDIR)/test_runner-0027_palette_request_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0027_palette_request_ownership.c' object='planner/pipeline/test_runner-0027_palette_request_ownership.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0027_palette_request_ownership.obj `if test -f 'planner/pipeline/0027_palette_request_ownership.c'; then $(CYGPATH_W) 'planner/pipeline/0027_palette_request_ownership.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0027_palette_request_ownership.c'; fi`
+
+planner/pipeline/test_runner-0028_palette_snapshot_bytes.o: planner/pipeline/0028_palette_snapshot_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0028_palette_snapshot_bytes.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Tpo -c -o planner/pipeline/test_runner-0028_palette_snapshot_bytes.o `test -f 'planner/pipeline/0028_palette_snapshot_bytes.c' || echo '$(srcdir)/'`planner/pipeline/0028_palette_snapshot_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Tpo planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0028_palette_snapshot_bytes.c' object='planner/pipeline/test_runner-0028_palette_snapshot_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0028_palette_snapshot_bytes.o `test -f 'planner/pipeline/0028_palette_snapshot_bytes.c' || echo '$(srcdir)/'`planner/pipeline/0028_palette_snapshot_bytes.c
+
+planner/pipeline/test_runner-0028_palette_snapshot_bytes.obj: planner/pipeline/0028_palette_snapshot_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0028_palette_snapshot_bytes.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Tpo -c -o planner/pipeline/test_runner-0028_palette_snapshot_bytes.obj `if test -f 'planner/pipeline/0028_palette_snapshot_bytes.c'; then $(CYGPATH_W) 'planner/pipeline/0028_palette_snapshot_bytes.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0028_palette_snapshot_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Tpo planner/pipeline/$(DEPDIR)/test_runner-0028_palette_snapshot_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0028_palette_snapshot_bytes.c' object='planner/pipeline/test_runner-0028_palette_snapshot_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0028_palette_snapshot_bytes.obj `if test -f 'planner/pipeline/0028_palette_snapshot_bytes.c'; then $(CYGPATH_W) 'planner/pipeline/0028_palette_snapshot_bytes.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0028_palette_snapshot_bytes.c'; fi`
+
+planner/pipeline/test_runner-0029_palette_snapshot_float.o: planner/pipeline/0029_palette_snapshot_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0029_palette_snapshot_float.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Tpo -c -o planner/pipeline/test_runner-0029_palette_snapshot_float.o `test -f 'planner/pipeline/0029_palette_snapshot_float.c' || echo '$(srcdir)/'`planner/pipeline/0029_palette_snapshot_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Tpo planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0029_palette_snapshot_float.c' object='planner/pipeline/test_runner-0029_palette_snapshot_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0029_palette_snapshot_float.o `test -f 'planner/pipeline/0029_palette_snapshot_float.c' || echo '$(srcdir)/'`planner/pipeline/0029_palette_snapshot_float.c
+
+planner/pipeline/test_runner-0029_palette_snapshot_float.obj: planner/pipeline/0029_palette_snapshot_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0029_palette_snapshot_float.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Tpo -c -o planner/pipeline/test_runner-0029_palette_snapshot_float.obj `if test -f 'planner/pipeline/0029_palette_snapshot_float.c'; then $(CYGPATH_W) 'planner/pipeline/0029_palette_snapshot_float.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0029_palette_snapshot_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Tpo planner/pipeline/$(DEPDIR)/test_runner-0029_palette_snapshot_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0029_palette_snapshot_float.c' object='planner/pipeline/test_runner-0029_palette_snapshot_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0029_palette_snapshot_float.obj `if test -f 'planner/pipeline/0029_palette_snapshot_float.c'; then $(CYGPATH_W) 'planner/pipeline/0029_palette_snapshot_float.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0029_palette_snapshot_float.c'; fi`
+
+planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.o: planner/pipeline/0030_palette_snapshot_fhedt_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Tpo -c -o planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.o `test -f 'planner/pipeline/0030_palette_snapshot_fhedt_bytes.c' || echo '$(srcdir)/'`planner/pipeline/0030_palette_snapshot_fhedt_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Tpo planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0030_palette_snapshot_fhedt_bytes.c' object='planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.o `test -f 'planner/pipeline/0030_palette_snapshot_fhedt_bytes.c' || echo '$(srcdir)/'`planner/pipeline/0030_palette_snapshot_fhedt_bytes.c
+
+planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.obj: planner/pipeline/0030_palette_snapshot_fhedt_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Tpo -c -o planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.obj `if test -f 'planner/pipeline/0030_palette_snapshot_fhedt_bytes.c'; then $(CYGPATH_W) 'planner/pipeline/0030_palette_snapshot_fhedt_bytes.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0030_palette_snapshot_fhedt_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Tpo planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0030_palette_snapshot_fhedt_bytes.c' object='planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0030_palette_snapshot_fhedt_bytes.obj `if test -f 'planner/pipeline/0030_palette_snapshot_fhedt_bytes.c'; then $(CYGPATH_W) 'planner/pipeline/0030_palette_snapshot_fhedt_bytes.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0030_palette_snapshot_fhedt_bytes.c'; fi`
+
+planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.o: planner/pipeline/0031_palette_snapshot_fhedt_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Tpo -c -o planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.o `test -f 'planner/pipeline/0031_palette_snapshot_fhedt_float.c' || echo '$(srcdir)/'`planner/pipeline/0031_palette_snapshot_fhedt_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Tpo planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0031_palette_snapshot_fhedt_float.c' object='planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.o `test -f 'planner/pipeline/0031_palette_snapshot_fhedt_float.c' || echo '$(srcdir)/'`planner/pipeline/0031_palette_snapshot_fhedt_float.c
+
+planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.obj: planner/pipeline/0031_palette_snapshot_fhedt_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Tpo -c -o planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.obj `if test -f 'planner/pipeline/0031_palette_snapshot_fhedt_float.c'; then $(CYGPATH_W) 'planner/pipeline/0031_palette_snapshot_fhedt_float.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0031_palette_snapshot_fhedt_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Tpo planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0031_palette_snapshot_fhedt_float.c' object='planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.obj `if test -f 'planner/pipeline/0031_palette_snapshot_fhedt_float.c'; then $(CYGPATH_W) 'planner/pipeline/0031_palette_snapshot_fhedt_float.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0031_palette_snapshot_fhedt_float.c'; fi`
+
+planner/pipeline/test_runner-0032_palette_snapshot_concurrent.o: planner/pipeline/0032_palette_snapshot_concurrent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0032_palette_snapshot_concurrent.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Tpo -c -o planner/pipeline/test_runner-0032_palette_snapshot_concurrent.o `test -f 'planner/pipeline/0032_palette_snapshot_concurrent.c' || echo '$(srcdir)/'`planner/pipeline/0032_palette_snapshot_concurrent.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Tpo planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0032_palette_snapshot_concurrent.c' object='planner/pipeline/test_runner-0032_palette_snapshot_concurrent.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0032_palette_snapshot_concurrent.o `test -f 'planner/pipeline/0032_palette_snapshot_concurrent.c' || echo '$(srcdir)/'`planner/pipeline/0032_palette_snapshot_concurrent.c
+
+planner/pipeline/test_runner-0032_palette_snapshot_concurrent.obj: planner/pipeline/0032_palette_snapshot_concurrent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0032_palette_snapshot_concurrent.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Tpo -c -o planner/pipeline/test_runner-0032_palette_snapshot_concurrent.obj `if test -f 'planner/pipeline/0032_palette_snapshot_concurrent.c'; then $(CYGPATH_W) 'planner/pipeline/0032_palette_snapshot_concurrent.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0032_palette_snapshot_concurrent.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Tpo planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0032_palette_snapshot_concurrent.c' object='planner/pipeline/test_runner-0032_palette_snapshot_concurrent.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0032_palette_snapshot_concurrent.obj `if test -f 'planner/pipeline/0032_palette_snapshot_concurrent.c'; then $(CYGPATH_W) 'planner/pipeline/0032_palette_snapshot_concurrent.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0032_palette_snapshot_concurrent.c'; fi`
+
+planner/pipeline/test_runner-palette_stage2_common.o: planner/pipeline/palette_stage2_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-palette_stage2_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Tpo -c -o planner/pipeline/test_runner-palette_stage2_common.o `test -f 'planner/pipeline/palette_stage2_common.c' || echo '$(srcdir)/'`planner/pipeline/palette_stage2_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/palette_stage2_common.c' object='planner/pipeline/test_runner-palette_stage2_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-palette_stage2_common.o `test -f 'planner/pipeline/palette_stage2_common.c' || echo '$(srcdir)/'`planner/pipeline/palette_stage2_common.c
+
+planner/pipeline/test_runner-palette_stage2_common.obj: planner/pipeline/palette_stage2_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-palette_stage2_common.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Tpo -c -o planner/pipeline/test_runner-palette_stage2_common.obj `if test -f 'planner/pipeline/palette_stage2_common.c'; then $(CYGPATH_W) 'planner/pipeline/palette_stage2_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/palette_stage2_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/palette_stage2_common.c' object='planner/pipeline/test_runner-palette_stage2_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-palette_stage2_common.obj `if test -f 'planner/pipeline/palette_stage2_common.c'; then $(CYGPATH_W) 'planner/pipeline/palette_stage2_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/palette_stage2_common.c'; fi`
 
 planner/pipeline/test_runner-playback_test_common.o: planner/pipeline/playback_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-playback_test_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Tpo -c -o planner/pipeline/test_runner-playback_test_common.o `test -f 'planner/pipeline/playback_test_common.c' || echo '$(srcdir)/'`planner/pipeline/playback_test_common.c

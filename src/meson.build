@@ -248,6 +248,7 @@ srcs = [
   'frombmp-internal.h',
   'clipboard.c',
   'encoder.c',
+  'encoder-palette.h',
   'mapfile.c',
   'mapfile.h',
   'drcs.c',

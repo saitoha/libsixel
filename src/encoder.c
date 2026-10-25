@@ -93,6 +93,7 @@
 #include "lookup-policy.h"
 #include "tty.h"
 #include "encoder.h"
+#include "encoder-palette.h"
 #include "presentation.h"
 #include "decoder.h"
 #include "color-option.h"
@@ -493,8 +494,13 @@ static SIXELSTATUS clipboard_write_file(char const *path,
 static SIXELSTATUS clipboard_read_file(char const *path,
                                        unsigned char **data,
                                        size_t *size);
-static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
-                                                  sixel_dither_t *dither);
+static SIXELSTATUS sixel_palette_request_build(
+    sixel_palette_build_request_t const *request, sixel_frame_t *frame,
+    sixel_dither_t **dither, sixel_palette_frame_state_t *palette_state,
+    sixel_timeline_logger_t *logger);
+static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_dither_t *dither,
+    int consumer_pixelformat, sixel_timeline_logger_t *logger,
+    sixel_lookup_policy_interface_t *reuse);
 static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
 static int sixel_encoder_resolve_transparent_policy(
     sixel_encoder_t const *encoder);
@@ -600,16 +606,223 @@ typedef enum sixel_palette_job_failure_stage {
     SIXEL_PALETTE_JOB_FAILURE_LOOKUP
 } sixel_palette_job_failure_stage_t;
 
+/* Frozen generated-palette inputs. No live planner, cache, capture or
+ * retained-plane pointer can cross this boundary. Owned endpoints survive
+ * encoder reconfiguration and destruction. Attempt state is separate. */
+struct sixel_palette_build_request {
+    sixel_allocator_t *allocator;
+    sixel_gamut_t *gamut_mapper;
+    sixel_color_def_t *output_icc;
+    unsigned char const *bgcolor;
+    unsigned char background[3];
+    int capacity;
+    int delta_alpha_key;
+    int native_palette;
+    int native_candidate;
+    int from_map_image;
+    int consumer_pixelformat;
+    int source_alpha_key;
+    uint64_t configuration_revision;
+    sixel_palette_frame_state_t initial_state;
+    sixel_palette_quantizer_selection_t quantizer;
+    int clustering_colorspace;
+    int cover_policy;
+    int cover_policy_grow;
+    int cover_policy_grow_override;
+    int cover_policy_mode;
+    int cover_policy_mode_override;
+    int cover_policy_override;
+    int final_merge_mode;
+    int force_palette;
+    size_t gpu_palette_threshold;
+    int gpu_policy;
+    int heckbert_cut;
+    int heckbert_cut_override;
+    int heckbert_order;
+    int heckbert_order_override;
+    double heckbert_weights[3];
+    int heckbert_weights_override;
+    int lut_policy;
+    int lut_policy_fhedt_first_touch;
+    int lut_policy_fhedt_first_touch_override;
+    int lut_policy_fhedt_refine;
+    int lut_policy_fhedt_refine_override;
+    int lut_policy_fhedt_resolution;
+    int lut_policy_fhedt_resolution_override;
+    int lut_policy_fhedt_shared;
+    int lut_policy_fhedt_shared_override;
+    unsigned int lut_policy_fhedt_tile_depth;
+    int lut_policy_fhedt_tile_depth_override;
+    unsigned int lut_policy_fhedt_tile_xy;
+    int lut_policy_fhedt_tile_xy_override;
+    int lut_policy_fhedt_use_cache;
+    int lut_policy_fhedt_use_cache_override;
+    int lut_policy_fhedt_use_dist2;
+    int lut_policy_fhedt_use_dist2_override;
+    double lut_policy_fhedt_weights[3];
+    int lut_policy_fhedt_weights_override;
+    int lut_policy_override;
+    int lut_policy_packing;
+    int lut_policy_packing_override;
+    int lut_policy_shared_instance;
+    int lut_policy_shared_instance_override;
+    double merge_policy_channel_factor_l;
+    int merge_policy_channel_factor_l_override;
+    unsigned int merge_policy_lloyd;
+    int merge_policy_lloyd_override;
+    int merge_policy_override;
+    double merge_policy_oversplit;
+    int merge_policy_oversplit_override;
+    int method_for_diffuse;
+    int method_for_largest;
+    int method_for_largest_override;
+    int method_for_rep;
+    int output_color_definition;
+    int output_colorspace;
+    int precision_requested;
+    int prefer_float32;
+    int quality_mode;
+    int quantize_model;
+    int quantize_model_heckbert_profile;
+    int quantize_model_kcenter_algo;
+    int quantize_model_kcenter_algo_override;
+    unsigned int quantize_model_kcenter_auto_fft_threshold;
+    int quantize_model_kcenter_auto_fft_threshold_override;
+    int quantize_model_kcenter_auto_policy;
+    int quantize_model_kcenter_auto_policy_override;
+    int quantize_model_kcenter_budget_policy;
+    int quantize_model_kcenter_budget_policy_override;
+    double quantize_model_kcenter_budget_scale;
+    int quantize_model_kcenter_budget_scale_override;
+    int quantize_model_kcenter_candidate_policy;
+    int quantize_model_kcenter_candidate_policy_override;
+    unsigned int quantize_model_kcenter_histbits;
+    int quantize_model_kcenter_histbits_override;
+    unsigned int quantize_model_kcenter_init_seeds;
+    int quantize_model_kcenter_init_seeds_override;
+    unsigned int quantize_model_kcenter_iter;
+    int quantize_model_kcenter_iter_override;
+    unsigned int quantize_model_kcenter_point_budget;
+    int quantize_model_kcenter_point_budget_override;
+    int quantize_model_kcenter_profile;
+    int quantize_model_kcenter_profile_override;
+    double quantize_model_kcenter_prune_mass;
+    int quantize_model_kcenter_prune_mass_override;
+    unsigned int quantize_model_kcenter_rare_keep;
+    int quantize_model_kcenter_rare_keep_override;
+    unsigned int quantize_model_kcenter_restarts;
+    int quantize_model_kcenter_restarts_override;
+    unsigned int quantize_model_kcenter_seed;
+    int quantize_model_kcenter_seed_override;
+    int quantize_model_kcenter_space_policy;
+    int quantize_model_kcenter_space_policy_override;
+    double quantize_model_kcenter_swap_min_gain;
+    int quantize_model_kcenter_swap_min_gain_override;
+    unsigned int quantize_model_kcenter_swap_patience;
+    int quantize_model_kcenter_swap_patience_override;
+    unsigned int quantize_model_kcenter_swap_topk;
+    int quantize_model_kcenter_swap_topk_override;
+    int quantize_model_kcenter_swap_update;
+    int quantize_model_kcenter_swap_update_override;
+    int quantize_model_kmeans_backend;
+    int quantize_model_kmeans_backend_override;
+    unsigned int quantize_model_kmeans_binbits;
+    int quantize_model_kmeans_binbits_override;
+    unsigned int quantize_model_kmeans_feedback_interval;
+    int quantize_model_kmeans_feedback_interval_override;
+    int quantize_model_kmeans_feedback_mode;
+    int quantize_model_kmeans_feedback_override;
+    unsigned int quantize_model_kmeans_feedback_slots;
+    int quantize_model_kmeans_feedback_slots_override;
+    int quantize_model_kmeans_init_override;
+    int quantize_model_kmeans_init_type;
+    unsigned int quantize_model_kmeans_iter;
+    unsigned int quantize_model_kmeans_iter_max;
+    int quantize_model_kmeans_iter_max_override;
+    int quantize_model_kmeans_iter_override;
+    int quantize_model_kmeans_mapping_mode;
+    int quantize_model_kmeans_mapping_override;
+    unsigned int quantize_model_kmeans_miniter;
+    int quantize_model_kmeans_miniter_override;
+    unsigned int quantize_model_kmeans_polish_iter;
+    int quantize_model_kmeans_polish_iter_override;
+    int quantize_model_kmeans_prune_override;
+    int quantize_model_kmeans_prune_policy;
+    unsigned int quantize_model_kmeans_restarts;
+    int quantize_model_kmeans_restarts_override;
+    unsigned int quantize_model_kmeans_seed;
+    int quantize_model_kmeans_seed_override;
+    int quantize_model_kmeans_softdist_mode;
+    int quantize_model_kmeans_softdist_override;
+    double quantize_model_kmeans_threshold;
+    int quantize_model_kmeans_threshold_override;
+    int quantize_model_kmedoids_algo;
+    int quantize_model_kmedoids_algo_override;
+    int quantize_model_kmedoids_auction;
+    int quantize_model_kmedoids_auction_override;
+    unsigned int quantize_model_kmedoids_auction_shortlist;
+    int quantize_model_kmedoids_auction_shortlist_override;
+    unsigned int quantize_model_kmedoids_bandit_batch;
+    int quantize_model_kmedoids_bandit_batch_override;
+    unsigned int quantize_model_kmedoids_bandit_candidates;
+    int quantize_model_kmedoids_bandit_candidates_override;
+    unsigned int quantize_model_kmedoids_bandit_iter;
+    int quantize_model_kmedoids_bandit_iter_override;
+    unsigned int quantize_model_kmedoids_clara_sample;
+    int quantize_model_kmedoids_clara_sample_override;
+    unsigned int quantize_model_kmedoids_clara_trials;
+    int quantize_model_kmedoids_clara_trials_override;
+    unsigned int quantize_model_kmedoids_clarans_local;
+    int quantize_model_kmedoids_clarans_local_override;
+    unsigned int quantize_model_kmedoids_clarans_neighbors;
+    int quantize_model_kmedoids_clarans_neighbors_override;
+    unsigned int quantize_model_kmedoids_histbits;
+    int quantize_model_kmedoids_histbits_override;
+    unsigned int quantize_model_kmedoids_iter;
+    int quantize_model_kmedoids_iter_override;
+    unsigned int quantize_model_kmedoids_point_budget;
+    int quantize_model_kmedoids_point_budget_override;
+    double quantize_model_kmedoids_prune_mass;
+    int quantize_model_kmedoids_prune_mass_override;
+    unsigned int quantize_model_kmedoids_rare_keep;
+    int quantize_model_kmedoids_rare_keep_override;
+    unsigned int quantize_model_kmedoids_sample;
+    int quantize_model_kmedoids_sample_override;
+    unsigned int quantize_model_kmedoids_seed;
+    int quantize_model_kmedoids_seed_override;
+    int snap_policy;
+    double snap_policy_approach_rate;
+    int snap_policy_approach_rate_override;
+    double snap_policy_channel_factor_l;
+    int snap_policy_channel_factor_l_override;
+    int snap_policy_grid;
+    int snap_policy_grid_override;
+    int snap_policy_override;
+    int snap_policy_timing;
+    int snap_policy_timing_override;
+    int working_colorspace;
+};
+
+/* The completed builder is never applied or mutated. Its FHEDT wrapper and
+ * borrowed byte palette stay alive together. References protect lifetime;
+ * the session owner is responsible for synchronized publication. */
+struct sixel_palette_snapshot {
+    sixel_atomic_u32_t ref;
+    sixel_dither_t *built;
+    sixel_color_def_t *output_icc;
+    sixel_palette_snapshot_profile_t profile;
+};
+
 typedef struct sixel_palette_async_job {
     sixel_threading_snapshot_t policy;
     sixel_thread_t thread;
     sixel_mutex_t mutex;
     sixel_cond_t cond;
-    sixel_encoder_t *encoder;
+    sixel_palette_build_request_t *request;
     sixel_timeline_logger_t *logger;
     sixel_sample_stream_t samples;
     sixel_allocator_t *allocator;
-    sixel_palette_frame_state_t *palette_state;
+    sixel_palette_frame_state_t state;
     sixel_dither_t *dither;
     SIXELSTATUS status;
     sixel_status_message_t message;
@@ -3703,7 +3916,7 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
  * diffusion candidates never enter this operation. Hidden pixels retain
  * their original storage and cannot fail a visible-color conversion. */
 static SIXELSTATUS
-sixel_encoder_map_gamut(sixel_encoder_t const *encoder, sixel_frame_t *frame)
+sixel_encoder_map_gamut(sixel_gamut_t const *mapper, sixel_frame_t *frame)
 {
     sixel_frame_pixels_view_t view;
     sixel_frame_transparency_t transparency;
@@ -3714,7 +3927,7 @@ sixel_encoder_map_gamut(sixel_encoder_t const *encoder, sixel_frame_t *frame)
     size_t i;
     int c;
 
-    if (encoder->gamut_mapper == NULL) {
+    if (mapper == NULL) {
         return SIXEL_OK;
     }
     status = sixel_encoder_frame_get_pixels_view(frame, &view);
@@ -3744,7 +3957,7 @@ sixel_encoder_map_gamut(sixel_encoder_t const *encoder, sixel_frame_t *frame)
         for (c = 0; c < 3; ++c) {
             input[c] = view.pixels_float32[i * 3u + (size_t)c];
         }
-        if (!sixel_gamut_apply(encoder->gamut_mapper, input, output,
+        if (!sixel_gamut_apply(mapper, input, output,
                 view.colorspace)) {
             sixel_helper_set_additional_message(
                 "gamut mapping cannot map this source color.");
@@ -4705,6 +4918,67 @@ sixel_encoder_copy_lookup_options(sixel_encoder_t const *encoder,
 }
 
 
+static void
+sixel_palette_request_lookup_options(
+    sixel_palette_build_request_t const *request,
+    sixel_dither_t *dither)
+{
+    if (request == NULL || dither == NULL) {
+        return;
+    }
+
+    sixel_dither_set_lut_policy_with_override(
+        dither,
+        request->lut_policy,
+        request->lut_policy_override);
+    /* Preserve the frozen application precision on the generated palette;
+     * the builder must not consult the encoder again after launch. */
+    dither->apply_8bit =
+        request->precision_requested == SIXEL_OPTION_PRECISION_8BIT;
+    dither->lut_policy_shared_instance_override =
+        request->lut_policy_shared_instance_override;
+    dither->lut_policy_shared_instance =
+        request->lut_policy_shared_instance;
+    dither->lut_policy_packing_override =
+        request->lut_policy_packing_override;
+    dither->lut_policy_packing = request->lut_policy_packing;
+    dither->lut_policy_fhedt_resolution_override =
+        request->lut_policy_fhedt_resolution_override;
+    dither->lut_policy_fhedt_resolution =
+        request->lut_policy_fhedt_resolution;
+    dither->lut_policy_fhedt_refine_override =
+        request->lut_policy_fhedt_refine_override;
+    dither->lut_policy_fhedt_refine = request->lut_policy_fhedt_refine;
+    dither->lut_policy_fhedt_weights_override =
+        request->lut_policy_fhedt_weights_override;
+    memcpy(dither->lut_policy_fhedt_weights,
+           request->lut_policy_fhedt_weights,
+           sizeof(dither->lut_policy_fhedt_weights));
+    dither->lut_policy_fhedt_shared_override =
+        request->lut_policy_fhedt_shared_override;
+    dither->lut_policy_fhedt_shared = request->lut_policy_fhedt_shared;
+    dither->lut_policy_fhedt_use_dist2_override =
+        request->lut_policy_fhedt_use_dist2_override;
+    dither->lut_policy_fhedt_use_dist2 =
+        request->lut_policy_fhedt_use_dist2;
+    dither->lut_policy_fhedt_use_cache_override =
+        request->lut_policy_fhedt_use_cache_override;
+    dither->lut_policy_fhedt_use_cache =
+        request->lut_policy_fhedt_use_cache;
+    dither->lut_policy_fhedt_tile_xy_override =
+        request->lut_policy_fhedt_tile_xy_override;
+    dither->lut_policy_fhedt_tile_xy = request->lut_policy_fhedt_tile_xy;
+    dither->lut_policy_fhedt_tile_depth_override =
+        request->lut_policy_fhedt_tile_depth_override;
+    dither->lut_policy_fhedt_tile_depth =
+        request->lut_policy_fhedt_tile_depth;
+    dither->lut_policy_fhedt_first_touch_override =
+        request->lut_policy_fhedt_first_touch_override;
+    dither->lut_policy_fhedt_first_touch =
+        request->lut_policy_fhedt_first_touch;
+}
+
+
 /* callback function for sixel_helper_load_image_file() */
 static SIXELSTATUS
 load_image_callback_for_palette(
@@ -5308,7 +5582,8 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
         sixel_frame_get_pixelformat(context->frame);
     context->current_colorspace = sixel_frame_get_colorspace(context->frame);
 
-    return sixel_encoder_map_gamut(context->encoder, context->frame);
+    return sixel_encoder_map_gamut(context->encoder->gamut_mapper,
+                                    context->frame);
 }
 
 static SIXELSTATUS
@@ -5470,6 +5745,17 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
                 &context->palette.sampling);
         }
     }
+    if (context->async_dither != NULL) {
+        context->palette.quantizer = context->palette_job.state.quantizer;
+        context->palette.binning = context->palette_job.state.binning;
+        context->palette.quantizer_retry_count =
+            context->palette_job.state.quantizer_retry_count;
+        if (context->async_dither->use_rgb101_palette &&
+                context->encoder->palette_output != NULL) {
+            status = sixel_encoder_capture_palette(context->encoder,
+                context->async_dither, context->encoder->working_colorspace);
+        }
+    }
     if (context->palette_job_initialized != 0) {
         sixel_encoder_palette_job_dispose(&context->palette_job);
         context->palette_job_initialized = 0;
@@ -5485,8 +5771,9 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     sixel_dither_set_pixelformat(context->dither,
         sixel_frame_get_pixelformat(context->frame));
     if (context->dither->lut_policy != SIXEL_LUT_POLICY_FHEDT) {
-        status = sixel_encoder_apply_lut_filter(context->encoder,
-                                                context->dither);
+        status = sixel_encoder_apply_lut_filter(context->dither,
+            context->dither->pixelformat, context->encoder->logger,
+            context->dither->lookup_policy);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -6106,14 +6393,14 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
                 SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD) {
         job->failure_stage = job->requested_failure_stage;
     }
-    if (job->encoder == NULL || job->samples.frame == NULL) {
+    if (job->request == NULL || job->samples.frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    job->state = job->request->initial_state;
     preserve_alpha_key =
         sixel_encoder_frame_preserves_alpha_key(job->samples.frame) ||
-        sixel_encoder_6delta_reserves_alpha_key_for(job->encoder,
-                                                    job->palette_state);
+        job->request->delta_alpha_key;
     if (job->requested_failure_stage ==
             SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT) {
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
@@ -6140,12 +6427,15 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_BUILD;
         return SIXEL_RUNTIME_ERROR;
     }
-    status = sixel_encoder_apply_palette_filter(job->encoder,
-                                                &job->samples,
-                                                job->palette_state,
-                                                0,
-                                                &local,
-                                                &job->failure_stage);
+    status = sixel_palette_request_build(job->request,
+        job->samples.frame, &local, &job->state, job->logger);
+    if (SIXEL_SUCCEEDED(status) &&
+            local->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+        job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
+        status = sixel_encoder_apply_lut_filter(local,
+            job->request->consumer_pixelformat, job->logger,
+            local->lookup_policy);
+    }
     /* Exercise late construction failures after policy state is committed.
      * This is distinct from lookup failures, which must never resample. */
     if (SIXEL_SUCCEEDED(status) && job->requested_failure_stage ==
@@ -6192,10 +6482,9 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
         return SIXEL_RUNTIME_ERROR;
     }
 
-    job->encoder = NULL;
+    job->request = NULL;
     job->logger = NULL;
     job->allocator = allocator;
-    job->palette_state = NULL;
     job->dither = NULL;
     job->status = SIXEL_OK;
     job->target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -6230,9 +6519,9 @@ sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job)
     }
     sixel_sample_stream_dispose(&job->samples);
     sixel_status_dispose_message(&job->message);
-    job->encoder = NULL;
+    sixel_palette_build_request_free(job->request);
+    job->request = NULL;
     job->logger = NULL;
-    job->palette_state = NULL;
     if (job->dither != NULL) {
         sixel_dither_unref(job->dither);
         job->dither = NULL;
@@ -6259,9 +6548,7 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    job->encoder = encoder;
     job->logger = encoder->logger;
-    job->palette_state = palette_state;
     job->target_pixelformat = target_pixelformat;
     job->frame_no = sixel_frame_get_frame_no(frame);
     job->loop_no = sixel_frame_get_loop_no(frame);
@@ -6282,6 +6569,16 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_SAMPLE;
         return status;
     }
+
+    /* Freeze prediction and consumer format before any worker can run.
+     * The worker has no encoder pointer and cannot mutate shared caches. */
+    status = sixel_palette_build_request_new(&job->request, encoder,
+        job->samples.frame, palette_state, 0);
+    if (SIXEL_FAILED(status)) {
+        job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_INIT;
+        return status;
+    }
+    sixel_encoder_clear_dither_cache(encoder);
 
     /*
      * Initialize shared result state before publishing the job to a worker.
@@ -7031,7 +7328,8 @@ sixel_encoder_validate_alpha_feature_policy(sixel_encoder_t const *encoder)
 }
 
 static SIXELSTATUS
-sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
+sixel_encoder_attach_alpha_keycolor(unsigned char const *bgcolor,
+                                    int working_colorspace,
                                     sixel_dither_t *dither)
 {
     SIXELSTATUS status;
@@ -7057,7 +7355,7 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
     memset(&entries_view, 0, sizeof(entries_view));
     memset(&float32_request, 0, sizeof(float32_request));
 
-    if (encoder == NULL || dither == NULL || dither->palette == NULL ||
+    if (dither == NULL || dither->palette == NULL ||
         dither->palette->vtbl == NULL ||
         dither->palette->vtbl->get_entries == NULL ||
         dither->palette->vtbl->init_entries == NULL ||
@@ -7088,10 +7386,10 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
     }
 
     memcpy(expanded, entries_view.entries, (size_t)base_colors * 3U);
-    if (encoder->bgcolor != NULL) {
-        expanded[key_index * 3U + 0U] = encoder->bgcolor[0];
-        expanded[key_index * 3U + 1U] = encoder->bgcolor[1];
-        expanded[key_index * 3U + 2U] = encoder->bgcolor[2];
+    if (bgcolor != NULL) {
+        expanded[key_index * 3U + 0U] = bgcolor[0];
+        expanded[key_index * 3U + 1U] = bgcolor[1];
+        expanded[key_index * 3U + 2U] = bgcolor[2];
     } else {
         expanded[key_index * 3U + 0U] = 0U;
         expanded[key_index * 3U + 1U] = 0U;
@@ -7117,7 +7415,7 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
             key_source[channel] = expanded[key_index * 3U + channel] / 255.0;
         }
         if (!sixel_color_convert(key_work, key_source,
-                SIXEL_COLORSPACE_GAMMA, encoder->working_colorspace)) {
+                SIXEL_COLORSPACE_GAMMA, working_colorspace)) {
             sixel_allocator_free(dither->allocator, expanded);
             return SIXEL_BAD_INPUT;
         }
@@ -7276,7 +7574,7 @@ sixel_encoder_select_palette_quantizer(
 
 static SIXELSTATUS
 sixel_encoder_resolve_direct_binning(
-    sixel_encoder_t const *encoder,
+    sixel_palette_build_request_t const *request,
     sixel_palette_binning_state_t *binning,
     int quantize_model,
     size_t source_point_count)
@@ -7290,7 +7588,7 @@ sixel_encoder_resolve_direct_binning(
     memset(&capabilities, 0, sizeof(capabilities));
     memset(&input, 0, sizeof(input));
     memset(&selection, 0, sizeof(selection));
-    if (encoder == NULL || binning == NULL || source_point_count == 0u ||
+    if (request == NULL || binning == NULL || source_point_count == 0u ||
             binning->policy.phase != SIXEL_PALETTE_POLICY_UNRESOLVED) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -7303,11 +7601,11 @@ sixel_encoder_resolve_direct_binning(
     input.requested = (sixel_palette_binning_policy_t)
         binning->policy.requested;
     if (quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
-        input.bits_per_axis = encoder->quantize_model_kcenter_histbits;
+        input.bits_per_axis = request->quantize_model_kcenter_histbits;
         input.grid_map = SIXEL_PALETTE_BINNING_GRID_UNIFORM_256;
     } else {
-        input.bits_per_axis = encoder->quantize_model_kmeans_binbits;
-        input.grid_map = encoder->quantize_model_kmeans_mapping_mode ==
+        input.bits_per_axis = request->quantize_model_kmeans_binbits;
+        input.grid_map = request->quantize_model_kmeans_mapping_mode ==
                 SIXEL_PALETTE_KMEANS_MAPPING_SRGB
             ? SIXEL_PALETTE_BINNING_GRID_SRGB
             : SIXEL_PALETTE_BINNING_GRID_UNIFORM;
@@ -7947,21 +8245,381 @@ sixel_encoder_visible_palette_pixels(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
-/* create dither object from a frame */
+void
+sixel_palette_build_request_free(sixel_palette_build_request_t *request)
+{
+    sixel_allocator_t *allocator;
+
+    if (request == NULL) {
+        return;
+    }
+    allocator = request->allocator;
+    sixel_gamut_free(request->gamut_mapper);
+    sixel_cdef_free(request->output_icc);
+    sixel_allocator_free(allocator, request);
+    sixel_allocator_unref(allocator);
+}
+
+SIXELSTATUS
+sixel_palette_build_request_new(sixel_palette_build_request_t **out,
+    sixel_encoder_t const *encoder, sixel_frame_t *frame,
+    sixel_palette_frame_state_t const *state, int from_map_image)
+{
+    sixel_palette_build_request_t *request;
+    SIXELSTATUS status;
+
+    *out = NULL;
+    request = sixel_allocator_calloc(encoder->allocator, 1, sizeof(*request));
+    if (request == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    request->allocator = encoder->allocator;
+    sixel_allocator_ref(request->allocator);
+    request->initial_state = *state;
+    request->delta_alpha_key = from_map_image ? 0
+        : sixel_encoder_6delta_reserves_alpha_key_for(encoder, state);
+    request->initial_state.delta_alpha_key = request->delta_alpha_key;
+    request->from_map_image = from_map_image;
+    request->source_alpha_key = sixel_encoder_frame_preserves_alpha_key(frame);
+    request->configuration_revision = encoder->configuration_revision;
+    request->capacity = sixel_encoder_palette_capacity(encoder);
+    request->native_palette = sixel_encoder_rgb101_frame(encoder, frame);
+    request->native_candidate = sixel_encoder_rgb101_candidate(encoder, frame);
+    request->consumer_pixelformat = sixel_encoder_pixelformat_for_colorspace(
+        encoder->planner.working_colorspace_effective,
+        SIXEL_PIXELFORMAT_IS_FLOAT32(encoder->planner.working_pixelformat));
+    request->clustering_colorspace = encoder->clustering_colorspace;
+    request->cover_policy = encoder->cover_policy;
+    request->cover_policy_grow = encoder->cover_policy_grow;
+    request->cover_policy_grow_override = encoder->cover_policy_grow_override;
+    request->cover_policy_mode = encoder->cover_policy_mode;
+    request->cover_policy_mode_override = encoder->cover_policy_mode_override;
+    request->cover_policy_override = encoder->cover_policy_override;
+    request->final_merge_mode = encoder->final_merge_mode;
+    request->force_palette = encoder->force_palette;
+    request->gpu_palette_threshold = encoder->gpu_palette_threshold;
+    request->gpu_policy = encoder->gpu_policy;
+    request->heckbert_cut = encoder->heckbert_cut;
+    request->heckbert_cut_override = encoder->heckbert_cut_override;
+    request->heckbert_order = encoder->heckbert_order;
+    request->heckbert_order_override = encoder->heckbert_order_override;
+    memcpy(request->heckbert_weights, encoder->heckbert_weights,
+        sizeof(request->heckbert_weights));
+    request->heckbert_weights_override = encoder->heckbert_weights_override;
+    request->lut_policy = encoder->lut_policy;
+    request->lut_policy_fhedt_first_touch =
+        encoder->lut_policy_fhedt_first_touch;
+    request->lut_policy_fhedt_first_touch_override =
+        encoder->lut_policy_fhedt_first_touch_override;
+    request->lut_policy_fhedt_refine = encoder->lut_policy_fhedt_refine;
+    request->lut_policy_fhedt_refine_override =
+        encoder->lut_policy_fhedt_refine_override;
+    request->lut_policy_fhedt_resolution = encoder->lut_policy_fhedt_resolution;
+    request->lut_policy_fhedt_resolution_override =
+        encoder->lut_policy_fhedt_resolution_override;
+    request->lut_policy_fhedt_shared = encoder->lut_policy_fhedt_shared;
+    request->lut_policy_fhedt_shared_override =
+        encoder->lut_policy_fhedt_shared_override;
+    request->lut_policy_fhedt_tile_depth = encoder->lut_policy_fhedt_tile_depth;
+    request->lut_policy_fhedt_tile_depth_override =
+        encoder->lut_policy_fhedt_tile_depth_override;
+    request->lut_policy_fhedt_tile_xy = encoder->lut_policy_fhedt_tile_xy;
+    request->lut_policy_fhedt_tile_xy_override =
+        encoder->lut_policy_fhedt_tile_xy_override;
+    request->lut_policy_fhedt_use_cache = encoder->lut_policy_fhedt_use_cache;
+    request->lut_policy_fhedt_use_cache_override =
+        encoder->lut_policy_fhedt_use_cache_override;
+    request->lut_policy_fhedt_use_dist2 = encoder->lut_policy_fhedt_use_dist2;
+    request->lut_policy_fhedt_use_dist2_override =
+        encoder->lut_policy_fhedt_use_dist2_override;
+    memcpy(request->lut_policy_fhedt_weights, encoder->lut_policy_fhedt_weights,
+        sizeof(request->lut_policy_fhedt_weights));
+    request->lut_policy_fhedt_weights_override =
+        encoder->lut_policy_fhedt_weights_override;
+    request->lut_policy_override = encoder->lut_policy_override;
+    request->lut_policy_packing = encoder->lut_policy_packing;
+    request->lut_policy_packing_override = encoder->lut_policy_packing_override;
+    request->lut_policy_shared_instance = encoder->lut_policy_shared_instance;
+    request->lut_policy_shared_instance_override =
+        encoder->lut_policy_shared_instance_override;
+    request->merge_policy_channel_factor_l =
+        encoder->merge_policy_channel_factor_l;
+    request->merge_policy_channel_factor_l_override =
+        encoder->merge_policy_channel_factor_l_override;
+    request->merge_policy_lloyd = encoder->merge_policy_lloyd;
+    request->merge_policy_lloyd_override = encoder->merge_policy_lloyd_override;
+    request->merge_policy_override = encoder->merge_policy_override;
+    request->merge_policy_oversplit = encoder->merge_policy_oversplit;
+    request->merge_policy_oversplit_override =
+        encoder->merge_policy_oversplit_override;
+    request->method_for_diffuse = encoder->method_for_diffuse;
+    request->method_for_largest = encoder->method_for_largest;
+    request->method_for_largest_override = encoder->method_for_largest_override;
+    request->method_for_rep = encoder->method_for_rep;
+    request->output_color_definition = encoder->output_color_definition;
+    request->output_colorspace = encoder->output_colorspace;
+    request->precision_requested = encoder->precision_requested;
+    request->prefer_float32 = encoder->prefer_float32;
+    request->quality_mode = encoder->quality_mode;
+    request->quantize_model = encoder->quantize_model;
+    request->quantize_model_heckbert_profile =
+        encoder->quantize_model_heckbert_profile;
+    request->quantize_model_kcenter_algo = encoder->quantize_model_kcenter_algo;
+    request->quantize_model_kcenter_algo_override =
+        encoder->quantize_model_kcenter_algo_override;
+    request->quantize_model_kcenter_auto_fft_threshold =
+        encoder->quantize_model_kcenter_auto_fft_threshold;
+    request->quantize_model_kcenter_auto_fft_threshold_override =
+        encoder->quantize_model_kcenter_auto_fft_threshold_override;
+    request->quantize_model_kcenter_auto_policy =
+        encoder->quantize_model_kcenter_auto_policy;
+    request->quantize_model_kcenter_auto_policy_override =
+        encoder->quantize_model_kcenter_auto_policy_override;
+    request->quantize_model_kcenter_budget_policy =
+        encoder->quantize_model_kcenter_budget_policy;
+    request->quantize_model_kcenter_budget_policy_override =
+        encoder->quantize_model_kcenter_budget_policy_override;
+    request->quantize_model_kcenter_budget_scale =
+        encoder->quantize_model_kcenter_budget_scale;
+    request->quantize_model_kcenter_budget_scale_override =
+        encoder->quantize_model_kcenter_budget_scale_override;
+    request->quantize_model_kcenter_candidate_policy =
+        encoder->quantize_model_kcenter_candidate_policy;
+    request->quantize_model_kcenter_candidate_policy_override =
+        encoder->quantize_model_kcenter_candidate_policy_override;
+    request->quantize_model_kcenter_histbits =
+        encoder->quantize_model_kcenter_histbits;
+    request->quantize_model_kcenter_histbits_override =
+        encoder->quantize_model_kcenter_histbits_override;
+    request->quantize_model_kcenter_init_seeds =
+        encoder->quantize_model_kcenter_init_seeds;
+    request->quantize_model_kcenter_init_seeds_override =
+        encoder->quantize_model_kcenter_init_seeds_override;
+    request->quantize_model_kcenter_iter = encoder->quantize_model_kcenter_iter;
+    request->quantize_model_kcenter_iter_override =
+        encoder->quantize_model_kcenter_iter_override;
+    request->quantize_model_kcenter_point_budget =
+        encoder->quantize_model_kcenter_point_budget;
+    request->quantize_model_kcenter_point_budget_override =
+        encoder->quantize_model_kcenter_point_budget_override;
+    request->quantize_model_kcenter_profile =
+        encoder->quantize_model_kcenter_profile;
+    request->quantize_model_kcenter_profile_override =
+        encoder->quantize_model_kcenter_profile_override;
+    request->quantize_model_kcenter_prune_mass =
+        encoder->quantize_model_kcenter_prune_mass;
+    request->quantize_model_kcenter_prune_mass_override =
+        encoder->quantize_model_kcenter_prune_mass_override;
+    request->quantize_model_kcenter_rare_keep =
+        encoder->quantize_model_kcenter_rare_keep;
+    request->quantize_model_kcenter_rare_keep_override =
+        encoder->quantize_model_kcenter_rare_keep_override;
+    request->quantize_model_kcenter_restarts =
+        encoder->quantize_model_kcenter_restarts;
+    request->quantize_model_kcenter_restarts_override =
+        encoder->quantize_model_kcenter_restarts_override;
+    request->quantize_model_kcenter_seed = encoder->quantize_model_kcenter_seed;
+    request->quantize_model_kcenter_seed_override =
+        encoder->quantize_model_kcenter_seed_override;
+    request->quantize_model_kcenter_space_policy =
+        encoder->quantize_model_kcenter_space_policy;
+    request->quantize_model_kcenter_space_policy_override =
+        encoder->quantize_model_kcenter_space_policy_override;
+    request->quantize_model_kcenter_swap_min_gain =
+        encoder->quantize_model_kcenter_swap_min_gain;
+    request->quantize_model_kcenter_swap_min_gain_override =
+        encoder->quantize_model_kcenter_swap_min_gain_override;
+    request->quantize_model_kcenter_swap_patience =
+        encoder->quantize_model_kcenter_swap_patience;
+    request->quantize_model_kcenter_swap_patience_override =
+        encoder->quantize_model_kcenter_swap_patience_override;
+    request->quantize_model_kcenter_swap_topk =
+        encoder->quantize_model_kcenter_swap_topk;
+    request->quantize_model_kcenter_swap_topk_override =
+        encoder->quantize_model_kcenter_swap_topk_override;
+    request->quantize_model_kcenter_swap_update =
+        encoder->quantize_model_kcenter_swap_update;
+    request->quantize_model_kcenter_swap_update_override =
+        encoder->quantize_model_kcenter_swap_update_override;
+    request->quantize_model_kmeans_backend =
+        encoder->quantize_model_kmeans_backend;
+    request->quantize_model_kmeans_backend_override =
+        encoder->quantize_model_kmeans_backend_override;
+    request->quantize_model_kmeans_binbits =
+        encoder->quantize_model_kmeans_binbits;
+    request->quantize_model_kmeans_binbits_override =
+        encoder->quantize_model_kmeans_binbits_override;
+    request->quantize_model_kmeans_feedback_interval =
+        encoder->quantize_model_kmeans_feedback_interval;
+    request->quantize_model_kmeans_feedback_interval_override =
+        encoder->quantize_model_kmeans_feedback_interval_override;
+    request->quantize_model_kmeans_feedback_mode =
+        encoder->quantize_model_kmeans_feedback_mode;
+    request->quantize_model_kmeans_feedback_override =
+        encoder->quantize_model_kmeans_feedback_override;
+    request->quantize_model_kmeans_feedback_slots =
+        encoder->quantize_model_kmeans_feedback_slots;
+    request->quantize_model_kmeans_feedback_slots_override =
+        encoder->quantize_model_kmeans_feedback_slots_override;
+    request->quantize_model_kmeans_init_override =
+        encoder->quantize_model_kmeans_init_override;
+    request->quantize_model_kmeans_init_type =
+        encoder->quantize_model_kmeans_init_type;
+    request->quantize_model_kmeans_iter = encoder->quantize_model_kmeans_iter;
+    request->quantize_model_kmeans_iter_max =
+        encoder->quantize_model_kmeans_iter_max;
+    request->quantize_model_kmeans_iter_max_override =
+        encoder->quantize_model_kmeans_iter_max_override;
+    request->quantize_model_kmeans_iter_override =
+        encoder->quantize_model_kmeans_iter_override;
+    request->quantize_model_kmeans_mapping_mode =
+        encoder->quantize_model_kmeans_mapping_mode;
+    request->quantize_model_kmeans_mapping_override =
+        encoder->quantize_model_kmeans_mapping_override;
+    request->quantize_model_kmeans_miniter =
+        encoder->quantize_model_kmeans_miniter;
+    request->quantize_model_kmeans_miniter_override =
+        encoder->quantize_model_kmeans_miniter_override;
+    request->quantize_model_kmeans_polish_iter =
+        encoder->quantize_model_kmeans_polish_iter;
+    request->quantize_model_kmeans_polish_iter_override =
+        encoder->quantize_model_kmeans_polish_iter_override;
+    request->quantize_model_kmeans_prune_override =
+        encoder->quantize_model_kmeans_prune_override;
+    request->quantize_model_kmeans_prune_policy =
+        encoder->quantize_model_kmeans_prune_policy;
+    request->quantize_model_kmeans_restarts =
+        encoder->quantize_model_kmeans_restarts;
+    request->quantize_model_kmeans_restarts_override =
+        encoder->quantize_model_kmeans_restarts_override;
+    request->quantize_model_kmeans_seed = encoder->quantize_model_kmeans_seed;
+    request->quantize_model_kmeans_seed_override =
+        encoder->quantize_model_kmeans_seed_override;
+    request->quantize_model_kmeans_softdist_mode =
+        encoder->quantize_model_kmeans_softdist_mode;
+    request->quantize_model_kmeans_softdist_override =
+        encoder->quantize_model_kmeans_softdist_override;
+    request->quantize_model_kmeans_threshold =
+        encoder->quantize_model_kmeans_threshold;
+    request->quantize_model_kmeans_threshold_override =
+        encoder->quantize_model_kmeans_threshold_override;
+    request->quantize_model_kmedoids_algo =
+        encoder->quantize_model_kmedoids_algo;
+    request->quantize_model_kmedoids_algo_override =
+        encoder->quantize_model_kmedoids_algo_override;
+    request->quantize_model_kmedoids_auction =
+        encoder->quantize_model_kmedoids_auction;
+    request->quantize_model_kmedoids_auction_override =
+        encoder->quantize_model_kmedoids_auction_override;
+    request->quantize_model_kmedoids_auction_shortlist =
+        encoder->quantize_model_kmedoids_auction_shortlist;
+    request->quantize_model_kmedoids_auction_shortlist_override =
+        encoder->quantize_model_kmedoids_auction_shortlist_override;
+    request->quantize_model_kmedoids_bandit_batch =
+        encoder->quantize_model_kmedoids_bandit_batch;
+    request->quantize_model_kmedoids_bandit_batch_override =
+        encoder->quantize_model_kmedoids_bandit_batch_override;
+    request->quantize_model_kmedoids_bandit_candidates =
+        encoder->quantize_model_kmedoids_bandit_candidates;
+    request->quantize_model_kmedoids_bandit_candidates_override =
+        encoder->quantize_model_kmedoids_bandit_candidates_override;
+    request->quantize_model_kmedoids_bandit_iter =
+        encoder->quantize_model_kmedoids_bandit_iter;
+    request->quantize_model_kmedoids_bandit_iter_override =
+        encoder->quantize_model_kmedoids_bandit_iter_override;
+    request->quantize_model_kmedoids_clara_sample =
+        encoder->quantize_model_kmedoids_clara_sample;
+    request->quantize_model_kmedoids_clara_sample_override =
+        encoder->quantize_model_kmedoids_clara_sample_override;
+    request->quantize_model_kmedoids_clara_trials =
+        encoder->quantize_model_kmedoids_clara_trials;
+    request->quantize_model_kmedoids_clara_trials_override =
+        encoder->quantize_model_kmedoids_clara_trials_override;
+    request->quantize_model_kmedoids_clarans_local =
+        encoder->quantize_model_kmedoids_clarans_local;
+    request->quantize_model_kmedoids_clarans_local_override =
+        encoder->quantize_model_kmedoids_clarans_local_override;
+    request->quantize_model_kmedoids_clarans_neighbors =
+        encoder->quantize_model_kmedoids_clarans_neighbors;
+    request->quantize_model_kmedoids_clarans_neighbors_override =
+        encoder->quantize_model_kmedoids_clarans_neighbors_override;
+    request->quantize_model_kmedoids_histbits =
+        encoder->quantize_model_kmedoids_histbits;
+    request->quantize_model_kmedoids_histbits_override =
+        encoder->quantize_model_kmedoids_histbits_override;
+    request->quantize_model_kmedoids_iter =
+        encoder->quantize_model_kmedoids_iter;
+    request->quantize_model_kmedoids_iter_override =
+        encoder->quantize_model_kmedoids_iter_override;
+    request->quantize_model_kmedoids_point_budget =
+        encoder->quantize_model_kmedoids_point_budget;
+    request->quantize_model_kmedoids_point_budget_override =
+        encoder->quantize_model_kmedoids_point_budget_override;
+    request->quantize_model_kmedoids_prune_mass =
+        encoder->quantize_model_kmedoids_prune_mass;
+    request->quantize_model_kmedoids_prune_mass_override =
+        encoder->quantize_model_kmedoids_prune_mass_override;
+    request->quantize_model_kmedoids_rare_keep =
+        encoder->quantize_model_kmedoids_rare_keep;
+    request->quantize_model_kmedoids_rare_keep_override =
+        encoder->quantize_model_kmedoids_rare_keep_override;
+    request->quantize_model_kmedoids_sample =
+        encoder->quantize_model_kmedoids_sample;
+    request->quantize_model_kmedoids_sample_override =
+        encoder->quantize_model_kmedoids_sample_override;
+    request->quantize_model_kmedoids_seed =
+        encoder->quantize_model_kmedoids_seed;
+    request->quantize_model_kmedoids_seed_override =
+        encoder->quantize_model_kmedoids_seed_override;
+    request->snap_policy = encoder->snap_policy;
+    request->snap_policy_approach_rate = encoder->snap_policy_approach_rate;
+    request->snap_policy_approach_rate_override =
+        encoder->snap_policy_approach_rate_override;
+    request->snap_policy_channel_factor_l =
+        encoder->snap_policy_channel_factor_l;
+    request->snap_policy_channel_factor_l_override =
+        encoder->snap_policy_channel_factor_l_override;
+    request->snap_policy_grid = encoder->snap_policy_grid;
+    request->snap_policy_grid_override = encoder->snap_policy_grid_override;
+    request->snap_policy_override = encoder->snap_policy_override;
+    request->snap_policy_timing = encoder->snap_policy_timing;
+    request->snap_policy_timing_override = encoder->snap_policy_timing_override;
+    request->working_colorspace = encoder->working_colorspace;
+    if (encoder->bgcolor != NULL) {
+        memcpy(request->background, encoder->bgcolor, 3);
+        request->bgcolor = request->background;
+    }
+    status = sixel_encoder_select_palette_quantizer(encoder, state,
+                                                    &request->quantizer);
+    if (SIXEL_SUCCEEDED(status) && encoder->output_icc != NULL) {
+        request->output_icc = sixel_cdef_clone(encoder->output_icc);
+        if (request->output_icc == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+        }
+    }
+    if (SIXEL_SUCCEEDED(status) && encoder->gamut_mapper != NULL) {
+        status = sixel_gamut_clone(encoder->gamut_mapper,
+                                   &request->gamut_mapper);
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_palette_build_request_free(request);
+        return status;
+    }
+    *out = request;
+    return SIXEL_OK;
+}
+
+/* The builder reads only its owned request and private sample/state. */
 static SIXELSTATUS
-sixel_encoder_prepare_palette(
-    sixel_encoder_t *encoder,  /* encoder object */
-    sixel_frame_t   *frame,    /* input frame object */
-    sixel_dither_t  **dither,  /* dither object to be created from the frame */
-    sixel_palette_frame_state_t *palette_state,
-    int allow_cache,
-    sixel_timeline_logger_t *logger,
-    int from_map_image)
+sixel_palette_request_build(sixel_palette_build_request_t const *request,
+                            sixel_frame_t *frame, sixel_dither_t **dither,
+                            sixel_palette_frame_state_t *palette_state,
+                            sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_filter_final_merge_config_t merge_config;
+    sixel_palette_quantizer_selection_t quantizer_selection;
     sixel_timeline_logger_t *target_logger;
-    int cache_allowed;
     sixel_frame_t *palette_frame;
     sixel_frame_t *cluster_frame;
     unsigned char *palette_pixels;
@@ -7983,23 +8641,19 @@ sixel_encoder_prepare_palette(
     unsigned int effective_merge_lloyd;
     int effective_lut_policy;
     int effective_lut_policy_override;
-    int fixed_palette_cache_candidate;
-    int dither_cache_hit;
-    int fixed_colorspace;
-    int fixed_native;
-    sixel_dither_t *fixed_source;
     int palette_width;
     int palette_height;
     size_t source_point_count;
     sixel_filter_t *merge_filter;
+    sixel_palette_cover_options_t cover_options;
+    sixel_palette_snap_options_t snap_options;
     sixel_palette_binning_policy_t requested_binning;
     sixel_palette_policy_origin_t binning_origin;
-    sixel_palette_quantizer_selection_t quantizer_selection;
     sixel_palette_build_attempt_t build_attempt;
     sixel_palette_policy_resolution_t quantizer_attempt;
 
     target_logger = logger;
-    cache_allowed = allow_cache != 0;
+    quantizer_selection = request->quantizer;
     palette_frame = frame;
     cluster_frame = NULL;
     palette_pixels = NULL;
@@ -8021,18 +8675,12 @@ sixel_encoder_prepare_palette(
     effective_merge_lloyd = 3u;
     effective_lut_policy = SIXEL_LUT_POLICY_AUTO;
     effective_lut_policy_override = 0;
-    fixed_palette_cache_candidate = 0;
-    dither_cache_hit = 0;
-    fixed_colorspace = SIXEL_COLORSPACE_GAMMA;
-    fixed_native = 0;
-    fixed_source = NULL;
     palette_width = 0;
     palette_height = 0;
     source_point_count = 0u;
     merge_filter = NULL;
     requested_binning = SIXEL_PALETTE_BINNING_AUTO;
     binning_origin = SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
-    memset(&quantizer_selection, 0, sizeof(quantizer_selection));
     memset(&build_attempt, 0, sizeof(build_attempt));
     sixel_palette_binning_state_init(
         &build_attempt.binning,
@@ -8043,6 +8691,724 @@ sixel_encoder_prepare_palette(
         &quantizer_attempt,
         SIXEL_QUANTIZE_MODEL_AUTO,
         SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT);
+    *dither = NULL;
+    if (palette_state->quantizer.phase !=
+            SIXEL_PALETTE_POLICY_UNRESOLVED ||
+            palette_state->binning.policy.phase !=
+                SIXEL_PALETTE_POLICY_UNRESOLVED) {
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
+    }
+    quantizer_selection = request->quantizer;
+    effective_quantize_model = quantizer_selection.effective;
+    /* Validate only when a palette is constructed. Fixed palettes and reuse
+     * have no representative-selection stage and intentionally bypass -s. */
+    if (request->method_for_rep != SIXEL_REP_AUTO &&
+            effective_quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        sixel_helper_set_additional_message(
+            "-s/--select-color requires heckbert; use -s auto with "
+            "kmeans, medoids or center.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    requested_binning = (sixel_palette_binning_policy_t)
+        palette_state->binning.policy.requested;
+    binning_origin = palette_state->binning.policy.origin;
+    sixel_palette_binning_state_init(&build_attempt.binning,
+                                     requested_binning,
+                                     binning_origin);
+    quantizer_attempt = palette_state->quantizer;
+    sixel_trace_topic_message(
+        "palette_contract",
+        "LSXBIN1|requested=%s|origin=%s|quantizer_requested=%d|"
+        "quantizer_effective=%d|phase=quantizer",
+        sixel_palette_binning_policy_name(requested_binning),
+        sixel_palette_policy_origin_name(binning_origin),
+        request->quantize_model,
+        effective_quantize_model);
+    palette_reqcolors = request->capacity;
+    reserve_alpha_key =
+        palette_reqcolors > 1
+        && (sixel_encoder_frame_preserves_alpha_key(frame)
+            || (!request->from_map_image &&
+                request->delta_alpha_key));
+    if (reserve_alpha_key) {
+        --palette_reqcolors;
+    }
+    /* Cover repairs real colors before the omission key is appended. Carry
+     * its capacity separately from the quantizer's requested color count:
+     * opted-in growth may exceed that request, but not consume this slot. */
+    build_attempt.reserved_colors = reserve_alpha_key ? 1U : 0U;
+    effective_method_for_largest = SIXEL_LARGE_NORM;
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        /*
+         * Largest-axis selection only applies to the Heckbert median-cut
+         * palette builder.
+         */
+        effective_method_for_largest = request->method_for_largest;
+    }
+    effective_final_merge_mode = request->final_merge_mode;
+    effective_merge_oversplit_override
+        = request->merge_policy_oversplit_override;
+    effective_merge_oversplit = request->merge_policy_oversplit;
+    effective_merge_lloyd_override
+        = request->merge_policy_lloyd_override;
+    effective_merge_lloyd = request->merge_policy_lloyd;
+    effective_lut_policy = request->lut_policy;
+    effective_lut_policy_override = request->lut_policy_override;
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            && request->quantize_model_heckbert_profile
+                == SIXEL_HECKBERT_PROFILE_QUALITY
+            && effective_merge_oversplit_override == 0
+            && effective_final_merge_mode == SIXEL_FINAL_MERGE_WARD) {
+        effective_merge_oversplit =
+            sixel_encoder_heckbert_quality_oversplit_factor(palette_reqcolors);
+        effective_merge_oversplit_override = 1;
+        if (effective_merge_lloyd_override == 0) {
+            /*
+             * Keep profile=quality defaults effective without changing CLI
+             * precedence: explicit merge_lloyd still wins.
+             */
+            effective_merge_lloyd = 2u;
+            effective_merge_lloyd_override = 1;
+        }
+    }
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            && request->quantize_model_heckbert_profile
+                == SIXEL_HECKBERT_PROFILE_SPEED
+            && effective_lut_policy_override == 0
+            && request->merge_policy_override == 0
+            && request->method_for_largest_override == 0
+            && effective_lut_policy == SIXEL_LUT_POLICY_AUTO) {
+        /*
+         * Keep speed profile internal and compatible: when lookup policy is not
+         * explicitly pinned by user/env, use the lighter 5bit histogram bins.
+         */
+        effective_lut_policy = SIXEL_LUT_POLICY_5BIT;
+    }
+
+    status = sixel_dither_new(dither, palette_reqcolors, request->allocator);
+    if (SIXEL_FAILED(status) || *dither == NULL) {
+        if (SIXEL_SUCCEEDED(status)) {
+            status = SIXEL_BAD_ALLOCATION;
+        }
+        goto end;
+    }
+    (*dither)->use_rgb101_palette =
+        request->native_palette;
+    if (reserve_alpha_key) {
+        /*
+         * Signal dither_initialize() to keep alpha-bearing input so palette
+         * generation can ignore fully transparent pixels.
+         */
+        sixel_dither_set_transparent(*dither, 0);
+        sixel_dither_set_transparent_bgcolor_hint(*dither,
+                                                  request->bgcolor);
+    } else {
+        sixel_dither_clear_transparent_bgcolor_hint(*dither);
+    }
+
+    clustering_colorspace = request->clustering_colorspace;
+    working_colorspace = request->working_colorspace;
+    /* The clustering view must preserve precision retained by the planner,
+     * including CMS output when the base preference is auto or 8bit. */
+    prefer_float32 = request->prefer_float32 ||
+        SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_get_pixelformat(frame));
+    if (reserve_alpha_key && !(*dither)->use_rgb101_palette) {
+        clustering_colorspace = sixel_frame_get_colorspace(frame);
+        palette_target_pixelformat = sixel_frame_get_pixelformat(frame);
+    } else {
+        palette_target_pixelformat =
+            sixel_encoder_pixelformat_for_colorspace(clustering_colorspace,
+                                                     prefer_float32);
+    }
+
+    if ((!reserve_alpha_key || (*dither)->use_rgb101_palette) &&
+        (request->gamut_mapper != NULL ||
+         sixel_frame_get_pixelformat(frame) != palette_target_pixelformat ||
+         sixel_frame_get_colorspace(frame) != clustering_colorspace)) {
+        status = sixel_encoder_frame_clone(frame,
+                                           request->allocator,
+                                           &cluster_frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_frame = cluster_frame;
+        if (sixel_frame_get_pixelformat(palette_frame)
+                != palette_target_pixelformat) {
+            status = sixel_frame_set_pixelformat(palette_frame,
+                                                 palette_target_pixelformat);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+        if (sixel_frame_get_colorspace(palette_frame)
+                != clustering_colorspace) {
+            status = sixel_encoder_convert_frame_colorspace(
+                palette_frame,
+                clustering_colorspace);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+    }
+
+    /* A map image defines the immutable fixed-palette source. Map only
+     * its application copy after the caller selects the destination. */
+    if (!request->from_map_image) {
+        status = sixel_encoder_map_gamut(request->gamut_mapper, palette_frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
+    sixel_palette_request_lookup_options(request, *dither);
+    sixel_dither_set_lut_policy_with_override(
+        *dither,
+        effective_lut_policy,
+        effective_lut_policy_override);
+    (*dither)->gpu_policy = request->gpu_policy;
+    (*dither)->gpu_palette_threshold = request->gpu_palette_threshold;
+    memset(&merge_config, 0, sizeof(merge_config));
+    merge_config.dither = *dither;
+    merge_config.final_merge_mode = effective_final_merge_mode;
+    status = sixel_filter_factory_create_by_kind(
+        SIXEL_FILTER_KIND_FINAL_MERGE,
+        &merge_config,
+        &merge_filter);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_filter_run(merge_filter,
+                                  request->allocator,
+                                  target_logger);
+    }
+    sixel_filter_free(merge_filter);
+    merge_filter = NULL;
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    (*dither)->quantize_model = effective_quantize_model;
+
+    palette_pixels = sixel_frame_get_pixels(palette_frame);
+    palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
+    /* Finish fallible sample preparation before installing temporary
+     * quantizer overrides. Allocation failure must not leave them active. */
+    palette_width = sixel_frame_get_width(palette_frame);
+    palette_height = sixel_frame_get_height(palette_frame);
+    if (palette_width <= 0 || palette_height <= 0 ||
+            (size_t)palette_width > SIZE_MAX / (size_t)palette_height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    /* Native construction and newly separated byte input share visible-only
+     * candidates. Excluded legacy paths retain their existing preparation. */
+    if (reserve_alpha_key &&
+            sixel_encoder_frame_has_transparent_mask(palette_frame) &&
+            ((*dither)->use_rgb101_palette ||
+             (palette_pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+              request->native_candidate))) {
+        status = sixel_encoder_visible_palette_pixels(palette_frame,
+            request->allocator, &visible_pixels, &palette_width);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_pixels = visible_pixels;
+        palette_height = 1;
+    }
+    quantize_override_lock_acquired =
+        sixel_encoder_quantize_override_lock_acquire();
+    sixel_set_kmeans_backend_override(
+        request->quantize_model_kmeans_backend_override,
+        (sixel_kmeans_backend)request->quantize_model_kmeans_backend);
+    sixel_set_kmeans_init_type_override(
+        request->quantize_model_kmeans_init_override,
+        (sixel_kmeans_init_type)request->quantize_model_kmeans_init_type);
+    sixel_set_kmeans_threshold_override(
+        request->quantize_model_kmeans_threshold_override,
+        request->quantize_model_kmeans_threshold);
+    sixel_set_kmeans_binbits_override(
+        request->quantize_model_kmeans_binbits_override,
+        request->quantize_model_kmeans_binbits);
+    sixel_set_kmeans_mapping_mode_override(
+        request->quantize_model_kmeans_mapping_override,
+        (sixel_kmeans_mapping_mode)
+            request->quantize_model_kmeans_mapping_mode);
+    sixel_set_kmeans_softdist_mode_override(
+        request->quantize_model_kmeans_softdist_override,
+        (sixel_kmeans_softdist_mode)
+            request->quantize_model_kmeans_softdist_mode);
+    sixel_set_kmeans_feedback_mode_override(
+        request->quantize_model_kmeans_feedback_override,
+        (sixel_kmeans_feedback_mode)
+            request->quantize_model_kmeans_feedback_mode);
+    sixel_set_kmeans_prune_policy_override(
+        request->quantize_model_kmeans_prune_override,
+        (sixel_kmeans_prune_policy)
+            request->quantize_model_kmeans_prune_policy);
+    sixel_set_kmeans_seed_override(
+        request->quantize_model_kmeans_seed_override,
+        (uint32_t)request->quantize_model_kmeans_seed);
+    sixel_set_kmeans_restarts_override(
+        request->quantize_model_kmeans_restarts_override,
+        request->quantize_model_kmeans_restarts);
+    sixel_set_kmeans_iter_override(
+        request->quantize_model_kmeans_iter_override,
+        request->quantize_model_kmeans_iter);
+    sixel_set_kmeans_iter_max_override(
+        request->quantize_model_kmeans_iter_max_override,
+        request->quantize_model_kmeans_iter_max);
+    sixel_set_kmeans_miniter_override(
+        request->quantize_model_kmeans_miniter_override,
+        request->quantize_model_kmeans_miniter);
+    sixel_set_kmeans_polish_iter_override(
+        request->quantize_model_kmeans_polish_iter_override,
+        request->quantize_model_kmeans_polish_iter);
+    sixel_set_kmeans_feedback_slots_override(
+        request->quantize_model_kmeans_feedback_slots_override,
+        request->quantize_model_kmeans_feedback_slots);
+    sixel_set_kmeans_feedback_interval_override(
+        request->quantize_model_kmeans_feedback_interval_override,
+        request->quantize_model_kmeans_feedback_interval);
+    sixel_set_final_merge_target_factor_override(
+        effective_merge_oversplit_override,
+        effective_merge_oversplit);
+    sixel_set_final_merge_lloyd_iterations_override(
+        effective_merge_lloyd_override,
+        effective_merge_lloyd);
+    sixel_set_final_merge_channel_factor_override(
+        request->merge_policy_channel_factor_l_override,
+        request->merge_policy_channel_factor_l);
+    sixel_set_kmedoids_algo_override(
+        request->quantize_model_kmedoids_algo_override,
+        (sixel_kmedoids_algo_t)request->quantize_model_kmedoids_algo);
+    sixel_set_kmedoids_seed_override(
+        request->quantize_model_kmedoids_seed_override,
+        (uint32_t)request->quantize_model_kmedoids_seed);
+    sixel_set_kmedoids_iter_override(
+        request->quantize_model_kmedoids_iter_override,
+        request->quantize_model_kmedoids_iter);
+    sixel_set_kmedoids_sample_override(
+        request->quantize_model_kmedoids_sample_override,
+        request->quantize_model_kmedoids_sample);
+    sixel_set_kmedoids_clara_trials_override(
+        request->quantize_model_kmedoids_clara_trials_override,
+        request->quantize_model_kmedoids_clara_trials);
+    sixel_set_kmedoids_clara_sample_override(
+        request->quantize_model_kmedoids_clara_sample_override,
+        request->quantize_model_kmedoids_clara_sample);
+    sixel_set_kmedoids_clarans_local_override(
+        request->quantize_model_kmedoids_clarans_local_override,
+        request->quantize_model_kmedoids_clarans_local);
+    sixel_set_kmedoids_clarans_neighbors_override(
+        request->quantize_model_kmedoids_clarans_neighbors_override,
+        request->quantize_model_kmedoids_clarans_neighbors);
+    sixel_set_kmedoids_bandit_iter_override(
+        request->quantize_model_kmedoids_bandit_iter_override,
+        request->quantize_model_kmedoids_bandit_iter);
+    sixel_set_kmedoids_bandit_candidates_override(
+        request->quantize_model_kmedoids_bandit_candidates_override,
+        request->quantize_model_kmedoids_bandit_candidates);
+    sixel_set_kmedoids_bandit_batch_override(
+        request->quantize_model_kmedoids_bandit_batch_override,
+        request->quantize_model_kmedoids_bandit_batch);
+    sixel_set_kmedoids_histbits_override(
+        request->quantize_model_kmedoids_histbits_override,
+        request->quantize_model_kmedoids_histbits);
+    sixel_set_kmedoids_point_budget_override(
+        request->quantize_model_kmedoids_point_budget_override,
+        request->quantize_model_kmedoids_point_budget);
+    sixel_set_kmedoids_rare_keep_override(
+        request->quantize_model_kmedoids_rare_keep_override,
+        request->quantize_model_kmedoids_rare_keep);
+    sixel_set_kmedoids_prune_mass_override(
+        request->quantize_model_kmedoids_prune_mass_override,
+        request->quantize_model_kmedoids_prune_mass);
+    sixel_set_kmedoids_auction_override(
+        request->quantize_model_kmedoids_auction_override,
+        request->quantize_model_kmedoids_auction);
+    sixel_set_kmedoids_auction_shortlist_override(
+        request->quantize_model_kmedoids_auction_shortlist_override,
+        request->quantize_model_kmedoids_auction_shortlist);
+    {
+        /* Fixed palettes bypass cover, including an image map's internal
+         * construction. Do not let AUTO insert or move supplied colors. */
+        cover_options.policy_override = request->from_map_image ||
+            request->cover_policy_override;
+        cover_options.policy = request->from_map_image
+            ? SIXEL_PALETTE_COVER_OFF : request->cover_policy;
+        cover_options.grow_override = request->cover_policy_grow_override;
+        cover_options.grow = request->cover_policy_grow;
+        cover_options.mode_override = request->cover_policy_mode_override;
+        cover_options.mode = request->cover_policy_mode;
+        sixel_set_palette_cover_override(
+            cover_options.policy_override || cover_options.grow_override ||
+                cover_options.mode_override,
+            &cover_options);
+    }
+    {
+        snap_options.policy_override = request->snap_policy_override;
+        snap_options.policy = request->snap_policy;
+        snap_options.timing_override =
+            request->snap_policy_timing_override;
+        snap_options.timing = request->snap_policy_timing;
+        snap_options.approach_rate_override =
+            request->snap_policy_approach_rate_override;
+        snap_options.approach_rate =
+            request->snap_policy_approach_rate;
+        snap_options.channel_factor_l_override =
+            request->snap_policy_channel_factor_l_override;
+        snap_options.channel_factor_l =
+            request->snap_policy_channel_factor_l;
+        sixel_set_palette_snap_override(&snap_options);
+        sixel_palette_snap_set_output(request->from_map_image
+            ? SIXEL_PALETTE_OUTPUT_LEGACY : request->output_color_definition,
+            request->snap_policy_grid_override, request->snap_policy_grid);
+        sixel_palette_snap_set_icc(
+            request->from_map_image ? NULL : request->output_icc);
+    }
+    sixel_set_kcenter_algo_override(
+        request->quantize_model_kcenter_algo_override,
+        (sixel_kcenter_algo_t)request->quantize_model_kcenter_algo);
+    sixel_set_kcenter_profile_override(
+        request->quantize_model_kcenter_profile_override,
+        (sixel_kcenter_profile_t)request->quantize_model_kcenter_profile);
+    sixel_set_kcenter_seed_override(
+        request->quantize_model_kcenter_seed_override,
+        (uint32_t)request->quantize_model_kcenter_seed);
+    sixel_set_kcenter_restarts_override(
+        request->quantize_model_kcenter_restarts_override,
+        request->quantize_model_kcenter_restarts);
+    sixel_set_kcenter_init_seeds_override(
+        request->quantize_model_kcenter_init_seeds_override,
+        request->quantize_model_kcenter_init_seeds);
+    sixel_set_kcenter_iter_override(
+        request->quantize_model_kcenter_iter_override,
+        request->quantize_model_kcenter_iter);
+    sixel_set_kcenter_histbits_override(
+        request->quantize_model_kcenter_histbits_override,
+        request->quantize_model_kcenter_histbits);
+    sixel_set_kcenter_point_budget_override(
+        request->quantize_model_kcenter_point_budget_override,
+        request->quantize_model_kcenter_point_budget);
+    sixel_set_kcenter_auto_policy_override(
+        request->quantize_model_kcenter_auto_policy_override,
+        (sixel_kcenter_auto_policy_t)
+            request->quantize_model_kcenter_auto_policy);
+    sixel_set_kcenter_auto_fft_threshold_override(
+        request->quantize_model_kcenter_auto_fft_threshold_override,
+        request->quantize_model_kcenter_auto_fft_threshold);
+    sixel_set_kcenter_space_policy_override(
+        request->quantize_model_kcenter_space_policy_override,
+        (sixel_kcenter_space_policy_t)
+            request->quantize_model_kcenter_space_policy);
+    sixel_set_kcenter_candidate_policy_override(
+        request->quantize_model_kcenter_candidate_policy_override,
+        (sixel_kcenter_candidate_policy_t)
+            request->quantize_model_kcenter_candidate_policy);
+    sixel_set_kcenter_rare_keep_override(
+        request->quantize_model_kcenter_rare_keep_override,
+        request->quantize_model_kcenter_rare_keep);
+    sixel_set_kcenter_budget_policy_override(
+        request->quantize_model_kcenter_budget_policy_override,
+        (sixel_kcenter_budget_policy_t)
+            request->quantize_model_kcenter_budget_policy);
+    sixel_set_kcenter_budget_scale_override(
+        request->quantize_model_kcenter_budget_scale_override,
+        request->quantize_model_kcenter_budget_scale);
+    sixel_set_kcenter_swap_topk_override(
+        request->quantize_model_kcenter_swap_topk_override,
+        request->quantize_model_kcenter_swap_topk);
+    sixel_set_kcenter_swap_update_override(
+        request->quantize_model_kcenter_swap_update_override,
+        (sixel_kcenter_swap_update_t)
+            request->quantize_model_kcenter_swap_update);
+    sixel_set_kcenter_swap_patience_override(
+        request->quantize_model_kcenter_swap_patience_override,
+        request->quantize_model_kcenter_swap_patience);
+    sixel_set_kcenter_swap_min_gain_override(
+        request->quantize_model_kcenter_swap_min_gain_override,
+        request->quantize_model_kcenter_swap_min_gain);
+    sixel_set_kcenter_prune_mass_override(
+        request->quantize_model_kcenter_prune_mass_override,
+        request->quantize_model_kcenter_prune_mass);
+    source_point_count =
+        (size_t)palette_width * (size_t)palette_height;
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+        build_attempt.binning = palette_state->binning;
+    } else {
+        status = sixel_encoder_resolve_direct_binning(
+            request,
+            &build_attempt.binning,
+            effective_quantize_model,
+            source_point_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    build_attempt.heckbert.cut_sse = request->heckbert_cut_override
+        ? request->heckbert_cut : 1;
+    build_attempt.heckbert.order_sse = request->heckbert_order_override
+        ? request->heckbert_order : 1;
+    if (request->heckbert_weights_override) {
+        memcpy(build_attempt.heckbert.weights, request->heckbert_weights,
+            sizeof(build_attempt.heckbert.weights));
+    }
+    build_attempt.quantize_model = effective_quantize_model;
+    /* Resolve through the same setter used for palette application. AUTO
+     * may be resolved again after construction changes the palette size;
+     * both of its outcomes use the dithered representative policy. */
+    sixel_dither_set_diffusion_type(*dither, request->method_for_diffuse);
+    status = sixel_dither_initialize_with_palette_attempt(
+        *dither,
+        palette_pixels,
+        palette_width,
+        palette_height,
+        palette_pixelformat,
+        effective_method_for_largest,
+        request->method_for_rep,
+        request->quality_mode,
+        &build_attempt);
+    sixel_set_kmeans_backend_override(0, SIXEL_PALETTE_KMEANS_BACKEND_CPU);
+    sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
+    sixel_set_kmeans_threshold_override(0, 0.125);
+    sixel_set_kmeans_binbits_override(0, 6u);
+    sixel_set_kmeans_mapping_mode_override(
+        0,
+        SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM);
+    sixel_set_kmeans_softdist_mode_override(
+        0,
+        SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
+    sixel_set_kmeans_seed_override(0, 0u);
+    sixel_set_kmeans_restarts_override(0, 1u);
+    sixel_set_kmeans_iter_override(0, 0u);
+    sixel_set_kmeans_iter_max_override(0, 20u);
+    sixel_set_kmeans_miniter_override(0, 0u);
+    sixel_set_kmeans_polish_iter_override(0, 0u);
+    sixel_set_kmeans_feedback_mode_override(
+        0,
+        SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
+    sixel_set_kmeans_prune_policy_override(
+        0,
+        SIXEL_PALETTE_KMEANS_PRUNE_AUTO);
+    sixel_set_kmeans_feedback_slots_override(0, 1u);
+    sixel_set_kmeans_feedback_interval_override(0, 1u);
+    sixel_set_final_merge_target_factor_override(0, 1.81);
+    sixel_set_final_merge_lloyd_iterations_override(0, 3u);
+    sixel_set_final_merge_channel_factor_override(0, 1.0 / 3.0);
+    sixel_set_palette_cover_override(0, NULL);
+    sixel_set_palette_snap_override(NULL);
+    sixel_set_kmedoids_algo_override(
+        0,
+        SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
+    sixel_set_kmedoids_seed_override(0, 1u);
+    sixel_set_kmedoids_iter_override(0, 0u);
+    sixel_set_kmedoids_sample_override(0, 0u);
+    sixel_set_kmedoids_clara_trials_override(0, 0u);
+    sixel_set_kmedoids_clara_sample_override(0, 0u);
+    sixel_set_kmedoids_clarans_local_override(0, 0u);
+    sixel_set_kmedoids_clarans_neighbors_override(0, 0u);
+    sixel_set_kmedoids_bandit_iter_override(0, 0u);
+    sixel_set_kmedoids_bandit_candidates_override(0, 0u);
+    sixel_set_kmedoids_bandit_batch_override(0, 0u);
+    sixel_set_kmedoids_histbits_override(0, 0u);
+    sixel_set_kmedoids_point_budget_override(0, 0u);
+    sixel_set_kmedoids_rare_keep_override(0, 0u);
+    sixel_set_kmedoids_prune_mass_override(0, 0.0);
+    sixel_set_kmedoids_auction_override(0, 0);
+    sixel_set_kmedoids_auction_shortlist_override(0, 4u);
+    sixel_set_kcenter_algo_override(
+        0,
+        SIXEL_PALETTE_KCENTER_ALGO_AUTO);
+    sixel_set_kcenter_profile_override(
+        0,
+        SIXEL_PALETTE_KCENTER_PROFILE_LEGACY);
+    sixel_set_kcenter_seed_override(0, 1u);
+    sixel_set_kcenter_restarts_override(0, 1u);
+    sixel_set_kcenter_init_seeds_override(0, 1u);
+    sixel_set_kcenter_iter_override(0, 16u);
+    sixel_set_kcenter_histbits_override(0, 5u);
+    sixel_set_kcenter_point_budget_override(0, 0u);
+    sixel_set_kcenter_auto_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY);
+    sixel_set_kcenter_auto_fft_threshold_override(0, 2048u);
+    sixel_set_kcenter_space_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY);
+    sixel_set_kcenter_candidate_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY);
+    sixel_set_kcenter_rare_keep_override(0, 0u);
+    sixel_set_kcenter_budget_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY);
+    sixel_set_kcenter_budget_scale_override(0, 1.0);
+    sixel_set_kcenter_swap_topk_override(0, 1u);
+    sixel_set_kcenter_swap_update_override(
+        0,
+        SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL);
+    sixel_set_kcenter_swap_patience_override(0, 0u);
+    sixel_set_kcenter_swap_min_gain_override(0, 0.0);
+    sixel_set_kcenter_prune_mass_override(0, 0.995);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (build_attempt.quantize_model != effective_quantize_model) {
+        /*
+         * The palette component retains its historical solver fallback.  Do
+         * not publish the failed solver's binning attempt: validate and build
+         * metadata for the solver that actually produced the palette.
+         */
+        sixel_palette_binning_state_init(&build_attempt.binning,
+                                         requested_binning,
+                                         binning_origin);
+        status = sixel_encoder_resolve_direct_binning(
+            request,
+            &build_attempt.binning,
+            build_attempt.quantize_model,
+            source_point_count);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "palette fallback quantizer cannot consume the requested "
+                "binning policy.");
+            goto end;
+        }
+        (*dither)->quantize_model = build_attempt.quantize_model;
+    }
+
+    if (clustering_colorspace != working_colorspace) {
+        status = sixel_encoder_convert_palette_colorspace(
+            (*dither)->palette,
+            clustering_colorspace,
+            working_colorspace);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    if (reserve_alpha_key) {
+        status = sixel_encoder_attach_alpha_keycolor(request->bgcolor,
+            request->working_colorspace, *dither);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    sixel_encoder_quantize_override_lock_release(
+        quantize_override_lock_acquired);
+    quantize_override_lock_acquired = 0;
+
+    sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
+
+    if (build_attempt.binning.policy.phase ==
+            SIXEL_PALETTE_POLICY_RESOLVED) {
+        status = sixel_palette_policy_mark_executed(
+            &build_attempt.binning.policy);
+    } else if (build_attempt.binning.policy.phase ==
+                   SIXEL_PALETTE_POLICY_EXECUTED) {
+        status = SIXEL_OK;
+    } else {
+        status = SIXEL_LOGIC_ERROR;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_policy_resolve(
+            &quantizer_attempt,
+            build_attempt.quantize_model,
+            build_attempt.quantize_model == effective_quantize_model
+                ? quantizer_selection.reason
+                : SIXEL_PALETTE_RESOLUTION_FALLBACK);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_policy_mark_executed(&quantizer_attempt);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        palette_state->quantizer = quantizer_attempt;
+        palette_state->binning = build_attempt.binning;
+        palette_state->quantizer_retry_count =
+            build_attempt.quantizer_retry_count;
+    }
+
+end:
+    sixel_allocator_free(request->allocator, visible_pixels);
+    sixel_encoder_quantize_override_lock_release(
+        quantize_override_lock_acquired);
+    sixel_frame_unref(cluster_frame);
+    if (SIXEL_SUCCEEDED(status) && *dither != NULL &&
+            !request->from_map_image &&
+            request->native_palette) {
+        /* Complete immutable output metadata without touching capture or
+         * history. The ordered owner captures only the palette it applies. */
+        (*dither)->use_rgb101_palette = 1;
+        status = sixel_palette_map_gamut((*dither)->palette,
+            request->gamut_mapper, request->working_colorspace,
+            sixel_encoder_pixelformat_for_colorspace(
+                request->working_colorspace, 1));
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_palette_prepare_output_definition(
+                (*dither)->palette, request->working_colorspace,
+                request->output_color_definition, request->output_colorspace,
+                request->output_icc);
+        }
+        sixel_dither_set_optimize_palette(*dither, 0);
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_encoder_release_dither_output(dither);
+    } else {
+        sixel_palette_request_lookup_options(request, *dither);
+        (*dither)->gpu_policy = request->gpu_policy;
+        (*dither)->gpu_palette_threshold = request->gpu_palette_threshold;
+        (*dither)->force_palette = request->force_palette;
+    }
+    return status;
+}
+
+SIXELSTATUS
+sixel_palette_build_request_execute(
+    sixel_palette_build_request_t const *request, sixel_frame_t *sample,
+    sixel_dither_t **out, sixel_palette_frame_state_t *state,
+    sixel_timeline_logger_t *logger)
+{
+    SIXELSTATUS status;
+
+    *state = request->initial_state;
+    status = sixel_palette_request_build(request, sample, out, state, logger);
+    if (SIXEL_SUCCEEDED(status) &&
+            (*out)->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+        status = sixel_encoder_apply_lut_filter(*out,
+            request->consumer_pixelformat, logger, (*out)->lookup_policy);
+        if (SIXEL_FAILED(status)) {
+            sixel_encoder_release_dither_output(out);
+        }
+    }
+    return status;
+}
+
+/* create dither object from a frame */
+static SIXELSTATUS
+sixel_encoder_prepare_palette(
+    sixel_encoder_t *encoder,  /* encoder object */
+    sixel_frame_t   *frame,    /* input frame object */
+    sixel_dither_t  **dither,  /* dither object to be created from the frame */
+    sixel_palette_frame_state_t *palette_state,
+    int allow_cache,
+    sixel_timeline_logger_t *logger,
+    int from_map_image)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_timeline_logger_t *target_logger;
+    sixel_palette_build_request_t *request;
+    sixel_dither_t *fixed_source;
+    int cache_allowed;
+    int fixed_palette_cache_candidate;
+    int dither_cache_hit;
+    int fixed_colorspace;
+    int fixed_native;
+
+    target_logger = logger;
+    request = NULL;
+    fixed_source = NULL;
+    cache_allowed = allow_cache != 0;
+    fixed_palette_cache_candidate = 0;
+    dither_cache_hit = 0;
+    fixed_colorspace = SIXEL_COLORSPACE_GAMMA;
+    fixed_native = 0;
     if (encoder == NULL || frame == NULL || dither == NULL ||
             palette_state == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -8186,9 +9552,11 @@ sixel_encoder_prepare_palette(
             goto end;
         }
         sixel_dither_set_palette(*dither, sixel_frame_get_palette(frame));
-        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
+        sixel_dither_set_pixelformat(*dither,
+            sixel_frame_get_pixelformat(frame));
         if (sixel_frame_get_transparent(frame) != (-1)) {
-            sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
+            sixel_dither_set_transparent(*dither,
+                sixel_frame_get_transparent(frame));
         }
         goto end;
     }
@@ -8212,665 +9580,31 @@ sixel_encoder_prepare_palette(
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
-        sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
+        sixel_dither_set_pixelformat(*dither,
+            sixel_frame_get_pixelformat(frame));
         status = SIXEL_OK;
         goto end;
     }
 
-    if (palette_state->quantizer.phase !=
-            SIXEL_PALETTE_POLICY_UNRESOLVED ||
-            palette_state->binning.policy.phase !=
-                SIXEL_PALETTE_POLICY_UNRESOLVED) {
-        status = SIXEL_LOGIC_ERROR;
-        goto end;
+    status = sixel_palette_build_request_new(&request, encoder, frame,
+        palette_state, from_map_image);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_request_build(request, frame, dither,
+                                              palette_state, target_logger);
     }
-    status = sixel_encoder_select_palette_quantizer(
-        encoder,
-        palette_state,
-        &quantizer_selection);
+    sixel_palette_build_request_free(request);
+    if (SIXEL_SUCCEEDED(status) && !from_map_image &&
+            (*dither)->use_rgb101_palette && encoder->palette_output != NULL) {
+        status = sixel_encoder_capture_palette(encoder, *dither,
+                                                encoder->working_colorspace);
+    }
     if (SIXEL_FAILED(status)) {
-        goto end;
+        sixel_encoder_release_dither_output(dither);
     }
-    effective_quantize_model = quantizer_selection.effective;
-    /* Validate only when a palette is constructed. Fixed palettes and reuse
-     * have no representative-selection stage and intentionally bypass -s. */
-    if (encoder->method_for_rep != SIXEL_REP_AUTO &&
-            effective_quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
-        sixel_helper_set_additional_message(
-            "-s/--select-color requires heckbert; use -s auto with "
-            "kmeans, medoids or center.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-    requested_binning = (sixel_palette_binning_policy_t)
-        palette_state->binning.policy.requested;
-    binning_origin = palette_state->binning.policy.origin;
-    sixel_palette_binning_state_init(&build_attempt.binning,
-                                     requested_binning,
-                                     binning_origin);
-    quantizer_attempt = palette_state->quantizer;
-    sixel_trace_topic_message(
-        "palette_contract",
-        "LSXBIN1|requested=%s|origin=%s|quantizer_requested=%d|"
-        "quantizer_effective=%d|phase=quantizer",
-        sixel_palette_binning_policy_name(requested_binning),
-        sixel_palette_policy_origin_name(binning_origin),
-        encoder->quantize_model,
-        effective_quantize_model);
-    palette_reqcolors = sixel_encoder_palette_capacity(encoder);
-    reserve_alpha_key =
-        palette_reqcolors > 1
-        && (sixel_encoder_frame_preserves_alpha_key(frame)
-            || (!from_map_image &&
-                sixel_encoder_6delta_reserves_alpha_key_for(
-                    encoder, palette_state)));
-    if (reserve_alpha_key) {
-        --palette_reqcolors;
-    }
-    /* Cover repairs real colors before the omission key is appended. Carry
-     * its capacity separately from the quantizer's requested color count:
-     * opted-in growth may exceed that request, but not consume this slot. */
-    build_attempt.reserved_colors = reserve_alpha_key ? 1U : 0U;
-    effective_method_for_largest = SIXEL_LARGE_NORM;
-    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
-        /*
-         * Largest-axis selection only applies to the Heckbert median-cut
-         * palette builder.
-         */
-        effective_method_for_largest = encoder->method_for_largest;
-    }
-    effective_final_merge_mode = encoder->final_merge_mode;
-    effective_merge_oversplit_override
-        = encoder->merge_policy_oversplit_override;
-    effective_merge_oversplit = encoder->merge_policy_oversplit;
-    effective_merge_lloyd_override
-        = encoder->merge_policy_lloyd_override;
-    effective_merge_lloyd = encoder->merge_policy_lloyd;
-    effective_lut_policy = encoder->lut_policy;
-    effective_lut_policy_override = encoder->lut_policy_override;
-    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            && encoder->quantize_model_heckbert_profile
-                == SIXEL_HECKBERT_PROFILE_QUALITY
-            && effective_merge_oversplit_override == 0
-            && effective_final_merge_mode == SIXEL_FINAL_MERGE_WARD) {
-        effective_merge_oversplit =
-            sixel_encoder_heckbert_quality_oversplit_factor(palette_reqcolors);
-        effective_merge_oversplit_override = 1;
-        if (effective_merge_lloyd_override == 0) {
-            /*
-             * Keep profile=quality defaults effective without changing CLI
-             * precedence: explicit merge_lloyd still wins.
-             */
-            effective_merge_lloyd = 2u;
-            effective_merge_lloyd_override = 1;
-        }
-    }
-    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            && encoder->quantize_model_heckbert_profile
-                == SIXEL_HECKBERT_PROFILE_SPEED
-            && effective_lut_policy_override == 0
-            && encoder->merge_policy_override == 0
-            && encoder->method_for_largest_override == 0
-            && effective_lut_policy == SIXEL_LUT_POLICY_AUTO) {
-        /*
-         * Keep speed profile internal and compatible: when lookup policy is not
-         * explicitly pinned by user/env, use the lighter 5bit histogram bins.
-         */
-        effective_lut_policy = SIXEL_LUT_POLICY_5BIT;
-    }
-
-    status = sixel_dither_new(dither, palette_reqcolors, encoder->allocator);
-    if (SIXEL_FAILED(status) || *dither == NULL) {
-        if (SIXEL_SUCCEEDED(status)) {
-            status = SIXEL_BAD_ALLOCATION;
-        }
-        goto end;
-    }
-    (*dither)->use_rgb101_palette =
-        sixel_encoder_rgb101_frame(encoder, frame);
-    if (reserve_alpha_key) {
-        /*
-         * Signal dither_initialize() to keep alpha-bearing input so palette
-         * generation can ignore fully transparent pixels.
-         */
-        sixel_dither_set_transparent(*dither, 0);
-        sixel_dither_set_transparent_bgcolor_hint(*dither,
-                                                  encoder->bgcolor);
-    } else {
-        sixel_dither_clear_transparent_bgcolor_hint(*dither);
-    }
-
-    clustering_colorspace = encoder->clustering_colorspace;
-    working_colorspace = encoder->working_colorspace;
-    /* The clustering view must preserve precision retained by the planner,
-     * including CMS output when the base preference is auto or 8bit. */
-    prefer_float32 = encoder->prefer_float32 ||
-        SIXEL_PIXELFORMAT_IS_FLOAT32(sixel_frame_get_pixelformat(frame));
-    if (reserve_alpha_key && !(*dither)->use_rgb101_palette) {
-        clustering_colorspace = sixel_frame_get_colorspace(frame);
-        palette_target_pixelformat = sixel_frame_get_pixelformat(frame);
-    } else {
-        palette_target_pixelformat =
-            sixel_encoder_pixelformat_for_colorspace(clustering_colorspace,
-                                                     prefer_float32);
-    }
-
-    if ((!reserve_alpha_key || (*dither)->use_rgb101_palette) &&
-        (encoder->gamut_mapper != NULL ||
-         sixel_frame_get_pixelformat(frame) != palette_target_pixelformat ||
-         sixel_frame_get_colorspace(frame) != clustering_colorspace)) {
-        status = sixel_encoder_frame_clone(frame,
-                                           encoder->allocator,
-                                           &cluster_frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        palette_frame = cluster_frame;
-        if (sixel_frame_get_pixelformat(palette_frame)
-                != palette_target_pixelformat) {
-            status = sixel_frame_set_pixelformat(palette_frame,
-                                                 palette_target_pixelformat);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        }
-        if (sixel_frame_get_colorspace(palette_frame)
-                != clustering_colorspace) {
-            status = sixel_encoder_convert_frame_colorspace(
-                palette_frame,
-                clustering_colorspace);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        }
-    }
-
-    /* A map image defines the immutable fixed-palette source. Map only
-     * its application copy after the caller selects the destination. */
-    if (!from_map_image) {
-        status = sixel_encoder_map_gamut(encoder, palette_frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
-    sixel_encoder_copy_lookup_options(encoder, *dither);
-    sixel_dither_set_lut_policy_with_override(
-        *dither,
-        effective_lut_policy,
-        effective_lut_policy_override);
-    (*dither)->gpu_policy = encoder->gpu_policy;
-    (*dither)->gpu_palette_threshold = encoder->gpu_palette_threshold;
-    memset(&merge_config, 0, sizeof(merge_config));
-    merge_config.dither = *dither;
-    merge_config.final_merge_mode = effective_final_merge_mode;
-    status = sixel_filter_factory_create_by_kind(
-        SIXEL_FILTER_KIND_FINAL_MERGE,
-        &merge_config,
-        &merge_filter);
-    if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_filter_run(merge_filter,
-                                  encoder->allocator,
-                                  target_logger);
-    }
-    sixel_filter_free(merge_filter);
-    merge_filter = NULL;
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    (*dither)->quantize_model = effective_quantize_model;
-
-    palette_pixels = sixel_frame_get_pixels(palette_frame);
-    palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
-    /* Finish fallible sample preparation before installing temporary
-     * quantizer overrides. Allocation failure must not leave them active. */
-    palette_width = sixel_frame_get_width(palette_frame);
-    palette_height = sixel_frame_get_height(palette_frame);
-    if (palette_width <= 0 || palette_height <= 0 ||
-            (size_t)palette_width > SIZE_MAX / (size_t)palette_height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto end;
-    }
-    /* Native construction and newly separated byte input share visible-only
-     * candidates. Excluded legacy paths retain their existing preparation. */
-    if (reserve_alpha_key &&
-            sixel_encoder_frame_has_transparent_mask(palette_frame) &&
-            ((*dither)->use_rgb101_palette ||
-             (palette_pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-              sixel_encoder_rgb101_candidate(encoder, palette_frame)))) {
-        status = sixel_encoder_visible_palette_pixels(palette_frame,
-            encoder->allocator, &visible_pixels, &palette_width);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        palette_pixels = visible_pixels;
-        palette_height = 1;
-    }
-    quantize_override_lock_acquired =
-        sixel_encoder_quantize_override_lock_acquire();
-    sixel_set_kmeans_backend_override(
-        encoder->quantize_model_kmeans_backend_override,
-        (sixel_kmeans_backend)encoder->quantize_model_kmeans_backend);
-    sixel_set_kmeans_init_type_override(
-        encoder->quantize_model_kmeans_init_override,
-        (sixel_kmeans_init_type)encoder->quantize_model_kmeans_init_type);
-    sixel_set_kmeans_threshold_override(
-        encoder->quantize_model_kmeans_threshold_override,
-        encoder->quantize_model_kmeans_threshold);
-    sixel_set_kmeans_binbits_override(
-        encoder->quantize_model_kmeans_binbits_override,
-        encoder->quantize_model_kmeans_binbits);
-    sixel_set_kmeans_mapping_mode_override(
-        encoder->quantize_model_kmeans_mapping_override,
-        (sixel_kmeans_mapping_mode)
-            encoder->quantize_model_kmeans_mapping_mode);
-    sixel_set_kmeans_softdist_mode_override(
-        encoder->quantize_model_kmeans_softdist_override,
-        (sixel_kmeans_softdist_mode)
-            encoder->quantize_model_kmeans_softdist_mode);
-    sixel_set_kmeans_feedback_mode_override(
-        encoder->quantize_model_kmeans_feedback_override,
-        (sixel_kmeans_feedback_mode)
-            encoder->quantize_model_kmeans_feedback_mode);
-    sixel_set_kmeans_prune_policy_override(
-        encoder->quantize_model_kmeans_prune_override,
-        (sixel_kmeans_prune_policy)
-            encoder->quantize_model_kmeans_prune_policy);
-    sixel_set_kmeans_seed_override(
-        encoder->quantize_model_kmeans_seed_override,
-        (uint32_t)encoder->quantize_model_kmeans_seed);
-    sixel_set_kmeans_restarts_override(
-        encoder->quantize_model_kmeans_restarts_override,
-        encoder->quantize_model_kmeans_restarts);
-    sixel_set_kmeans_iter_override(
-        encoder->quantize_model_kmeans_iter_override,
-        encoder->quantize_model_kmeans_iter);
-    sixel_set_kmeans_iter_max_override(
-        encoder->quantize_model_kmeans_iter_max_override,
-        encoder->quantize_model_kmeans_iter_max);
-    sixel_set_kmeans_miniter_override(
-        encoder->quantize_model_kmeans_miniter_override,
-        encoder->quantize_model_kmeans_miniter);
-    sixel_set_kmeans_polish_iter_override(
-        encoder->quantize_model_kmeans_polish_iter_override,
-        encoder->quantize_model_kmeans_polish_iter);
-    sixel_set_kmeans_feedback_slots_override(
-        encoder->quantize_model_kmeans_feedback_slots_override,
-        encoder->quantize_model_kmeans_feedback_slots);
-    sixel_set_kmeans_feedback_interval_override(
-        encoder->quantize_model_kmeans_feedback_interval_override,
-        encoder->quantize_model_kmeans_feedback_interval);
-    sixel_set_final_merge_target_factor_override(
-        effective_merge_oversplit_override,
-        effective_merge_oversplit);
-    sixel_set_final_merge_lloyd_iterations_override(
-        effective_merge_lloyd_override,
-        effective_merge_lloyd);
-    sixel_set_final_merge_channel_factor_override(
-        encoder->merge_policy_channel_factor_l_override,
-        encoder->merge_policy_channel_factor_l);
-    sixel_set_kmedoids_algo_override(
-        encoder->quantize_model_kmedoids_algo_override,
-        (sixel_kmedoids_algo_t)encoder->quantize_model_kmedoids_algo);
-    sixel_set_kmedoids_seed_override(
-        encoder->quantize_model_kmedoids_seed_override,
-        (uint32_t)encoder->quantize_model_kmedoids_seed);
-    sixel_set_kmedoids_iter_override(
-        encoder->quantize_model_kmedoids_iter_override,
-        encoder->quantize_model_kmedoids_iter);
-    sixel_set_kmedoids_sample_override(
-        encoder->quantize_model_kmedoids_sample_override,
-        encoder->quantize_model_kmedoids_sample);
-    sixel_set_kmedoids_clara_trials_override(
-        encoder->quantize_model_kmedoids_clara_trials_override,
-        encoder->quantize_model_kmedoids_clara_trials);
-    sixel_set_kmedoids_clara_sample_override(
-        encoder->quantize_model_kmedoids_clara_sample_override,
-        encoder->quantize_model_kmedoids_clara_sample);
-    sixel_set_kmedoids_clarans_local_override(
-        encoder->quantize_model_kmedoids_clarans_local_override,
-        encoder->quantize_model_kmedoids_clarans_local);
-    sixel_set_kmedoids_clarans_neighbors_override(
-        encoder->quantize_model_kmedoids_clarans_neighbors_override,
-        encoder->quantize_model_kmedoids_clarans_neighbors);
-    sixel_set_kmedoids_bandit_iter_override(
-        encoder->quantize_model_kmedoids_bandit_iter_override,
-        encoder->quantize_model_kmedoids_bandit_iter);
-    sixel_set_kmedoids_bandit_candidates_override(
-        encoder->quantize_model_kmedoids_bandit_candidates_override,
-        encoder->quantize_model_kmedoids_bandit_candidates);
-    sixel_set_kmedoids_bandit_batch_override(
-        encoder->quantize_model_kmedoids_bandit_batch_override,
-        encoder->quantize_model_kmedoids_bandit_batch);
-    sixel_set_kmedoids_histbits_override(
-        encoder->quantize_model_kmedoids_histbits_override,
-        encoder->quantize_model_kmedoids_histbits);
-    sixel_set_kmedoids_point_budget_override(
-        encoder->quantize_model_kmedoids_point_budget_override,
-        encoder->quantize_model_kmedoids_point_budget);
-    sixel_set_kmedoids_rare_keep_override(
-        encoder->quantize_model_kmedoids_rare_keep_override,
-        encoder->quantize_model_kmedoids_rare_keep);
-    sixel_set_kmedoids_prune_mass_override(
-        encoder->quantize_model_kmedoids_prune_mass_override,
-        encoder->quantize_model_kmedoids_prune_mass);
-    sixel_set_kmedoids_auction_override(
-        encoder->quantize_model_kmedoids_auction_override,
-        encoder->quantize_model_kmedoids_auction);
-    sixel_set_kmedoids_auction_shortlist_override(
-        encoder->quantize_model_kmedoids_auction_shortlist_override,
-        encoder->quantize_model_kmedoids_auction_shortlist);
-    {
-        sixel_palette_cover_options_t cover_options;
-
-        /* Fixed palettes bypass cover, including an image map's internal
-         * construction. Do not let AUTO insert or move supplied colors. */
-        cover_options.policy_override = from_map_image ||
-            encoder->cover_policy_override;
-        cover_options.policy = from_map_image
-            ? SIXEL_PALETTE_COVER_OFF : encoder->cover_policy;
-        cover_options.grow_override = encoder->cover_policy_grow_override;
-        cover_options.grow = encoder->cover_policy_grow;
-        cover_options.mode_override = encoder->cover_policy_mode_override;
-        cover_options.mode = encoder->cover_policy_mode;
-        sixel_set_palette_cover_override(
-            cover_options.policy_override || cover_options.grow_override ||
-                cover_options.mode_override,
-            &cover_options);
-    }
-    {
-        sixel_palette_snap_options_t snap_options;
-
-        snap_options.policy_override = encoder->snap_policy_override;
-        snap_options.policy = encoder->snap_policy;
-        snap_options.timing_override =
-            encoder->snap_policy_timing_override;
-        snap_options.timing = encoder->snap_policy_timing;
-        snap_options.approach_rate_override =
-            encoder->snap_policy_approach_rate_override;
-        snap_options.approach_rate =
-            encoder->snap_policy_approach_rate;
-        snap_options.channel_factor_l_override =
-            encoder->snap_policy_channel_factor_l_override;
-        snap_options.channel_factor_l =
-            encoder->snap_policy_channel_factor_l;
-        sixel_set_palette_snap_override(&snap_options);
-        sixel_palette_snap_set_output(from_map_image
-            ? SIXEL_PALETTE_OUTPUT_LEGACY : encoder->output_color_definition,
-            encoder->snap_policy_grid_override, encoder->snap_policy_grid);
-        sixel_palette_snap_set_icc(from_map_image ? NULL : encoder->output_icc);
-    }
-    sixel_set_kcenter_algo_override(
-        encoder->quantize_model_kcenter_algo_override,
-        (sixel_kcenter_algo_t)encoder->quantize_model_kcenter_algo);
-    sixel_set_kcenter_profile_override(
-        encoder->quantize_model_kcenter_profile_override,
-        (sixel_kcenter_profile_t)encoder->quantize_model_kcenter_profile);
-    sixel_set_kcenter_seed_override(
-        encoder->quantize_model_kcenter_seed_override,
-        (uint32_t)encoder->quantize_model_kcenter_seed);
-    sixel_set_kcenter_restarts_override(
-        encoder->quantize_model_kcenter_restarts_override,
-        encoder->quantize_model_kcenter_restarts);
-    sixel_set_kcenter_init_seeds_override(
-        encoder->quantize_model_kcenter_init_seeds_override,
-        encoder->quantize_model_kcenter_init_seeds);
-    sixel_set_kcenter_iter_override(
-        encoder->quantize_model_kcenter_iter_override,
-        encoder->quantize_model_kcenter_iter);
-    sixel_set_kcenter_histbits_override(
-        encoder->quantize_model_kcenter_histbits_override,
-        encoder->quantize_model_kcenter_histbits);
-    sixel_set_kcenter_point_budget_override(
-        encoder->quantize_model_kcenter_point_budget_override,
-        encoder->quantize_model_kcenter_point_budget);
-    sixel_set_kcenter_auto_policy_override(
-        encoder->quantize_model_kcenter_auto_policy_override,
-        (sixel_kcenter_auto_policy_t)
-            encoder->quantize_model_kcenter_auto_policy);
-    sixel_set_kcenter_auto_fft_threshold_override(
-        encoder->quantize_model_kcenter_auto_fft_threshold_override,
-        encoder->quantize_model_kcenter_auto_fft_threshold);
-    sixel_set_kcenter_space_policy_override(
-        encoder->quantize_model_kcenter_space_policy_override,
-        (sixel_kcenter_space_policy_t)
-            encoder->quantize_model_kcenter_space_policy);
-    sixel_set_kcenter_candidate_policy_override(
-        encoder->quantize_model_kcenter_candidate_policy_override,
-        (sixel_kcenter_candidate_policy_t)
-            encoder->quantize_model_kcenter_candidate_policy);
-    sixel_set_kcenter_rare_keep_override(
-        encoder->quantize_model_kcenter_rare_keep_override,
-        encoder->quantize_model_kcenter_rare_keep);
-    sixel_set_kcenter_budget_policy_override(
-        encoder->quantize_model_kcenter_budget_policy_override,
-        (sixel_kcenter_budget_policy_t)
-            encoder->quantize_model_kcenter_budget_policy);
-    sixel_set_kcenter_budget_scale_override(
-        encoder->quantize_model_kcenter_budget_scale_override,
-        encoder->quantize_model_kcenter_budget_scale);
-    sixel_set_kcenter_swap_topk_override(
-        encoder->quantize_model_kcenter_swap_topk_override,
-        encoder->quantize_model_kcenter_swap_topk);
-    sixel_set_kcenter_swap_update_override(
-        encoder->quantize_model_kcenter_swap_update_override,
-        (sixel_kcenter_swap_update_t)
-            encoder->quantize_model_kcenter_swap_update);
-    sixel_set_kcenter_swap_patience_override(
-        encoder->quantize_model_kcenter_swap_patience_override,
-        encoder->quantize_model_kcenter_swap_patience);
-    sixel_set_kcenter_swap_min_gain_override(
-        encoder->quantize_model_kcenter_swap_min_gain_override,
-        encoder->quantize_model_kcenter_swap_min_gain);
-    sixel_set_kcenter_prune_mass_override(
-        encoder->quantize_model_kcenter_prune_mass_override,
-        encoder->quantize_model_kcenter_prune_mass);
-    source_point_count =
-        (size_t)palette_width * (size_t)palette_height;
-    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
-        build_attempt.binning = palette_state->binning;
-    } else {
-        status = sixel_encoder_resolve_direct_binning(
-            encoder,
-            &build_attempt.binning,
-            effective_quantize_model,
-            source_point_count);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-    build_attempt.heckbert.cut_sse = encoder->heckbert_cut_override
-        ? encoder->heckbert_cut : 1;
-    build_attempt.heckbert.order_sse = encoder->heckbert_order_override
-        ? encoder->heckbert_order : 1;
-    if (encoder->heckbert_weights_override) {
-        memcpy(build_attempt.heckbert.weights, encoder->heckbert_weights,
-            sizeof(build_attempt.heckbert.weights));
-    }
-    build_attempt.quantize_model = effective_quantize_model;
-    /* Resolve through the same setter used for palette application. AUTO
-     * may be resolved again after construction changes the palette size;
-     * both of its outcomes use the dithered representative policy. */
-    sixel_dither_set_diffusion_type(*dither, encoder->method_for_diffuse);
-    status = sixel_dither_initialize_with_palette_attempt(
-        *dither,
-        palette_pixels,
-        palette_width,
-        palette_height,
-        palette_pixelformat,
-        effective_method_for_largest,
-        encoder->method_for_rep,
-        encoder->quality_mode,
-        &build_attempt);
-    sixel_set_kmeans_backend_override(0, SIXEL_PALETTE_KMEANS_BACKEND_CPU);
-    sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
-    sixel_set_kmeans_threshold_override(0, 0.125);
-    sixel_set_kmeans_binbits_override(0, 6u);
-    sixel_set_kmeans_mapping_mode_override(
-        0,
-        SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM);
-    sixel_set_kmeans_softdist_mode_override(
-        0,
-        SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR);
-    sixel_set_kmeans_seed_override(0, 0u);
-    sixel_set_kmeans_restarts_override(0, 1u);
-    sixel_set_kmeans_iter_override(0, 0u);
-    sixel_set_kmeans_iter_max_override(0, 20u);
-    sixel_set_kmeans_miniter_override(0, 0u);
-    sixel_set_kmeans_polish_iter_override(0, 0u);
-    sixel_set_kmeans_feedback_mode_override(
-        0,
-        SIXEL_PALETTE_KMEANS_FEEDBACK_OFF);
-    sixel_set_kmeans_prune_policy_override(
-        0,
-        SIXEL_PALETTE_KMEANS_PRUNE_AUTO);
-    sixel_set_kmeans_feedback_slots_override(0, 1u);
-    sixel_set_kmeans_feedback_interval_override(0, 1u);
-    sixel_set_final_merge_target_factor_override(0, 1.81);
-    sixel_set_final_merge_lloyd_iterations_override(0, 3u);
-    sixel_set_final_merge_channel_factor_override(0, 1.0 / 3.0);
-    sixel_set_palette_cover_override(0, NULL);
-    sixel_set_palette_snap_override(NULL);
-    sixel_set_kmedoids_algo_override(
-        0,
-        SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
-    sixel_set_kmedoids_seed_override(0, 1u);
-    sixel_set_kmedoids_iter_override(0, 0u);
-    sixel_set_kmedoids_sample_override(0, 0u);
-    sixel_set_kmedoids_clara_trials_override(0, 0u);
-    sixel_set_kmedoids_clara_sample_override(0, 0u);
-    sixel_set_kmedoids_clarans_local_override(0, 0u);
-    sixel_set_kmedoids_clarans_neighbors_override(0, 0u);
-    sixel_set_kmedoids_bandit_iter_override(0, 0u);
-    sixel_set_kmedoids_bandit_candidates_override(0, 0u);
-    sixel_set_kmedoids_bandit_batch_override(0, 0u);
-    sixel_set_kmedoids_histbits_override(0, 0u);
-    sixel_set_kmedoids_point_budget_override(0, 0u);
-    sixel_set_kmedoids_rare_keep_override(0, 0u);
-    sixel_set_kmedoids_prune_mass_override(0, 0.0);
-    sixel_set_kmedoids_auction_override(0, 0);
-    sixel_set_kmedoids_auction_shortlist_override(0, 4u);
-    sixel_set_kcenter_algo_override(
-        0,
-        SIXEL_PALETTE_KCENTER_ALGO_AUTO);
-    sixel_set_kcenter_profile_override(
-        0,
-        SIXEL_PALETTE_KCENTER_PROFILE_LEGACY);
-    sixel_set_kcenter_seed_override(0, 1u);
-    sixel_set_kcenter_restarts_override(0, 1u);
-    sixel_set_kcenter_init_seeds_override(0, 1u);
-    sixel_set_kcenter_iter_override(0, 16u);
-    sixel_set_kcenter_histbits_override(0, 5u);
-    sixel_set_kcenter_point_budget_override(0, 0u);
-    sixel_set_kcenter_auto_policy_override(
-        0,
-        SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY);
-    sixel_set_kcenter_auto_fft_threshold_override(0, 2048u);
-    sixel_set_kcenter_space_policy_override(
-        0,
-        SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY);
-    sixel_set_kcenter_candidate_policy_override(
-        0,
-        SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY);
-    sixel_set_kcenter_rare_keep_override(0, 0u);
-    sixel_set_kcenter_budget_policy_override(
-        0,
-        SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY);
-    sixel_set_kcenter_budget_scale_override(0, 1.0);
-    sixel_set_kcenter_swap_topk_override(0, 1u);
-    sixel_set_kcenter_swap_update_override(
-        0,
-        SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL);
-    sixel_set_kcenter_swap_patience_override(0, 0u);
-    sixel_set_kcenter_swap_min_gain_override(0, 0.0);
-    sixel_set_kcenter_prune_mass_override(0, 0.995);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    if (build_attempt.quantize_model != effective_quantize_model) {
-        /*
-         * The palette component retains its historical solver fallback.  Do
-         * not publish the failed solver's binning attempt: validate and build
-         * metadata for the solver that actually produced the palette.
-         */
-        sixel_palette_binning_state_init(&build_attempt.binning,
-                                         requested_binning,
-                                         binning_origin);
-        status = sixel_encoder_resolve_direct_binning(
-            encoder,
-            &build_attempt.binning,
-            build_attempt.quantize_model,
-            source_point_count);
-        if (SIXEL_FAILED(status)) {
-            sixel_helper_set_additional_message(
-                "palette fallback quantizer cannot consume the requested "
-                "binning policy.");
-            goto end;
-        }
-        (*dither)->quantize_model = build_attempt.quantize_model;
-    }
-
-    if (clustering_colorspace != working_colorspace) {
-        status = sixel_encoder_convert_palette_colorspace(
-            (*dither)->palette,
-            clustering_colorspace,
-            working_colorspace);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-    if (reserve_alpha_key) {
-        status = sixel_encoder_attach_alpha_keycolor(encoder, *dither);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-    sixel_encoder_quantize_override_lock_release(
-        quantize_override_lock_acquired);
-    quantize_override_lock_acquired = 0;
-
-    sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
-
-    if (build_attempt.binning.policy.phase ==
-            SIXEL_PALETTE_POLICY_RESOLVED) {
-        status = sixel_palette_policy_mark_executed(
-            &build_attempt.binning.policy);
-    } else if (build_attempt.binning.policy.phase ==
-                   SIXEL_PALETTE_POLICY_EXECUTED) {
-        status = SIXEL_OK;
-    } else {
-        status = SIXEL_LOGIC_ERROR;
-    }
-    if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_palette_policy_resolve(
-            &quantizer_attempt,
-            build_attempt.quantize_model,
-            build_attempt.quantize_model == effective_quantize_model
-                ? quantizer_selection.reason
-                : SIXEL_PALETTE_RESOLUTION_FALLBACK);
-    }
-    if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_palette_policy_mark_executed(&quantizer_attempt);
-    }
-    if (SIXEL_SUCCEEDED(status)) {
-        palette_state->quantizer = quantizer_attempt;
-        palette_state->binning = build_attempt.binning;
-        palette_state->quantizer_retry_count =
-            build_attempt.quantizer_retry_count;
-    }
+    return status;
 
 end:
     sixel_dither_unref(fixed_source);
-    sixel_allocator_free(encoder->allocator, visible_pixels);
-    if (quantize_override_lock_acquired != 0) {
-        sixel_encoder_quantize_override_lock_release(
-            quantize_override_lock_acquired);
-        quantize_override_lock_acquired = 0;
-    }
-    if (cluster_frame != NULL) {
-        sixel_frame_unref(cluster_frame);
-        cluster_frame = NULL;
-    }
     if (SIXEL_SUCCEEDED(status) && *dither != NULL && !from_map_image &&
             ((*dither)->use_rgb101_palette ||
              sixel_encoder_rgb101_frame(encoder, frame))) {
@@ -9004,7 +9738,12 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
         if (failure_stage != NULL) {
             *failure_stage = SIXEL_PALETTE_JOB_FAILURE_LOOKUP;
         }
-        status = sixel_encoder_apply_lut_filter(encoder, *dither_out);
+        status = sixel_encoder_apply_lut_filter(*dither_out,
+            sixel_encoder_pixelformat_for_colorspace(
+                encoder->planner.working_colorspace_effective,
+                SIXEL_PIXELFORMAT_IS_FLOAT32(
+                    encoder->planner.working_pixelformat)),
+            encoder->logger, (*dither_out)->lookup_policy);
         if (SIXEL_FAILED(status)) {
             sixel_encoder_release_dither_output(dither_out);
         }
@@ -9013,8 +9752,9 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
 }
 
 static SIXELSTATUS
-sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
-                               sixel_dither_t *dither)
+sixel_encoder_apply_lut_filter(sixel_dither_t *dither,
+    int consumer_pixelformat, sixel_timeline_logger_t *logger,
+    sixel_lookup_policy_interface_t *reuse)
 {
     SIXELSTATUS status;
     sixel_filter_lookup_result_t result;
@@ -9040,7 +9780,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     memset(&vptree_config, 0, sizeof(vptree_config));
     memset(&eytzinger_config, 0, sizeof(eytzinger_config));
 
-    if (encoder == NULL || dither == NULL) {
+    if (dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -9130,12 +9870,9 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
         /* Samples can retain their source representation after the palette
          * has moved to -W. Use the already planned consumer format, without
          * waiting for or inspecting the concurrently converted frame. */
-        lookup_config.pixelformat = sixel_encoder_pixelformat_for_colorspace(
-            encoder->planner.working_colorspace_effective,
-            SIXEL_PIXELFORMAT_IS_FLOAT32(
-                encoder->planner.working_pixelformat));
+        lookup_config.pixelformat = consumer_pixelformat;
     }
-    lookup_config.reuse_policy = dither->lookup_policy;
+    lookup_config.reuse_policy = reuse;
 
     if (policy == SIXEL_LUT_POLICY_FHEDT) {
         fhedt_config.lookup_config = lookup_config;
@@ -9165,8 +9902,8 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 
     sixel_filter_set_progress(filter, NULL, NULL, 1);
     status = sixel_filter_run(filter,
-                              encoder->allocator,
-                              encoder->logger);
+                              dither->allocator,
+                              logger);
     if (SIXEL_SUCCEEDED(status) && result.policy != NULL) {
         if (dither->lookup_policy != NULL
                 && dither->lookup_policy != result.policy) {
@@ -9179,6 +9916,198 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 
     return status;
 }
+
+
+SIXELSTATUS
+sixel_palette_snapshot_take(sixel_palette_snapshot_t **out,
+    sixel_palette_build_request_t const *request, sixel_dither_t **built,
+    sixel_palette_frame_state_t const *state)
+{
+    sixel_palette_snapshot_t *snapshot;
+
+    *out = NULL;
+    snapshot = sixel_allocator_calloc(request->allocator, 1,
+                                      sizeof(*snapshot));
+    if (snapshot == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (request->output_icc != NULL) {
+        snapshot->output_icc = sixel_cdef_clone(request->output_icc);
+        if (snapshot->output_icc == NULL) {
+            sixel_allocator_free(request->allocator, snapshot);
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+    snapshot->ref = 1U;
+    snapshot->built = *built;
+    snapshot->profile.working_colorspace = request->working_colorspace;
+    snapshot->profile.clustering_colorspace = request->clustering_colorspace;
+    snapshot->profile.output_colorspace = request->output_colorspace;
+    snapshot->profile.output_color_definition =
+        request->output_color_definition;
+    snapshot->profile.consumer_pixelformat = request->consumer_pixelformat;
+    snapshot->profile.precision_requested = request->precision_requested;
+    snapshot->profile.delta_alpha_key = request->delta_alpha_key;
+    snapshot->profile.source_alpha_key = request->source_alpha_key;
+    snapshot->profile.configuration_revision = request->configuration_revision;
+    snapshot->profile.output_icc = snapshot->output_icc;
+    snapshot->profile.keycolor = (*built)->keycolor;
+    snapshot->profile.keycolor_reserved = (*built)->keycolor_reserved;
+    snapshot->profile.paintable_colors = sixel_dither_lookup_ncolors(*built);
+    snapshot->profile.construction = *state;
+    *built = NULL;
+    *out = snapshot;
+    return SIXEL_OK;
+}
+
+void
+sixel_palette_snapshot_ref(sixel_palette_snapshot_t *snapshot)
+{
+    if (snapshot != NULL) {
+        (void)sixel_atomic_fetch_add_u32(&snapshot->ref, 1U);
+    }
+}
+
+void
+sixel_palette_snapshot_unref(sixel_palette_snapshot_t *snapshot)
+{
+    sixel_dither_t *built;
+
+    if (snapshot == NULL ||
+            sixel_atomic_fetch_sub_u32(&snapshot->ref, 1U) != 1U) {
+        return;
+    }
+    built = snapshot->built;
+    sixel_cdef_free(snapshot->output_icc);
+    sixel_allocator_free(built->allocator, snapshot);
+    sixel_dither_unref(built);
+}
+
+sixel_palette_snapshot_profile_t const *
+sixel_palette_snapshot_profile(sixel_palette_snapshot_t const *snapshot)
+{
+    return &snapshot->profile;
+}
+
+SIXELSTATUS
+sixel_palette_snapshot_clone(sixel_palette_snapshot_t const *snapshot,
+    sixel_dither_t **out)
+{
+    sixel_dither_t const *source;
+    sixel_dither_t *copy;
+    sixel_palette_entries_view_t bytes;
+    sixel_palette_float32_entries_view_t floats;
+    sixel_palette_entries_request_t byte_request;
+    sixel_palette_float32_entries_request_t float_request;
+    SIXELSTATUS status;
+
+    *out = NULL;
+    source = snapshot->built;
+    copy = NULL;
+    status = source->palette->vtbl->get_entries(source->palette, &bytes);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = source->palette->vtbl->get_entries_float32(source->palette,
+                                                          &floats);
+    }
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_dither_new(&copy, source->ncolors, source->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    byte_request.entries = bytes.entries;
+    byte_request.colors = bytes.entry_count;
+    byte_request.depth = bytes.depth;
+    status = copy->palette->vtbl->init_entries(copy->palette, &byte_request);
+    if (SIXEL_SUCCEEDED(status) && floats.entries != NULL) {
+        float_request.entries = floats.entries;
+        float_request.colors = floats.entry_count;
+        float_request.depth = floats.depth;
+        status = copy->palette->vtbl->init_entries_float32(copy->palette,
+                                                          &float_request);
+    }
+    copy->apply_8bit = source->apply_8bit;
+    copy->bodyonly = source->bodyonly;
+    copy->final_merge_mode = source->final_merge_mode;
+    copy->force_palette = source->force_palette;
+    copy->keycolor = source->keycolor;
+    copy->keycolor_reserved = source->keycolor_reserved;
+    copy->lut_policy = source->lut_policy;
+    copy->lut_policy_fhedt_first_touch = source->lut_policy_fhedt_first_touch;
+    copy->lut_policy_fhedt_first_touch_override =
+        source->lut_policy_fhedt_first_touch_override;
+    copy->lut_policy_fhedt_refine = source->lut_policy_fhedt_refine;
+    copy->lut_policy_fhedt_refine_override =
+        source->lut_policy_fhedt_refine_override;
+    copy->lut_policy_fhedt_resolution = source->lut_policy_fhedt_resolution;
+    copy->lut_policy_fhedt_resolution_override =
+        source->lut_policy_fhedt_resolution_override;
+    copy->lut_policy_fhedt_shared = source->lut_policy_fhedt_shared;
+    copy->lut_policy_fhedt_shared_override =
+        source->lut_policy_fhedt_shared_override;
+    copy->lut_policy_fhedt_tile_depth = source->lut_policy_fhedt_tile_depth;
+    copy->lut_policy_fhedt_tile_depth_override =
+        source->lut_policy_fhedt_tile_depth_override;
+    copy->lut_policy_fhedt_tile_xy = source->lut_policy_fhedt_tile_xy;
+    copy->lut_policy_fhedt_tile_xy_override =
+        source->lut_policy_fhedt_tile_xy_override;
+    copy->lut_policy_fhedt_use_cache = source->lut_policy_fhedt_use_cache;
+    copy->lut_policy_fhedt_use_cache_override =
+        source->lut_policy_fhedt_use_cache_override;
+    copy->lut_policy_fhedt_use_dist2 = source->lut_policy_fhedt_use_dist2;
+    copy->lut_policy_fhedt_use_dist2_override =
+        source->lut_policy_fhedt_use_dist2_override;
+    memcpy(copy->lut_policy_fhedt_weights, source->lut_policy_fhedt_weights,
+        sizeof(copy->lut_policy_fhedt_weights));
+    copy->lut_policy_fhedt_weights_override =
+        source->lut_policy_fhedt_weights_override;
+    copy->lut_policy_override = source->lut_policy_override;
+    copy->lut_policy_packing = source->lut_policy_packing;
+    copy->lut_policy_packing_override = source->lut_policy_packing_override;
+    copy->lut_policy_shared_instance = source->lut_policy_shared_instance;
+    copy->lut_policy_shared_instance_override =
+        source->lut_policy_shared_instance_override;
+    copy->method_for_largest = source->method_for_largest;
+    copy->method_for_rep = source->method_for_rep;
+    copy->ncolors = source->ncolors;
+    copy->optimized = source->optimized;
+    copy->origcolors = source->origcolors;
+    copy->palette_snap_exact = source->palette_snap_exact;
+    copy->prefer_float32 = source->prefer_float32;
+    copy->quality_mode = source->quality_mode;
+    copy->quantize_model = source->quantize_model;
+    copy->reqcolors = source->reqcolors;
+    copy->requested_quality_mode = source->requested_quality_mode;
+    memcpy(copy->transparent_bgcolor, source->transparent_bgcolor,
+        sizeof(copy->transparent_bgcolor));
+    copy->transparent_bgcolor_valid = source->transparent_bgcolor_valid;
+    copy->use_rgb101_palette = source->use_rgb101_palette;
+    copy->pixelformat = snapshot->profile.consumer_pixelformat;
+    /* Regenerate small output views privately. Lazy HLS caches, mutable
+     * byte views and application results never belong to the snapshot. */
+    if (SIXEL_SUCCEEDED(status) && copy->use_rgb101_palette) {
+        status = sixel_palette_prepare_output_definition(copy->palette,
+            snapshot->profile.working_colorspace,
+            snapshot->profile.output_color_definition,
+            snapshot->profile.output_colorspace, snapshot->output_icc);
+    }
+    if (SIXEL_SUCCEEDED(status) &&
+            copy->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+        /* FHEDT alone promises non-destructive immutable-table retention.
+         * Its backend checks representation, signature and sharing options;
+         * other policies start with NULL and build their own mutable cache. */
+        status = sixel_encoder_apply_lut_filter(copy, copy->pixelformat,
+            NULL, source->lookup_policy);
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_dither_unref(copy);
+        return status;
+    }
+    *out = copy;
+    return SIXEL_OK;
+}
+
 
 
 static void
@@ -10031,6 +10960,14 @@ sixel_encoder_frame_job_prepare(
                                     palette_ready);
     }
 
+    /* Every DAG node borrows this job's schedule, including early palette
+     * launch. A later prepare may replace the encoder's planner. */
+    if (planner != NULL) {
+        job->planner = *planner;
+        planner = &job->planner;
+        job->context.planner = planner;
+    }
+
     job->context.target_pixelformat = target_pixelformat;
     job->context.palette_ready = palette_ready;
     job->context.clip_active = clip_active;
@@ -10100,12 +11037,6 @@ sixel_encoder_frame_job_prepare(
     }
     if (SIXEL_FAILED(status)) {
         goto end;
-    }
-    /* The emit half reads this frame's schedule, which a later frame may
-     * replace in the encoder-owned planner. */
-    if (planner != NULL) {
-        job->planner = *planner;
-        job->context.planner = &job->planner;
     }
 
 end:

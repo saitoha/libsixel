@@ -856,6 +856,33 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
     return SIXEL_OK;
 }
 
+SIXELSTATUS
+sixel_gamut_clone(sixel_gamut_t const *source, sixel_gamut_t **out)
+{
+    sixel_gamut_t *copy;
+    size_t bytes;
+
+    *out = NULL;
+    copy = sixel_allocator_malloc(source->allocator, sizeof(*copy));
+    if (copy == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    *copy = *source;
+    copy->edge = NULL;
+    if (source->edge != NULL) {
+        bytes = (size_t)source->edge_count * sizeof(*source->edge);
+        copy->edge = sixel_allocator_malloc(source->allocator, bytes);
+        if (copy->edge == NULL) {
+            sixel_allocator_free(source->allocator, copy);
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(copy->edge, source->edge, bytes);
+    }
+    sixel_allocator_ref(copy->allocator);
+    *out = copy;
+    return SIXEL_OK;
+}
+
 int
 sixel_gamut_apply(sixel_gamut_t const *mapper, double const input[3],
                    double output[3], int colorspace)

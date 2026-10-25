@@ -575,6 +575,13 @@ int test_playback_0020(int argc, char **argv);
 int test_playback_0021(int argc, char **argv);
 int test_playback_0022(int argc, char **argv);
 int test_playback_0026(int argc, char **argv);
+int test_palette_stage2_0027(int argc, char **argv);
+int test_palette_stage2_0028(int argc, char **argv);
+int test_palette_stage2_0029(int argc, char **argv);
+int test_palette_stage2_0030(int argc, char **argv);
+int test_palette_stage2_0031(int argc, char **argv);
+int test_palette_stage2_0032(int argc, char **argv);
+
 int test_sequence_0086(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -5834,6 +5841,19 @@ static test_entry_t const test_entries[] = {
       test_playback_0022 },
     { "planner/pipeline/0026_playback_palette_policy",
       test_playback_0026 },
+    { "planner/pipeline/0027_palette_request_ownership",
+      test_palette_stage2_0027 },
+    { "planner/pipeline/0028_palette_snapshot_bytes",
+      test_palette_stage2_0028 },
+    { "planner/pipeline/0029_palette_snapshot_float",
+      test_palette_stage2_0029 },
+    { "planner/pipeline/0030_palette_snapshot_fhedt_bytes",
+      test_palette_stage2_0030 },
+    { "planner/pipeline/0031_palette_snapshot_fhedt_float",
+      test_palette_stage2_0031 },
+
+    { "planner/pipeline/0032_palette_snapshot_concurrent",
+      test_palette_stage2_0032 },
     { "decoder/0086_multi_pass_allocation_failure",
       test_sequence_0086 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },

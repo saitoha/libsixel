@@ -351,6 +351,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0021_PLAYBACK_ADMISSION \
     -DBUILD_TEST_0022_PLAYBACK_CANCEL_FAILURE \
     -DBUILD_TEST_0026_PLAYBACK_PALETTE_POLICY \
+    -DBUILD_TEST_0027_PALETTE_REQUEST_OWNERSHIP \
+    -DBUILD_TEST_0028_PALETTE_SNAPSHOT_BYTES \
+    -DBUILD_TEST_0029_PALETTE_SNAPSHOT_FLOAT \
+    -DBUILD_TEST_0030_PALETTE_SNAPSHOT_FHEDT_BYTES \
+    -DBUILD_TEST_0031_PALETTE_SNAPSHOT_FHEDT_FLOAT \
+    -DBUILD_TEST_0032_PALETTE_SNAPSHOT_CONCURRENT \
+    -DBUILD_PALETTE_STAGE2_COMMON \
     -DBUILD_PLAYBACK_TEST_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
@@ -4946,6 +4953,14 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0021_playback_admission.c \
     planner/pipeline/0022_playback_cancel_failure.c \
     planner/pipeline/0026_playback_palette_policy.c \
+    planner/pipeline/0027_palette_request_ownership.c \
+    planner/pipeline/0028_palette_snapshot_bytes.c \
+    planner/pipeline/0029_palette_snapshot_float.c \
+    planner/pipeline/0030_palette_snapshot_fhedt_bytes.c \
+    planner/pipeline/0031_palette_snapshot_fhedt_float.c \
+    planner/pipeline/0032_palette_snapshot_concurrent.c \
+    planner/pipeline/palette_stage2_common.c \
+    planner/pipeline/palette_stage2_common.h \
     planner/pipeline/playback_test_common.c \
     planner/pipeline/playback_test_common.h \
     processing/colorspace/parallel/0001_frame_bits.c \

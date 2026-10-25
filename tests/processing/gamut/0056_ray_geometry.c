@@ -21,6 +21,7 @@
 #define sixel_gamut ray_test_gamut
 #define sixel_gamut_apply ray_test_gamut_apply
 #define sixel_gamut_clip ray_test_gamut_clip
+#define sixel_gamut_clone ray_test_gamut_clone
 #define sixel_gamut_contains ray_test_gamut_contains
 #define sixel_gamut_destroy ray_test_gamut_destroy
 #define sixel_gamut_edge_seeker ray_test_gamut_edge_seeker
@@ -52,6 +53,7 @@ typedef struct ray_test_gamut ray_test_gamut_t;
 #undef sixel_gamut
 #undef sixel_gamut_apply
 #undef sixel_gamut_clip
+#undef sixel_gamut_clone
 #undef sixel_gamut_contains
 #undef sixel_gamut_destroy
 #undef sixel_gamut_edge_seeker

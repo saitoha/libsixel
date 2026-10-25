@@ -2129,7 +2129,7 @@ sixel_dither_new(
 
     *ppdither = (sixel_dither_t *)sixel_allocator_malloc(allocator, headsize);
     if (*ppdither == NULL) {
-        sixel_allocator_unref(allocator);
+        /* The common failure exit releases this constructor's reference. */
         sixel_helper_set_additional_message(
             "sixel_dither_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
