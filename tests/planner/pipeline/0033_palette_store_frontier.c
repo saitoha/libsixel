@@ -20,7 +20,8 @@ test_palette_store_0033(int argc, char **argv)
     PALETTE_STORE_CHECK(!palette_store_fixture_init(&f));
     PALETTE_STORE_CHECK(palette_store_test_admit(&f, 1, &f.gates[0],
         SIXEL_OK, &job) == SIXEL_OK);
-    PALETTE_STORE_CHECK(sixel_palette_store_job_start(job, 1) == SIXEL_OK);
+    PALETTE_STORE_CHECK(sixel_palette_store_job_start(job,
+        &f.scheduler) == SIXEL_OK);
     palette_store_gate_wait(&f.gates[0], &f.gates[0].entered);
     PALETTE_STORE_CHECK(!palette_store_test_select(f.store, 1, 0, NULL));
     palette_store_gate_open(&f.gates[0], 1);
@@ -30,7 +31,8 @@ test_palette_store_0033(int argc, char **argv)
     sixel_palette_store_job_release(job);
     PALETTE_STORE_CHECK(palette_store_test_admit(&f, 2, &f.gates[1],
         SIXEL_OK, &slow) == SIXEL_OK);
-    PALETTE_STORE_CHECK(sixel_palette_store_job_start(slow, 1) == SIXEL_OK);
+    PALETTE_STORE_CHECK(sixel_palette_store_job_start(slow,
+        &f.scheduler) == SIXEL_OK);
     palette_store_gate_wait(&f.gates[1], &f.gates[1].entered);
     PALETTE_STORE_CHECK(palette_store_test_admit(&f, 3, NULL,
         SIXEL_OK, &job) == SIXEL_OK);

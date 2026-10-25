@@ -20,11 +20,15 @@ typedef struct palette_store_gate {
     int published;
     int leave;
     int join;
+    int threads;
+    int palette_mode;
 } palette_store_gate_t;
 
 typedef struct palette_store_fixture {
     sixel_allocator_t *allocator;
     sixel_palette_store_t *store;
+    sixel_palette_scheduler_t scheduler;
+    int scheduler_initialized;
     palette_store_gate_t gates[2];
     int initialized;
 } palette_store_fixture_t;

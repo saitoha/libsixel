@@ -3,6 +3,7 @@
 #define LIBSIXEL_ENCODER_PALETTE_STORE_H
 
 #include "encoder-palette.h"
+#include "encoder-palette-scheduler.h"
 
 typedef struct sixel_palette_store sixel_palette_store_t;
 typedef struct sixel_palette_store_job sixel_palette_store_job_t;
@@ -27,6 +28,7 @@ typedef struct sixel_palette_job_test_hooks {
     void (*before_join)(void *context);
     void *context;
     SIXELSTATUS completion_status;
+    int fail_thread_create;
 } sixel_palette_job_test_hooks_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -53,9 +55,14 @@ sixel_palette_store_admit(sixel_palette_store_t *store, uint64_t sequence,
     sixel_palette_job_test_hooks_t const *hooks,
     sixel_palette_store_job_t **out);
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_palette_store_job_start(sixel_palette_store_job_t *job, int threads);
-/* Thread creation failure leaves the same request/sample available here.
- * Conversion, sampling retry and budget admission belong to the caller. */
+sixel_palette_store_job_start(sixel_palette_store_job_t *job,
+    sixel_palette_scheduler_t *scheduler);
+/* Start returns FALSE on unavailable admission or thread creation failure.
+ * No lease remains and the same request/sample can be run synchronously in
+ * a live Q/M lease or after the other lanes have joined (frame fallback).
+ * No grant can also defer admission; it never authorizes unbudgeted work.
+ * Never select an older palette after serial fallback. Sampling retry
+ * remains the frame owner's responsibility. */
 SIXEL_INTERNAL_API void
 sixel_palette_store_job_run(sixel_palette_store_job_t *job);
 SIXEL_INTERNAL_API SIXELSTATUS

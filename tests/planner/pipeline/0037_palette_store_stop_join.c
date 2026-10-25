@@ -29,7 +29,8 @@ test_palette_store_0037(int argc, char **argv)
     PALETTE_STORE_CHECK(!palette_store_fixture_init(&f));
     PALETTE_STORE_CHECK(palette_store_test_admit(&f, 1, &f.gates[0],
         SIXEL_OK, &job) == SIXEL_OK);
-    PALETTE_STORE_CHECK(sixel_palette_store_job_start(job, 1) == SIXEL_OK);
+    PALETTE_STORE_CHECK(sixel_palette_store_job_start(job,
+        &f.scheduler) == SIXEL_OK);
     palette_store_gate_wait(&f.gates[0], &f.gates[0].entered);
     palette_store_gate_open(&f.gates[0], 0);
     palette_store_gate_wait(&f.gates[0], &f.gates[0].published);

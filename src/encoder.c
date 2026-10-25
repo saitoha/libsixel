@@ -6273,6 +6273,55 @@ sixel_encoder_sample_frame(
 }
 
 
+SIXELSTATUS
+sixel_palette_build_input_new(sixel_palette_build_request_t **request,
+    sixel_frame_t **sample, sixel_encoder_t *encoder, sixel_frame_t *frame,
+    sixel_palette_frame_state_t const *state)
+{
+    sixel_sample_stream_t stream;
+    sixel_frame_t *owned;
+    sixel_palette_frame_state_t construction;
+    SIXELSTATUS status;
+
+    *request = NULL;
+    *sample = NULL;
+    owned = NULL;
+    construction = *state;
+    sixel_sample_stream_init(&stream);
+    status = sixel_encoder_sample_frame(encoder, frame, encoder->allocator,
+        (sixel_palette_sampling_policy_t)state->sampling.effective,
+        state->sampling_source, &stream);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (stream.storage == SIXEL_SAMPLE_STREAM_BORROWED_FRAME) {
+        /* Application may mutate or release the preprocessed source while
+         * construction runs. A reference alone would not isolate pixels. */
+        status = sixel_encoder_frame_clone(stream.frame, encoder->allocator,
+            &owned);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    } else {
+        owned = stream.frame;
+        sixel_sample_stream_init(&stream);
+    }
+    status = sixel_palette_policy_mark_executed(&construction.sampling);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_build_request_new(request, encoder, owned,
+            &construction, 0);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        *sample = owned;
+        owned = NULL;
+    }
+end:
+    sixel_frame_unref(owned);
+    sixel_sample_stream_dispose(&stream);
+    return status;
+}
+
+
 static int
 sixel_encoder_palette_job_thread(void *priv)
 {

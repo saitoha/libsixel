@@ -28,7 +28,8 @@ test_palette_store_0039(int argc, char **argv)
             sequence = (uint64_t)(pair * 2 + slot + 1);
             PALETTE_STORE_CHECK(palette_store_test_admit(&f, sequence,
                 NULL, SIXEL_OK, &jobs[slot]) == SIXEL_OK);
-            PALETTE_STORE_CHECK(sixel_palette_store_job_start(jobs[slot], 1)
+            PALETTE_STORE_CHECK(sixel_palette_store_job_start(
+                jobs[slot], &f.scheduler)
                 == SIXEL_OK);
         }
         for (slot = 0; slot < 2; ++slot) {

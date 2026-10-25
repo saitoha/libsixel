@@ -17,6 +17,7 @@ struct sixel_palette_store_job {
     sixel_palette_selection_t future;
     sixel_thread_t thread;
     sixel_threading_snapshot_t policy;
+    sixel_palette_lease_t lease;
     sixel_status_message_t message;
     sixel_palette_job_test_hooks_t hooks;
     SIXELSTATUS status;
@@ -109,6 +110,7 @@ sixel_palette_store_admit(sixel_palette_store_t *store, uint64_t sequence,
     sixel_palette_store_job_t *job;
     sixel_threading_snapshot_t policy;
     int i;
+    int threads;
 
     *out = NULL;
     if (sequence == 0 || *request == NULL || *sample == NULL) {
@@ -116,6 +118,7 @@ sixel_palette_store_admit(sixel_palette_store_t *store, uint64_t sequence,
     }
     /* Policy resolution may allocate; freeze it before taking the lock. */
     (void)sixel_threading_policy_capture(&policy, 0);
+    threads = sixel_threads_resolve();
     sixel_mutex_lock(&store->mutex);
     if (store->stopped) {
         sixel_mutex_unlock(&store->mutex);
@@ -142,7 +145,7 @@ sixel_palette_store_admit(sixel_palette_store_t *store, uint64_t sequence,
     job->request = *request;
     job->sample = *sample;
     job->policy = policy;
-    job->threads = 1;
+    job->threads = threads;
     job->admitted = 1;
     job->result.epoch = store->epoch;
     job->result.sequence = sequence;
@@ -157,8 +160,8 @@ sixel_palette_store_admit(sixel_palette_store_t *store, uint64_t sequence,
     return SIXEL_OK;
 }
 
-void
-sixel_palette_store_job_run(sixel_palette_store_job_t *job)
+static void
+sixel_palette_store_build(sixel_palette_store_job_t *job)
 {
     sixel_palette_store_t *store;
     sixel_palette_frame_state_t state;
@@ -227,19 +230,43 @@ sixel_palette_store_job_run(sixel_palette_store_job_t *job)
     }
 }
 
+void
+sixel_palette_store_job_run(sixel_palette_store_job_t *job)
+{
+    /* Keep the frozen policy, but fit synchronous execution to the caller's
+     * current lane. Its budget may be narrower than it was at admission. */
+    job->threads = sixel_threads_resolve();
+    sixel_palette_store_build(job);
+}
+
 static int
 sixel_palette_store_worker(void *context)
 {
-    sixel_palette_store_job_run(context);
+    sixel_palette_store_build(context);
     return 0;
 }
 
 SIXELSTATUS
-sixel_palette_store_job_start(sixel_palette_store_job_t *job, int threads)
+sixel_palette_store_job_start(sixel_palette_store_job_t *job,
+    sixel_palette_scheduler_t *scheduler)
 {
-    job->threads = threads > 0 ? threads : 1;
-    if (sixel_thread_create(&job->thread, sixel_palette_store_worker, job)) {
-        return SIXEL_RUNTIME_ERROR;
+    int threads;
+
+    threads = sixel_palette_scheduler_acquire(scheduler,
+        SIXEL_PALETTE_LANE_BUILD, 0, &job->lease);
+    if (threads == 0) {
+        return SIXEL_FALSE;
+    }
+    job->policy = scheduler->policy;
+    job->threads = threads;
+    if (job->hooks.fail_thread_create ||
+            sixel_thread_create(&job->thread,
+                sixel_palette_store_worker, job)) {
+        /* No worker exists, so return immediately. Keep the very same
+         * sample and frozen policy for synchronous use in the caller lane. */
+        sixel_palette_lease_release(&job->lease);
+        job->threads = sixel_threads_resolve();
+        return SIXEL_FALSE;
     }
     job->started = 1;
     return SIXEL_OK;
@@ -268,6 +295,7 @@ sixel_palette_store_job_join(sixel_palette_store_job_t *job,
         if (job->started) {
             sixel_thread_join(&job->thread);
         }
+        sixel_palette_lease_release(&job->lease);
         job->joined = 1;
     }
     if (frame_status == SIXEL_OK && job->status != SIXEL_OK) {

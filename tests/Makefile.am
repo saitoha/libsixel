@@ -366,6 +366,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0038_PALETTE_STORE_CANCEL_ISOLATION \
     -DBUILD_TEST_0039_PALETTE_STORE_CONCURRENT \
     -DBUILD_PALETTE_STORE_TEST_COMMON \
+    -DBUILD_TEST_0040_PALETTE_SCHEDULER_ADMISSION \
+    -DBUILD_TEST_0041_PALETTE_SCHEDULER_SCOPE \
+    -DBUILD_TEST_0042_PALETTE_SCHEDULER_JOIN \
+    -DBUILD_TEST_0043_PALETTE_FULL_FRAME_OWNED \
+    -DBUILD_TEST_0044_PALETTE_LAUNCH_SYNC_SAMPLE \
+    -DBUILD_TEST_0045_PALETTE_SCHEDULER_SERIAL \
+    -DBUILD_TEST_0046_PALETTE_SCHEDULER_CONCURRENT \
+    -DBUILD_PALETTE_LAUNCH_TEST_COMMON \
     -DBUILD_PLAYBACK_TEST_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
@@ -4978,6 +4986,15 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0039_palette_store_concurrent.c \
     planner/pipeline/palette_store_test_common.c \
     planner/pipeline/palette_store_test_common.h \
+    planner/pipeline/0040_palette_scheduler_admission.c \
+    planner/pipeline/0041_palette_scheduler_scope.c \
+    planner/pipeline/0042_palette_scheduler_join.c \
+    planner/pipeline/0043_palette_full_frame_owned.c \
+    planner/pipeline/0044_palette_launch_sync_sample.c \
+    planner/pipeline/0045_palette_scheduler_serial.c \
+    planner/pipeline/0046_palette_scheduler_concurrent.c \
+    planner/pipeline/palette_launch_test_common.c \
+    planner/pipeline/palette_launch_test_common.h \
     planner/pipeline/playback_test_common.c \
     planner/pipeline/playback_test_common.h \
     processing/colorspace/parallel/0001_frame_bits.c \

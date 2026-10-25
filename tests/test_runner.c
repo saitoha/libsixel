@@ -588,6 +588,13 @@ int test_palette_store_0036(int argc, char **argv);
 int test_palette_store_0037(int argc, char **argv);
 int test_palette_store_0038(int argc, char **argv);
 int test_palette_store_0039(int argc, char **argv);
+int test_palette_scheduler_0040(int argc, char **argv);
+int test_palette_scheduler_0041(int argc, char **argv);
+int test_palette_scheduler_0042(int argc, char **argv);
+int test_palette_scheduler_0043(int argc, char **argv);
+int test_palette_scheduler_0044(int argc, char **argv);
+int test_palette_scheduler_0045(int argc, char **argv);
+int test_palette_scheduler_0046(int argc, char **argv);
 
 
 int test_sequence_0086(int argc, char **argv);
@@ -5876,6 +5883,20 @@ static test_entry_t const test_entries[] = {
       test_palette_store_0038 },
     { "planner/pipeline/0039_palette_store_concurrent",
       test_palette_store_0039 },
+    { "planner/pipeline/0040_palette_scheduler_admission",
+      test_palette_scheduler_0040 },
+    { "planner/pipeline/0041_palette_scheduler_scope",
+      test_palette_scheduler_0041 },
+    { "planner/pipeline/0042_palette_scheduler_join",
+      test_palette_scheduler_0042 },
+    { "planner/pipeline/0043_palette_full_frame_owned",
+      test_palette_scheduler_0043 },
+    { "planner/pipeline/0044_palette_launch_sync_sample",
+      test_palette_scheduler_0044 },
+    { "planner/pipeline/0045_palette_scheduler_serial",
+      test_palette_scheduler_0045 },
+    { "planner/pipeline/0046_palette_scheduler_concurrent",
+      test_palette_scheduler_0046 },
 
     { "decoder/0086_multi_pass_allocation_failure",
       test_sequence_0086 },

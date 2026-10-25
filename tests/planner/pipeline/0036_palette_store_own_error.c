@@ -26,7 +26,8 @@ test_palette_store_0036(int argc, char **argv)
     sixel_palette_store_job_release(job);
     PALETTE_STORE_CHECK(palette_store_test_admit(&f, 2, &f.gates[0],
         SIXEL_BAD_ALLOCATION, &job) == SIXEL_OK);
-    PALETTE_STORE_CHECK(sixel_palette_store_job_start(job, 1) == SIXEL_OK);
+    PALETTE_STORE_CHECK(sixel_palette_store_job_start(job,
+        &f.scheduler) == SIXEL_OK);
     palette_store_gate_wait(&f.gates[0], &f.gates[0].entered);
     PALETTE_STORE_CHECK(sixel_palette_store_job_status(job, &finished)
         == SIXEL_OK && !finished);

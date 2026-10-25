@@ -11,6 +11,7 @@ int
 palette_store_fixture_init(palette_store_fixture_t *fixture)
 {
     int i;
+    sixel_threading_snapshot_t policy;
 
     memset(fixture, 0, sizeof(*fixture));
     for (i = 0; i < 2; ++i) {
@@ -23,6 +24,14 @@ palette_store_fixture_init(palette_store_fixture_t *fixture)
         }
         ++fixture->initialized;
     }
+    memset(&policy, 0, sizeof(policy));
+    policy.budget = 4;
+    policy.options.palette = SIXEL_THREADING_PALETTE_LATEST;
+    if (sixel_palette_scheduler_init(&fixture->scheduler, &policy)
+            != SIXEL_OK) {
+        return 1;
+    }
+    fixture->scheduler_initialized = 1;
     return SIXEL_FAILED(sixel_allocator_new(&fixture->allocator,
         NULL, NULL, NULL, NULL)) ||
         SIXEL_FAILED(sixel_palette_store_new(&fixture->store,
@@ -56,6 +65,8 @@ palette_store_test_before_publish(void *context)
 
     gate = context;
     sixel_mutex_lock(&gate->mutex);
+    gate->threads = sixel_threads_resolve();
+    gate->palette_mode = sixel_threading_policy_palette_mode();
     gate->entered = 1;
     sixel_cond_broadcast(&gate->cond);
     while (!gate->open) {
@@ -154,6 +165,9 @@ palette_store_fixture_free(palette_store_fixture_t *fixture)
         palette_store_gate_open(&fixture->gates[i], 1);
     }
     sixel_palette_store_free(fixture->store);
+    if (fixture->scheduler_initialized) {
+        sixel_palette_scheduler_destroy(&fixture->scheduler);
+    }
     failed = fixture->allocator != NULL &&
         sixel_atomic_fetch_add_u32(&fixture->allocator->ref, 0) != 1;
     sixel_allocator_unref(fixture->allocator);
