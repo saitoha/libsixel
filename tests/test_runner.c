@@ -605,6 +605,17 @@ int test_palette_integration_0057(int argc, char **argv);
 int test_palette_integration_0058(int argc, char **argv);
 int test_palette_integration_0059(int argc, char **argv);
 int test_palette_integration_0060(int argc, char **argv);
+int test_palette_features_0061(int argc, char **argv);
+int test_palette_features_0062(int argc, char **argv);
+int test_palette_features_0063(int argc, char **argv);
+int test_palette_features_0064(int argc, char **argv);
+int test_palette_features_0065(int argc, char **argv);
+int test_palette_features_0066(int argc, char **argv);
+int test_palette_features_0067(int argc, char **argv);
+int test_palette_features_0068(int argc, char **argv);
+int test_palette_features_0069(int argc, char **argv);
+int test_palette_features_0070(int argc, char **argv);
+
 
 
 int test_sequence_0086(int argc, char **argv);
@@ -5927,6 +5938,27 @@ static test_entry_t const test_entries[] = {
       test_palette_integration_0059 },
     { "planner/pipeline/0060_latest_emit_stage_limits",
       test_palette_integration_0060 },
+    { "planner/pipeline/0061_latest_delta_reservation",
+      test_palette_features_0061 },
+    { "planner/pipeline/0062_latest_delta_wire_history",
+      test_palette_features_0062 },
+    { "planner/pipeline/0063_latest_delta_hls_history",
+      test_palette_features_0063 },
+    { "planner/pipeline/0064_latest_delta_native_export",
+      test_palette_features_0064 },
+    { "planner/pipeline/0065_latest_alpha_origin_history",
+      test_palette_features_0065 },
+    { "planner/pipeline/0066_latest_delta_prediction_redo",
+      test_palette_features_0066 },
+    { "planner/pipeline/0067_latest_profile_epoch",
+      test_palette_features_0067 },
+    { "planner/pipeline/0068_latest_stale_histogram",
+      test_palette_features_0068 },
+    { "planner/pipeline/0069_latest_delta_byte_export",
+      test_palette_features_0069 },
+    { "planner/pipeline/0070_latest_feature_fallback",
+      test_palette_features_0070 },
+
 
     { "decoder/0086_multi_pass_allocation_failure",
       test_sequence_0086 },

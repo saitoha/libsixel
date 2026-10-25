@@ -210,6 +210,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      palette=frame|latest -> palette source of each frame\n"
         "                              (default frame; latest reuses\n"
         "                              completed CPU animation palettes; C)\n"
+        "    Latest supports delta and palette export; incompatible\n"
+        "    alpha/color profiles wait for the current frame palette.\n"
         "    per-stage limits:\n"
         "      dither=COUNT         -> palette application workers (D)\n"
         "      encode=COUNT         -> SIXEL encode workers (E)\n"

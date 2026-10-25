@@ -89,6 +89,12 @@ sixel_palette_store_job_release(sixel_palette_store_job_t *job);
 SIXEL_INTERNAL_API void
 sixel_palette_store_job_result(sixel_palette_store_job_t *job,
     sixel_palette_selection_t *result);
+/* Rebase a joined, successful own result after a profile transition. Other
+ * attempts are invalidated and must join/re-prepare before their emission. */
+SIXEL_INTERNAL_API void
+sixel_palette_store_job_rebase(sixel_palette_store_job_t *job);
+SIXEL_INTERNAL_API int
+sixel_palette_store_job_current(sixel_palette_store_job_t *job);
 /* Advance in frame order. Select the greatest published s <= sequence once
  * per application transaction. A known own error wins over an older palette.
  * An empty successful result means the caller must wait for its own job. */

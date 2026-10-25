@@ -5185,6 +5185,8 @@ typedef struct sixel_encode_dag_context {
     int latest;
     int own_started;
     int own_sync;
+    int own_required;
+    uint64_t configuration_revision;
 } sixel_encode_dag_context_t;
 
 /*
@@ -11062,17 +11064,16 @@ sixel_encoder_frame_job_prepare(
         goto end;
     }
 
-    /* Stage 5 activates ordinary CPU sessions. Delta, native output and
-     * export keep frame behavior until their integration is complete. */
+    /* Latest owns ordinary CPU palettes, including delta and native output.
+     * Features with a separate output/lifetime boundary retain frame mode. */
     job->context.latest = pipeline != NULL &&
         pipeline->palette_store != NULL && sampling_required &&
         (pipeline->playback != NULL || job->context.multiframe) &&
-        !encoder->fstatic && !encoder->sixdelta_enabled &&
+        !encoder->fstatic &&
         encoder->gpu_policy == SIXEL_GPU_POLICY_OFF && !encoder->fdrcs &&
         encoder->presentation == NULL && encoder->progressive_context == NULL &&
-        !encoder->fuse_macro && encoder->macro_number < 0 &&
-        encoder->palette_output == NULL &&
-        encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY;
+        !encoder->fuse_macro && encoder->macro_number < 0;
+    job->context.configuration_revision = encoder->configuration_revision;
 
     sampling_policy = job->context.palette.sampling.phase ==
             SIXEL_PALETTE_POLICY_RESOLVED
@@ -11283,6 +11284,47 @@ sixel_encoder_latest_join(sixel_encode_dag_context_t *context,
     return status;
 }
 
+/* Image contents may differ, but construction and application must agree on
+ * representation and alpha semantics. Configuration revisions include ICC,
+ * gamut and lookup options; retained history itself never enters a snapshot.
+ * A reservation is a construction decision, not a spare index to patch. */
+static int
+sixel_encoder_latest_profile_matches(sixel_encode_dag_context_t *context,
+    sixel_palette_snapshot_profile_t const *profile, int reservation)
+{
+    sixel_encoder_t *encoder;
+    int source_alpha;
+    int delta_alpha;
+    int reserved;
+
+    encoder = context->encoder;
+    source_alpha = sixel_encoder_frame_preserves_alpha_key(context->frame);
+    if (profile->consumer_pixelformat != context->planner->working_pixelformat
+            || profile->working_colorspace != encoder->working_colorspace
+            || profile->clustering_colorspace !=
+                encoder->clustering_colorspace
+            || profile->output_colorspace != encoder->output_colorspace
+            || profile->output_color_definition !=
+                encoder->output_color_definition
+            || profile->precision_requested != encoder->precision_requested
+            || profile->configuration_revision !=
+                encoder->configuration_revision
+            || profile->source_alpha_key != source_alpha) {
+        return 0;
+    }
+    if (!reservation) {
+        return 1;
+    }
+    delta_alpha = sixel_encoder_6delta_reserves_alpha_key(encoder);
+    reserved = sixel_encoder_palette_capacity(encoder) > 1 &&
+        (source_alpha || delta_alpha);
+    /* Source alpha can already require the same omission slot before delta
+     * history exists. Compare the actual reservation, not only its cause. */
+    return profile->keycolor_reserved == reserved &&
+        (!reserved || (profile->keycolor == profile->paintable_colors &&
+                       profile->paintable_colors > 0));
+}
+
 /* The latest transaction waits for presentation time before selecting.
  * Nothing palette-dependent (including LUT/gradient setup) precedes it. */
 static SIXELSTATUS
@@ -11293,6 +11335,7 @@ sixel_encoder_latest_select(sixel_encode_dag_context_t *context)
     SIXELSTATUS status;
     unsigned int delay;
     int incompatible;
+    int profile_changed;
 
     encoder = context->encoder;
     if (encoder->palette_test_hooks != NULL &&
@@ -11338,17 +11381,20 @@ sixel_encoder_latest_select(sixel_encode_dag_context_t *context)
         ? sixel_palette_snapshot_profile(context->selected_palette.snapshot)
         : NULL;
     incompatible = profile != NULL &&
-        (profile->consumer_pixelformat !=
-            context->planner->working_pixelformat ||
-         profile->source_alpha_key !=
-            sixel_encoder_frame_preserves_alpha_key(context->frame));
-    if (profile == NULL || incompatible || context->own_sync) {
+        !sixel_encoder_latest_profile_matches(context, profile, 1);
+    profile_changed = profile != NULL &&
+        !sixel_encoder_latest_profile_matches(context, profile, 0);
+    if (profile == NULL || incompatible || context->own_sync ||
+            context->own_required) {
         sixel_palette_snapshot_unref(context->selected_palette.snapshot);
         memset(&context->selected_palette, 0,
             sizeof(context->selected_palette));
         status = sixel_encoder_latest_join(context, SIXEL_OK);
         if (status != SIXEL_OK) {
             return status;
+        }
+        if (profile_changed) {
+            sixel_palette_store_job_rebase(context->own_palette);
         }
         /* Re-select after own publication: this still excludes future jobs
          * and advances the frontier so the own result survives slot reuse. */
@@ -11357,6 +11403,15 @@ sixel_encoder_latest_select(sixel_encode_dag_context_t *context)
         if (status != SIXEL_OK) {
             return status;
         }
+    }
+    /* The prepare-ahead owner repairs stale own predictions from its
+     * pristine source before entering this transaction. Do not emit bytes
+     * if construction nevertheless failed to provide the required key. */
+    if (context->selected_palette.snapshot == NULL ||
+            !sixel_encoder_latest_profile_matches(context,
+                sixel_palette_snapshot_profile(
+                    context->selected_palette.snapshot), 1)) {
+        return SIXEL_LOGIC_ERROR;
     }
     context->palette_sequence = context->selected_palette.sequence;
     if (encoder->palette_test_hooks != NULL &&
@@ -11456,6 +11511,13 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
                 /* Own construction/retry metadata still belongs to n;
                  * binding palette k must not replace that state. */
                 status = sixel_encode_dag_node_palette_bind(context);
+            }
+            if (status == SIXEL_OK && encoder->palette_output != NULL &&
+                    context->dither->use_rgb101_palette) {
+                /* Native export captures the selected working palette;
+                 * builder completion must never overwrite this capture. */
+                status = sixel_encoder_capture_palette(encoder,
+                    context->dither, encoder->working_colorspace);
             }
         }
     }
@@ -16200,6 +16262,7 @@ sixel_encoder_frame_pipeline_run_ahead(
     int have_current;
     int have_next;
     int index;
+    int redo;
 
     encoder = pipeline->encoder;
     memset(slots, 0, sizeof(slots));
@@ -16272,8 +16335,17 @@ sixel_encoder_frame_pipeline_run_ahead(
 
         /* The previous frame has published its history; check the
          * reservation the helper predicted for this frame. */
-        if (current->prepared != 0 && current->job->delta_alpha_key
-                != sixel_encoder_6delta_reserves_alpha_key(encoder)) {
+        redo = 0;
+        if (current->prepared != 0 &&
+                (current->job->delta_alpha_key !=
+                    sixel_encoder_6delta_reserves_alpha_key(encoder) ||
+                 (current->job->context.latest &&
+                  (current->job->context.configuration_revision !=
+                       encoder->configuration_revision ||
+                   (current->job->context.own_palette != NULL &&
+                    !sixel_palette_store_job_current(
+                        current->job->context.own_palette)))))) {
+            redo = 1;
             if (current->job->active != 0) {
                 (void)sixel_encoder_frame_job_release(current->job,
                                                       SIXEL_OK, 0);
@@ -16293,6 +16365,9 @@ sixel_encoder_frame_pipeline_run_ahead(
             current->status = sixel_encoder_pipeline_prepare_job(
                 pipeline, current->job, current->work_frame,
                 &current->metadata, NULL);
+            /* A repaired prediction establishes this frame's own baseline;
+             * an older compatible palette cannot replace that repair. */
+            current->job->context.own_required = redo;
         } else if (SIXEL_FAILED(current->status)) {
             sixel_status_restore_message(&current->message);
         }
@@ -16653,13 +16728,12 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     }
     pipeline->initialized = 1;
     if (pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST &&
-            !encoder->fstatic && !encoder->sixdelta_enabled &&
+            !encoder->fstatic &&
             encoder->gpu_policy == SIXEL_GPU_POLICY_OFF && !encoder->fdrcs &&
             encoder->presentation == NULL &&
             encoder->progressive_context == NULL && !encoder->fuse_macro &&
-            encoder->macro_number < 0 && encoder->palette_output == NULL &&
-            encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
-            encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY) {
+            encoder->macro_number < 0 &&
+            encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
         status = sixel_palette_scheduler_init(&pipeline->palette_scheduler,
             &pipeline->policy);
         if (status != SIXEL_OK) {

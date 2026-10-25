@@ -135,8 +135,10 @@ earlier frame at application start, after the display delay. Selection is
 fixed throughout that frame. Ordinary CPU animations and public playback
 can overlap their own palette build with application; the first frame waits.
 A one-worker budget, nonthreaded execution, still images, fixed/indexed/high-color
-palettes, GPU, DRCS, presentation/repair, macros, delta output, native color
-output and palette export retain \fBframe\fP behavior. A frame's own build
+palettes, GPU, DRCS, presentation/repair and macros retain \fBframe\fP behavior.
+Delta/alpha reservation or color-profile mismatch waits for the current
+frame's own palette; stale prepare-ahead predictions are joined and rebuilt.
+Native color output and palette export use the selected palette. A frame's own build
 failure is reported even if output was already emitted.
 .TP 5
 .B dither=COUNT

@@ -374,6 +374,17 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0045_PALETTE_SCHEDULER_SERIAL \
     -DBUILD_TEST_0046_PALETTE_SCHEDULER_CONCURRENT \
     -DBUILD_PALETTE_INTEGRATION_COMMON \
+    -DBUILD_PALETTE_FEATURES_COMMON \
+    -DBUILD_TEST_0070_LATEST_FEATURE_FALLBACK \
+    -DBUILD_TEST_0061_LATEST_DELTA_RESERVATION \
+    -DBUILD_TEST_0062_LATEST_DELTA_WIRE_HISTORY \
+    -DBUILD_TEST_0063_LATEST_DELTA_HLS_HISTORY \
+    -DBUILD_TEST_0064_LATEST_DELTA_NATIVE_EXPORT \
+    -DBUILD_TEST_0065_LATEST_ALPHA_ORIGIN_HISTORY \
+    -DBUILD_TEST_0066_LATEST_DELTA_PREDICTION_REDO \
+    -DBUILD_TEST_0067_LATEST_PROFILE_EPOCH \
+    -DBUILD_TEST_0068_LATEST_STALE_HISTOGRAM \
+    -DBUILD_TEST_0069_LATEST_DELTA_BYTE_EXPORT \
     -DBUILD_TEST_0058_LATEST_AUTO_BUILD_RETRY \
     -DBUILD_TEST_0059_LATEST_EMIT_REMAINING_BUDGET \
     -DBUILD_TEST_0060_LATEST_EMIT_STAGE_LIMITS \
@@ -5015,6 +5026,18 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0059_latest_emit_remaining_budget.c \
     planner/pipeline/0060_latest_emit_stage_limits.c \
     planner/pipeline/palette_integration_common.c \
+    planner/pipeline/palette_features_common.c \
+    planner/pipeline/0070_latest_feature_fallback.c \
+    planner/pipeline/palette_features_common.h \
+    planner/pipeline/0061_latest_delta_reservation.c \
+    planner/pipeline/0062_latest_delta_wire_history.c \
+    planner/pipeline/0063_latest_delta_hls_history.c \
+    planner/pipeline/0064_latest_delta_native_export.c \
+    planner/pipeline/0065_latest_alpha_origin_history.c \
+    planner/pipeline/0066_latest_delta_prediction_redo.c \
+    planner/pipeline/0067_latest_profile_epoch.c \
+    planner/pipeline/0068_latest_stale_histogram.c \
+    planner/pipeline/0069_latest_delta_byte_export.c \
     planner/pipeline/palette_integration_common.h \
     planner/pipeline/palette_launch_test_common.c \
     planner/pipeline/palette_launch_test_common.h \

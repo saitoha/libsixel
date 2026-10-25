@@ -365,6 +365,35 @@ sixel_palette_store_job_release(sixel_palette_store_job_t *job)
     sixel_mutex_unlock(&job->store->mutex);
 }
 
+int
+sixel_palette_store_job_current(sixel_palette_store_job_t *job)
+{
+    int current;
+
+    sixel_mutex_lock(&job->store->mutex);
+    current = !job->cancelled && job->result.epoch == job->store->epoch;
+    sixel_mutex_unlock(&job->store->mutex);
+    return current;
+}
+
+void
+sixel_palette_store_job_rebase(sixel_palette_store_job_t *job)
+{
+    sixel_palette_store_t *store;
+
+    /* The emitter owns this joined result. Reset never frees job results;
+     * other builders can finish but cannot publish into the new epoch. */
+    store = job->store;
+    sixel_palette_store_reset(store, job->result.sequence);
+    sixel_mutex_lock(&store->mutex);
+    job->cancelled = 0;
+    job->result.epoch = store->epoch;
+    job->result.published = ++store->event;
+    store->active = job->result;
+    sixel_palette_snapshot_ref(store->active.snapshot);
+    sixel_mutex_unlock(&store->mutex);
+}
+
 SIXELSTATUS
 sixel_palette_store_select(sixel_palette_store_t *store, uint64_t sequence,
     sixel_palette_selection_t *result)

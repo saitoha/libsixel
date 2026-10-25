@@ -2223,7 +2223,10 @@ sixel_encoder_encode_frame(
  * setup. CPU generated palettes can overlap their own build and application,
  * including RGB submissions with multiframe=0. The first frame waits for its
  * own palette. One-worker/nonthreaded and feature fallback use PER_FRAME.
- * Delta, native color output, export, GPU and macros currently use PER_FRAME.
+ * Delta/alpha reservation or color-profile mismatch waits for the own
+ * palette; stale prepare-ahead predictions are joined and rebuilt. Native
+ * color output, export and retained history use the selected palette.
+ * GPU and macros use PER_FRAME.
  * The requested mode is frozen for the session without changing the encoder.
  * palette_sequence identifies the selected source; zero means no selection.
  * Fixed/indexed/high-color bypass reports the current sequence on success
