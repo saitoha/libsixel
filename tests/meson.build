@@ -400,6 +400,16 @@ foreach t : tests
       ['tap', 'quicklook-installed'] : ['tap'])
 endforeach
 
+if have_child_time_executor and python_for_tests.found()
+  # This supervisor test uses only the Python standard library, independently
+  # of optional language bindings and their package environments.
+  test('tools/child-time/0001_marker_backpressure.py', python_for_tests,
+    args: [files('tools/child-time/0001_marker_backpressure.py'),
+           child_time_executor.full_path()],
+    depends: child_time_executor,
+    protocol: 'tap', timeout: 15, suite: ['tap', 'child-time'])
+endif
+
 add_test_setup('ci',
   env: setup_env,
   is_default: share_test_env,

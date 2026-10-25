@@ -20128,6 +20128,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/edge-reference.h \
 	data/color-numeric/ray-reference.py \
 	data/color-numeric/ray-reference.h test-time-allowlist.tsv \
+	tools/child-time/0001_marker_backpressure.py \
 	extension/quicklook-lifecycle/private-user.inc.h \
 	extension/quicklook-lifecycle/private-mutations.inc.h \
 	extension/quicklook-lifecycle/private-driver.m \
@@ -89493,9 +89494,10 @@ distdir-am: $(DISTFILES)
 	$(MAKE) $(AM_MAKEFLAGS) \
 	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
 	  dist-hook
+@BUILD_LSO_TIMEOUT_FALSE@check-local:
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_LTLIBRARIES)
-	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile
@@ -89865,20 +89867,20 @@ uninstall-am:
 	install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
-	check-am clean clean-checkLTLIBRARIES clean-checkPROGRAMS \
-	clean-generic clean-libtool clean-local cscopelist-am ctags \
-	ctags-am dist-hook distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installcheck-local installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
-	uninstall-am
+	check-am check-local clean clean-checkLTLIBRARIES \
+	clean-checkPROGRAMS clean-generic clean-libtool clean-local \
+	cscopelist-am ctags ctags-am dist-hook distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installcheck-local \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
+	uninstall uninstall-am
 
 .PRECIOUS: Makefile
 
@@ -91784,6 +91786,17 @@ $(COPY_TESTS) $(HELPER_FILES):
 @WITH_SHEBANG_FILE_TRUE@	fi
 
 @WITH_SHEBANG_FILE_TRUE@check-am: apply-shebang-check
+
+# Exercise the native supervisor without enabling optional Python bindings.
+@BUILD_LSO_TIMEOUT_TRUE@check-local:
+@BUILD_LSO_TIMEOUT_TRUE@	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
+@BUILD_LSO_TIMEOUT_TRUE@	    echo 'SKIP child-time backpressure: native Python runner unavailable'; \
+@BUILD_LSO_TIMEOUT_TRUE@	else \
+@BUILD_LSO_TIMEOUT_TRUE@	    $(MAKE) $(AM_MAKEFLAGS) -C "$(top_builddir)/tools" lso-timeout$(EXEEXT) && \
+@BUILD_LSO_TIMEOUT_TRUE@	    "$(PYTHON_STATICCHECK)" \
+@BUILD_LSO_TIMEOUT_TRUE@	        "$(srcdir)/tools/child-time/0001_marker_backpressure.py" \
+@BUILD_LSO_TIMEOUT_TRUE@	        "$(abs_top_builddir)/tools/lso-timeout$(EXEEXT)"; \
+@BUILD_LSO_TIMEOUT_TRUE@	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -389,16 +389,35 @@ lso_time_guard(int control, double start, double duration,
       continue;
     }
     now = lso_time_now();
-    if (now < end || now >= end + 0.1 ||
+    if (now < end || now >= deadline || lso_stop_signal ||
         (n < 0 && errno != EAGAIN && errno != EINTR)) {
       result = 125;
       goto cleanup;
     }
-    fds[0].fd = STDERR_FILENO;
-    fds[0].events = POLLOUT;
-    if (poll(fds, 1, 1) < 0 && errno != EINTR) {
+    /* The final record shares the command's output backpressure. A busy
+     * reader is not a failed command: retain the caller's deadline instead
+     * of imposing a separate 100 ms transfer deadline. The child is already
+     * reaped, but the lifeline and self-pipe still bound outer-death and
+     * cancellation handling while stderr cannot accept the record. */
+    n = read(control, events, sizeof(events));
+    if (n >= 0 || (errno != EAGAIN && errno != EINTR)) {
       result = 125;
       goto cleanup;
+    }
+    memset(fds, 0, sizeof(fds));
+    fds[0].fd = STDERR_FILENO;
+    fds[0].events = POLLOUT;
+    fds[1].fd = control;
+    fds[1].events = POLLIN;
+    fds[2].fd = wake[0];
+    fds[2].events = POLLIN;
+    poll_ms = isfinite(deadline) ?
+        (int) ((deadline - now) * 1000.0) + 1 : -1;
+    if (poll(fds, 3, poll_ms) < 0 && errno != EINTR) {
+      result = 125;
+      goto cleanup;
+    }
+    while (read(wake[0], events, sizeof(events)) > 0) {
     }
   }
 

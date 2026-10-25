@@ -9965,6 +9965,20 @@ EXTRA_DIST += data/color-numeric/ray-reference.py \
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
 
+# Exercise the native supervisor without enabling optional Python bindings.
+if BUILD_LSO_TIMEOUT
+check-local:
+	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
+	    echo 'SKIP child-time backpressure: native Python runner unavailable'; \
+	else \
+	    $(MAKE) $(AM_MAKEFLAGS) -C "$(top_builddir)/tools" lso-timeout$(EXEEXT) && \
+	    "$(PYTHON_STATICCHECK)" \
+	        "$(srcdir)/tools/child-time/0001_marker_backpressure.py" \
+	        "$(abs_top_builddir)/tools/lso-timeout$(EXEEXT)"; \
+	fi
+endif
+EXTRA_DIST += tools/child-time/0001_marker_backpressure.py
+
 EXTRA_DIST += extension/quicklook-lifecycle/private-user.inc.h \
     extension/quicklook-lifecycle/private-mutations.inc.h \
     extension/quicklook-lifecycle/private-driver.m \
