@@ -20,7 +20,7 @@ The table gives every key, its compact form and its per-key environment source. 
 | `load` | `L` | `serial`, `ahead` | `ahead` | `SIXEL_ENCODER_THREADING_LOAD` | Encoder |
 | `load_depth` | `Q` | 1..16 | 4 | `SIXEL_ENCODER_THREADING_LOAD_DEPTH` | Encoder |
 | `prepare` | `P` | `serial`, `ahead` | `ahead` | `SIXEL_ENCODER_THREADING_PREPARE` | Encoder |
-| `palette` | `C` | `frame`; `latest` is reserved and rejected | `frame` | `SIXEL_ENCODER_THREADING_PALETTE` | Encoder |
+| `palette` | `C` | `frame`, `latest` (currently executes as `frame`) | `frame` | `SIXEL_ENCODER_THREADING_PALETTE` | Encoder |
 | `dither` | `D` | Positive integer | Automatic | `SIXEL_ENCODER_THREADING_DITHER` | Encoder |
 | `encode` | `E` | Positive integer | Automatic | `SIXEL_ENCODER_THREADING_ENCODE` | Encoder |
 | `prepare_workers` | `W` | Positive integer | Resolved budget | `SIXEL_ENCODER_THREADING_PREPARE_WORKERS` | Encoder |
@@ -39,7 +39,7 @@ Stage limits shrink to the available budget; requesting more slots is never an e
 
 `load` controls loader read-ahead and `load_depth` bounds its queued frames. `prepare=ahead` permits preparation of frame n+1 during emission of frame n. Publication remains ordered, one frame at a time. These keys and `prepare_workers` preserve output. [Animation threading](../threading/animation.md) describes ownership and the separate public playback queue capacity.
 
-Numeric `global_budget=0`, negative values and words other than `all` fail CLI parsing with a diagnostic naming the positive-integer-or-`all` grammar. Invalid per-key environment values are ignored, leaving the next applicable default. `palette=latest` is recognized but returns `SIXEL_NOT_IMPLEMENTED`; it does not select a different palette or silently fall back.
+Numeric `global_budget=0`, negative values and words other than `all` fail CLI parsing with a diagnostic naming the positive-integer-or-`all` grammar. Invalid per-key environment values are ignored, leaving the next applicable default. `palette=latest` is accepted and retained in the resolved policy, but currently executes the existing `frame` path on every input. Each generated frame waits for its own palette; no completed palette is reused across frames. Serial execution, GPU paths, DRCS, presentation/attached repair, generated macros and fixed/indexed/high-color inputs therefore retain their frame behavior. Verbose output distinguishes `palette=latest` from `palette_effective=frame`.
 
 `img2sixel` accepts encoder keys; `sixel2png` accepts only `global_budget`. A key outside the converter's scope is rejected. An invalid policy argument leaves the stored policy unchanged.
 
@@ -49,7 +49,7 @@ Each encoder and decoder owns its policy. `setopt('=')` changes only that object
 
 `sixel_set_encoder_threads(n)` and `sixel_set_decoder_threads(n)` set independent, internally locked process defaults for budgets only. Call them before processing starts. In the C API, values `n <= 0` select `all`. The Python, Perl, Ruby and PHP binding setters accept positive integers or case-insensitive `all`, with surrounding whitespace stripped from strings. Ruby also accepts `:all`. The bindings reject `auto`, zero and negative budgets with a positive-integer-or-`all` error; only `all` is translated to the C zero sentinel. They supply objects without an explicit budget and object-less APIs such as `sixel_encode()`, `sixel_dither_*`, `sixel_decode_raw()` and `sixel_decode_direct()`. An explicit object budget wins regardless of setter call order.
 
-The base resolves independently: an explicit object base wins over the matching `SIXEL_ENCODER_THREADING_POLICY` or `SIXEL_DECODER_THREADING_POLICY`, then `balanced`. Stage keys resolve from explicit object fields, encoder environment, then stage defaults. Repeated policy arguments replace the base and non-budget keys; an omitted budget preserves the object's earlier explicit budget.
+The base resolves independently: an explicit object base wins over the matching `SIXEL_ENCODER_THREADING_POLICY` or `SIXEL_DECODER_THREADING_POLICY`, then `balanced`. Stage keys resolve from explicit object fields, encoder environment, then stage defaults. Playback freezes this resolution when attached: an explicit config overrides the palette key, including its default `SIXEL_PLAYBACK_PALETTE_PER_FRAME=0`; a NULL config inherits the encoder policy. The override does not modify the encoder and does not survive detach. Repeated policy arguments replace the base and non-budget keys; an omitted budget preserves the object's earlier explicit budget.
 
 Each work entry freezes the resolved mode, budget, stage limits, pin and frame keys in a thread-local scope. Helper threads inherit that snapshot. Nested budget scopes restrict the current operation; a nested public call on another object resolves that object's policy independently. The builtin SIXEL loader inherits its encoder's scope and applies the encoder's `decode` cap. Object-less APIs inside an active scope inherit it; outside one they resolve their own side's defaults. In-flight work is unaffected by later default changes.
 
@@ -70,7 +70,7 @@ The `greedy` mode makes `-j` minimum-size thresholds ineffective for eligible co
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | TP-01 | Library default and direct decoder default are resolved separately. | [tests/processing/threadpool/0002_thread_default_counts.t](../../tests/processing/threadpool/0002_thread_default_counts.t) |
-| TP-02 | Modes preserve the library default; CLI/API/environment precedence, `all`, numeric rejection, atomic failure, reserved palette rejection and decoder limits are enforced. | [tests/processing/threadpool/0003_thread_policy.t](../../tests/processing/threadpool/0003_thread_policy.t) |
+| TP-02 | Modes preserve the library default; CLI/API/environment precedence, `all`, numeric rejection, atomic failure, palette acceptance and frozen-scope precedence and decoder limits are enforced. | [tests/processing/threadpool/0003_thread_policy.t](../../tests/processing/threadpool/0003_thread_policy.t) |
 | TP-03 | Short, long and environment budget routes use the same `greedy` mode when comparing encoder output; `all` routes store the stable sentinel. | [tests/cli/options/regression/0185_threading_global_budget_image_regression.t](../../tests/cli/options/regression/0185_threading_global_budget_image_regression.t) |
 | TP-04 | Converter defaults resolve to the available performance CPU budget, with user environment and CLI overrides. | [tests/processing/threadpool/0004_converter_default_budget.t](../../tests/processing/threadpool/0004_converter_default_budget.t) |
 | TP-05 | Load depth is routed through the registry with range fallback and output equivalence. | [tests/cli/options/regression/0180_threading_load_depth_image_regression.t](../../tests/cli/options/regression/0180_threading_load_depth_image_regression.t) |
@@ -81,6 +81,8 @@ The `greedy` mode makes `-j` minimum-size thresholds ineffective for eligible co
 | TP-10 | Both Perl budget setters validate positive counts and trimmed, case-insensitive `all` and reject non-positive budgets before FFI conversion. | [tests/bindings/perl/0035_perl_api_thread_budget_setters.pl](../../tests/bindings/perl/0035_perl_api_thread_budget_setters.pl), [tests/bindings/perl/0055_perl_api_set_encoder_threads_invalid_numbers.pl](../../tests/bindings/perl/0055_perl_api_set_encoder_threads_invalid_numbers.pl) |
 | TP-11 | Both Ruby budget setters accept positive counts, trimmed, case-insensitive `all` and `:all` and reject non-positive budgets. | [tests/bindings/ruby/0035_ruby_api_thread_budget_setters.rb](../../tests/bindings/ruby/0035_ruby_api_thread_budget_setters.rb) |
 | TP-12 | Both PHP budget setters accept positive counts and trimmed, case-insensitive `all` and reject non-positive budgets. | [tests/bindings/php/0035_php_api_thread_budget_setters.php](../../tests/bindings/php/0035_php_api_thread_budget_setters.php) |
+| TP-13 | Compact, long and environment palette routes retain latest, explicit frame overrides it, and effective frame output remains byte-identical. | [tests/cli/options/regression/0182_threading_palette_image_regression.t](../../tests/cli/options/regression/0182_threading_palette_image_regression.t) |
+| TP-14 | Playback config overrides and NULL inheritance reach execution, remain frozen and leave the encoder unchanged; latest fallback matches frame bytes. | [tests/planner/pipeline/0026_playback_palette_policy.t](../../tests/planner/pipeline/0026_playback_palette_policy.t) |
 
 ### Coverage boundary
 

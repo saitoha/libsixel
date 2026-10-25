@@ -196,8 +196,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    global_budget=COUNT|all (B) sets the total budget.\n"
         "    Default: all hardware threads, capped to performance CPUs.\n"
         "    Lazy defaults to one dither band; explicit dither wins.\n"
-        "    Frame keys and prepare_workers never change the output; the\n"
-        "    dither worker count selects the parallel band split. Stage\n"
+        "    With palette=frame, frame keys and prepare_workers preserve\n"
+        "    output; dither workers select the parallel band split. Stage\n"
         "    limits that exceed the budget shrink to fit it.\n"
         "    decode=COUNT (S) caps builtin SIXEL input parsing.\n"
         "    Each encoder owns its policy independently.\n"
@@ -208,8 +208,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      prepare=serial|ahead -> prepare frame n+1 while frame n is\n"
         "                              emitted (default ahead; P)\n"
         "      palette=frame|latest -> palette source of each frame\n"
-        "                              (default frame; latest is reserved\n"
-        "                              and not implemented yet; C)\n"
+        "                              (default frame; latest currently\n"
+        "                              uses the frame path; C)\n"
         "    per-stage limits:\n"
         "      dither=COUNT         -> palette application workers (D)\n"
         "      encode=COUNT         -> SIXEL encode workers (E)\n"
@@ -1635,7 +1635,7 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_ENCODER_THREADING_PALETTE",
-        "default for -= *:palette. Accepts frame; latest is reserved."
+        "default for -= *:palette. Accepts frame|latest; both use frame behavior."
     },
     {
         "SIXEL_ENCODER_THREADING_DITHER",

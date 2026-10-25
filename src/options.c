@@ -3557,13 +3557,6 @@ sixel_option_apply_threading_policy_argument(
         sixel_helper_set_additional_message(
             "failed to apply threading policy suboptions.");
         status = SIXEL_BAD_ARGUMENT;
-    } else if (options.palette_override &&
-               options.palette == SIXEL_THREADING_PALETTE_LATEST) {
-        /* Reserved: frames would use the newest completed palette while
-         * their own palette is still being built. */
-        sixel_helper_set_additional_message(
-            "threading-policy palette=latest is not implemented yet.");
-        status = SIXEL_NOT_IMPLEMENTED;
     } else {
         *destination = options;
     }

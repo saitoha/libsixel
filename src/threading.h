@@ -193,6 +193,9 @@ SIXEL_INTERNAL_API int sixel_threading_policy_explicit_budget(int *threads);
 /* Frame-level modes return sixel_threading_frame_mode_t values. */
 SIXEL_INTERNAL_API int sixel_threading_policy_load_mode(void);
 SIXEL_INTERNAL_API int sixel_threading_policy_prepare_mode(void);
+/* Requested palette mode from the frozen scope, not execution eligibility.
+ * Latest currently resolves to the existing frame execution path. */
+SIXEL_INTERNAL_API int sixel_threading_policy_palette_mode(void);
 SIXEL_INTERNAL_API int sixel_threading_policy_load_depth(void);
 /* Returns true with an explicit stage limit; the caller fits it to the
  * resolved budget. */

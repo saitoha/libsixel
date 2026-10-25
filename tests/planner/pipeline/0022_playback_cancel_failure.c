@@ -21,7 +21,9 @@ playback_0022_done(sixel_playback_result_t const *result, void *context)
     playback_0022_counts_t *counts;
 
     counts = (playback_0022_counts_t *)context;
-    if (result->sequence != counts->last_sequence + 1u) {
+    if (result->sequence != counts->last_sequence + 1u ||
+            result->palette_sequence != (result->status == SIXEL_OK
+                                          ? result->sequence : 0u)) {
         counts->ordered = 0;
     }
     counts->last_sequence = result->sequence;

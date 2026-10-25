@@ -1078,6 +1078,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	planner/pipeline/0020_playback_direct_equivalence.c \
 	planner/pipeline/0021_playback_admission.c \
 	planner/pipeline/0022_playback_cancel_failure.c \
+	planner/pipeline/0026_playback_palette_policy.c \
 	planner/pipeline/playback_test_common.c \
 	planner/pipeline/playback_test_common.h \
 	processing/colorspace/parallel/0001_frame_bits.c \
@@ -4892,6 +4893,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0020_playback_direct_equivalence.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0021_playback_admission.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0022_playback_cancel_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0026_playback_palette_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-playback_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0001_frame_bits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0002_helper_bits.$(OBJEXT) \
@@ -9417,6 +9419,7 @@ am__depfiles_remade =  \
 	planner/pipeline/$(DEPDIR)/test_runner-0020_playback_direct_equivalence.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0021_playback_admission.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0022_playback_cancel_failure.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
@@ -12389,6 +12392,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_PLAYBACK_DIRECT_EQUIVALENCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_PLAYBACK_ADMISSION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_PLAYBACK_CANCEL_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_PLAYBACK_PALETTE_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PLAYBACK_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARALLEL_FLOAT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_BITS \
@@ -17015,6 +17019,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0020_playback_direct_equivalence.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0021_playback_admission.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0022_playback_cancel_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0026_playback_palette_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/playback_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/playback_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0001_frame_bits.c \
@@ -23051,6 +23056,9 @@ planner/pipeline/test_runner-0021_playback_admission.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-0022_playback_cancel_failure.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0026_playback_palette_policy.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-playback_test_common.$(OBJEXT):  \
@@ -33998,6 +34006,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0020_playback_direct_equivalence.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0021_playback_admission.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0022_playback_cancel_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
@@ -49117,6 +49126,20 @@ planner/pipeline/test_runner-0022_playback_cancel_failure.obj: planner/pipeline/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0022_playback_cancel_failure.c' object='planner/pipeline/test_runner-0022_playback_cancel_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0022_playback_cancel_failure.obj `if test -f 'planner/pipeline/0022_playback_cancel_failure.c'; then $(CYGPATH_W) 'planner/pipeline/0022_playback_cancel_failure.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0022_playback_cancel_failure.c'; fi`
+
+planner/pipeline/test_runner-0026_playback_palette_policy.o: planner/pipeline/0026_playback_palette_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0026_playback_palette_policy.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Tpo -c -o planner/pipeline/test_runner-0026_playback_palette_policy.o `test -f 'planner/pipeline/0026_playback_palette_policy.c' || echo '$(srcdir)/'`planner/pipeline/0026_playback_palette_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Tpo planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0026_playback_palette_policy.c' object='planner/pipeline/test_runner-0026_playback_palette_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0026_playback_palette_policy.o `test -f 'planner/pipeline/0026_playback_palette_policy.c' || echo '$(srcdir)/'`planner/pipeline/0026_playback_palette_policy.c
+
+planner/pipeline/test_runner-0026_playback_palette_policy.obj: planner/pipeline/0026_playback_palette_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0026_playback_palette_policy.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Tpo -c -o planner/pipeline/test_runner-0026_playback_palette_policy.obj `if test -f 'planner/pipeline/0026_playback_palette_policy.c'; then $(CYGPATH_W) 'planner/pipeline/0026_playback_palette_policy.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0026_playback_palette_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Tpo planner/pipeline/$(DEPDIR)/test_runner-0026_playback_palette_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0026_playback_palette_policy.c' object='planner/pipeline/test_runner-0026_playback_palette_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0026_playback_palette_policy.obj `if test -f 'planner/pipeline/0026_playback_palette_policy.c'; then $(CYGPATH_W) 'planner/pipeline/0026_playback_palette_policy.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0026_playback_palette_policy.c'; fi`
 
 planner/pipeline/test_runner-playback_test_common.o: planner/pipeline/playback_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-playback_test_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Tpo -c -o planner/pipeline/test_runner-playback_test_common.o `test -f 'planner/pipeline/playback_test_common.c' || echo '$(srcdir)/'`planner/pipeline/playback_test_common.c

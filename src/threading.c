@@ -1370,6 +1370,15 @@ sixel_threading_policy_prepare_mode(void)
 }
 
 int
+sixel_threading_policy_palette_mode(void)
+{
+    sixel_threading_policy_options_t options;
+
+    sixel_threading_policy_load(&options);
+    return options.palette;
+}
+
+int
 sixel_threading_policy_load_depth(void)
 {
     sixel_threading_policy_options_t options;

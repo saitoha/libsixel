@@ -2216,8 +2216,14 @@ sixel_encoder_encode_frame(
  * shrink to fit the budget. Load and prepare default to ahead; prepare selects
  * whether the next frame is prepared during emission. CAPACITY, not the
  * policy's load_depth, bounds admission. palette_mode is the per-object
- * counterpart of the policy's palette key; only per-frame palettes are
- * implemented.
+ * counterpart of the policy's palette key. An explicit CONFIG overrides the
+ * encoder, including PER_FRAME (zero); NULL CONFIG inherits the encoder.
+ * Both PER_FRAME and LATEST currently use the existing frame path: each
+ * frame waits for its own palette. No asynchronous palette reuse occurs.
+ * The requested mode is frozen for the session without changing the encoder.
+ * palette_sequence is the admission sequence on success (including fixed,
+ * indexed and high-color bypass), or zero on failure/cancellation. Failure
+ * may still leave bytes written to OUTPUT; they cannot be rolled back.
  */
 #define SIXEL_HAVE_PLAYBACK 1
 
@@ -2231,8 +2237,9 @@ typedef struct sixel_playback sixel_playback_t;
 #define SIXEL_PLAYBACK_NOWAIT             0
 #define SIXEL_PLAYBACK_WAIT               1
 
-/* palette dependency modes; only per-frame palettes are implemented */
+/* Requested palette dependency modes; both currently execute per-frame. */
 #define SIXEL_PLAYBACK_PALETTE_PER_FRAME  0
+#define SIXEL_PLAYBACK_PALETTE_LATEST     1
 
 /* sixel_playback_options_t.flags */
 #define SIXEL_PLAYBACK_OPTION_ORIGIN          0x1  /* apply origin_x/y */
@@ -2245,7 +2252,7 @@ typedef struct sixel_playback_result {
     SIXELSTATUS status;
     size_t painted_pixels;          /* see sixel_encoder_get_6delta_... */
     int needs_6delta_refinement;    /* see sixel_encoder_needs_6delta_... */
-    uint64_t palette_sequence;      /* frame whose palette was applied */
+    uint64_t palette_sequence;      /* applied frame, or zero; see above */
     double queued_seconds;          /* admission to start of encoding */
     double processing_seconds;      /* start of encoding to completion */
 } sixel_playback_result_t;
@@ -2257,7 +2264,7 @@ typedef void (*sixel_playback_done_function)(
 typedef struct sixel_playback_config {
     size_t struct_size;
     unsigned int capacity;          /* 1..SIXEL_PLAYBACK_CAPACITY_MAX */
-    int palette_mode;               /* SIXEL_PLAYBACK_PALETTE_PER_FRAME */
+    int palette_mode;               /* SIXEL_PLAYBACK_PALETTE_* */
     sixel_playback_done_function done;  /* optional */
     void *done_context;
 } sixel_playback_config_t;
@@ -2302,7 +2309,8 @@ sixel_playback_options_init(sixel_playback_options_t *options,
 
 /* Attach a playback queue to ENCODER, writing to OUTPUT (NULL selects the
  * encoder destination). The playback object retains both. NULL CONFIG and
- * NULL ALLOCATOR select defaults. */
+ * NULL ALLOCATOR select defaults; NULL CONFIG inherits the encoder palette
+ * policy instead of overriding it with PER_FRAME. */
 SIXELAPI SIXELSTATUS
 sixel_playback_new(sixel_playback_t **playback,
                    sixel_encoder_t *encoder,

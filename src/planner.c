@@ -1409,7 +1409,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     fprintf(stream,
             "  threading: mode=%s budget=%d "
             "load=%s load_depth=%d prepare=%s "
-            "prepare_workers=%d pin=%d\n",
+            "prepare_workers=%d pin=%d palette=%s palette_effective=frame\n",
             sixel_threading_policy_mode_name(),
             planner->total_threads,
             sixel_threading_policy_load_mode() == SIXEL_THREADING_FRAME_AHEAD
@@ -1419,7 +1419,10 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                     SIXEL_THREADING_FRAME_AHEAD
                 ? "ahead" : "serial",
             planner->prepare_threads,
-            planner->pipeline_pin_threads);
+            planner->pipeline_pin_threads,
+            sixel_threading_policy_palette_mode() ==
+                    SIXEL_THREADING_PALETTE_LATEST
+                ? "latest" : "frame");
     fprintf(stream,
             "  formats: source=%s work=%s scale_out=%s\n",
             sixel_encoding_planner_pixelformat_label(

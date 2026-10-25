@@ -215,10 +215,30 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
         ok &= policy_expect("failed parse is atomic",
                              sixel_threads_resolve(), 1);
     }
-    ok &= policy_apply("lazy:palette=latest", SIXEL_NOT_IMPLEMENTED);
-    ok &= policy_expect("unimplemented parse is atomic",
-                         sixel_threading_policy_mode(),
-                         SIXEL_THREADING_POLICY_BALANCED);
+    ok &= policy_apply("lazy:palette=latest", SIXEL_OK);
+    ok &= policy_expect("latest requested",
+                         sixel_threading_policy_palette_mode(),
+                         SIXEL_THREADING_PALETTE_LATEST);
+    ok &= policy_expect("latest preserves budget", sixel_threads_resolve(), 1);
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_PALETTE", "frame") == 0;
+    sixel_thread_budget_enter(&scope, 1);
+    ok &= policy_expect("nested scope retains latest",
+                         sixel_threading_policy_palette_mode(),
+                         SIXEL_THREADING_PALETTE_LATEST);
+    sixel_thread_budget_leave(&scope);
+    ok &= policy_apply("greedy:Cframe", SIXEL_OK);
+    ok &= policy_expect("compact frame override",
+                         sixel_threading_policy_palette_mode(),
+                         SIXEL_THREADING_PALETTE_FRAME);
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_PALETTE", "latest") == 0;
+    ok &= policy_expect("environment cannot alter frozen frame scope",
+                         sixel_threading_policy_palette_mode(),
+                         SIXEL_THREADING_PALETTE_FRAME);
+    ok &= policy_apply("balanced", SIXEL_OK);
+    ok &= policy_expect("base-only clears palette override",
+                         sixel_threading_policy_palette_mode(),
+                         SIXEL_THREADING_PALETTE_LATEST);
+    ok &= sixel_compat_setenv("SIXEL_ENCODER_THREADING_PALETTE", "") == 0;
 
     /* Lazy must not stage or split dither unless the dither key is set. */
     request.total_threads = 8;

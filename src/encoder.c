@@ -14368,7 +14368,10 @@ sixel_encoder_playback_frame_done(
         result.needs_6delta_refinement =
             pipeline->encoder->sixdelta_refinement_needed;
     }
-    result.palette_sequence = meta->sequence;
+    /* The frame fallback reports no palette for unsuccessful work,
+     * including queued cancellation and failures before application. */
+    result.palette_sequence = encoded != 0 && status == SIXEL_OK
+        ? meta->sequence : 0u;
     if (meta->started_at > 0.0) {
         result.queued_seconds = meta->started_at - meta->admitted_at;
         result.processing_seconds = now - meta->started_at;
@@ -18094,6 +18097,7 @@ sixel_playback_new(sixel_playback_t **playback,
                    sixel_allocator_t *allocator)
 {
     sixel_thread_budget_scope_t policy_scope;
+    sixel_threading_snapshot_t policy;
     sixel_playback_config_t defaults;
     sixel_playback_t *object;
     SIXELSTATUS status;
@@ -18117,7 +18121,8 @@ sixel_playback_new(sixel_playback_t **playback,
             "sixel_playback_new: capacity is out of range.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_PER_FRAME) {
+    if (defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_PER_FRAME &&
+            defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_LATEST) {
         sixel_helper_set_additional_message(
             "sixel_playback_new: palette mode is not implemented.");
         return SIXEL_NOT_IMPLEMENTED;
@@ -18173,7 +18178,17 @@ sixel_playback_new(sixel_playback_t **playback,
         sixel_output_ref(output);
     }
 
-    sixel_threading_object_enter(&policy_scope, &encoder->threading, 0);
+    /* A supplied config is an override, including its default zero value.
+     * NULL config inherits the encoder. Freeze this choice for both worker
+     * and synchronous submission without changing the encoder's policy. */
+    sixel_threading_policy_resolve(&encoder->threading, 0, &policy);
+    if (config != NULL) {
+        policy.options.palette = defaults.palette_mode ==
+                SIXEL_PLAYBACK_PALETTE_LATEST
+            ? SIXEL_THREADING_PALETTE_LATEST : SIXEL_THREADING_PALETTE_FRAME;
+        policy.options.palette_override = 1;
+    }
+    sixel_threading_policy_enter(&policy_scope, &policy);
     status = sixel_encoder_frame_pipeline_init(&object->pipeline, encoder,
                                                output);
     sixel_thread_budget_leave(&policy_scope);
