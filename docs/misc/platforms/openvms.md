@@ -85,6 +85,8 @@ The durable workarounds are split across [`Makefile.am`](../../../Makefile.am), 
 - The final library and test-runner object lists are restated on one physical line, followed by explicit target prerequisites.
 - Dependency tracking defaults to disabled because its Makefile bootstrap can hang after `config.status` has already produced the build files.
 
+The test runner also receives a separate, short prerequisite rule for `check_LTLIBRARIES`. This keeps check-only archives such as `libfloatlookuptests.la` ahead of the native link even when GNV loses the generated library dependencies in the large runner Makefile. Listing an archive after `test_runner` among the recursive make goals does not establish that ordering. The [test-harness link check](../../build/test-harness.md#test-coverage) exercises this repair without compiling C.
+
 The Makefile sanitizer itself contained a delayed-expansion trap. A bare AWK `$0` inside an M4 macro argument was read as the enclosing M4 macro name and repeatedly rescanned when Autoconf generated `config.status`; autoreconf time grew from seconds to more than twenty minutes. The source now spells the AWK record variable as `$[0]`, which M4 reduces to the intended `$0` at the correct expansion stage.
 
 The [amalgamation generator](../../../tools/gen-amalgamation.sh) keeps source paths and their preprocessor guards in parallel temporary files. It computes all guards in one AWK pass, avoiding per-test command substitutions and `sed`/`tr` pipelines. This also keeps the growing source inventory out of large GNV shell variables. Changes to guard generation must preserve the generated translation unit byte for byte for the same source and configuration inputs.
@@ -225,6 +227,7 @@ Using top-level `make check` would re-enter the expensive library-object walk be
 | OV-18 | Flushing the shared timeline releases RMS writer locks so completed sessions are readable in the same process, and later sessions append without truncating earlier records. | [tests/processing/timeline/0006_timeline_encode_frame_session.t](../../../tests/processing/timeline/0006_timeline_encode_frame_session.t) |
 | OV-19 | An output-open failure beneath an existing regular input preserves the previously configured PNG destination and configuration revision. | [tests/processing/progressive/0013_failed_output_preserves_destination.t](../../../tests/processing/progressive/0013_failed_output_preserves_destination.t) |
 | OV-20 | Literal Unix stream aliases do not reach native file-opening APIs or timeline destinations in maintained C, shell, TAP, Make, and Meson sources. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
+| OV-21 | The generated runner repair builds check-only archives before linking despite a missing Automake dependency list, propagates archive failures, supports dry runs and incremental reuse, and relinks after an archive changes. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../../tests/_static/sh/staticcheck-test-runner-link.sh) |
 
 ### Coverage boundary
 

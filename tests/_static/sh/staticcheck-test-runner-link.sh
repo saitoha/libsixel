@@ -1,6 +1,8 @@
 #!/bin/sh
-# Validate bounded link recipes and the object inventory without compiling.
+# Validate link recipes, object lists and archive prerequisites without C.
 # Policy: docs/build/test-harness.md
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-21
 set -eux
 echo '1..1'
 set -v

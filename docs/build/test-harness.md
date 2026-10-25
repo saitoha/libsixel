@@ -170,6 +170,8 @@ The object list is regenerated when the configured Makefile changes, rather than
 
 ## OpenVMS execution
 
+The link check also extracts the production `config.status` repair and simulates a lost Automake library-dependency list. It verifies archive-before-link ordering, archive-failure propagation, dry-run behavior, incremental reuse and relinking after an archive changes. This checks the make dependency contract; it does not reproduce GNV's parser or invoke the native linker. [OpenVMS generated Makefiles](../misc/platforms/openvms.md#gnv-make-3781-and-generated-makefiles) owns the separate archive-prerequisite rule.
+
 On OpenVMS, `TESTS` is empty in the Makefile and `OPENVMS_CHECK_TESTS_LIST` points to the line-oriented inventory. `sixel-check-test-openvms-shard` reads it and launches each script through the same custom TAP driver. `OPENVMS_TEST_JOBS` defaults to one. The experimental two-worker path splits the inventory, runs its designated serial cases first, and collects worker status files. The source comments record that extra GNV process and file work made the two-worker mode slower on the measured runner.
 
 This is different from normal make-driven log scheduling. It addresses both RMS record semantics and GNV process behavior. Native executable linking has its own [gnv-link-program.sh](../../openvms/gnv-link-program.sh) adapter, which produces an OpenVMS linker option file; it is not the mechanism used to solve ordinary test-list argument growth. [OpenVMS compatibility](../misc/platforms/openvms.md) owns the complete platform contract.
@@ -208,7 +210,7 @@ This is a declaration audit, not a complete shell interpreter or proof of option
 
 | ID | Contract | Owning check |
 | --- | --- | --- |
-| TH-01 | Object-list generation, compiler response-file linking and fallback recipes stay bounded, preserve argument order, support dry runs and incremental reuse, and propagate a list-read failure. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
+| TH-01 | Object-list generation, compiler response-file linking and fallback recipes stay bounded, preserve argument order, support dry runs and incremental reuse, and propagate a list-read failure. The OpenVMS repair separately preserves archive ordering, failure propagation and archive-driven relinking. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
 | TH-02 | Statically named external commands have corresponding configure discovery declarations. | [tests/_static/sh/staticcheck-command-dependencies.sh](../../tests/_static/sh/staticcheck-command-dependencies.sh) |
 | TH-03 | Runtime-report cleanup batches removals, preserves other file owners, propagates POSIX discovery/removal failures and retains repeated version removal on the OpenVMS path. | [tests/_static/sh/staticcheck-test-log-cleanup.sh](../../tests/_static/sh/staticcheck-test-log-cleanup.sh) |
 | TH-04 | Single-pass suite aggregation preserves per-observation totals, global failure selection, timing records and native shell diagnostic-copy semantics; incomplete metadata cannot publish a successful report. | [tests/_static/sh/staticcheck-test-suite-report.sh](../../tests/_static/sh/staticcheck-test-suite-report.sh) |
