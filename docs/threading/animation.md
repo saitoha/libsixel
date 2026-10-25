@@ -1,6 +1,6 @@
 # Animation Threading
 
-For input formats, loader support, playback controls, timing, and output-state interactions, see [Animation playback in img2sixel](../encoder/animation.md). This document covers scheduling and frame ownership. Playback and prepare-ahead workers inherit the owning encoder’s resolved policy snapshot, including its frame keys. Serial playback submission enters the same snapshot. The [palette policy](../cli/threading-policy.md#precedence-and-interactions) defines playback overrides and inheritance; both accepted palette modes currently wait for each frame’s own palette.
+For input formats, loader support, playback controls, timing, and output-state interactions, see [Animation playback in img2sixel](../encoder/animation.md). This document covers scheduling and frame ownership. Playback and prepare-ahead workers inherit the owning encoder’s resolved policy snapshot, including its frame keys. Serial playback submission enters the same snapshot. The [palette policy](../cli/threading-policy.md#precedence-and-interactions) defines playback overrides and inheritance; frame mode waits for each frame’s own palette, while eligible latest sessions select a completed palette at application start.
 
 ## Current frame pipeline
 
@@ -29,7 +29,7 @@ neither the JSONL record nor the SIXEL output has a natural completion point.
 
 ## What is and is not shared
 
-Preparation owns private frame and palette state; emission owns ordered output and temporal history. Caller-local budget scopes limit preprocessing, including palette/main overlap, and `prepare_workers` does not reduce the emission allocation. The [mode explanation](policy-modes.md#frame-overlap-and-ordered-publication) places these stages in the complete scheduling model.
+Preparation owns private frame and palette state; emission owns ordered output and temporal history. In frame mode, caller-local budget scopes limit preprocessing, including palette/main overlap, and `prepare_workers` does not reduce the emission allocation. Latest sessions share one local budget across palette construction, preparation and application. Preparation returns after starting an owned build; emission waits for display time, selects a completed snapshot and creates a private application dither. Frame completion joins its own build before reporting the result, even when another palette was applied. An own-build error therefore fails the frame even after bytes have been written. At most two own builds and their bounded completed records can be retained. The [mode explanation](policy-modes.md#frame-overlap-and-ordered-publication) places these stages in the complete scheduling model.
 
 Each component can create an independent short-lived pool. The budget is not a process-wide scheduler: control, loader-handoff and writer threads exist outside planned work slots, and separate API clients are not jointly admitted against one root quota. [Threading overview](overview.md#worker-budget-is-not-a-process-thread-limit) defines that distinction.
 

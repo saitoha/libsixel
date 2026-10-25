@@ -47,11 +47,11 @@ test_palette_scheduler_0044(int argc, char **argv)
             PALETTE_STORE_CHECK(palette_launch_clone(sample, f.allocator,
                 &reference) == SIXEL_OK);
             PALETTE_STORE_CHECK(sixel_palette_build_request_execute(request,
-                reference, &expected, &state, NULL) == SIXEL_OK);
+                reference, &expected, &state, NULL, NULL) == SIXEL_OK);
             PALETTE_STORE_CHECK(sixel_palette_store_admit(f.store, 1,
                 &request, &sample, &hooks, &job) == SIXEL_OK);
             PALETTE_STORE_CHECK(sixel_palette_store_job_start(job,
-                &f.scheduler) == SIXEL_FALSE);
+                &f.scheduler) == SIXEL_RUNTIME_ERROR);
             sixel_palette_scheduler_usage(&f.scheduler, used);
             PALETTE_STORE_CHECK(used[0] + used[1] + used[2] == 0);
             /* Re-sampling this source on failure would now build black. */

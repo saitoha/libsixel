@@ -14,6 +14,7 @@ typedef struct playback_0026_state {
     int wrong_mode;
     int callbacks;
     int wrong_result;
+    uint64_t last_palette;
 } playback_0026_state_t;
 
 /* Observe the policy at execution, so acceptance alone cannot pass. */
@@ -38,9 +39,12 @@ playback_0026_done(sixel_playback_result_t const *result, void *context)
     ++state->callbacks;
     if (result->status != SIXEL_OK ||
             result->sequence != (uint64_t)state->callbacks ||
-            result->palette_sequence != result->sequence) {
+            result->palette_sequence < state->last_palette ||
+            result->palette_sequence == 0 ||
+            result->palette_sequence > result->sequence) {
         state->wrong_result = 1;
     }
+    state->last_palette = result->palette_sequence;
 }
 
 /* Compare explicit frame with a requested session, then check detach.
@@ -91,6 +95,7 @@ playback_0026_compare(int encoder_mode, int config_mode, int budget)
         state.expected_mode = pass == 0 ? SIXEL_THREADING_PALETTE_FRAME
             : config_mode < 0 ? encoder_mode : config_mode;
         state.callbacks = 0;
+        state.last_palette = 0;
         status = sixel_playback_new(&playback, encoder, output,
             pass != 0 && config_mode < 0 ? NULL : &config, NULL);
         if (SIXEL_FAILED(status)) {
@@ -121,8 +126,9 @@ playback_0026_compare(int encoder_mode, int config_mode, int budget)
             memset(&state.buffer, 0, sizeof(state.buffer));
         }
     }
-    if (reference.size != state.buffer.size ||
-            memcmp(reference.bytes, state.buffer.bytes, reference.size)) {
+    if ((budget == 1 || state.expected_mode == SIXEL_THREADING_PALETTE_FRAME) &&
+            (reference.size != state.buffer.size ||
+             memcmp(reference.bytes, state.buffer.bytes, reference.size))) {
         fprintf(stderr, "latest frame fallback differs\n");
         goto end;
     }

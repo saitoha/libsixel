@@ -32,6 +32,7 @@
 #include "timeline-logger.h"
 
 #include "planner.h"
+#include "encoder-palette-store.h"
 #include "delta-residual.h"
 #include <stdint.h>
 
@@ -61,6 +62,20 @@ sixel_encoder_should_hide_animation_cursor(int is_multiframe,
                                            int fstatic,
                                            int outfd_is_tty,
                                            int enabled);
+
+/* Internal integration barriers; install before starting a session and keep
+ * the callbacks/context alive through drain. Production leaves this NULL. */
+struct sixel_encoder_palette_test_hooks {
+    void (*build)(void *context, uint64_t sequence,
+        sixel_palette_job_test_hooks_t *hooks);
+    void (*before_select)(void *context, uint64_t sequence,
+        sixel_palette_store_job_t *own);
+    void (*selected)(void *context, uint64_t sequence,
+        sixel_palette_selection_t const *selection);
+    void (*emitted)(void *context, uint64_t sequence,
+        sixel_encoding_planner_t const *planner, sixel_dither_t const *dither);
+    void *context;
+};
 
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
@@ -95,6 +110,7 @@ struct sixel_encoder {
     sixel_thread_identity_t playback_owner;
     /* A sixel_playback_t owns the encoder; ordinary calls are refused. */
     int playback_attached;
+    struct sixel_encoder_palette_test_hooks const *palette_test_hooks;
     struct sixel_encoder_callback_scope *active_callbacks;
     /* A setting candidate borrows runtime state. Destructive cache/history
      * effects are recorded here and run only after successful validation. */

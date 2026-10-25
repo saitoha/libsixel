@@ -208,8 +208,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      prepare=serial|ahead -> prepare frame n+1 while frame n is\n"
         "                              emitted (default ahead; P)\n"
         "      palette=frame|latest -> palette source of each frame\n"
-        "                              (default frame; latest currently\n"
-        "                              uses the frame path; C)\n"
+        "                              (default frame; latest reuses\n"
+        "                              completed CPU animation palettes; C)\n"
         "    per-stage limits:\n"
         "      dither=COUNT         -> palette application workers (D)\n"
         "      encode=COUNT         -> SIXEL encode workers (E)\n"
@@ -1635,7 +1635,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_ENCODER_THREADING_PALETTE",
-        "default for -= *:palette. Accepts frame|latest; both use frame behavior."
+        "default for -= *:palette. Accepts frame|latest; latest reuses "
+        "completed CPU animation palettes."
     },
     {
         "SIXEL_ENCODER_THREADING_DITHER",

@@ -26,6 +26,7 @@ struct sixel_palette_store_job {
     int started;
     int joined;
     int finished;
+    int retryable;
     int cancelled;
 };
 
@@ -180,7 +181,7 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
     sixel_thread_budget_enter(&budget_scope, job->threads);
     sixel_helper_set_additional_message(NULL);
     status = sixel_palette_build_request_execute(job->request, job->sample,
-        &built, &state, NULL);
+        &built, &state, NULL, &job->retryable);
     if (status == SIXEL_OK) {
         status = sixel_palette_snapshot_take(&snapshot, job->request,
             &built, &state);
@@ -191,6 +192,7 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
     }
     if (status == SIXEL_OK && job->hooks.completion_status != SIXEL_OK) {
         status = job->hooks.completion_status;
+        job->retryable = job->hooks.completion_retryable;
     }
     if (status != SIXEL_OK) {
         sixel_status_take_message(&job->message);
@@ -266,7 +268,7 @@ sixel_palette_store_job_start(sixel_palette_store_job_t *job,
          * sample and frozen policy for synchronous use in the caller lane. */
         sixel_palette_lease_release(&job->lease);
         job->threads = sixel_threads_resolve();
-        return SIXEL_FALSE;
+        return SIXEL_RUNTIME_ERROR;
     }
     job->started = 1;
     return SIXEL_OK;
@@ -303,6 +305,13 @@ sixel_palette_store_job_join(sixel_palette_store_job_t *job,
         return job->status;
     }
     return frame_status;
+}
+
+int
+sixel_palette_store_job_retryable(sixel_palette_store_job_t *job)
+{
+    /* The frame owner queries this only after join. */
+    return job->retryable;
 }
 
 void

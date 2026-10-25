@@ -105,9 +105,12 @@ typedef struct sixel_planner_edge {
 
 typedef struct sixel_encoding_planner {
     int total_threads;
+    int palette_latest;    /* session uses completed-palette selection */
     int prepare_threads;   /* total, capped by threading prepare_workers */
     int main_threads;
     int palette_threads;
+    int emit_threads;      /* live latest M, zero for the frame schedule */
+    int next_prepare_threads; /* live latest Q at emit allocation */
     int allow_palette_async;
     int clip_active;
     int scale_active;
@@ -156,6 +159,11 @@ sixel_encoding_planner_schedule(
 void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
                                  sixel_frame_t *frame);
+/* Refresh only application geometry under the live emission lease. Keep
+ * the analyzed source transforms and session N/W diagnostics intact. */
+SIXEL_INTERNAL_API void
+sixel_encoding_planner_plan_emit(sixel_encoding_planner_t *planner,
+    struct sixel_encoder *encoder, sixel_frame_t *frame);
 void sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
                                  sixel_frame_t *frame,

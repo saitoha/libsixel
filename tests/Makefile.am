@@ -373,6 +373,17 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0044_PALETTE_LAUNCH_SYNC_SAMPLE \
     -DBUILD_TEST_0045_PALETTE_SCHEDULER_SERIAL \
     -DBUILD_TEST_0046_PALETTE_SCHEDULER_CONCURRENT \
+    -DBUILD_PALETTE_INTEGRATION_COMMON \
+    -DBUILD_TEST_0058_LATEST_AUTO_BUILD_RETRY \
+    -DBUILD_TEST_0059_LATEST_EMIT_REMAINING_BUDGET \
+    -DBUILD_TEST_0060_LATEST_EMIT_STAGE_LIMITS \
+    -DBUILD_TEST_0047_LATEST_APPLY_BEFORE_OWN \
+    -DBUILD_TEST_0048_LATEST_SELECT_COMPLETED_OWN \
+    -DBUILD_TEST_0049_LATEST_EXCLUDES_FUTURE \
+    -DBUILD_TEST_0050_LATEST_BYPASS_EPOCH \
+    -DBUILD_TEST_0051_LATEST_OWN_FAILURE_AFTER_OUTPUT \
+    -DBUILD_TEST_0052_LATEST_THREAD_FAILURE_SAME_SAMPLE \
+    -DBUILD_TEST_0057_LATEST_KNOWN_OWN_FAILURE \
     -DBUILD_PALETTE_LAUNCH_TEST_COMMON \
     -DBUILD_PLAYBACK_TEST_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
@@ -4993,6 +5004,18 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0044_palette_launch_sync_sample.c \
     planner/pipeline/0045_palette_scheduler_serial.c \
     planner/pipeline/0046_palette_scheduler_concurrent.c \
+    planner/pipeline/0047_latest_apply_before_own.c \
+    planner/pipeline/0048_latest_select_completed_own.c \
+    planner/pipeline/0049_latest_excludes_future.c \
+    planner/pipeline/0050_latest_bypass_epoch.c \
+    planner/pipeline/0051_latest_own_failure_after_output.c \
+    planner/pipeline/0052_latest_thread_failure_same_sample.c \
+    planner/pipeline/0057_latest_known_own_failure.c \
+    planner/pipeline/0058_latest_auto_build_retry.c \
+    planner/pipeline/0059_latest_emit_remaining_budget.c \
+    planner/pipeline/0060_latest_emit_stage_limits.c \
+    planner/pipeline/palette_integration_common.c \
+    planner/pipeline/palette_integration_common.h \
     planner/pipeline/palette_launch_test_common.c \
     planner/pipeline/palette_launch_test_common.h \
     planner/pipeline/playback_test_common.c \

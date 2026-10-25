@@ -6,7 +6,7 @@ This explanation is for users and contributors choosing how libsixel spends a wo
 
 A budget permits two different forms of concurrency: independent stages can overlap, and one stage can partition its data among workers. `lazy` favors independent work; `balanced` also partitions useful-sized work; `greedy` removes selected minimum-size gates. The mode does not itself raise the library budget.
 
-The table follows a frame from preparation to output. Every reservation still fits the resolved budget and applicable stage limit.
+The table follows a frame from preparation to output with `palette=frame`. Every reservation still fits the resolved budget and applicable stage limit.
 
 | Stage | `lazy` | `balanced` | `greedy` |
 | --- | --- | --- | --- |
@@ -27,7 +27,7 @@ Of the threading policy's scheduling choices, the dither band split can change o
 
 With default dither geometry, lazy output equals a one-thread run using the same image, palette and other options. Its single dither producer preserves the history while independent six-row encoding jobs publish in order. An explicit `dither` limit or diffusion geometry override can split that history even in lazy mode.
 
-Frame controls (`load`, `load_depth`, `prepare`, and `palette=frame`) and `prepare_workers` never change output. The accepted `palette=latest` request currently resolves to the same frame path; [the policy reference](../cli/threading-policy.md#contract) owns that fallback. They alter when independent work runs. Encode worker count changes neither indexed pixels nor their publication order. SIMD and arithmetic representation are separate runtime choices and can have their own rounding behavior.
+With `palette=frame`, frame controls (`load`, `load_depth` and `prepare`) and `prepare_workers` alter when independent work runs without changing output. With `palette=latest`, scheduling can change which completed palette is selected; [the policy reference](../cli/threading-policy.md#contract) owns selection and fallback. Encode worker count changes neither indexed pixels nor their publication order. SIMD and arithmetic representation are separate runtime choices and can have their own rounding behavior.
 
 ## Performance CPUs and size thresholds
 

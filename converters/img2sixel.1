@@ -130,11 +130,14 @@ prepare frame n+1 while frame n is emitted (default \fBahead\fP; short form
 .TP 5
 .B palette=frame|latest
 palette source of each frame (default \fBframe\fP; short form \fB:C\fP).
-\fBlatest\fP is accepted and retained in the encoder policy, but currently
-uses the same per-frame path as \fBframe\fP. Each frame waits for its own
-palette; no asynchronous palette reuse occurs. This applies to serial and
-threaded execution and all output features. Verbose diagnostics distinguish
-the requested palette mode from the effective \fBframe\fP mode.
+\fBlatest\fP selects the newest completed palette from the current or an
+earlier frame at application start, after the display delay. Selection is
+fixed throughout that frame. Ordinary CPU animations and public playback
+can overlap their own palette build with application; the first frame waits.
+A one-worker budget, nonthreaded execution, still images, fixed/indexed/high-color
+palettes, GPU, DRCS, presentation/repair, macros, delta output, native color
+output and palette export retain \fBframe\fP behavior. A frame's own build
+failure is reported even if output was already emitted.
 .TP 5
 .B dither=COUNT
 palette application workers (short form \fB:D\fP).

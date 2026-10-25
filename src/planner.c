@@ -546,9 +546,12 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     }
 
     planner->total_threads = 1;
+    planner->palette_latest = 0;
     planner->prepare_threads = 1;
     planner->main_threads = 1;
     planner->palette_threads = 0;
+    planner->emit_threads = 0;
+    planner->next_prepare_threads = 0;
     planner->allow_palette_async = 0;
     planner->clip_active = 0;
     planner->scale_active = 0;
@@ -1195,9 +1198,10 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     planner->pipeline_pin_threads = pin_threads;
     height = sixel_frame_get_height(frame);
     width = sixel_frame_get_width(frame);
-    /* Palette construction joins before this phase. Its earlier overlap
-     * reservation must not reduce the final dither/encode worker budget. */
-    threads = planner->total_threads;
+    /* Frame mode joins palette construction before application. Latest
+     * instead owns M beside live P/Q leases, resolved at emit time. */
+    threads = planner->emit_threads > 0
+        ? planner->emit_threads : planner->total_threads;
     if (width <= 0 || height <= 0 || threads <= 1) {
         return;
     }
@@ -1253,6 +1257,18 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     planner->pipeline_queue_depth = queue_depth;
     planner->pipeline_dither_threads = allocation.dither_threads;
     planner->pipeline_encode_threads = allocation.encode_threads;
+}
+
+void
+sixel_encoding_planner_plan_emit(sixel_encoding_planner_t *planner,
+    sixel_encoder_t *encoder, sixel_frame_t *frame)
+{
+    /* Preparation may have run with Q=1. Never reuse that estimate for
+     * application: both this plan and runtime allocate from the live M. */
+    planner->emit_threads = sixel_threads_resolve();
+    planner->main_threads = planner->emit_threads;
+    sixel_encoding_planner_plan_pipeline(planner, encoder, frame);
+    sixel_encoding_planner_replan(planner, encoder, frame, 0);
 }
 
 
@@ -1409,7 +1425,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     fprintf(stream,
             "  threading: mode=%s budget=%d "
             "load=%s load_depth=%d prepare=%s "
-            "prepare_workers=%d pin=%d palette=%s palette_effective=frame\n",
+            "prepare_workers=%d pin=%d palette=%s palette_effective=%s\n",
             sixel_threading_policy_mode_name(),
             planner->total_threads,
             sixel_threading_policy_load_mode() == SIXEL_THREADING_FRAME_AHEAD
@@ -1422,7 +1438,13 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
             planner->pipeline_pin_threads,
             sixel_threading_policy_palette_mode() ==
                     SIXEL_THREADING_PALETTE_LATEST
-                ? "latest" : "frame");
+                ? "latest" : "frame",
+            planner->palette_latest ? "latest" : "frame");
+    if (planner->emit_threads > 0) {
+        fprintf(stream, "  latest leases: palette=%d prepare=%d emit=%d\n",
+            planner->palette_threads, planner->next_prepare_threads,
+            planner->emit_threads);
+    }
     fprintf(stream,
             "  formats: source=%s work=%s scale_out=%s\n",
             sixel_encoding_planner_pixelformat_label(

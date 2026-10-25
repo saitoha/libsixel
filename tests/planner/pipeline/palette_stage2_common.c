@@ -76,7 +76,7 @@ palette_stage2_request(sixel_allocator_t *allocator, int floating,
     /* A predicted omission reservation must survive history/config changes. */
     state.delta_alpha_key = 1;
     status = sixel_palette_build_request_new(request, encoder, *frame,
-                                              &state, 0);
+        &state, 0, encoder->planner.working_pixelformat);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "request freeze: %x %s\n", status,
             sixel_helper_get_additional_message());
@@ -113,7 +113,7 @@ palette_stage2_snapshot(sixel_allocator_t *allocator, int floating,
         return 1;
     }
     status = sixel_palette_build_request_execute(request, frame, &built,
-                                                 &state, NULL);
+                                                 &state, NULL, NULL);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_palette_snapshot_take(snapshot, request, &built, &state);
     }

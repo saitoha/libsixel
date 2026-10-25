@@ -64,7 +64,7 @@ palette_launch_input(sixel_allocator_t *allocator, int floating,
     }
     state.delta_alpha_key = 0;
     status = sixel_palette_build_input_new(request, sample, *encoder, *source,
-        &state);
+        &state, (*encoder)->planner.working_pixelformat);
     if (status != SIXEL_OK) {
         fprintf(stderr, "palette input: %x %s\n", status,
             sixel_helper_get_additional_message());

@@ -2218,12 +2218,19 @@ sixel_encoder_encode_frame(
  * policy's load_depth, bounds admission. palette_mode is the per-object
  * counterpart of the policy's palette key. An explicit CONFIG overrides the
  * encoder, including PER_FRAME (zero); NULL CONFIG inherits the encoder.
- * Both PER_FRAME and LATEST currently use the existing frame path: each
- * frame waits for its own palette. No asynchronous palette reuse occurs.
+ * LATEST reuses the newest completed palette with source sequence <= the
+ * current sequence. Selection occurs once, after delay, before LUT/gradient
+ * setup. CPU generated palettes can overlap their own build and application,
+ * including RGB submissions with multiframe=0. The first frame waits for its
+ * own palette. One-worker/nonthreaded and feature fallback use PER_FRAME.
+ * Delta, native color output, export, GPU and macros currently use PER_FRAME.
  * The requested mode is frozen for the session without changing the encoder.
- * palette_sequence is the admission sequence on success (including fixed,
- * indexed and high-color bypass), or zero on failure/cancellation. Failure
- * may still leave bytes written to OUTPUT; they cannot be rolled back.
+ * palette_sequence identifies the selected source; zero means no selection.
+ * Fixed/indexed/high-color bypass reports the current sequence on success
+ * and starts a new palette epoch. PER_FRAME failures report zero. LATEST
+ * retains a selected sequence on later failure, including own-build failure
+ * after emission. Written bytes cannot be rolled back. Drain joins own builds
+ * before completion; detach and a new input discard the session's palettes.
  */
 #define SIXEL_HAVE_PLAYBACK 1
 
@@ -2237,7 +2244,7 @@ typedef struct sixel_playback sixel_playback_t;
 #define SIXEL_PLAYBACK_NOWAIT             0
 #define SIXEL_PLAYBACK_WAIT               1
 
-/* Requested palette dependency modes; both currently execute per-frame. */
+/* Palette dependency modes; unsupported features use PER_FRAME. */
 #define SIXEL_PLAYBACK_PALETTE_PER_FRAME  0
 #define SIXEL_PLAYBACK_PALETTE_LATEST     1
 
@@ -2252,7 +2259,7 @@ typedef struct sixel_playback_result {
     SIXELSTATUS status;
     size_t painted_pixels;          /* see sixel_encoder_get_6delta_... */
     int needs_6delta_refinement;    /* see sixel_encoder_needs_6delta_... */
-    uint64_t palette_sequence;      /* applied frame, or zero; see above */
+    uint64_t palette_sequence;      /* palette source, or zero; see above */
     double queued_seconds;          /* admission to start of encoding */
     double processing_seconds;      /* start of encoding to completion */
 } sixel_playback_result_t;

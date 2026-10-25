@@ -47,7 +47,7 @@ test_palette_scheduler_0043(int argc, char **argv)
         PALETTE_STORE_CHECK(palette_launch_clone(sample, f.allocator,
             &reference) == SIXEL_OK);
         PALETTE_STORE_CHECK(sixel_palette_build_request_execute(request,
-            reference, &expected, &state, NULL) == SIXEL_OK);
+            reference, &expected, &state, NULL, NULL) == SIXEL_OK);
         PALETTE_STORE_CHECK(sixel_palette_store_admit(f.store,
             (uint64_t)floating + 1, &request, &sample, NULL, &job) == SIXEL_OK);
         PALETTE_STORE_CHECK(sixel_palette_store_job_start(job, &f.scheduler)

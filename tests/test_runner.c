@@ -595,6 +595,16 @@ int test_palette_scheduler_0043(int argc, char **argv);
 int test_palette_scheduler_0044(int argc, char **argv);
 int test_palette_scheduler_0045(int argc, char **argv);
 int test_palette_scheduler_0046(int argc, char **argv);
+int test_palette_integration_0047(int argc, char **argv);
+int test_palette_integration_0048(int argc, char **argv);
+int test_palette_integration_0049(int argc, char **argv);
+int test_palette_integration_0050(int argc, char **argv);
+int test_palette_integration_0051(int argc, char **argv);
+int test_palette_integration_0052(int argc, char **argv);
+int test_palette_integration_0057(int argc, char **argv);
+int test_palette_integration_0058(int argc, char **argv);
+int test_palette_integration_0059(int argc, char **argv);
+int test_palette_integration_0060(int argc, char **argv);
 
 
 int test_sequence_0086(int argc, char **argv);
@@ -5897,6 +5907,26 @@ static test_entry_t const test_entries[] = {
       test_palette_scheduler_0045 },
     { "planner/pipeline/0046_palette_scheduler_concurrent",
       test_palette_scheduler_0046 },
+    { "planner/pipeline/0047_latest_apply_before_own",
+      test_palette_integration_0047 },
+    { "planner/pipeline/0048_latest_select_completed_own",
+      test_palette_integration_0048 },
+    { "planner/pipeline/0049_latest_excludes_future",
+      test_palette_integration_0049 },
+    { "planner/pipeline/0050_latest_bypass_epoch",
+      test_palette_integration_0050 },
+    { "planner/pipeline/0051_latest_own_failure_after_output",
+      test_palette_integration_0051 },
+    { "planner/pipeline/0052_latest_thread_failure_same_sample",
+      test_palette_integration_0052 },
+    { "planner/pipeline/0057_latest_known_own_failure",
+      test_palette_integration_0057 },
+    { "planner/pipeline/0058_latest_auto_build_retry",
+      test_palette_integration_0058 },
+    { "planner/pipeline/0059_latest_emit_remaining_budget",
+      test_palette_integration_0059 },
+    { "planner/pipeline/0060_latest_emit_stage_limits",
+      test_palette_integration_0060 },
 
     { "decoder/0086_multi_pass_allocation_failure",
       test_sequence_0086 },

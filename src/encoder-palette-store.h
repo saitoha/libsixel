@@ -28,6 +28,7 @@ typedef struct sixel_palette_job_test_hooks {
     void (*before_join)(void *context);
     void *context;
     SIXELSTATUS completion_status;
+    int completion_retryable;
     int fail_thread_create;
 } sixel_palette_job_test_hooks_t;
 
@@ -57,7 +58,8 @@ sixel_palette_store_admit(sixel_palette_store_t *store, uint64_t sequence,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_store_job_start(sixel_palette_store_job_t *job,
     sixel_palette_scheduler_t *scheduler);
-/* Start returns FALSE on unavailable admission or thread creation failure.
+/* Start returns FALSE on unavailable admission, RUNTIME_ERROR on thread
+ * creation failure.
  * No lease remains and the same request/sample can be run synchronously in
  * a live Q/M lease or after the other lanes have joined (frame fallback).
  * No grant can also defer admission; it never authorizes unbudgeted work.
@@ -72,6 +74,10 @@ sixel_palette_store_job_status(sixel_palette_store_job_t *job, int *finished);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_store_job_join(sixel_palette_store_job_t *job,
     SIXELSTATUS frame_status);
+/* Construction failures may retry AUTO sampling; lookup failures may not.
+ * Query only after joining the own job. */
+SIXEL_INTERNAL_API int
+sixel_palette_store_job_retryable(sixel_palette_store_job_t *job);
 SIXEL_INTERNAL_API void
 sixel_palette_store_job_cancel(sixel_palette_store_job_t *job);
 /* Release joins before freeing inputs. Cancel a discarded future job first;

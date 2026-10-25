@@ -27,7 +27,7 @@ test_palette_stage2_0027(int argc, char **argv)
         return 1;
     }
     status = sixel_palette_build_request_execute(request, frame,
-                                                  &built, &state, NULL);
+                                                  &built, &state, NULL, NULL);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_palette_snapshot_take(&snapshot, request,
                                               &built, &state);
