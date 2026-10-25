@@ -1087,6 +1087,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	planner/pipeline/0032_palette_snapshot_concurrent.c \
 	planner/pipeline/palette_stage2_common.c \
 	planner/pipeline/palette_stage2_common.h \
+	planner/pipeline/0033_palette_store_frontier.c \
+	planner/pipeline/0034_palette_store_attempt_epoch.c \
+	planner/pipeline/0035_palette_store_bound_lifetime.c \
+	planner/pipeline/0036_palette_store_own_error.c \
+	planner/pipeline/0037_palette_store_stop_join.c \
+	planner/pipeline/0038_palette_store_cancel_isolation.c \
+	planner/pipeline/0039_palette_store_concurrent.c \
+	planner/pipeline/palette_store_test_common.c \
+	planner/pipeline/palette_store_test_common.h \
 	planner/pipeline/playback_test_common.c \
 	planner/pipeline/playback_test_common.h \
 	processing/colorspace/parallel/0001_frame_bits.c \
@@ -4909,6 +4918,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0031_palette_snapshot_fhedt_float.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0032_palette_snapshot_concurrent.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-palette_stage2_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0033_palette_store_frontier.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0034_palette_store_attempt_epoch.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0035_palette_store_bound_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0036_palette_store_own_error.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0037_palette_store_stop_join.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0038_palette_store_cancel_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0039_palette_store_concurrent.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-palette_store_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-playback_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0001_frame_bits.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/colorspace/parallel/test_runner-0002_helper_bits.$(OBJEXT) \
@@ -9441,7 +9458,15 @@ am__depfiles_remade =  \
 	planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
@@ -12422,6 +12447,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_PALETTE_SNAPSHOT_FHEDT_FLOAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_PALETTE_SNAPSHOT_CONCURRENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_STAGE2_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_PALETTE_STORE_FRONTIER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_PALETTE_STORE_ATTEMPT_EPOCH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_PALETTE_STORE_BOUND_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0036_PALETTE_STORE_OWN_ERROR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_PALETTE_STORE_STOP_JOIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_PALETTE_STORE_CANCEL_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_PALETTE_STORE_CONCURRENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_STORE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PLAYBACK_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARALLEL_FLOAT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_BITS \
@@ -17057,6 +17090,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0032_palette_snapshot_concurrent.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_stage2_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_stage2_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0033_palette_store_frontier.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0034_palette_store_attempt_epoch.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0035_palette_store_bound_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0036_palette_store_own_error.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0037_palette_store_stop_join.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0038_palette_store_cancel_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0039_palette_store_concurrent.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_store_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_store_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/playback_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/playback_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/colorspace/parallel/0001_frame_bits.c \
@@ -23117,6 +23159,30 @@ planner/pipeline/test_runner-0032_palette_snapshot_concurrent.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-palette_stage2_common.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0033_palette_store_frontier.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0034_palette_store_attempt_epoch.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0035_palette_store_bound_lifetime.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0036_palette_store_own_error.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0037_palette_store_stop_join.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0038_palette_store_cancel_isolation.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0039_palette_store_concurrent.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-palette_store_test_common.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-playback_test_common.$(OBJEXT):  \
@@ -34071,7 +34137,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0030_palette_snapshot_fhedt_bytes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0031_palette_snapshot_fhedt_float.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0032_palette_snapshot_concurrent.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_stage2_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
@@ -49303,6 +49377,118 @@ planner/pipeline/test_runner-palette_stage2_common.obj: planner/pipeline/palette
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/palette_stage2_common.c' object='planner/pipeline/test_runner-palette_stage2_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-palette_stage2_common.obj `if test -f 'planner/pipeline/palette_stage2_common.c'; then $(CYGPATH_W) 'planner/pipeline/palette_stage2_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/palette_stage2_common.c'; fi`
+
+planner/pipeline/test_runner-0033_palette_store_frontier.o: planner/pipeline/0033_palette_store_frontier.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0033_palette_store_frontier.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Tpo -c -o planner/pipeline/test_runner-0033_palette_store_frontier.o `test -f 'planner/pipeline/0033_palette_store_frontier.c' || echo '$(srcdir)/'`planner/pipeline/0033_palette_store_frontier.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Tpo planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0033_palette_store_frontier.c' object='planner/pipeline/test_runner-0033_palette_store_frontier.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0033_palette_store_frontier.o `test -f 'planner/pipeline/0033_palette_store_frontier.c' || echo '$(srcdir)/'`planner/pipeline/0033_palette_store_frontier.c
+
+planner/pipeline/test_runner-0033_palette_store_frontier.obj: planner/pipeline/0033_palette_store_frontier.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0033_palette_store_frontier.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Tpo -c -o planner/pipeline/test_runner-0033_palette_store_frontier.obj `if test -f 'planner/pipeline/0033_palette_store_frontier.c'; then $(CYGPATH_W) 'planner/pipeline/0033_palette_store_frontier.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0033_palette_store_frontier.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Tpo planner/pipeline/$(DEPDIR)/test_runner-0033_palette_store_frontier.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0033_palette_store_frontier.c' object='planner/pipeline/test_runner-0033_palette_store_frontier.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0033_palette_store_frontier.obj `if test -f 'planner/pipeline/0033_palette_store_frontier.c'; then $(CYGPATH_W) 'planner/pipeline/0033_palette_store_frontier.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0033_palette_store_frontier.c'; fi`
+
+planner/pipeline/test_runner-0034_palette_store_attempt_epoch.o: planner/pipeline/0034_palette_store_attempt_epoch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0034_palette_store_attempt_epoch.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Tpo -c -o planner/pipeline/test_runner-0034_palette_store_attempt_epoch.o `test -f 'planner/pipeline/0034_palette_store_attempt_epoch.c' || echo '$(srcdir)/'`planner/pipeline/0034_palette_store_attempt_epoch.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Tpo planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0034_palette_store_attempt_epoch.c' object='planner/pipeline/test_runner-0034_palette_store_attempt_epoch.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0034_palette_store_attempt_epoch.o `test -f 'planner/pipeline/0034_palette_store_attempt_epoch.c' || echo '$(srcdir)/'`planner/pipeline/0034_palette_store_attempt_epoch.c
+
+planner/pipeline/test_runner-0034_palette_store_attempt_epoch.obj: planner/pipeline/0034_palette_store_attempt_epoch.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0034_palette_store_attempt_epoch.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Tpo -c -o planner/pipeline/test_runner-0034_palette_store_attempt_epoch.obj `if test -f 'planner/pipeline/0034_palette_store_attempt_epoch.c'; then $(CYGPATH_W) 'planner/pipeline/0034_palette_store_attempt_epoch.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0034_palette_store_attempt_epoch.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Tpo planner/pipeline/$(DEPDIR)/test_runner-0034_palette_store_attempt_epoch.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0034_palette_store_attempt_epoch.c' object='planner/pipeline/test_runner-0034_palette_store_attempt_epoch.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0034_palette_store_attempt_epoch.obj `if test -f 'planner/pipeline/0034_palette_store_attempt_epoch.c'; then $(CYGPATH_W) 'planner/pipeline/0034_palette_store_attempt_epoch.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0034_palette_store_attempt_epoch.c'; fi`
+
+planner/pipeline/test_runner-0035_palette_store_bound_lifetime.o: planner/pipeline/0035_palette_store_bound_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0035_palette_store_bound_lifetime.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Tpo -c -o planner/pipeline/test_runner-0035_palette_store_bound_lifetime.o `test -f 'planner/pipeline/0035_palette_store_bound_lifetime.c' || echo '$(srcdir)/'`planner/pipeline/0035_palette_store_bound_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Tpo planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0035_palette_store_bound_lifetime.c' object='planner/pipeline/test_runner-0035_palette_store_bound_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0035_palette_store_bound_lifetime.o `test -f 'planner/pipeline/0035_palette_store_bound_lifetime.c' || echo '$(srcdir)/'`planner/pipeline/0035_palette_store_bound_lifetime.c
+
+planner/pipeline/test_runner-0035_palette_store_bound_lifetime.obj: planner/pipeline/0035_palette_store_bound_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0035_palette_store_bound_lifetime.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Tpo -c -o planner/pipeline/test_runner-0035_palette_store_bound_lifetime.obj `if test -f 'planner/pipeline/0035_palette_store_bound_lifetime.c'; then $(CYGPATH_W) 'planner/pipeline/0035_palette_store_bound_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0035_palette_store_bound_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Tpo planner/pipeline/$(DEPDIR)/test_runner-0035_palette_store_bound_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0035_palette_store_bound_lifetime.c' object='planner/pipeline/test_runner-0035_palette_store_bound_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0035_palette_store_bound_lifetime.obj `if test -f 'planner/pipeline/0035_palette_store_bound_lifetime.c'; then $(CYGPATH_W) 'planner/pipeline/0035_palette_store_bound_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0035_palette_store_bound_lifetime.c'; fi`
+
+planner/pipeline/test_runner-0036_palette_store_own_error.o: planner/pipeline/0036_palette_store_own_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0036_palette_store_own_error.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Tpo -c -o planner/pipeline/test_runner-0036_palette_store_own_error.o `test -f 'planner/pipeline/0036_palette_store_own_error.c' || echo '$(srcdir)/'`planner/pipeline/0036_palette_store_own_error.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Tpo planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0036_palette_store_own_error.c' object='planner/pipeline/test_runner-0036_palette_store_own_error.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0036_palette_store_own_error.o `test -f 'planner/pipeline/0036_palette_store_own_error.c' || echo '$(srcdir)/'`planner/pipeline/0036_palette_store_own_error.c
+
+planner/pipeline/test_runner-0036_palette_store_own_error.obj: planner/pipeline/0036_palette_store_own_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0036_palette_store_own_error.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Tpo -c -o planner/pipeline/test_runner-0036_palette_store_own_error.obj `if test -f 'planner/pipeline/0036_palette_store_own_error.c'; then $(CYGPATH_W) 'planner/pipeline/0036_palette_store_own_error.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0036_palette_store_own_error.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Tpo planner/pipeline/$(DEPDIR)/test_runner-0036_palette_store_own_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0036_palette_store_own_error.c' object='planner/pipeline/test_runner-0036_palette_store_own_error.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0036_palette_store_own_error.obj `if test -f 'planner/pipeline/0036_palette_store_own_error.c'; then $(CYGPATH_W) 'planner/pipeline/0036_palette_store_own_error.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0036_palette_store_own_error.c'; fi`
+
+planner/pipeline/test_runner-0037_palette_store_stop_join.o: planner/pipeline/0037_palette_store_stop_join.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0037_palette_store_stop_join.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Tpo -c -o planner/pipeline/test_runner-0037_palette_store_stop_join.o `test -f 'planner/pipeline/0037_palette_store_stop_join.c' || echo '$(srcdir)/'`planner/pipeline/0037_palette_store_stop_join.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Tpo planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0037_palette_store_stop_join.c' object='planner/pipeline/test_runner-0037_palette_store_stop_join.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0037_palette_store_stop_join.o `test -f 'planner/pipeline/0037_palette_store_stop_join.c' || echo '$(srcdir)/'`planner/pipeline/0037_palette_store_stop_join.c
+
+planner/pipeline/test_runner-0037_palette_store_stop_join.obj: planner/pipeline/0037_palette_store_stop_join.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0037_palette_store_stop_join.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Tpo -c -o planner/pipeline/test_runner-0037_palette_store_stop_join.obj `if test -f 'planner/pipeline/0037_palette_store_stop_join.c'; then $(CYGPATH_W) 'planner/pipeline/0037_palette_store_stop_join.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0037_palette_store_stop_join.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Tpo planner/pipeline/$(DEPDIR)/test_runner-0037_palette_store_stop_join.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0037_palette_store_stop_join.c' object='planner/pipeline/test_runner-0037_palette_store_stop_join.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0037_palette_store_stop_join.obj `if test -f 'planner/pipeline/0037_palette_store_stop_join.c'; then $(CYGPATH_W) 'planner/pipeline/0037_palette_store_stop_join.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0037_palette_store_stop_join.c'; fi`
+
+planner/pipeline/test_runner-0038_palette_store_cancel_isolation.o: planner/pipeline/0038_palette_store_cancel_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0038_palette_store_cancel_isolation.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Tpo -c -o planner/pipeline/test_runner-0038_palette_store_cancel_isolation.o `test -f 'planner/pipeline/0038_palette_store_cancel_isolation.c' || echo '$(srcdir)/'`planner/pipeline/0038_palette_store_cancel_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Tpo planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0038_palette_store_cancel_isolation.c' object='planner/pipeline/test_runner-0038_palette_store_cancel_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0038_palette_store_cancel_isolation.o `test -f 'planner/pipeline/0038_palette_store_cancel_isolation.c' || echo '$(srcdir)/'`planner/pipeline/0038_palette_store_cancel_isolation.c
+
+planner/pipeline/test_runner-0038_palette_store_cancel_isolation.obj: planner/pipeline/0038_palette_store_cancel_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0038_palette_store_cancel_isolation.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Tpo -c -o planner/pipeline/test_runner-0038_palette_store_cancel_isolation.obj `if test -f 'planner/pipeline/0038_palette_store_cancel_isolation.c'; then $(CYGPATH_W) 'planner/pipeline/0038_palette_store_cancel_isolation.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0038_palette_store_cancel_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Tpo planner/pipeline/$(DEPDIR)/test_runner-0038_palette_store_cancel_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0038_palette_store_cancel_isolation.c' object='planner/pipeline/test_runner-0038_palette_store_cancel_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0038_palette_store_cancel_isolation.obj `if test -f 'planner/pipeline/0038_palette_store_cancel_isolation.c'; then $(CYGPATH_W) 'planner/pipeline/0038_palette_store_cancel_isolation.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0038_palette_store_cancel_isolation.c'; fi`
+
+planner/pipeline/test_runner-0039_palette_store_concurrent.o: planner/pipeline/0039_palette_store_concurrent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0039_palette_store_concurrent.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Tpo -c -o planner/pipeline/test_runner-0039_palette_store_concurrent.o `test -f 'planner/pipeline/0039_palette_store_concurrent.c' || echo '$(srcdir)/'`planner/pipeline/0039_palette_store_concurrent.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Tpo planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0039_palette_store_concurrent.c' object='planner/pipeline/test_runner-0039_palette_store_concurrent.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0039_palette_store_concurrent.o `test -f 'planner/pipeline/0039_palette_store_concurrent.c' || echo '$(srcdir)/'`planner/pipeline/0039_palette_store_concurrent.c
+
+planner/pipeline/test_runner-0039_palette_store_concurrent.obj: planner/pipeline/0039_palette_store_concurrent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0039_palette_store_concurrent.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Tpo -c -o planner/pipeline/test_runner-0039_palette_store_concurrent.obj `if test -f 'planner/pipeline/0039_palette_store_concurrent.c'; then $(CYGPATH_W) 'planner/pipeline/0039_palette_store_concurrent.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0039_palette_store_concurrent.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Tpo planner/pipeline/$(DEPDIR)/test_runner-0039_palette_store_concurrent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0039_palette_store_concurrent.c' object='planner/pipeline/test_runner-0039_palette_store_concurrent.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0039_palette_store_concurrent.obj `if test -f 'planner/pipeline/0039_palette_store_concurrent.c'; then $(CYGPATH_W) 'planner/pipeline/0039_palette_store_concurrent.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0039_palette_store_concurrent.c'; fi`
+
+planner/pipeline/test_runner-palette_store_test_common.o: planner/pipeline/palette_store_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-palette_store_test_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Tpo -c -o planner/pipeline/test_runner-palette_store_test_common.o `test -f 'planner/pipeline/palette_store_test_common.c' || echo '$(srcdir)/'`planner/pipeline/palette_store_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/palette_store_test_common.c' object='planner/pipeline/test_runner-palette_store_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-palette_store_test_common.o `test -f 'planner/pipeline/palette_store_test_common.c' || echo '$(srcdir)/'`planner/pipeline/palette_store_test_common.c
+
+planner/pipeline/test_runner-palette_store_test_common.obj: planner/pipeline/palette_store_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-palette_store_test_common.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Tpo -c -o planner/pipeline/test_runner-palette_store_test_common.obj `if test -f 'planner/pipeline/palette_store_test_common.c'; then $(CYGPATH_W) 'planner/pipeline/palette_store_test_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/palette_store_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/palette_store_test_common.c' object='planner/pipeline/test_runner-palette_store_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-palette_store_test_common.obj `if test -f 'planner/pipeline/palette_store_test_common.c'; then $(CYGPATH_W) 'planner/pipeline/palette_store_test_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/palette_store_test_common.c'; fi`
 
 planner/pipeline/test_runner-playback_test_common.o: planner/pipeline/playback_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-playback_test_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Tpo -c -o planner/pipeline/test_runner-playback_test_common.o `test -f 'planner/pipeline/playback_test_common.c' || echo '$(srcdir)/'`planner/pipeline/playback_test_common.c

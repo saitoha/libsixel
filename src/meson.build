@@ -249,6 +249,8 @@ srcs = [
   'clipboard.c',
   'encoder.c',
   'encoder-palette.h',
+  'encoder-palette-store.c',
+  'encoder-palette-store.h',
   'mapfile.c',
   'mapfile.h',
   'drcs.c',

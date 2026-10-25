@@ -358,6 +358,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0031_PALETTE_SNAPSHOT_FHEDT_FLOAT \
     -DBUILD_TEST_0032_PALETTE_SNAPSHOT_CONCURRENT \
     -DBUILD_PALETTE_STAGE2_COMMON \
+    -DBUILD_TEST_0033_PALETTE_STORE_FRONTIER \
+    -DBUILD_TEST_0034_PALETTE_STORE_ATTEMPT_EPOCH \
+    -DBUILD_TEST_0035_PALETTE_STORE_BOUND_LIFETIME \
+    -DBUILD_TEST_0036_PALETTE_STORE_OWN_ERROR \
+    -DBUILD_TEST_0037_PALETTE_STORE_STOP_JOIN \
+    -DBUILD_TEST_0038_PALETTE_STORE_CANCEL_ISOLATION \
+    -DBUILD_TEST_0039_PALETTE_STORE_CONCURRENT \
+    -DBUILD_PALETTE_STORE_TEST_COMMON \
     -DBUILD_PLAYBACK_TEST_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
@@ -4961,6 +4969,15 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0032_palette_snapshot_concurrent.c \
     planner/pipeline/palette_stage2_common.c \
     planner/pipeline/palette_stage2_common.h \
+    planner/pipeline/0033_palette_store_frontier.c \
+    planner/pipeline/0034_palette_store_attempt_epoch.c \
+    planner/pipeline/0035_palette_store_bound_lifetime.c \
+    planner/pipeline/0036_palette_store_own_error.c \
+    planner/pipeline/0037_palette_store_stop_join.c \
+    planner/pipeline/0038_palette_store_cancel_isolation.c \
+    planner/pipeline/0039_palette_store_concurrent.c \
+    planner/pipeline/palette_store_test_common.c \
+    planner/pipeline/palette_store_test_common.h \
     planner/pipeline/playback_test_common.c \
     planner/pipeline/playback_test_common.h \
     processing/colorspace/parallel/0001_frame_bits.c \

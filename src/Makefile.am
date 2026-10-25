@@ -372,6 +372,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encoder.c \
                 $(srcdir)/encoder.h \
                 $(srcdir)/encoder-palette.h \
+                $(srcdir)/encoder-palette-store.c \
+                $(srcdir)/encoder-palette-store.h \
                 $(srcdir)/mapfile.c \
                 $(srcdir)/mapfile.h \
                 $(srcdir)/drcs.c \

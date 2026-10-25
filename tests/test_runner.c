@@ -581,6 +581,14 @@ int test_palette_stage2_0029(int argc, char **argv);
 int test_palette_stage2_0030(int argc, char **argv);
 int test_palette_stage2_0031(int argc, char **argv);
 int test_palette_stage2_0032(int argc, char **argv);
+int test_palette_store_0033(int argc, char **argv);
+int test_palette_store_0034(int argc, char **argv);
+int test_palette_store_0035(int argc, char **argv);
+int test_palette_store_0036(int argc, char **argv);
+int test_palette_store_0037(int argc, char **argv);
+int test_palette_store_0038(int argc, char **argv);
+int test_palette_store_0039(int argc, char **argv);
+
 
 int test_sequence_0086(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
@@ -5854,6 +5862,21 @@ static test_entry_t const test_entries[] = {
 
     { "planner/pipeline/0032_palette_snapshot_concurrent",
       test_palette_stage2_0032 },
+    { "planner/pipeline/0033_palette_store_frontier",
+      test_palette_store_0033 },
+    { "planner/pipeline/0034_palette_store_attempt_epoch",
+      test_palette_store_0034 },
+    { "planner/pipeline/0035_palette_store_bound_lifetime",
+      test_palette_store_0035 },
+    { "planner/pipeline/0036_palette_store_own_error",
+      test_palette_store_0036 },
+    { "planner/pipeline/0037_palette_store_stop_join",
+      test_palette_store_0037 },
+    { "planner/pipeline/0038_palette_store_cancel_isolation",
+      test_palette_store_0038 },
+    { "planner/pipeline/0039_palette_store_concurrent",
+      test_palette_store_0039 },
+
     { "decoder/0086_multi_pass_allocation_failure",
       test_sequence_0086 },
     { "colorspace/0012_extended_failure_atomic", test_color_0012 },
