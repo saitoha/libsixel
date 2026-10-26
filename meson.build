@@ -1203,6 +1203,7 @@ endif
 
 webp_opt = get_option('webp')
 webp_dep = disabler()
+webp_reqs = []
 webpdemux_dep = disabler()
 lcms2_opt = get_option('lcms2')
 lcms2_dep = disabler()
@@ -1233,6 +1234,9 @@ if not webp_opt.disabled()
                                       required: webp_opt.enabled())
     endif
     if webp_dep.found() and webpdemux_dep.found()
+      # The combined dependency has an internal name; record the real
+      # packages for libsixel.pc before wrapping them.
+      webp_reqs = [webp_dep, webpdemux_dep]
       webp_dep = declare_dependency(dependencies: [webp_dep, webpdemux_dep])
     else
       webp_dep = disabler()
@@ -1245,7 +1249,7 @@ endif
 
 if webp_dep.found()
   deps += webp_dep
-  reqs += webp_dep
+  reqs += webp_reqs
   conf.set('HAVE_WEBP', 1)
   loaders += 'webp'
 endif
@@ -1280,6 +1284,7 @@ endif
 
 librsvg_opt = get_option('librsvg')
 librsvg_dep = disabler()
+librsvg_reqs = []
 enable_librsvg = not librsvg_opt.disabled()
 if is_pcc_backend and librsvg_opt.auto()
   # GCC/clang-oriented glib/cairo headers trigger pcc diagnostics and can
@@ -1294,6 +1299,7 @@ if enable_librsvg
                            method: 'pkg-config')
   cairo_dep = dependency('cairo', required: false, method: 'pkg-config')
   if librsvg_dep.found() and cairo_dep.found()
+    librsvg_reqs = [librsvg_dep, cairo_dep]
     librsvg_dep = declare_dependency(
       dependencies: [librsvg_dep, cairo_dep])
   else
@@ -1306,7 +1312,7 @@ endif
 
 if librsvg_dep.found()
   deps += librsvg_dep
-  reqs += librsvg_dep
+  reqs += librsvg_reqs
   conf.set('HAVE_LIBRSVG', 1)
   loaders += 'librsvg'
 endif
@@ -2808,9 +2814,13 @@ endif
 pkgconfig_dir_rel = join_paths(get_option('libdir'), 'pkgconfig')
 pkgconfig_dir = join_paths(get_option('prefix'), pkgconfig_dir_rel)
 
+# Requires.private may only name pkg-config packages. Dependencies found as
+# plain libraries, through CMake or declared for Emscripten have no .pc file.
 req_names = []
 foreach r : reqs
-  req_names += r.name()
+  if r.type_name() == 'pkgconfig'
+    req_names += r.name()
+  endif
 endforeach
 
 pc_conf = configuration_data()
