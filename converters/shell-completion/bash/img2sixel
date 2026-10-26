@@ -740,6 +740,23 @@ _img2sixel()
         return 0
         ;;
     -=|--threading-policy)
+        if [[ ${cur} == *:* && ( ${cur##*:} == palette=* || ${cur##*:} == C* ) ]]; then
+            local palette_prefix palette_value palette_choice
+            palette_value=${cur##*:}
+            palette_prefix=${cur%"${palette_value}"}
+            if [[ ${palette_value} == palette=* ]]; then
+                palette_prefix+=palette=
+                palette_value=${palette_value#palette=}
+            else
+                palette_prefix+=C
+                palette_value=${palette_value#C}
+            fi
+            for palette_choice in frame latest auto; do
+                [[ ${palette_choice} == "${palette_value}"* ]] || continue
+                COMPREPLY+=("${palette_prefix}${palette_choice}")
+            done
+            return 0
+        fi
         COMPREPLY=( $( compgen -W 'lazy balanced greedy lazy:Ball balanced:Ball greedy:Ball' -- "$cur" ) )
         return 0
         ;;

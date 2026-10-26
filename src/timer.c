@@ -54,6 +54,28 @@
 #include <unistd.h>
 #endif
 
+double
+sixel_timer_monotonic(void)
+{
+#if defined(_WIN32)
+    LARGE_INTEGER frequency;
+    LARGE_INTEGER counter;
+
+    if (QueryPerformanceFrequency(&frequency) && frequency.QuadPart > 0 &&
+            QueryPerformanceCounter(&counter)) {
+        return (double)counter.QuadPart / (double)frequency.QuadPart;
+    }
+    return (double)GetTickCount64() / 1000.0;
+#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
+    struct timespec ts;
+
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
+        return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+    }
+#endif
+    return 0.0;
+}
+
 SIXELAPI double
 sixel_timer_now(void)
 {

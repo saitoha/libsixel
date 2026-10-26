@@ -607,6 +607,21 @@ int test_palette_integration_0059(int argc, char **argv);
 int test_palette_integration_0060(int argc, char **argv);
 int test_palette_integration_0074(int argc, char **argv);
 int test_palette_scheduler_0075(int argc, char **argv);
+int test_palette_auto_0077(int argc, char **argv);
+int test_palette_auto_0078(int argc, char **argv);
+int test_palette_auto_0079(int argc, char **argv);
+int test_palette_auto_0080(int argc, char **argv);
+int test_palette_auto_0081(int argc, char **argv);
+int test_palette_auto_0082(int argc, char **argv);
+int test_palette_auto_0083(int argc, char **argv);
+int test_palette_auto_0084(int argc, char **argv);
+int test_palette_auto_0085(int argc, char **argv);
+int test_palette_auto_0086(int argc, char **argv);
+int test_palette_auto_0089(int argc, char **argv);
+int test_palette_auto_0090(int argc, char **argv);
+int test_palette_auto_0091(int argc, char **argv);
+int test_palette_auto_0092(int argc, char **argv);
+
 int test_palette_features_0061(int argc, char **argv);
 int test_palette_features_0062(int argc, char **argv);
 int test_palette_features_0063(int argc, char **argv);
@@ -5964,6 +5979,34 @@ static test_entry_t const test_entries[] = {
       test_palette_features_0070 },
     { "planner/pipeline/0074_latest_completed_build_reclaims_budget",
       test_palette_integration_0074 },
+    { "planner/pipeline/0077_palette_auto_zero_wait",
+      test_palette_auto_0077 },
+    { "planner/pipeline/0078_palette_auto_preprocess_wait",
+      test_palette_auto_0078 },
+    { "planner/pipeline/0079_palette_auto_probe_length",
+      test_palette_auto_0079 },
+    { "planner/pipeline/0080_palette_auto_faster_probe",
+      test_palette_auto_0080 },
+    { "planner/pipeline/0081_palette_auto_slower_probe",
+      test_palette_auto_0081 },
+    { "planner/pipeline/0082_palette_auto_hysteresis",
+      test_palette_auto_0082 },
+    { "planner/pipeline/0083_palette_auto_reevaluate_frame",
+      test_palette_auto_0083 },
+    { "planner/pipeline/0084_palette_auto_reevaluate_latest",
+      test_palette_auto_0084 },
+    { "planner/pipeline/0085_palette_auto_outlier",
+      test_palette_auto_0085 },
+    { "planner/pipeline/0086_palette_auto_playback",
+      test_palette_auto_0086 },
+    { "planner/pipeline/0089_palette_auto_backoff",
+      test_palette_auto_0089 },
+    { "planner/pipeline/0090_palette_auto_backoff_reset",
+      test_palette_auto_0090 },
+    { "planner/pipeline/0091_palette_auto_store_return",
+      test_palette_auto_0091 },
+    { "planner/pipeline/0092_palette_auto_store_profile",
+      test_palette_auto_0092 },
     { "planner/pipeline/0075_latest_emit_priority_loans",
       test_palette_scheduler_0075 },
     { "planner/pipeline/0072_palette_snapshot_allocation",

@@ -361,8 +361,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/encoder-palette.h $(srcdir)/encoder-palette-store.c \
 	$(srcdir)/encoder-palette-scheduler.c \
+	$(srcdir)/encoder-palette-auto.c \
 	$(srcdir)/encoder-palette-store.h \
-	$(srcdir)/encoder-palette-scheduler.h $(srcdir)/mapfile.c \
+	$(srcdir)/encoder-palette-scheduler.h \
+	$(srcdir)/encoder-palette-auto.h $(srcdir)/mapfile.c \
 	$(srcdir)/mapfile.h $(srcdir)/drcs.c $(srcdir)/drcs.h \
 	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
 	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
@@ -539,6 +541,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-palette-store.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-palette-scheduler.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-palette-auto.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-mapfile.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-drcs.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-planner.lo \
@@ -631,6 +634,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core.Plo \
+	./$(DEPDIR)/libsixel_la-encoder-palette-auto.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-palette-scheduler.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-palette-store.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
@@ -1404,8 +1408,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette-store.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette-scheduler.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette-auto.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette-store.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette-scheduler.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-palette-auto.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/mapfile.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/mapfile.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/drcs.c $(srcdir)/drcs.h \
@@ -1744,6 +1750,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-palette-auto.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-palette-scheduler.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-palette-store.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder.Plo@am__quote@ # am--include-marker
@@ -2927,6 +2934,13 @@ libsixel_la-encoder-palette-scheduler.lo: encoder-palette-scheduler.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-encoder-palette-scheduler.lo `test -f 'encoder-palette-scheduler.c' || echo '$(srcdir)/'`encoder-palette-scheduler.c
 
+libsixel_la-encoder-palette-auto.lo: encoder-palette-auto.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-encoder-palette-auto.lo -MD -MP -MF $(DEPDIR)/libsixel_la-encoder-palette-auto.Tpo -c -o libsixel_la-encoder-palette-auto.lo `test -f 'encoder-palette-auto.c' || echo '$(srcdir)/'`encoder-palette-auto.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-encoder-palette-auto.Tpo $(DEPDIR)/libsixel_la-encoder-palette-auto.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder-palette-auto.c' object='libsixel_la-encoder-palette-auto.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-encoder-palette-auto.lo `test -f 'encoder-palette-auto.c' || echo '$(srcdir)/'`encoder-palette-auto.c
+
 libsixel_la-mapfile.lo: mapfile.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-mapfile.lo -MD -MP -MF $(DEPDIR)/libsixel_la-mapfile.Tpo -c -o libsixel_la-mapfile.lo `test -f 'mapfile.c' || echo '$(srcdir)/'`mapfile.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-mapfile.Tpo $(DEPDIR)/libsixel_la-mapfile.Plo
@@ -3369,6 +3383,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-encoder-palette-auto.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-palette-scheduler.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-palette-store.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
@@ -3587,6 +3602,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-encoder-palette-auto.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-palette-scheduler.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-palette-store.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo

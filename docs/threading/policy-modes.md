@@ -23,13 +23,15 @@ For eligible spatial or positional dither at budgets two through four, balanced 
 
 For `palette=latest`, eligible CPU animation and playback can overlap an owned palette build with application of a completed palette, including full-frame sampling after preprocessing. Application and encoding retain the entire budget N and the same stage limits and allocator as frame mode. Builders borrow idle work slots; lazy allows this independent work without increasing its data-parallel fan-out. `load=serial`, `prepare=serial` and `prepare_workers=1` do not by themselves disable latest selection. A serial fallback uses frame behavior; the [policy reference](../cli/threading-policy.md#contract) owns eligibility and selection.
 
+`palette=auto` uses these frame/latest scheduling behaviors with measured completion intervals, short probes and increasing reevaluation intervals when a choice is confirmed. The [policy reference](../cli/threading-policy.md#contract) owns the five-frame comparison, palette-wait trigger, relative margin and back-off/reset rule. The default stays frame. Auto can temporarily probe the slower behavior and retains completed palettes across frame periods, with compatibility checks on reuse; neither probing nor adaptation promises a speedup.
+
 ## Output depends on dither history
 
 Of the threading policy's scheduling choices, the dither band split can change output. Error diffusion carries residuals from earlier rows; independent bands start with separate histories. Warm-up rows reduce seams but do not reconstruct the complete serial history. The [work-band explanation](overview.md#work-band-seams-and-image-quality) describes this boundary.
 
 With `palette=frame` and default dither geometry, lazy output equals a one-thread run using the same image, palette and other options. Its single dither producer preserves the history while independent six-row encoding jobs publish in order. An explicit `dither` limit or diffusion geometry override can split that history even in lazy mode.
 
-With `palette=frame`, frame controls (`load`, `load_depth` and `prepare`) and `prepare_workers` alter when independent work runs without changing output. With `palette=latest`, scheduling can change which completed palette is selected; [the policy reference](../cli/threading-policy.md#contract) owns selection and fallback. Once a palette and dither geometry are fixed, encode worker count changes neither indexed pixels nor their publication order. SIMD and arithmetic representation are separate runtime choices and can have their own rounding behavior.
+With `palette=frame`, frame controls (`load`, `load_depth` and `prepare`) and `prepare_workers` alter when independent work runs without changing output. With `palette=latest` or auto executing latest, scheduling can change which completed palette is selected; [the policy reference](../cli/threading-policy.md#contract) owns selection and fallback. Once a palette and dither geometry are fixed, encode worker count changes neither indexed pixels nor their publication order. SIMD and arithmetic representation are separate runtime choices and can have their own rounding behavior.
 
 ## Performance CPUs and size thresholds
 
@@ -56,7 +58,7 @@ emission:                 emit n         emit n+1       emit n+2
                           |< overlap >|
 ```
 
-Preparation of the next frame can run during current emission, while output still advances one frame at a time. Both palette modes give emission N and preserve ordinary preparation's independent cap. Latest builders and their full-frame input copies borrow execution slots while emission jobs drain or its caller waits for child jobs or output. Renewed emission demand stops further background admissions; an admitted background job returns its loan at its next boundary. Emission never waits for that return, so a job already in progress may briefly overlap renewed foreground demand. This policy does not promise a speedup. Delta history is committed in order. [Animation threading](animation.md) explains the corrective re-preparation needed when the next frame's predicted alpha-key reservation disagrees with committed history.
+Preparation of the next frame can run during current emission, while output still advances one frame at a time. Both effective palette behaviors give emission N and preserve ordinary preparation's independent cap. Latest builders and their full-frame input copies borrow execution slots while emission jobs drain or its caller waits for child jobs or output. Renewed emission demand stops further background admissions; an admitted background job returns its loan at its next boundary. Emission never waits for that return, so a job already in progress may briefly overlap renewed foreground demand. This policy does not promise a speedup. Delta history is committed in order. [Animation threading](animation.md) explains the corrective re-preparation needed when the next frame's predicted alpha-key reservation disagrees with committed history.
 
 ## In libsixel
 
@@ -88,6 +90,8 @@ Each encoder and decoder owns its mode. A work entry resolves a policy snapshot 
 | PM-08 | Playback admits its configured capacity independently of loader read-ahead depth. | [tests/planner/pipeline/0021_playback_admission.t](../../tests/planner/pipeline/0021_playback_admission.t) |
 | PM-09 | Object settings and encoder/decoder defaults stay independent. | [tests/processing/threadpool/0005_object_policy_isolation.t](../../tests/processing/threadpool/0005_object_policy_isolation.t) |
 | PM-10 | Concurrent encode and playback calls preserve their own budgets and dither plans. | [tests/processing/threadpool/0006_concurrent_object_policies.t](../../tests/processing/threadpool/0006_concurrent_object_policies.t) |
+
+| PM-11 | Auto executes both scheduling behaviors at frame boundaries and resets to frame on playback reattachment. | [tests/planner/pipeline/0086_palette_auto_playback.t](../../tests/planner/pipeline/0086_palette_auto_playback.t) |
 
 ### Coverage boundary
 

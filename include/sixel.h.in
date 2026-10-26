@@ -2219,6 +2219,14 @@ sixel_encoder_encode_frame(
  * policy's load_depth, bounds admission. palette_mode is the per-object
  * counterpart of the policy's palette key. An explicit CONFIG overrides the
  * encoder, including PER_FRAME (zero); NULL CONFIG inherits the encoder.
+ * AUTO starts each session in frame behavior, probing latest on palette
+ * waits. It compares five-frame median completion intervals (including
+ * output writes, own joins and preparation waits), retaining the incumbent
+ * within 12%, and first re-evaluates after 40 chosen frames. Confirmations
+ * double that interval up to 320; reversals reset it to 40. Compatible
+ * completed palettes survive frame periods. The first completion
+ * establishes the clock origin; switching occurs only at frame boundaries.
+ * Its frame behavior reports the own sequence. Defaults stay PER_FRAME.
  * LATEST reuses the newest completed palette with source sequence <= the
  * current sequence. Selection occurs once, after delay, before LUT/gradient
  * setup. CPU generated palettes can overlap their own build and application,
@@ -2255,6 +2263,7 @@ typedef struct sixel_playback sixel_playback_t;
 /* Palette dependency modes; unsupported features use PER_FRAME. */
 #define SIXEL_PLAYBACK_PALETTE_PER_FRAME  0
 #define SIXEL_PLAYBACK_PALETTE_LATEST     1
+#define SIXEL_PLAYBACK_PALETTE_AUTO       2
 
 /* sixel_playback_options_t.flags */
 #define SIXEL_PLAYBACK_OPTION_ORIGIN          0x1  /* apply origin_x/y */

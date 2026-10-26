@@ -147,6 +147,7 @@
 #include "threading.h"
 #include "planner.h"
 #include "timer.h"
+#include "encoder-palette-auto.h"
 #include "sixel_atomic.h"
 
 #define SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR \
@@ -836,6 +837,8 @@ typedef struct sixel_palette_async_job {
     sixel_palette_job_failure_stage_t failure_stage;
     int started;
     int finished;
+    int measure_completion;
+    double completed_at;
 } sixel_palette_async_job_t;
 
 /* Return the palette reservation only after its child pools and native
@@ -1133,6 +1136,9 @@ typedef struct sixel_encoder_frame_pipeline {
     sixel_threading_snapshot_t policy;
     sixel_palette_store_t *palette_store;
     sixel_palette_scheduler_t palette_scheduler;
+    sixel_palette_auto_t palette_auto;
+    double auto_completed_at;
+    double auto_emit_end;
     uint64_t next_sequence;
     sixel_thread_t thread;
     sixel_mutex_t mutex;
@@ -5183,6 +5189,11 @@ typedef struct sixel_encode_dag_context {
     uint64_t sequence;
     uint64_t palette_sequence;
     int latest;
+    int auto_eligible;
+    double preprocess_done;
+    double palette_done;
+    double palette_wait;
+    double emit_end;
     int own_started;
     int own_sync;
     int own_required;
@@ -5390,6 +5401,7 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
                                             context->encoder->allocator);
     if (SIXEL_SUCCEEDED(status)) {
         context->palette_job_initialized = 1;
+        context->palette_job.measure_completion = context->auto_eligible;
         context->palette_job.threads = context->planner != NULL
             ? context->planner->palette_threads : 1;
         /* Match the synchronous builder: a base auto/byte preference
@@ -5666,6 +5678,9 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     }
 
     status = SIXEL_OK;
+    if (context->auto_eligible) {
+        context->preprocess_done = sixel_timer_monotonic();
+    }
     fallback_cause = context->palette_job_failure_status;
     fallback_stage = context->palette_job_failure_stage;
     sampling_policy = SIXEL_PALETTE_SAMPLING_FULL_FRAME;
@@ -5804,6 +5819,11 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
             status = sixel_palette_policy_mark_executed(
                 &context->palette.sampling);
         }
+    }
+    if (context->auto_eligible) {
+        context->palette_done = context->async_dither != NULL &&
+                context->palette_job.completed_at > 0.0
+            ? context->palette_job.completed_at : sixel_timer_monotonic();
     }
     if (context->async_dither != NULL) {
         context->palette.quantizer = context->palette_job.state.quantizer;
@@ -6450,6 +6470,9 @@ sixel_encoder_palette_job_thread(void *priv)
     sixel_mutex_lock(&job->mutex);
     job->status = status;
     job->dither = local;
+    if (job->measure_completion) {
+        job->completed_at = sixel_timer_monotonic();
+    }
     job->finished = 1;
     sixel_cond_broadcast(&job->cond);
     sixel_mutex_unlock(&job->mutex);
@@ -11084,6 +11107,11 @@ sixel_encoder_frame_job_prepare(
         encoder->gpu_policy == SIXEL_GPU_POLICY_OFF && !encoder->fdrcs &&
         encoder->presentation == NULL && encoder->progressive_context == NULL &&
         !encoder->fuse_macro && encoder->macro_number < 0;
+    job->context.auto_eligible = job->context.latest &&
+        pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_AUTO;
+    if (job->context.auto_eligible) {
+        job->context.latest = pipeline->palette_auto.effective;
+    }
     job->context.configuration_revision = encoder->configuration_revision;
 
     sampling_policy = job->context.palette.sampling.phase ==
@@ -11469,8 +11497,10 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
     if (context->pipeline != NULL &&
             context->pipeline->palette_store != NULL &&
             (context->pipeline->playback != NULL || context->multiframe)) {
-        if (!context->latest) {
-            /* Bypass cuts the epoch before the next generated admission. */
+        if (!context->latest && !context->auto_eligible) {
+            /* A real bypass cuts the epoch before the next admission.
+             * Auto's ordinary frame period retains completed palettes;
+             * latest_select validates their profile before any reuse. */
             sixel_palette_store_reset(context->pipeline->palette_store,
                 context->sequence);
         }
@@ -11479,12 +11509,16 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
                 &context->pipeline->palette_scheduler);
             context->own_started = status == SIXEL_OK;
         }
-        if (!sixel_palette_scheduler_acquire(
+        if ((context->latest || context->pipeline->policy.options.palette !=
+                SIXEL_THREADING_PALETTE_AUTO) &&
+                !sixel_palette_scheduler_acquire(
                 &context->pipeline->palette_scheduler,
                 SIXEL_PALETTE_LANE_APPLY, 0, &lease)) {
             return SIXEL_LOGIC_ERROR;
         }
-        sixel_palette_lease_enter(&lease, &policy_scope, &budget_scope);
+        if (lease.threads != 0) {
+            sixel_palette_lease_enter(&lease, &policy_scope, &budget_scope);
+        }
     }
     status = SIXEL_OK;
     if (context->latest) {
@@ -11556,6 +11590,9 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
         status = sixel_encode_dag_run_nodes(context,
             &job->nodes[SIXEL_DAG_NODE_DITHER_PLAN],
             SIXEL_DAG_NODE_COUNT - SIXEL_DAG_NODE_DITHER_PLAN);
+    }
+    if (context->auto_eligible) {
+        context->emit_end = sixel_timer_monotonic();
     }
     if (work_entered) {
         sixel_thread_work_end();
@@ -15859,6 +15896,107 @@ sixel_encoder_playback_frame_done(
     }
 }
 
+/* Measure completion-to-completion intervals on the ordered emission lane.
+ * Completion includes output writes, own-build join and frame cleanup. The
+ * next interval consequently includes queue/prepare waits and a transition's
+ * lost overlap. The first completion only establishes an origin. A helper
+ * reads only effective; possible changes to that member suppress read-ahead
+ * at the preceding boundary. Other controller members belong to this lane. */
+static void
+sixel_encoder_auto_complete(sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoder_frame_job_t *job, SIXELSTATUS status, double completed)
+{
+    sixel_palette_auto_t *state;
+    struct sixel_encoder_palette_test_hooks const *hooks;
+    double interval;
+    int probe;
+
+    if (pipeline->policy.options.palette != SIXEL_THREADING_PALETTE_AUTO) {
+        return;
+    }
+    state = &pipeline->palette_auto;
+    if (status != SIXEL_OK) {
+        return; /* The session stops; a helper may still own its inputs. */
+    }
+    if (!job->context.auto_eligible) {
+        sixel_trace_topic_message("palette_auto",
+            "LSXAUTO1|frame=%llu|palette_effective=frame|auto_state=disabled|"
+            "interval=0|palette_wait=0|decision=frame-fallback",
+            (unsigned long long)job->context.sequence);
+        sixel_palette_auto_init(state);
+        pipeline->auto_completed_at = 0.0;
+        pipeline->auto_emit_end = 0.0;
+        return;
+    }
+    interval = pipeline->auto_completed_at > 0.0 && completed > 0.0
+        ? completed - pipeline->auto_completed_at : 0.0;
+    probe = state->probe;
+    hooks = pipeline->encoder->palette_test_hooks;
+    if (hooks != NULL && hooks->auto_interval != NULL) {
+        hooks->auto_interval(hooks->context, job->context.sequence,
+            job->context.latest, &interval);
+    }
+    if (job->context.latest != state->effective) {
+        /* An AUTO-sampling recovery can execute the ordinary frame path
+         * during a latest probe. It is not a sample of latest behavior;
+         * leave the probe pending rather than compare unlike observations.
+         * The following preparation may already borrow effective. */
+        state->decision = "frame-fallback";
+    } else if (pipeline->auto_completed_at > 0.0) {
+        sixel_palette_auto_observe(state, interval, job->context.palette_wait);
+    }
+    pipeline->auto_completed_at = completed;
+    pipeline->auto_emit_end = job->context.emit_end;
+    sixel_trace_topic_message("palette_auto",
+        "LSXAUTO1|frame=%llu|palette_effective=%s|auto_state=%s|"
+        "interval=%.9f|palette_wait=%.9f|baseline=%.9f|median=%.9f|"
+        "decision=%s|next=%s|probes=%u|switches=%u|transitions=%u|"
+        "reevaluate_interval=%d|elapsed=%d",
+        (unsigned long long)job->context.sequence,
+        job->context.latest ? "latest" : "frame", probe ? "probe" : "chosen",
+        interval, job->context.palette_wait, state->baseline, state->measured,
+        state->decision, state->effective ? "latest" : "frame",
+        state->probes, state->switches, state->transitions,
+        state->reevaluate_interval, state->elapsed);
+    if (pipeline->encoder->verbose) {
+        fprintf(stderr, "  palette auto: frame=%llu palette_effective=%s "
+            "auto_state=%s interval=%.9f palette_wait=%.9f decision=%s\n",
+            (unsigned long long)job->context.sequence,
+            job->context.latest ? "latest" : "frame",
+            probe ? "probe" : "chosen", interval, job->context.palette_wait,
+            state->decision);
+    }
+    if (hooks != NULL && hooks->auto_result != NULL) {
+        hooks->auto_result(hooks->context, job->context.sequence,
+            job->context.latest, probe, interval, job->context.palette_wait,
+            state->decision);
+    }
+}
+
+/* Called after preparation and the preceding frame's output, never by the
+ * ahead helper. In particular, preprocessing-only stalls yield zero wait. */
+static int
+sixel_encoder_auto_boundary(sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoder_frame_job_t *job)
+{
+    struct sixel_encoder_palette_test_hooks const *hooks;
+
+    if (!job->context.auto_eligible) {
+        return 0;
+    }
+    job->context.palette_wait = job->context.latest ? 0.0
+        : sixel_palette_auto_wait(job->context.preprocess_done,
+            job->context.palette_done, pipeline->auto_emit_end);
+    hooks = pipeline->encoder->palette_test_hooks;
+    if (hooks != NULL && hooks->auto_wait != NULL) {
+        hooks->auto_wait(hooks->context, job->context.sequence,
+            &job->context.palette_wait);
+    }
+    return pipeline->auto_completed_at > 0.0 &&
+        sixel_palette_auto_boundary(&pipeline->palette_auto,
+            job->context.palette_wait);
+}
+
 /*
  * Prepare a frame for the pipeline output.  Frame cleanup always releases
  * the output it was given, so hold one reference per frame; a preparation
@@ -15883,6 +16021,8 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
         memset(reserved, 0, sizeof(*reserved));
     }
     if (pipeline->palette_store != NULL &&
+            (pipeline->policy.options.palette != SIXEL_THREADING_PALETTE_AUTO ||
+             pipeline->palette_auto.effective) &&
             (pipeline->playback != NULL || meta->multiframe)) {
         if (lease.threads == 0 &&
                 !sixel_palette_scheduler_acquire(&pipeline->palette_scheduler,
@@ -15928,6 +16068,7 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
     status = sixel_encoder_pipeline_prepare_job(pipeline, &job, frame,
         meta, NULL);
     if (SIXEL_SUCCEEDED(status)) {
+        (void)sixel_encoder_auto_boundary(pipeline, &job);
         status = sixel_encoder_frame_job_emit(&job);
     } else {
         pipeline->encoder->sixdelta_refinement_needed = 0;
@@ -15939,7 +16080,10 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
 
     meta->palette_sequence = job.context.latest || status == SIXEL_OK
         ? job.context.palette_sequence : 0;
-    return sixel_encoder_frame_job_finish(&job, status);
+    status = sixel_encoder_frame_job_finish(&job, status);
+    sixel_encoder_auto_complete(pipeline, &job, status,
+        job.context.auto_eligible ? sixel_timer_monotonic() : 0.0);
+    return status;
 }
 
 #if SIXEL_ENABLE_THREADS
@@ -16292,6 +16436,8 @@ sixel_encoder_frame_pipeline_run_ahead(
     int have_next;
     int index;
     int redo;
+    int auto_boundary;
+    double auto_completed;
 
     encoder = pipeline->encoder;
     memset(slots, 0, sizeof(slots));
@@ -16407,13 +16553,18 @@ sixel_encoder_frame_pipeline_run_ahead(
             /* A successful emission leaves the history active whenever
              * 6delta retains it. */
             /* A bypass must cut the epoch before future admission. */
-            if (pipeline->palette_store == NULL ||
+            auto_boundary = sixel_encoder_auto_boundary(pipeline,
+                current->job);
+            if (!auto_boundary &&
+                    (pipeline->palette_store == NULL ||
+                     (current->job->context.auto_eligible &&
+                      !current->job->context.latest) ||
                     (current->job->context.latest &&
                      current->job->context.own_started &&
                      sixel_palette_scheduler_acquire(
                         &pipeline->palette_scheduler,
                         SIXEL_PALETTE_LANE_PREPARE, 0,
-                        &next->prepare_lease))) {
+                        &next->prepare_lease)))) {
                 sixel_encoder_prepare_ahead_request(
                     &ahead, next,
                     sixel_encoder_6delta_accumulation_requested(encoder));
@@ -16427,6 +16578,8 @@ sixel_encoder_frame_pipeline_run_ahead(
         if (current->job->active != 0) {
             status = sixel_encoder_frame_job_finish(current->job, status);
         }
+        auto_completed = current->job->context.auto_eligible
+            ? sixel_timer_monotonic() : 0.0;
         current->metadata.palette_sequence =
             current->job->context.latest || status == SIXEL_OK
                 ? current->job->context.palette_sequence : 0;
@@ -16434,6 +16587,8 @@ sixel_encoder_frame_pipeline_run_ahead(
             sixel_encoder_frame_pipeline_request_stop(pipeline, status,
                 SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_ERROR);
         }
+        sixel_encoder_auto_complete(pipeline, current->job, status,
+            auto_completed);
         sixel_encoder_playback_frame_done(pipeline, &current->metadata,
                                           status, 1);
         if (have_next != 0) {
@@ -16727,6 +16882,9 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
     pipeline->output = output;
     pipeline->next_sequence = 0;
     pipeline->palette_store = NULL;
+    sixel_palette_auto_init(&pipeline->palette_auto);
+    pipeline->auto_completed_at = 0.0;
+    pipeline->auto_emit_end = 0.0;
     pipeline->worker_status = SIXEL_OK;
     pipeline->queue_head = 0;
     pipeline->queue_tail = 0;
@@ -16756,7 +16914,8 @@ sixel_encoder_frame_pipeline_init(sixel_encoder_frame_pipeline_t *pipeline,
         goto end;
     }
     pipeline->initialized = 1;
-    if (pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST &&
+    if ((pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_LATEST ||
+         pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_AUTO) &&
             !encoder->fstatic &&
             encoder->gpu_policy == SIXEL_GPU_POLICY_OFF && !encoder->fdrcs &&
             encoder->presentation == NULL &&
@@ -16802,6 +16961,16 @@ sixel_encoder_frame_pipeline_dispose(sixel_encoder_frame_pipeline_t *pipeline)
     }
 
     if (pipeline->palette_store != NULL) {
+        if (pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_AUTO) {
+            sixel_trace_topic_message("palette_auto_summary",
+                "LSXAUTOSUM1|probes=%u|switches=%u|chosen=%s|probe=%d|"
+                "transitions=%u",
+                pipeline->palette_auto.probes,
+                pipeline->palette_auto.switches,
+                pipeline->palette_auto.chosen ? "latest" : "frame",
+                pipeline->palette_auto.probe,
+                pipeline->palette_auto.transitions);
+        }
         sixel_palette_store_free(pipeline->palette_store);
         pipeline->palette_store = NULL;
         sixel_palette_scheduler_destroy(&pipeline->palette_scheduler);
@@ -19701,7 +19870,8 @@ sixel_playback_new(sixel_playback_t **playback,
         return SIXEL_BAD_ARGUMENT;
     }
     if (defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_PER_FRAME &&
-            defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_LATEST) {
+            defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_LATEST &&
+            defaults.palette_mode != SIXEL_PLAYBACK_PALETTE_AUTO) {
         sixel_helper_set_additional_message(
             "sixel_playback_new: palette mode is not implemented.");
         return SIXEL_NOT_IMPLEMENTED;
@@ -19764,7 +19934,9 @@ sixel_playback_new(sixel_playback_t **playback,
     if (config != NULL) {
         policy.options.palette = defaults.palette_mode ==
                 SIXEL_PLAYBACK_PALETTE_LATEST
-            ? SIXEL_THREADING_PALETTE_LATEST : SIXEL_THREADING_PALETTE_FRAME;
+            ? SIXEL_THREADING_PALETTE_LATEST
+            : defaults.palette_mode == SIXEL_PLAYBACK_PALETTE_AUTO
+                ? SIXEL_THREADING_PALETTE_AUTO : SIXEL_THREADING_PALETTE_FRAME;
         policy.options.palette_override = 1;
     }
     sixel_threading_policy_enter(&policy_scope, &policy);

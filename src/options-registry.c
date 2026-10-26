@@ -1458,7 +1458,8 @@ static sixel_suboption_choice_t const g_threading_frame_choices[] = {
 
 static sixel_suboption_choice_t const g_threading_palette_choices[] = {
     { "frame", SIXEL_THREADING_PALETTE_FRAME },
-    { "latest", SIXEL_THREADING_PALETTE_LATEST }
+    { "latest", SIXEL_THREADING_PALETTE_LATEST },
+    { "auto", SIXEL_THREADING_PALETTE_AUTO }
 };
 
 static sixel_suboption_choice_t const g_runtime_resize_choices[] = {

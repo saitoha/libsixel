@@ -75,6 +75,11 @@ struct sixel_encoder_palette_test_hooks {
     void (*emitted)(void *context, uint64_t sequence,
         sixel_encoding_planner_t const *planner, sixel_dither_t const *dither);
     void *context;
+    void (*auto_wait)(void *context, uint64_t sequence, double *wait);
+    void (*auto_interval)(void *context, uint64_t sequence, int latest,
+        double *interval);
+    void (*auto_result)(void *context, uint64_t sequence, int latest,
+        int probe, double interval, double wait, char const *decision);
 };
 
 /* palette type */

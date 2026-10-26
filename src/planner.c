@@ -1438,7 +1438,8 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
             planner->pipeline_pin_threads,
             sixel_threading_policy_palette_mode() ==
                     SIXEL_THREADING_PALETTE_LATEST
-                ? "latest" : "frame",
+                ? "latest" : sixel_threading_policy_palette_mode() ==
+                    SIXEL_THREADING_PALETTE_AUTO ? "auto" : "frame",
             planner->palette_latest ? "latest" : "frame");
     if (planner->emit_threads > 0) {
         fprintf(stream, "  latest leases: palette=%d prepare=%d emit=%d\n",

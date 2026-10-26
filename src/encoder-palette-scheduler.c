@@ -29,7 +29,8 @@ sixel_palette_scheduler_init(sixel_palette_scheduler_t *scheduler,
     }
 #if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     scheduler->enabled = policy->budget >= 2 &&
-        policy->options.palette == SIXEL_THREADING_PALETTE_LATEST;
+        (policy->options.palette == SIXEL_THREADING_PALETTE_LATEST ||
+         policy->options.palette == SIXEL_THREADING_PALETTE_AUTO);
 #endif
     return SIXEL_OK;
 }

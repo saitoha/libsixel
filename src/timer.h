@@ -34,6 +34,9 @@
  * full assessment stack.
  */
 SIXEL_INTERNAL_API double sixel_timer_now(void);
+/* Strict elapsed-time clock. Zero means unavailable; never substitute CPU
+ * time or an adjustable civil clock for adaptive scheduling decisions. */
+SIXEL_INTERNAL_API double sixel_timer_monotonic(void);
 
 #endif
 

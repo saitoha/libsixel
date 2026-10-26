@@ -494,18 +494,19 @@ typedef enum sixel_threading_frame_mode {
 } sixel_threading_frame_mode_t;
 
 /* Requested palette dependency, retained in the session policy snapshot.
- * Both values currently execute the existing per-frame path. The latest
- * selection contract is max completed sequence <= the current frame, chosen
+ * Frame uses the current frame's palette. Latest selects the greatest
+ * completed sequence <= the current frame, chosen
  * once when application LUT/gradient setup begins, after the display delay.
- * A future asynchronous path must wait for the first own palette and fall
- * back to own on reservation/profile mismatch, joining and re-preparing a
+ * The asynchronous path waits for the first own palette and falls back to
+ * own on reservation/profile mismatch, joining and re-preparing a
  * mismatched own prediction from a pristine clone. GPU, DRCS, presentation,
  * attached repair and generated macros retain frame behavior. Own build
  * failure remains a frame failure even after emission; bypass starts a new
- * epoch. These requirements do not enable asynchronous selection here. */
+ * epoch. Auto starts in frame behavior and compares measured intervals. */
 typedef enum sixel_threading_palette_mode {
     SIXEL_THREADING_PALETTE_FRAME = 0,
-    SIXEL_THREADING_PALETTE_LATEST
+    SIXEL_THREADING_PALETTE_LATEST,
+    SIXEL_THREADING_PALETTE_AUTO
 } sixel_threading_palette_mode_t;
 
 typedef enum sixel_threading_policy_base {

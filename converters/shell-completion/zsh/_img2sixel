@@ -1092,6 +1092,15 @@ _completiontarget() {
 }
 
 _threadcount() {
+  if [[ ${PREFIX} == *:* && ( ${PREFIX##*:} == palette=* || ${PREFIX##*:} == C* ) ]]; then
+    if [[ ${PREFIX##*:} == palette=* ]]; then
+      compset -P '*:palette='
+    else
+      compset -P '*:C'
+    fi
+    compadd frame latest auto
+    return
+  fi
   _values \
     'THREADINGPOLICY' \
     'lazy[overlap independent branches without data fan-out]' \

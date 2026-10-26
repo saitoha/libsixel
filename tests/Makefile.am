@@ -378,6 +378,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0070_LATEST_FEATURE_FALLBACK \
     -DBUILD_TEST_0074_LATEST_COMPLETED_BUILD_RECLAIMS_BUDGET \
     -DBUILD_TEST_0075_LATEST_EMIT_PRIORITY_LOANS \
+    -DBUILD_PALETTE_AUTO_TEST_COMMON \
+    -DBUILD_TEST_0077_PALETTE_AUTO_ZERO_WAIT \
+    -DBUILD_TEST_0078_PALETTE_AUTO_PREPROCESS_WAIT \
+    -DBUILD_TEST_0079_PALETTE_AUTO_PROBE_LENGTH \
+    -DBUILD_TEST_0080_PALETTE_AUTO_FASTER_PROBE \
+    -DBUILD_TEST_0081_PALETTE_AUTO_SLOWER_PROBE \
+    -DBUILD_TEST_0082_PALETTE_AUTO_HYSTERESIS \
+    -DBUILD_TEST_0083_PALETTE_AUTO_REEVALUATE_FRAME \
+    -DBUILD_TEST_0084_PALETTE_AUTO_REEVALUATE_LATEST \
+    -DBUILD_TEST_0085_PALETTE_AUTO_OUTLIER \
+    -DBUILD_TEST_0086_PALETTE_AUTO_PLAYBACK \
+    -DBUILD_TEST_0092_PALETTE_AUTO_STORE_PROFILE \
+    -DBUILD_TEST_0091_PALETTE_AUTO_STORE_RETURN \
+    -DBUILD_TEST_0090_PALETTE_AUTO_BACKOFF_RESET \
+    -DBUILD_TEST_0089_PALETTE_AUTO_BACKOFF \
     -DBUILD_TEST_0072_PALETTE_SNAPSHOT_ALLOCATION \
     -DBUILD_TEST_0071_LATEST_WRITE_FAILURE \
     -DBUILD_TEST_0061_LATEST_DELTA_RESERVATION \
@@ -5034,6 +5049,22 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0070_latest_feature_fallback.c \
     planner/pipeline/0074_latest_completed_build_reclaims_budget.c \
     planner/pipeline/0075_latest_emit_priority_loans.c \
+    planner/pipeline/0077_palette_auto_zero_wait.c \
+    planner/pipeline/0078_palette_auto_preprocess_wait.c \
+    planner/pipeline/0079_palette_auto_probe_length.c \
+    planner/pipeline/0080_palette_auto_faster_probe.c \
+    planner/pipeline/0081_palette_auto_slower_probe.c \
+    planner/pipeline/0082_palette_auto_hysteresis.c \
+    planner/pipeline/0083_palette_auto_reevaluate_frame.c \
+    planner/pipeline/0084_palette_auto_reevaluate_latest.c \
+    planner/pipeline/0085_palette_auto_outlier.c \
+    planner/pipeline/0086_palette_auto_playback.c \
+    planner/pipeline/0089_palette_auto_backoff.c \
+    planner/pipeline/0090_palette_auto_backoff_reset.c \
+    planner/pipeline/0091_palette_auto_store_return.c \
+    planner/pipeline/0092_palette_auto_store_profile.c \
+    planner/pipeline/palette_auto_test_common.c \
+    planner/pipeline/palette_auto_test_common.h \
     planner/pipeline/0072_palette_snapshot_allocation.c \
     planner/pipeline/0071_latest_write_failure.c \
     planner/pipeline/palette_features_common.h \

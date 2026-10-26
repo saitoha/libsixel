@@ -79,7 +79,8 @@ playback_0026_compare(int encoder_mode, int config_mode, int budget)
 #endif
     (void)snprintf(policy, sizeof(policy),
         "greedy:B%d:palette=%s:prepare=%s", budget,
-        encoder_mode ? "latest" : "frame", budget == 1 ? "serial" : "ahead");
+        encoder_mode == 2 ? "auto" : encoder_mode ? "latest" : "frame",
+        budget == 1 ? "serial" : "ahead");
     encoder = playback_test_encoder(0, "1");
     if (encoder == NULL ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder,
@@ -132,7 +133,7 @@ playback_0026_compare(int encoder_mode, int config_mode, int budget)
         }
     }
     if ((serial ||
-            state.expected_mode == SIXEL_THREADING_PALETTE_FRAME) &&
+            state.expected_mode != SIXEL_THREADING_PALETTE_LATEST) &&
             (reference.size != state.buffer.size ||
              memcmp(reference.bytes, state.buffer.bytes, reference.size))) {
         fprintf(stderr, "latest frame fallback differs\n");
@@ -171,8 +172,8 @@ test_playback_0026(int argc, char **argv)
     (void)argc;
     (void)argv;
     for (budget = 1; budget <= 4; budget += 3) {
-        for (encoder_mode = 0; encoder_mode <= 1; ++encoder_mode) {
-            for (config_mode = -1; config_mode <= 1; ++config_mode) {
+        for (encoder_mode = 0; encoder_mode <= 2; ++encoder_mode) {
+            for (config_mode = -1; config_mode <= 2; ++config_mode) {
                 if (playback_0026_compare(encoder_mode, config_mode,
                                           budget)) {
                     return EXIT_FAILURE;

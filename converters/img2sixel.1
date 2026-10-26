@@ -129,7 +129,7 @@ frames decoded ahead (default 4; short form \fB:Q\fP).
 prepare frame n+1 while frame n is emitted (default \fBahead\fP; short form
 \fB:P\fP).
 .TP 5
-.B palette=frame|latest
+.B palette=frame|latest|auto
 palette source of each frame (default \fBframe\fP; short form \fB:C\fP).
 \fBlatest\fP selects the newest completed palette from the current or an
 earlier frame at application start, after the display delay. Selection is
@@ -146,11 +146,22 @@ frame's own palette; stale prepare-ahead predictions are joined and rebuilt.
 Native color output and palette export use the selected palette. A frame's own build
 failure is reported even if output was already emitted. Serial fallbacks match
 \fBframe\fP output bytes with the same options.
-Latest shares the budget between palette construction, next preparation and
-application/encoding. Construction plus preparation also fit
-\fBprepare_workers\fP; a value of one still allows construction to overlap
-application. Load/prepare serial settings alone do not disable latest.
-Reservations can reduce application parallelism; no speedup is guaranteed.
+Latest emission keeps the full encoder budget. Its palette builders borrow
+idle execution slots; ordinary next preparation retains its independent cap.
+Load/prepare serial settings alone do not disable latest.
+\fBauto\fP starts in frame behavior and probes latest only after palette
+construction delays emission. It compares five-frame median intervals with
+a 12% relative margin and first re-evaluates after 40 chosen frames.
+Confirmed choices double that interval up to 320 frames; a reversal resets
+it to 40. Completed compatible palettes survive frame periods for reuse
+on return to latest. Probes can run the slower behavior for five frames.
+Within the
+margin it retains the chosen behavior. Intervals run from one frame's output,
+own-build join and cleanup completion to the next such completion, including
+writes and preparation waits. The first completion establishes the origin.
+A possible decision boundary defers next-frame preparation. Probe and
+transition costs can outweigh a benefit on short sessions; no speedup is
+guaranteed. The default remains \fBframe\fP.
 .TP 5
 .B dither=COUNT
 palette application workers (short form \fB:D\fP).
