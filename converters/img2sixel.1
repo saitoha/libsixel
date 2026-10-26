@@ -150,18 +150,24 @@ Latest emission keeps the full encoder budget. Its palette builders borrow
 idle execution slots; ordinary next preparation retains its independent cap.
 Load/prepare serial settings alone do not disable latest.
 \fBauto\fP starts in frame behavior and probes latest only after palette
-construction delays emission. It compares five-frame median intervals with
-a 12% relative margin and first re-evaluates after 40 chosen frames.
-Confirmed choices double that interval up to 320 frames; a reversal resets
-it to 40. Completed compatible palettes survive frame periods for reuse
-on return to latest. Probes can run the slower behavior for five frames.
-Within the
-margin it retains the chosen behavior. Intervals run from one frame's output,
-own-build join and cleanup completion to the next such completion, including
-writes and preparation waits. The first completion establishes the origin.
-A possible decision boundary defers next-frame preparation. Probe and
-transition costs can outweigh a benefit on short sessions; no speedup is
-guaranteed. The default remains \fBframe\fP.
+construction delays emission and five intervals exist. Each probe uses five
+ABBA blocks (20 frames), A the incumbent and B the challenger. Each block
+averages adjacent pair contrasts 2*(A-B)/(A+B); the median of the five
+contrasts must exceed 0.03 plus twice their median absolute deviation to
+switch. Balanced orders reduce content-trend bias; five blocks tolerate two
+outliers. The 3% floor guards small repeat variation, and twice MAD adds an
+empirical noise allowance, not a confidence interval. Uncertain or incomplete
+probes retain the choice without back-off. Reevaluation starts after 40 chosen
+frames; decisive incumbent confirmations double that interval up to 320,
+while reversals reset it to 40. A no-wait frame reevaluation skips the probe
+and backs off. Completed compatible palettes survive frame periods.
+Each probe schedules ten frames of each behavior. Intervals run from one frame's
+output, own-build join and cleanup completion to the next such completion,
+including writes and preparation waits. The first completion establishes the
+origin. Interior probe modes are passed to prepare-ahead without a hold;
+only the final decision defers next-frame preparation. Probe and transition
+costs can outweigh a benefit; no speedup is guaranteed. The default remains
+\fBframe\fP.
 .TP 5
 .B dither=COUNT
 palette application workers (short form \fB:D\fP).

@@ -2220,13 +2220,21 @@ sixel_encoder_encode_frame(
  * counterpart of the policy's palette key. An explicit CONFIG overrides the
  * encoder, including PER_FRAME (zero); NULL CONFIG inherits the encoder.
  * AUTO starts each session in frame behavior, probing latest on palette
- * waits. It compares five-frame median completion intervals (including
- * output writes, own joins and preparation waits), retaining the incumbent
- * within 12%, and first re-evaluates after 40 chosen frames. Confirmations
- * double that interval up to 320; reversals reset it to 40. Compatible
- * completed palettes survive frame periods. The first completion
- * establishes the clock origin; switching occurs only at frame boundaries.
- * Its frame behavior reports the own sequence. Defaults stay PER_FRAME.
+ * waits after five intervals. A probe has five ABBA blocks (20 frames), A
+ * the incumbent and B the challenger. Each block averages the adjacent
+ * pair contrasts 2*(A-B)/(A+B). Their median must exceed 0.03 + twice their
+ * median absolute deviation to switch. This is an empirical noise margin;
+ * uncertain or incomplete probes retain the choice without back-off.
+ * Intervals include output writes, own joins, cleanup and preparation waits.
+ * The first reevaluation follows 40 chosen frames. Decisive confirmations
+ * double that interval up to 320; reversals reset it to 40. No-wait frame
+ * reevaluations skip probing and back off. Compatible completed palettes
+ * survive frame periods. Predictable probe modes retain prepare-ahead
+ * overlap; only the final decision holds next preparation. Five balanced
+ * blocks tolerate two outliers; the 3% floor guards small repeat variation.
+ * The first completion establishes the clock origin; switching occurs only
+ * at frame boundaries. Frame behavior reports its own sequence. Probes and
+ * transitions can cost time; AUTO promises no speedup. Defaults stay PER_FRAME.
  * LATEST reuses the newest completed palette with source sequence <= the
  * current sequence. Selection occurs once, after delay, before LUT/gradient
  * setup. CPU generated palettes can overlap their own build and application,

@@ -10824,7 +10824,7 @@ sixel_encoder_frame_job_prepare(
     sixel_frame_t   *frame,
     sixel_output_t  *output,
     sixel_encoder_frame_handoff_meta_t const *metadata,
-    sixel_encoder_frame_pipeline_t *pipeline)
+    sixel_encoder_frame_pipeline_t *pipeline, int auto_latest)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_encoding_planner_t *planner;
@@ -11110,7 +11110,7 @@ sixel_encoder_frame_job_prepare(
     job->context.auto_eligible = job->context.latest &&
         pipeline->policy.options.palette == SIXEL_THREADING_PALETTE_AUTO;
     if (job->context.auto_eligible) {
-        job->context.latest = pipeline->palette_auto.effective;
+        job->context.latest = auto_latest;
     }
     job->context.configuration_revision = encoder->configuration_revision;
 
@@ -11722,7 +11722,7 @@ sixel_encoder_encode_frame_internal(
 
     job.delta_alpha_key = -1;
     status = sixel_encoder_frame_job_prepare(&job, encoder, frame, output,
-                                             metadata, NULL);
+                                             metadata, NULL, 0);
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_frame_job_emit(&job);
     } else if (encoder != NULL) {
@@ -15899,9 +15899,9 @@ sixel_encoder_playback_frame_done(
 /* Measure completion-to-completion intervals on the ordered emission lane.
  * Completion includes output writes, own-build join and frame cleanup. The
  * next interval consequently includes queue/prepare waits and a transition's
- * lost overlap. The first completion only establishes an origin. A helper
- * reads only effective; possible changes to that member suppress read-ahead
- * at the preceding boundary. Other controller members belong to this lane. */
+ * lost overlap. The first completion only establishes an origin. Helpers
+ * receive the next predetermined probe mode by value, never reading the
+ * controller. Only the final decision boundary suppresses read-ahead. */
 static void
 sixel_encoder_auto_complete(sixel_encoder_frame_pipeline_t *pipeline,
     sixel_encoder_frame_job_t *job, SIXELSTATUS status, double completed)
@@ -15939,22 +15939,26 @@ sixel_encoder_auto_complete(sixel_encoder_frame_pipeline_t *pipeline,
     if (job->context.latest != state->effective) {
         /* An AUTO-sampling recovery can execute the ordinary frame path
          * during a latest probe. It is not a sample of latest behavior;
-         * leave the probe pending rather than compare unlike observations.
-         * The following preparation may already borrow effective. */
+         * invalidate this block while preserving its announced schedule. */
+        if (state->probe) {
+            sixel_palette_auto_observe(state, 0.0, 0.0);
+        }
         state->decision = "frame-fallback";
-    } else if (pipeline->auto_completed_at > 0.0) {
+    } else if (pipeline->auto_completed_at > 0.0 || state->probe) {
         sixel_palette_auto_observe(state, interval, job->context.palette_wait);
     }
     pipeline->auto_completed_at = completed;
     pipeline->auto_emit_end = job->context.emit_end;
     sixel_trace_topic_message("palette_auto",
         "LSXAUTO1|frame=%llu|palette_effective=%s|auto_state=%s|"
-        "interval=%.9f|palette_wait=%.9f|baseline=%.9f|median=%.9f|"
+        "interval=%.9f|palette_wait=%.9f|paired=%.9f|mad=%.9f|"
+        "margin=%.9f|step=%d|blocks=%d|"
         "decision=%s|next=%s|probes=%u|switches=%u|transitions=%u|"
         "reevaluate_interval=%d|elapsed=%d",
         (unsigned long long)job->context.sequence,
         job->context.latest ? "latest" : "frame", probe ? "probe" : "chosen",
-        interval, job->context.palette_wait, state->baseline, state->measured,
+        interval, job->context.palette_wait, state->measured, state->mad,
+        state->margin, state->step, state->pairs,
         state->decision, state->effective ? "latest" : "frame",
         state->probes, state->switches, state->transitions,
         state->reevaluate_interval, state->elapsed);
@@ -16007,7 +16011,8 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
                                    sixel_encoder_frame_job_t *job,
                                    sixel_frame_t *frame,
                                    sixel_encoder_frame_handoff_meta_t *meta,
-                                   sixel_palette_lease_t *reserved)
+                                   sixel_palette_lease_t *reserved,
+                                   int auto_latest)
 {
     SIXELSTATUS status;
     sixel_palette_lease_t lease;
@@ -16022,20 +16027,24 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
     }
     if (pipeline->palette_store != NULL &&
             (pipeline->policy.options.palette != SIXEL_THREADING_PALETTE_AUTO ||
-             pipeline->palette_auto.effective) &&
+             auto_latest) &&
             (pipeline->playback != NULL || meta->multiframe)) {
         if (lease.threads == 0 &&
                 !sixel_palette_scheduler_acquire(&pipeline->palette_scheduler,
                 SIXEL_PALETTE_LANE_PREPARE, 0, &lease)) {
             return SIXEL_FALSE; /* Leave speculative work to its own turn. */
         }
+    }
+    /* An announced latest-to-frame transition can inherit a preparation
+     * lease too. Enter every reserved lease before leaving its scopes. */
+    if (lease.threads != 0) {
         sixel_palette_lease_enter(&lease, &policy_scope, &budget_scope);
     }
     if (pipeline->output != NULL) {
         sixel_output_ref(pipeline->output);
     }
     status = sixel_encoder_frame_job_prepare(job, pipeline->encoder, frame,
-                                             pipeline->output, meta, pipeline);
+        pipeline->output, meta, pipeline, auto_latest);
     if (job->active == 0 && pipeline->output != NULL) {
         sixel_output_unref(pipeline->output);
     }
@@ -16066,7 +16075,7 @@ sixel_encoder_pipeline_encode_frame(sixel_encoder_frame_pipeline_t *pipeline,
 
     job.delta_alpha_key = -1;
     status = sixel_encoder_pipeline_prepare_job(pipeline, &job, frame,
-        meta, NULL);
+        meta, NULL, pipeline->palette_auto.effective);
     if (SIXEL_SUCCEEDED(status)) {
         (void)sixel_encoder_auto_boundary(pipeline, &job);
         status = sixel_encoder_frame_job_emit(&job);
@@ -16124,6 +16133,7 @@ typedef struct sixel_encoder_prepare_ahead {
     int requested;
     int exiting;
     int alpha_key;
+    int auto_latest;
     sixel_encoder_frame_pipeline_t *pipeline;
     sixel_encoder_t *encoder;
     sixel_output_t *output;
@@ -16333,7 +16343,7 @@ sixel_encoder_prepare_ahead_main(void *arg)
             slot->job->delta_alpha_key = ahead->alpha_key;
             slot->status = sixel_encoder_pipeline_prepare_job(
                 ahead->pipeline, slot->job, slot->work_frame,
-                &slot->metadata, &slot->prepare_lease);
+                &slot->metadata, &slot->prepare_lease, ahead->auto_latest);
             if (SIXEL_FAILED(slot->status)) {
                 sixel_status_take_message(&slot->message);
             }
@@ -16358,11 +16368,12 @@ sixel_encoder_prepare_ahead_main(void *arg)
 static void
 sixel_encoder_prepare_ahead_request(sixel_encoder_prepare_ahead_t *ahead,
                                     sixel_encoder_pipeline_slot_t *slot,
-                                    int alpha_key)
+                                    int alpha_key, int auto_latest)
 {
     sixel_mutex_lock(&ahead->mutex);
     ahead->slot = slot;
     ahead->alpha_key = alpha_key;
+    ahead->auto_latest = auto_latest;
     ahead->requested = 1;
     sixel_cond_broadcast(&ahead->cond);
     sixel_mutex_unlock(&ahead->mutex);
@@ -16539,7 +16550,7 @@ sixel_encoder_frame_pipeline_run_ahead(
             current->job->delta_alpha_key = -1;
             current->status = sixel_encoder_pipeline_prepare_job(
                 pipeline, current->job, current->work_frame,
-                &current->metadata, NULL);
+                &current->metadata, NULL, pipeline->palette_auto.effective);
             /* A repaired prediction establishes this frame's own baseline;
              * an older compatible palette cannot replace that repair. */
             current->job->context.own_required = redo;
@@ -16567,7 +16578,8 @@ sixel_encoder_frame_pipeline_run_ahead(
                         &next->prepare_lease)))) {
                 sixel_encoder_prepare_ahead_request(
                     &ahead, next,
-                    sixel_encoder_6delta_accumulation_requested(encoder));
+                    sixel_encoder_6delta_accumulation_requested(encoder),
+                    sixel_palette_auto_next(&pipeline->palette_auto));
                 have_next = 1;
             }
             status = sixel_encoder_frame_job_emit(current->job);

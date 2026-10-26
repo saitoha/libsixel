@@ -389,6 +389,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0084_PALETTE_AUTO_REEVALUATE_LATEST \
     -DBUILD_TEST_0085_PALETTE_AUTO_OUTLIER \
     -DBUILD_TEST_0086_PALETTE_AUTO_PLAYBACK \
+    -DBUILD_TEST_0093_PALETTE_AUTO_MODEST_GAIN \
+    -DBUILD_TEST_0094_PALETTE_AUTO_CONTENT_CHANGE \
+    -DBUILD_TEST_0095_PALETTE_AUTO_UNCERTAIN_PAIRS \
     -DBUILD_TEST_0092_PALETTE_AUTO_STORE_PROFILE \
     -DBUILD_TEST_0091_PALETTE_AUTO_STORE_RETURN \
     -DBUILD_TEST_0090_PALETTE_AUTO_BACKOFF_RESET \
@@ -5062,6 +5065,9 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0089_palette_auto_backoff.c \
     planner/pipeline/0090_palette_auto_backoff_reset.c \
     planner/pipeline/0091_palette_auto_store_return.c \
+    planner/pipeline/0093_palette_auto_modest_gain.c \
+    planner/pipeline/0094_palette_auto_content_change.c \
+    planner/pipeline/0095_palette_auto_uncertain_pairs.c \
     planner/pipeline/0092_palette_auto_store_profile.c \
     planner/pipeline/palette_auto_test_common.c \
     planner/pipeline/palette_auto_test_common.h \

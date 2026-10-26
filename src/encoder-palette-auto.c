@@ -45,42 +45,117 @@ sixel_palette_auto_median(double const *values)
     return sorted[SIXEL_PALETTE_AUTO_K / 2];
 }
 
+/* A is the incumbent, B the challenger. Opposite adjacent-pair orders
+ * reduce content-trend bias without comparing separated content windows. */
+static int
+sixel_palette_auto_mode(sixel_palette_auto_t const *state, int step)
+{
+    return state->chosen ^ (step % 4 == 1 || step % 4 == 2);
+}
+
+int
+sixel_palette_auto_next(sixel_palette_auto_t const *state)
+{
+    return state->probe
+        ? sixel_palette_auto_mode(state, state->step + 1) : state->chosen;
+}
+
 int
 sixel_palette_auto_boundary(sixel_palette_auto_t const *state, double wait)
 {
-    int i;
-    int waiting;
+    (void)wait;
+    return state->probe &&
+        state->step + 1 == SIXEL_PALETTE_AUTO_PROBE_FRAMES;
+}
 
-    if (state->probe) {
-        return state->count + 1 >= SIXEL_PALETTE_AUTO_K;
-    }
-    if (state->count + 1 < SIXEL_PALETTE_AUTO_K ||
-            (state->evaluated &&
-             state->elapsed + 1 < state->reevaluate_interval)) {
-        return 0;
-    }
-    waiting = wait > 0.0;
-    for (i = 0; i < state->count; ++i) {
-        if (i != state->cursor) {
-            waiting |= state->waits[i];
+static void
+sixel_palette_auto_decide(sixel_palette_auto_t *state)
+{
+    double deviations[SIXEL_PALETTE_AUTO_K];
+    int i;
+
+    state->decision = "uncertain";
+    if (state->pairs == SIXEL_PALETTE_AUTO_K) {
+        state->measured = sixel_palette_auto_median(state->differences);
+        for (i = 0; i < SIXEL_PALETTE_AUTO_K; ++i) {
+            deviations[i] = fabs(state->differences[i] - state->measured);
+        }
+        state->mad = sixel_palette_auto_median(deviations);
+        state->margin = SIXEL_PALETTE_AUTO_MARGIN + 2.0 * state->mad;
+        if (state->measured > state->margin) {
+            state->chosen = !state->chosen;
+            state->reevaluate_interval = SIXEL_PALETTE_AUTO_M;
+            ++state->switches;
+            state->decision = state->chosen ? "switch-latest" : "switch-frame";
+        } else if (state->measured < -state->margin) {
+            state->decision = state->chosen ? "keep-latest" : "keep-frame";
+            if (state->evaluated && state->reevaluate_interval <
+                    SIXEL_PALETTE_AUTO_MAX_INTERVAL) {
+                state->reevaluate_interval *= 2;
+            }
         }
     }
-    return state->chosen || waiting;
+    state->probe = 0;
+    state->evaluated = 1;
+    state->elapsed = 0;
+    state->count = 0;
+    state->cursor = 0;
 }
 
 void
 sixel_palette_auto_observe(sixel_palette_auto_t *state, double interval,
     double wait)
 {
+    double first;
+    double second;
     int i;
     int waiting;
+    int next;
 
     state->decision = "sample";
+    if (state->probe) {
+        /* Even invalid clocks advance the preannounced schedule. A block
+         * containing one cannot vote, and an incomplete probe cannot decide
+         * or back off. No speculative job depends on clock validity. */
+        state->block[state->step % 4] = interval;
+        if (state->step % 4 == 3) {
+            for (i = 0; i < 4; ++i) {
+                if (!(state->block[i] > 0.0) || !isfinite(state->block[i])) {
+                    break;
+                }
+            }
+            if (i == 4) {
+                /* Scale each pair before division to avoid overflow. Each
+                 * signed contrast is 2*(A-B)/(A+B); averaging AB and BA
+                 * balances order and keeps all comparisons dimensionless. */
+                first = state->block[0] / fmax(state->block[0],
+                    state->block[1]);
+                second = state->block[1] / fmax(state->block[0],
+                    state->block[1]);
+                state->differences[state->pairs] =
+                    (first - second) / (first + second);
+                first = state->block[3] / fmax(state->block[3],
+                    state->block[2]);
+                second = state->block[2] / fmax(state->block[3],
+                    state->block[2]);
+                state->differences[state->pairs++] +=
+                    (first - second) / (first + second);
+            }
+        }
+        ++state->step;
+        if (state->step == SIXEL_PALETTE_AUTO_PROBE_FRAMES) {
+            sixel_palette_auto_decide(state);
+        }
+        next = state->probe
+            ? sixel_palette_auto_mode(state, state->step) : state->chosen;
+        state->transitions += state->effective != next;
+        state->effective = next;
+        return;
+    }
     if (!(interval > 0.0) || !isfinite(interval)) {
         state->decision = "clock-unavailable";
         return;
     }
-    state->intervals[state->cursor] = interval;
     state->waits[state->cursor] = wait > 0.0;
     state->cursor = (state->cursor + 1) % SIXEL_PALETTE_AUTO_K;
     if (state->count < SIXEL_PALETTE_AUTO_K) {
@@ -90,38 +165,9 @@ sixel_palette_auto_observe(sixel_palette_auto_t *state, double interval,
     if (state->elapsed < state->reevaluate_interval) {
         ++state->elapsed;
     }
-    if (state->count < SIXEL_PALETTE_AUTO_K) {
-        return;
-    }
-    state->measured = sixel_palette_auto_median(state->intervals);
-    if (state->probe) {
-        /* A probe is a challenger. Inside the margin the incumbent wins,
-         * including when it is latest and the challenger is frame. */
-        if (state->measured <
-                state->baseline * (1.0 - SIXEL_PALETTE_AUTO_MARGIN)) {
-            state->chosen = state->effective;
-            state->reevaluate_interval = SIXEL_PALETTE_AUTO_M;
-            ++state->switches;
-            state->decision = state->chosen ? "switch-latest" : "switch-frame";
-        } else {
-            state->decision = state->chosen ? "keep-latest" : "keep-frame";
-            /* The initial comparison establishes the base cadence. Only
-             * a subsequent confirmation doubles the chosen period. */
-            if (state->evaluated && state->reevaluate_interval <
-                    SIXEL_PALETTE_AUTO_MAX_INTERVAL) {
-                state->reevaluate_interval *= 2;
-            }
-        }
-        state->transitions += state->effective != state->chosen;
-        state->effective = state->chosen;
-        state->probe = 0;
-        state->evaluated = 1;
-        state->elapsed = 0;
-        state->count = 0;
-        state->cursor = 0;
-        return;
-    }
-    if (state->evaluated && state->elapsed < state->reevaluate_interval) {
+    if (state->count < SIXEL_PALETTE_AUTO_K ||
+            (state->evaluated &&
+             state->elapsed < state->reevaluate_interval)) {
         return;
     }
     waiting = 0;
@@ -130,9 +176,8 @@ sixel_palette_auto_observe(sixel_palette_auto_t *state, double interval,
     }
     if (!state->chosen && !waiting) {
         state->decision = "skip-no-wait";
-        /* A no-wait reevaluation also confirms frame, without running a
-         * challenger. Before the first comparison, keep observing the full
-         * K-sample window; wait magnitude never shortens that decision. */
+        /* No critical palette wait decisively rules out useful overlap.
+         * Keep the initial window rolling until the first wait appears. */
         if (state->evaluated && state->reevaluate_interval <
                 SIXEL_PALETTE_AUTO_MAX_INTERVAL) {
             state->reevaluate_interval *= 2;
@@ -140,12 +185,10 @@ sixel_palette_auto_observe(sixel_palette_auto_t *state, double interval,
         state->elapsed = 0;
         return;
     }
-    state->baseline = state->measured;
-    state->effective = !state->chosen;
-    ++state->transitions;
     state->probe = 1;
     ++state->probes;
-    state->count = 0;
-    state->cursor = 0;
-    state->decision = state->effective ? "probe-latest" : "probe-frame";
+    state->step = 0;
+    state->pairs = 0;
+    state->measured = state->mad = state->margin = 0.0;
+    state->decision = "probe-paired";
 }

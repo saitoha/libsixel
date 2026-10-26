@@ -28,47 +28,56 @@ auto_samples(sixel_palette_auto_t *state, int count, double interval,
     }
 }
 
-/* Literal durations are observations, not sleeps. Five and forty are pinned
- * independently here so accidental policy-constant changes are visible. */
+/* Feed one complete order-balanced probe. The literal twenty-frame length
+ * is independent of the production constant so a policy drift is visible. */
+static void
+auto_probe(sixel_palette_auto_t *state, double incumbent, double challenger)
+{
+    int i;
+    int chosen;
+
+    chosen = state->chosen;
+    for (i = 0; i < 20; ++i) {
+        sixel_palette_auto_observe(state,
+            state->effective == chosen ? incumbent : challenger, 10.0);
+    }
+}
+
+/* Literal durations are observations, not sleeps. */
 int
 palette_auto_test(int scenario)
 {
     sixel_palette_auto_t state;
     int i;
+    int j;
     int chosen;
     int expected;
+    int next;
     unsigned int probes;
+    double interval;
 
     sixel_palette_auto_init(&state);
     AUTO_CHECK(!state.effective && !state.probe);
-    if (scenario == 0) {
-        for (i = 0; i < 200; ++i) {
-            AUTO_CHECK(!sixel_palette_auto_boundary(&state, 0.0));
-            sixel_palette_auto_observe(&state, 100.0, 0.0);
-        }
-        AUTO_CHECK(state.probes == 0 && !state.effective);
-        return EXIT_SUCCESS;
-    }
-    if (scenario == 1) {
-        /* Palette completed before preplan: even a very late preplan is
-         * not evidence that latest could remove a critical palette wait. */
+    if (scenario == 0 || scenario == 1) {
         AUTO_CHECK(sixel_palette_auto_wait(40.0, 20.0, 10.0) == 0.0);
         AUTO_CHECK(sixel_palette_auto_wait(10.0, 20.0, 30.0) == 0.0);
         AUTO_CHECK(sixel_palette_auto_wait(10.0, 40.0, 30.0) == 10.0);
         AUTO_CHECK(sixel_palette_auto_wait(30.0, 40.0, 10.0) == 10.0);
-        auto_samples(&state, 100, 100.0,
-            sixel_palette_auto_wait(40.0, 20.0, 10.0));
-        AUTO_CHECK(state.probes == 0);
+        for (i = 0; i < 200; ++i) {
+            AUTO_CHECK(!sixel_palette_auto_boundary(&state, 0.0));
+            sixel_palette_auto_observe(&state, 100.0,
+                sixel_palette_auto_wait(40.0, 20.0, 10.0));
+        }
+        AUTO_CHECK(state.probes == 0 && !state.effective);
         return EXIT_SUCCESS;
     }
     if (scenario == 9 || scenario == 10) {
         for (chosen = 0; chosen < 2; ++chosen) {
             sixel_palette_auto_init(&state);
-            /* Even an enormous wait still requires all five observations. */
             auto_samples(&state, 4, 100.0, 1e30);
             AUTO_CHECK(!state.probe);
             auto_samples(&state, 1, 100.0, 1e30);
-            auto_samples(&state, 5, chosen ? 70.0 : 110.0, 0.0);
+            auto_probe(&state, 100.0, chosen ? 70.0 : 110.0);
             AUTO_CHECK(state.chosen == chosen);
             AUTO_CHECK(state.reevaluate_interval == 40);
             expected = 40;
@@ -76,103 +85,121 @@ palette_auto_test(int scenario)
                 probes = state.probes;
                 auto_samples(&state, expected - 1, 100.0, 10.0);
                 AUTO_CHECK(!state.probe && state.probes == probes);
-                AUTO_CHECK(sixel_palette_auto_boundary(&state, 10.0));
                 auto_samples(&state, 1, 100.0, 10.0);
                 AUTO_CHECK(state.probe && state.probes == probes + 1);
-                auto_samples(&state, 5, 95.0, 10.0);
+                auto_probe(&state, 100.0, 110.0);
                 expected = expected < 320 ? expected * 2 : 320;
                 AUTO_CHECK(state.chosen == chosen && !state.probe);
                 AUTO_CHECK(state.reevaluate_interval == expected);
             }
             if (scenario == 10) {
                 auto_samples(&state, 320, 100.0, 10.0);
-                auto_samples(&state, 5, 70.0, 10.0);
+                auto_probe(&state, 100.0, 70.0);
                 AUTO_CHECK(state.chosen == !chosen);
                 AUTO_CHECK(state.reevaluate_interval == 40);
-                auto_samples(&state, 39, 100.0, 10.0);
-                AUTO_CHECK(!state.probe);
-                auto_samples(&state, 1, 100.0, 10.0);
-                AUTO_CHECK(state.probe);
             }
         }
         return EXIT_SUCCESS;
     }
     auto_samples(&state, 4, 100.0, 10.0);
     AUTO_CHECK(!state.effective && !state.probe);
-    AUTO_CHECK(sixel_palette_auto_boundary(&state, 10.0));
+    AUTO_CHECK(!sixel_palette_auto_boundary(&state, 10.0));
     sixel_palette_auto_observe(&state, 100.0, 10.0);
-    AUTO_CHECK(state.probe && state.effective && state.probes == 1);
+    AUTO_CHECK(state.probe && !state.effective && state.probes == 1);
     if (scenario == 2) {
-        for (i = 0; i < 4; ++i) {
-            AUTO_CHECK(!sixel_palette_auto_boundary(&state, 0.0));
-            sixel_palette_auto_observe(&state, 70.0, 0.0);
-            AUTO_CHECK(state.probe && !state.chosen);
+        for (i = 0; i < 20; ++i) {
+            AUTO_CHECK(state.effective == (i % 4 == 1 || i % 4 == 2));
+            AUTO_CHECK(sixel_palette_auto_boundary(&state, 0.0) == (i == 19));
+            next = sixel_palette_auto_next(&state);
+            sixel_palette_auto_observe(&state,
+                i == 2 ? 0.0 : state.effective ? 70.0 : 100.0, 10.0);
+            AUTO_CHECK(i == 19 || state.effective == next);
         }
-        AUTO_CHECK(sixel_palette_auto_boundary(&state, 0.0));
-        sixel_palette_auto_observe(&state, 0.0, 0.0);
-        AUTO_CHECK(state.probe && state.count == 4);
-        sixel_palette_auto_observe(&state, 70.0, 0.0);
-        AUTO_CHECK(!state.probe && state.chosen);
+        AUTO_CHECK(!state.probe && !state.chosen && state.pairs == 4);
+        AUTO_CHECK(!strcmp(state.decision, "uncertain"));
+        AUTO_CHECK(state.reevaluate_interval == 40);
         return EXIT_SUCCESS;
     }
     if (scenario == 3 || scenario == 4) {
-        auto_samples(&state, 5, scenario == 3 ? 70.0 : 110.0, 0.0);
+        auto_probe(&state, 100.0, scenario == 3 ? 70.0 : 110.0);
         AUTO_CHECK(!state.probe && state.chosen == (scenario == 3));
         AUTO_CHECK(state.switches == (unsigned int)(scenario == 3));
         return EXIT_SUCCESS;
     }
-    if (scenario == 5) {
-        auto_samples(&state, 5, 95.0, 0.0);
-        AUTO_CHECK(!state.effective && !state.chosen);
+    if (scenario == 5 || scenario == 11) {
+        /* A 2% difference is hysteresis; a stable 4% gain wins in either
+         * direction, with the same relative rule and a reset cadence. */
+        auto_probe(&state, 100.0, scenario == 5 ? 98.0 : 96.0);
+        AUTO_CHECK(state.chosen == (scenario == 11));
         auto_samples(&state, 40, 100.0, 10.0);
-        auto_samples(&state, 5, 70.0, 0.0);
-        AUTO_CHECK(state.chosen && state.switches == 1);
-        auto_samples(&state, 40, 100.0, 0.0);
-        AUTO_CHECK(state.probe && !state.effective);
-        auto_samples(&state, 5, 95.0, 10.0);
-        AUTO_CHECK(state.chosen && state.effective && !state.probe);
-        AUTO_CHECK(state.switches == 1);
+        auto_probe(&state, 100.0, 96.0);
+        AUTO_CHECK(state.chosen == (scenario == 5));
+        auto_samples(&state, 40, 100.0, 10.0);
+        auto_probe(&state, 100.0, 98.0);
+        AUTO_CHECK(state.chosen == (scenario == 5));
+        AUTO_CHECK(!strcmp(state.decision, "uncertain"));
+        AUTO_CHECK(state.reevaluate_interval == 40);
         return EXIT_SUCCESS;
     }
     if (scenario == 6) {
-        auto_samples(&state, 5, 110.0, 0.0);
+        auto_probe(&state, 100.0, 110.0);
         auto_samples(&state, 39, 100.0, 10.0);
         AUTO_CHECK(!state.probe && state.probes == 1);
-        AUTO_CHECK(sixel_palette_auto_boundary(&state, 10.0));
         auto_samples(&state, 1, 100.0, 10.0);
         AUTO_CHECK(state.probe && state.probes == 2);
-        auto_samples(&state, 5, 110.0, 0.0);
+        auto_probe(&state, 100.0, 110.0);
         AUTO_CHECK(state.reevaluate_interval == 80);
-        auto_samples(&state, 79, 100.0, 0.0);
-        AUTO_CHECK(state.reevaluate_interval == 80 && !state.probe);
-        auto_samples(&state, 1, 100.0, 0.0);
+        auto_samples(&state, 80, 100.0, 0.0);
         AUTO_CHECK(!state.probe && state.probes == 2);
         AUTO_CHECK(state.reevaluate_interval == 160);
         auto_samples(&state, 160, 100.0, 0.0);
         AUTO_CHECK(state.reevaluate_interval == 320 && !state.probe);
-        auto_samples(&state, 320, 100.0, 0.0);
-        AUTO_CHECK(state.reevaluate_interval == 320 && !state.probe);
         return EXIT_SUCCESS;
     }
     if (scenario == 7) {
-        auto_samples(&state, 5, 70.0, 0.0);
+        auto_probe(&state, 100.0, 70.0);
         auto_samples(&state, 39, 100.0, 0.0);
         AUTO_CHECK(!state.probe && state.effective);
-        AUTO_CHECK(sixel_palette_auto_boundary(&state, 0.0));
         auto_samples(&state, 1, 100.0, 0.0);
-        AUTO_CHECK(state.probe && !state.effective);
-        auto_samples(&state, 5, 70.0, 10.0);
+        AUTO_CHECK(state.probe && state.effective);
+        auto_probe(&state, 100.0, 70.0);
         AUTO_CHECK(!state.probe && !state.chosen && state.switches == 2);
         return EXIT_SUCCESS;
     }
     if (scenario == 8) {
-        auto_samples(&state, 4, 100.0, 0.0);
-        auto_samples(&state, 1, 1.0, 0.0);
-        AUTO_CHECK(!state.chosen);
-        auto_samples(&state, 40, 100.0, 10.0);
-        auto_samples(&state, 4, 70.0, 0.0);
-        auto_samples(&state, 1, 10000.0, 0.0);
+        for (i = 0; i < 20; ++i) {
+            interval = state.effective ? 70.0 : 100.0;
+            sixel_palette_auto_observe(&state,
+                i == 1 || i == 5 ? 10000.0 : interval, 10.0);
+        }
         AUTO_CHECK(state.chosen && state.switches == 1);
+        return EXIT_SUCCESS;
+    }
+    if (scenario == 12 || scenario == 13) {
+        for (chosen = 0; chosen < 2; ++chosen) {
+            sixel_palette_auto_init(&state);
+            auto_samples(&state, 5, 100.0, 10.0);
+            auto_probe(&state, 100.0, chosen ? 70.0 : 110.0);
+            for (j = 0; j < 3; ++j) {
+                auto_samples(&state, 40, 100.0, 10.0);
+                for (i = 0; i < 20; ++i) {
+                    /* Content gets much cheaper in the probe, including
+                     * a single cut inside one pair. Identical modes must
+                     * not be confused with that common content change. */
+                    interval = i < 7 ? 60.0 : 30.0;
+                    if (scenario == 13) {
+                        /* About 6% median gain with 2% MAD: a 3% floor
+                         * or one MAD would switch, but two MADs must not. */
+                        interval = state.effective == chosen ? 100.0 :
+                            90.0 + 2.0 * (i / 4);
+                    }
+                    sixel_palette_auto_observe(&state, interval, 10.0);
+                }
+                AUTO_CHECK(state.chosen == chosen && !state.probe);
+                AUTO_CHECK(!strcmp(state.decision, "uncertain"));
+                AUTO_CHECK(state.reevaluate_interval == 40);
+            }
+        }
         return EXIT_SUCCESS;
     }
     return EXIT_FAILURE;
@@ -202,7 +229,7 @@ auto_playback_interval(void *context, uint64_t sequence, int latest,
     double *interval)
 {
     (void)context;
-    *interval = latest ? 0.05 : sequence < 52 ? 0.1 : 0.02;
+    *interval = latest ? 0.05 : sequence < 67 ? 0.1 : 0.02;
 }
 
 static void
@@ -217,9 +244,16 @@ auto_playback_observed(void *context, uint64_t sequence, int latest,
     (void)interval;
     (void)wait;
     ++state->observations;
-    expected_latest = sequence >= 7 && sequence <= 51;
-    expected_probe = (sequence >= 7 && sequence <= 11) ||
-        (sequence >= 52 && sequence <= 56);
+    expected_probe = (sequence >= 7 && sequence <= 26) ||
+        (sequence >= 67 && sequence <= 86);
+    expected_latest = sequence >= 27 && sequence <= 66;
+    if (sequence >= 7 && sequence <= 26) {
+        expected_latest = (sequence - 7) % 4 == 1 ||
+            (sequence - 7) % 4 == 2;
+    } else if (sequence >= 67 && sequence <= 86) {
+        expected_latest = (sequence - 67) % 4 == 0 ||
+            (sequence - 67) % 4 == 3;
+    }
     state->failed |= latest != expected_latest || probe != expected_probe;
     state->latest = latest;
     state->probes += !strncmp(decision, "probe-", 6);
@@ -296,7 +330,7 @@ palette_auto_playback_test(void)
             if (status != SIXEL_OK) {
                 goto end;
             }
-            for (i = 0; i < 60; ++i) {
+            for (i = 0; i < 90; ++i) {
                 frame = playback_test_frame(i % 3);
                 if (frame == NULL) {
                     goto end;
@@ -311,8 +345,8 @@ palette_auto_playback_test(void)
             status = sixel_playback_drain(playback, -1);
             sixel_playback_unref(playback);
             playback = NULL;
-            if (status != SIXEL_OK || state.failed || state.callbacks != 60 ||
-                    state.observations != 60 || state.probes != 2 ||
+            if (status != SIXEL_OK || state.failed || state.callbacks != 90 ||
+                    state.observations != 90 || state.probes != 2 ||
                     state.switches != 2) {
                 fprintf(stderr, "auto playback ahead=%d pass=%d "
                     "status=%x bad=%d callbacks=%d observed=%d P=%d S=%d\n",
@@ -347,6 +381,7 @@ typedef struct auto_store_state {
     int joined_before_select;
     int profile_change;
     int return_sequence;
+    int retained_sequence;
     int failed;
     int callbacks;
 } auto_store_state_t;
@@ -402,7 +437,7 @@ auto_store_before_select(void *context, uint64_t sequence,
     auto_store_state_t *state;
 
     state = context;
-    if (sequence == 51) {
+    if (sequence == (uint64_t)state->retained_sequence) {
         state->failed |= sixel_palette_store_job_join(own, SIXEL_OK)
             != SIXEL_OK;
     }
@@ -417,11 +452,12 @@ auto_store_selected(void *context, uint64_t sequence,
     state = context;
     state->failed |= selection->sequence > sequence ||
         selection->published >= selection->selected;
-    if (sequence == 51) {
+    if (sequence == (uint64_t)state->retained_sequence) {
         state->retained = selection->snapshot;
         sixel_palette_snapshot_ref(state->retained);
         state->epoch = selection->epoch;
-        state->failed |= selection->sequence != 51;
+        state->failed |= selection->sequence !=
+            (uint64_t)state->retained_sequence;
     }
     if (sequence != (uint64_t)state->return_sequence) {
         return;
@@ -437,7 +473,8 @@ auto_store_selected(void *context, uint64_t sequence,
     } else {
         /* Pointer identity proves the same immutable completed object was
          * kept, not rebuilt or substituted with the return frame's own. */
-        state->failed |= selection->sequence != 51 ||
+        state->failed |= selection->sequence !=
+            (uint64_t)state->retained_sequence ||
             selection->epoch != state->epoch ||
             selection->snapshot != state->retained || state->open;
     }
@@ -455,9 +492,33 @@ auto_store_interval(void *context, uint64_t sequence, int latest,
 
     state = context;
     *interval = latest ? 0.05 : 0.1;
-    if (state->return_sequence == 97 && sequence >= 52) {
-        *interval = latest ? 0.01 : 0.02;
+    if (state->return_sequence == 68 && sequence <= 26) {
+        /* Keep frame after the first probe, then retain its last completed
+         * latest palette throughout forty chosen frame applications. */
+        *interval = latest ? 0.1 : 0.05;
     }
+}
+
+/* Independent expected schedule for short and long store-retention gaps. */
+static int
+auto_store_expected_latest(auto_store_state_t const *state, uint64_t sequence)
+{
+    uint64_t start;
+
+    if (sequence < 7) {
+        return 0;
+    }
+    start = 7;
+    if (sequence > 26) {
+        if (state->return_sequence != 68) {
+            return 1;
+        }
+        if (sequence < 67) {
+            return 0;
+        }
+        start = 67;
+    }
+    return (sequence - start) % 4 == 1 || (sequence - start) % 4 == 2;
 }
 
 static void
@@ -471,8 +532,7 @@ auto_store_observed(void *context, uint64_t sequence, int latest,
     (void)interval;
     (void)wait;
     (void)decision;
-    state->failed |= latest != (sequence >= 7 &&
-        (sequence <= 51 || sequence >= (uint64_t)state->return_sequence));
+    state->failed |= latest != auto_store_expected_latest(state, sequence);
     if (sequence + 1 == (uint64_t)state->return_sequence &&
             state->profile_change) {
         /* No ahead job crosses this decision boundary. Model a changed
@@ -492,14 +552,13 @@ auto_store_done(sixel_playback_result_t const *result, void *context)
         result->sequence != (uint64_t)state->callbacks ||
         result->palette_sequence == 0 ||
         result->palette_sequence > result->sequence;
-    if (result->sequence <= 6 ||
-            (result->sequence >= 52 &&
-             result->sequence < (uint64_t)state->return_sequence)) {
+    if (!auto_store_expected_latest(state, result->sequence)) {
         state->failed |= result->palette_sequence != result->sequence;
     }
     if (result->sequence == (uint64_t)state->return_sequence) {
         state->failed |= result->palette_sequence !=
-            (uint64_t)(state->profile_change ? state->return_sequence : 51);
+            (uint64_t)(state->profile_change ? state->return_sequence :
+                state->retained_sequence);
     }
 }
 #endif
@@ -552,9 +611,11 @@ palette_auto_store_test(int profile_change)
         }
         state.encoder = encoder;
         encoder->palette_test_hooks = &hooks;
-        for (period = 0; period < 4; ++period) {
+        for (period = profile_change ? 2 : 0;
+                period < (profile_change ? 4 : 6); ++period) {
             ahead = period % 2;
-            state.return_sequence = period < 2 ? 57 : 97;
+            state.return_sequence = period < 2 ? 12 : period < 4 ? 27 : 68;
+            state.retained_sequence = period < 2 ? 9 : 25;
             count = state.return_sequence + 3;
             status = sixel_encoder_setopt(encoder,
                 SIXEL_OPTFLAG_THREADING_POLICY,

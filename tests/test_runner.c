@@ -620,6 +620,9 @@ int test_palette_auto_0086(int argc, char **argv);
 int test_palette_auto_0089(int argc, char **argv);
 int test_palette_auto_0090(int argc, char **argv);
 int test_palette_auto_0091(int argc, char **argv);
+int test_palette_auto_0093(int argc, char **argv);
+int test_palette_auto_0094(int argc, char **argv);
+int test_palette_auto_0095(int argc, char **argv);
 int test_palette_auto_0092(int argc, char **argv);
 
 int test_palette_features_0061(int argc, char **argv);
@@ -6005,6 +6008,12 @@ static test_entry_t const test_entries[] = {
       test_palette_auto_0090 },
     { "planner/pipeline/0091_palette_auto_store_return",
       test_palette_auto_0091 },
+    { "planner/pipeline/0093_palette_auto_modest_gain",
+      test_palette_auto_0093 },
+    { "planner/pipeline/0094_palette_auto_content_change",
+      test_palette_auto_0094 },
+    { "planner/pipeline/0095_palette_auto_uncertain_pairs",
+      test_palette_auto_0095 },
     { "planner/pipeline/0092_palette_auto_store_profile",
       test_palette_auto_0092 },
     { "planner/pipeline/0075_latest_emit_priority_loans",
