@@ -19,6 +19,11 @@ typedef struct sixel_palette_scheduler {
     int enabled;
     int prepare_limit;
     int used[3];
+    sixel_cond_t changed;
+    int foreground_controller;
+    int foreground_jobs;
+    int background_jobs;
+    int waiting_jobs;
 } sixel_palette_scheduler_t;
 
 typedef struct sixel_palette_lease {
@@ -35,16 +40,15 @@ sixel_palette_scheduler_init(sixel_palette_scheduler_t *scheduler,
 /* All leases and worker scopes must have ended before destruction. */
 SIXEL_INTERNAL_API void
 sixel_palette_scheduler_destroy(sixel_palette_scheduler_t *scheduler);
-/* Nonblocking, partial admission. A zero grant defers work without holding
- * an operation gate or waiting for another lane. Start P, then optional Q,
- * then M; P/Q always leave at least one slot for M. A zero-initialized lease
- * has one owner and cannot grow while its work or child pools are running.
- * requested <= 0 asks for the lane's default maximum. */
+/* Leases bound pool sizes, not live CPU claims. M always receives N;
+ * ordinary next-frame preparation has frame mode's independent cap. P
+ * admits work only through the cooperative hook below, even if its pool
+ * was created while M was idle. requested <= 0 selects the lane maximum. */
 SIXEL_INTERNAL_API int
 sixel_palette_scheduler_acquire(sixel_palette_scheduler_t *scheduler,
     sixel_palette_lane_t lane, int requested, sixel_palette_lease_t *lease);
-/* Return only after the lane and all its children have joined. Publication
- * alone does not make a palette reservation reusable. */
+/* Join all children before releasing the lease. Live CPU loans return at
+ * job boundaries; the lease itself protects the pool and scheduler lifetime. */
 SIXEL_INTERNAL_API void
 sixel_palette_lease_release(sixel_palette_lease_t *lease);
 /* Enter on the executing thread. The frozen policy carries stage caps and
@@ -60,5 +64,12 @@ sixel_palette_lease_allocate(sixel_palette_lease_t const *lease,
 SIXEL_INTERNAL_API void
 sixel_palette_scheduler_usage(sixel_palette_scheduler_t *scheduler,
     int used[3]);
+
+/* Install on an executing build or emit scope. Preparation keeps the same
+ * independence as frame mode and does not inherit either work hook. */
+SIXEL_INTERNAL_API void sixel_palette_scheduler_background(
+    void *context, int worker, int begin);
+SIXEL_INTERNAL_API void sixel_palette_scheduler_foreground(
+    void *context, int worker, int begin);
 
 #endif /* LIBSIXEL_ENCODER_PALETTE_SCHEDULER_H */

@@ -23,8 +23,7 @@ palette_admission_worker(void *context)
         (void)sixel_palette_scheduler_acquire(probe->scheduler,
             probe->lane, 0, &lease);
         sixel_palette_scheduler_usage(probe->scheduler, used);
-        probe->failed |= used[0] + used[1] > 3 ||
-            used[0] + used[1] + used[2] > 4;
+        probe->failed |= used[0] > 3 || used[1] > 3 || used[2] != 4;
         sixel_palette_lease_release(&lease);
     }
     return 0;
@@ -54,7 +53,7 @@ test_palette_scheduler_0046(int argc, char **argv)
     PALETTE_STORE_CHECK(sixel_palette_scheduler_acquire(&other,
         SIXEL_PALETTE_LANE_APPLY, 0, &independent) == 4);
     PALETTE_STORE_CHECK(sixel_palette_scheduler_acquire(&f.scheduler,
-        SIXEL_PALETTE_LANE_APPLY, 1, &m) == 1);
+        SIXEL_PALETTE_LANE_APPLY, 1, &m) == 4);
     for (i = 0; i < 2; ++i) {
         probes[i].scheduler = &f.scheduler;
         probes[i].lane = (sixel_palette_lane_t)i;

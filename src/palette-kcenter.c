@@ -35,6 +35,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include "threading.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -5483,6 +5484,8 @@ sixel_kcenter_solver_run_trial_swaps(sixel_kcenter_swap_ctx_t *swap_ctx,
     }
 
     while (trial_iterations < iter_limit) {
+        /* Return revoked loans before the next solver job. */
+        sixel_thread_work_checkpoint();
         swap_ctx->swap_topk = effective_topk;
         gain2 = *radius2_io;
         if (sixel_kcenter_try_worst_swap(swap_ctx)) {

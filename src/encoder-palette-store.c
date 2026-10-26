@@ -180,6 +180,7 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
     sixel_threading_policy_enter(&policy_scope, &job->policy);
     sixel_thread_budget_enter(&budget_scope, job->threads);
     sixel_helper_set_additional_message(NULL);
+    sixel_thread_work_begin();
     status = sixel_palette_build_request_execute(job->request, job->sample,
         &built, &state, NULL, &job->retryable);
     if (status == SIXEL_OK) {
@@ -187,6 +188,8 @@ sixel_palette_store_build(sixel_palette_store_job_t *job)
             &built, &state);
     }
     sixel_dither_unref(built);
+    /* Publication/test barriers are control work, not a borrowed CPU job. */
+    sixel_thread_work_end();
     if (job->hooks.before_publish != NULL) {
         job->hooks.before_publish(job->hooks.context);
     }
@@ -238,6 +241,8 @@ sixel_palette_store_job_run(sixel_palette_store_job_t *job)
     /* Keep the frozen policy, but fit synchronous execution to the caller's
      * current lane. Its budget may be narrower than it was at admission. */
     job->threads = sixel_threads_resolve();
+    job->policy.work = NULL;
+    job->policy.work_context = NULL;
     sixel_palette_store_build(job);
 }
 
@@ -260,6 +265,9 @@ sixel_palette_store_job_start(sixel_palette_store_job_t *job,
         return SIXEL_FALSE;
     }
     job->policy = scheduler->policy;
+    job->policy.work = sixel_palette_scheduler_background;
+    job->policy.work_context = scheduler;
+    job->policy.work_worker = 0;
     job->threads = threads;
     if (job->hooks.fail_thread_create ||
             sixel_thread_create(&job->thread,

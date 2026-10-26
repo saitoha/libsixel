@@ -1216,7 +1216,9 @@ sixel_parallel_context_wait(sixel_parallel_context_t *ctx, int force_abort)
 
     ctx->pool->vtbl->finish(ctx->pool);
     pool_error = ctx->pool->vtbl->get_error(ctx->pool);
+    sixel_thread_work_end();
     sixel_parallel_writer_stop(ctx, force_abort || pool_error != SIXEL_OK);
+    sixel_thread_work_begin();
 
     if (pool_error != SIXEL_OK) {
         return pool_error;

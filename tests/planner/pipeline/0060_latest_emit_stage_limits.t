@@ -17,7 +17,7 @@ trace=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     exit 0
 }
 case "${trace}" in
-    *'budget=8 '*'prepare_workers=8 '*'latest leases: palette=4 prepare=0 emit=4'*) true ;;
+    *'budget=8 '*'prepare_workers=8 '*'latest leases: palette=4 prepare=0 emit=8'*) true ;;
     *) false ;;
 esac || {
     echo "not ok 1 - latest planner lost the session or emission budget"

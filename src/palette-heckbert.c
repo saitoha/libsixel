@@ -48,6 +48,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include "threading.h"
 
 #include <limits.h>
 #include <stdint.h>
@@ -2392,6 +2393,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         }
     }
     for (iteration = 0U; iteration < iterations; ++iteration) {
+        /* Return revoked loans before the next solver job. */
+        sixel_thread_work_checkpoint();
         if (stats != NULL) {
             memset(stats, 0, cluster_count * sizeof(*stats));
         }
@@ -3376,6 +3379,8 @@ mediancut(tupletable2 const colorfreqtable,
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
     while (boxes < working_colors && multicolorBoxesExist) {
+        /* Return revoked loans before the next solver job. */
+        sixel_thread_work_checkpoint();
         iteration_wall_start = sixel_timer_now();
         boxes_before = boxes;
         job_iteration = sixel_palette_heckbert_log_start(logger,

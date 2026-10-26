@@ -4,6 +4,7 @@
 #endif
 #include <string.h>
 #include "encoder-palette-scheduler.h"
+#include "loader-common.h"
 
 SIXELSTATUS
 sixel_palette_scheduler_init(sixel_palette_scheduler_t *scheduler,
@@ -15,6 +16,10 @@ sixel_palette_scheduler_init(sixel_palette_scheduler_t *scheduler,
         return SIXEL_RUNTIME_ERROR;
     }
 #endif
+    if (sixel_cond_init(&scheduler->changed) != 0) {
+        sixel_mutex_destroy(&scheduler->mutex);
+        return SIXEL_RUNTIME_ERROR;
+    }
     scheduler->policy = *policy;
     scheduler->prepare_limit = policy->budget;
     if (policy->options.prepare_threads_override &&
@@ -32,6 +37,7 @@ sixel_palette_scheduler_init(sixel_palette_scheduler_t *scheduler,
 void
 sixel_palette_scheduler_destroy(sixel_palette_scheduler_t *scheduler)
 {
+    sixel_cond_destroy(&scheduler->changed);
     sixel_mutex_destroy(&scheduler->mutex);
 }
 
@@ -40,40 +46,29 @@ sixel_palette_scheduler_acquire(sixel_palette_scheduler_t *scheduler,
     sixel_palette_lane_t lane, int requested, sixel_palette_lease_t *lease)
 {
     int available;
-    int prepare;
-    int application;
     int limit;
-    int lazy;
 
     if (!scheduler->enabled || lease->threads != 0) {
         return 0;
     }
-    lazy = scheduler->policy.options.mode == SIXEL_THREADING_POLICY_LAZY;
     sixel_mutex_lock(&scheduler->mutex);
-    prepare = scheduler->used[SIXEL_PALETTE_LANE_BUILD] +
-        scheduler->used[SIXEL_PALETTE_LANE_PREPARE];
-    application = scheduler->used[SIXEL_PALETTE_LANE_APPLY];
-    if (lane != SIXEL_PALETTE_LANE_APPLY && application == 0) {
-        application = 1;
-    }
-    available = scheduler->policy.budget - prepare - application;
-    if (lane != SIXEL_PALETTE_LANE_APPLY) {
-        limit = scheduler->prepare_limit - prepare;
-        if (available > limit) {
-            available = limit;
-        }
-        /* P receives half of N initially; Q uses only the remaining cap.
-         * A second palette takes a fresh lease, never Q's running slots. */
-        limit = lane == SIXEL_PALETTE_LANE_BUILD
-            ? scheduler->policy.budget / 2 : scheduler->policy.budget;
-        if (lazy) {
-            limit = 1;
-        }
+    if (lane == SIXEL_PALETTE_LANE_APPLY) {
+        /* M owns the entire allocator budget regardless of running loans.
+         * It never waits for a background callback or reduces its geometry. */
+        available = scheduler->used[lane] == 0
+            ? scheduler->policy.budget : 0;
+    } else if (lane == SIXEL_PALETTE_LANE_PREPARE) {
+        available = scheduler->prepare_limit - scheduler->used[lane];
+    } else {
+        available = scheduler->prepare_limit - scheduler->used[lane];
+        limit = scheduler->policy.options.mode == SIXEL_THREADING_POLICY_LAZY
+            ? 1 : scheduler->policy.budget / 2;
         if (available > limit) {
             available = limit;
         }
     }
-    if (requested > 0 && available > requested) {
+    if (lane != SIXEL_PALETTE_LANE_APPLY &&
+            requested > 0 && available > requested) {
         available = requested;
     }
     if (available > 0) {
@@ -84,6 +79,70 @@ sixel_palette_scheduler_acquire(sixel_palette_scheduler_t *scheduler,
     }
     sixel_mutex_unlock(&scheduler->mutex);
     return available > 0 ? available : 0;
+}
+
+/* Foreground admission only updates demand. Running background callbacks
+ * finish their current job, then must request another loan. No foreground
+ * path waits for their acknowledgement, including when demand rises to N. */
+void
+sixel_palette_scheduler_foreground(void *context, int worker, int begin)
+{
+    sixel_palette_scheduler_t *scheduler;
+
+    scheduler = context;
+    sixel_mutex_lock(&scheduler->mutex);
+    if (worker) {
+        scheduler->foreground_jobs += begin ? 1 : -1;
+    } else {
+        scheduler->foreground_controller = begin;
+    }
+    sixel_trace_topic_message("palette_latest",
+        "LSXLOAN1|event=foreground|worker=%d|begin=%d|controller=%d|"
+        "main=%d|background=%d|budget=%d",
+        worker, begin, scheduler->foreground_controller,
+        scheduler->foreground_jobs, scheduler->background_jobs,
+        scheduler->policy.budget);
+    sixel_cond_broadcast(&scheduler->changed);
+    sixel_mutex_unlock(&scheduler->mutex);
+}
+
+void
+sixel_palette_scheduler_background(void *context, int worker, int begin)
+{
+    sixel_palette_scheduler_t *scheduler;
+    int waiting;
+
+    (void)worker;
+    scheduler = context;
+    waiting = 0;
+    sixel_mutex_lock(&scheduler->mutex);
+    if (begin) {
+        while (scheduler->foreground_controller ||
+                scheduler->foreground_jobs + scheduler->background_jobs >=
+                    scheduler->policy.budget ||
+                scheduler->background_jobs >= scheduler->prepare_limit) {
+            /* Announce once. Re-announcing after each wake could make
+             * two borrowers wake each other indefinitely with no loan. */
+            if (!waiting) {
+                waiting = 1;
+                ++scheduler->waiting_jobs;
+                sixel_cond_broadcast(&scheduler->changed);
+            }
+            sixel_cond_wait(&scheduler->changed, &scheduler->mutex);
+        }
+        scheduler->waiting_jobs -= waiting;
+        ++scheduler->background_jobs;
+    } else {
+        --scheduler->background_jobs;
+    }
+    sixel_trace_topic_message("palette_latest",
+        "LSXLOAN1|event=background|worker=%d|begin=%d|controller=%d|"
+        "main=%d|background=%d|budget=%d",
+        worker, begin, scheduler->foreground_controller,
+        scheduler->foreground_jobs, scheduler->background_jobs,
+        scheduler->policy.budget);
+    sixel_cond_broadcast(&scheduler->changed);
+    sixel_mutex_unlock(&scheduler->mutex);
 }
 
 void

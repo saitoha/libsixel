@@ -56,10 +56,10 @@ test_palette_scheduler_0040(int argc, char **argv)
                     PALETTE_STORE_CHECK(sixel_palette_scheduler_acquire(
                         &scheduler, SIXEL_PALETTE_LANE_APPLY, 0, &m) >= 1);
                     sixel_palette_scheduler_usage(&scheduler, used);
-                    PALETTE_STORE_CHECK(used[0] + used[1] <= w &&
-                        used[0] + used[1] + used[2] <= policy.budget);
+                    PALETTE_STORE_CHECK(used[0] <= w && used[1] <= w &&
+                        used[2] == policy.budget && m.threads == policy.budget);
                     PALETTE_STORE_CHECK(w != 1 ||
-                        (p.threads == 1 && q.threads == 0));
+                        (p.threads == 1 && q.threads == 1));
                     sixel_palette_lease_allocate(&m, &request, &allocation);
                     PALETTE_STORE_CHECK(allocation.dither_threads <=
                         m.threads && allocation.encode_threads <= m.threads);
@@ -73,8 +73,8 @@ test_palette_scheduler_0040(int argc, char **argv)
                     (void)sixel_palette_scheduler_acquire(&scheduler,
                         SIXEL_PALETTE_LANE_BUILD, 0, &next);
                     sixel_palette_scheduler_usage(&scheduler, used);
-                    PALETTE_STORE_CHECK(used[0] + used[1] <= w &&
-                        used[0] + used[1] + used[2] <= policy.budget);
+                    PALETTE_STORE_CHECK(used[0] <= w && used[1] <= w &&
+                        used[2] == policy.budget && m.threads == policy.budget);
                     sixel_palette_lease_release(&next);
                     sixel_palette_lease_release(&p);
                     sixel_palette_lease_release(&m);

@@ -21,7 +21,7 @@ Palette overlap requires independent work, such as an eligible adaptive sample w
 
 For eligible spatial or positional dither at budgets two through four, balanced and greedy automatically finish parallel application before giving encoding its full reservation. Larger budgets normally overlap application and encoding. An explicit `dither` or `encode` limit selects a fitted allocation instead of automatic staging. [Dither/encode allocation](encoder.md#ditherencode-budget-policy) owns the formulas, geometry and exceptional paths.
 
-For `palette=latest`, eligible CPU animation and playback can overlap an owned palette build with application of a completed palette, including full-frame sampling after preprocessing. Lazy permits this independent work when both lanes receive a slot. `load=serial`, `prepare=serial` and `prepare_workers=1` do not by themselves disable it. A serial fallback uses frame behavior; the [policy reference](../cli/threading-policy.md#contract) owns eligibility and selection.
+For `palette=latest`, eligible CPU animation and playback can overlap an owned palette build with application of a completed palette, including full-frame sampling after preprocessing. Application and encoding retain the entire budget N and the same stage limits and allocator as frame mode. Builders borrow idle work slots; lazy allows this independent work without increasing its data-parallel fan-out. `load=serial`, `prepare=serial` and `prepare_workers=1` do not by themselves disable latest selection. A serial fallback uses frame behavior; the [policy reference](../cli/threading-policy.md#contract) owns eligibility and selection.
 
 ## Output depends on dither history
 
@@ -56,7 +56,7 @@ emission:                 emit n         emit n+1       emit n+2
                           |< overlap >|
 ```
 
-Preparation of the next frame can run during current emission, while output still advances one frame at a time. Latest shares the encoder budget between palette construction, next preparation and application/encoding; a reservation held by one lane reduces the slots available to the others. Slots return after join, and next preparation can be deferred when no grant is available. This accounting does not promise a speedup. Delta history is committed in order. [Animation threading](animation.md) explains the corrective re-preparation needed when the next frame's predicted alpha-key reservation disagrees with committed history.
+Preparation of the next frame can run during current emission, while output still advances one frame at a time. Both palette modes give emission N and preserve ordinary preparation's independent cap. Latest builders and their full-frame input copies borrow execution slots while emission jobs drain or its caller waits for child jobs or output. Renewed emission demand stops further background admissions; an admitted background job returns its loan at its next boundary. Emission never waits for that return, so a job already in progress may briefly overlap renewed foreground demand. This policy does not promise a speedup. Delta history is committed in order. [Animation threading](animation.md) explains the corrective re-preparation needed when the next frame's predicted alpha-key reservation disagrees with committed history.
 
 ## In libsixel
 

@@ -606,6 +606,7 @@ int test_palette_integration_0058(int argc, char **argv);
 int test_palette_integration_0059(int argc, char **argv);
 int test_palette_integration_0060(int argc, char **argv);
 int test_palette_integration_0074(int argc, char **argv);
+int test_palette_scheduler_0075(int argc, char **argv);
 int test_palette_features_0061(int argc, char **argv);
 int test_palette_features_0062(int argc, char **argv);
 int test_palette_features_0063(int argc, char **argv);
@@ -5937,7 +5938,7 @@ static test_entry_t const test_entries[] = {
       test_palette_integration_0057 },
     { "planner/pipeline/0058_latest_auto_build_retry",
       test_palette_integration_0058 },
-    { "planner/pipeline/0059_latest_emit_remaining_budget",
+    { "planner/pipeline/0059_latest_emit_full_budget",
       test_palette_integration_0059 },
     { "planner/pipeline/0060_latest_emit_stage_limits",
       test_palette_integration_0060 },
@@ -5963,6 +5964,8 @@ static test_entry_t const test_entries[] = {
       test_palette_features_0070 },
     { "planner/pipeline/0074_latest_completed_build_reclaims_budget",
       test_palette_integration_0074 },
+    { "planner/pipeline/0075_latest_emit_priority_loans",
+      test_palette_scheduler_0075 },
     { "planner/pipeline/0072_palette_snapshot_allocation",
       test_snapshot_allocation_0072 },
     { "planner/pipeline/0071_latest_write_failure",

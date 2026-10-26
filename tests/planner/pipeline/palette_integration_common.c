@@ -200,16 +200,16 @@ integration_emitted(void *context, uint64_t sequence,
     if (state->scenario < 8) {
         return;
     }
-    /* A completed own build returns P before geometry is fixed. The other
-     * cases keep own2 at the barrier, leaving exactly M=N-P and Q=0. */
-    emit = sequence == 1 || state->scenario == 10
-        ? state->budget : state->budget / 2;
+    /* Outstanding own jobs never subtract from the application allocator.
+     * The barrier cases prove this with own2 still unpublished. */
+    emit = state->budget;
     dither_threads = dither->pipeline_last_dither_threads;
     encode_threads = dither->pipeline_last_encode_threads;
     state->failed |= planner->total_threads != state->budget ||
         planner->prepare_threads != state->budget ||
         planner->emit_threads != emit || planner->main_threads != emit ||
-        planner->palette_threads != state->budget - emit ||
+        planner->palette_threads !=
+            (sequence == 1 || state->scenario == 10 ? 0 : emit / 2) ||
         planner->next_prepare_threads != 0 || sixel_threads_resolve() != emit;
     state->failed |= dither_threads < 1 || encode_threads < 1 ||
         dither_threads > emit || encode_threads > emit ||

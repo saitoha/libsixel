@@ -5301,7 +5301,8 @@ sixel_encoder_latest_launch(sixel_encode_dag_context_t *context)
     memset(&hooks, 0, sizeof(hooks));
     status = sixel_palette_build_input_new(&request, &sample,
         context->encoder, context->frame, &context->palette,
-        context->planner->working_pixelformat);
+        context->planner->working_pixelformat,
+        &context->pipeline->palette_scheduler);
     if (status == SIXEL_OK) {
         if (context->encoder->palette_test_hooks != NULL &&
                 context->encoder->palette_test_hooks->build != NULL) {
@@ -6350,7 +6351,8 @@ sixel_encoder_sample_frame(
 SIXELSTATUS
 sixel_palette_build_input_new(sixel_palette_build_request_t **request,
     sixel_frame_t **sample, sixel_encoder_t *encoder, sixel_frame_t *frame,
-    sixel_palette_frame_state_t const *state, int consumer_pixelformat)
+    sixel_palette_frame_state_t const *state, int consumer_pixelformat,
+    sixel_palette_scheduler_t *scheduler)
 {
     sixel_sample_stream_t stream;
     sixel_frame_t *owned;
@@ -6371,8 +6373,17 @@ sixel_palette_build_input_new(sixel_palette_build_request_t **request,
     if (stream.storage == SIXEL_SAMPLE_STREAM_BORROWED_FRAME) {
         /* Application may mutate or release the preprocessed source while
          * construction runs. A reference alone would not isolate pixels. */
+        /* The owned full-frame copy is latest-only preparation (Q). Its
+         * single copy job uses the same revocable admission as P; ordinary
+         * sampling above remains independent, as in frame preparation. */
+        if (scheduler != NULL) {
+            sixel_palette_scheduler_background(scheduler, 2, 1);
+        }
         status = sixel_encoder_frame_clone(stream.frame, encoder->allocator,
             &owned);
+        if (scheduler != NULL) {
+            sixel_palette_scheduler_background(scheduler, 2, 0);
+        }
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -11226,8 +11237,6 @@ sixel_encoder_latest_join(sixel_encode_dag_context_t *context,
 {
     sixel_palette_build_request_t *request;
     sixel_frame_t *sample;
-    sixel_palette_lease_t lease;
-    sixel_thread_budget_scope_t policy_scope;
     sixel_thread_budget_scope_t budget_scope;
     SIXELSTATUS status;
 
@@ -11240,15 +11249,11 @@ sixel_encoder_latest_join(sixel_encode_dag_context_t *context,
             !sixel_palette_store_job_retryable(context->own_palette)) {
         return status;
     }
-    memset(&lease, 0, sizeof(lease));
-    /* Joining own P returned at least one preparation slot. A synchronous
-     * fallback does not launch speculative Q, so it also has a free slot. */
-    if (!sixel_palette_scheduler_acquire(
-            &context->pipeline->palette_scheduler,
-            SIXEL_PALETTE_LANE_PREPARE, 1, &lease)) {
-        return status;
-    }
-    sixel_palette_lease_enter(&lease, &policy_scope, &budget_scope);
+    /* Required own recovery is synchronous preparation in the current
+     * lane. Ordinary next preparation is independent and must not prevent
+     * this retry from acquiring its own local preparation budget. */
+    sixel_thread_budget_enter(&budget_scope,
+        context->pipeline->palette_scheduler.prepare_limit);
     sixel_palette_store_job_cancel(context->own_palette);
     sixel_palette_store_job_release(context->own_palette);
     context->own_palette = NULL;
@@ -11266,7 +11271,8 @@ sixel_encoder_latest_join(sixel_encode_dag_context_t *context,
     if (status == SIXEL_OK) {
         status = sixel_palette_build_input_new(&request, &sample,
             context->encoder, context->frame, &context->palette,
-        context->planner->working_pixelformat);
+            context->planner->working_pixelformat,
+            &context->pipeline->palette_scheduler);
     }
     if (status == SIXEL_OK) {
         status = sixel_palette_store_admit(context->pipeline->palette_store,
@@ -11279,8 +11285,6 @@ sixel_encoder_latest_join(sixel_encode_dag_context_t *context,
     sixel_palette_build_request_free(request);
     sixel_frame_unref(sample);
     sixel_thread_budget_leave(&budget_scope);
-    sixel_thread_budget_leave(&policy_scope);
-    sixel_palette_lease_release(&lease);
     return status;
 }
 
@@ -11365,11 +11369,9 @@ sixel_encoder_latest_select(sixel_encode_dag_context_t *context)
         return SIXEL_INTERRUPTED;
     }
     context->delay = 0; /* The ordinary output path must not sleep twice. */
-    /* A published own palette may still hold P until frame cleanup. Join
-     * an already completed build before selection so its reservation can
-     * return to M before application geometry is fixed. An unfinished
-     * build keeps its lease and may overlap application of an older palette.
-     * Join also preserves the own failure/retry contract at this boundary. */
+    /* Collect a completed own result before selection, preserving its
+     * failure/retry contract. An unfinished build uses borrowed slots while
+     * M applies an older palette with the complete encoder budget. */
     (void)sixel_palette_store_job_status(context->own_palette, &finished);
     if (finished) {
         status = sixel_encoder_latest_join(context, SIXEL_OK);
@@ -11454,7 +11456,11 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
     sixel_thread_budget_scope_t build_scope;
     SIXELSTATUS status;
     int used[3];
+    sixel_threading_snapshot_t work_policy;
+    sixel_thread_budget_scope_t work_scope;
+    int work_entered;
 
+    work_entered = 0;
     context = &job->context;
     encoder = context->encoder;
     memset(&lease, 0, sizeof(lease));
@@ -11493,10 +11499,9 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
         }
         status = sixel_encoder_latest_select(context);
         if (status == SIXEL_OK) {
-            /* Selection may have joined own P or completed a synchronous
-             * retry. Return the provisional M and claim N minus the live
-             * P/Q leases before LUT setup fixes application geometry. No
-             * application children exist yet; never resize M after this. */
+            /* Selection may have completed a retry. Re-enter the full M
+             * budget before LUT setup fixes application geometry. CPU loans
+             * are separate from this immutable allocator reservation. */
             sixel_thread_budget_leave(&budget_scope);
             sixel_thread_budget_leave(&policy_scope);
             sixel_palette_lease_release(&lease);
@@ -11518,6 +11523,13 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
                 sixel_encoding_planner_dump(&job->planner, encoder,
                     context->frame, 0);
             }
+            work_policy = lease.scheduler->policy;
+            work_policy.work = sixel_palette_scheduler_foreground;
+            work_policy.work_context = lease.scheduler;
+            work_policy.work_worker = 0;
+            sixel_threading_policy_enter(&work_scope, &work_policy);
+            sixel_thread_work_begin();
+            work_entered = 1;
             status = sixel_palette_snapshot_clone(
                 context->selected_palette.snapshot, &context->dither);
             if (status == SIXEL_OK) {
@@ -11544,6 +11556,10 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
         status = sixel_encode_dag_run_nodes(context,
             &job->nodes[SIXEL_DAG_NODE_DITHER_PLAN],
             SIXEL_DAG_NODE_COUNT - SIXEL_DAG_NODE_DITHER_PLAN);
+    }
+    if (work_entered) {
+        sixel_thread_work_end();
+        sixel_thread_budget_leave(&work_scope);
     }
     if (status == SIXEL_OK && context->latest &&
             encoder->palette_test_hooks != NULL &&
@@ -15870,7 +15886,7 @@ sixel_encoder_pipeline_prepare_job(sixel_encoder_frame_pipeline_t *pipeline,
             (pipeline->playback != NULL || meta->multiframe)) {
         if (lease.threads == 0 &&
                 !sixel_palette_scheduler_acquire(&pipeline->palette_scheduler,
-                SIXEL_PALETTE_LANE_PREPARE, 1, &lease)) {
+                SIXEL_PALETTE_LANE_PREPARE, 0, &lease)) {
             return SIXEL_FALSE; /* Leave speculative work to its own turn. */
         }
         sixel_palette_lease_enter(&lease, &policy_scope, &budget_scope);
@@ -16396,7 +16412,7 @@ sixel_encoder_frame_pipeline_run_ahead(
                      current->job->context.own_started &&
                      sixel_palette_scheduler_acquire(
                         &pipeline->palette_scheduler,
-                        SIXEL_PALETTE_LANE_PREPARE, 1,
+                        SIXEL_PALETTE_LANE_PREPARE, 0,
                         &next->prepare_lease))) {
                 sixel_encoder_prepare_ahead_request(
                     &ahead, next,

@@ -12,6 +12,7 @@
  * Consumer format comes from the frame-owned plan, including late retry. */
 typedef struct sixel_palette_build_request sixel_palette_build_request_t;
 typedef struct sixel_palette_snapshot sixel_palette_snapshot_t;
+struct sixel_palette_scheduler;
 
 typedef struct sixel_palette_snapshot_profile {
     int working_colorspace;
@@ -38,11 +39,14 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
 /* Prepare at the sampling policy's original boundary: adaptive-grid before
  * preplan, full-frame after preplan. Both return an owned input; full-frame
  * clones the preprocessed pixels, alpha and metadata before launching.
- * Allocation failure leaves the source and state intact for frame fallback. */
+ * The optional scheduler lends a slot for the latest-only full-frame copy;
+ * common sampling keeps frame preparation's independent budget. Allocation
+ * failure leaves the source and state intact for frame fallback. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_build_input_new(sixel_palette_build_request_t **request,
     sixel_frame_t **sample, sixel_encoder_t *encoder, sixel_frame_t *frame,
-    sixel_palette_frame_state_t const *state, int consumer_pixelformat);
+    sixel_palette_frame_state_t const *state, int consumer_pixelformat,
+    struct sixel_palette_scheduler *scheduler);
 SIXEL_INTERNAL_API void
 sixel_palette_build_request_free(sixel_palette_build_request_t *request);
 

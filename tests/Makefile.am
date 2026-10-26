@@ -377,6 +377,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_PALETTE_FEATURES_COMMON \
     -DBUILD_TEST_0070_LATEST_FEATURE_FALLBACK \
     -DBUILD_TEST_0074_LATEST_COMPLETED_BUILD_RECLAIMS_BUDGET \
+    -DBUILD_TEST_0075_LATEST_EMIT_PRIORITY_LOANS \
     -DBUILD_TEST_0072_PALETTE_SNAPSHOT_ALLOCATION \
     -DBUILD_TEST_0071_LATEST_WRITE_FAILURE \
     -DBUILD_TEST_0061_LATEST_DELTA_RESERVATION \
@@ -389,7 +390,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0068_LATEST_STALE_HISTOGRAM \
     -DBUILD_TEST_0069_LATEST_DELTA_BYTE_EXPORT \
     -DBUILD_TEST_0058_LATEST_AUTO_BUILD_RETRY \
-    -DBUILD_TEST_0059_LATEST_EMIT_REMAINING_BUDGET \
+    -DBUILD_TEST_0059_LATEST_EMIT_FULL_BUDGET \
     -DBUILD_TEST_0060_LATEST_EMIT_STAGE_LIMITS \
     -DBUILD_TEST_0047_LATEST_APPLY_BEFORE_OWN \
     -DBUILD_TEST_0048_LATEST_SELECT_COMPLETED_OWN \
@@ -5026,12 +5027,13 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0052_latest_thread_failure_same_sample.c \
     planner/pipeline/0057_latest_known_own_failure.c \
     planner/pipeline/0058_latest_auto_build_retry.c \
-    planner/pipeline/0059_latest_emit_remaining_budget.c \
+    planner/pipeline/0059_latest_emit_full_budget.c \
     planner/pipeline/0060_latest_emit_stage_limits.c \
     planner/pipeline/palette_integration_common.c \
     planner/pipeline/palette_features_common.c \
     planner/pipeline/0070_latest_feature_fallback.c \
     planner/pipeline/0074_latest_completed_build_reclaims_budget.c \
+    planner/pipeline/0075_latest_emit_priority_loans.c \
     planner/pipeline/0072_palette_snapshot_allocation.c \
     planner/pipeline/0071_latest_write_failure.c \
     planner/pipeline/palette_features_common.h \

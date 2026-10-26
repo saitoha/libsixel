@@ -125,6 +125,11 @@ typedef struct sixel_threading_snapshot {
     int budget;
     int explicit_budget;
     int decoder;
+    /* Optional session work accounting. Callbacks run outside pool/config
+     * locks. A worker inherits the hook, but never a controller's claim. */
+    void (*work)(void *, int, int);
+    void *work_context;
+    int work_worker;
 } sixel_threading_snapshot_t;
 
 SIXEL_INTERNAL_API void sixel_threading_policy_resolve(
@@ -166,6 +171,11 @@ SIXEL_INTERNAL_API void sixel_thread_budget_leave(
 SIXEL_INTERNAL_API void sixel_thread_budget_set_reclaim(
     sixel_thread_budget_scope_t *scope, int ceiling,
     int (*reclaim)(void *), void *context);
+/* Cooperative job boundaries. Idle callers release their execution claim
+ * before waiting for children; only background begin callbacks may wait. */
+SIXEL_INTERNAL_API void sixel_thread_work_begin(void);
+SIXEL_INTERNAL_API void sixel_thread_work_end(void);
+SIXEL_INTERNAL_API void sixel_thread_work_checkpoint(void);
 SIXEL_INTERNAL_API int sixel_threads_ceiling(void);
 SIXEL_INTERNAL_API int sixel_threads_reclaim(void);
 

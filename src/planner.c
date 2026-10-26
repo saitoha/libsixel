@@ -1198,8 +1198,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     planner->pipeline_pin_threads = pin_threads;
     height = sixel_frame_get_height(frame);
     width = sixel_frame_get_width(frame);
-    /* Frame mode joins palette construction before application. Latest
-     * instead owns M beside live P/Q leases, resolved at emit time. */
+    /* Latest fixes the same full emission budget as frame mode. Live CPU
+     * loans never alter allocator geometry or its stage limits. */
     threads = planner->emit_threads > 0
         ? planner->emit_threads : planner->total_threads;
     if (width <= 0 || height <= 0 || threads <= 1) {

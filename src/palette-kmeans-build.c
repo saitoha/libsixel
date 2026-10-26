@@ -30,6 +30,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include "threading.h"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -2068,6 +2069,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         }
         for (iteration = 0u; !gpu_completed && iteration < max_iterations;
                 ++iteration) {
+            /* Return revoked loans before the next solver job. */
+            sixel_thread_work_checkpoint();
             iteration_wall_start = sixel_timer_now();
             if (lloyd_iterations == 0u) {
                 iterate_start = iteration_wall_start;
@@ -2661,6 +2664,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         refine_hamerly_initialized = 0u;
         refine_elkan_initialized = 0u;
         for (iteration = 0U; iteration < refine_iterations; ++iteration) {
+            /* Return revoked loans before the next solver job. */
+            sixel_thread_work_checkpoint();
             ++merge_iterations;
             for (index = 0U; index < k; ++index) {
                 cluster_weights[index] = 0.0;

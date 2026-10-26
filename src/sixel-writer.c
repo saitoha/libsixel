@@ -163,7 +163,9 @@ sixel_writer_write_raw_locked(sixel_writer_storage_t *storage,
      * caller.  Re-entering the same writer from the callback would deadlock in
      * thread-enabled builds and is outside the component contract.
      */
+    sixel_thread_work_end();
     result = storage->fn_write((char *)data, size, storage->priv);
+    sixel_thread_work_begin();
     if (result < 0) {
 #if HAVE_ERRNO_H
         return (SIXEL_LIBC_ERROR | (errno & 0xff));

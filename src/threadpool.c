@@ -179,7 +179,15 @@ sixel_thread_pool_worker_main(void *arg)
             worker->pinned = 1;
         }
 
+        /* Admission is outside the queue lock: a background job can wait
+         * for a loan without preventing foreground queue progress. */
+        if (pool->policy.work != NULL) {
+            pool->policy.work(pool->policy.work_context, 1, 1);
+        }
         rc = pool->worker(job, pool->userdata, worker->workspace);
+        if (pool->policy.work != NULL) {
+            pool->policy.work(pool->policy.work_context, 1, 0);
+        }
 
         sixel_mutex_lock(&pool->mutex);
         pool->running -= 1;
@@ -220,6 +228,7 @@ sixel_thread_pool_storage_create(int nthreads,
     /* Jobs occupy one reserved slot; nested policy reads retain the mode
      * and keys without opening an unbudgeted child pool. */
     pool->policy.budget = 1;
+    pool->policy.work_worker = 1;
     pool->vtbl = sixel_thread_pool_get_vtbl();
     pool->ref = 1U;
     pool->nthreads = nthreads;
@@ -612,14 +621,20 @@ sixel_thread_pool_push(sixel_thread_pool_t *self,
     if (pool == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    /* The caller is a queue controller while submitting or joining. Its
+     * children own their own claims; reacquire only outside the pool lock. */
+    sixel_thread_work_end();
     sixel_thread_pool_storage_push(pool, job);
+    sixel_thread_work_begin();
     return SIXEL_OK;
 }
 
 static void
 sixel_thread_pool_finish(sixel_thread_pool_t *self)
 {
+    sixel_thread_work_end();
     sixel_thread_pool_storage_finish(sixel_thread_pool_from_interface(self));
+    sixel_thread_work_begin();
 }
 
 static int

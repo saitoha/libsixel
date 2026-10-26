@@ -1299,6 +1299,49 @@ sixel_threading_policy_capture(sixel_threading_snapshot_t *snapshot,
     return found;
 }
 
+static void
+sixel_thread_work_event(int begin)
+{
+    sixel_threading_snapshot_t policy;
+    sixel_thread_budget_scope_t *scope;
+    sixel_thread_identity_t owner;
+
+    /* No active operation means no hook. Do not resolve defaults or probe
+     * topology at a serial solver checkpoint outside an encoder scope. */
+    owner = sixel_thread_identity_current();
+    policy.work = NULL;
+    sixel_thread_config_lock();
+    for (scope = g_thread_budget_scopes; scope != NULL; scope = scope->next) {
+        if (sixel_thread_identity_equal(scope->owner, owner)) {
+            policy = scope->policy;
+            break;
+        }
+    }
+    sixel_thread_config_unlock();
+    if (policy.work != NULL) {
+        policy.work(policy.work_context, policy.work_worker, begin);
+    }
+}
+
+void
+sixel_thread_work_begin(void)
+{
+    sixel_thread_work_event(1);
+}
+
+void
+sixel_thread_work_end(void)
+{
+    sixel_thread_work_event(0);
+}
+
+void
+sixel_thread_work_checkpoint(void)
+{
+    sixel_thread_work_end();
+    sixel_thread_work_begin();
+}
+
 void
 sixel_threading_policy_load(sixel_threading_policy_options_t *options)
 {

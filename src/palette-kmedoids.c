@@ -38,6 +38,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include "threading.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -8692,6 +8693,8 @@ sixel_kmedoids_run_pam(double const *points,
                                  &current_cost);
 
     for (iteration = 0u; iteration < max_iterations; ++iteration) {
+        /* Return revoked loans before the next solver job. */
+        sixel_thread_work_checkpoint();
         best_cost = current_cost;
         best_slot = 0u;
         best_candidate = medoids[0u];
@@ -10982,6 +10985,8 @@ sixel_kmedoids_run_banditpam(double const *points,
 
     current_cost = *cost_io;
     for (iteration = 0u; iteration < max_iterations; ++iteration) {
+        /* Return revoked loans before the next solver job. */
+        sixel_thread_work_checkpoint();
         sixel_kmedoids_mark_medoids(flags, medoids_io, k, point_count);
         if (!current_assigned) {
             sixel_kmedoids_assign_points(points,
