@@ -11336,6 +11336,7 @@ sixel_encoder_latest_select(sixel_encode_dag_context_t *context)
     unsigned int delay;
     int incompatible;
     int profile_changed;
+    int finished;
 
     encoder = context->encoder;
     if (encoder->palette_test_hooks != NULL &&
@@ -11364,6 +11365,18 @@ sixel_encoder_latest_select(sixel_encode_dag_context_t *context)
         return SIXEL_INTERRUPTED;
     }
     context->delay = 0; /* The ordinary output path must not sleep twice. */
+    /* A published own palette may still hold P until frame cleanup. Join
+     * an already completed build before selection so its reservation can
+     * return to M before application geometry is fixed. An unfinished
+     * build keeps its lease and may overlap application of an older palette.
+     * Join also preserves the own failure/retry contract at this boundary. */
+    (void)sixel_palette_store_job_status(context->own_palette, &finished);
+    if (finished) {
+        status = sixel_encoder_latest_join(context, SIXEL_OK);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+    }
     status = sixel_palette_store_select(context->pipeline->palette_store,
         context->sequence, &context->selected_palette);
     if (status != SIXEL_OK) {

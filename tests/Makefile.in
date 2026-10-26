@@ -1116,6 +1116,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	planner/pipeline/palette_integration_common.c \
 	planner/pipeline/palette_features_common.c \
 	planner/pipeline/0070_latest_feature_fallback.c \
+	planner/pipeline/0074_latest_completed_build_reclaims_budget.c \
 	planner/pipeline/0072_palette_snapshot_allocation.c \
 	planner/pipeline/0071_latest_write_failure.c \
 	planner/pipeline/palette_features_common.h \
@@ -4981,6 +4982,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-palette_integration_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-palette_features_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0070_latest_feature_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0072_palette_snapshot_allocation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0071_latest_write_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0061_latest_delta_reservation.$(OBJEXT) \
@@ -9561,6 +9563,7 @@ am__depfiles_remade =  \
 	planner/pipeline/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0071_latest_write_failure.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0072_palette_snapshot_allocation.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_launch_test_common.Po \
@@ -12564,6 +12567,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_INTEGRATION_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_FEATURES_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_LATEST_FEATURE_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_LATEST_COMPLETED_BUILD_RECLAIMS_BUDGET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_PALETTE_SNAPSHOT_ALLOCATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_LATEST_WRITE_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_LATEST_DELTA_RESERVATION \
@@ -17250,6 +17254,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_integration_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_features_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0070_latest_feature_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0074_latest_completed_build_reclaims_budget.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0072_palette_snapshot_allocation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0071_latest_write_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_features_common.h \
@@ -23409,6 +23414,9 @@ planner/pipeline/test_runner-palette_features_common.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-0070_latest_feature_fallback.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-0072_palette_snapshot_allocation.$(OBJEXT):  \
@@ -34435,6 +34443,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0070_latest_feature_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0071_latest_write_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0072_palette_snapshot_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_launch_test_common.Po@am__quote@ # am--include-marker
@@ -50063,6 +50072,20 @@ planner/pipeline/test_runner-0070_latest_feature_fallback.obj: planner/pipeline/
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0070_latest_feature_fallback.c' object='planner/pipeline/test_runner-0070_latest_feature_fallback.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0070_latest_feature_fallback.obj `if test -f 'planner/pipeline/0070_latest_feature_fallback.c'; then $(CYGPATH_W) 'planner/pipeline/0070_latest_feature_fallback.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0070_latest_feature_fallback.c'; fi`
+
+planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.o: planner/pipeline/0074_latest_completed_build_reclaims_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Tpo -c -o planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.o `test -f 'planner/pipeline/0074_latest_completed_build_reclaims_budget.c' || echo '$(srcdir)/'`planner/pipeline/0074_latest_completed_build_reclaims_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Tpo planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0074_latest_completed_build_reclaims_budget.c' object='planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.o `test -f 'planner/pipeline/0074_latest_completed_build_reclaims_budget.c' || echo '$(srcdir)/'`planner/pipeline/0074_latest_completed_build_reclaims_budget.c
+
+planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.obj: planner/pipeline/0074_latest_completed_build_reclaims_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Tpo -c -o planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.obj `if test -f 'planner/pipeline/0074_latest_completed_build_reclaims_budget.c'; then $(CYGPATH_W) 'planner/pipeline/0074_latest_completed_build_reclaims_budget.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0074_latest_completed_build_reclaims_budget.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Tpo planner/pipeline/$(DEPDIR)/test_runner-0074_latest_completed_build_reclaims_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0074_latest_completed_build_reclaims_budget.c' object='planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0074_latest_completed_build_reclaims_budget.obj `if test -f 'planner/pipeline/0074_latest_completed_build_reclaims_budget.c'; then $(CYGPATH_W) 'planner/pipeline/0074_latest_completed_build_reclaims_budget.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0074_latest_completed_build_reclaims_budget.c'; fi`
 
 planner/pipeline/test_runner-0072_palette_snapshot_allocation.o: planner/pipeline/0072_palette_snapshot_allocation.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0072_palette_snapshot_allocation.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0072_palette_snapshot_allocation.Tpo -c -o planner/pipeline/test_runner-0072_palette_snapshot_allocation.o `test -f 'planner/pipeline/0072_palette_snapshot_allocation.c' || echo '$(srcdir)/'`planner/pipeline/0072_palette_snapshot_allocation.c

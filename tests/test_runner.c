@@ -605,6 +605,7 @@ int test_palette_integration_0057(int argc, char **argv);
 int test_palette_integration_0058(int argc, char **argv);
 int test_palette_integration_0059(int argc, char **argv);
 int test_palette_integration_0060(int argc, char **argv);
+int test_palette_integration_0074(int argc, char **argv);
 int test_palette_features_0061(int argc, char **argv);
 int test_palette_features_0062(int argc, char **argv);
 int test_palette_features_0063(int argc, char **argv);
@@ -5960,6 +5961,8 @@ static test_entry_t const test_entries[] = {
       test_palette_features_0069 },
     { "planner/pipeline/0070_latest_feature_fallback",
       test_palette_features_0070 },
+    { "planner/pipeline/0074_latest_completed_build_reclaims_budget",
+      test_palette_integration_0074 },
     { "planner/pipeline/0072_palette_snapshot_allocation",
       test_snapshot_allocation_0072 },
     { "planner/pipeline/0071_latest_write_failure",

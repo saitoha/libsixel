@@ -55,7 +55,8 @@ integration_before_publish(void *context)
 
     gate = context;
     state = gate->state;
-    if (gate->sequence != 2 || state->scenario == 1 || state->scenario == 6) {
+    if (gate->sequence != 2 || state->scenario == 1 || state->scenario == 6 ||
+            state->scenario == 10) {
         return;
     }
     sixel_mutex_lock(&state->mutex);
@@ -105,11 +106,18 @@ integration_before_select(void *context, uint64_t sequence,
 
     state = context;
     if (state->scenario == 1 || state->scenario == 5 ||
-            (state->scenario >= 8 && sequence == 1)) {
+            ((state->scenario == 8 || state->scenario == 9) && sequence == 1)) {
         /* Complete own2 after preparation, before the delay/transaction. */
         if (sixel_palette_store_job_join(own, SIXEL_OK) != SIXEL_OK) {
             state->failed = 1;
         }
+    }
+    if (state->scenario == 10) {
+        /* Observe publication without joining or returning P from the test.
+         * The application boundary must reclaim the completed own build. */
+        sixel_mutex_lock(&state->mutex);
+        integration_wait(state, &state->gates[sequence].published);
+        sixel_mutex_unlock(&state->mutex);
     }
     if (state->scenario == 6 && sequence == 2) {
         sixel_mutex_lock(&state->mutex);
@@ -192,9 +200,10 @@ integration_emitted(void *context, uint64_t sequence,
     if (state->scenario < 8) {
         return;
     }
-    /* Frame 1 joins its own build during selection and recovers all N.
-     * Frame 2 keeps P=N/2 at the barrier, leaving exactly M=N-P and Q=0. */
-    emit = sequence == 1 ? state->budget : state->budget / 2;
+    /* A completed own build returns P before geometry is fixed. The other
+     * cases keep own2 at the barrier, leaving exactly M=N-P and Q=0. */
+    emit = sequence == 1 || state->scenario == 10
+        ? state->budget : state->budget / 2;
     dither_threads = dither->pipeline_last_dither_threads;
     encode_threads = dither->pipeline_last_encode_threads;
     state->failed |= planner->total_threads != state->budget ||
@@ -220,7 +229,7 @@ integration_emitted(void *context, uint64_t sequence,
         planner->total_threads, planner->emit_threads,
         dither_threads, encode_threads);
     ++state->emitted;
-    if (sequence == 2) {
+    if (sequence == 2 && state->scenario != 10) {
         sixel_mutex_lock(&state->mutex);
         state->failed |= state->gates[2].published ||
             state->gates[2].open || state->chosen[2] != 1;
@@ -340,7 +349,7 @@ palette_integration_test(int scenario)
     /* Reattach verifies that sequence/store state cannot cross sessions. */
     for (pass = 0; pass < 2; ++pass) {
         if (scenario >= 8) {
-            state.budget = scenario == 8 && pass == 1 ? 4 : 8;
+            state.budget = scenario != 9 && pass == 1 ? 4 : 8;
             status = sixel_encoder_setopt(encoder,
                 SIXEL_OPTFLAG_THREADING_POLICY, scenario == 9
                     ? "greedy:B8:palette=latest:prepare=serial:"
@@ -399,7 +408,8 @@ palette_integration_test(int scenario)
         }
         for (index = 1; index <= count; ++index) {
             expected = index == 2 && scenario == 6 ? 0
-                : index == 2 && scenario != 1 && scenario != 5 ? 1
+                : index == 2 && scenario != 1 && scenario != 5 &&
+                    scenario != 10 ? 1
                 : (uint64_t)index;
             if (state.results[index].palette_sequence != expected ||
                     state.results[index].status !=
