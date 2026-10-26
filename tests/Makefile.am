@@ -10101,9 +10101,27 @@ EXTRA_DIST += data/color-numeric/ray-reference.py \
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
 
+# Keep one check-local rule with conditionally selected prerequisites.
+CHECK_LOCAL_TARGETS = check-pkgconfig-headers
+check-local: $(CHECK_LOCAL_TARGETS)
+.PHONY: $(CHECK_LOCAL_TARGETS)
+
+# Check the real installation rules without optional Python bindings.
+check-pkgconfig-headers:
+	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
+	    echo 'SKIP installed headers: native Python runner unavailable'; \
+	else \
+	    "$(PYTHON_STATICCHECK)" \
+	        "$(srcdir)/build/install/0001_pkgconfig_headers.py" \
+	        autotools "$(abs_top_builddir)" "$(MAKE)" \
+	        "$(abs_top_srcdir)" --cc "$(CC)"; \
+	fi
+EXTRA_DIST += build/install/0001_pkgconfig_headers.py
+
 # Exercise the native supervisor without enabling optional Python bindings.
 if BUILD_LSO_TIMEOUT
-check-local:
+CHECK_LOCAL_TARGETS += check-child-time-backpressure
+check-child-time-backpressure:
 	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
 	    echo 'SKIP child-time backpressure: native Python runner unavailable'; \
 	else \

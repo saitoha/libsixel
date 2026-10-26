@@ -400,6 +400,16 @@ foreach t : tests
       ['tap', 'quicklook-installed'] : ['tap'])
 endforeach
 
+if python_for_tests.found() and not meson.is_cross_build() and cc.get_id() != 'msvc' and cc.get_id() != 'clang-cl'
+  test('build/install/0001_pkgconfig_headers.py', python_for_tests,
+    args: [files('build/install/0001_pkgconfig_headers.py'), 'meson',
+           meson.project_build_root(), find_program('meson').full_path(),
+           meson.project_source_root(), '--cc', ' '.join(cc.cmd_array())],
+    depends: [libsixel, sixcells_h],
+    protocol: 'tap', timeout: 60, suite: ['tap', 'install'],
+    is_parallel: false)
+endif
+
 if have_child_time_executor and python_for_tests.found()
   # This supervisor test uses only the Python standard library, independently
   # of optional language bindings and their package environments.

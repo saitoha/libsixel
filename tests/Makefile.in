@@ -94,6 +94,9 @@ check_PROGRAMS = test_runner$(EXEEXT)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_1 = HAVE_QUICKLOOK_EXTENSION=1; export HAVE_QUICKLOOK_EXTENSION;
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@am__append_2 = HAVE_QUICKLOOK_EXTENSION=0; export HAVE_QUICKLOOK_EXTENSION;
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_3 = -x objective-c
+
+# Exercise the native supervisor without enabling optional Python bindings.
+@BUILD_LSO_TIMEOUT_TRUE@am__append_4 = check-child-time-backpressure
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -20465,6 +20468,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/edge-reference.h \
 	data/color-numeric/ray-reference.py \
 	data/color-numeric/ray-reference.h test-time-allowlist.tsv \
+	build/install/0001_pkgconfig_headers.py \
 	tools/child-time/0001_marker_backpressure.py \
 	extension/quicklook-lifecycle/private-user.inc.h \
 	extension/quicklook-lifecycle/private-mutations.inc.h \
@@ -20491,6 +20495,9 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp
 DISTCLEANFILES = check-tests.mk
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
+
+# Keep one check-local rule with conditionally selected prerequisites.
+CHECK_LOCAL_TARGETS = check-pkgconfig-headers $(am__append_4)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -91001,7 +91008,6 @@ distdir-am: $(DISTFILES)
 	$(MAKE) $(AM_MAKEFLAGS) \
 	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
 	  dist-hook
-@BUILD_LSO_TIMEOUT_FALSE@check-local:
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_LTLIBRARIES)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
@@ -93293,9 +93299,20 @@ $(COPY_TESTS) $(HELPER_FILES):
 @WITH_SHEBANG_FILE_TRUE@	fi
 
 @WITH_SHEBANG_FILE_TRUE@check-am: apply-shebang-check
+check-local: $(CHECK_LOCAL_TARGETS)
+.PHONY: $(CHECK_LOCAL_TARGETS)
 
-# Exercise the native supervisor without enabling optional Python bindings.
-@BUILD_LSO_TIMEOUT_TRUE@check-local:
+# Check the real installation rules without optional Python bindings.
+check-pkgconfig-headers:
+	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
+	    echo 'SKIP installed headers: native Python runner unavailable'; \
+	else \
+	    "$(PYTHON_STATICCHECK)" \
+	        "$(srcdir)/build/install/0001_pkgconfig_headers.py" \
+	        autotools "$(abs_top_builddir)" "$(MAKE)" \
+	        "$(abs_top_srcdir)" --cc "$(CC)"; \
+	fi
+@BUILD_LSO_TIMEOUT_TRUE@check-child-time-backpressure:
 @BUILD_LSO_TIMEOUT_TRUE@	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
 @BUILD_LSO_TIMEOUT_TRUE@	    echo 'SKIP child-time backpressure: native Python runner unavailable'; \
 @BUILD_LSO_TIMEOUT_TRUE@	else \

@@ -2838,6 +2838,7 @@ configure_file(
   output: 'libsixel.pc',
   configuration: pc_conf,
   install: true,
+  install_tag: 'devel',
   install_dir: pkgconfig_dir_rel)
 
 net_summary = ' '.join(net)

@@ -48,7 +48,9 @@ sixcells_h = custom_target(
             '@INPUT@'],
   capture: true,
   install: true,
-  install_dir: join_paths(get_option('includedir'), 'sixel'))
-install_headers(sixel_h, subdir: 'sixel')
+  install_tag: 'devel',
+  install_dir: get_option('includedir'))
+# Match Autotools and libsixel.pc: consumers include <sixel.h>.
+install_headers(sixel_h)
 
 # vim: set et ts=2:
