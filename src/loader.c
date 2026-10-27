@@ -1523,12 +1523,12 @@ static int
 test2(void)
 {
     int nret = EXIT_FAILURE;
+    sixel_allocator_t *allocator = NULL;
 #if HAVE_GDK_PIXBUF2
     size_t i;
     FILE *fp;
     char const *filename = NULL;
     unsigned char *pixels = NULL;
-    sixel_allocator_t *allocator = NULL;
     SIXELSTATUS status;
     static char const * const candidates[] = {
         "../images/snake.png",

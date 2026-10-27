@@ -42,6 +42,12 @@
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
+#if HAVE_TESTS
+/* Override default callbacks only while the allocator unit tests run. */
+static sixel_malloc_t test_frame_malloc = malloc;
+static sixel_free_t test_frame_free = free;
+#endif
+
 /* constructor of frame object */
 SIXELAPI SIXELSTATUS
 sixel_frame_new(
@@ -51,17 +57,28 @@ sixel_frame_new(
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
+    /* The frame owns one reference, including a new allocator's initial one. */
     if (allocator == NULL) {
+#if HAVE_TESTS
+        status = sixel_allocator_new(&allocator, test_frame_malloc, calloc,
+                                     realloc, test_frame_free);
+#else
         status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+#endif
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+    } else {
+        sixel_allocator_ref(allocator);
     }
 
-    *ppframe = (sixel_frame_t *)sixel_allocator_malloc(allocator, sizeof(sixel_frame_t));
+    *ppframe = (sixel_frame_t *)sixel_allocator_malloc(
+        allocator, sizeof(sixel_frame_t));
     if (*ppframe == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_frame_resize: sixel_allocator_malloc() failed.");
+            "sixel_frame_new: sixel_allocator_malloc() failed.");
+        /* No frame will own the reference acquired above. */
+        sixel_allocator_unref(allocator);
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -79,8 +96,6 @@ sixel_frame_new(
     (*ppframe)->multiframe = 0;
     (*ppframe)->transparent = (-1);
     (*ppframe)->allocator = allocator;
-
-    sixel_allocator_ref(allocator);
 
     status = SIXEL_OK;
 
@@ -1145,6 +1160,182 @@ error:
 }
 
 
+/* Count real heap blocks without depending on an external leak detector. */
+static int test_allocator_allocations;
+static int test_allocator_live_blocks;
+static int test_allocator_fail_at;
+
+static void *
+test_counted_malloc(size_t size)
+{
+    void *ptr;
+
+    ++test_allocator_allocations;
+    if (test_allocator_allocations == test_allocator_fail_at) {
+        return NULL;
+    }
+    ptr = malloc(size);
+    if (ptr != NULL) {
+        ++test_allocator_live_blocks;
+    }
+    return ptr;
+}
+
+
+static void
+test_counted_free(void *ptr)
+{
+    if (ptr != NULL) {
+        --test_allocator_live_blocks;
+    }
+    free(ptr);
+}
+
+
+static void
+test_allocator_begin(void)
+{
+    /* These cases construct empty frames, with no uncounted pixel buffers. */
+    test_allocator_allocations = 0;
+    test_allocator_live_blocks = 0;
+    test_allocator_fail_at = 0;
+    test_frame_malloc = test_counted_malloc;
+    test_frame_free = test_counted_free;
+}
+
+
+/* Destroying a frame must release its internally created allocator. */
+static int
+test_default_allocator_release(void)
+{
+    sixel_frame_t *frame = NULL;
+    SIXELSTATUS status;
+
+    test_allocator_begin();
+    status = sixel_frame_new(&frame, NULL);
+    if (SIXEL_FAILED(status) || frame == NULL) {
+        return EXIT_FAILURE;
+    }
+    sixel_frame_unref(frame);
+
+    return test_allocator_allocations == 2 && test_allocator_live_blocks == 0
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+
+/* A frame must keep a supplied allocator alive after its caller releases it. */
+static int
+test_supplied_allocator_lifetime(void)
+{
+    sixel_allocator_t *allocator = NULL;
+    sixel_frame_t *frame = NULL;
+    SIXELSTATUS status;
+
+    test_allocator_begin();
+    status = sixel_allocator_new(&allocator, test_counted_malloc, calloc,
+                                 realloc, test_counted_free);
+    if (SIXEL_FAILED(status)) {
+        return EXIT_FAILURE;
+    }
+    status = sixel_frame_new(&frame, allocator);
+    sixel_allocator_unref(allocator);
+    if (SIXEL_FAILED(status) || frame == NULL
+        || test_allocator_live_blocks != 2) {
+        return EXIT_FAILURE;
+    }
+    sixel_frame_unref(frame);
+
+    return test_allocator_allocations == 2 && test_allocator_live_blocks == 0
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+
+/* Frame allocation failure must release the newly created default allocator. */
+static int
+test_default_frame_allocation_failure(void)
+{
+    sixel_frame_t *frame = NULL;
+    SIXELSTATUS status;
+
+    test_allocator_begin();
+    test_allocator_fail_at = 2;
+    status = sixel_frame_new(&frame, NULL);
+
+    return status == SIXEL_BAD_ALLOCATION && frame == NULL
+        && test_allocator_allocations == 2 && test_allocator_live_blocks == 0
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+
+/* A failed frame must leave only the caller's supplied allocator reference. */
+static int
+test_supplied_frame_allocation_failure(void)
+{
+    sixel_allocator_t *allocator = NULL;
+    sixel_frame_t *frame = NULL;
+    SIXELSTATUS status;
+
+    test_allocator_begin();
+    status = sixel_allocator_new(&allocator, test_counted_malloc, calloc,
+                                 realloc, test_counted_free);
+    if (SIXEL_FAILED(status)) {
+        return EXIT_FAILURE;
+    }
+    test_allocator_fail_at = 2;
+    status = sixel_frame_new(&frame, allocator);
+    if (status != SIXEL_BAD_ALLOCATION || frame != NULL
+        || test_allocator_live_blocks != 1) {
+        return EXIT_FAILURE;
+    }
+    sixel_allocator_unref(allocator);
+
+    return test_allocator_allocations == 2 && test_allocator_live_blocks == 0
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+
+/* Failure to allocate the default allocator must not create a frame. */
+static int
+test_default_allocator_allocation_failure(void)
+{
+    sixel_frame_t *frame = NULL;
+    SIXELSTATUS status;
+
+    test_allocator_begin();
+    test_allocator_fail_at = 1;
+    status = sixel_frame_new(&frame, NULL);
+
+    return status == SIXEL_BAD_ALLOCATION && frame == NULL
+        && test_allocator_allocations == 1 && test_allocator_live_blocks == 0
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+
+/* The deprecated constructor must also release its default allocator. */
+static int
+test_legacy_allocator_release(void)
+{
+    sixel_frame_t *frame;
+
+    test_allocator_begin();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    frame = sixel_frame_create();
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
+    if (frame == NULL) {
+        return EXIT_FAILURE;
+    }
+    sixel_frame_unref(frame);
+
+    return test_allocator_allocations == 2 && test_allocator_live_blocks == 0
+        ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+
 SIXELAPI int
 sixel_frame_tests_main(void)
 {
@@ -1159,11 +1350,21 @@ sixel_frame_tests_main(void)
         test4,
         test5,
         test6,
+        test_default_allocator_release,
+        test_supplied_allocator_lifetime,
+        test_default_frame_allocation_failure,
+        test_supplied_frame_allocation_failure,
+        test_default_allocator_allocation_failure,
+        test_legacy_allocator_release,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
         nret = testcases[i]();
+        /* Do not change the allocator behavior of later module tests. */
+        test_frame_malloc = malloc;
+        test_frame_free = free;
         if (nret != EXIT_SUCCESS) {
+            fprintf(stderr, "frame test %lu failed.\n", (unsigned long)i + 1);
             goto error;
         }
     }
