@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-22
 # Policy: docs/threading/encoder.md
 # Verify playback output matches direct frame encoding.
 set -eux

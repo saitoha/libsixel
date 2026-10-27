@@ -227,6 +227,20 @@ sixel_atomic_store_relaxed_i32(sixel_atomic_i32_t *ptr, int value)
 }
 #endif
 
+/* Initialize privately owned storage before publishing it to other threads.
+ * This is not an atomic store: callers must exclude every concurrent access.
+ * In particular, mutex-backed atomics need no lock during construction. */
+static inline void
+sixel_atomic_init_i32(sixel_atomic_i32_t *ptr, int value)
+{
+#if defined(__STDC_NO_ATOMICS__) || !defined(__STDC_VERSION__) || \
+    __STDC_VERSION__ < 201112L
+    *ptr = value;
+#else
+    atomic_init(ptr, value);
+#endif
+}
+
 #endif /* LIBSIXEL_SIXEL_ATOMIC_H */
 
 /* emacs Local Variables:      */

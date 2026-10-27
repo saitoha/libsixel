@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-22
 # A profile transition during frame behavior invalidates retained palettes.
 # Policy: docs/cli/threading-policy.md
 # Build configuration: docs/build/meson.md

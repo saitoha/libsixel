@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-22
 # A completed palette survives frame probes and is reused on return.
 # Policy: docs/cli/threading-policy.md
 # Build configuration: docs/build/meson.md

@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-22
 # Verify adaptive palette playback with injected durations.
 # Policy: docs/cli/threading-policy.md
 # Build configuration: docs/build/meson.md

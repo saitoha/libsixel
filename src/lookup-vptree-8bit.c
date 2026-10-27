@@ -708,11 +708,14 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
             sixel_lookup_vptree_8bit_release(tree);
             return SIXEL_BAD_ALLOCATION;
         }
+        /* No reader can reach this new table until configure returns.
+         * Initialize privately instead of locking each of its 262144 words
+         * on platforms whose atomic operations use a mutex fallback. */
         for (index = 0;
                 index < (1 << SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
                 ++index) {
-            sixel_atomic_store_relaxed_i32(&tree->memo[index],
-                                           SIXEL_LOOKUP_VPTREE_8BIT_MEMO_EMPTY);
+            sixel_atomic_init_i32(&tree->memo[index],
+                                  SIXEL_LOOKUP_VPTREE_8BIT_MEMO_EMPTY);
         }
     }
 

@@ -2,7 +2,7 @@
 # Verify the source-level OpenVMS compatibility boundaries.
 # Policy: docs/misc/platforms/openvms.md
 # Coverage: OV-01 OV-02 OV-03 OV-04 OV-05 OV-07 OV-08 OV-09 OV-10 OV-11 OV-12 OV-14 OV-17
-# Coverage: OV-20
+# Coverage: OV-20 OV-22
 
 # Named tests form the OpenVMS compatibility ledger: each records a specific
 # RMS record, native exit-status, or GNV I/O workaround, not suite coverage.
@@ -60,6 +60,11 @@ canonical_host_line=$(awk '/^AC_CANONICAL_HOST$/ { print NR; exit }' \
 test -n "$openvms_detect_line" && test -n "$canonical_host_line" &&
     test "$openvms_detect_line" -lt "$canonical_host_line" ||
     fail "configure must detect OpenVMS before AC_CANONICAL_HOST"
+
+# A newly allocated memo is private until configure completes. An atomic
+# store here takes one fallback mutex per slot on the VSI C compiler.
+require_fixed 'sixel_atomic_init_i32(&tree->memo[index],' \
+    src/lookup-vptree-8bit.c
 
 require_fixed \
     "ac_executable_extensions=\".exe \$ac_executable_extensions\"" configure.ac

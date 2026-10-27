@@ -139,6 +139,8 @@ Two semantic cases deserved dedicated code. OpenVMS `putenv()` retains the suppl
 
 GNV exposed `getopt()` without a matching GNU `getopt_long()` interface, and its short-option parser stops at the first positional argument. The converters therefore use the project's fallback with private parser symbols and GNU-style option permutation. The fallback rejects attached values on flags that take no argument, including an empty `=`, so `lsqa --direct=yes` and `lsqa --direct=` remain invalid just as they are with the system long-option parser.
 
+VSI C builds can use the mutex-backed atomic fallback. The [VP-tree memo](../../encoder/palette-application/lookup-policy/vptree.md#cost) initializes its private 262,144-word table before publication through `sixel_atomic_init_i32()`, avoiding one mutex operation per word. Shared memo accesses remain atomic. The playback regressions retain their full image sizes, frame histories, default lookup and thread budgets; their ordinary test deadline also detects a return to excessive construction overhead on OpenVMS.
+
 OpenVMS builds currently add `-DNDEBUG` because `assert()` can become an unresolved external reference on the GNV link path. This remains a visible limitation rather than a completed portability result; it should be revisited if the native linker integration or C RTL setup changes.
 
 ### Record-oriented files, time, and tests
@@ -230,6 +232,7 @@ Using top-level `make check` would re-enter the expensive library-object walk be
 | OV-19 | An output-open failure beneath an existing regular input preserves the previously configured PNG destination and configuration revision. | [tests/processing/progressive/0013_failed_output_preserves_destination.t](../../../tests/processing/progressive/0013_failed_output_preserves_destination.t) |
 | OV-20 | Literal Unix stream aliases do not reach native file-opening APIs or timeline destinations in maintained C, shell, TAP, Make, and Meson sources. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh) |
 | OV-21 | The generated runner repair builds check-only archives before linking despite a missing Automake dependency list, propagates archive failures, supports dry runs and incremental reuse, and relinks after an archive changes. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../../tests/_static/sh/staticcheck-test-runner-link.sh) |
+| OV-22 | A private VP-tree memo uses non-synchronizing initialization before publication; full direct/playback equivalence and adaptive-palette histories remain covered with the default lookup. | [tests/_static/sh/staticcheck-openvms-compat.sh](../../../tests/_static/sh/staticcheck-openvms-compat.sh), [tests/planner/pipeline/0020_playback_direct_equivalence.t](../../../tests/planner/pipeline/0020_playback_direct_equivalence.t), [tests/planner/pipeline/0086_palette_auto_playback.t](../../../tests/planner/pipeline/0086_palette_auto_playback.t), [tests/planner/pipeline/0091_palette_auto_store_return.t](../../../tests/planner/pipeline/0091_palette_auto_store_return.t), [tests/planner/pipeline/0092_palette_auto_store_profile.t](../../../tests/planner/pipeline/0092_palette_auto_store_profile.t) |
 
 ### Coverage boundary
 

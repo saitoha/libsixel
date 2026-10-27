@@ -129,6 +129,8 @@ extra space                 Theta(K^2)
 
 With `K = 256` the neighbor lists occupy 512 KiB per prepared instance. The 8-bit backend also keeps an exact-result memo of 2^18 one-word entries (1 MiB per prepared instance) keyed by the full RGB value: dithered byte queries repeat often, and a hit skips the search. Each entry is a single relaxed atomic word holding the query's nearest index, so the memo is safe for concurrent callers and never changes a result. A refined query is cheap when consecutive pixels are close in color, which error diffusion and natural images usually provide; a query far from its hint pays for the moves toward its nearest color. Calling the lookup logarithmic or constant without qualification would be misleading.
 
+The memo is initialized while the new table is private, before configuration returns and readers can use it. [`sixel_atomic_init_i32()`](../../../../src/sixel_atomic.h) initializes each word without a synchronization operation; the C11 backend uses `atomic_init`. This avoids 262,144 mutex operations per palette on compilers using the atomic fallback. Published memo reads and writes still use relaxed atomic operations. The [OpenVMS compatibility coverage](../../../misc/platforms/openvms.md#test-coverage) guards this construction boundary and exercises complete playback histories with the default lookup.
+
 ## Name and sources
 
 `vptree` means vantage-point tree. Peter N. Yianilos introduced the name and algorithms in [“Data Structures and Algorithms for Nearest Neighbor Search in General Metric Spaces”](https://citeseerx.ist.psu.edu/document?doi=ef5f36cb8ed5a1bdd2f564d65b87ce88e0536c1a&repid=rep1&type=pdf).
