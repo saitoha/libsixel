@@ -6,6 +6,14 @@ The root [meson.build](../../meson.build) and [meson_options.txt](../../meson_op
 
 Meson creates `config.h` using `configuration_data()` and `configure_file()`. It configures public headers before consumers such as binding constant generators and builds target relationships directly through library dependencies and generated targets. It does not read the configured Autotools Makefiles or reproduce their recursive phase driver.
 
+The `clock_gettime` probe defines `_POSIX_C_SOURCE=200809L` before including `<time.h>`, matching the timer implementation's declaration requirements in C99 mode. It tries `librt` when the function is not in the default link environment. A missing declaration must not silently disable a working monotonic clock: adaptive palette playback uses that clock to advance its observation history. The existing playback observations exercise this consequence in a configured build.
+
+| Clock-dependent observation | Test |
+| --- | --- |
+| Adaptive playback completes both probe transitions. | [tests/planner/pipeline/0086_palette_auto_playback.t](../../tests/planner/pipeline/0086_palette_auto_playback.t) |
+| Frame probes preserve a completed palette for reuse. | [tests/planner/pipeline/0091_palette_auto_store_return.t](../../tests/planner/pipeline/0091_palette_auto_store_return.t) |
+| Profile changes invalidate retained palettes. | [tests/planner/pipeline/0092_palette_auto_store_profile.t](../../tests/planner/pipeline/0092_palette_auto_store_profile.t) |
+
 ```sh
 # Start at the source root.
 export PATH="$PWD/.local/bin:$PATH"

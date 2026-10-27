@@ -1,6 +1,7 @@
 #!/bin/sh
 # A completed palette survives frame probes and is reused on return.
 # Policy: docs/cli/threading-policy.md
+# Build configuration: docs/build/meson.md
 set -eux
 
 echo "1..1"

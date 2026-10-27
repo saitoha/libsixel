@@ -9236,6 +9236,8 @@ sixel-check-test-openvms-shard:
 	fi; \
 	while IFS= read -r test_path || test -n "$$test_path"; do \
 	    test -n "$$test_path" || continue; \
+	    printf 'openvms test start: %s\n' "$$test_path"; \
+	    printf '%s\n' "$$test_path" > .openvms-current-test; \
 	    log_base="$${test_path%.*}"; \
 	    log_path="$$log_base.log"; \
 	    trs_path="$$log_base.trs"; \
@@ -10030,7 +10032,8 @@ dist-hook:
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp
+CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp \
+    .openvms-current-test
 DISTCLEANFILES = check-tests.mk
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.

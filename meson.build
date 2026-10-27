@@ -818,7 +818,7 @@ func_prefixes = {
   '_sopen_s': '#include <io.h>\n#include <share.h>',
   '_commit': '#include <io.h>',
   'open': '#include <fcntl.h>',
-  'clock_gettime': '#include <time.h>',
+  'clock_gettime': '#define _POSIX_C_SOURCE 200809L\n#include <time.h>',
   'waitpid': '#include <sys/types.h>\n#include <sys/wait.h>'
 }
 
@@ -1010,6 +1010,18 @@ endif
 deps = []
 reqs = []
 link_libs = []
+
+# Some POSIX systems keep the elapsed-time clock in librt. The strict timer
+# must see the same capability in Meson and Autotools builds.
+if not conf.has('HAVE_CLOCK_GETTIME')
+  clock_dep = cc.find_library('rt', required: false)
+  if clock_dep.found() and cc.has_function('clock_gettime',
+      prefix: func_prefixes['clock_gettime'], dependencies: clock_dep)
+    conf.set('HAVE_CLOCK_GETTIME', 1)
+    deps += clock_dep
+    link_libs += clock_dep
+  endif
+endif
 
 m_dep = cc.find_library('m', required: false)
 if m_dep.found()

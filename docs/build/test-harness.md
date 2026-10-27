@@ -174,6 +174,8 @@ The link check also extracts the production `config.status` repair and simulates
 
 On OpenVMS, `TESTS` is empty in the Makefile and `OPENVMS_CHECK_TESTS_LIST` points to the line-oriented inventory. `sixel-check-test-openvms-shard` reads it and launches each script through the same custom TAP driver. `OPENVMS_TEST_JOBS` defaults to one. The experimental two-worker path splits the inventory, runs its designated serial cases first, and collects worker status files. The source comments record that extra GNV process and file work made the two-worker mode slower on the measured runner.
 
+Before each launch the shard prints `openvms test start: PATH` and overwrites `.openvms-current-test` with that path. This checkpoint identifies the last launch even if no TAP result arrives; an external supervisor can read the corresponding `.log` before destroying the guest. It is diagnostic state, not a completed result or a heartbeat. In the experimental two-worker mode it identifies only the most recent launch across the workers. `make clean` removes it.
+
 This is different from normal make-driven log scheduling. It addresses both RMS record semantics and GNV process behavior. Native executable linking has its own [gnv-link-program.sh](../../openvms/gnv-link-program.sh) adapter, which produces an OpenVMS linker option file; it is not the mechanism used to solve ordinary test-list argument growth. [OpenVMS compatibility](../misc/platforms/openvms.md) owns the complete platform contract.
 
 ## Runtime and process costs

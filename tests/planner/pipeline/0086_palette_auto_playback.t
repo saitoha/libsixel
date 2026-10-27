@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify adaptive palette playback with injected durations.
 # Policy: docs/cli/threading-policy.md
+# Build configuration: docs/build/meson.md
 # Policy: docs/threading/policy-modes.md
 set -eux
 

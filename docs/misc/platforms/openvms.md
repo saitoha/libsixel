@@ -183,6 +183,8 @@ The amalgamated library was the largest measured speedup. A known-green pre-amal
 
 The first complete green baseline at `525c7b6dc` reported 4,550 tests: 2,619 passed, 1,928 skipped, 3 were expected failures, and none failed or errored. Its recorded test elapsed time was about 1,677 seconds. A two-shard mode was implemented for experiments, but process startup and file I/O made it slower or less reliable on the runner. [`OPENVMS_TEST_JOBS`](../../../tests/Makefile.am) therefore defaults to `1`; the build recursion is independently fixed at `-j1 V=1`.
 
+The guest's per-test timeout is not sufficient protection against a stalled GNV process tree or transport. Private CI also supervises guest PTY output on the host: ten minutes without guest output triggers an independent DCL process/memory snapshot and collection of the current test log, then a failed job. Host polling messages do not reset that deadline. The eight-hour command limit remains separate. The [test harness](../../build/test-harness.md#openvms-execution) owns the last-launch checkpoint; CI's `docs/openvms-private-ci-runbook.md` and `tests/test_openvms_pty_supervision.py` own the external supervisor and its simulated-transport regression coverage. This containment does not make the interrupted test pass or establish the underlying cause of a stall.
+
 Because the explicit build phase has already completed `all`, CI runs the test subdirectory directly:
 
 ```sh
