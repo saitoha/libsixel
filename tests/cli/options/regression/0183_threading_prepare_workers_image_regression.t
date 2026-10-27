@@ -1,5 +1,7 @@
 #!/bin/sh
 # Policy: docs/threading/policy-modes.md
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-17
 # Verify threading-policy prepare_workers through short and environment paths.
 # Registry row: SIXEL_OPTION_SCHEMA_ENCODER_THREADING_POLICY|NULL|prepare_workers
 # Registry binding: prepare_threads|prepare_threads_override
@@ -28,7 +30,7 @@ env_output="${artifact_dir}/0183-threading-prepare-workers-env-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs -j auto:C0:S0:B0 -w128 \
-    "-=greedy:B6:W2" "${input_image}" 2>&1 >"${short_output}") || {
+    "-=greedy:B6:W2" -o "${short_output}" "${input_image}" 2>&1) || {
     echo "not ok" 1 - "threading prepare_workers short conversion failed"
     exit 0
 }
@@ -44,7 +46,7 @@ case "${short_trace}" in *prepare_workers=2\ **) true ;; *) false ;; esac || {
 env_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -d fs -j auto:C0:S0:B0 -w128 \
     --env "SIXEL_ENCODER_THREADING_PREPARE_WORKERS=2" \
-    "-=greedy:B6" "${input_image}" 2>&1 >"${env_output}") || {
+    "-=greedy:B6" -o "${env_output}" "${input_image}" 2>&1) || {
     echo "not ok" 1 - "threading prepare_workers environment conversion failed"
     exit 0
 }
@@ -69,6 +71,7 @@ case "${range_trace}" in *LSXSUB1\|*key=prepare_workers\|stored=1**) false ;; *)
     exit 0
 }
 
+# Both captures use converter-owned binary files; GNV redirection is text.
 cmp -s "${short_output}" "${env_output}" || {
     echo "not ok" 1 - "threading prepare_workers short and environment output differ"
     exit 0

@@ -222,11 +222,13 @@ do
 done
 
 require_fixed 'tests/data/inputs/mapfile/* -text' .gitattributes
-# Captures used by quality assertions must retain every byte even when a
+# Captures used by image assertions must retain every byte even when a
 # SIXEL packet exceeds the GNV shell-created RMS record-size limit.
 for capture_test in \
     tests/cli/options/regression/0072_lookup_5bit_shared_instance_image_regression.t \
-    tests/cli/options/regression/0073_lookup_6bit_shared_instance_image_regression.t
+    tests/cli/options/regression/0073_lookup_6bit_shared_instance_image_regression.t \
+    tests/cli/options/regression/0179_threading_load_image_regression.t \
+    tests/cli/options/regression/0183_threading_prepare_workers_image_regression.t
 do
     # Match shell source, not values from this checker environment.
     # shellcheck disable=SC2016
