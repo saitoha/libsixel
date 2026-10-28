@@ -3857,11 +3857,7 @@ sixel_encoder_map_gamut(sixel_gamut_t const *mapper, sixel_frame_t *frame)
     sixel_frame_pixels_view_t view;
     sixel_frame_transparency_t transparency;
     SIXELSTATUS status;
-    double input[3];
-    double output[3];
     size_t count;
-    size_t i;
-    int c;
 
     if (mapper == NULL) {
         return SIXEL_OK;
@@ -3884,29 +3880,9 @@ sixel_encoder_map_gamut(sixel_gamut_t const *mapper, sixel_frame_t *frame)
     if (count > SIZE_MAX / (3u * sizeof(float))) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    for (i = 0; i < count; ++i) {
-        if (transparency.transparent_mask != NULL &&
-                i < transparency.transparent_mask_size &&
-                transparency.transparent_mask[i] != 0) {
-            continue;
-        }
-        for (c = 0; c < 3; ++c) {
-            input[c] = view.pixels_float32[i * 3u + (size_t)c];
-        }
-        if (!sixel_gamut_apply(mapper, input, output,
-                view.colorspace)) {
-            sixel_helper_set_additional_message(
-                "gamut mapping cannot map this source color.");
-            return SIXEL_BAD_INPUT;
-        }
-        for (c = 0; c < 3; ++c) {
-            if (!isfinite(output[c]) || fabs(output[c]) > FLT_MAX) {
-                return SIXEL_BAD_INPUT;
-            }
-            view.pixels_float32[i * 3u + (size_t)c] = (float)output[c];
-        }
-    }
-    return SIXEL_OK;
+    return sixel_gamut_apply_float32(mapper, view.pixels_float32, count,
+        view.colorspace, transparency.transparent_mask,
+        transparency.transparent_mask_size);
 }
 
 /*

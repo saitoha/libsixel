@@ -52,6 +52,14 @@ SIXEL_INTERNAL_API int
 sixel_gamut_apply(sixel_gamut_t const *mapper, double const input[3],
                    double output[3], int colorspace);
 
+/* Map an owned packed float plane in place. Hidden pixels are untouched.
+ * Linear sources skip scalar dispatch and stores for in-gamut pixels.
+ * A failing pixel is unchanged; earlier successful pixels may be mapped. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gamut_apply_float32(sixel_gamut_t const *mapper, float *pixels,
+    size_t count, int colorspace, unsigned char const *hidden,
+    size_t hidden_count);
+
 SIXEL_INTERNAL_API void
 sixel_gamut_free(sixel_gamut_t *mapper);
 

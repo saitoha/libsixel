@@ -1611,6 +1611,9 @@ int test_gamut_0056_ray_geometry(int argc, char **argv);
 int test_gamut_0057_ray_cache_reset(int argc, char **argv);
 int test_gamut_0058_ray_linear_reference(int argc, char **argv);
 int test_gamut_0059_ray_convergence(int argc, char **argv);
+int test_gamut_0060_float32_scalar_equivalence(int argc, char **argv);
+int test_gamut_0061_float32_hidden_nonfinite(int argc, char **argv);
+
 int test_gamut_0013_matrix_icc(int argc, char **argv);
 int test_gamut_0014_lut_rejected(int argc, char **argv);
 int test_gamut_0015_encoder_isolation(int argc, char **argv);
@@ -7939,6 +7942,11 @@ static test_entry_t const test_entries[] = {
       test_gamut_0058_ray_linear_reference },
     { "gamut/0059_ray_convergence",
       test_gamut_0059_ray_convergence },
+    { "gamut/0060_float32_scalar_equivalence",
+      test_gamut_0060_float32_scalar_equivalence },
+    { "gamut/0061_float32_hidden_nonfinite",
+      test_gamut_0061_float32_hidden_nonfinite },
+
     { "gamut/0013_matrix_icc",
       test_gamut_0013_matrix_icc },
     { "gamut/0014_lut_rejected",

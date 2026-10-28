@@ -32,6 +32,8 @@
 #if defined(HAVE_CONFIG_H)
 # include "config.h"
 #endif
+#include <float.h>
+#include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,6 +58,7 @@ struct sixel_gamut {
     double maximum[3];
     sixel_edge_entry_t *edge;
     int edge_count;
+    int contains_srgb_cube;
 };
 
 static void
@@ -767,6 +770,7 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
     double xyz[3];
     double forward[3];
     double backward[3];
+    double low, high, margin;
     double zero[3] = {0.0, 0.0, 0.0};
     double one[3] = {1.0, 1.0, 1.0};
     int i;
@@ -847,6 +851,28 @@ sixel_gamut_new(sixel_gamut_t **out, sixel_color_def_t const *destination,
             : "local-minde requires a supported matrix/TRC RGB gamut.");
         return SIXEL_BAD_ARGUMENT;
     }
+    /* A linear map reaches each box extremum at a cube vertex. Prove
+     * once that every [0,1] sRGB triplet is accepted by this destination's
+     * actual matrix/ranges. The rounding margin makes this a conservative
+     * certificate, not an approximate identity-matrix test. Failure only
+     * disables the shortcut; extended samples still use the matrix. */
+    mapper->contains_srgb_cube = 1;
+    for (i = 0; i < 3; ++i) {
+        low = high = 0.0;
+        for (j = 0; j < 3; ++j) {
+            if (!isfinite(mapper->forward[i * 3 + j])) {
+                mapper->contains_srgb_cube = 0;
+            }
+            low += fmin(0.0, mapper->forward[i * 3 + j]);
+            high += fmax(0.0, mapper->forward[i * 3 + j]);
+        }
+        margin = 8.0 * DBL_EPSILON * (fabs(low) + fabs(high) + 1.0);
+        if (!isfinite(low) || !isfinite(high) ||
+                low - margin < mapper->minimum[i] - 2e-7 ||
+                high + margin > mapper->maximum[i] + 2e-7) {
+            mapper->contains_srgb_cube = 0;
+        }
+    }
     mapper->vtbl = policy == SIXEL_GAMUT_EDGE_SEEKER
         ? &sixel_gamut_edge_seeker_vtbl : policy == SIXEL_GAMUT_RAY_TRACE
         ? &sixel_gamut_ray_trace_vtbl : &sixel_gamut_local_minde_vtbl;
@@ -889,6 +915,71 @@ sixel_gamut_apply(sixel_gamut_t const *mapper, double const input[3],
 {
     return mapper != NULL && input != NULL && output != NULL &&
         mapper->vtbl->apply(mapper, input, output, colorspace);
+}
+
+/* The scalar API is useful for individual palette entries, but calling
+ * it once per image pixel repeats dispatch, generic color conversion and
+ * double/float publication even when the source is already linear and the
+ * destination contains it. Keep the common membership test in this loop.
+ * Use the same matrix and tolerance as the scalar algorithms: do not assume
+ * that [0,1] linear sRGB describes a P3 or matrix/TRC ICC destination. */
+SIXELSTATUS
+sixel_gamut_apply_float32(sixel_gamut_t const *mapper, float *pixels,
+    size_t count, int colorspace, unsigned char const *hidden,
+    size_t hidden_count)
+{
+    double input[3];
+    double device[3];
+    double output[3];
+    size_t i;
+    int c;
+
+    if (mapper == NULL || (pixels == NULL && count != 0)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (count > SIZE_MAX / (3u * sizeof(float))) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    for (i = 0; i < count; ++i) {
+        if (hidden != NULL && i < hidden_count && hidden[i] != 0) {
+            continue;
+        }
+        if (colorspace == SIXEL_COLORSPACE_LINEAR &&
+                mapper->contains_srgb_cube &&
+                pixels[i * 3u] >= 0.0f && pixels[i * 3u] <= 1.0f &&
+                pixels[i * 3u + 1u] >= 0.0f &&
+                pixels[i * 3u + 1u] <= 1.0f &&
+                pixels[i * 3u + 2u] >= 0.0f &&
+                pixels[i * 3u + 2u] <= 1.0f) {
+            continue;
+        }
+        for (c = 0; c < 3; ++c) {
+            input[c] = pixels[i * 3u + (size_t)c];
+        }
+        if (colorspace == SIXEL_COLORSPACE_LINEAR) {
+            sixel_gamut_matrix(mapper->forward, input, device);
+            if (sixel_gamut_contains(mapper, device)) {
+                /* Preserve the original float bits, including signed zero.
+                 * Nonfinite values cannot pass the membership predicate. */
+                continue;
+            }
+        }
+        if (!sixel_gamut_apply(mapper, input, output, colorspace)) {
+            sixel_helper_set_additional_message(
+                "gamut mapping cannot map this source color.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (c = 0; c < 3; ++c) {
+            if (!isfinite(output[c]) || fabs(output[c]) > FLT_MAX) {
+                return SIXEL_BAD_INPUT;
+            }
+        }
+        /* Validate all components before changing the failing triplet. */
+        for (c = 0; c < 3; ++c) {
+            pixels[i * 3u + (size_t)c] = (float)output[c];
+        }
+    }
+    return SIXEL_OK;
 }
 
 void

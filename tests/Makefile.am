@@ -324,6 +324,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0057_RAY_CACHE_RESET \
     -DBUILD_TEST_0058_RAY_LINEAR_REFERENCE \
     -DBUILD_TEST_0059_RAY_CONVERGENCE \
+    -DBUILD_TEST_0060_FLOAT32_SCALAR_EQUIVALENCE \
+    -DBUILD_TEST_0061_FLOAT32_HIDDEN_NONFINITE \
     -DBUILD_TEST_0030_EDGE_FULL_FRAME_SAMPLES \
     -DBUILD_TEST_0031_EDGE_ADAPTIVE_SAMPLES \
     -DBUILD_TEST_0032_EDGE_OKLAB_WORKSPACE \
@@ -7065,6 +7067,8 @@ test_runner_SOURCES = test_runner.c \
     processing/gamut/0057_ray_cache_reset.c \
     processing/gamut/0058_ray_linear_reference.c \
     processing/gamut/0059_ray_convergence.c \
+    processing/gamut/0060_float32_scalar_equivalence.c \
+    processing/gamut/0061_float32_hidden_nonfinite.c \
     processing/gamut/0038_edge_linear_reference.c \
     processing/gamut/0030_edge_full_frame_samples.c \
     processing/gamut/0031_edge_adaptive_samples.c \
