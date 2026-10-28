@@ -2326,6 +2326,7 @@ static sixel_option_choice_t const g_option_choices_encode_policy[] = {
 };
 
 static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
+    { "auto", -1 },
     { "gamma", SIXEL_COLORSPACE_GAMMA },
     { "linear", SIXEL_COLORSPACE_LINEAR },
     { "oklab", SIXEL_COLORSPACE_OKLAB },
@@ -4048,6 +4049,15 @@ sixel_encoder_apply_precision_override(
      * resolve identically regardless of their order.
      */
     encoder->precision_requested = mode;
+    if (mode == SIXEL_OPTION_PRECISION_8BIT &&
+            !encoder->working_colorspace_set) {
+        /* An encoder reused after float input must not validate against
+         * that input's resolved space before the next frame is available. */
+        encoder->working_colorspace = SIXEL_COLORSPACE_GAMMA;
+        if (!encoder->clustering_colorspace_set) {
+            encoder->clustering_colorspace = SIXEL_COLORSPACE_GAMMA;
+        }
+    }
     sixel_encoder_update_precision(encoder);
 
     return SIXEL_OK;
@@ -4681,6 +4691,57 @@ sixel_encoder_clear_dither_cache(sixel_encoder_t *encoder)
     encoder->dither_cache = NULL;
     sixel_dither_unref((sixel_dither_t *)encoder->fixed_palette_source);
     encoder->fixed_palette_source = NULL;
+}
+
+/* AUTO follows the typed source coordinates, independently of the previous
+ * frame's resolved settings. Loader-side planner snapshots use this pure
+ * query while an output worker may still be encoding the preceding frame.
+ * SMPTE-C is an input/output definition, not a supported working metric. */
+int
+sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
+                                      sixel_frame_t const *frame)
+{
+    int colorspace;
+
+    if (encoder->working_colorspace_set) {
+        return encoder->working_colorspace;
+    }
+    /* Explicit byte application only supports gamma coordinates. AUTO
+     * satisfies that requested boundary; an explicit non-gamma -W still
+     * reports its existing conflict instead of silently changing space. */
+    if (encoder->precision_requested == SIXEL_OPTION_PRECISION_8BIT) {
+        return SIXEL_COLORSPACE_GAMMA;
+    }
+    colorspace = sixel_frame_get_colorspace((sixel_frame_t *)frame);
+    return colorspace == SIXEL_COLORSPACE_SMPTEC
+        ? SIXEL_COLORSPACE_LINEAR : colorspace;
+}
+
+/* Resolve only at a frame boundary. Prepare-ahead leaves a different AUTO
+ * workspace to the serial owner; equal spaces must not write shared state.
+ * Palette requests snapshot these resolved coordinates before async work. */
+static void
+sixel_encoder_resolve_frame_colorspaces(sixel_encoder_t *encoder,
+                                        sixel_frame_t const *frame)
+{
+    int working;
+    int clustering;
+
+    working = sixel_encoder_frame_working_colorspace(encoder, frame);
+    clustering = encoder->clustering_colorspace_set
+        ? encoder->clustering_colorspace : working;
+    if (working == encoder->working_colorspace &&
+            clustering == encoder->clustering_colorspace) {
+        return;
+    }
+    /* Keep the source palette: stdin/mapfile input may be non-rewindable.
+     * Only its working-space application is invalidated at this boundary. */
+    sixel_dither_unref((sixel_dither_t *)encoder->dither_cache);
+    encoder->dither_cache = NULL;
+    memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
+    encoder->working_colorspace = working;
+    encoder->clustering_colorspace = clustering;
+    sixel_encoder_revision_advance(encoder, &encoder->configuration_revision);
 }
 
 static int
@@ -10832,6 +10893,7 @@ sixel_encoder_frame_job_prepare(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    sixel_encoder_resolve_frame_colorspaces(encoder, frame);
     /* A PNG destination must not prepare a delta palette on a fresh
      * snapshot canvas, even if private state bypassed option validation. */
     status = sixel_encoder_validate_delta_png(encoder->sixdelta_enabled,
@@ -11743,6 +11805,7 @@ sixel_encoder_prepare_repair(sixel_encoder_t *encoder,
             domain == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    sixel_encoder_resolve_frame_colorspaces(encoder, source);
     *prepared = NULL;
     *domain = NULL;
     mask = NULL;
@@ -15409,8 +15472,9 @@ sixel_encoder_setopt_owned(
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            encoder->clustering_colorspace = match_value;
-            encoder->clustering_colorspace_set = 1;
+            encoder->clustering_colorspace_set = match_value >= 0;
+            encoder->clustering_colorspace = match_value >= 0
+                ? match_value : encoder->working_colorspace;
             /*
              * Clustering space only controls palette construction.  Do not
              * promote the main image path here; fixed palettes such as -b,
@@ -15449,13 +15513,15 @@ sixel_encoder_setopt_owned(
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            encoder->working_colorspace = match_value;
-            encoder->working_colorspace_set = 1;
+            encoder->working_colorspace_set = match_value >= 0;
+            encoder->working_colorspace = match_value >= 0
+                ? match_value : SIXEL_COLORSPACE_GAMMA;
             if (encoder->clustering_colorspace_set == 0) {
-                encoder->clustering_colorspace = match_value;
+                encoder->clustering_colorspace =
+                    encoder->working_colorspace;
             }
             encoder->force_float32_colorspace =
-                match_value != SIXEL_COLORSPACE_GAMMA;
+                match_value >= 0 && match_value != SIXEL_COLORSPACE_GAMMA;
             sixel_encoder_update_precision(encoder);
         }
         break;
@@ -16310,6 +16376,15 @@ sixel_encoder_prepare_ahead_main(void *arg)
             if (slot->metadata.cancelled != 0) {
                 status = SIXEL_FALSE;
             }
+        }
+        /* Changing AUTO coordinates would race the preceding emission.
+         * Keep this frame queued locally, but resolve and prepare it only
+         * after the owner has finished that emission. Same-space streams
+         * retain their usual overlap without a per-frame settings write. */
+        if (SIXEL_SUCCEEDED(status) &&
+                sixel_encoder_frame_working_colorspace(ahead->encoder,
+                    slot->work_frame) != ahead->encoder->working_colorspace) {
+            status = SIXEL_FALSE;
         }
         /* Without a pristine copy a missed prediction could not be
          * repaired, so leave such a frame to serial preparation. */
@@ -19061,6 +19136,7 @@ sixel_encoder_encode_frame_owned(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    sixel_encoder_resolve_frame_colorspaces(encoder, frame);
     encoder->sixdelta_refinement_needed = 0;
     encoder->sixdelta_painted_pixels = 0u;
     /* A PNG destination must not prepare a delta palette on a fresh

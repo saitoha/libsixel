@@ -1491,7 +1491,9 @@ is active
 .br
 \fICOLORSPACE\fP is one of them:
 .br
-gamma  -> keep gamma encoded pixels (default)
+auto -> follow the resolved working color space (default)
+.br
+gamma  -> keep gamma encoded pixels
 .br
 linear -> convert to linear RGB for clustering
 .br
@@ -1507,7 +1509,9 @@ select internal working color space
 .br
 \fICOLORSPACE\fP is one of them:
 .br
-gamma  -> keep gamma encoded pixels at the selected precision (default)
+auto -> follow the input frame color space (default)
+.br
+gamma  -> keep gamma encoded pixels at the selected precision
 .br
 linear -> convert to linear RGB float32 for processing
 .br

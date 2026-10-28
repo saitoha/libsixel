@@ -16,6 +16,8 @@ test "${HAVE_JPEG-}" = 1 || {
 echo "1..1"
 set -v
 
+# Hold quantization geometry fixed while testing loader/filter behavior.
+
 input_jpeg="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/cmyk_mft2_truncated.jpg"
 output_builtin="${TMPDIR:-/tmp}/libsixel-cmyk-mft2-truncated-builtin-$$.six"
 output_none="${TMPDIR:-/tmp}/libsixel-cmyk-mft2-truncated-none-$$.six"
@@ -25,12 +27,12 @@ test -f "${input_jpeg}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_builtin}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_builtin}" || {
     echo "not ok" 1 - "libjpeg builtin cms decode failed: cmyk_mft2_truncated"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibjpeg:cms_engine=none! "${input_jpeg}" >"${output_none}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -Llibjpeg:cms_engine=none! "${input_jpeg}" >"${output_none}" || {
     echo "not ok" 1 - "libjpeg cms=none decode failed: cmyk_mft2_truncated"
     exit 0
 }

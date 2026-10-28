@@ -10,10 +10,7 @@ palette is constructed:
 --clustering-colorspace=COLORSPACE
 ```
 
-The accepted values are `gamma`, `linear`, `oklab`, `cielab`, and `din99d`.
-The default is `gamma` unless `-W` selects a working color space and `-X` was
-not set explicitly. An explicit `-X` remains authoritative regardless of its
-position relative to `-W`.
+The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, and `din99d`. The default `auto` follows the resolved `-W` working space. An explicit non-auto `-X` remains authoritative regardless of its position relative to `-W`; `-Xauto` restores tracking. The [working-space default and option coupling](../../palette-application/working-colorspace/README.md#default-and-option-coupling) owns per-input auto resolution and its precision constraint.
 
 This option changes the geometry seen by the quantizer. It does not declare
 the source image profile, change the terminal's interpretation of SIXEL

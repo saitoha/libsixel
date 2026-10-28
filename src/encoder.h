@@ -374,6 +374,7 @@ struct sixel_encoder {
     int encode_policy;
     int clustering_colorspace;
     int working_colorspace;
+    /* Zero selects AUTO; coordinate fields hold the last resolved values. */
     int working_colorspace_set;
     int clustering_colorspace_set;
     int force_float32_colorspace;
@@ -518,6 +519,11 @@ sixel_encoder_operation_admit_output(sixel_encoder_t *encoder);
 SIXEL_INTERNAL_API int
 sixel_encoder_is_cancel_requested(sixel_encoder_t const *encoder);
 
+
+/* Pure per-source AUTO resolution, also safe for loader planner snapshots. */
+SIXEL_INTERNAL_API int
+sixel_encoder_frame_working_colorspace(sixel_encoder_t const *encoder,
+                                      sixel_frame_t const *frame);
 
 #endif /* LIBSIXEL_ENCODER_H */
 

@@ -22,6 +22,8 @@ test "${HAVE_JPEG-}" = 1 || {
 echo "1..1"
 set -v
 
+# Hold quantization geometry fixed while testing loader/filter behavior.
+
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 input_jpeg="${TOP_SRCDIR}/tests/data/colormgmt/input/custom/cmyk_mft2_valid.jpg"
 reference_six="${TOP_SRCDIR}/tests/data/loader/quality/19f15fdd-cmyk_mft2_valid_builtin.ppm"
@@ -37,7 +39,7 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -r nearest -w 192 -h 192 -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -W gamma -r nearest -w 192 -h 192 -Llibjpeg:cms_engine=builtin! "${input_jpeg}" >"${output_six}" || {
     echo "not ok" 1 - "libjpeg builtin cms decode failed: cmyk_mft2_valid"
     exit 0
 }

@@ -9,7 +9,7 @@
 --working-colorspace=COLORSPACE
 ```
 
-The accepted values are `gamma`, `linear`, `oklab`, `cielab`, and `din99d`. The default is `gamma`.
+The accepted values are `auto`, `gamma`, `linear`, `oklab`, `cielab`, and `din99d`. The default is `auto`.
 
 The working color space changes the geometry used by palette lookup and the components in which dithering error is calculated and propagated. It can therefore change visible structure, pointwise color error, runtime, memory use, and SIXEL stream size even when palette construction returns exactly the same palette colors.
 
@@ -40,9 +40,9 @@ Fixed palettes bypass `-X`, but they do not bypass `-W`: the supplied palette an
 
 ## Default and option coupling
 
-`-Wgamma` is the default working geometry. If the user specifies `-W` while never specifying `-X`, palette construction follows the selected working space as a convenience. This makes a command such as `-Woklab` use Oklab for both construction and application.
+`-Wauto` follows the input frame coordinates: gamma RGB stays gamma, while linear RGB, Oklab, CIELAB and DIN99d keep their typed float32 coordinates. SMPTE-C input uses linear RGB because SMPTE-C is not a supported working metric. An explicit `--precision-policy=8bit` makes auto select gamma, the only supported byte-application space. Explicit non-gamma `-W` retains its conflict with that byte policy. `-Xauto`, including omission, follows the resolved working space. Thus `-Woklab` uses Oklab for both construction and application unless `-X` selects another space.
 
-An explicit `-X` is authoritative regardless of option order. These commands therefore have the same split geometry:
+An explicit non-auto `-X` is authoritative regardless of option order. Repeating either option with `auto` restores its automatic policy. AUTO resolves independently for each input frame; it does not keep the previous frame's space. A workspace change invalidates palette application state while preserving a fixed source palette that may have come from a non-rewindable stream. These commands therefore have the same split geometry:
 
 ```sh
 img2sixel -Xgamma -Woklab image.png
@@ -88,7 +88,7 @@ The formal comparison below forces float32 for all spaces. It therefore measures
 
 `-Wgamma` compares and diffuses the displayed sRGB code values. Its normalized vector is `(R_srgb, G_srgb, B_srgb)`, with nominal components in `[0, 1]` on the float32 path or `[0, 255]` on the byte path. Extended float paths can retain values outside the nominal range.
 
-This space is inexpensive when image and palette data are already gamma-encoded sRGB, and it is the compatibility default. Its geometry is not perceptually uniform and arithmetic differences do not represent additive light, but the nonlinear transfer devotes more code-value resolution to dark linear-light values. That can be beneficial for some pointwise errors even when a perceptual space produces better spatial structure.
+This space is inexpensive when image and palette data are already gamma-encoded sRGB, and preserves the historical gamma working geometry. Its geometry is not perceptually uniform and arithmetic differences do not represent additive light, but the nonlinear transfer devotes more code-value resolution to dark linear-light values. That can be beneficial for some pointwise errors even when a perceptual space produces better spatial structure.
 
 The sRGB transfer function is defined in the [W3C CSS Color 4 sRGB definitions](https://www.w3.org/TR/css-color-4/#predefined-sRGB).
 
@@ -219,6 +219,12 @@ python3 tools/check_working_colorspace_measurements.py \
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
+| WC-10 | Default auto preserves typed input coordinates and avoids coordinate conversion across repeated inputs. | [tests/processing/planner/0003_default_colorspace_auto.t](../../../../tests/processing/planner/0003_default_colorspace_auto.t) |
+| WC-11 | Returning both options to auto restores input/working tracking in either option order. | [tests/processing/planner/0004_reset_colorspace_auto.t](../../../../tests/processing/planner/0004_reset_colorspace_auto.t) |
+| WC-12 | An explicit clustering space remains fixed while auto working space follows the input. | [tests/processing/planner/0005_explicit_clustering_auto_working.t](../../../../tests/processing/planner/0005_explicit_clustering_auto_working.t) |
+| WC-13 | Explicit byte application constrains auto to gamma, including encoder reuse. | [tests/processing/planner/0006_byte_precision_auto.t](../../../../tests/processing/planner/0006_byte_precision_auto.t) |
+| WC-14 | Auto clustering follows an explicit working space after resetting an explicit clustering choice. | [tests/processing/planner/0007_explicit_working_auto_clustering.t](../../../../tests/processing/planner/0007_explicit_working_auto_clustering.t) |
+| WC-15 | Mixed input spaces retain serial/playback output equivalence across capacities and delta modes. | [tests/planner/pipeline/0096_playback_auto_colorspaces.t](../../../../tests/planner/pipeline/0096_playback_auto_colorspaces.t) |
 | WC-01 | Returning to `-Wgamma` preserves an explicit 8-bit precision request regardless of option order. | [tests/cli/options/matching/0237_option_matching_precision_8bit_working_gamma_order.t](../../../../tests/cli/options/matching/0237_option_matching_precision_8bit_working_gamma_order.t) |
 | WC-02 | `--precision-policy=8bit` rejects `-Wlinear`, because a byte palette application has no linear-light byte coordinates. | [tests/cli/options/matching/0238_option_matching_precision_8bit_working_linear_rejected.t](../../../../tests/cli/options/matching/0238_option_matching_precision_8bit_working_linear_rejected.t) |
 | WC-03 | `-Wgamma` preserves an explicit float32 precision request. | [tests/cli/options/matching/0240_option_matching_precision_float32_working_gamma.t](../../../../tests/cli/options/matching/0240_option_matching_precision_float32_working_gamma.t) |

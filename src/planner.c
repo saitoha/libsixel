@@ -673,7 +673,8 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     resize_mode = SIXEL_PLANNER_RESIZE_MODE_PRESERVE;
     colorspace_after_scale = 0;
     colorspace_before_scale = 0;
-    working_colorspace_effective = encoder->working_colorspace;
+    working_colorspace_effective =
+        sixel_encoder_frame_working_colorspace(encoder, frame);
     source_pixelformat = sixel_frame_get_pixelformat(frame);
     source_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(source_pixelformat);
     source_ncolors = sixel_frame_get_ncolors(frame);
@@ -704,7 +705,7 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     source_colorspace = sixel_frame_get_colorspace(frame);
     prefer_float32 = encoder->prefer_float32;
     if (source_is_float32 ||
-        encoder->working_colorspace != source_colorspace) {
+        working_colorspace_effective != source_colorspace) {
         /* A byte preference never discards precision supplied by a loader
          * or required by a coordinate transform. Explicit float additionally
          * promotes an otherwise sufficient byte path. */
@@ -721,7 +722,7 @@ sixel_encoding_planner_analyze(sixel_encoding_planner_t *planner,
     if (prefer_float32 != 0) {
         resize_mode = SIXEL_PLANNER_RESIZE_MODE_FLOAT_WORK;
     } else if (planner->scale_active != 0
-               || encoder->working_colorspace != source_colorspace) {
+               || working_colorspace_effective != source_colorspace) {
         resize_mode = SIXEL_PLANNER_RESIZE_MODE_LINEAR32;
     }
     resize_mode = sixel_runtime_policy_resize_precision(resize_mode);

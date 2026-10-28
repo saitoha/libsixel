@@ -74,8 +74,8 @@ The explicit `-j auto:resize_precision=preserve` policy can keep a byte resize i
 
 | Option | Boundary controlled | Default | Accepted values |
 | --- | --- | --- | --- |
-| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `gamma`, unless an explicit `-W` supplies the implicit `-X` value | `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
-| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `gamma` | `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
+| `-X`, `--clustering-colorspace` | coordinates used by binning and the palette solver after sample selection | `auto` (follow resolved `-W`) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
+| `-W`, `--working-colorspace` | coordinates used when applying the palette, including lookup and dithering | `auto` (follow input) | `auto`, `gamma`, `linear`, `oklab`, `cielab`, `din99d` |
 | `-U`, `--output-colorspace` | RGB definition of the palette entries written to the SIXEL stream | `gamma` | `gamma`, `linear`, `smpte-c`, `display-p3`, `auto` (CLI negotiation) |
 
 The names are defined in [spaces used by libsixel](../../concepts/colorspace/README.md#spaces-used-by-libsixel).
@@ -84,7 +84,7 @@ The names are defined in [spaces used by libsixel](../../concepts/colorspace/REA
 
 `-X` changes the distances, ranges, centroids, and partitions seen by a generated-palette algorithm. It operates on a palette-building view; specifying it does not by itself convert the main image path. After palette construction, the `K` generated entries are converted from `-X` to `-W` before palette lookup and dithering.
 
-An explicit `-X` is authoritative regardless of whether it appears before or after `-W`. When `-W` is specified and `-X` has never been specified, the encoder makes `-X` follow `-W`; this convenience keeps the two geometries matched without preventing an intentional mixed-space configuration. `-X` is ignored by paths that use a fixed palette through `-b`, `-m`, or `-e`, because those paths do not construct a new palette.
+`-Xauto` follows the resolved working space. An explicit non-auto `-X` is authoritative regardless of whether it appears before or after `-W`. The [working-space coupling policy](../palette-application/working-colorspace/README.md#default-and-option-coupling) defines defaults, repeated options and per-frame resolution. `-X` is ignored by paths that use a fixed palette through `-b`, `-m`, or `-e`, because those paths do not construct a new palette.
 
 ### `-W`: palette-application geometry
 
@@ -134,7 +134,7 @@ cms_target=gamma|linear|cielab|oklab|din99d
 
 Its short suboption form is `Tvalue`, its environment fallback is `SIXEL_LOADER_CMS_TARGET_COLORSPACE`, and its default is `linear`. This target controls the frame representation produced after a successful CMS conversion. It does not set `-X`, `-W`, or `-U`; the encoder still performs any conversions required by those later boundaries.
 
-For example, this command asks the builtin loader to apply an available CMS backend and leave the managed frame in linear-light float32 before the encoder applies its default gamma working and output policies:
+For example, this command asks the builtin loader to apply an available CMS backend and leave the managed frame in linear-light float32 before the encoder keeps those coordinates under default `-Wauto -Xauto` and converts the output palette to gamma sRGB:
 
 ```sh
 img2sixel --cms-engine=auto --loaders='builtin:cms_target=linear!' image.png
@@ -198,7 +198,7 @@ Independent fixtures in [`tests/data/color-numeric`](../../../tests/data/color-n
 img2sixel --cms-engine=auto image.png
 ```
 
-The loader may normalize a recognized source profile, while palette generation, lookup, dithering, and emitted palette values retain their default gamma policy. A linear float loader result can still be converted later because its frame metadata records the actual representation.
+The loader may normalize a recognized source profile. Default auto working and clustering spaces follow the resulting typed frame; a linear float result therefore keeps linear coordinates for palette generation, lookup and dithering. The emitted palette is converted to gamma sRGB by the default output policy. Explicit `-W` and `-X` can request other processing coordinates.
 
 ### Perceptual palette construction with gamma lookup
 

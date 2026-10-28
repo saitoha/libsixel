@@ -421,6 +421,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0093_PALETTE_AUTO_MODEST_GAIN \
     -DBUILD_TEST_0094_PALETTE_AUTO_CONTENT_CHANGE \
     -DBUILD_TEST_0095_PALETTE_AUTO_UNCERTAIN_PAIRS \
+    -DBUILD_TEST_0096_PLAYBACK_AUTO_COLORSPACES \
+    -DBUILD_TEST_0006_BYTE_PRECISION_AUTO \
+    -DBUILD_TEST_0007_EXPLICIT_WORKING_AUTO_CLUSTERING \
     -DBUILD_TEST_0092_PALETTE_AUTO_STORE_PROFILE \
     -DBUILD_TEST_0091_PALETTE_AUTO_STORE_RETURN \
     -DBUILD_TEST_0090_PALETTE_AUTO_BACKOFF_RESET \
@@ -2091,6 +2094,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_FLOAT_ALPHA \
     -DBUILD_TEST_0001_RESIZE_LINEAR_FLOAT32 \
     -DBUILD_TEST_0002_RESIZE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0003_DEFAULT_COLORSPACE_AUTO \
+    -DBUILD_TEST_0004_RESET_COLORSPACE_AUTO \
+    -DBUILD_TEST_0005_EXPLICIT_CLUSTERING_AUTO_WORKING \
     -DBUILD_TEST_0001_FRAME_SAMPLES \
     -DBUILD_TEST_0001_BYTE_REQUEST_FLOAT_SOURCE \
     -DBUILD_TEST_0002_BYTE_REQUEST_LINEAR_SOURCE \
@@ -5135,6 +5141,7 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0093_palette_auto_modest_gain.c \
     planner/pipeline/0094_palette_auto_content_change.c \
     planner/pipeline/0095_palette_auto_uncertain_pairs.c \
+    planner/pipeline/0096_playback_auto_colorspaces.c \
     planner/pipeline/0092_palette_auto_store_profile.c \
     planner/pipeline/palette_auto_test_common.c \
     planner/pipeline/palette_auto_test_common.h \
@@ -5742,6 +5749,12 @@ test_runner_SOURCES = test_runner.c \
     processing/geometry/resampling_measurement_test_driver.c \
     processing/planner/0001_resize_linear_float32.c \
     processing/planner/0002_resize_allocation_failure.c \
+    processing/planner/0003_default_colorspace_auto.c \
+    processing/planner/0004_reset_colorspace_auto.c \
+    processing/planner/0005_explicit_clustering_auto_working.c \
+    processing/planner/0006_byte_precision_auto.c \
+    processing/planner/0007_explicit_working_auto_clustering.c \
+    processing/planner/colorspace_auto_common.h \
     processing/precision/precision_frame_common.h \
     processing/precision/0001_byte_request_float_source.c \
     processing/precision/0002_byte_request_linear_source.c \

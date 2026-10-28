@@ -1373,6 +1373,13 @@ int test_geometry_resampling_exact(int argc, char **argv);
 int test_geometry_resampling_measurement_baseline(int argc, char **argv);
 int test_plan_0001_resize_linear_float32(int argc, char **argv);
 int test_plan_0002_resize_alloc_failure(int argc, char **argv);
+int test_plan_0006_byte_precision_auto(int argc, char **argv);
+int test_plan_0007_explicit_working_auto_clustering(int argc, char **argv);
+int test_playback_0096(int argc, char **argv);
+int test_plan_0003_default_colorspace_auto(int argc, char **argv);
+int test_plan_0004_reset_colorspace_auto(int argc, char **argv);
+int test_plan_0005_explicit_clustering_auto_working(int argc, char **argv);
+
 int test_precision_0001(int argc, char **argv);
 int test_precision_0002(int argc, char **argv);
 int test_precision_0003(int argc, char **argv);
@@ -5306,6 +5313,19 @@ static test_entry_t const test_entries[] = {
       test_plan_0001_resize_linear_float32 },
     { "planner/0002_resize_allocation_failure",
       test_plan_0002_resize_alloc_failure },
+    { "planner/0006_byte_precision_auto",
+      test_plan_0006_byte_precision_auto },
+    { "planner/0007_explicit_working_auto_clustering",
+      test_plan_0007_explicit_working_auto_clustering },
+    { "planner/pipeline/0096_playback_auto_colorspaces",
+      test_playback_0096 },
+    { "planner/0003_default_colorspace_auto",
+      test_plan_0003_default_colorspace_auto },
+    { "planner/0004_reset_colorspace_auto",
+      test_plan_0004_reset_colorspace_auto },
+    { "planner/0005_explicit_clustering_auto_working",
+      test_plan_0005_explicit_clustering_auto_working },
+
     { "precision/0001_byte_request_float_source", test_precision_0001 },
     { "precision/0002_byte_request_linear_source", test_precision_0002 },
     { "precision/0003_auto_float_source", test_precision_0003 },
