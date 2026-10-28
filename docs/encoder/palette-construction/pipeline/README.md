@@ -27,7 +27,7 @@ sampling
 sample point stream
     |
     v
-palette-space transform (-X)
+palette-colorspace transform (-X)
     |
     v
 binning
@@ -45,7 +45,7 @@ palette finalization -> lookup preparation -> palette application
 The stages have separate responsibilities:
 
 - sampling chooses which spatial observations enter palette construction;
-- the palette-space transform defines the coordinates in which colors are
+- the palette-colorspace transform defines the coordinates in which colors are
   clustered;
 - binning aggregates sample mass in that color space;
 - quantization selects at most `K` representatives from the resulting point
@@ -154,7 +154,7 @@ Parallel dispatch requires a threaded build, more than one available slot and at
 
 ## Binning policy
 
-Binning consumes points after their palette-space coordinates are known. It
+Binning consumes points after their palette-colorspace coordinates are known. It
 controls how sample mass is aggregated, independently of the quantizer that
 will consume the result.
 
@@ -208,6 +208,42 @@ soft:          min(8 * source point count, 2^(3b))
 The multiplication saturates before applying the finite-domain bound, so an
 untrusted point count cannot wrap the allocation estimate. This upper bound is
 not an occupancy prediction and must not by itself force a dense allocation.
+
+### Range adaptation at a fixed depth
+
+The CPU collectors below can refine hard-bin addresses from the retained sample distribution. This is a per-build addressing map at the selected depth, separate from the future [automatic depth selection](#adaptive-hard-grid-resolution). Distribution collection and final aggregation use the same retained samples, with no thumbnail, resampling, or change to solver coordinates. Between them, bounded occupancy probes select a feasible map without running a quantizer.
+
+| Phase | Operation | Result |
+| --- | --- | --- |
+| First pass | The palette-colorspace filter collects exact marginal value counts and safe-tone evidence, excluding hidden samples. | Immutable statistics and aligned native-space safe-tone projections. |
+| Activation probe | Binning counts occupied nominal cells and distinct safe colors within those cells. | A strict shortage decision and a recovery-capacity bound. |
+| Between passes | Binning reduces the marginals, proposes subdivisions and verifies candidate occupancy against its budget. | A frozen feasible map; at most eight candidate probes at strength 100. |
+| Second pass | Replay the same population with the same visibility exclusions and aggregate through that map. | Histogram moments or weighted points in the original color coordinates. |
+
+Use `--binning-policy=auto:strength=N` (or `-5 auto:SN`) with integer `N` from 0 through 100 and default 100. `SIXEL_BINNING_RANGE_STRENGTH` supplies the environment default; an explicit suboption takes precedence. Strength 0 skips adaptive statistics and retains the nominal grid. Nonzero strength limits both spare-address allocation and the extra candidate budget. Unsupported collectors ignore range adaptation; explicit non-auto binning modes do not accept this suboption.
+
+Refinement requires both `H < P` and `U > H`: `H` is the occupied nominal histogram count, `P` the requested palette size, and `U` the distinct sampled gamma-RGB triplets after bounded byte rounding and the SIXEL safe-tone table. `U` saturates at 1024, preserving the decision for every supported `P`. The probe stops when `H` reaches `min(P, U)`; its trace distinguishes complete counts from sufficient lower bounds. A deficit without additional safe tones retains the nominal map.
+
+Let `R` count distinct `(nominal cell, safe RGB triplet)` pairs, saturated at 1024. Counting within cells preserves pre-existing boundaries when the same safe color straddles them. The candidate budget is `H + floor((min(F * P, R) - H) * N / 100)`, where `F` is 2 for k-means and k-medoids, and 1 for byte Heckbert and k-center. The actual resolved quantizer supplies this policy, including when `-Q auto` selects it. A bounded search keeps only maps whose measured occupancy fits the budget; moving subdivision boundaries makes occupancy nonmonotone, so this is the strongest tested feasible map, not a global optimum.
+
+Within a nominal cell, refinement addresses use the sample's gamma-RGB safe tone projected into native clustering coordinates. Samples with the same safe RGB triplet therefore cannot gain different refinement addresses in that cell. Original coordinates and weights still feed histogram moments and solvers. The producer reuses a matching gamma source when available, otherwise converts the complete native triplet; binning performs no color conversion. This is the library's gamma-RGB output model, not destination ICC or terminal characterization. Local and global gradients remain disabled.
+
+Only empty nominal intervals donate addresses. Each occupied interval keeps at least one, preserving sparse bright intervals beside dense dark ramps without percentile clipping. At trial strength `S`, an axis with `O` occupied intervals and `L` available addresses receives at most `O + floor((L - O) * S / 100)` addresses. Extra addresses go to the interval with the largest count-weighted variance divided by squared subdivision count. Byte intervals cannot exceed their observed integer span. An axis without spare addresses or useful subdivisions retains its nominal map.
+
+For `b` bits, an axis still has at most `2^b` addresses; the three-axis entry bound above is unchanged. Alpha keeps its nominal grid. Only grouping addresses change: source coordinates, accumulated mass and solver-distance scales remain intact. The map is local to one palette build and is frozen before aggregation, so a later sample cannot redefine an earlier histogram entry. Bright-interval preservation applies to this aggregation stage; a final palette with fewer entries can still merge colors, and range adaptation does not guarantee identical UI pixels or eliminate source banding.
+
+The activation conditions are specific to each collector. Sharing the address helper does not extend a quantizer's supported top-level binning modes.
+
+| Collector | Range adaptation enabled |
+| --- | --- |
+| Byte Heckbert | RGB/RGBA fast-pack histogram, lookup policy `auto`, non-reversible input. Native float histograms and explicit lookup policies keep their own behavior. |
+| K-means | Requested binning `auto` resolved to `hard`. Explicit `hard` keeps the nominal grid. |
+| K-center | Hard binning selected by `auto` or the default profile. Explicit `hard` keeps the nominal grid. |
+| K-medoids | Automatic non-reversible candidate collection. The later nearest-observed representative scan reuses the frozen map. |
+
+Explicit `hard` does not request adaptive axis statistics. Palette-colorspace conversion still runs if the sample coordinates require it; when neither conversion nor statistics is needed, orchestration omits that filter. An applicable `auto` collector with nonzero strength requests statistics even when the transform is identity. Unsupported explicit binning/solver combinations remain errors.
+
+The shared `none`, `exact` and `soft` modes do not apply this refinement. A fixed `binbits` or `histbits` value bounds the address count even when the applicable automatic collector refines its intervals. The [range-adaptation contract tests](#range-adaptation-contracts) cover narrow ramps with highlights, unchanged fully occupied grids, constants, native coordinates and visibility exclusions. Quality and processing cost depend on the resulting occupied population and encoded stream, so they require separate measurement.
 
 ## Progressive automatic resolution
 
@@ -357,6 +393,14 @@ population even when its point count cannot be represented as a frame width.
 It is borrowed for the duration of one filter execution and cannot be
 refreshed as a frame-backed stream.
 
+The `palette-colorspace` filter consumes a sample stream and publishes a stream in the requested `-X` coordinates. Its configuration separates conversion from statistics collection. A conversion owns a cloned output payload and leaves its input untouched; an identity transform borrows the input payload. Both preserve sampling policy and source metadata. Working-space conversion (`-W`) belongs to the image-processing branch and does not determine the coordinate system of these statistics.
+
+`SAMPLE_STREAM` and the unaggregated point-set adapter carry a reference-counted statistics object, independent of filter lifetime. It contains the coordinate-space tag, byte/float domain, visible count, axis extrema, exact marginals and bounded distinct gamma-RGB safe-tone count. Bytes use 256 counters per axis; floats use sparse tables of finite values. Float samples also carry aligned safe RGB keys and native-space projections. The distinct counter and conversion cache saturate at 1024; aligned projections continue for every visible sample. Statistics are immutable after publication. Neither the artifact nor its producer selects a grid, palette size, strength or solver.
+
+Binning consumes these observations without collecting marginal distributions or performing safe-tone color conversion. Its activation and candidate-budget probes inspect retained points on the consumer's grid. It validates coordinate-space and storage-domain tags before adaptation. Source-changing operations invalidate observations: frame-stream refresh drops its reference, while palette adapters reuse attempt statistics only for the same buffer, length and pixel format. Alpha compaction, gamut mapping, normalization and fallback populations request fresh statistics after coordinates settle. A failed producer publishes neither partial statistics nor a partial output artifact.
+
+Spatial neighborhoods belong to the sampling stage; binning has no source-image neighborhood access. Local and global gradient statistics are not currently collected. Adding them requires a sampling-owned observation contract, distinct from marginal color distributions.
+
 The byte-layout boundary remains canonical: a buffer consumed by binning is
 RGB888 or RGBA8888. K-center adapts packed ARGB8888, BGRA8888, and ABGR8888
 inputs to RGBA8888 before binding the stream, preserving alpha values without
@@ -385,16 +429,16 @@ scan order. The residual histogram used by K-means feedback is a quantizer
 operation, not a second preprocessing filter, although it reuses the same
 compact histogram primitive.
 
-K-center hard binning uses a separate uniform-grid mapping with a half-open `[0, 256)` address domain. For nominal byte coordinates and `b` bits per axis, the address is:
+K-center hard binning starts from a separate uniform-grid mapping with a half-open `[0, 256)` address domain. For nominal byte coordinates and `b` bits per axis, the nominal address is:
 
 ```text
 bin(x) = floor(x * 2^b / 256)
 ```
 
-This preserves the former `((unsigned int)x) >> (8 - b)` behavior for integer bytes. The distinction from the general closed `[0, 255]` mapping is observable for fractional coordinates near a bin boundary. Float input outside the nominal range expands the addressing bounds before this mapping; the original sample coordinates remain unchanged. Address mapping and the fixed solver-distance scales are separate, as specified by the [ordinary float generator contract](../quantization/README.md#ordinary-float-iterative-solvers). Soft binning rejects this hard-only compatibility grid.
+Explicit `hard` preserves `((unsigned int)x) >> (8 - b)` behavior for integer bytes; the applicable automatic collectors can then apply [range adaptation](#range-adaptation-at-a-fixed-depth). The distinction from the general closed `[0, 255]` mapping is observable for fractional coordinates near a bin boundary. Float input outside the nominal range expands the addressing bounds before this mapping; the original sample coordinates remain unchanged. Address mapping and the fixed solver-distance scales are separate, as specified by the [ordinary float generator contract](../quantization/README.md#ordinary-float-iterative-solvers). Soft binning rejects this hard-only compatibility grid.
 
 Exact aggregation uses a separate compact hash table because finite grid keys
-cannot represent full palette-space coordinates. Equality is numeric equality
+cannot represent full palette-colorspace coordinates. Equality is numeric equality
 across all three finite coordinates; positive and negative zero therefore
 name the same point. The table stores the first coordinate tuple unchanged and
 sums the weights of later equal tuples. It does not average, round, or map the
@@ -450,11 +494,7 @@ direct histogram updates can avoid allocation and memory traffic.
 
 ## Adaptive hard-grid resolution
 
-Hard binning currently applies one fixed coordinate-grid depth to every
-clustering color space. This does not preserve an equivalent solver input. The
-same source samples can occupy very different numbers of cells after coordinate
-conversion; the measured difference and quality impact are documented in
-[Palette Clustering Color Space](../clustering-colorspace/README.md#hard-binning-occupancy).
+This section describes future automatic grid-depth selection. The implemented [range adaptation](#range-adaptation-at-a-fixed-depth) reallocates addresses within a fixed depth; it does not select a depth from occupancy or distortion thresholds. Equal fixed depths do not preserve equivalent solver inputs across clustering color spaces. The measured difference in nominal hard-grid occupancy and quality is documented in [Palette Clustering Color Space](../clustering-colorspace/README.md#hard-binning-occupancy).
 
 The pipeline should keep the following decisions independent:
 
@@ -844,6 +884,51 @@ itself.
 ## Test coverage
 
 <!-- test-coverage: enforced -->
+
+### Range adaptation contracts
+
+The model tests retain a 24-step dark ramp and three sparse bright gray values in a 256-entry palette. They establish palette-level preservation for that fixture, not a universal final-pixel or temporal-quality guarantee. The remaining tests isolate addressing and stream contracts.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| RA-01 | Byte Heckbert AUTO retains output-distinguishable dark tones and all three highlights. | [tests/quant/palette/adaptive_range/0001_range_heckbert.t](../../../../tests/quant/palette/adaptive_range/0001_range_heckbert.t) |
+| RA-02 | K-means AUTO retains output-distinguishable dark tones and all three highlights. | [tests/quant/palette/adaptive_range/0002_range_kmeans.t](../../../../tests/quant/palette/adaptive_range/0002_range_kmeans.t) |
+| RA-03 | K-medoids candidate collection retains output-distinguishable dark tones and all three highlights. | [tests/quant/palette/adaptive_range/0003_range_medoids.t](../../../../tests/quant/palette/adaptive_range/0003_range_medoids.t) |
+| RA-04 | Default K-center retains output-distinguishable dark tones and all three highlights. | [tests/quant/palette/adaptive_range/0004_range_kcenter.t](../../../../tests/quant/palette/adaptive_range/0004_range_kcenter.t) |
+| RA-05 | A narrow byte ramp receives distinct bounded addresses while sparse highlights remain separate. | [tests/quant/palette/adaptive_range/0005_range_refinement.t](../../../../tests/quant/palette/adaptive_range/0005_range_refinement.t) |
+| RA-06 | A fully occupied axis retains every nominal address. | [tests/quant/palette/adaptive_range/0006_range_full_grid.t](../../../../tests/quant/palette/adaptive_range/0006_range_full_grid.t) |
+| RA-07 | Constant black and white intervals retain their nominal addresses without refinement. | [tests/quant/palette/adaptive_range/0007_range_constant.t](../../../../tests/quant/palette/adaptive_range/0007_range_constant.t) |
+| RA-08 | A narrow float interval is refined without absorbing a highlight or exceeding the address budget. | [tests/quant/palette/adaptive_range/0008_range_float.t](../../../../tests/quant/palette/adaptive_range/0008_range_float.t) |
+| RA-09 | Reversing the byte sample order preserves the address map. | [tests/quant/palette/adaptive_range/0009_range_order.t](../../../../tests/quant/palette/adaptive_range/0009_range_order.t) |
+| RA-10 | Stream binning preserves native float coordinates and sample mass. | [tests/quant/palette/adaptive_range/0010_range_native_stream.t](../../../../tests/quant/palette/adaptive_range/0010_range_native_stream.t) |
+| RA-11 | A masked highlight contributes no weighted output; visible native coordinates and mass survive. | [tests/quant/palette/adaptive_range/0011_range_masked_stream.t](../../../../tests/quant/palette/adaptive_range/0011_range_masked_stream.t) |
+| RA-13 | Zero strength preserves every nominal address. | [tests/quant/palette/adaptive_range/0012_range_zero_strength.t](../../../../tests/quant/palette/adaptive_range/0012_range_zero_strength.t) |
+| RA-14 | Quarter strength steps obey the spare-address budget. | [tests/quant/palette/adaptive_range/0013_range_strength_budget.t](../../../../tests/quant/palette/adaptive_range/0013_range_strength_budget.t) |
+| RA-15 | Accepted limits, invalid values and reset use the public encoder API. | [tests/quant/palette/adaptive_range/0014_range_strength_option.t](../../../../tests/quant/palette/adaptive_range/0014_range_strength_option.t) |
+| RA-16 | Strength is isolated between interleaved encoder requests and resets to the default. | [tests/quant/palette/adaptive_range/0015_range_encoder_isolation.t](../../../../tests/quant/palette/adaptive_range/0015_range_encoder_isolation.t) |
+| RA-18 | Enough nominal candidate colors disable refinement. | [tests/quant/palette/adaptive_range/0016_range_sufficient_colors.t](../../../../tests/quant/palette/adaptive_range/0016_range_sufficient_colors.t) |
+| RA-19 | Distinct source values that share a single safe tone do not activate refinement. | [tests/quant/palette/adaptive_range/0017_range_unrecoverable_tones.t](../../../../tests/quant/palette/adaptive_range/0017_range_unrecoverable_tones.t) |
+| RA-20 | A nominal color deficit with additional safe tones activates refinement. | [tests/quant/palette/adaptive_range/0018_range_recoverable_tones.t](../../../../tests/quant/palette/adaptive_range/0018_range_recoverable_tones.t) |
+| RA-21 | Perceptual sample statistics count safe RGB triplets after inverse color conversion. | [tests/quant/palette/adaptive_range/0019_range_perceptual_safe_tones.t](../../../../tests/quant/palette/adaptive_range/0019_range_perceptual_safe_tones.t) |
+| RA-22 | A palette with no remaining color capacity does not activate refinement. | [tests/quant/palette/adaptive_range/0020_range_palette_boundary.t](../../../../tests/quant/palette/adaptive_range/0020_range_palette_boundary.t) |
+| RA-23 | A sparse highlight does not hide recoverable dark tones from the gate. | [tests/quant/palette/adaptive_range/0021_range_highlight_gate.t](../../../../tests/quant/palette/adaptive_range/0021_range_highlight_gate.t) |
+| RA-24 | Observed candidate occupancy respects the resolved clustering budget. | [tests/quant/palette/adaptive_range/0022_range_candidate_budget.t](../../../../tests/quant/palette/adaptive_range/0022_range_candidate_budget.t) |
+| RA-25 | Perceptual samples with the same safe RGB tone share refinement addresses inside a nominal cell. | [tests/quant/palette/adaptive_range/0023_range_perceptual_projection.t](../../../../tests/quant/palette/adaptive_range/0023_range_perceptual_projection.t) |
+| RA-26 | Aligned projections continue after the distinct-color counter saturates. | [tests/quant/palette/adaptive_range/0024_range_projection_after_saturation.t](../../../../tests/quant/palette/adaptive_range/0024_range_projection_after_saturation.t) |
+| RA-27 | Intermediate strength limits the extra candidate budget. | [tests/quant/palette/adaptive_range/0025_range_candidate_strength.t](../../../../tests/quant/palette/adaptive_range/0025_range_candidate_strength.t) |
+| RA-28 | Safe-tone projection does not merge distinct nominal intervals. | [tests/quant/palette/adaptive_range/0026_range_nominal_boundaries.t](../../../../tests/quant/palette/adaptive_range/0026_range_nominal_boundaries.t) |
+| RA-29 | The resolved model supplies the candidate-budget multiplier. | [tests/quant/palette/adaptive_range/0027_range_model_budget.t](../../../../tests/quant/palette/adaptive_range/0027_range_model_budget.t) |
+| RA-17 | Short-form and environment strength routes store the value and produce identical encoded images. | [tests/cli/options/regression/0187_binning_range_strength_image_regression.t](../../../../tests/cli/options/regression/0187_binning_range_strength_image_regression.t) |
+| RA-12 | Omitted and explicit AUTO K-means binning produce the same seeded CLI output. | [tests/cli/options/regression/0024_quantize_kmeans_default_auto_binning_equivalence.t](../../../../tests/cli/options/regression/0024_quantize_kmeans_default_auto_binning_equivalence.t) |
+| PC-01 | Identity conversion preserves sample metadata and exact byte populations; statistics survive filter destruction. | [tests/processing/filter/0049_palette_colors_identity_statistics.t](../../../../tests/processing/filter/0049_palette_colors_identity_statistics.t) |
+| PC-02 | Conversion preserves its input and collects finite marginals in the output color space. | [tests/processing/filter/0050_palette_colors_conversion_statistics.t](../../../../tests/processing/filter/0050_palette_colors_conversion_statistics.t) |
+| PC-03 | Disabling collection leaves the statistics artifact absent. | [tests/processing/filter/0051_palette_colors_statistics_disabled.t](../../../../tests/processing/filter/0051_palette_colors_statistics_disabled.t) |
+| PC-04 | A hidden nonfinite point contributes no statistics. | [tests/processing/filter/0052_palette_colors_hidden_nonfinite.t](../../../../tests/processing/filter/0052_palette_colors_hidden_nonfinite.t) |
+| PC-05 | A visible nonfinite point fails without publishing a partial output. | [tests/processing/filter/0053_palette_colors_failure_output.t](../../../../tests/processing/filter/0053_palette_colors_failure_output.t) |
+| PC-06 | Binning rejects statistics tagged for a different color space. | [tests/processing/filter/0054_binning_statistics_colorspace.t](../../../../tests/processing/filter/0054_binning_statistics_colorspace.t) |
+| PC-07 | Explicit hard with matching coordinates omits the palette-colorspace stage. | [tests/processing/filter/0055_palette_colors_hard_skips_statistics.t](../../../../tests/processing/filter/0055_palette_colors_hard_skips_statistics.t) |
+| PC-08 | Automatic adaptive binning requests statistics without a color conversion. | [tests/processing/filter/0056_palette_colors_identity_statistics.t](../../../../tests/processing/filter/0056_palette_colors_identity_statistics.t) |
+| PC-09 | Explicit hard with different coordinates executes conversion without collecting statistics. | [tests/processing/filter/0057_palette_colors_hard_conversion_only.t](../../../../tests/processing/filter/0057_palette_colors_hard_conversion_only.t) |
 
 ### Sampling contracts
 

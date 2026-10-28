@@ -110,6 +110,7 @@
 #include "options-registry.h"
 #include "dither.h"
 #include "palette.h"
+#include "palette-bin-histogram.h"
 #include "palette-heckbert.h"
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
@@ -132,6 +133,8 @@
 #include "filter.h"
 #include "filter-clip.h"
 #include "filter-colors.h"
+#include "filter-palette-colors.h"
+#include "filter-factory-palette-colors.h"
 #include "filter-dither.h"
 #include "filter-gradient.h"
 #include "filter-final-merge.h"
@@ -782,6 +785,8 @@ struct sixel_palette_build_request {
     int quantize_model_kmedoids_histbits_override;
     unsigned int quantize_model_kmedoids_iter;
     int quantize_model_kmedoids_iter_override;
+    unsigned int palette_range_strength;
+    int palette_range_strength_override;
     unsigned int quantize_model_kmedoids_point_budget;
     int quantize_model_kmedoids_point_budget_override;
     double quantize_model_kmedoids_prune_mass;
@@ -3842,87 +3847,6 @@ end:
     return status;
 }
 
-/*
- * Convert frame pixels into the requested colorspace without changing
- * the current pixelformat.
- */
-static SIXELSTATUS
-sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
-                                        int target_colorspace)
-{
-    SIXELSTATUS status;
-    int source_colorspace;
-    int pixelformat;
-    int depth;
-    int width;
-    int height;
-    size_t pixel_total;
-    size_t pixel_bytes;
-    unsigned char *pixels;
-    sixel_frame_pixels_view_t view;
-
-    status = SIXEL_BAD_ARGUMENT;
-    source_colorspace = SIXEL_COLORSPACE_GAMMA;
-    pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    depth = 0;
-    width = 0;
-    height = 0;
-    pixel_total = 0U;
-    pixel_bytes = 0U;
-    pixels = NULL;
-    memset(&view, 0, sizeof(view));
-
-    if (frame == NULL) {
-        return status;
-    }
-
-    source_colorspace = sixel_frame_get_colorspace(frame);
-    if (source_colorspace == target_colorspace) {
-        return SIXEL_OK;
-    }
-
-    width = sixel_frame_get_width(frame);
-    height = sixel_frame_get_height(frame);
-    if (width <= 0 || height <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    pixelformat = sixel_frame_get_pixelformat(frame);
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth <= 0) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    pixel_total = (size_t)width * (size_t)height;
-    if (pixel_total / (size_t)width != (size_t)height) {
-        return SIXEL_BAD_INPUT;
-    }
-    if (pixel_total > SIZE_MAX / (size_t)depth) {
-        return SIXEL_BAD_INPUT;
-    }
-    pixel_bytes = pixel_total * (size_t)depth;
-
-    status = sixel_encoder_frame_get_pixels_view(frame, &view);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    pixels = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
-        ? (unsigned char *)view.pixels_float32
-        : view.pixels;
-
-    /* Both precisions use the buffer driver. Float arithmetic preserves
-     * extended coordinates, with the common parallel threshold and budget;
-     * byte storage retains its separate LUT/SIMD implementation. */
-    status = sixel_helper_convert_colorspace(pixels, pixel_bytes,
-        pixelformat, source_colorspace, target_colorspace);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    sixel_frame_set_colorspace(frame, target_colorspace);
-    return SIXEL_OK;
-}
-
 /* Map only source/sample planes owned by this encode. Error-adjusted
  * diffusion candidates never enter this operation. Hidden pixels retain
  * their original storage and cannot fail a visible-color conversion. */
@@ -6526,10 +6450,15 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
     SIXELSTATUS status;
     sixel_dither_t *local;
     int preserve_alpha_key;
-    sixel_filter_colors_config_t colors;
+    sixel_filter_palette_colors_config_t colors;
+    sixel_sample_stream_t converted;
+    sixel_filter_t *colors_filter;
+
 
     status = SIXEL_BAD_ARGUMENT;
     local = NULL;
+    sixel_sample_stream_init(&converted);
+    colors_filter = NULL;
     preserve_alpha_key = 0;
 
     if (job == NULL || dither_out == NULL) {
@@ -6563,20 +6492,31 @@ sixel_encoder_palette_job_build(sixel_palette_async_job_t *job,
         job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
         return SIXEL_RUNTIME_ERROR;
     }
-    if (!preserve_alpha_key) {
+    if (!preserve_alpha_key &&
+            job->samples.pixelformat != job->target_pixelformat) {
         memset(&colors, 0, sizeof(colors));
+        colors.convert = 1;
         colors.target_pixelformat = job->target_pixelformat;
-        status = sixel_filter_colors_convert(&colors, job->samples.frame,
-            job->logger);
+        colors.target_colorspace =
+            sixel_pixelformat_get_colorspace(job->target_pixelformat);
+        status = sixel_filter_factory_create_palette_colors(&colors,
+            &colors_filter);
+        if (SIXEL_SUCCEEDED(status)) {
+            sixel_filter_bind_sample_input(colors_filter, &job->samples);
+            sixel_filter_bind_sample_output(colors_filter, &converted,
+                colors.target_pixelformat, colors.target_colorspace);
+            status = sixel_filter_run(colors_filter, job->allocator,
+                job->logger);
+        }
+        sixel_filter_free(colors_filter);
         if (SIXEL_FAILED(status)) {
+            sixel_sample_stream_dispose(&converted);
             job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
             return status;
         }
-        status = sixel_sample_stream_refresh(&job->samples);
-        if (SIXEL_FAILED(status)) {
-            job->failure_stage = SIXEL_PALETTE_JOB_FAILURE_WORKER_CONVERT;
-            return status;
-        }
+        sixel_sample_stream_dispose(&job->samples);
+        job->samples = converted;
+        sixel_sample_stream_init(&converted);
     }
 
     if (job->requested_failure_stage ==
@@ -8711,6 +8651,9 @@ sixel_palette_build_request_new(sixel_palette_build_request_t **out,
         encoder->quantize_model_kmedoids_iter;
     request->quantize_model_kmedoids_iter_override =
         encoder->quantize_model_kmedoids_iter_override;
+    request->palette_range_strength = encoder->palette_range_strength;
+    request->palette_range_strength_override =
+        encoder->palette_range_strength_override;
     request->quantize_model_kmedoids_point_budget =
         encoder->quantize_model_kmedoids_point_budget;
     request->quantize_model_kmedoids_point_budget_override =
@@ -8781,7 +8724,11 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     sixel_palette_quantizer_selection_t quantizer_selection;
     sixel_timeline_logger_t *target_logger;
     sixel_frame_t *palette_frame;
-    sixel_frame_t *cluster_frame;
+    sixel_sample_stream_t source_samples;
+    sixel_sample_stream_t palette_samples;
+    sixel_filter_palette_colors_config_t colors_config;
+    sixel_filter_t *colors_filter;
+
     unsigned char *palette_pixels;
     unsigned char *visible_pixels;
     int palette_pixelformat;
@@ -8815,7 +8762,11 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     target_logger = logger;
     quantizer_selection = request->quantizer;
     palette_frame = frame;
-    cluster_frame = NULL;
+    sixel_sample_stream_init(&source_samples);
+    sixel_sample_stream_init(&palette_samples);
+    memset(&colors_config, 0, sizeof(colors_config));
+    colors_filter = NULL;
+
     palette_pixels = NULL;
     visible_pixels = NULL;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -8983,34 +8934,53 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
                                                      prefer_float32);
     }
 
-    if ((!reserve_alpha_key || (*dither)->use_rgb101_palette) &&
-        (request->gamut_mapper != NULL ||
-         sixel_frame_get_pixelformat(frame) != palette_target_pixelformat ||
-         sixel_frame_get_colorspace(frame) != clustering_colorspace)) {
-        status = sixel_encoder_frame_clone(frame,
-                                           request->allocator,
-                                           &cluster_frame);
+    colors_config.target_pixelformat = palette_target_pixelformat;
+    colors_config.target_colorspace = clustering_colorspace;
+    colors_config.convert =
+        sixel_frame_get_pixelformat(frame) != palette_target_pixelformat ||
+        sixel_frame_get_colorspace(frame) != clustering_colorspace;
+    colors_config.copy_payload = request->gamut_mapper != NULL &&
+        (!reserve_alpha_key || (*dither)->use_rgb101_palette);
+    /* Collect only stable RGB populations here. Alpha adaptation, gamut
+     * mapping and solver fallbacks can change the retained coordinates;
+     * their adapters request fresh observations after those operations. */
+    colors_config.collect_statistics =
+        requested_binning == SIXEL_PALETTE_BINNING_AUTO &&
+        (request->palette_range_strength_override
+            ? request->palette_range_strength != 0u
+            : sixel_palette_bin_range_get_strength() != 0u) &&
+        request->gamut_mapper == NULL && !reserve_alpha_key &&
+        sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGBA8888 &&
+        (effective_quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT ||
+         (!SIXEL_PIXELFORMAT_IS_FLOAT32(palette_target_pixelformat) &&
+          effective_lut_policy == SIXEL_LUT_POLICY_AUTO));
+    if (colors_config.convert || colors_config.copy_payload ||
+            colors_config.collect_statistics) {
+        status = sixel_sample_stream_bind_borrowed(&source_samples, frame,
+            palette_state->sampling.effective ==
+                SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID
+                ? SIXEL_PALETTE_SAMPLING_ADAPTIVE_GRID
+                : SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+            palette_state->sampling_source ==
+                SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME
+                ? SIXEL_PALETTE_SAMPLING_SOURCE_LOADED_FRAME
+                : SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        palette_frame = cluster_frame;
-        if (sixel_frame_get_pixelformat(palette_frame)
-                != palette_target_pixelformat) {
-            status = sixel_frame_set_pixelformat(palette_frame,
-                                                 palette_target_pixelformat);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
+        status = sixel_filter_factory_create_palette_colors(&colors_config,
+            &colors_filter);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
-        if (sixel_frame_get_colorspace(palette_frame)
-                != clustering_colorspace) {
-            status = sixel_encoder_convert_frame_colorspace(
-                palette_frame,
-                clustering_colorspace);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
+        sixel_filter_bind_sample_input(colors_filter, &source_samples);
+        sixel_filter_bind_sample_output(colors_filter, &palette_samples,
+            palette_target_pixelformat, clustering_colorspace);
+        status = sixel_filter_run(colors_filter, request->allocator, logger);
+        if (SIXEL_FAILED(status)) {
+            goto end;
         }
+        palette_frame = palette_samples.frame;
     }
 
     /* A map image defines the immutable fixed-palette source. Map only
@@ -9173,6 +9143,9 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     sixel_set_kmedoids_histbits_override(
         request->quantize_model_kmedoids_histbits_override,
         request->quantize_model_kmedoids_histbits);
+    sixel_palette_bin_range_set_strength(
+        request->palette_range_strength_override,
+        request->palette_range_strength);
     sixel_set_kmedoids_point_budget_override(
         request->quantize_model_kmedoids_point_budget_override,
         request->quantize_model_kmedoids_point_budget);
@@ -9317,6 +9290,11 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
      * may be resolved again after construction changes the palette size;
      * both of its outcomes use the dithered representative policy. */
     sixel_dither_set_diffusion_type(*dither, request->method_for_diffuse);
+    build_attempt.statistics = palette_samples.statistics;
+    build_attempt.statistics_data = palette_pixels;
+    build_attempt.statistics_length = source_point_count *
+        (size_t)sixel_helper_compute_depth(palette_pixelformat);
+    build_attempt.statistics_pixelformat = palette_pixelformat;
     status = sixel_dither_initialize_with_palette_attempt(
         *dither,
         palette_pixels,
@@ -9370,6 +9348,7 @@ sixel_palette_request_build(sixel_palette_build_request_t const *request,
     sixel_set_kmedoids_bandit_candidates_override(0, 0u);
     sixel_set_kmedoids_bandit_batch_override(0, 0u);
     sixel_set_kmedoids_histbits_override(0, 0u);
+    sixel_palette_bin_range_set_strength(0, 100u);
     sixel_set_kmedoids_point_budget_override(0, 0u);
     sixel_set_kmedoids_rare_keep_override(0, 0u);
     sixel_set_kmedoids_prune_mass_override(0, 0.0);
@@ -9489,7 +9468,10 @@ end:
     sixel_allocator_free(request->allocator, visible_pixels);
     sixel_encoder_quantize_override_lock_release(
         quantize_override_lock_acquired);
-    sixel_frame_unref(cluster_frame);
+    sixel_filter_free(colors_filter);
+    sixel_sample_stream_dispose(&palette_samples);
+    sixel_sample_stream_dispose(&source_samples);
+
     if (SIXEL_SUCCEEDED(status) && *dither != NULL &&
             !request->from_map_image &&
             request->native_palette) {
@@ -11944,6 +11926,8 @@ sixel_encoder_new(
     (*ppencoder)->palette_sampling_override = 0;
     (*ppencoder)->palette_binning_policy = SIXEL_PALETTE_BINNING_AUTO;
     (*ppencoder)->palette_binning_override = 0;
+    (*ppencoder)->palette_range_strength = 100u;
+    (*ppencoder)->palette_range_strength_override = 0;
     (*ppencoder)->palette_binning_origin =
         SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
     (*ppencoder)->palette_sample_target = 0u;
@@ -15094,18 +15078,17 @@ sixel_encoder_setopt_owned(
         }
         break;
     case SIXEL_OPTFLAG_BINNING_POLICY:
-        status = sixel_option_parse_scalar_argument(
+        status = sixel_encoder_apply_registered_policy_argument(
+            encoder,
             SIXEL_OPTION_SCHEMA_BINNING_POLICY,
-            SIXEL_OPTION_SCOPE_ENCODER,
             value,
-            &scalar_value,
+            &encoder->palette_binning_policy,
+            &encoder->palette_binning_override,
             match_detail,
             sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        encoder->palette_binning_policy = scalar_value.int_value;
-        encoder->palette_binning_override = 1;
         encoder->palette_binning_origin =
             SIXEL_PALETTE_POLICY_ORIGIN_EXPLICIT;
         break;

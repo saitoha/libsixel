@@ -28,6 +28,7 @@
 #include <sixel.h>
 
 #include "palette-plan.h"
+#include "sample-statistics.h"
 
 typedef enum sixel_weighted_point_ownership {
     SIXEL_WEIGHTED_POINT_EMPTY = 0,
@@ -48,6 +49,7 @@ typedef enum sixel_weighted_point_ownership {
  * contract.
  */
 typedef struct sixel_weighted_point_set {
+    sixel_sample_statistics_t *statistics;
     double *coordinates;
     double *weights;
     sixel_allocator_t *allocator;

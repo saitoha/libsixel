@@ -142,6 +142,14 @@ typedef struct sixel_heckbert_options {
 } sixel_heckbert_options_t;
 
 typedef struct sixel_palette_build_attempt {
+    /* Borrowed from the producing stream for this synchronous build call.
+     * The binding keys prevent reuse after a solver changes its population
+     * or layout; ownership never moves into the copied attempt state. */
+    struct sixel_sample_statistics *statistics;
+    void const *statistics_data;
+    size_t statistics_length;
+    int statistics_pixelformat;
+
     sixel_palette_binning_state_t binning;
     sixel_heckbert_options_t heckbert;
     int quantize_model;

@@ -55,6 +55,7 @@ typedef enum sixel_filter_kind {
     SIXEL_FILTER_KIND_DITHER,
     SIXEL_FILTER_KIND_ENCODE,
     SIXEL_FILTER_KIND_BINNING,
+    SIXEL_FILTER_KIND_PALETTE_COLORS,
 } sixel_filter_kind_t;
 
 typedef enum sixel_filter_flags {

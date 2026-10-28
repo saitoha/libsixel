@@ -377,8 +377,9 @@ At `K=64`, linear RGB is smallest at 120.9 KiB, gamma is 121.1 KiB, OKLab is 130
 
 ## Adaptive hard-binning design
 
-A future adaptive hard-grid must resolve bin depth from the transformed sample
-distribution, not from the `-X` name. Keep three decisions distinct:
+This section proposes automatic selection of hard-grid depth. The implemented [range adaptation at a fixed depth](../pipeline/README.md#range-adaptation-at-a-fixed-depth) instead redistributes unused addresses within the configured budget after observing the retained samples. Its two-pass map does not implement the depth-selection thresholds below. The fixed, explicit `hard` grids used in this document's measurements retain their nominal mapping.
+
+A future automatic depth selector must use the transformed sample distribution, not the `-X` name. Keep three decisions distinct:
 
 1. binning policy, such as `hard`, `soft`, `exact`, or `none`;
 2. hard-grid depth; and

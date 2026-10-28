@@ -423,6 +423,11 @@ heckbert_bucket_mean_check(int scenario)
         : scenario == 2 ? 1U : 3U;
     policy = scenario == 1 || scenario >= 4 ? SIXEL_LUT_POLICY_5BIT
         : scenario == 3 ? SIXEL_LUT_POLICY_NONE : SIXEL_LUT_POLICY_AUTO;
+    /* This oracle checks fractional means within a fixed RGB bucket.
+     * AUTO may refine it into distinct addresses for the observed values. */
+    if (scenario == 0) {
+        policy = SIXEL_LUT_POLICY_6BIT;
+    }
     reversible = scenario == 4;
     for (i = 0U; i < 3U; ++i) {
         for (channel = 0U; channel < depth; ++channel) {
@@ -440,7 +445,7 @@ heckbert_bucket_mean_check(int scenario)
     }
     status = policy_sixel_lut_build_histogram(pixels, 3U * depth, depth,
         depth, SIXEL_PIXELFORMAT_RGB888, SIXEL_QUALITY_AUTO, reversible,
-        policy, &table, allocator);
+        policy, SIXEL_PALETTE_MAX, NULL, &table, allocator);
     ok = SIXEL_SUCCEEDED(status) && table.size ==
         (scenario == 3 ? 2U : 1U);
     if (ok) {

@@ -49,6 +49,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "filter-binning.h"
+#include "palette-sample.h"
 #include "filter-factory-binning.h"
 #include "filter.h"
 #include "timeline-logger.h"
@@ -802,10 +803,12 @@ static SIXELSTATUS
 sixel_kmeans_build_point_set(
     double *samples,
     unsigned int sample_count,
+    unsigned int requested_colors,
     int input_is_float32,
     int pixelformat,
     double const scale[3],
     double const offset[3],
+    sixel_sample_statistics_t *statistics,
     sixel_palette_binning_state_t *binning_state,
     unsigned int bits_per_axis,
     sixel_kmeans_mapping_mode mapping_mode,
@@ -943,7 +946,12 @@ sixel_kmeans_build_point_set(
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    raw_points.statistics = statistics;
+    sixel_sample_statistics_ref(statistics);
     config.binning = binning;
+    config.adaptive_range = requested == SIXEL_PALETTE_BINNING_AUTO;
+    config.requested_colors = requested_colors;
+    config.quantize_model = SIXEL_QUANTIZE_MODEL_KMEANS;
     config.input_is_float32 = input_is_float32;
     memcpy(config.scale, scale, sizeof(config.scale));
     memcpy(config.offset, offset, sizeof(config.offset));
@@ -1223,6 +1231,7 @@ typedef struct sixel_palette_kmeans_build_request {
     int use_reversible;
     int final_merge_mode;
     int gpu_policy;
+    sixel_sample_statistics_t *statistics;
     sixel_palette_binning_state_t *binning_state;
     sixel_allocator_t *allocator;
     int pixelformat;
@@ -1236,6 +1245,7 @@ typedef struct sixel_palette_kmeans_build_request {
 static SIXELSTATUS
 build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
 {
+    sixel_sample_statistics_t *statistics;
     SIXELSTATUS status;
     SIXELSTATUS gpu_status;
     sixel_kmeans_gpu_request_t gpu_request;
@@ -1416,6 +1426,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     force_palette = request->force_palette;
     use_reversible = request->use_reversible;
     final_merge_mode = request->final_merge_mode;
+    statistics = request->statistics;
+    sixel_sample_statistics_ref(statistics);
     binning_state = request->binning_state;
     allocator = request->allocator;
     pixelformat = request->pixelformat;
@@ -1729,12 +1741,25 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     if (seed_enabled && seed_value == 0u) {
         seed_value = 1u;
     }
+    if (statistics == NULL &&
+            (binning_state == NULL || binning_state->policy.requested ==
+                SIXEL_PALETTE_BINNING_AUTO) &&
+            sixel_palette_bin_range_get_strength() != 0u) {
+        status = sixel_palette_prepare_sample_statistics(data, length,
+            pixelformat, sixel_kmeans_colorspace_from_pixelformat(pixelformat),
+            1, &statistics, allocator, logger);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     status = sixel_kmeans_build_point_set(samples,
                                           sample_count,
+                                          reqcolors,
                                           input_is_float32,
                                           pixelformat,
                                           float32_channel_scale,
                                           float32_channel_offset,
+                                          statistics,
                                           binning_state,
                                           binbits,
                                           mapping_mode,
@@ -3216,6 +3241,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                     log_detail);
 
 end:
+    sixel_sample_statistics_unref(statistics);
     if (telemetry != NULL) {
         double now;
         double init_span;
@@ -3472,6 +3498,8 @@ sixel_palette_build_kmeans_internal(
         context != NULL && context->attempt != NULL
             ? &context->attempt->binning
             : NULL;
+    build_request.statistics = sixel_palette_sample_statistics_for(
+        context->attempt, data, length, pixelformat);
     build_request.allocator = work_allocator;
     build_request.pixelformat = pixelformat;
     build_request.treat_input_as_float32 = treat_input_as_float32;

@@ -1250,6 +1250,12 @@ int test_filter_0044_filter_dither_transparent_mask_fence_parallel(
 int test_filter_0045_filter_binning_stream_alpha_zero_disabled(
     int argc,
     char **argv);
+int test_filter_0049_palette_colors_identity_statistics(int argc, char **argv);
+int test_filter_0050_palette_colors_conversion_statistics(int argc, char **argv);
+int test_filter_0051_palette_colors_statistics_disabled(int argc, char **argv);
+int test_filter_0052_palette_colors_hidden_nonfinite(int argc, char **argv);
+int test_filter_0053_palette_colors_failure_output(int argc, char **argv);
+int test_filter_0054_binning_statistics_colorspace(int argc, char **argv);
 int test_filter_0046_filter_sample_parallel_exact(int argc, char **argv);
 int test_gpupal_0001_strtoul(int argc, char **argv);
 int test_gpupal_0002_reserved_key(int argc, char **argv);
@@ -1494,6 +1500,33 @@ int test_palette_0026_sampling_auto(int argc, char **argv);
 int test_palette_0028_sampling_schedule(int argc, char **argv);
 int test_palette_0029_sampling_fallback(int argc, char **argv);
 int test_palette_0030_binning_policy(int argc, char **argv);
+int test_0010_range_native_stream(int argc, char **argv);
+int test_0011_range_masked_stream(int argc, char **argv);
+int test_0012_range_zero_strength(int argc, char **argv);
+int test_0013_range_strength_budget(int argc, char **argv);
+int test_0014_range_strength_option(int argc, char **argv);
+int test_0016_range_sufficient_colors(int argc, char **argv);
+int test_0017_range_unrecoverable_tones(int argc, char **argv);
+int test_0018_range_recoverable_tones(int argc, char **argv);
+int test_0019_range_perceptual_safe_tones(int argc, char **argv);
+int test_0020_range_palette_boundary(int argc, char **argv);
+int test_0021_range_highlight_gate(int argc, char **argv);
+int test_0027_range_model_budget(int argc, char **argv);
+int test_0022_range_candidate_budget(int argc, char **argv);
+int test_0023_range_perceptual_projection(int argc, char **argv);
+int test_0024_range_projection_after_saturation(int argc, char **argv);
+int test_0025_range_candidate_strength(int argc, char **argv);
+int test_0026_range_nominal_boundaries(int argc, char **argv);
+int test_0015_range_encoder_isolation(int argc, char **argv);
+int test_0001_range_heckbert(int argc, char **argv);
+int test_0002_range_kmeans(int argc, char **argv);
+int test_0003_range_medoids(int argc, char **argv);
+int test_0004_range_kcenter(int argc, char **argv);
+int test_0005_range_refinement(int argc, char **argv);
+int test_0006_range_full_grid(int argc, char **argv);
+int test_0007_range_constant(int argc, char **argv);
+int test_0008_range_float(int argc, char **argv);
+int test_0009_range_order(int argc, char **argv);
 int test_palette_0031_weighted_point_set(int argc, char **argv);
 int test_palette_0032_kmeans_binning_policy_output(int argc, char **argv);
 int test_palette_0033_quantizer_capabilities(int argc, char **argv);
@@ -5070,6 +5103,18 @@ static test_entry_t const test_entries[] = {
       test_filter_0044_filter_dither_transparent_mask_fence_parallel },
     { "filter/0045_filter_binning_stream_alpha_zero_disabled",
       test_filter_0045_filter_binning_stream_alpha_zero_disabled },
+    { "filter/0049_palette_colors_identity_statistics",
+      test_filter_0049_palette_colors_identity_statistics },
+    { "filter/0050_palette_colors_conversion_statistics",
+      test_filter_0050_palette_colors_conversion_statistics },
+    { "filter/0051_palette_colors_statistics_disabled",
+      test_filter_0051_palette_colors_statistics_disabled },
+    { "filter/0052_palette_colors_hidden_nonfinite",
+      test_filter_0052_palette_colors_hidden_nonfinite },
+    { "filter/0053_palette_colors_failure_output",
+      test_filter_0053_palette_colors_failure_output },
+    { "filter/0054_binning_statistics_colorspace",
+      test_filter_0054_binning_statistics_colorspace },
     { "filter/0046_filter_sample_parallel_exact",
       test_filter_0046_filter_sample_parallel_exact },
     { "gpu-palette/0001_gpu_palette_threshold_strtoul",
@@ -6409,6 +6454,60 @@ static test_entry_t const test_entries[] = {
       test_palette_0029_sampling_fallback },
     { "palette/0030_binning_policy_contract",
       test_palette_0030_binning_policy },
+    { "palette/adaptive_range/0010_range_native_stream",
+      test_0010_range_native_stream },
+    { "palette/adaptive_range/0011_range_masked_stream",
+      test_0011_range_masked_stream },
+    { "palette/adaptive_range/0012_range_zero_strength",
+      test_0012_range_zero_strength },
+    { "palette/adaptive_range/0013_range_strength_budget",
+      test_0013_range_strength_budget },
+    { "palette/adaptive_range/0014_range_strength_option",
+      test_0014_range_strength_option },
+    { "palette/adaptive_range/0016_range_sufficient_colors",
+      test_0016_range_sufficient_colors },
+    { "palette/adaptive_range/0017_range_unrecoverable_tones",
+      test_0017_range_unrecoverable_tones },
+    { "palette/adaptive_range/0018_range_recoverable_tones",
+      test_0018_range_recoverable_tones },
+    { "palette/adaptive_range/0019_range_perceptual_safe_tones",
+      test_0019_range_perceptual_safe_tones },
+    { "palette/adaptive_range/0020_range_palette_boundary",
+      test_0020_range_palette_boundary },
+    { "palette/adaptive_range/0021_range_highlight_gate",
+      test_0021_range_highlight_gate },
+    { "palette/adaptive_range/0027_range_model_budget",
+      test_0027_range_model_budget },
+    { "palette/adaptive_range/0022_range_candidate_budget",
+      test_0022_range_candidate_budget },
+    { "palette/adaptive_range/0023_range_perceptual_projection",
+      test_0023_range_perceptual_projection },
+    { "palette/adaptive_range/0024_range_projection_after_saturation",
+      test_0024_range_projection_after_saturation },
+    { "palette/adaptive_range/0025_range_candidate_strength",
+      test_0025_range_candidate_strength },
+    { "palette/adaptive_range/0026_range_nominal_boundaries",
+      test_0026_range_nominal_boundaries },
+    { "palette/adaptive_range/0015_range_encoder_isolation",
+      test_0015_range_encoder_isolation },
+    { "palette/adaptive_range/0001_range_heckbert",
+      test_0001_range_heckbert },
+    { "palette/adaptive_range/0002_range_kmeans",
+      test_0002_range_kmeans },
+    { "palette/adaptive_range/0003_range_medoids",
+      test_0003_range_medoids },
+    { "palette/adaptive_range/0004_range_kcenter",
+      test_0004_range_kcenter },
+    { "palette/adaptive_range/0005_range_refinement",
+      test_0005_range_refinement },
+    { "palette/adaptive_range/0006_range_full_grid",
+      test_0006_range_full_grid },
+    { "palette/adaptive_range/0007_range_constant",
+      test_0007_range_constant },
+    { "palette/adaptive_range/0008_range_float",
+      test_0008_range_float },
+    { "palette/adaptive_range/0009_range_order",
+      test_0009_range_order },
     { "palette/0031_weighted_point_set",
       test_palette_0031_weighted_point_set },
     { "palette/0032_kmeans_binning_policy_output",

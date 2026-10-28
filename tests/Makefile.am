@@ -196,6 +196,35 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
+    -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
+    -DBUILD_TEST_0018_RANGE_RECOVERABLE_TONES \
+    -DBUILD_TEST_0019_RANGE_PERCEPTUAL_SAFE_TONES \
+    -DBUILD_TEST_0020_RANGE_PALETTE_BOUNDARY \
+    -DBUILD_TEST_0021_RANGE_HIGHLIGHT_GATE \
+    -DBUILD_TEST_0022_RANGE_CANDIDATE_BUDGET \
+    -DBUILD_TEST_0023_RANGE_PERCEPTUAL_PROJECTION \
+    -DBUILD_TEST_0024_RANGE_PROJECTION_AFTER_SATURATION \
+    -DBUILD_TEST_0025_RANGE_CANDIDATE_STRENGTH \
+    -DBUILD_TEST_0026_RANGE_NOMINAL_BOUNDARIES \
+    -DBUILD_TEST_0027_RANGE_MODEL_BUDGET \
+    -DBUILD_RANGE_BUDGET_TEST_COMMON \
+    -DBUILD_TEST_0010_RANGE_NATIVE_STREAM \
+    -DBUILD_TEST_0011_RANGE_MASKED_STREAM \
+    -DBUILD_TEST_0012_RANGE_ZERO_STRENGTH \
+    -DBUILD_TEST_0013_RANGE_STRENGTH_BUDGET \
+    -DBUILD_TEST_0014_RANGE_STRENGTH_OPTION \
+    -DBUILD_TEST_0015_RANGE_ENCODER_ISOLATION \
+    -DBUILD_TEST_0001_RANGE_HECKBERT \
+    -DBUILD_TEST_0002_RANGE_KMEANS \
+    -DBUILD_TEST_0003_RANGE_MEDOIDS \
+    -DBUILD_TEST_0004_RANGE_KCENTER \
+    -DBUILD_TEST_0005_RANGE_REFINEMENT \
+    -DBUILD_TEST_0006_RANGE_FULL_GRID \
+    -DBUILD_TEST_0007_RANGE_CONSTANT \
+    -DBUILD_TEST_0008_RANGE_FLOAT \
+    -DBUILD_TEST_0009_RANGE_ORDER \
+    -DBUILD_ADAPTIVE_RANGE_TEST_COMMON \
     -DBUILD_TEST_0001_DEFAULTS \
     -DBUILD_TEST_0002_OPTION_ROUTES \
     -DBUILD_TEST_0003_INVALID_OPTION_ATOMICITY \
@@ -1983,6 +2012,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0039_FILTER_BINNING_STREAM_NONE \
     -DBUILD_TEST_0040_FILTER_BINNING_STREAM_EXACT \
     -DBUILD_TEST_0041_FILTER_BINNING_UNIFORM_256 \
+    -DBUILD_PALETTE_COLORS_TEST_COMMON \
+    -DBUILD_TEST_0049_PALETTE_COLORS_IDENTITY_STATISTICS \
+    -DBUILD_TEST_0050_PALETTE_COLORS_CONVERSION_STATISTICS \
+    -DBUILD_TEST_0051_PALETTE_COLORS_STATISTICS_DISABLED \
+    -DBUILD_TEST_0052_PALETTE_COLORS_HIDDEN_NONFINITE \
+    -DBUILD_TEST_0053_PALETTE_COLORS_FAILURE_OUTPUT \
+    -DBUILD_TEST_0054_BINNING_STATISTICS_COLORSPACE \
     -DBUILD_FILTER_BINNING_STREAM_ALPHA_ZERO_TEST_COMMON \
     -DBUILD_TEST_0042_FILTER_BINNING_STREAM_ALPHA_ZERO \
     -DBUILD_FILTER_TRANSPARENT_MASK_FENCE_TEST_COMMON \
@@ -4066,6 +4102,37 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    quant/palette/adaptive_range/0027_range_model_budget.c \
+    quant/palette/adaptive_range/0022_range_candidate_budget.c \
+    quant/palette/adaptive_range/0023_range_perceptual_projection.c \
+    quant/palette/adaptive_range/0024_range_projection_after_saturation.c \
+    quant/palette/adaptive_range/0025_range_candidate_strength.c \
+    quant/palette/adaptive_range/0026_range_nominal_boundaries.c \
+    quant/palette/adaptive_range/range_budget_test_common.c \
+    quant/palette/adaptive_range/range_budget_test_common.h \
+    quant/palette/adaptive_range/0016_range_sufficient_colors.c \
+    quant/palette/adaptive_range/0017_range_unrecoverable_tones.c \
+    quant/palette/adaptive_range/0018_range_recoverable_tones.c \
+    quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c \
+    quant/palette/adaptive_range/0020_range_palette_boundary.c \
+    quant/palette/adaptive_range/0021_range_highlight_gate.c \
+    quant/palette/adaptive_range/0010_range_native_stream.c \
+    quant/palette/adaptive_range/0011_range_masked_stream.c \
+    quant/palette/adaptive_range/0012_range_zero_strength.c \
+    quant/palette/adaptive_range/0013_range_strength_budget.c \
+    quant/palette/adaptive_range/0014_range_strength_option.c \
+    quant/palette/adaptive_range/0015_range_encoder_isolation.c \
+    quant/palette/adaptive_range/0001_range_heckbert.c \
+    quant/palette/adaptive_range/0002_range_kmeans.c \
+    quant/palette/adaptive_range/0003_range_medoids.c \
+    quant/palette/adaptive_range/0004_range_kcenter.c \
+    quant/palette/adaptive_range/0005_range_refinement.c \
+    quant/palette/adaptive_range/0006_range_full_grid.c \
+    quant/palette/adaptive_range/0007_range_constant.c \
+    quant/palette/adaptive_range/0008_range_float.c \
+    quant/palette/adaptive_range/0009_range_order.c \
+    quant/palette/adaptive_range/adaptive_range_test_common.c \
+    quant/palette/adaptive_range/adaptive_range_test_common.h \
     quant/palette/delta_native/0015_delta_signed_threshold.c \
     quant/palette/delta_native/0016_delta_p3_or_recovery.c \
     quant/palette/delta_native/0017_delta_spatial_dispatch.c \
@@ -5792,6 +5859,14 @@ test_runner_SOURCES = test_runner.c \
     processing/dither/perturb/0001_perturb_weights.c \
     processing/dither/perturb/0003_perturb_row_8bit.c \
     processing/dither/perturb/0004_perturb_row_float.c \
+    processing/filter/0049_palette_colors_identity_statistics.c \
+    processing/filter/0050_palette_colors_conversion_statistics.c \
+    processing/filter/0051_palette_colors_statistics_disabled.c \
+    processing/filter/0052_palette_colors_hidden_nonfinite.c \
+    processing/filter/0053_palette_colors_failure_output.c \
+    processing/filter/0054_binning_statistics_colorspace.c \
+    processing/filter/palette_colors_test_common.c \
+    processing/filter/palette_colors_test_common.h \
     processing/filter/filter_test_common.h \
     loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
     loader/wic/0009_loader_wic_pixelformat.c \

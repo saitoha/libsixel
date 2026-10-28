@@ -26,6 +26,7 @@
 #include "config.h"
 #endif
 
+#include <float.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -56,6 +57,7 @@ sixel_sample_stream_init(sixel_sample_stream_t *stream)
         return;
     }
 
+    stream->statistics = NULL;
     stream->frame = NULL;
     stream->buffer = NULL;
     stream->buffer_size = 0u;
@@ -215,6 +217,9 @@ sixel_sample_stream_refresh(sixel_sample_stream_t *stream)
         return SIXEL_BAD_ARGUMENT;
     }
 
+    sixel_sample_statistics_unref(stream->statistics);
+    stream->statistics = NULL;
+
     stream->width = sixel_frame_get_width(stream->frame);
     stream->height = sixel_frame_get_height(stream->frame);
     if (stream->width <= 0 || stream->height <= 0) {
@@ -242,7 +247,149 @@ sixel_sample_stream_dispose(sixel_sample_stream_t *stream)
             stream->frame != NULL) {
         sixel_frame_unref(stream->frame);
     }
+    sixel_sample_statistics_unref(stream->statistics);
     sixel_sample_stream_init(stream);
+}
+
+SIXELSTATUS
+sixel_sample_stream_get_view(
+    sixel_sample_stream_t const *stream,
+    sixel_frame_pixels_view_t *view,
+    sixel_frame_transparency_t *transparency,
+    unsigned int *channels_out,
+    int *input_is_float32_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    int depth;
+    unsigned int channels;
+    int input_is_float32;
+
+    status = SIXEL_BAD_ARGUMENT;
+    frame_if = NULL;
+    depth = 0;
+    channels = 0u;
+    input_is_float32 = 0;
+    if (stream == NULL || view == NULL || transparency == NULL ||
+            channels_out == NULL || input_is_float32_out == NULL ||
+            stream->storage == SIXEL_SAMPLE_STREAM_EMPTY) {
+        return status;
+    }
+    memset(view, 0, sizeof(*view));
+    memset(transparency, 0, sizeof(*transparency));
+    if (stream->storage == SIXEL_SAMPLE_STREAM_BORROWED_BUFFER) {
+        if (stream->buffer == NULL || stream->buffer_size == 0u ||
+                stream->point_count == 0u) {
+            return status;
+        }
+        view->pixelformat = stream->pixelformat;
+        view->colorspace = stream->colorspace;
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(stream->pixelformat)) {
+            view->pixels_float32 = (float *)(void *)stream->buffer;
+        } else {
+            view->pixels = (unsigned char *)(void *)stream->buffer;
+        }
+        *transparency = stream->transparency;
+    } else {
+        if (stream->frame == NULL) {
+            return status;
+        }
+        frame_if = sixel_frame_as_interface(stream->frame);
+        if (frame_if == NULL || frame_if->vtbl == NULL ||
+                frame_if->vtbl->get_pixels == NULL ||
+                frame_if->vtbl->get_transparency == NULL) {
+            return status;
+        }
+        status = frame_if->vtbl->get_pixels(frame_if, view);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (view->width != stream->width ||
+                view->height != stream->height ||
+                view->pixelformat != stream->pixelformat ||
+                view->colorspace != stream->colorspace) {
+            return SIXEL_LOGIC_ERROR;
+        }
+        status = frame_if->vtbl->get_transparency(frame_if, transparency);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    if ((transparency->transparent_mask == NULL &&
+         transparency->transparent_mask_size != 0u) ||
+            (transparency->transparent_mask != NULL &&
+             transparency->transparent_mask_size < stream->point_count)) {
+        return SIXEL_BAD_INPUT;
+    }
+    depth = sixel_helper_compute_depth(view->pixelformat);
+    if (depth <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(view->pixelformat);
+    if (input_is_float32) {
+        if (depth != 3 * (int)sizeof(float) ||
+                view->pixels_float32 == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        channels = 3u;
+    } else {
+        if (view->pixels == NULL ||
+                (view->pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
+                 view->pixelformat != SIXEL_PIXELFORMAT_RGBA8888)) {
+            return SIXEL_BAD_INPUT;
+        }
+        channels = (unsigned int)depth;
+    }
+    if (channels != 3u && channels != 4u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *channels_out = channels;
+    *input_is_float32_out = input_is_float32;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_sample_stream_read(
+    sixel_frame_pixels_view_t const *view,
+    sixel_frame_transparency_t const *transparency,
+    unsigned int channels,
+    int input_is_float32,
+    size_t index,
+    double sample[3],
+    int *visible_out)
+{
+    unsigned int channel;
+
+    channel = 0u;
+    if (view == NULL || transparency == NULL ||
+            sample == NULL || visible_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *visible_out = 0;
+    if (transparency->transparent_mask != NULL &&
+            transparency->transparent_mask[index] != 0u) {
+        return SIXEL_OK;
+    }
+    if (channels == 4u &&
+            transparency->alpha_zero_is_transparent != 0 &&
+            view->pixels[index * channels + 3u] == 0u) {
+        return SIXEL_OK;
+    }
+    for (channel = 0u; channel < 3u; ++channel) {
+        if (input_is_float32) {
+            sample[channel] = (double)
+                view->pixels_float32[index * channels + channel];
+            if (!(sample[channel] <= DBL_MAX &&
+                  sample[channel] >= -DBL_MAX)) {
+                return SIXEL_BAD_INPUT;
+            }
+        } else {
+            sample[channel] = (double)
+                view->pixels[index * channels + channel];
+        }
+    }
+    *visible_out = 1;
+    return SIXEL_OK;
 }
 
 /* emacs Local Variables:      */

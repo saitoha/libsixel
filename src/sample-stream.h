@@ -29,6 +29,7 @@
 #include <sixel.h>
 
 #include "palette-plan.h"
+#include "sample-statistics.h"
 
 typedef enum sixel_sample_stream_storage {
     SIXEL_SAMPLE_STREAM_EMPTY = 0,
@@ -46,6 +47,8 @@ typedef enum sixel_sample_stream_storage {
  * to infer sampling provenance from frame dimensions or scheduler state.
  */
 typedef struct sixel_sample_stream {
+    /* Owned immutable statistics reference, or NULL when not requested. */
+    sixel_sample_statistics_t *statistics;
     sixel_frame_t *frame;
     void const *buffer;
     size_t buffer_size;
@@ -99,7 +102,20 @@ sixel_sample_stream_refresh(sixel_sample_stream_t *stream);
 SIXEL_INTERNAL_API void
 sixel_sample_stream_dispose(sixel_sample_stream_t *stream);
 
+/* Read canonical coordinates and visibility through the artifact contract. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sample_stream_get_view(sixel_sample_stream_t const *stream,
+    sixel_frame_pixels_view_t *view,
+    sixel_frame_transparency_t *transparency,
+    unsigned int *channels_out, int *input_is_float32_out);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_sample_stream_read(sixel_frame_pixels_view_t const *view,
+    sixel_frame_transparency_t const *transparency,
+    unsigned int channels, int input_is_float32, size_t index,
+    double sample[3], int *visible_out);
+
 #endif /* LIBSIXEL_SAMPLE_STREAM_H */
+
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

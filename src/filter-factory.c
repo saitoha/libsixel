@@ -40,6 +40,7 @@
 #include "filter-load.h"
 #include "filter-lookup.h"
 #include "filter-palette.h"
+#include "filter-palette-colors.h"
 #include "filter-fhedt.h"
 #include "filter-vptree.h"
 #include "filter-eytzinger.h"
@@ -113,6 +114,13 @@ sixel_filter_factory_binning_init(sixel_filter_t *filter,
     }
     binning_config = (sixel_filter_binning_config_t const *)config;
     return sixel_filter_binning_init(filter, binning_config);
+}
+
+static SIXELSTATUS
+sixel_filter_factory_palette_colors_init(sixel_filter_t *filter,
+    const void *config)
+{
+    return sixel_filter_palette_colors_init(filter, config);
 }
 
 static SIXELSTATUS
@@ -302,6 +310,8 @@ static const sixel_filter_factory_entry_t
      sixel_filter_factory_1d_eytzinger_init},
     {"resize", SIXEL_FILTER_KIND_RESIZE, sixel_filter_factory_resize_init},
     {"sample", SIXEL_FILTER_KIND_SAMPLE, sixel_filter_factory_sample_init},
+    {"palette-colorspace", SIXEL_FILTER_KIND_PALETTE_COLORS,
+     sixel_filter_factory_palette_colors_init},
     {"binning", SIXEL_FILTER_KIND_BINNING,
      sixel_filter_factory_binning_init},
 };

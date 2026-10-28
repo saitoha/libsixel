@@ -161,6 +161,14 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-bin-histogram.h \
                 $(srcdir)/palette-plan.c \
                 $(srcdir)/palette-plan.h \
+                $(srcdir)/sample-statistics.c \
+                $(srcdir)/sample-statistics.h \
+                $(srcdir)/palette-sample.c \
+                $(srcdir)/palette-sample.h \
+                $(srcdir)/filter-palette-colors.c \
+                $(srcdir)/filter-palette-colors.h \
+                $(srcdir)/filter-factory-palette-colors.c \
+                $(srcdir)/filter-factory-palette-colors.h \
                 $(srcdir)/sample-stream.c \
                 $(srcdir)/sample-stream.h \
                 $(srcdir)/weighted-point-set.c \

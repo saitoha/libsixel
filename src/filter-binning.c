@@ -423,6 +423,10 @@ sixel_filter_binning_add_samples(
     double sample[3];
     double mapped[3];
     double weight;
+    sixel_palette_bin_range_t range;
+    unsigned int bin;
+    int adaptive;
+    unsigned int strength;
 
     status = SIXEL_OK;
     policy = SIXEL_PALETTE_BINNING_AUTO;
@@ -438,6 +442,28 @@ sixel_filter_binning_add_samples(
     policy = (sixel_palette_binning_policy_t)
         config->binning->policy.effective;
 
+    strength = sixel_palette_bin_range_get_strength();
+    adaptive = strength != 0u && config->adaptive_range &&
+        policy == SIXEL_PALETTE_BINNING_HARD;
+    if (adaptive) {
+        sixel_palette_bin_range_init(&range, histogram->bin_count);
+        if (input->statistics == NULL ||
+                input->statistics->colorspace != input->colorspace ||
+                input->statistics->point_count != input->point_count ||
+                input->statistics->byte_coordinates ==
+                    (config->input_is_float32 != 0)) {
+            return SIXEL_LOGIC_ERROR;
+        }
+        status = sixel_palette_bin_range_prepare(&range, input->statistics,
+            NULL, input, config->requested_colors, config->scale,
+            config->offset, config->binning->grid_map, 0, NULL, strength,
+            config->quantize_model);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        adaptive = range.active[0] || range.active[1] || range.active[2];
+    }
+
     for (index = 0u; index < input->point_count; ++index) {
         for (channel = 0u; channel < 3u; ++channel) {
             sample[channel] = input->coordinates[index * 3u + channel];
@@ -448,6 +474,17 @@ sixel_filter_binning_add_samples(
                 config->scale,
                 config->offset,
                 config->binning->grid_map);
+            if (adaptive) {
+                bin = (unsigned int)(mapped[channel] * range.levels);
+                if (bin >= range.levels) {
+                    bin = range.levels - 1u;
+                }
+                bin = sixel_palette_bin_range_sample_index(&range,
+                    channel, bin,
+                    config->input_is_float32 ? mapped[channel] :
+                    sample[channel], index);
+                mapped[channel] = ((double)bin + 0.5) / range.levels;
+            }
         }
         if (policy == SIXEL_PALETTE_BINNING_SOFT) {
             status = sixel_palette_bin_histogram_add_soft_trilinear(
@@ -472,150 +509,6 @@ sixel_filter_binning_add_samples(
 }
 
 static SIXELSTATUS
-sixel_filter_binning_get_stream_view(
-    sixel_sample_stream_t const *stream,
-    sixel_frame_pixels_view_t *view,
-    sixel_frame_transparency_t *transparency,
-    unsigned int *channels_out,
-    int *input_is_float32_out)
-{
-    SIXELSTATUS status;
-    sixel_frame_interface_t *frame_if;
-    int depth;
-    unsigned int channels;
-    int input_is_float32;
-
-    status = SIXEL_BAD_ARGUMENT;
-    frame_if = NULL;
-    depth = 0;
-    channels = 0u;
-    input_is_float32 = 0;
-    if (stream == NULL || view == NULL || transparency == NULL ||
-            channels_out == NULL || input_is_float32_out == NULL ||
-            stream->storage == SIXEL_SAMPLE_STREAM_EMPTY) {
-        return status;
-    }
-    memset(view, 0, sizeof(*view));
-    memset(transparency, 0, sizeof(*transparency));
-    if (stream->storage == SIXEL_SAMPLE_STREAM_BORROWED_BUFFER) {
-        if (stream->buffer == NULL || stream->buffer_size == 0u ||
-                stream->point_count == 0u) {
-            return status;
-        }
-        view->pixelformat = stream->pixelformat;
-        view->colorspace = stream->colorspace;
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(stream->pixelformat)) {
-            view->pixels_float32 = (float *)(void *)stream->buffer;
-        } else {
-            view->pixels = (unsigned char *)(void *)stream->buffer;
-        }
-        *transparency = stream->transparency;
-    } else {
-        if (stream->frame == NULL) {
-            return status;
-        }
-        frame_if = sixel_frame_as_interface(stream->frame);
-        if (frame_if == NULL || frame_if->vtbl == NULL ||
-                frame_if->vtbl->get_pixels == NULL ||
-                frame_if->vtbl->get_transparency == NULL) {
-            return status;
-        }
-        status = frame_if->vtbl->get_pixels(frame_if, view);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-        if (view->width != stream->width ||
-                view->height != stream->height ||
-                view->pixelformat != stream->pixelformat ||
-                view->colorspace != stream->colorspace) {
-            return SIXEL_LOGIC_ERROR;
-        }
-        status = frame_if->vtbl->get_transparency(frame_if, transparency);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-    }
-    if ((transparency->transparent_mask == NULL &&
-         transparency->transparent_mask_size != 0u) ||
-            (transparency->transparent_mask != NULL &&
-             transparency->transparent_mask_size < stream->point_count)) {
-        return SIXEL_BAD_INPUT;
-    }
-    depth = sixel_helper_compute_depth(view->pixelformat);
-    if (depth <= 0) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(view->pixelformat);
-    if (input_is_float32) {
-        if (depth != 3 * (int)sizeof(float) ||
-                view->pixels_float32 == NULL) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        channels = 3u;
-    } else {
-        if (view->pixels == NULL ||
-                (view->pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
-                 view->pixelformat != SIXEL_PIXELFORMAT_RGBA8888)) {
-            return SIXEL_BAD_INPUT;
-        }
-        channels = (unsigned int)depth;
-    }
-    if (channels != 3u && channels != 4u) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    *channels_out = channels;
-    *input_is_float32_out = input_is_float32;
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-sixel_filter_binning_read_stream_sample(
-    sixel_frame_pixels_view_t const *view,
-    sixel_frame_transparency_t const *transparency,
-    unsigned int channels,
-    int input_is_float32,
-    size_t index,
-    double sample[3],
-    int *visible_out)
-{
-    unsigned int channel;
-
-    channel = 0u;
-    if (view == NULL || transparency == NULL ||
-            sample == NULL || visible_out == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    *visible_out = 0;
-    if (transparency->transparent_mask != NULL &&
-            transparency->transparent_mask[index] != 0u) {
-        return SIXEL_OK;
-    }
-    if (channels == 4u &&
-            transparency->alpha_zero_is_transparent != 0 &&
-            view->pixels[index * channels + 3u] == 0u) {
-        return SIXEL_OK;
-    }
-    for (channel = 0u; channel < 3u; ++channel) {
-        if (input_is_float32) {
-            sample[channel] = (double)
-                view->pixels_float32[index * channels + channel];
-            if (!(sample[channel] <= DBL_MAX &&
-                  sample[channel] >= -DBL_MAX)) {
-                return SIXEL_BAD_INPUT;
-            }
-        } else {
-            sample[channel] = (double)
-                view->pixels[index * channels + channel];
-        }
-    }
-    if (!sixel_filter_binning_coordinates_are_valid(sample)) {
-        return SIXEL_BAD_INPUT;
-    }
-    *visible_out = 1;
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
 sixel_filter_binning_add_stream(
     sixel_palette_bin_histogram_t *histogram,
     sixel_sample_stream_t const *stream,
@@ -635,6 +528,10 @@ sixel_filter_binning_add_stream(
     double sample[3];
     double mapped[3];
     double total_weight;
+    sixel_palette_bin_range_t range;
+    unsigned int bin;
+    int adaptive;
+    unsigned int strength;
 
     status = SIXEL_BAD_ARGUMENT;
     memset(&view, 0, sizeof(view));
@@ -653,7 +550,7 @@ sixel_filter_binning_add_stream(
             total_weight_out == NULL) {
         return status;
     }
-    status = sixel_filter_binning_get_stream_view(stream,
+    status = sixel_sample_stream_get_view(stream,
                                                    &view,
                                                    &transparency,
                                                    &channels,
@@ -671,8 +568,29 @@ sixel_filter_binning_add_stream(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    strength = sixel_palette_bin_range_get_strength();
+    adaptive = strength != 0u && config->adaptive_range &&
+        policy == SIXEL_PALETTE_BINNING_HARD;
+    if (adaptive) {
+        sixel_palette_bin_range_init(&range, histogram->bin_count);
+        if (stream->statistics == NULL ||
+                stream->statistics->colorspace != stream->colorspace ||
+                stream->statistics->byte_coordinates ==
+                    (input_is_float32 != 0)) {
+            return SIXEL_LOGIC_ERROR;
+        }
+        status = sixel_palette_bin_range_prepare(&range, stream->statistics,
+            stream, NULL, config->requested_colors, config->scale,
+            config->offset, config->binning->grid_map, 0, NULL, strength,
+            config->quantize_model);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        adaptive = range.active[0] || range.active[1] || range.active[2];
+    }
+
     for (index = 0u; index < stream->point_count; ++index) {
-        status = sixel_filter_binning_read_stream_sample(
+        status = sixel_sample_stream_read(
             &view,
             &transparency,
             channels,
@@ -694,6 +612,17 @@ sixel_filter_binning_add_stream(
                 config->scale,
                 config->offset,
                 config->binning->grid_map);
+            if (adaptive) {
+                bin = (unsigned int)(mapped[channel] * range.levels);
+                if (bin >= range.levels) {
+                    bin = range.levels - 1u;
+                }
+                bin = sixel_palette_bin_range_sample_index(&range,
+                    channel, bin,
+                    input_is_float32 ? mapped[channel] : sample[channel],
+                    (size_t)total_weight);
+                mapped[channel] = ((double)bin + 0.5) / range.levels;
+            }
         }
         if (policy == SIXEL_PALETTE_BINNING_SOFT) {
             status = sixel_palette_bin_histogram_add_soft_trilinear(
@@ -749,7 +678,7 @@ sixel_filter_binning_add_exact_stream(
             allocator == NULL || total_weight_out == NULL) {
         return status;
     }
-    status = sixel_filter_binning_get_stream_view(stream,
+    status = sixel_sample_stream_get_view(stream,
                                                    &view,
                                                    &transparency,
                                                    &channels,
@@ -758,7 +687,7 @@ sixel_filter_binning_add_exact_stream(
         return status;
     }
     for (index = 0u; index < stream->point_count; ++index) {
-        status = sixel_filter_binning_read_stream_sample(
+        status = sixel_sample_stream_read(
             &view,
             &transparency,
             channels,
@@ -820,7 +749,7 @@ sixel_filter_binning_publish_direct_stream(
             stream->point_count > SIZE_MAX / 3u / sizeof(double)) {
         return status;
     }
-    status = sixel_filter_binning_get_stream_view(stream,
+    status = sixel_sample_stream_get_view(stream,
                                                    &view,
                                                    &transparency,
                                                    &channels,
@@ -835,7 +764,7 @@ sixel_filter_binning_publish_direct_stream(
         return SIXEL_BAD_ALLOCATION;
     }
     for (index = 0u; index < stream->point_count; ++index) {
-        status = sixel_filter_binning_read_stream_sample(
+        status = sixel_sample_stream_read(
             &view,
             &transparency,
             channels,

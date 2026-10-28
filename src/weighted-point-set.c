@@ -47,6 +47,7 @@ sixel_weighted_point_set_init(sixel_weighted_point_set_t *set)
         return;
     }
 
+    set->statistics = NULL;
     set->coordinates = NULL;
     set->weights = NULL;
     set->allocator = NULL;
@@ -209,6 +210,7 @@ sixel_weighted_point_set_dispose(sixel_weighted_point_set_t *set)
             sixel_allocator_free(allocator, set->weights);
         }
     }
+    sixel_sample_statistics_unref(set->statistics);
     sixel_weighted_point_set_init(set);
     sixel_allocator_unref(allocator);
 }

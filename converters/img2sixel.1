@@ -469,6 +469,10 @@ to neighboring bins with trilinear weights. Explicit \fBexact\fP,
 \fBauto\fP selects hard binning for a compatible weighted-point quantizer;
 other quantizers select a compatible input form.
 The \fBSIXEL_BINNING_POLICY\fP environment provides the default.
+The auto suboption \fBstrength=S\fP accepts 0..100 (default 100).
+It spends that percentage of spare bin addresses; zero keeps the nominal
+grid and skips range sampling. \fBSIXEL_BINNING_RANGE_STRENGTH\fP supplies
+the default; an explicit suboption takes precedence.
 .TP 5
 .B \-F \fIPOLICY\fP, \-\-merge\-policy=\fIPOLICY\fP
 configure final palette merging independently of the quantizer.
@@ -2394,6 +2398,12 @@ adaptive-grid. The \fB\-4/\-\-sampling\-policy\fP option takes precedence.
 select how sampled colors become weighted quantizer input. Accepts auto,
 none, exact, hard, or soft. The \fB\-5/\-\-binning\-policy\fP option takes
 precedence.
+.TP 5
+.B SIXEL_BINNING_RANGE_STRENGTH
+.br
+Set the spare-address fraction for automatic range binning, an integer
+from 0 through 100 (default 100). The \fB\-5 auto:strength\fP suboption
+takes precedence.
 .TP 5
 .B SIXEL_PALETTE_FINAL_MERGE
 .br

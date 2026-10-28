@@ -60,6 +60,7 @@
 #include "palette-common-snap.h"
 #include "palette-kmedoids.h"
 #include "palette-bin-histogram.h"
+#include "palette-sample.h"
 #include "palette-private.h"
 #include "options.h"
 #include "pixelformat.h"
@@ -4295,6 +4296,10 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
                                unsigned int channels,
                                unsigned int pixel_stride,
                                int input_is_float32,
+                               int pixelformat,
+                               sixel_sample_statistics_t *statistics,
+                               int adaptive_range,
+                               unsigned int requested_colors,
                                double const *float_scale,
                                double const *float_offset,
                                unsigned int histbits,
@@ -4308,6 +4313,9 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
                                unsigned int *visible_count_out,
                                sixel_allocator_t *allocator)
 {
+    sixel_sample_statistics_t *owned_statistics;
+    sixel_sample_stream_t gate_samples;
+    sixel_frame_transparency_t gate_transparency;
     SIXELSTATUS status;
     unsigned int hist_levels;
     unsigned int hist_shift;
@@ -4365,7 +4373,13 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
     double c0;
     double c1;
     double c2;
+    sixel_palette_bin_range_t range;
+    unsigned int range_lut[3][256];
+    unsigned int projection_index;
+    unsigned int strength;
+    unsigned int value;
 
+    owned_statistics = NULL;
     status = SIXEL_BAD_ARGUMENT;
     hist_levels = 0u;
     hist_shift = 0u;
@@ -4472,11 +4486,52 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
 
     hist_levels = 1u << histbits;
     hist_shift = 8u - histbits;
+    sixel_palette_bin_range_init(&range, hist_levels);
+    strength = sixel_palette_bin_range_get_strength();
+    if (adaptive_range && strength != 0u) {
+        if (statistics == NULL) {
+            status = sixel_palette_prepare_sample_statistics(data,
+                length - length % pixel_stride, pixelformat,
+                sixel_pixelformat_get_colorspace(pixelformat), 1,
+                &owned_statistics, allocator, NULL);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            statistics = owned_statistics;
+        }
+        sixel_sample_stream_init(&gate_samples);
+        memset(&gate_transparency, 0, sizeof(gate_transparency));
+        gate_transparency.alpha_zero_is_transparent = 1;
+        status = sixel_sample_stream_bind_borrowed_buffer(&gate_samples,
+            data, length - length % pixel_stride, pixelformat,
+            statistics->colorspace, &gate_transparency,
+            SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_palette_bin_range_prepare(&range, statistics,
+                &gate_samples, NULL, requested_colors, float_scale,
+                float_offset, SIXEL_PALETTE_BINNING_GRID_NONE, 1, NULL,
+                strength, SIXEL_QUANTIZE_MODEL_KMEDOIDS);
+        }
+        sixel_sample_stream_dispose(&gate_samples);
+        if (SIXEL_FAILED(status)) {
+            sixel_sample_statistics_unref(owned_statistics);
+            return status;
+        }
+    }
+    for (channel = 0u; channel < 3u; ++channel) {
+        for (value = 0u; value < 256u; ++value) {
+            range_lut[channel][value] = input_is_float32 ? value >> hist_shift
+                : sixel_palette_bin_range_sample_index(&range, channel,
+                    value >> hist_shift, (double)value, 0u);
+        }
+    }
     bin_count64 = (uint64_t)hist_levels
                 * (uint64_t)hist_levels
                 * (uint64_t)hist_levels;
     if (bin_count64 > (uint64_t)UINT_MAX) {
-        return SIXEL_BAD_ALLOCATION;
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
     bin_count = (unsigned int)bin_count64;
 
@@ -4501,25 +4556,8 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
     if (bin_hits == NULL || bin_seen == NULL
             || bin_selected == NULL || bin_colors == NULL
             || bin_sum == NULL || bin_sum_sq == NULL) {
-        if (bin_hits != NULL) {
-            sixel_allocator_free(allocator, bin_hits);
-        }
-        if (bin_seen != NULL) {
-            sixel_allocator_free(allocator, bin_seen);
-        }
-        if (bin_selected != NULL) {
-            sixel_allocator_free(allocator, bin_selected);
-        }
-        if (bin_colors != NULL) {
-            sixel_allocator_free(allocator, bin_colors);
-        }
-        if (bin_sum != NULL) {
-            sixel_allocator_free(allocator, bin_sum);
-        }
-        if (bin_sum_sq != NULL) {
-            sixel_allocator_free(allocator, bin_sum_sq);
-        }
-        return SIXEL_BAD_ALLOCATION;
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
     for (index = 0u; index < bin_count; ++index) {
         bin_hits[index] = 0u;
@@ -4584,6 +4622,12 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
             if (bin2 >= hist_levels) {
                 bin2 = hist_levels - 1u;
             }
+            bin0 = sixel_palette_bin_range_sample_index(&range, 0u, bin0,
+                c0, visible_count);
+            bin1 = sixel_palette_bin_range_sample_index(&range, 1u, bin1,
+                c1, visible_count);
+            bin2 = sixel_palette_bin_range_sample_index(&range, 2u, bin2,
+                c2, visible_count);
             bin = (bin0 << (histbits * 2u))
                 | (bin1 << histbits)
                 | bin2;
@@ -4610,9 +4654,9 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
             c0 = (double)data[base + 0u];
             c1 = (double)data[base + 1u];
             c2 = (double)data[base + 2u];
-            bin0 = data[base + 0u] >> hist_shift;
-            bin1 = data[base + 1u] >> hist_shift;
-            bin2 = data[base + 2u] >> hist_shift;
+            bin0 = range_lut[0][data[base + 0u]];
+            bin1 = range_lut[1][data[base + 1u]];
+            bin2 = range_lut[2][data[base + 2u]];
             bin = (bin0 << (histbits * 2u))
                 | (bin1 << histbits)
                 | bin2;
@@ -4842,6 +4886,7 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
+    projection_index = 0u;
     for (index = 0u; index < pixel_count; ++index) {
         base = index * pixel_stride;
         if (input_is_float32) {
@@ -4893,6 +4938,12 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
             if (bin2 >= hist_levels) {
                 bin2 = hist_levels - 1u;
             }
+            bin0 = sixel_palette_bin_range_sample_index(&range, 0u, bin0,
+                c0, projection_index);
+            bin1 = sixel_palette_bin_range_sample_index(&range, 1u, bin1,
+                c1, projection_index);
+            bin2 = sixel_palette_bin_range_sample_index(&range, 2u, bin2,
+                c2, projection_index);
             bin = (bin0 << (histbits * 2u))
                 | (bin1 << histbits)
                 | bin2;
@@ -4903,13 +4954,14 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
             c0 = (double)data[base + 0u];
             c1 = (double)data[base + 1u];
             c2 = (double)data[base + 2u];
-            bin0 = data[base + 0u] >> hist_shift;
-            bin1 = data[base + 1u] >> hist_shift;
-            bin2 = data[base + 2u] >> hist_shift;
+            bin0 = range_lut[0][data[base + 0u]];
+            bin1 = range_lut[1][data[base + 1u]];
+            bin2 = range_lut[2][data[base + 2u]];
             bin = (bin0 << (histbits * 2u))
                 | (bin1 << histbits)
                 | bin2;
         }
+        ++projection_index;
         if (bin >= bin_count) {
             continue;
         }
@@ -4946,6 +4998,7 @@ sixel_kmedoids_collect_samples(unsigned char const *data,
     status = SIXEL_OK;
 
 end:
+    sixel_sample_statistics_unref(owned_statistics);
     if (selected_colors != NULL) {
         sixel_allocator_free(allocator, selected_colors);
     }
@@ -7834,6 +7887,10 @@ sixel_kmedoids_test_collect_samples(
                                           channels,
                                           pixel_stride,
                                           input_is_float32,
+                                          SIXEL_PIXELFORMAT_RGB888,
+                                          NULL,
+                                          0,
+                                          SIXEL_PALETTE_MAX,
                                           NULL,
                                           NULL,
                                           histbits,
@@ -11449,6 +11506,7 @@ build_palette_kmedoids(unsigned char **result,
                        int force_palette,
                        int use_reversible,
                        int final_merge_mode,
+                       sixel_palette_build_attempt_t *attempt,
                        sixel_allocator_t *allocator,
                        int pixelformat,
                        int treat_input_as_float32,
@@ -11808,6 +11866,15 @@ build_palette_kmedoids(unsigned char **result,
                                             channels,
                                             pixel_stride,
                                             input_is_float32,
+                                            pixelformat,
+                                            sixel_palette_sample_statistics_for(
+                                                attempt, data, length,
+                                                pixelformat),
+                                            !use_reversible &&
+                                            (attempt == NULL ||
+                                             attempt->binning.policy.requested
+                                                == SIXEL_PALETTE_BINNING_AUTO),
+                                            reqcolors,
                                             bin_scale,
                                             bin_offset,
                                             histbits,
@@ -12737,6 +12804,7 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
                                         ->use_reversible,
                                     SIXEL_PALETTE_CONTEXT(palette)
                                         ->final_merge_mode,
+                                    SIXEL_PALETTE_CONTEXT(palette)->attempt,
                                     work_allocator,
                                     pixelformat,
                                     treat_input_as_float32,

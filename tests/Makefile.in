@@ -138,6 +138,37 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	quant/palette/adaptive_range/0027_range_model_budget.c \
+	quant/palette/adaptive_range/0022_range_candidate_budget.c \
+	quant/palette/adaptive_range/0023_range_perceptual_projection.c \
+	quant/palette/adaptive_range/0024_range_projection_after_saturation.c \
+	quant/palette/adaptive_range/0025_range_candidate_strength.c \
+	quant/palette/adaptive_range/0026_range_nominal_boundaries.c \
+	quant/palette/adaptive_range/range_budget_test_common.c \
+	quant/palette/adaptive_range/range_budget_test_common.h \
+	quant/palette/adaptive_range/0016_range_sufficient_colors.c \
+	quant/palette/adaptive_range/0017_range_unrecoverable_tones.c \
+	quant/palette/adaptive_range/0018_range_recoverable_tones.c \
+	quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c \
+	quant/palette/adaptive_range/0020_range_palette_boundary.c \
+	quant/palette/adaptive_range/0021_range_highlight_gate.c \
+	quant/palette/adaptive_range/0010_range_native_stream.c \
+	quant/palette/adaptive_range/0011_range_masked_stream.c \
+	quant/palette/adaptive_range/0012_range_zero_strength.c \
+	quant/palette/adaptive_range/0013_range_strength_budget.c \
+	quant/palette/adaptive_range/0014_range_strength_option.c \
+	quant/palette/adaptive_range/0015_range_encoder_isolation.c \
+	quant/palette/adaptive_range/0001_range_heckbert.c \
+	quant/palette/adaptive_range/0002_range_kmeans.c \
+	quant/palette/adaptive_range/0003_range_medoids.c \
+	quant/palette/adaptive_range/0004_range_kcenter.c \
+	quant/palette/adaptive_range/0005_range_refinement.c \
+	quant/palette/adaptive_range/0006_range_full_grid.c \
+	quant/palette/adaptive_range/0007_range_constant.c \
+	quant/palette/adaptive_range/0008_range_float.c \
+	quant/palette/adaptive_range/0009_range_order.c \
+	quant/palette/adaptive_range/adaptive_range_test_common.c \
+	quant/palette/adaptive_range/adaptive_range_test_common.h \
 	quant/palette/delta_native/0015_delta_signed_threshold.c \
 	quant/palette/delta_native/0016_delta_p3_or_recovery.c \
 	quant/palette/delta_native/0017_delta_spatial_dispatch.c \
@@ -1858,6 +1889,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/dither/perturb/0001_perturb_weights.c \
 	processing/dither/perturb/0003_perturb_row_8bit.c \
 	processing/dither/perturb/0004_perturb_row_float.c \
+	processing/filter/0049_palette_colors_identity_statistics.c \
+	processing/filter/0050_palette_colors_conversion_statistics.c \
+	processing/filter/0051_palette_colors_statistics_disabled.c \
+	processing/filter/0052_palette_colors_hidden_nonfinite.c \
+	processing/filter/0053_palette_colors_failure_output.c \
+	processing/filter/0054_binning_statistics_colorspace.c \
+	processing/filter/palette_colors_test_common.c \
+	processing/filter/palette_colors_test_common.h \
 	processing/filter/filter_test_common.h \
 	loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 	loader/wic/0009_loader_wic_pixelformat.c \
@@ -4051,6 +4090,35 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0027_range_model_budget.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-range_budget_test_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0010_range_native_stream.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0011_range_masked_stream.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0012_range_zero_strength.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0013_range_strength_budget.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0014_range_strength_option.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0001_range_heckbert.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0002_range_kmeans.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0003_range_medoids.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0004_range_kcenter.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0005_range_refinement.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0006_range_full_grid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0007_range_constant.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0008_range_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-0009_range_order.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/adaptive_range/test_runner-adaptive_range_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0015_delta_signed_threshold.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0016_delta_p3_or_recovery.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/delta_native/test_runner-0017_delta_spatial_dispatch.$(OBJEXT) \
@@ -5729,6 +5797,13 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0001_perturb_weights.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0003_perturb_row_8bit.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0004_perturb_row_float.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0049_palette_colors_identity_statistics.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0050_palette_colors_conversion_statistics.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0051_palette_colors_statistics_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0053_palette_colors_failure_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0054_binning_statistics_colorspace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-palette_colors_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/wic/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
@@ -10283,8 +10358,15 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po \
 	processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po \
 	processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Po \
+	processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Po \
+	processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Po \
+	processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Po \
+	processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Po \
+	processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Po \
+	processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Po \
 	processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po \
 	processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po \
+	processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po \
 	processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po \
@@ -10902,6 +10984,35 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po \
 	quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Po \
+	quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Po \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0001_srgb_gamma.Po \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0002_srgb_linear.Po \
 	quant/palette/alpha_float/$(DEPDIR)/test_runner-0003_srgb_oklab.Po \
@@ -12448,6 +12559,35 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_RANGE_RECOVERABLE_TONES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_RANGE_PERCEPTUAL_SAFE_TONES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_RANGE_PALETTE_BOUNDARY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_RANGE_HIGHLIGHT_GATE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_RANGE_CANDIDATE_BUDGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_RANGE_PERCEPTUAL_PROJECTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_RANGE_PROJECTION_AFTER_SATURATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_RANGE_CANDIDATE_STRENGTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_RANGE_NOMINAL_BOUNDARIES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_RANGE_MODEL_BUDGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RANGE_BUDGET_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_RANGE_NATIVE_STREAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_RANGE_MASKED_STREAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_RANGE_ZERO_STRENGTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_RANGE_STRENGTH_BUDGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_RANGE_STRENGTH_OPTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_RANGE_ENCODER_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_RANGE_HECKBERT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_RANGE_KMEANS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_RANGE_MEDOIDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_RANGE_KCENTER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_RANGE_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_RANGE_FULL_GRID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_RANGE_CONSTANT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_RANGE_FLOAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_RANGE_ORDER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ADAPTIVE_RANGE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DEFAULTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_OPTION_ROUTES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_INVALID_OPTION_ATOMICITY \
@@ -14235,6 +14375,13 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_FILTER_BINNING_STREAM_NONE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_FILTER_BINNING_STREAM_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_FILTER_BINNING_UNIFORM_256 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_COLORS_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_PALETTE_COLORS_IDENTITY_STATISTICS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_PALETTE_COLORS_CONVERSION_STATISTICS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_PALETTE_COLORS_STATISTICS_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_PALETTE_COLORS_HIDDEN_NONFINITE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_PALETTE_COLORS_FAILURE_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_BINNING_STATISTICS_COLORSPACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FILTER_BINNING_STREAM_ALPHA_ZERO_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_FILTER_BINNING_STREAM_ALPHA_ZERO \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FILTER_TRANSPARENT_MASK_FENCE_TEST_COMMON \
@@ -16350,6 +16497,37 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0027_range_model_budget.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0022_range_candidate_budget.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0023_range_perceptual_projection.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0024_range_projection_after_saturation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0025_range_candidate_strength.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0026_range_nominal_boundaries.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/range_budget_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/range_budget_test_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0016_range_sufficient_colors.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0017_range_unrecoverable_tones.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0018_range_recoverable_tones.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0020_range_palette_boundary.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0021_range_highlight_gate.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0010_range_native_stream.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0011_range_masked_stream.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0012_range_zero_strength.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0013_range_strength_budget.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0014_range_strength_option.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0015_range_encoder_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0001_range_heckbert.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0002_range_kmeans.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0003_range_medoids.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0004_range_kcenter.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0005_range_refinement.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0006_range_full_grid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0007_range_constant.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0008_range_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/0009_range_order.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/adaptive_range_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/adaptive_range/adaptive_range_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0015_delta_signed_threshold.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0016_delta_p3_or_recovery.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/delta_native/0017_delta_spatial_dispatch.c \
@@ -18076,6 +18254,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0001_perturb_weights.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0003_perturb_row_8bit.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0004_perturb_row_float.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0049_palette_colors_identity_statistics.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0050_palette_colors_conversion_statistics.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0051_palette_colors_statistics_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0052_palette_colors_hidden_nonfinite.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0053_palette_colors_failure_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0054_binning_statistics_colorspace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/palette_colors_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/palette_colors_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/wic/0009_loader_wic_pixelformat.c \
@@ -20587,6 +20773,99 @@ processing/lookup/libfloatlookuptests_la-0032_delaunay_float_bulk.lo:  \
 
 libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+quant/palette/adaptive_range/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/adaptive_range
+	@: >>quant/palette/adaptive_range/$(am__dirstamp)
+quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) quant/palette/adaptive_range/$(DEPDIR)
+	@: >>quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0027_range_model_budget.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-range_budget_test_common.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0010_range_native_stream.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0011_range_masked_stream.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0012_range_zero_strength.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0013_range_strength_budget.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0014_range_strength_option.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0001_range_heckbert.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0002_range_kmeans.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0003_range_medoids.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0004_range_kcenter.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0005_range_refinement.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0006_range_full_grid.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0007_range_constant.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0008_range_float.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-0009_range_order.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+quant/palette/adaptive_range/test_runner-adaptive_range_test_common.$(OBJEXT):  \
+	quant/palette/adaptive_range/$(am__dirstamp) \
+	quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
 quant/palette/delta_native/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette/delta_native
 	@: >>quant/palette/delta_native/$(am__dirstamp)
@@ -25861,6 +26140,27 @@ processing/dither/perturb/test_runner-0003_perturb_row_8bit.$(OBJEXT):  \
 processing/dither/perturb/test_runner-0004_perturb_row_float.$(OBJEXT):  \
 	processing/dither/perturb/$(am__dirstamp) \
 	processing/dither/perturb/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0049_palette_colors_identity_statistics.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0050_palette_colors_conversion_statistics.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0051_palette_colors_statistics_disabled.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0053_palette_colors_failure_output.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0054_binning_statistics_colorspace.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-palette_colors_test_common.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
 loader/coregraphics/$(am__dirstamp):
 	@$(MKDIR_P) loader/coregraphics
 	@: >>loader/coregraphics/$(am__dirstamp)
@@ -32917,6 +33217,7 @@ mostlyclean-compile:
 	-rm -f processing/threadpool/*.$(OBJEXT)
 	-rm -f processing/timeline/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
+	-rm -f quant/palette/adaptive_range/*.$(OBJEXT)
 	-rm -f quant/palette/alpha_float/*.$(OBJEXT)
 	-rm -f quant/palette/animation_native/*.$(OBJEXT)
 	-rm -f quant/palette/auto_cover_float/*.$(OBJEXT)
@@ -35284,8 +35585,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0044_filter_dither_transparent_mask_fence_parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0045_filter_binning_stream_alpha_zero_disabled.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0046_filter_sample_parallel_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-filter_binning_stream_alpha_zero_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-filter_transparent_mask_fence_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0002_frame_float_request.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0003_frame_transparent_mask_clip.Po@am__quote@ # am--include-marker
@@ -35903,6 +36211,35 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-output_float_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-packed_alpha_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-srgb_contract_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0001_srgb_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0002_srgb_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/alpha_float/$(DEPDIR)/test_runner-0003_srgb_oklab.Po@am__quote@ # am--include-marker
@@ -36898,6 +37235,412 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0027_range_model_budget.o: quant/palette/adaptive_range/0027_range_model_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0027_range_model_budget.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Tpo -c -o quant/palette/adaptive_range/test_runner-0027_range_model_budget.o `test -f 'quant/palette/adaptive_range/0027_range_model_budget.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0027_range_model_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0027_range_model_budget.c' object='quant/palette/adaptive_range/test_runner-0027_range_model_budget.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0027_range_model_budget.o `test -f 'quant/palette/adaptive_range/0027_range_model_budget.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0027_range_model_budget.c
+
+quant/palette/adaptive_range/test_runner-0027_range_model_budget.obj: quant/palette/adaptive_range/0027_range_model_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0027_range_model_budget.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Tpo -c -o quant/palette/adaptive_range/test_runner-0027_range_model_budget.obj `if test -f 'quant/palette/adaptive_range/0027_range_model_budget.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0027_range_model_budget.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0027_range_model_budget.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0027_range_model_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0027_range_model_budget.c' object='quant/palette/adaptive_range/test_runner-0027_range_model_budget.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0027_range_model_budget.obj `if test -f 'quant/palette/adaptive_range/0027_range_model_budget.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0027_range_model_budget.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0027_range_model_budget.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.o: quant/palette/adaptive_range/0022_range_candidate_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Tpo -c -o quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.o `test -f 'quant/palette/adaptive_range/0022_range_candidate_budget.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0022_range_candidate_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0022_range_candidate_budget.c' object='quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.o `test -f 'quant/palette/adaptive_range/0022_range_candidate_budget.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0022_range_candidate_budget.c
+
+quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.obj: quant/palette/adaptive_range/0022_range_candidate_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Tpo -c -o quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.obj `if test -f 'quant/palette/adaptive_range/0022_range_candidate_budget.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0022_range_candidate_budget.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0022_range_candidate_budget.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0022_range_candidate_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0022_range_candidate_budget.c' object='quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0022_range_candidate_budget.obj `if test -f 'quant/palette/adaptive_range/0022_range_candidate_budget.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0022_range_candidate_budget.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0022_range_candidate_budget.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.o: quant/palette/adaptive_range/0023_range_perceptual_projection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Tpo -c -o quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.o `test -f 'quant/palette/adaptive_range/0023_range_perceptual_projection.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0023_range_perceptual_projection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0023_range_perceptual_projection.c' object='quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.o `test -f 'quant/palette/adaptive_range/0023_range_perceptual_projection.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0023_range_perceptual_projection.c
+
+quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.obj: quant/palette/adaptive_range/0023_range_perceptual_projection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Tpo -c -o quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.obj `if test -f 'quant/palette/adaptive_range/0023_range_perceptual_projection.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0023_range_perceptual_projection.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0023_range_perceptual_projection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0023_range_perceptual_projection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0023_range_perceptual_projection.c' object='quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0023_range_perceptual_projection.obj `if test -f 'quant/palette/adaptive_range/0023_range_perceptual_projection.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0023_range_perceptual_projection.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0023_range_perceptual_projection.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.o: quant/palette/adaptive_range/0024_range_projection_after_saturation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Tpo -c -o quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.o `test -f 'quant/palette/adaptive_range/0024_range_projection_after_saturation.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0024_range_projection_after_saturation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0024_range_projection_after_saturation.c' object='quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.o `test -f 'quant/palette/adaptive_range/0024_range_projection_after_saturation.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0024_range_projection_after_saturation.c
+
+quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.obj: quant/palette/adaptive_range/0024_range_projection_after_saturation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Tpo -c -o quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.obj `if test -f 'quant/palette/adaptive_range/0024_range_projection_after_saturation.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0024_range_projection_after_saturation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0024_range_projection_after_saturation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0024_range_projection_after_saturation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0024_range_projection_after_saturation.c' object='quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0024_range_projection_after_saturation.obj `if test -f 'quant/palette/adaptive_range/0024_range_projection_after_saturation.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0024_range_projection_after_saturation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0024_range_projection_after_saturation.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.o: quant/palette/adaptive_range/0025_range_candidate_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Tpo -c -o quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.o `test -f 'quant/palette/adaptive_range/0025_range_candidate_strength.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0025_range_candidate_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0025_range_candidate_strength.c' object='quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.o `test -f 'quant/palette/adaptive_range/0025_range_candidate_strength.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0025_range_candidate_strength.c
+
+quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.obj: quant/palette/adaptive_range/0025_range_candidate_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Tpo -c -o quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.obj `if test -f 'quant/palette/adaptive_range/0025_range_candidate_strength.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0025_range_candidate_strength.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0025_range_candidate_strength.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0025_range_candidate_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0025_range_candidate_strength.c' object='quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0025_range_candidate_strength.obj `if test -f 'quant/palette/adaptive_range/0025_range_candidate_strength.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0025_range_candidate_strength.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0025_range_candidate_strength.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.o: quant/palette/adaptive_range/0026_range_nominal_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Tpo -c -o quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.o `test -f 'quant/palette/adaptive_range/0026_range_nominal_boundaries.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0026_range_nominal_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0026_range_nominal_boundaries.c' object='quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.o `test -f 'quant/palette/adaptive_range/0026_range_nominal_boundaries.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0026_range_nominal_boundaries.c
+
+quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.obj: quant/palette/adaptive_range/0026_range_nominal_boundaries.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Tpo -c -o quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.obj `if test -f 'quant/palette/adaptive_range/0026_range_nominal_boundaries.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0026_range_nominal_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0026_range_nominal_boundaries.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0026_range_nominal_boundaries.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0026_range_nominal_boundaries.c' object='quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0026_range_nominal_boundaries.obj `if test -f 'quant/palette/adaptive_range/0026_range_nominal_boundaries.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0026_range_nominal_boundaries.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0026_range_nominal_boundaries.c'; fi`
+
+quant/palette/adaptive_range/test_runner-range_budget_test_common.o: quant/palette/adaptive_range/range_budget_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-range_budget_test_common.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Tpo -c -o quant/palette/adaptive_range/test_runner-range_budget_test_common.o `test -f 'quant/palette/adaptive_range/range_budget_test_common.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/range_budget_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/range_budget_test_common.c' object='quant/palette/adaptive_range/test_runner-range_budget_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-range_budget_test_common.o `test -f 'quant/palette/adaptive_range/range_budget_test_common.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/range_budget_test_common.c
+
+quant/palette/adaptive_range/test_runner-range_budget_test_common.obj: quant/palette/adaptive_range/range_budget_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-range_budget_test_common.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Tpo -c -o quant/palette/adaptive_range/test_runner-range_budget_test_common.obj `if test -f 'quant/palette/adaptive_range/range_budget_test_common.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/range_budget_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/range_budget_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-range_budget_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/range_budget_test_common.c' object='quant/palette/adaptive_range/test_runner-range_budget_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-range_budget_test_common.obj `if test -f 'quant/palette/adaptive_range/range_budget_test_common.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/range_budget_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/range_budget_test_common.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.o: quant/palette/adaptive_range/0016_range_sufficient_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Tpo -c -o quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.o `test -f 'quant/palette/adaptive_range/0016_range_sufficient_colors.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0016_range_sufficient_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0016_range_sufficient_colors.c' object='quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.o `test -f 'quant/palette/adaptive_range/0016_range_sufficient_colors.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0016_range_sufficient_colors.c
+
+quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.obj: quant/palette/adaptive_range/0016_range_sufficient_colors.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Tpo -c -o quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.obj `if test -f 'quant/palette/adaptive_range/0016_range_sufficient_colors.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0016_range_sufficient_colors.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0016_range_sufficient_colors.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0016_range_sufficient_colors.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0016_range_sufficient_colors.c' object='quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0016_range_sufficient_colors.obj `if test -f 'quant/palette/adaptive_range/0016_range_sufficient_colors.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0016_range_sufficient_colors.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0016_range_sufficient_colors.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.o: quant/palette/adaptive_range/0017_range_unrecoverable_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Tpo -c -o quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.o `test -f 'quant/palette/adaptive_range/0017_range_unrecoverable_tones.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0017_range_unrecoverable_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0017_range_unrecoverable_tones.c' object='quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.o `test -f 'quant/palette/adaptive_range/0017_range_unrecoverable_tones.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0017_range_unrecoverable_tones.c
+
+quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.obj: quant/palette/adaptive_range/0017_range_unrecoverable_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Tpo -c -o quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.obj `if test -f 'quant/palette/adaptive_range/0017_range_unrecoverable_tones.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0017_range_unrecoverable_tones.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0017_range_unrecoverable_tones.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0017_range_unrecoverable_tones.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0017_range_unrecoverable_tones.c' object='quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0017_range_unrecoverable_tones.obj `if test -f 'quant/palette/adaptive_range/0017_range_unrecoverable_tones.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0017_range_unrecoverable_tones.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0017_range_unrecoverable_tones.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.o: quant/palette/adaptive_range/0018_range_recoverable_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Tpo -c -o quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.o `test -f 'quant/palette/adaptive_range/0018_range_recoverable_tones.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0018_range_recoverable_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0018_range_recoverable_tones.c' object='quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.o `test -f 'quant/palette/adaptive_range/0018_range_recoverable_tones.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0018_range_recoverable_tones.c
+
+quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.obj: quant/palette/adaptive_range/0018_range_recoverable_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Tpo -c -o quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.obj `if test -f 'quant/palette/adaptive_range/0018_range_recoverable_tones.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0018_range_recoverable_tones.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0018_range_recoverable_tones.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0018_range_recoverable_tones.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0018_range_recoverable_tones.c' object='quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0018_range_recoverable_tones.obj `if test -f 'quant/palette/adaptive_range/0018_range_recoverable_tones.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0018_range_recoverable_tones.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0018_range_recoverable_tones.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.o: quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Tpo -c -o quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.o `test -f 'quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c' object='quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.o `test -f 'quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c
+
+quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.obj: quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Tpo -c -o quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.obj `if test -f 'quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0019_range_perceptual_safe_tones.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c' object='quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0019_range_perceptual_safe_tones.obj `if test -f 'quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0019_range_perceptual_safe_tones.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.o: quant/palette/adaptive_range/0020_range_palette_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Tpo -c -o quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.o `test -f 'quant/palette/adaptive_range/0020_range_palette_boundary.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0020_range_palette_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0020_range_palette_boundary.c' object='quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.o `test -f 'quant/palette/adaptive_range/0020_range_palette_boundary.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0020_range_palette_boundary.c
+
+quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.obj: quant/palette/adaptive_range/0020_range_palette_boundary.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Tpo -c -o quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.obj `if test -f 'quant/palette/adaptive_range/0020_range_palette_boundary.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0020_range_palette_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0020_range_palette_boundary.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0020_range_palette_boundary.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0020_range_palette_boundary.c' object='quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0020_range_palette_boundary.obj `if test -f 'quant/palette/adaptive_range/0020_range_palette_boundary.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0020_range_palette_boundary.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0020_range_palette_boundary.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.o: quant/palette/adaptive_range/0021_range_highlight_gate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Tpo -c -o quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.o `test -f 'quant/palette/adaptive_range/0021_range_highlight_gate.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0021_range_highlight_gate.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0021_range_highlight_gate.c' object='quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.o `test -f 'quant/palette/adaptive_range/0021_range_highlight_gate.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0021_range_highlight_gate.c
+
+quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.obj: quant/palette/adaptive_range/0021_range_highlight_gate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Tpo -c -o quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.obj `if test -f 'quant/palette/adaptive_range/0021_range_highlight_gate.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0021_range_highlight_gate.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0021_range_highlight_gate.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0021_range_highlight_gate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0021_range_highlight_gate.c' object='quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0021_range_highlight_gate.obj `if test -f 'quant/palette/adaptive_range/0021_range_highlight_gate.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0021_range_highlight_gate.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0021_range_highlight_gate.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0010_range_native_stream.o: quant/palette/adaptive_range/0010_range_native_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0010_range_native_stream.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Tpo -c -o quant/palette/adaptive_range/test_runner-0010_range_native_stream.o `test -f 'quant/palette/adaptive_range/0010_range_native_stream.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0010_range_native_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0010_range_native_stream.c' object='quant/palette/adaptive_range/test_runner-0010_range_native_stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0010_range_native_stream.o `test -f 'quant/palette/adaptive_range/0010_range_native_stream.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0010_range_native_stream.c
+
+quant/palette/adaptive_range/test_runner-0010_range_native_stream.obj: quant/palette/adaptive_range/0010_range_native_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0010_range_native_stream.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Tpo -c -o quant/palette/adaptive_range/test_runner-0010_range_native_stream.obj `if test -f 'quant/palette/adaptive_range/0010_range_native_stream.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0010_range_native_stream.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0010_range_native_stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0010_range_native_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0010_range_native_stream.c' object='quant/palette/adaptive_range/test_runner-0010_range_native_stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0010_range_native_stream.obj `if test -f 'quant/palette/adaptive_range/0010_range_native_stream.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0010_range_native_stream.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0010_range_native_stream.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0011_range_masked_stream.o: quant/palette/adaptive_range/0011_range_masked_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0011_range_masked_stream.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Tpo -c -o quant/palette/adaptive_range/test_runner-0011_range_masked_stream.o `test -f 'quant/palette/adaptive_range/0011_range_masked_stream.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0011_range_masked_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0011_range_masked_stream.c' object='quant/palette/adaptive_range/test_runner-0011_range_masked_stream.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0011_range_masked_stream.o `test -f 'quant/palette/adaptive_range/0011_range_masked_stream.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0011_range_masked_stream.c
+
+quant/palette/adaptive_range/test_runner-0011_range_masked_stream.obj: quant/palette/adaptive_range/0011_range_masked_stream.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0011_range_masked_stream.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Tpo -c -o quant/palette/adaptive_range/test_runner-0011_range_masked_stream.obj `if test -f 'quant/palette/adaptive_range/0011_range_masked_stream.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0011_range_masked_stream.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0011_range_masked_stream.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0011_range_masked_stream.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0011_range_masked_stream.c' object='quant/palette/adaptive_range/test_runner-0011_range_masked_stream.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0011_range_masked_stream.obj `if test -f 'quant/palette/adaptive_range/0011_range_masked_stream.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0011_range_masked_stream.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0011_range_masked_stream.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0012_range_zero_strength.o: quant/palette/adaptive_range/0012_range_zero_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0012_range_zero_strength.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Tpo -c -o quant/palette/adaptive_range/test_runner-0012_range_zero_strength.o `test -f 'quant/palette/adaptive_range/0012_range_zero_strength.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0012_range_zero_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0012_range_zero_strength.c' object='quant/palette/adaptive_range/test_runner-0012_range_zero_strength.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0012_range_zero_strength.o `test -f 'quant/palette/adaptive_range/0012_range_zero_strength.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0012_range_zero_strength.c
+
+quant/palette/adaptive_range/test_runner-0012_range_zero_strength.obj: quant/palette/adaptive_range/0012_range_zero_strength.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0012_range_zero_strength.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Tpo -c -o quant/palette/adaptive_range/test_runner-0012_range_zero_strength.obj `if test -f 'quant/palette/adaptive_range/0012_range_zero_strength.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0012_range_zero_strength.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0012_range_zero_strength.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0012_range_zero_strength.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0012_range_zero_strength.c' object='quant/palette/adaptive_range/test_runner-0012_range_zero_strength.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0012_range_zero_strength.obj `if test -f 'quant/palette/adaptive_range/0012_range_zero_strength.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0012_range_zero_strength.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0012_range_zero_strength.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0013_range_strength_budget.o: quant/palette/adaptive_range/0013_range_strength_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0013_range_strength_budget.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Tpo -c -o quant/palette/adaptive_range/test_runner-0013_range_strength_budget.o `test -f 'quant/palette/adaptive_range/0013_range_strength_budget.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0013_range_strength_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0013_range_strength_budget.c' object='quant/palette/adaptive_range/test_runner-0013_range_strength_budget.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0013_range_strength_budget.o `test -f 'quant/palette/adaptive_range/0013_range_strength_budget.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0013_range_strength_budget.c
+
+quant/palette/adaptive_range/test_runner-0013_range_strength_budget.obj: quant/palette/adaptive_range/0013_range_strength_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0013_range_strength_budget.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Tpo -c -o quant/palette/adaptive_range/test_runner-0013_range_strength_budget.obj `if test -f 'quant/palette/adaptive_range/0013_range_strength_budget.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0013_range_strength_budget.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0013_range_strength_budget.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0013_range_strength_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0013_range_strength_budget.c' object='quant/palette/adaptive_range/test_runner-0013_range_strength_budget.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0013_range_strength_budget.obj `if test -f 'quant/palette/adaptive_range/0013_range_strength_budget.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0013_range_strength_budget.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0013_range_strength_budget.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0014_range_strength_option.o: quant/palette/adaptive_range/0014_range_strength_option.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0014_range_strength_option.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Tpo -c -o quant/palette/adaptive_range/test_runner-0014_range_strength_option.o `test -f 'quant/palette/adaptive_range/0014_range_strength_option.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0014_range_strength_option.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0014_range_strength_option.c' object='quant/palette/adaptive_range/test_runner-0014_range_strength_option.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0014_range_strength_option.o `test -f 'quant/palette/adaptive_range/0014_range_strength_option.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0014_range_strength_option.c
+
+quant/palette/adaptive_range/test_runner-0014_range_strength_option.obj: quant/palette/adaptive_range/0014_range_strength_option.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0014_range_strength_option.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Tpo -c -o quant/palette/adaptive_range/test_runner-0014_range_strength_option.obj `if test -f 'quant/palette/adaptive_range/0014_range_strength_option.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0014_range_strength_option.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0014_range_strength_option.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0014_range_strength_option.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0014_range_strength_option.c' object='quant/palette/adaptive_range/test_runner-0014_range_strength_option.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0014_range_strength_option.obj `if test -f 'quant/palette/adaptive_range/0014_range_strength_option.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0014_range_strength_option.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0014_range_strength_option.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.o: quant/palette/adaptive_range/0015_range_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Tpo -c -o quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.o `test -f 'quant/palette/adaptive_range/0015_range_encoder_isolation.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0015_range_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0015_range_encoder_isolation.c' object='quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.o `test -f 'quant/palette/adaptive_range/0015_range_encoder_isolation.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0015_range_encoder_isolation.c
+
+quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.obj: quant/palette/adaptive_range/0015_range_encoder_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Tpo -c -o quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.obj `if test -f 'quant/palette/adaptive_range/0015_range_encoder_isolation.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0015_range_encoder_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0015_range_encoder_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0015_range_encoder_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0015_range_encoder_isolation.c' object='quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0015_range_encoder_isolation.obj `if test -f 'quant/palette/adaptive_range/0015_range_encoder_isolation.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0015_range_encoder_isolation.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0015_range_encoder_isolation.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0001_range_heckbert.o: quant/palette/adaptive_range/0001_range_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0001_range_heckbert.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Tpo -c -o quant/palette/adaptive_range/test_runner-0001_range_heckbert.o `test -f 'quant/palette/adaptive_range/0001_range_heckbert.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0001_range_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0001_range_heckbert.c' object='quant/palette/adaptive_range/test_runner-0001_range_heckbert.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0001_range_heckbert.o `test -f 'quant/palette/adaptive_range/0001_range_heckbert.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0001_range_heckbert.c
+
+quant/palette/adaptive_range/test_runner-0001_range_heckbert.obj: quant/palette/adaptive_range/0001_range_heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0001_range_heckbert.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Tpo -c -o quant/palette/adaptive_range/test_runner-0001_range_heckbert.obj `if test -f 'quant/palette/adaptive_range/0001_range_heckbert.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0001_range_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0001_range_heckbert.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0001_range_heckbert.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0001_range_heckbert.c' object='quant/palette/adaptive_range/test_runner-0001_range_heckbert.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0001_range_heckbert.obj `if test -f 'quant/palette/adaptive_range/0001_range_heckbert.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0001_range_heckbert.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0001_range_heckbert.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0002_range_kmeans.o: quant/palette/adaptive_range/0002_range_kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0002_range_kmeans.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Tpo -c -o quant/palette/adaptive_range/test_runner-0002_range_kmeans.o `test -f 'quant/palette/adaptive_range/0002_range_kmeans.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0002_range_kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0002_range_kmeans.c' object='quant/palette/adaptive_range/test_runner-0002_range_kmeans.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0002_range_kmeans.o `test -f 'quant/palette/adaptive_range/0002_range_kmeans.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0002_range_kmeans.c
+
+quant/palette/adaptive_range/test_runner-0002_range_kmeans.obj: quant/palette/adaptive_range/0002_range_kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0002_range_kmeans.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Tpo -c -o quant/palette/adaptive_range/test_runner-0002_range_kmeans.obj `if test -f 'quant/palette/adaptive_range/0002_range_kmeans.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0002_range_kmeans.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0002_range_kmeans.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0002_range_kmeans.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0002_range_kmeans.c' object='quant/palette/adaptive_range/test_runner-0002_range_kmeans.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0002_range_kmeans.obj `if test -f 'quant/palette/adaptive_range/0002_range_kmeans.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0002_range_kmeans.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0002_range_kmeans.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0003_range_medoids.o: quant/palette/adaptive_range/0003_range_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0003_range_medoids.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Tpo -c -o quant/palette/adaptive_range/test_runner-0003_range_medoids.o `test -f 'quant/palette/adaptive_range/0003_range_medoids.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0003_range_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0003_range_medoids.c' object='quant/palette/adaptive_range/test_runner-0003_range_medoids.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0003_range_medoids.o `test -f 'quant/palette/adaptive_range/0003_range_medoids.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0003_range_medoids.c
+
+quant/palette/adaptive_range/test_runner-0003_range_medoids.obj: quant/palette/adaptive_range/0003_range_medoids.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0003_range_medoids.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Tpo -c -o quant/palette/adaptive_range/test_runner-0003_range_medoids.obj `if test -f 'quant/palette/adaptive_range/0003_range_medoids.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0003_range_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0003_range_medoids.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0003_range_medoids.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0003_range_medoids.c' object='quant/palette/adaptive_range/test_runner-0003_range_medoids.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0003_range_medoids.obj `if test -f 'quant/palette/adaptive_range/0003_range_medoids.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0003_range_medoids.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0003_range_medoids.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0004_range_kcenter.o: quant/palette/adaptive_range/0004_range_kcenter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0004_range_kcenter.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Tpo -c -o quant/palette/adaptive_range/test_runner-0004_range_kcenter.o `test -f 'quant/palette/adaptive_range/0004_range_kcenter.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0004_range_kcenter.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0004_range_kcenter.c' object='quant/palette/adaptive_range/test_runner-0004_range_kcenter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0004_range_kcenter.o `test -f 'quant/palette/adaptive_range/0004_range_kcenter.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0004_range_kcenter.c
+
+quant/palette/adaptive_range/test_runner-0004_range_kcenter.obj: quant/palette/adaptive_range/0004_range_kcenter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0004_range_kcenter.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Tpo -c -o quant/palette/adaptive_range/test_runner-0004_range_kcenter.obj `if test -f 'quant/palette/adaptive_range/0004_range_kcenter.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0004_range_kcenter.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0004_range_kcenter.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0004_range_kcenter.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0004_range_kcenter.c' object='quant/palette/adaptive_range/test_runner-0004_range_kcenter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0004_range_kcenter.obj `if test -f 'quant/palette/adaptive_range/0004_range_kcenter.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0004_range_kcenter.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0004_range_kcenter.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0005_range_refinement.o: quant/palette/adaptive_range/0005_range_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0005_range_refinement.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Tpo -c -o quant/palette/adaptive_range/test_runner-0005_range_refinement.o `test -f 'quant/palette/adaptive_range/0005_range_refinement.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0005_range_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0005_range_refinement.c' object='quant/palette/adaptive_range/test_runner-0005_range_refinement.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0005_range_refinement.o `test -f 'quant/palette/adaptive_range/0005_range_refinement.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0005_range_refinement.c
+
+quant/palette/adaptive_range/test_runner-0005_range_refinement.obj: quant/palette/adaptive_range/0005_range_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0005_range_refinement.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Tpo -c -o quant/palette/adaptive_range/test_runner-0005_range_refinement.obj `if test -f 'quant/palette/adaptive_range/0005_range_refinement.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0005_range_refinement.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0005_range_refinement.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0005_range_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0005_range_refinement.c' object='quant/palette/adaptive_range/test_runner-0005_range_refinement.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0005_range_refinement.obj `if test -f 'quant/palette/adaptive_range/0005_range_refinement.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0005_range_refinement.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0005_range_refinement.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0006_range_full_grid.o: quant/palette/adaptive_range/0006_range_full_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0006_range_full_grid.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Tpo -c -o quant/palette/adaptive_range/test_runner-0006_range_full_grid.o `test -f 'quant/palette/adaptive_range/0006_range_full_grid.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0006_range_full_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0006_range_full_grid.c' object='quant/palette/adaptive_range/test_runner-0006_range_full_grid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0006_range_full_grid.o `test -f 'quant/palette/adaptive_range/0006_range_full_grid.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0006_range_full_grid.c
+
+quant/palette/adaptive_range/test_runner-0006_range_full_grid.obj: quant/palette/adaptive_range/0006_range_full_grid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0006_range_full_grid.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Tpo -c -o quant/palette/adaptive_range/test_runner-0006_range_full_grid.obj `if test -f 'quant/palette/adaptive_range/0006_range_full_grid.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0006_range_full_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0006_range_full_grid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0006_range_full_grid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0006_range_full_grid.c' object='quant/palette/adaptive_range/test_runner-0006_range_full_grid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0006_range_full_grid.obj `if test -f 'quant/palette/adaptive_range/0006_range_full_grid.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0006_range_full_grid.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0006_range_full_grid.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0007_range_constant.o: quant/palette/adaptive_range/0007_range_constant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0007_range_constant.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Tpo -c -o quant/palette/adaptive_range/test_runner-0007_range_constant.o `test -f 'quant/palette/adaptive_range/0007_range_constant.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0007_range_constant.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0007_range_constant.c' object='quant/palette/adaptive_range/test_runner-0007_range_constant.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0007_range_constant.o `test -f 'quant/palette/adaptive_range/0007_range_constant.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0007_range_constant.c
+
+quant/palette/adaptive_range/test_runner-0007_range_constant.obj: quant/palette/adaptive_range/0007_range_constant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0007_range_constant.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Tpo -c -o quant/palette/adaptive_range/test_runner-0007_range_constant.obj `if test -f 'quant/palette/adaptive_range/0007_range_constant.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0007_range_constant.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0007_range_constant.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0007_range_constant.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0007_range_constant.c' object='quant/palette/adaptive_range/test_runner-0007_range_constant.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0007_range_constant.obj `if test -f 'quant/palette/adaptive_range/0007_range_constant.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0007_range_constant.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0007_range_constant.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0008_range_float.o: quant/palette/adaptive_range/0008_range_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0008_range_float.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Tpo -c -o quant/palette/adaptive_range/test_runner-0008_range_float.o `test -f 'quant/palette/adaptive_range/0008_range_float.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0008_range_float.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0008_range_float.c' object='quant/palette/adaptive_range/test_runner-0008_range_float.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0008_range_float.o `test -f 'quant/palette/adaptive_range/0008_range_float.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0008_range_float.c
+
+quant/palette/adaptive_range/test_runner-0008_range_float.obj: quant/palette/adaptive_range/0008_range_float.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0008_range_float.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Tpo -c -o quant/palette/adaptive_range/test_runner-0008_range_float.obj `if test -f 'quant/palette/adaptive_range/0008_range_float.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0008_range_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0008_range_float.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0008_range_float.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0008_range_float.c' object='quant/palette/adaptive_range/test_runner-0008_range_float.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0008_range_float.obj `if test -f 'quant/palette/adaptive_range/0008_range_float.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0008_range_float.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0008_range_float.c'; fi`
+
+quant/palette/adaptive_range/test_runner-0009_range_order.o: quant/palette/adaptive_range/0009_range_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0009_range_order.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Tpo -c -o quant/palette/adaptive_range/test_runner-0009_range_order.o `test -f 'quant/palette/adaptive_range/0009_range_order.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0009_range_order.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0009_range_order.c' object='quant/palette/adaptive_range/test_runner-0009_range_order.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0009_range_order.o `test -f 'quant/palette/adaptive_range/0009_range_order.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/0009_range_order.c
+
+quant/palette/adaptive_range/test_runner-0009_range_order.obj: quant/palette/adaptive_range/0009_range_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-0009_range_order.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Tpo -c -o quant/palette/adaptive_range/test_runner-0009_range_order.obj `if test -f 'quant/palette/adaptive_range/0009_range_order.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0009_range_order.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0009_range_order.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-0009_range_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/0009_range_order.c' object='quant/palette/adaptive_range/test_runner-0009_range_order.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-0009_range_order.obj `if test -f 'quant/palette/adaptive_range/0009_range_order.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/0009_range_order.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/0009_range_order.c'; fi`
+
+quant/palette/adaptive_range/test_runner-adaptive_range_test_common.o: quant/palette/adaptive_range/adaptive_range_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-adaptive_range_test_common.o -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Tpo -c -o quant/palette/adaptive_range/test_runner-adaptive_range_test_common.o `test -f 'quant/palette/adaptive_range/adaptive_range_test_common.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/adaptive_range_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/adaptive_range_test_common.c' object='quant/palette/adaptive_range/test_runner-adaptive_range_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-adaptive_range_test_common.o `test -f 'quant/palette/adaptive_range/adaptive_range_test_common.c' || echo '$(srcdir)/'`quant/palette/adaptive_range/adaptive_range_test_common.c
+
+quant/palette/adaptive_range/test_runner-adaptive_range_test_common.obj: quant/palette/adaptive_range/adaptive_range_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/adaptive_range/test_runner-adaptive_range_test_common.obj -MD -MP -MF quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Tpo -c -o quant/palette/adaptive_range/test_runner-adaptive_range_test_common.obj `if test -f 'quant/palette/adaptive_range/adaptive_range_test_common.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/adaptive_range_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/adaptive_range_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Tpo quant/palette/adaptive_range/$(DEPDIR)/test_runner-adaptive_range_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/adaptive_range/adaptive_range_test_common.c' object='quant/palette/adaptive_range/test_runner-adaptive_range_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/adaptive_range/test_runner-adaptive_range_test_common.obj `if test -f 'quant/palette/adaptive_range/adaptive_range_test_common.c'; then $(CYGPATH_W) 'quant/palette/adaptive_range/adaptive_range_test_common.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/adaptive_range/adaptive_range_test_common.c'; fi`
 
 quant/palette/delta_native/test_runner-0015_delta_signed_threshold.o: quant/palette/delta_native/0015_delta_signed_threshold.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/delta_native/test_runner-0015_delta_signed_threshold.o -MD -MP -MF quant/palette/delta_native/$(DEPDIR)/test_runner-0015_delta_signed_threshold.Tpo -c -o quant/palette/delta_native/test_runner-0015_delta_signed_threshold.o `test -f 'quant/palette/delta_native/0015_delta_signed_threshold.c' || echo '$(srcdir)/'`quant/palette/delta_native/0015_delta_signed_threshold.c
@@ -60390,6 +61133,104 @@ processing/dither/perturb/test_runner-0004_perturb_row_float.obj: processing/dit
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/perturb/0004_perturb_row_float.c' object='processing/dither/perturb/test_runner-0004_perturb_row_float.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/perturb/test_runner-0004_perturb_row_float.obj `if test -f 'processing/dither/perturb/0004_perturb_row_float.c'; then $(CYGPATH_W) 'processing/dither/perturb/0004_perturb_row_float.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/perturb/0004_perturb_row_float.c'; fi`
+
+processing/filter/test_runner-0049_palette_colors_identity_statistics.o: processing/filter/0049_palette_colors_identity_statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0049_palette_colors_identity_statistics.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Tpo -c -o processing/filter/test_runner-0049_palette_colors_identity_statistics.o `test -f 'processing/filter/0049_palette_colors_identity_statistics.c' || echo '$(srcdir)/'`processing/filter/0049_palette_colors_identity_statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Tpo processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0049_palette_colors_identity_statistics.c' object='processing/filter/test_runner-0049_palette_colors_identity_statistics.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0049_palette_colors_identity_statistics.o `test -f 'processing/filter/0049_palette_colors_identity_statistics.c' || echo '$(srcdir)/'`processing/filter/0049_palette_colors_identity_statistics.c
+
+processing/filter/test_runner-0049_palette_colors_identity_statistics.obj: processing/filter/0049_palette_colors_identity_statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0049_palette_colors_identity_statistics.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Tpo -c -o processing/filter/test_runner-0049_palette_colors_identity_statistics.obj `if test -f 'processing/filter/0049_palette_colors_identity_statistics.c'; then $(CYGPATH_W) 'processing/filter/0049_palette_colors_identity_statistics.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0049_palette_colors_identity_statistics.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Tpo processing/filter/$(DEPDIR)/test_runner-0049_palette_colors_identity_statistics.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0049_palette_colors_identity_statistics.c' object='processing/filter/test_runner-0049_palette_colors_identity_statistics.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0049_palette_colors_identity_statistics.obj `if test -f 'processing/filter/0049_palette_colors_identity_statistics.c'; then $(CYGPATH_W) 'processing/filter/0049_palette_colors_identity_statistics.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0049_palette_colors_identity_statistics.c'; fi`
+
+processing/filter/test_runner-0050_palette_colors_conversion_statistics.o: processing/filter/0050_palette_colors_conversion_statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0050_palette_colors_conversion_statistics.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Tpo -c -o processing/filter/test_runner-0050_palette_colors_conversion_statistics.o `test -f 'processing/filter/0050_palette_colors_conversion_statistics.c' || echo '$(srcdir)/'`processing/filter/0050_palette_colors_conversion_statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Tpo processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0050_palette_colors_conversion_statistics.c' object='processing/filter/test_runner-0050_palette_colors_conversion_statistics.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0050_palette_colors_conversion_statistics.o `test -f 'processing/filter/0050_palette_colors_conversion_statistics.c' || echo '$(srcdir)/'`processing/filter/0050_palette_colors_conversion_statistics.c
+
+processing/filter/test_runner-0050_palette_colors_conversion_statistics.obj: processing/filter/0050_palette_colors_conversion_statistics.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0050_palette_colors_conversion_statistics.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Tpo -c -o processing/filter/test_runner-0050_palette_colors_conversion_statistics.obj `if test -f 'processing/filter/0050_palette_colors_conversion_statistics.c'; then $(CYGPATH_W) 'processing/filter/0050_palette_colors_conversion_statistics.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0050_palette_colors_conversion_statistics.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Tpo processing/filter/$(DEPDIR)/test_runner-0050_palette_colors_conversion_statistics.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0050_palette_colors_conversion_statistics.c' object='processing/filter/test_runner-0050_palette_colors_conversion_statistics.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0050_palette_colors_conversion_statistics.obj `if test -f 'processing/filter/0050_palette_colors_conversion_statistics.c'; then $(CYGPATH_W) 'processing/filter/0050_palette_colors_conversion_statistics.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0050_palette_colors_conversion_statistics.c'; fi`
+
+processing/filter/test_runner-0051_palette_colors_statistics_disabled.o: processing/filter/0051_palette_colors_statistics_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0051_palette_colors_statistics_disabled.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Tpo -c -o processing/filter/test_runner-0051_palette_colors_statistics_disabled.o `test -f 'processing/filter/0051_palette_colors_statistics_disabled.c' || echo '$(srcdir)/'`processing/filter/0051_palette_colors_statistics_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Tpo processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0051_palette_colors_statistics_disabled.c' object='processing/filter/test_runner-0051_palette_colors_statistics_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0051_palette_colors_statistics_disabled.o `test -f 'processing/filter/0051_palette_colors_statistics_disabled.c' || echo '$(srcdir)/'`processing/filter/0051_palette_colors_statistics_disabled.c
+
+processing/filter/test_runner-0051_palette_colors_statistics_disabled.obj: processing/filter/0051_palette_colors_statistics_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0051_palette_colors_statistics_disabled.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Tpo -c -o processing/filter/test_runner-0051_palette_colors_statistics_disabled.obj `if test -f 'processing/filter/0051_palette_colors_statistics_disabled.c'; then $(CYGPATH_W) 'processing/filter/0051_palette_colors_statistics_disabled.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0051_palette_colors_statistics_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Tpo processing/filter/$(DEPDIR)/test_runner-0051_palette_colors_statistics_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0051_palette_colors_statistics_disabled.c' object='processing/filter/test_runner-0051_palette_colors_statistics_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0051_palette_colors_statistics_disabled.obj `if test -f 'processing/filter/0051_palette_colors_statistics_disabled.c'; then $(CYGPATH_W) 'processing/filter/0051_palette_colors_statistics_disabled.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0051_palette_colors_statistics_disabled.c'; fi`
+
+processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.o: processing/filter/0052_palette_colors_hidden_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Tpo -c -o processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.o `test -f 'processing/filter/0052_palette_colors_hidden_nonfinite.c' || echo '$(srcdir)/'`processing/filter/0052_palette_colors_hidden_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Tpo processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0052_palette_colors_hidden_nonfinite.c' object='processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.o `test -f 'processing/filter/0052_palette_colors_hidden_nonfinite.c' || echo '$(srcdir)/'`processing/filter/0052_palette_colors_hidden_nonfinite.c
+
+processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.obj: processing/filter/0052_palette_colors_hidden_nonfinite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Tpo -c -o processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.obj `if test -f 'processing/filter/0052_palette_colors_hidden_nonfinite.c'; then $(CYGPATH_W) 'processing/filter/0052_palette_colors_hidden_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0052_palette_colors_hidden_nonfinite.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Tpo processing/filter/$(DEPDIR)/test_runner-0052_palette_colors_hidden_nonfinite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0052_palette_colors_hidden_nonfinite.c' object='processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0052_palette_colors_hidden_nonfinite.obj `if test -f 'processing/filter/0052_palette_colors_hidden_nonfinite.c'; then $(CYGPATH_W) 'processing/filter/0052_palette_colors_hidden_nonfinite.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0052_palette_colors_hidden_nonfinite.c'; fi`
+
+processing/filter/test_runner-0053_palette_colors_failure_output.o: processing/filter/0053_palette_colors_failure_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0053_palette_colors_failure_output.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Tpo -c -o processing/filter/test_runner-0053_palette_colors_failure_output.o `test -f 'processing/filter/0053_palette_colors_failure_output.c' || echo '$(srcdir)/'`processing/filter/0053_palette_colors_failure_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Tpo processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0053_palette_colors_failure_output.c' object='processing/filter/test_runner-0053_palette_colors_failure_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0053_palette_colors_failure_output.o `test -f 'processing/filter/0053_palette_colors_failure_output.c' || echo '$(srcdir)/'`processing/filter/0053_palette_colors_failure_output.c
+
+processing/filter/test_runner-0053_palette_colors_failure_output.obj: processing/filter/0053_palette_colors_failure_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0053_palette_colors_failure_output.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Tpo -c -o processing/filter/test_runner-0053_palette_colors_failure_output.obj `if test -f 'processing/filter/0053_palette_colors_failure_output.c'; then $(CYGPATH_W) 'processing/filter/0053_palette_colors_failure_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0053_palette_colors_failure_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Tpo processing/filter/$(DEPDIR)/test_runner-0053_palette_colors_failure_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0053_palette_colors_failure_output.c' object='processing/filter/test_runner-0053_palette_colors_failure_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0053_palette_colors_failure_output.obj `if test -f 'processing/filter/0053_palette_colors_failure_output.c'; then $(CYGPATH_W) 'processing/filter/0053_palette_colors_failure_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0053_palette_colors_failure_output.c'; fi`
+
+processing/filter/test_runner-0054_binning_statistics_colorspace.o: processing/filter/0054_binning_statistics_colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0054_binning_statistics_colorspace.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Tpo -c -o processing/filter/test_runner-0054_binning_statistics_colorspace.o `test -f 'processing/filter/0054_binning_statistics_colorspace.c' || echo '$(srcdir)/'`processing/filter/0054_binning_statistics_colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Tpo processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0054_binning_statistics_colorspace.c' object='processing/filter/test_runner-0054_binning_statistics_colorspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0054_binning_statistics_colorspace.o `test -f 'processing/filter/0054_binning_statistics_colorspace.c' || echo '$(srcdir)/'`processing/filter/0054_binning_statistics_colorspace.c
+
+processing/filter/test_runner-0054_binning_statistics_colorspace.obj: processing/filter/0054_binning_statistics_colorspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0054_binning_statistics_colorspace.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Tpo -c -o processing/filter/test_runner-0054_binning_statistics_colorspace.obj `if test -f 'processing/filter/0054_binning_statistics_colorspace.c'; then $(CYGPATH_W) 'processing/filter/0054_binning_statistics_colorspace.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0054_binning_statistics_colorspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Tpo processing/filter/$(DEPDIR)/test_runner-0054_binning_statistics_colorspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0054_binning_statistics_colorspace.c' object='processing/filter/test_runner-0054_binning_statistics_colorspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0054_binning_statistics_colorspace.obj `if test -f 'processing/filter/0054_binning_statistics_colorspace.c'; then $(CYGPATH_W) 'processing/filter/0054_binning_statistics_colorspace.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0054_binning_statistics_colorspace.c'; fi`
+
+processing/filter/test_runner-palette_colors_test_common.o: processing/filter/palette_colors_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-palette_colors_test_common.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Tpo -c -o processing/filter/test_runner-palette_colors_test_common.o `test -f 'processing/filter/palette_colors_test_common.c' || echo '$(srcdir)/'`processing/filter/palette_colors_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Tpo processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/palette_colors_test_common.c' object='processing/filter/test_runner-palette_colors_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-palette_colors_test_common.o `test -f 'processing/filter/palette_colors_test_common.c' || echo '$(srcdir)/'`processing/filter/palette_colors_test_common.c
+
+processing/filter/test_runner-palette_colors_test_common.obj: processing/filter/palette_colors_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-palette_colors_test_common.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Tpo -c -o processing/filter/test_runner-palette_colors_test_common.obj `if test -f 'processing/filter/palette_colors_test_common.c'; then $(CYGPATH_W) 'processing/filter/palette_colors_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/palette_colors_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Tpo processing/filter/$(DEPDIR)/test_runner-palette_colors_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/palette_colors_test_common.c' object='processing/filter/test_runner-palette_colors_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-palette_colors_test_common.obj `if test -f 'processing/filter/palette_colors_test_common.c'; then $(CYGPATH_W) 'processing/filter/palette_colors_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/palette_colors_test_common.c'; fi`
 
 loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o: loader/coregraphics/0008_loader_coregraphics_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o -MD -MP -MF loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/coregraphics/0008_loader_coregraphics_pixelformat.c
@@ -91287,6 +92128,8 @@ distclean-generic:
 	-$(am__rm_f) processing/timeline/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/adaptive_range/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) quant/palette/adaptive_range/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/alpha_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/alpha_float/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/animation_native/$(DEPDIR)/$(am__dirstamp)

@@ -53,6 +53,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "filter-binning.h"
+#include "palette-sample.h"
 #include "filter-factory-binning.h"
 #include "filter.h"
 #include "timeline-logger.h"
@@ -489,6 +490,7 @@ typedef struct sixel_kcenter_build_ctx {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
+    sixel_palette_build_attempt_t *attempt;
     sixel_palette_binning_state_t *binning;
     sixel_timeline_logger_t *logger;
     int *job_seq;
@@ -5952,6 +5954,7 @@ typedef struct sixel_kcenter_build_runtime {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
+    sixel_palette_build_attempt_t *attempt;
     sixel_palette_binning_state_t *binning;
     sixel_timeline_logger_t *logger;
     int *job_seq;
@@ -6075,6 +6078,7 @@ sixel_kcenter_build_runtime_init(sixel_kcenter_build_runtime_t *rt,
     rt->allocator = ctx->allocator;
     rt->pixelformat = ctx->pixelformat;
     rt->treat_input_as_float32 = ctx->treat_input_as_float32;
+    rt->attempt = ctx->attempt;
     rt->binning = ctx->binning;
     rt->logger = ctx->logger;
     rt->job_seq = ctx->job_seq;
@@ -6313,6 +6317,11 @@ sixel_kcenter_build_binned_points(
     }
 
     config.binning = binning;
+    config.requested_colors = rt->reqcolors;
+    config.quantize_model = SIXEL_QUANTIZE_MODEL_KCENTER;
+    config.adaptive_range =
+        binning->policy.requested == SIXEL_PALETTE_BINNING_AUTO ||
+        binning->policy.origin == SIXEL_PALETTE_POLICY_ORIGIN_DEFAULT;
     config.input_is_float32 = rt->input_is_float32;
     memcpy(config.scale,
            rt->float32_channel_scale,
@@ -6332,6 +6341,22 @@ sixel_kcenter_build_binned_points(
             config.scale, config.offset);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
+        }
+    }
+    if (config.adaptive_range && policy == SIXEL_PALETTE_BINNING_HARD &&
+            sixel_palette_bin_range_get_strength() != 0u) {
+        samples.statistics = sixel_palette_sample_statistics_for(rt->attempt,
+            sample_data, sample_length, sample_pixelformat);
+        if (samples.statistics != NULL) {
+            sixel_sample_statistics_ref(samples.statistics);
+        } else {
+            status = sixel_palette_prepare_sample_statistics(sample_data,
+                sample_length, sample_pixelformat, samples.colorspace,
+                transparency.alpha_zero_is_transparent, &samples.statistics,
+                rt->allocator, rt->logger);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
+            }
         }
     }
     status = sixel_filter_factory_create_binning(&config, &filter);
@@ -7577,6 +7602,7 @@ sixel_palette_build_kcenter_internal(sixel_kcenter_internal_ctx_t *ctx)
     build_ctx->allocator = work_allocator;
     build_ctx->pixelformat = pixelformat;
     build_ctx->treat_input_as_float32 = treat_input_as_float32;
+    build_ctx->attempt = SIXEL_PALETTE_CONTEXT(palette)->attempt;
     build_ctx->binning = SIXEL_PALETTE_CONTEXT(palette)->attempt != NULL
         ? &SIXEL_PALETTE_CONTEXT(palette)->attempt->binning
         : NULL;

@@ -184,7 +184,9 @@ parallel_trace(char const *path, int clustering)
                 strstr(line, "\"worker\":\"palette/build\"") != NULL) {
             palette_seen = 1;
         }
-        if (strstr(line, "\"event\":\"colorspace-start\"") != NULL &&
+        if (strstr(line, clustering
+                ? "\"event\":\"palette-colorspace-start\""
+                : "\"event\":\"colorspace-start\"") != NULL &&
                 main_thread != 0 &&
                 (clustering ? thread != main_thread : thread == main_thread)) {
             if (!in_filter) {
@@ -192,7 +194,9 @@ parallel_trace(char const *path, int clustering)
                 filter_thread = thread;
                 worker_count = worker_finishes = 0;
             }
-        } else if (strstr(line, "\"event\":\"colorspace-finish\"") != NULL
+        } else if (strstr(line, clustering
+                ? "\"event\":\"palette-colorspace-finish\""
+                : "\"event\":\"colorspace-finish\"") != NULL
                 && thread == filter_thread) {
             if (in_filter && in_controller == 2 && worker_count == 2 &&
                     worker_finishes == 2) {

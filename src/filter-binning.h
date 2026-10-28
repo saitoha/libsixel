@@ -40,6 +40,9 @@ typedef struct sixel_filter_binning_config {
     int input_is_float32;
     double scale[3];
     double offset[3];
+    int adaptive_range;
+    unsigned int requested_colors;
+    int quantize_model;
     sixel_filter_binning_output_order_t output_order;
 } sixel_filter_binning_config_t;
 

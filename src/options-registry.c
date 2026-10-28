@@ -1804,6 +1804,12 @@ static sixel_suboption_choice_t const g_gamut_choices[] = {
 };
 
 static sixel_suboption_key_t const g_suboptions[] = {
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_BINNING_POLICY, g_palette_binning_values,
+        "strength", 'S', "SIXEL_BINNING_RANGE_STRENGTH", NULL, NULL,
+        0.0, 100.0, 1,
+        "binning strength must be an integer in range 0..100.",
+        palette_range_strength, palette_range_strength_override),
     SIXEL_REGISTRY_OUTPUT_COLOR_CHOICE(
         SIXEL_OPTION_SCHEMA_OUTPUT_COLORSPACE, NULL,
         "gamut", 'G', "SIXEL_OUTPUT_COLORSPACE_GAMUT", NULL, NULL,

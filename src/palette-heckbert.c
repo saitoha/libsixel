@@ -70,6 +70,8 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
+#include "palette-bin-histogram.h"
+#include "palette-sample.h"
 #include "palette-private.h"
 #include "pixelformat.h"
 #include "status.h"
@@ -606,9 +608,12 @@ sixel_lut_build_histogram(unsigned char const *data,
                           int quality_mode,
                           int use_reversible,
                           int policy,
+                          unsigned int requested_colors,
+                          sixel_sample_statistics_t *statistics,
                           tupletable2 *colorfreqtable,
                           sixel_allocator_t *allocator)
 {
+    sixel_sample_statistics_t *owned_statistics;
     SIXELSTATUS status;
     typedef uint32_t unit_t;
     unit_t *slotmap;
@@ -633,7 +638,13 @@ sixel_lut_build_histogram(unsigned char const *data,
     uint32_t packed_lut[4][256];
     unsigned int bits;
     int use_fast_pack;
+    sixel_palette_bin_range_t range;
+    unsigned int value;
+    unsigned int address;
+    unsigned int strength;
+    sixel_sample_stream_t gate_samples;
 
+    owned_statistics = NULL;
     status = SIXEL_FALSE;
     slotmap = NULL;
     moments = NULL;
@@ -695,6 +706,49 @@ sixel_lut_build_histogram(unsigned char const *data,
                                       quantized_lut,
                                       packed_lut);
         use_fast_pack = 1;
+    }
+    strength = sixel_palette_bin_range_get_strength();
+    if (strength != 0u && use_fast_pack && !use_reversible &&
+            policy == SIXEL_LUT_POLICY_AUTO) {
+        /* Retain the sampled RGB values. Only the grouping LUT changes;
+         * occupied moments below still accumulate the original bytes.
+         * Alpha retains its nominal grid, as it is not a color axis. */
+        sixel_palette_bin_range_init(&range, 1u << bits);
+        if (statistics == NULL) {
+            status = sixel_palette_prepare_sample_statistics(data,
+                length - length % pixel_stride, pixelformat,
+                sixel_pixelformat_get_colorspace(pixelformat), 0,
+                &owned_statistics, allocator, NULL);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
+            }
+            statistics = owned_statistics;
+        }
+        sixel_sample_stream_init(&gate_samples);
+        status = sixel_sample_stream_bind_borrowed_buffer(&gate_samples,
+            data, length - length % pixel_stride, pixelformat,
+            statistics->colorspace, NULL, SIXEL_PALETTE_SAMPLING_FULL_FRAME,
+            SIXEL_PALETTE_SAMPLING_SOURCE_PREPROCESSED_FRAME);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_palette_bin_range_prepare(&range, statistics,
+                &gate_samples, NULL, requested_colors, NULL, NULL,
+                SIXEL_PALETTE_BINNING_GRID_NONE, 1, quantized_lut,
+                strength, SIXEL_QUANTIZE_MODEL_MEDIANCUT);
+        }
+        sixel_sample_stream_dispose(&gate_samples);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        if (range.active[0] || range.active[1] || range.active[2]) {
+            for (plane = 0u; plane < 3u; ++plane) {
+                for (value = 0u; value < 256u; ++value) {
+                    address = sixel_palette_bin_range_sample_index(&range,
+                        plane, quantized_lut[value], (double)value, 0u);
+                    packed_lut[plane][value] =
+                        (uint32_t)address << ((depth_u - 1u - plane) * bits);
+                }
+            }
+        }
     }
     hist_size = histogram_dense_size(depth_u, &control);
     if (hist_size > SIZE_MAX / sizeof(unit_t)) {
@@ -834,6 +888,7 @@ sixel_lut_build_histogram(unsigned char const *data,
     status = SIXEL_OK;
 
 cleanup:
+    sixel_sample_statistics_unref(owned_statistics);
     sixel_allocator_free(allocator, moments);
     sixel_allocator_free(allocator, slotmap);
 
@@ -3855,6 +3910,12 @@ sixel_palette_heckbert_colormap(
                                            use_reversible,
                                            SIXEL_PALETTE_CONTEXT(palette)
                                                ->lut_policy,
+                                           SIXEL_PALETTE_STORAGE(palette)
+                                               ->requested_colors,
+                                           sixel_palette_sample_statistics_for(
+                                               SIXEL_PALETTE_CONTEXT(palette)
+                                                   ->attempt,
+                                               data, length, pixelformat),
                                            &colorfreqtable,
                                            allocator);
     }

@@ -30,6 +30,9 @@
 #include <sixel.h>
 
 #include "palette-plan.h"
+#include "sample-statistics.h"
+#include "sample-stream.h"
+#include "weighted-point-set.h"
 
 typedef struct sixel_palette_bin_entry {
     uint32_t key;
@@ -45,6 +48,102 @@ typedef struct sixel_palette_bin_histogram {
     unsigned int bits_per_axis;
     unsigned int bin_count;
 } sixel_palette_bin_histogram_t;
+
+/* A frame-local refinement of the nominal hard grid. Each occupied interval
+ * keeps at least one address; only empty intervals donate addresses. Thus a
+ * sparse highlight can never be merged into a dark interval by adaptation.
+ * Statistics use addressing coordinates, not the solver's distance metric. */
+typedef struct sixel_palette_bin_range_cell {
+    double count;
+    double sum;
+    double square_sum;
+    double minimum;
+    double maximum;
+    double scale;
+    unsigned int first;
+    unsigned int divisions;
+} sixel_palette_bin_range_cell_t;
+
+typedef struct sixel_palette_bin_range {
+    sixel_palette_bin_range_cell_t cells[3][256];
+    unsigned int levels;
+    int active[3];
+    /* Borrowed producer evidence, valid until aggregation completes. */
+    sixel_sample_statistics_t const *statistics;
+    double scale[3];
+    double offset[3];
+    sixel_palette_binning_grid_map_t grid_map;
+    int raw_coordinates;
+    unsigned int axis_weight[3];
+} sixel_palette_bin_range_t;
+
+/* Model-dependent recovery budgets are bounded by producer evidence. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_bin_range_prepare(sixel_palette_bin_range_t *range,
+    sixel_sample_statistics_t const *statistics,
+    sixel_sample_stream_t const *stream,
+    sixel_weighted_point_set_t const *points,
+    unsigned int requested_colors, double const scale[3],
+    double const offset[3], sixel_palette_binning_grid_map_t grid_map,
+    int raw_coordinates, unsigned int const *byte_lut,
+    unsigned int strength, int model);
+
+/* Refinement addresses use the producer's safe-tone projection; the caller
+ * still accumulates its original sample and weight. Visible indices exclude
+ * hidden samples in the same order as the producer's observations. */
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_bin_range_sample_index(sixel_palette_bin_range_t const *range,
+    unsigned int channel, unsigned int bin, double value,
+    size_t visible_index);
+
+/* Encoder workers install a frame-local override around palette building. */
+SIXEL_INTERNAL_API void
+sixel_palette_bin_range_set_strength(int enabled, unsigned int strength);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_bin_range_get_strength(void);
+
+SIXEL_INTERNAL_API void
+sixel_palette_bin_range_init(sixel_palette_bin_range_t *range,
+                             unsigned int levels);
+
+SIXEL_INTERNAL_API void
+sixel_palette_bin_range_observe(sixel_palette_bin_range_t *range,
+                                unsigned int channel,
+                                unsigned int bin,
+                                double value);
+
+/* Reduce independent axis populations into this consumer's addressing grid.
+ * A byte LUT preserves the Heckbert rounding convention. Raw coordinates
+ * preserve the medoids distance domain; normalized coordinates serve the
+ * common binning filter. No source pixels are accessed here. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_bin_range_from_statistics(sixel_palette_bin_range_t *range,
+    sixel_sample_statistics_t const *statistics, double const scale[3],
+    double const offset[3], sixel_palette_binning_grid_map_t grid_map,
+    int raw_coordinates, unsigned int const *byte_lut);
+
+/* Probe only retained samples. Stop as soon as the nominal occupied count
+ * reaches either the requested palette size or available safe-tone count.
+ * No spatial measurement or colorspace conversion belongs to this gate. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_bin_range_gate(sixel_sample_statistics_t const *statistics,
+    sixel_sample_stream_t const *stream,
+    sixel_weighted_point_set_t const *points,
+    unsigned int levels, unsigned int requested_colors,
+    double const scale[3], double const offset[3],
+    sixel_palette_binning_grid_map_t grid_map, int raw_coordinates,
+    unsigned int const *byte_lut, int *enabled);
+
+SIXEL_INTERNAL_API void
+sixel_palette_bin_range_finish(sixel_palette_bin_range_t *range,
+                               int byte_coordinates, unsigned int strength);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_bin_range_index(sixel_palette_bin_range_t const *range,
+                              unsigned int channel,
+                              unsigned int bin,
+                              double value);
 
 SIXEL_INTERNAL_API void
 sixel_palette_bin_histogram_clear(
@@ -62,7 +161,7 @@ sixel_palette_bin_histogram_dispose(
     sixel_palette_bin_histogram_t *histogram,
     sixel_allocator_t *allocator);
 
-/* Expand only bin addresses; source coordinates and solver scales stay intact. */
+/* Expand bin addresses; source coordinates and solver scales stay intact. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_bin_expand_bounds(void const *samples,
                                unsigned int sample_count,

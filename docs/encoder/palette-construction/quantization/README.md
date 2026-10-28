@@ -108,6 +108,8 @@ occupied histogram cells
 
 On the byte path, each occupied histogram cell retains the mean of the actual input samples assigned to that cell. Exact 64-bit counts and channel sums are stored only for occupied cells, in first-occurrence order; the mean uses the unsaturated count independently of the capped histogram weight. Fractional means survive box bounds, axis ordering, representative selection and Ward statistics until final byte rounding. `--lookup-policy=none` gives every distinct byte color its own cell. Reversible input mapping precedes binning and accumulation, and each resulting mean is projected back onto the reversible tone grid.
 
+The byte RGB/RGBA collector's automatic lookup path uses [range adaptation at a fixed depth](../pipeline/README.md#range-adaptation-at-a-fixed-depth) before accumulating those moments. That reference defines its activation conditions and bright-interval preservation; native float histograms continue to aggregate identical source triples.
+
 The traditional split direction is a channel with a large range. libsixel can
 also choose a luminance-oriented direction or estimate a principal component
 from the weighted covariance matrix. The representative of a leaf may be its
@@ -221,14 +223,9 @@ usually called D-squared or k-means++ seeding, introduced in
 sorts them, and initializes centers from equal-weight intervals on that axis;
 it falls back to the legacy initializer if PCA seeding cannot complete.
 
-`--binning-policy=hard` replaces colors by individual histogram cells, while `--binning-policy=soft` distributes a color over as many as eight neighboring cells with trilinear weights. `--binning-policy=auto` currently selects hard binning when the solver can consume its weighted point set. The K-means
-`binbits` suboption controls histogram resolution, and
-`mapping=uniform|srgb` controls how coordinates address that histogram.
-`softdist` selects the distribution kernel for soft binning. None of these
-options replaces `-X`, which defines the clustering colorspace. Binning changes
-the weighted data set and can therefore change the optimum. It is an
-approximation or preconditioning choice, not merely an acceleration of the
-same Lloyd iterations.
+`--binning-policy=hard` aggregates each color into one nominal histogram cell, while `--binning-policy=soft` distributes a color over as many as eight neighboring cells with trilinear weights. `--binning-policy=auto` selects hard binning with the [range adaptation](../pipeline/README.md#range-adaptation-at-a-fixed-depth) defined by the pipeline reference. The K-means `binbits` suboption controls the axis address budget, and `mapping=uniform|srgb` controls the nominal coordinate mapping. `softdist` selects the distribution kernel for soft binning.
+
+None of these options replaces `-X`, which defines the clustering colorspace. Binning changes the weighted data set and can therefore change the optimum. It is an approximation or preconditioning choice, not merely an acceleration of the same Lloyd iterations.
 
 The pruning policies skip distance calculations by maintaining bounds:
 
@@ -335,6 +332,8 @@ continuous-center objective. FastPAM and the practical relationship among PAM
 and CLARA are discussed in
 [Faster k-Medoids Clustering](https://arxiv.org/abs/1810.05691).
 
+Candidate collection uses the shared [range-adaptation map](../pipeline/README.md#range-adaptation-at-a-fixed-depth) within its `histbits` budget. The observed-representative scan uses the same map as aggregation, so a refined cell's representative still comes from that cell's samples. The pipeline reference owns the reversible-path exception and distinguishes this private collector from supported top-level binning modes.
+
 ## `center`: worst-case radius control
 
 ```text
@@ -401,6 +400,8 @@ multiply work but can improve seeded or local-search results. As with medoids,
 Ward final merging can move centers away from observed samples and alter the
 solver's objective; use `-F none` when measuring the unmodified K-center
 result.
+
+Hard-bin candidate collection follows the pipeline's [range-adaptation activation rules](../pipeline/README.md#range-adaptation-at-a-fixed-depth): automatic/default collection can refine intervals within the `histbits` budget, while explicit `hard` retains the nominal grid. This affects the candidate population, not the radius objective or its distance metric.
 
 ## GD and Netpbm lineage
 

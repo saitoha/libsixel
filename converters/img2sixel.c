@@ -441,6 +441,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      hard  -> assign each color to one finite grid bin.\n"
         "      soft  -> distribute color mass with trilinear weights.\n"
         "    Explicit exact, hard, or soft selects k-means when -Q is auto.\n"
+        "    auto suboption: strength=S (0..100, default 100).\n"
+        "    Zero keeps the nominal grid; 100 spends all spare addresses.\n"
     },
     {
         'F',
@@ -1682,6 +1684,13 @@ static cli_env_help_t const g_env_help_table[] = {
         "auto, none, exact, hard, or soft. The -5/--binning-policy option\n"
         "takes precedence."
     },
+    {
+        "SIXEL_BINNING_RANGE_STRENGTH",
+        "set the spare-address fraction for automatic range binning,\n"
+        "an integer from 0 through 100 (default 100). The -5 auto:strength\n"
+        "suboption takes precedence."
+    },
+
     {
         "SIXEL_DITHER_PARALLEL_BAND_WIDTH",
         "override the band height assigned to each dither worker.\n"
