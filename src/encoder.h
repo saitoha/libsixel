@@ -123,6 +123,8 @@ struct sixel_encoder {
     int option_clear_cache;
     int option_invalidate_history;
     int reqcolors;
+    unsigned int reserved_palette_count;
+    unsigned char reserved_palette[SIXEL_PALETTE_MAX * 3];
     sixel_threading_policy_options_t threading;
     int palette_sampling_policy;  /* requested sampling-stage policy */
     int palette_sampling_override; /* non-zero when explicitly configured */

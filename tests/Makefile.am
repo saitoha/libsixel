@@ -431,6 +431,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0094_PALETTE_AUTO_CONTENT_CHANGE \
     -DBUILD_TEST_0095_PALETTE_AUTO_UNCERTAIN_PAIRS \
     -DBUILD_TEST_0096_PLAYBACK_AUTO_COLORSPACES \
+    -DBUILD_TEST_0097_RESERVED_RGB8_SOURCE \
+    -DBUILD_TEST_0098_RESERVED_FLOAT_SOURCE \
+    -DBUILD_TEST_0099_RESERVED_LATEST_SOURCE \
+    -DBUILD_TEST_0100_RESERVED_AUTO_SOURCE \
+    -DBUILD_TEST_0101_RESERVED_VALIDATION \
+    -DBUILD_TEST_0102_RESERVED_OPTIONS_ABI \
+    -DBUILD_TEST_0103_RESERVED_FULL_SOURCE \
+    -DBUILD_TEST_0104_RESERVED_CANCEL_SOURCE \
     -DBUILD_TEST_0006_BYTE_PRECISION_AUTO \
     -DBUILD_TEST_0007_EXPLICIT_WORKING_AUTO_CLUSTERING \
     -DBUILD_TEST_0092_PALETTE_AUTO_STORE_PROFILE \
@@ -460,6 +468,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0057_LATEST_KNOWN_OWN_FAILURE \
     -DBUILD_PALETTE_LAUNCH_TEST_COMMON \
     -DBUILD_PLAYBACK_TEST_COMMON \
+    -DBUILD_RESERVED_PALETTE_TEST_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
     -DBUILD_TEST_0002_HELPER_BITS \
@@ -5151,6 +5160,16 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0094_palette_auto_content_change.c \
     planner/pipeline/0095_palette_auto_uncertain_pairs.c \
     planner/pipeline/0096_playback_auto_colorspaces.c \
+    planner/pipeline/0097_reserved_rgb8_source.c \
+    planner/pipeline/0098_reserved_float_source.c \
+    planner/pipeline/0099_reserved_latest_source.c \
+    planner/pipeline/0100_reserved_auto_source.c \
+    planner/pipeline/0101_reserved_validation.c \
+    planner/pipeline/0102_reserved_options_abi.c \
+    planner/pipeline/0103_reserved_full_source.c \
+    planner/pipeline/0104_reserved_cancel_source.c \
+    planner/pipeline/reserved_palette_test_common.c \
+    planner/pipeline/reserved_palette_test_common.h \
     planner/pipeline/0092_palette_auto_store_profile.c \
     planner/pipeline/palette_auto_test_common.c \
     planner/pipeline/palette_auto_test_common.h \

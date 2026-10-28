@@ -46,7 +46,7 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_build_input_new(sixel_palette_build_request_t **request,
     sixel_frame_t **sample, sixel_encoder_t *encoder, sixel_frame_t *frame,
     sixel_palette_frame_state_t const *state, int consumer_pixelformat,
-    struct sixel_palette_scheduler *scheduler);
+    struct sixel_palette_scheduler *scheduler, sixel_frame_t *palette_source);
 SIXEL_INTERNAL_API void
 sixel_palette_build_request_free(sixel_palette_build_request_t *request);
 

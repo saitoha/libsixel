@@ -2145,6 +2145,21 @@ sixel_encoder_needs_6delta_refinement(sixel_encoder_t const *encoder);
 SIXELAPI size_t
 sixel_encoder_get_6delta_painted_pixels(sixel_encoder_t const *encoder);
 
+#define SIXEL_HAVE_ENCODER_RESERVED_PALETTE 1
+
+/* Reserve COUNT leading colors in every generated palette. RGB contains
+ * COUNT sRGB RGB888 triplets, copied on success; COUNT zero clears the list.
+ * Entries retain their order and are never clustered, merged, covered or
+ * snapped. Working/output colorspace conversion and wire rounding still apply.
+ * The total palette budget includes these entries, at least one generated
+ * color, and any transparency/6delta omission key. Duplicates, insufficient
+ * capacity, fixed/high-color palettes and indexed input are rejected.
+ * Configure before attaching playback. Failure leaves the setting unchanged.
+ */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_reserved_palette(sixel_encoder_t *encoder,
+    unsigned char const *rgb, unsigned int count);
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -2301,6 +2316,17 @@ typedef struct sixel_playback_config {
     void *done_context;
 } sixel_playback_config_t;
 
+#define SIXEL_HAVE_PLAYBACK_PALETTE_SOURCE 1
+
+/* Optional palette_source is an independent, immutable RGB frame used only
+ * for palette sampling. Its geometry is independent of the submitted image:
+ * output crop/resize do not apply to this source. Both frames must have the
+ * same pixel format/colorspace. NULL samples the submitted image as usual.
+ * Playback retains the source through completion; borrowed pixels must remain
+ * alive and unchanged until the done callback, including cancellation.
+ * Adaptive sampling stays bounded; explicit full-frame samples this entire
+ * source. The encoder never modifies the supplied source pixels.
+ */
 typedef struct sixel_playback_options {
     size_t struct_size;
     int flags;                      /* SIXEL_PLAYBACK_OPTION_* */
@@ -2308,6 +2334,7 @@ typedef struct sixel_playback_options {
     int origin_y;
     unsigned int threshold_limit;   /* as set_6delta_threshold_limit() */
     uint64_t user_tag;
+    sixel_frame_t *palette_source;
 } sixel_playback_options_t;
 
 /* A reservation; valid until submitted or released. */

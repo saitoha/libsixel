@@ -1376,6 +1376,15 @@ int test_plan_0002_resize_alloc_failure(int argc, char **argv);
 int test_plan_0006_byte_precision_auto(int argc, char **argv);
 int test_plan_0007_explicit_working_auto_clustering(int argc, char **argv);
 int test_playback_0096(int argc, char **argv);
+int test_reserved_0097(int argc, char **argv);
+int test_reserved_0098(int argc, char **argv);
+int test_reserved_0099(int argc, char **argv);
+int test_reserved_0100(int argc, char **argv);
+int test_reserved_0101(int argc, char **argv);
+int test_reserved_0102(int argc, char **argv);
+int test_reserved_0103(int argc, char **argv);
+int test_reserved_0104(int argc, char **argv);
+
 int test_plan_0003_default_colorspace_auto(int argc, char **argv);
 int test_plan_0004_reset_colorspace_auto(int argc, char **argv);
 int test_plan_0005_explicit_clustering_auto_working(int argc, char **argv);
@@ -5330,6 +5339,23 @@ static test_entry_t const test_entries[] = {
       test_plan_0007_explicit_working_auto_clustering },
     { "planner/pipeline/0096_playback_auto_colorspaces",
       test_playback_0096 },
+    { "planner/pipeline/0097_reserved_rgb8_source",
+      test_reserved_0097 },
+    { "planner/pipeline/0098_reserved_float_source",
+      test_reserved_0098 },
+    { "planner/pipeline/0099_reserved_latest_source",
+      test_reserved_0099 },
+    { "planner/pipeline/0100_reserved_auto_source",
+      test_reserved_0100 },
+    { "planner/pipeline/0101_reserved_validation",
+      test_reserved_0101 },
+    { "planner/pipeline/0102_reserved_options_abi",
+      test_reserved_0102 },
+    { "planner/pipeline/0103_reserved_full_source",
+      test_reserved_0103 },
+    { "planner/pipeline/0104_reserved_cancel_source",
+      test_reserved_0104 },
+
     { "planner/0003_default_colorspace_auto",
       test_plan_0003_default_colorspace_auto },
     { "planner/0004_reset_colorspace_auto",
