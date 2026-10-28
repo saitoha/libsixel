@@ -262,6 +262,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/pixelformat.h \
                 $(srcdir)/filter-colors.c \
                 $(srcdir)/filter-colors.h \
+                $(srcdir)/filter-gamut.c \
+                $(srcdir)/filter-gamut.h \
+                $(srcdir)/filter-pipeline.c \
+                $(srcdir)/filter-pipeline.h \
                 $(srcdir)/filter-load.c \
                 $(srcdir)/filter-load.h \
                 $(srcdir)/filter-factory.c \

@@ -237,6 +237,7 @@ sixel_filter_colors_init(sixel_filter_t *filter,
         return status;
     }
 
+    filter->flags |= SIXEL_FILTER_FLAG_FLOAT32_TILES;
     return SIXEL_OK;
 }
 

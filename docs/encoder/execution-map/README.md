@@ -23,7 +23,7 @@ High-color output, DRCS, macro playback, 6delta retained-screen comparison, anim
 | --- | --- | --- |
 | `LOAD` | Establishes the scheduler dependency root; the frame was already delivered by the loader. | Caller thread; currently a no-op. |
 | `PALETTE_LAUNCH` | For adaptive sampling, finishes sampling from the loaded frame before preprocessing may mutate it. When admitted, starts the palette worker after the sample exists. Full-frame sampling waits for preprocessing. | Caller thread for sampling and launch; optional worker for the palette build. |
-| `PREPLAN` | Materializes and runs the ordered clip, colorspace, resize, and colorspace filters described by the planner graph. | Caller thread. May overlap only the worker-side palette build. |
+| `PREPLAN` | Materializes the ordered clip, colorspace, resize, working-space and optional gamut filters described by the planner graph. | Caller thread with eligible color/gamut tile overlap; may also overlap the worker-side palette build. |
 | `PALETTE_COLLECT` | Joins the palette worker, executes documented synchronous fallbacks, prepares selected eager lookup structures, and configures diffusion-related state. | Caller thread; waits for the optional worker. |
 | `DITHER_PLAN` | Prepares gradient/dither filter state. It does not yet run the whole per-pixel PaletteApply loop. | Caller thread. |
 | `OUTPUT` | Calls the encoder output path; ordinary non-indexed input reaches PaletteApply here, then SIXEL band generation. | Caller thread plus the separate optional dither/encode band pipeline. |
@@ -76,9 +76,12 @@ loaded frame
   -> optional resize
   -> optional late clip when clipfirst is false
   -> optional colorspace/pixelformat conversion to the effective working representation
+  -> optional output-gamut mapping
 ```
 
 Ordinary quality-preserving resize converts non-float input to linear RGB float32, resamples there, and converts again after resizing when the working representation differs. An explicit preserve-precision runtime mode can keep integer input in RGB888 instead. Non-RGB working spaces cannot be resampled directly and therefore pass through the selected linear RGB scale representation. Alpha-bearing key-preservation paths can suppress a post conversion that would otherwise discard the still-required alpha channel.
+
+The gamut component remains independently runnable. Adjacent float colorspace and gamut filters may use a bounded tile pipeline under the preparation budget, retaining separate callbacks and numerical loops. Resize and clip remain ordering barriers. The [gamut reference](../output/gamut-mapping.md#pipeline-and-policy-boundaries) owns mapping placement and sampling semantics; [encoder threading](../../threading/encoder.md#float-colorspace-transactions) describes actual admission and timing boundaries.
 
 Adaptive sampling branches from the loaded frame before this chain and owns a compact sample frame. Full-frame sampling runs after preprocessing and borrows the resulting frame. These sources intentionally differ; thread count can therefore affect the automatically resolved sample population even though the named quantizer is unchanged.
 

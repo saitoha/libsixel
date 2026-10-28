@@ -99,6 +99,8 @@
 #include "decoder.h"
 #include "color-option.h"
 #include "gamut.h"
+#include "filter-gamut.h"
+#include "filter-pipeline.h"
 #include "frame.h"
 #include "frame-normalize.h"
 #include "frame-factory.h"
@@ -3854,35 +3856,27 @@ end:
 static SIXELSTATUS
 sixel_encoder_map_gamut(sixel_gamut_t const *mapper, sixel_frame_t *frame)
 {
-    sixel_frame_pixels_view_t view;
-    sixel_frame_transparency_t transparency;
+    sixel_filter_gamut_config_t config;
+    sixel_filter_t *filter;
     SIXELSTATUS status;
-    size_t count;
+    int format, colorspace;
 
     if (mapper == NULL) {
         return SIXEL_OK;
     }
-    status = sixel_encoder_frame_get_pixels_view(frame, &view);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    config.mapper = mapper;
+    filter = NULL;
+    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_GAMUT,
+        &config, &filter);
+    if (SIXEL_SUCCEEDED(status)) {
+        format = sixel_frame_get_pixelformat(frame);
+        colorspace = sixel_frame_get_colorspace(frame);
+        sixel_filter_bind_input(filter, &frame, format, colorspace);
+        sixel_filter_bind_output(filter, &frame, format, colorspace);
+        status = sixel_filter_run(filter, NULL, NULL);
     }
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat) ||
-            view.pixels_float32 == NULL || view.width <= 0 ||
-            view.height <= 0 || (size_t)view.width >
-                SIZE_MAX / (size_t)view.height) {
-        return SIXEL_BAD_INPUT;
-    }
-    status = sixel_encoder_frame_get_transparency(frame, &transparency);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    count = (size_t)view.width * (size_t)view.height;
-    if (count > SIZE_MAX / (3u * sizeof(float))) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    return sixel_gamut_apply_float32(mapper, view.pixels_float32, count,
-        view.colorspace, transparency.transparent_mask,
-        transparency.transparent_mask_size);
+    sixel_filter_free(filter);
+    return status;
 }
 
 /*
@@ -4200,9 +4194,20 @@ sixel_encoder_filter_plan_run(sixel_filter_plan_t *plan,
     }
 
     for (index = 0; index < plan->count; ++index) {
-        status = sixel_filter_run(plan->nodes[index].filter,
-                                  allocator,
-                                  logger);
+        status = SIXEL_FALSE;
+        if (index + 1 < plan->count &&
+                plan->nodes[index].kind == SIXEL_FILTER_KIND_COLORS &&
+                plan->nodes[index + 1].kind == SIXEL_FILTER_KIND_GAMUT) {
+            status = sixel_filter_pipeline_run(plan->nodes[index].filter,
+                plan->nodes[index + 1].filter, allocator, logger);
+            if (status != SIXEL_FALSE) {
+                ++index;
+            }
+        }
+        if (status == SIXEL_FALSE) {
+            status = sixel_filter_run(plan->nodes[index].filter,
+                allocator, logger);
+        }
         if (SIXEL_FAILED(status)) {
             if (status == SIXEL_BAD_ALLOCATION
                 && plan->nodes[index].linear_resize_allocation != 0) {
@@ -5415,8 +5420,10 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
     sixel_thread_budget_scope_t budget;
+    sixel_filter_gamut_config_t gamut_config;
     int height;
     int index;
+    int scoped;
     sixel_planner_node_kind_t kind;
 
     status = SIXEL_OK;
@@ -5597,9 +5604,25 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
         }
     }
 
+    /* Gamut stays after every geometry/working-space filter and before
+     * palette collection or application. It is also independently runnable. */
+    if (context->encoder->gamut_mapper != NULL) {
+        gamut_config.mapper = context->encoder->gamut_mapper;
+        status = sixel_encoder_filter_plan_append(&context->pre_plan,
+            SIXEL_FILTER_KIND_GAMUT, &gamut_config, &context->frame,
+            context->current_pixelformat, context->current_colorspace,
+            context->current_pixelformat, context->current_colorspace, height);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    scoped = context->palette_job_started != 0 ||
+        context->encoder->gamut_mapper != NULL;
+    if (scoped) {
+        sixel_thread_budget_enter(&budget, context->planner != NULL
+            ? context->planner->main_threads : sixel_threads_resolve());
+    }
     if (context->palette_job_started != 0) {
-        sixel_thread_budget_enter(&budget,
-            context->planner->main_threads);
         sixel_thread_budget_set_reclaim(&budget,
             context->planner->main_threads + context->planner->palette_threads,
             sixel_encoder_palette_job_reclaim, &context->palette_job);
@@ -5607,7 +5630,7 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
     status = sixel_encoder_filter_plan_run(&context->pre_plan,
                                            context->encoder->allocator,
                                            context->encoder->logger);
-    if (context->palette_job_started != 0) {
+    if (scoped) {
         sixel_thread_budget_leave(&budget);
     }
     if (SIXEL_FAILED(status)) {
@@ -5618,8 +5641,7 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
         sixel_frame_get_pixelformat(context->frame);
     context->current_colorspace = sixel_frame_get_colorspace(context->frame);
 
-    return sixel_encoder_map_gamut(context->encoder->gamut_mapper,
-                                    context->frame);
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS

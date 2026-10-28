@@ -33,6 +33,7 @@
 
 #include "filter-factory.h"
 #include "filter-colors.h"
+#include "filter-gamut.h"
 #include "filter-clip.h"
 #include "filter-final-merge.h"
 #include "filter-dither.h"
@@ -286,10 +287,17 @@ sixel_filter_factory_encode_init(sixel_filter_t *filter,
     return sixel_filter_encode_init(filter, encode_config);
 }
 
+static SIXELSTATUS
+sixel_filter_factory_gamut_init(sixel_filter_t *filter, const void *config)
+{
+    return sixel_filter_gamut_init(filter, config);
+}
+
 static const sixel_filter_factory_entry_t
         sixel_filter_factory_entries[] = {
     {"load", SIXEL_FILTER_KIND_LOAD, sixel_filter_factory_load_init},
     {"clip", SIXEL_FILTER_KIND_CLIP, sixel_filter_factory_clip_init},
+    {"gamut", SIXEL_FILTER_KIND_GAMUT, sixel_filter_factory_gamut_init},
     {"colorspace",
      SIXEL_FILTER_KIND_COLORS,
      sixel_filter_factory_colors_init},

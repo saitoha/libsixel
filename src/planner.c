@@ -347,6 +347,8 @@ sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
     int dither_node;
     int encode_node;
     int work_tail;
+    int gamut_node;
+    int gamut_pipeline;
     float gradient_factor;
 
     load_node = -1;
@@ -417,6 +419,20 @@ sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
                                             colorspace_post_node,
                                             0);
         work_tail = colorspace_post_node;
+    }
+
+    if (encoder->gamut_mapper != NULL) {
+        gamut_node = sixel_encoding_planner_dag_add_node(
+            planner, SIXEL_PLANNER_NODE_GAMUT, "gamut");
+        /* The runtime checks size, representation and available resources
+         * before admitting this edge to the two independent tile filters. */
+        gamut_pipeline = work_tail == colorspace_post_node &&
+            colorspace_post_node >= 0 && planner->main_threads > 1 &&
+            sixel_threading_policy_mode() != SIXEL_THREADING_POLICY_LAZY &&
+            SIXEL_PIXELFORMAT_IS_FLOAT32(planner->scale_pixelformat);
+        sixel_encoding_planner_dag_add_edge(planner, work_tail, gamut_node,
+            gamut_pipeline);
+        work_tail = gamut_node;
     }
 
     if (palette_ready != 0) {

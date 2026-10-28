@@ -326,6 +326,13 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0059_RAY_CONVERGENCE \
     -DBUILD_TEST_0060_FLOAT32_SCALAR_EQUIVALENCE \
     -DBUILD_TEST_0061_FLOAT32_HIDDEN_NONFINITE \
+    -DBUILD_TEST_0062_FILTER_STANDALONE \
+    -DBUILD_TEST_0063_PIPELINE_BITS \
+    -DBUILD_TEST_0064_PIPELINE_FAILURE \
+    -DBUILD_TEST_0065_PIPELINE_OVERLAP \
+    -DBUILD_TEST_0066_PIPELINE_FALLBACK \
+    -DBUILD_TEST_0067_PIPELINE_MASK \
+    -DBUILD_TEST_0068_FILTER_DAG \
     -DBUILD_TEST_0030_EDGE_FULL_FRAME_SAMPLES \
     -DBUILD_TEST_0031_EDGE_ADAPTIVE_SAMPLES \
     -DBUILD_TEST_0032_EDGE_OKLAB_WORKSPACE \
@@ -7045,6 +7052,7 @@ test_runner_SOURCES = test_runner.c \
     processing/gamut/0007_nonfinite_atomic.c \
     processing/gamut/0008_policy_atomicity.c \
     processing/gamut/gamut_test_common.h \
+    processing/gamut/gamut_filter_common.h \
     processing/gamut/edge_test_common.h \
     processing/gamut/ray_test_common.h \
     processing/gamut/0039_ray_srgb_reference.c \
@@ -7069,6 +7077,13 @@ test_runner_SOURCES = test_runner.c \
     processing/gamut/0059_ray_convergence.c \
     processing/gamut/0060_float32_scalar_equivalence.c \
     processing/gamut/0061_float32_hidden_nonfinite.c \
+    processing/gamut/0062_filter_standalone.c \
+    processing/gamut/0063_pipeline_bits.c \
+    processing/gamut/0064_pipeline_failure.c \
+    processing/gamut/0065_pipeline_overlap.c \
+    processing/gamut/0066_pipeline_fallback.c \
+    processing/gamut/0067_pipeline_mask.c \
+    processing/gamut/0068_filter_dag.c \
     processing/gamut/0038_edge_linear_reference.c \
     processing/gamut/0030_edge_full_frame_samples.c \
     processing/gamut/0031_edge_adaptive_samples.c \

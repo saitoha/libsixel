@@ -87,6 +87,7 @@ typedef enum sixel_planner_node_kind {
     SIXEL_PLANNER_NODE_GRADIENT_MAP,
     SIXEL_PLANNER_NODE_DITHER,
     SIXEL_PLANNER_NODE_ENCODE,
+    SIXEL_PLANNER_NODE_GAMUT,
 } sixel_planner_node_kind_t;
 
 typedef struct sixel_planner_node {

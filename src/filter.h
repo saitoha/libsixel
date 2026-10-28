@@ -56,6 +56,7 @@ typedef enum sixel_filter_kind {
     SIXEL_FILTER_KIND_ENCODE,
     SIXEL_FILTER_KIND_BINNING,
     SIXEL_FILTER_KIND_PALETTE_COLORS,
+    SIXEL_FILTER_KIND_GAMUT,
 } sixel_filter_kind_t;
 
 typedef enum sixel_filter_flags {
@@ -64,6 +65,9 @@ typedef enum sixel_filter_flags {
      * is still producing output (e.g., dither -> encode pipeline).
      */
     SIXEL_FILTER_FLAG_PIPELINED = 1 << 0,
+    /* Independent float32 tiles use the ordinary apply callback. Only the
+     * frame binding and progress state vary; userdata stays immutable. */
+    SIXEL_FILTER_FLAG_FLOAT32_TILES = 1 << 1,
 } sixel_filter_flags_t;
 
 typedef enum sixel_filter_event {

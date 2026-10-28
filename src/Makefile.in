@@ -306,6 +306,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/frame-normalize.h $(srcdir)/cpu.c $(srcdir)/cpu.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
 	$(srcdir)/filter-colors.c $(srcdir)/filter-colors.h \
+	$(srcdir)/filter-gamut.c $(srcdir)/filter-gamut.h \
+	$(srcdir)/filter-pipeline.c $(srcdir)/filter-pipeline.h \
 	$(srcdir)/filter-load.c $(srcdir)/filter-load.h \
 	$(srcdir)/filter-factory.c $(srcdir)/filter-factory.h \
 	$(srcdir)/filter-factory-binning.c \
@@ -493,6 +495,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-cpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-pixelformat.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-colors.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-gamut.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-load.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-factory.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-factory-binning.lo \
@@ -660,11 +664,13 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-factory.Plo \
 	./$(DEPDIR)/libsixel_la-filter-fhedt.Plo \
 	./$(DEPDIR)/libsixel_la-filter-final-merge.Plo \
+	./$(DEPDIR)/libsixel_la-filter-gamut.Plo \
 	./$(DEPDIR)/libsixel_la-filter-gradient.Plo \
 	./$(DEPDIR)/libsixel_la-filter-load.Plo \
 	./$(DEPDIR)/libsixel_la-filter-lookup.Plo \
 	./$(DEPDIR)/libsixel_la-filter-palette-colors.Plo \
 	./$(DEPDIR)/libsixel_la-filter-palette.Plo \
+	./$(DEPDIR)/libsixel_la-filter-pipeline.Plo \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
 	./$(DEPDIR)/libsixel_la-filter-vptree.Plo \
@@ -1310,6 +1316,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/pixelformat.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-colors.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-colors.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-gamut.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-gamut.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-pipeline.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-pipeline.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-load.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-load.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-factory.c \
@@ -1788,11 +1798,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-factory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-fhedt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-final-merge.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-gamut.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-gradient.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-load.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-lookup.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette-colors.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-pipeline.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vptree.Plo@am__quote@ # am--include-marker
@@ -2581,6 +2593,20 @@ libsixel_la-filter-colors.lo: filter-colors.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-colors.c' object='libsixel_la-filter-colors.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-colors.lo `test -f 'filter-colors.c' || echo '$(srcdir)/'`filter-colors.c
+
+libsixel_la-filter-gamut.lo: filter-gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-gamut.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-gamut.Tpo -c -o libsixel_la-filter-gamut.lo `test -f 'filter-gamut.c' || echo '$(srcdir)/'`filter-gamut.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-gamut.Tpo $(DEPDIR)/libsixel_la-filter-gamut.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-gamut.c' object='libsixel_la-filter-gamut.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-gamut.lo `test -f 'filter-gamut.c' || echo '$(srcdir)/'`filter-gamut.c
+
+libsixel_la-filter-pipeline.lo: filter-pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-pipeline.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-pipeline.Tpo -c -o libsixel_la-filter-pipeline.lo `test -f 'filter-pipeline.c' || echo '$(srcdir)/'`filter-pipeline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-pipeline.Tpo $(DEPDIR)/libsixel_la-filter-pipeline.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-pipeline.c' object='libsixel_la-filter-pipeline.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-pipeline.lo `test -f 'filter-pipeline.c' || echo '$(srcdir)/'`filter-pipeline.c
 
 libsixel_la-filter-load.lo: filter-load.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-load.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-load.Tpo -c -o libsixel_la-filter-load.lo `test -f 'filter-load.c' || echo '$(srcdir)/'`filter-load.c
@@ -3453,11 +3479,13 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-gamut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-gradient.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
@@ -3676,11 +3704,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-gamut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-gradient.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
