@@ -211,6 +211,8 @@ not an occupancy prediction and must not by itself force a dense allocation.
 
 ### Range adaptation at a fixed depth
 
+[Preserving tones through a fade](range-adaptation.md) explains the addressing mechanism with images and diagrams; the [measurement companion](range-measurements/README.md) compares decoded quality and encoding cost across fades, ordinary images, quantizers and palette sizes.
+
 The CPU collectors below can refine hard-bin addresses from the retained sample distribution. This is a per-build addressing map at the selected depth, separate from the future [automatic depth selection](#adaptive-hard-grid-resolution). Distribution collection and final aggregation use the same retained samples, with no thumbnail, resampling, or change to solver coordinates. Between them, bounded occupancy probes select a feasible map without running a quantizer.
 
 | Phase | Operation | Result |

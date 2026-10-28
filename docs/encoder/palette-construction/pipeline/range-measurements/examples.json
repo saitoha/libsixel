@@ -1,0 +1,46 @@
+[
+  {
+    "id": "video-09-ui1",
+    "model": "heckbert",
+    "space": "gamma",
+    "p": 256,
+    "files": {
+      "source": "images/source/video-09-ui1-heckbert-gamma-256.png",
+      "baseline": "images/baseline/video-09-ui1-heckbert-gamma-256.png",
+      "adaptive": "images/adaptive/video-09-ui1-heckbert-gamma-256.png"
+    }
+  },
+  {
+    "id": "video-04-ui1",
+    "model": "kmeans",
+    "space": "gamma",
+    "p": 256,
+    "files": {
+      "source": "images/source/video-04-ui1-kmeans-gamma-256.png",
+      "baseline": "images/baseline/video-04-ui1-kmeans-gamma-256.png",
+      "adaptive": "images/adaptive/video-04-ui1-kmeans-gamma-256.png"
+    }
+  },
+  {
+    "id": "flat-025",
+    "model": "center",
+    "space": "gamma",
+    "p": 256,
+    "files": {
+      "source": "images/source/flat-025-center-gamma-256.png",
+      "baseline": "images/baseline/flat-025-center-gamma-256.png",
+      "adaptive": "images/adaptive/flat-025-center-gamma-256.png"
+    }
+  },
+  {
+    "id": "photo-087",
+    "model": "medoids",
+    "space": "din99d",
+    "p": 256,
+    "files": {
+      "source": "images/source/photo-087-medoids-din99d-256.png",
+      "baseline": "images/baseline/photo-087-medoids-din99d-256.png",
+      "adaptive": "images/adaptive/photo-087-medoids-din99d-256.png"
+    }
+  }
+]

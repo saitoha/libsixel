@@ -58,6 +58,8 @@ docs/encoder/output/or-mode/x68k.md	explanation	both	history and hardware ration
 docs/encoder/output/output-colorspace.md	reference	both	output-space contracts + numeric example and contributor test ledger
 docs/overview.md	explanation	both	capability/architecture overview + contributor repository map
 docs/encoder/palette-construction/pipeline/README.md	explanation	contributor	target architecture + normative measurement protocol and migration plan
+docs/encoder/palette-construction/pipeline/range-adaptation.md	explanation	both	binning intuition + worked examples and component ownership
+docs/encoder/palette-construction/pipeline/range-measurements/README.md	reference	both	quality and runtime evidence + reproduction how-to
 docs/encoder/precision/README.md	reference	both	precision contracts + measurements and contributor test ledger
 docs/encoder/palette-construction/gpu-kmeans.md	reference	both	Backend selection and solver implementation
 docs/encoder/palette-construction/quantization/README.md	reference	both	quantizer methods + mathematical explanation and contributor benchmark design

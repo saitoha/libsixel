@@ -152,6 +152,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 ### Palette construction
 
 - [Palette construction pipeline](encoder/palette-construction/pipeline/README.md) defines the stages that build a palette and how their automatic policies are resolved.
+- [Preserving tones through a fade](encoder/palette-construction/pipeline/range-adaptation.md) explains range-adaptive binning, with [measured quality and cost](encoder/palette-construction/pipeline/range-measurements/README.md) across video fades and ordinary images.
 - [Palette quantization](encoder/palette-construction/quantization/README.md) explains `-Q` and the objectives and costs of each palette solver.
 - [GPU K-means](encoder/palette-construction/gpu-kmeans.md) describes the Metal K-means backend, its CPU fallback, and its limits.
 - [Palette clustering color space](encoder/palette-construction/clustering-colorspace/README.md) explains `-X` and its measured quality, speed, and size trade-offs.

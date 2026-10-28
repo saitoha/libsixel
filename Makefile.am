@@ -761,6 +761,42 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/encoder/execution-map/figures/palette-build-mobile.svg \
 	docs/encoder/execution-map/figures/palette-build-wide.svg \
 	docs/encoder/palette-construction/pipeline/README.md \
+	docs/encoder/palette-construction/pipeline/range-adaptation.md \
+	docs/encoder/palette-construction/pipeline/range-measurements/README.md \
+	docs/encoder/palette-construction/pipeline/range-measurements/examples.json \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/category-tails.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/category-tails.svg \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/fade-comparison.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/mechanism.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/mechanism.svg \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/ordinary-examples.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/quality-by-palette.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/quality-by-palette.svg \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/quality-summary.csv \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/safe-tones.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/safe-tones.svg \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/timing-pairs.csv \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/timing.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/timing.svg \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/top-k.csv \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/video-timeline.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/figures/video-timeline.svg \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/adaptive/flat-025-center-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/adaptive/photo-087-medoids-din99d-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/adaptive/video-04-ui1-kmeans-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/adaptive/video-09-ui1-heckbert-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/baseline/flat-025-center-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/baseline/photo-087-medoids-din99d-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/baseline/video-04-ui1-kmeans-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/baseline/video-09-ui1-heckbert-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/source/flat-025-center-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/source/photo-087-medoids-din99d-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/source/video-04-ui1-kmeans-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/images/source/video-09-ui1-heckbert-gamma-256.png \
+	docs/encoder/palette-construction/pipeline/range-measurements/inputs.json \
+	docs/encoder/palette-construction/pipeline/range-measurements/provenance.json \
+	docs/encoder/palette-construction/pipeline/range-measurements/quality.csv \
+	docs/encoder/palette-construction/pipeline/range-measurements/timing.csv \
 	docs/encoder/palette-construction/pipeline/measurements/palette-pipeline-quality.csv \
 	docs/encoder/palette-construction/pipeline/measurements/palette-pipeline-quality.png \
 	docs/encoder/palette-construction/pipeline/measurements/palette-pipeline-run.json \
@@ -975,6 +1011,9 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	tools/plot_lookup_policy_acceleration.py \
 	tools/plot_lookup_policy_delaunay.py \
 	tools/plot_clustering_binning_threshold_measurements.py \
+	tools/plot_range_adaptation.py \
+	tools/measure_range_adaptation.c \
+	tools/reproduce_range_adaptation.py \
 	tools/plot_clustering_colorspace_measurements.py \
 	tools/plot_cover_policy_figures.py \
 	tools/plot_gamut_mapping_figures.py \
