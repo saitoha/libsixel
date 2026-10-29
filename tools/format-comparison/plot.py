@@ -22,8 +22,8 @@ import numpy as np
 COLORS = {'SIXEL': '#0072b2', 'GIF': '#b36b00', 'PNG': '#009e73', 'QOI': '#d55e00',
           'JPEG': '#a84073', 'WebP': '#6457a6', 'AVIF': '#56b4e9', 'HEIC': '#8c7a00'}
 MARKERS = {'SIXEL': 'o', 'GIF': 's', 'PNG': 'D', 'QOI': 'v', 'JPEG': '^', 'WebP': 'P', 'AVIF': 'X', 'HEIC': 'h'}
-REP = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
-GENERATIONS = ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
+REP = ['SIXEL -d none', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
+GENERATIONS = ['SIXEL -d none', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 11,
     'axes.spines.top': False, 'axes.spines.right': False,
     'svg.hashsalt': 'libsixel-format-comparison', 'svg.fonttype': 'none'})
@@ -36,8 +36,6 @@ def color(codec):
 def style(codec):
     if codec.endswith('lossless'):
         return '--'
-    if codec.endswith('quality'):
-        return '-.'
     return '-'
 
 
@@ -167,13 +165,14 @@ def scaling(axes, rows, corpus):
 
 def generations(axes, rows, count):
     for codec in GENERATIONS:
-        mode = 'indexed' if codec in ['SIXEL default', 'GIF'] else 'RGB'
+        mode = 'indexed' if codec in ['SIXEL -d none', 'GIF'] else 'RGB'
         x = list(range(1, count + 1))
-        for ax, metric in zip(axes, ['ms_ssim', 'delta_e', 'encode_ms', 'decode_ms']):
+        for ax, metric in zip(axes, ['ms_ssim', 'scielab', 'encode_ms', 'decode_ms']):
             y = [np.mean(per_image(rows, codec, metric, mode=mode, generation=g)) for g in x]
             ax.plot(x, y, label=codec, color=color(codec), marker='x' if mode == 'indexed' else MARKERS[codec.split()[0]],
                     markersize=4, linestyle='--' if mode == 'indexed' or codec.endswith('lossless') else '-')
-    for ax, label in zip(axes, ['MS-SSIM versus original (higher is better)', 'Mean Delta E00 vs original (lower is better)',
+    for ax, label in zip(axes, ['MS-SSIM versus original (higher is better)',
+                                'Mean S-CIELAB at 60 ppd\nversus original (lower is better)',
                                 'Encode each generation (ms, log axis)', 'Decode each generation (ms, log axis)']):
         ax.set(xlabel='Encode / decode generation', ylabel=label)
         ax.set_xticks(range(1, count + 1))
@@ -208,14 +207,14 @@ STAGE_ROLES = [
     ('sampling', 'Sampling (histogram / initialization)', '#88ccee'),
     ('palette search', 'Palette search', '#44aa99'),
     ('lookup setup', 'Lookup setup', '#ddcc77'),
-    ('lookup', 'Lookup and dither (GIF: lookup only)', '#cc6677'),
+    ('lookup', 'Palette lookup', '#cc6677'),
     ('filter', 'PNG row filter', '#aa4499'),
     ('encode', 'Output coding (SIXEL bands, LZW, DEFLATE)', '#332288'),
     ('other', 'Other (copies, container, wrapper)', '#cfcfcf'),
 ]
 STAGE_ROLE = {'color conversion': 'color conversion', 'sampling': 'sampling',
               'palette search': 'palette search', 'lookup setup': 'lookup setup',
-              'lookup + dither': 'lookup', 'lookup': 'lookup', 'filter': 'filter',
+              'lookup': 'lookup', 'filter': 'filter',
               'SIXEL encode': 'encode', 'LZW encode': 'encode', 'DEFLATE': 'encode',
               'other': 'other'}
 
@@ -268,7 +267,9 @@ def stages_chart(ax, payload, per_pixel):
 def render_stages(directory, preview, check):
     payload = json.loads((directory / 'stages.json').read_text())
     meta = payload['metadata']
-    handles = [matplotlib.patches.Patch(color=c, label=l) for _, l, c in STAGE_ROLES]
+    active = {STAGE_ROLE[n] for r in payload['rows'] for s in r['samples']
+              for n, v in s['stages'].items() if v > 0}
+    handles = [matplotlib.patches.Patch(color=c, label=l) for r, l, c in STAGE_ROLES if r in active]
     for mobile in [False, True]:
         suffix = 'mobile' if mobile else 'wide'
         fig, axes = plt.subplots(2 if mobile else 1, 1 if mobile else 2,
@@ -306,9 +307,9 @@ SEGMENT_STYLE = {
     'palette search': ('palette search', None, 0),
     'palette search | conversion': ('palette search', '//', 0),
     'lookup setup': ('lookup setup', None, 1),
-    'lookup + dither': ('lookup', None, 2),
+    'lookup': ('lookup', None, 2),
     'SIXEL encode': ('encode', None, 2),
-    'lookup + dither + encode': ('pipeline', None, 2),
+    'lookup + encode': ('pipeline', None, 2),
     'other': ('other', None, 3),
 }
 PIPELINE_COLOR = '#7d4f9e'
@@ -352,19 +353,23 @@ def render_threads(directory, preview, check):
         for i, codec in enumerate(codecs):
             ax.text(i, -.08, codec, transform=ax.get_xaxis_transform(), ha='center', va='top', fontsize=10)
         ax.set_ylabel('Milliseconds per image')
-        labels = {'lookup': 'Lookup and dither', 'encode': 'SIXEL band coding',
-                  'pipeline': 'Lookup, dither and band coding (pipelined)', 'other': 'Other'}
+        labels = {'lookup': 'Palette lookup', 'encode': 'SIXEL band coding',
+                  'pipeline': 'Lookup and band coding (pipelined)', 'other': 'Other'}
+        active = {SEGMENT_STYLE[n][0] for r in rows for s in r['samples']
+                  for n, v in s['segments'].items() if v > 0}
         handles = [matplotlib.patches.Patch(color=colors[r], label=labels.get(r, l)) for r, l, _ in STAGE_ROLES
-                   if r != 'filter' and r != 'other']
-        handles += [matplotlib.patches.Patch(color=PIPELINE_COLOR, label=labels['pipeline']),
-                    matplotlib.patches.Patch(color=colors['other'], label=labels['other'])]
-        handles.append(matplotlib.patches.Patch(facecolor='white', edgecolor='#505050', hatch='//',
-                                                label='Runs while the color conversion continues'))
+                   if r in active and r != 'other']
+        handles += [matplotlib.patches.Patch(color=colors[r], label=labels[r])
+                    for r in ['pipeline', 'other'] if r in active]
+        if any(v > 0 and SEGMENT_STYLE[n][1] for r in rows for s in r['samples']
+               for n, v in s['segments'].items()):
+            handles.append(matplotlib.patches.Patch(facecolor='white', edgecolor='#505050', hatch='//',
+                                                    label='Runs while the color conversion continues'))
         fig.legend(handles=handles, loc='outside lower center', ncol=2 if mobile else 3, fontsize=8)
         w, h = meta['thread_size']
         note = (f'{w} × {h} crops of {len(meta["images"])} photographs; mean of each segment\'s median over '
                 f'{meta["runs"]} samples. Bars partition elapsed time by the work running in each interval; '
-                'dotted lines join the ends of palette construction, lookup setup, the dither and coding phase, '
+                'dotted lines join the ends of palette construction, lookup setup, the lookup and coding phase, '
                 'and the whole encode.')
         fig.suptitle('Worker budgets shorten some stages and not others\n'
                      + textwrap.fill(note, width=64 if mobile else 110), fontsize=10)
@@ -392,6 +397,8 @@ def main():
         args.preview_directory.mkdir(parents=True, exist_ok=True)
     p = json.loads((args.directory / 'results.json').read_text())
     meta = p['metadata']
+    assert meta['settings'] == REP, meta['settings']
+    assert meta['scielab_ppd_requested'] == 60 and meta['scielab_ppd'] in (None, 60)
     photos = set(meta['photo_sources'])
     corpora = {'photo': ('Photographs', photos), 'chart': ('Charts', set(meta.get('chart_sources') or {}))}
     corpora = {k: v for k, v in corpora.items() if v[1]}

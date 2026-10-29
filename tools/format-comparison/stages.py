@@ -30,11 +30,11 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import measure  # noqa: E402
 
-CODECS = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG']
+CODECS = ['SIXEL -d none', 'GIF', 'PNG']
 # Stage names in display order. A codec reports only the stages it has.
 STAGES = {
     'SIXEL': ['color conversion', 'sampling', 'palette search',
-              'lookup setup', 'lookup + dither', 'SIXEL encode', 'other'],
+              'lookup setup', 'lookup', 'SIXEL encode', 'other'],
     'GIF': ['sampling', 'palette search', 'lookup', 'LZW encode', 'other'],
     'PNG': ['filter', 'DEFLATE', 'other'],
 }
@@ -108,7 +108,7 @@ def sixel_stages(events):
                     + (m['search'] - m['pal_start']),
         'palette search': m['pal_finish'] - m['search'],
         'lookup setup': m['dither'] - conversion_end,
-        'lookup + dither': m['bands'] - m['dither'],
+        'lookup': m['bands'] - m['dither'],
         'SIXEL encode': m['end'] - m['bands'],
     }
     stages['other'] = (m['done'] - m['begin']) - sum(stages.values())
@@ -118,10 +118,10 @@ def sixel_stages(events):
 
 # Wall-clock segments of a SIXEL encode at any worker budget, in stacking
 # order. With several workers the color conversion can run beside palette
-# construction, and lookup, diffusion and band encoding form one pipeline.
+# construction, and lookup and band encoding form one pipeline.
 SEGMENTS = ['color conversion', 'sampling', 'sampling | conversion',
             'palette search', 'palette search | conversion', 'lookup setup',
-            'lookup + dither', 'SIXEL encode', 'lookup + dither + encode', 'other']
+            'lookup', 'SIXEL encode', 'lookup + encode', 'other']
 
 
 def sixel_segments(events, threads):
@@ -142,10 +142,10 @@ def sixel_segments(events, threads):
                    ('lookup setup', conversion_end, m['dither'])]
     if threads == 1:
         assert m['dither'] <= m['bands'] <= m['end']
-        activities += [('lookup + dither', m['dither'], m['bands']),
+        activities += [('lookup', m['dither'], m['bands']),
                        ('SIXEL encode', m['bands'], m['end'])]
     else:
-        activities.append(('lookup + dither + encode', m['dither'], m['end']))
+        activities.append(('lookup + encode', m['dither'], m['end']))
     points = {m['begin'], m['done']}
     for _, lo, hi in activities:
         points |= {lo, hi}
@@ -184,6 +184,8 @@ def main():
     p.add_argument('--photos', type=Path, required=True,
                    help='directory of uncropped originals (*.jpg)')
     p.add_argument('--images', default='photo-001,photo-011,photo-021,photo-041,photo-051,photo-061,photo-071,photo-081,photo-091')
+    p.add_argument('--corpus-stride', type=int, default=1,
+                   help='keep selected images at their full-corpus positions')
     p.add_argument('--crops', default='640x480,1920x1080')
     p.add_argument('--runs', type=int, default=7)
     p.add_argument('--thread-crop', default='1920x1080',
@@ -199,13 +201,15 @@ def main():
     log = work / 'timeline.jsonl'
     # The library probes the log path once, so set it before loading.
     os.environ.update(SIXEL_GPU_POLICY='off', SIXEL_PALETTE_KMEANS_SEED='1', SIXEL_LOG_PATH=str(log))
-    names = args.images.split(',')
+    selected = {p.stem for p in measure.corpus_paths(args.photos)[::args.corpus_stride]}
+    names = [n for n in args.images.split(',') if n in selected]
+    assert names, 'no stage images selected by the corpus stride'
     crops = [tuple(int(v) for v in c.lower().split('x')) for c in args.crops.split(',')]
     images, sources = measure.crop_fixtures(args.photos, names, crops)
     codecs = measure.Codecs(args.adapter.resolve(), args.library.resolve())
     rows = []
     for (name, crop), image in images.items():
-        for codec in CODECS[:2]:
+        for codec in [c for c in CODECS if c.startswith('SIXEL')]:
             samples = []
             for n in range(args.runs + 2):
                 offset = log.stat().st_size if log.exists() else 0
@@ -223,7 +227,7 @@ def main():
     for (name, crop), image in images.items():
         if crop != thread_crop:
             continue
-        for codec in CODECS[:2]:
+        for codec in [c for c in CODECS if c.startswith('SIXEL')]:
             for threads in budgets:
                 samples = []
                 for n in range(args.runs + 2):

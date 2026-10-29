@@ -79,6 +79,7 @@ if [ -n "${SIZE_PHOTOS}" ] && [ -n "${STAGE_PILLOW_PYTHON-}" ]; then
         --source "${study_dir}/source" --library "${library}" \
         --adapter "${study_dir}/codecs.so" --revision "${REVISION}" \
         --photos "${SIZE_PHOTOS}" --pillow-python "${STAGE_PILLOW_PYTHON}" \
+        --corpus-stride "${CORPUS_STRIDE-1}" \
         --output "${output_dir}"
 fi
 "${PYTHON}" "${TOP_SRCDIR}/tools/format-comparison/check.py" "${output_dir}"

@@ -50,14 +50,13 @@ study_free(void *data)
 }
 
 /*
- * preset 0 is the fast default row: 8-bit precision and -E fast.
- * preset 1 is the quality row, equivalent to
- * img2sixel -=balanced:BN -Qk -Fw -Wc -Xc -dl with library defaults otherwise.
+ * Use the default row with diffusion disabled: 256 colors, 8-bit precision,
+ * GPU off and -E fast. Keep all other library defaults at every budget.
  */
 int
 study_sixel_encode(unsigned char *pixels, int width, int height,
                    unsigned char *palette, int colors, int threads,
-                   int preset, unsigned char **data, size_t *size)
+                   unsigned char **data, size_t *size)
 {
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;
@@ -78,29 +77,14 @@ study_sixel_encode(unsigned char *pixels, int width, int height,
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_setopt(encoder, 'G', "off");
     }
-    if (preset == 0) {
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_setopt(encoder, '.', "8bit");
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_setopt(encoder, 'E', "fast");
-        }
-    } else {
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_setopt(encoder, 'Q', "kmeans");
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_setopt(encoder, 'F', "ward");
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_setopt(encoder, 'W', "cielab");
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_setopt(encoder, 'X', "cielab");
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_encoder_setopt(encoder, 'd', "lso2");
-        }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_setopt(encoder, '.', "8bit");
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_setopt(encoder, 'E', "fast");
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_encoder_setopt(encoder, 'd', "none");
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_frame_new(&frame, NULL);

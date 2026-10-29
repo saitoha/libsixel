@@ -29,6 +29,10 @@ pillow_heif.register_heif_opener()
 P = C.c_void_p
 I = C.c_int
 Z = C.c_size_t
+SETTINGS = ['SIXEL -d none', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80',
+            'WebP lossless', 'AVIF 80', 'HEIC 80']
+QUALITY_METRICS = {'ms_ssim': 'MS-SSIM', 'scielab': 'S-CIELAB',
+                   'delta_e': 'Δ E00_mean', 'scielab_max': 'S-CIELAB_max'}
 
 
 class Options(C.Structure):
@@ -55,7 +59,7 @@ class Codecs:
         if C.cast(self.a.sixel_decode_pixels, P).value != C.cast(self.s.sixel_decode_pixels, P).value:
             raise RuntimeError("adapter resolved a different libsixel library")
         self.a.study_free.argtypes = [P]
-        self.a.study_sixel_encode.argtypes = [P, I, I, P, I, I, I, C.POINTER(P), C.POINTER(Z)]
+        self.a.study_sixel_encode.argtypes = [P, I, I, P, I, I, C.POINTER(P), C.POINTER(Z)]
         self.a.study_webp_encode.argtypes = [P, I, I, I, I, I, C.POINTER(P), C.POINTER(Z)]
         self.a.study_webp_decode.argtypes = [P, Z, I, C.POINTER(P), C.POINTER(I), C.POINTER(I)]
         self.s.sixel_decode_pixels.argtypes = [P, Z, C.POINTER(Options), C.POINTER(Result), P]
@@ -72,7 +76,7 @@ class Codecs:
                 palette = buffer(bytes(image.getpalette()).ljust(768, b'\0'))
             if codec.startswith('SIXEL'):
                 ok = self.a.study_sixel_encode(pixels, *image.size, palette,
-                    256, threads, codec.endswith('quality'), C.byref(data), C.byref(size))
+                    256, threads, C.byref(data), C.byref(size))
             else:
                 quality = 80 if codec.endswith('lossless') else int(codec.split()[-1])
                 ok = self.a.study_webp_encode(pixels, *image.size, quality,
@@ -227,7 +231,7 @@ def sampled(fn, runs):
 QUALITY_CACHE = {}
 
 
-def quality(reference, image, lsqa, work):
+def quality(reference, image, lsqa, work, metadata):
     # Identical decoded pixels against the same reference score identically;
     # evaluate each pair once. LSQA is outside every timed region.
     key = (str(reference), sha(image.convert('RGB').tobytes()))
@@ -237,14 +241,21 @@ def quality(reference, image, lsqa, work):
     image.convert('RGB').save(path)
     env = os.environ.copy()
     env.update(LSQA_VERBOSE='0', LSQA_PREFIX=str(work / 'lsqa'), SIXEL_ENCODER_THREADING_POLICY='greedy', SIXEL_ENCODER_THREADING_GLOBAL_BUDGET='1')
-    p = subprocess.run([str(lsqa), str(reference), str(path)], capture_output=True, env=env, check=True)
+    p = subprocess.run([str(lsqa), '--scielab-ppd=60', str(reference), str(path)],
+                       capture_output=True, env=env, check=True)
     q = json.loads(p.stdout)
+    # Preserve the reported viewing geometry before selecting the scores.
+    # Older full reports may omit it; the explicit request still fixes PPD.
+    ppd = q.get('color_evaluation', {}).get('scielab_ppd')
+    if ppd is not None:
+        assert ppd == 60, ppd
+        metadata['scielab_ppd'] = ppd
     q = q.get('quality', q)
-    QUALITY_CACHE[key] = {'ms_ssim': float(q['MS-SSIM']), 'delta_e': float(q['Δ E00_mean'])}
+    QUALITY_CACHE[key] = {field: float(q[name]) for field, name in QUALITY_METRICS.items()}
     return dict(QUALITY_CACHE[key])
 
 
-def record(image, codec, threads, encoded, decoded, enc, dec, reference, lsqa, work):
+def record(image, codec, threads, encoded, decoded, enc, dec, reference, lsqa, work, metadata):
     assert decoded.size == image.size
     rgb = decoded.convert('RGB').tobytes()
     if codec.startswith('SIXEL'):
@@ -253,7 +264,7 @@ def record(image, codec, threads, encoded, decoded, enc, dec, reference, lsqa, w
     return dict(codec=codec, threads=threads, encode_ms=enc, decode_ms=dec,
         bytes=len(encoded), transport_bytes=len(encoded) if codec.startswith('SIXEL') else 4 * ((len(encoded) + 2) // 3),
         rgb_sha256=sha(rgb), stream_sha256=sha(encoded), exact_input=rgb == image.convert('RGB').tobytes(),
-        **quality(reference, decoded, lsqa, work))
+        **quality(reference, decoded, lsqa, work, metadata))
 
 
 def main():
@@ -300,7 +311,7 @@ def main():
         chart_names = [p.stem for p in corpus_paths(args.charts)] if args.charts else []
         assert not set(photos) & set(charts), 'photograph and chart names must differ'
         size_crops = [tuple(int(v) for v in c.lower().split('x')) for c in args.size_crops.split(',')]
-        size_images = photo_names[::args.size_stride] if args.size_photos else []
+        size_images = [n for n in photo_names[::args.size_stride] if n in photos] if args.size_photos else []
         sweep, sweep_sources = crop_fixtures(args.size_photos, size_images, size_crops) if args.size_photos else ({}, {})
         images = dict(photos, **charts)
         # Every Nth image of each corpus in name order keeps the subset spread
@@ -315,12 +326,20 @@ def main():
             assert b'iCCP' not in references[name].read_bytes(), name
         codecs = Codecs(args.adapter.resolve(), args.library.resolve())
         lsqa = args.source / 'assessment/lsqa'
-        settings = ['SIXEL default', 'SIXEL quality', 'GIF', 'PNG', 'QOI', 'JPEG 60', 'JPEG 80', 'JPEG 95', 'WebP 60', 'WebP 80', 'WebP 95', 'WebP lossless', 'AVIF 60', 'AVIF 80', 'HEIC 60', 'HEIC 80']
+        settings = SETTINGS
         rows = []
+        cpu, cpu_probe_error = platform.processor(), None
+        if platform.system() == 'Darwin':
+            probe = subprocess.run(['sysctl', '-n', 'machdep.cpu.brand_string'],
+                                   capture_output=True, text=True)
+            # Restricted hosts may deny sysctl. Record the missing provenance
+            # explicitly without preventing a local smoke measurement.
+            cpu = probe.stdout.strip() if probe.returncode == 0 else None
+            cpu_probe_error = probe.stderr.strip() or None
         payload = {'metadata': {'revision': args.revision, 'platform': platform.platform(),
             'cpu_count': os.cpu_count(), 'python': platform.python_version(),
             'date_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'cpu': subprocess.check_output(['sysctl', '-n', 'machdep.cpu.brand_string'], text=True).strip() if platform.system() == 'Darwin' else platform.processor(),
+            'cpu': cpu, 'cpu_probe_error': cpu_probe_error,
             'compiler': subprocess.check_output(['cc', '--version'], text=True).splitlines()[0],
             'webp': subprocess.check_output(['pkg-config', '--modversion', 'libwebp'], text=True).strip(),
             'build_config': (args.source / 'config.log').read_text().splitlines()[:10],
@@ -337,6 +356,8 @@ def main():
             'adapter_sha256': sha(args.adapter.read_bytes()), 'library_sha256': sha(args.library.read_bytes()),
             'runs': args.runs, 'warmups': 2, 'generations': args.generations,
             'settings': settings, 'fit': list(fit),
+            'quality_metrics': QUALITY_METRICS,
+            'scielab_ppd_requested': 60, 'scielab_ppd': None,
             'corpus_stride': args.corpus_stride,
             'corpus_sizes': {'photo': len(photo_names), 'chart': len(chart_names)},
             'generation_images': generation_images,
@@ -368,22 +389,22 @@ def main():
                     decoded, dec = sampled(lambda: codecs.decode(fixed, codec, threads), args.runs)
                     assert decoded.tobytes() == expected
                     encoded_decoded = codecs.decode(encoded, codec, 1)
-                    row = record(image, codec, threads, encoded, encoded_decoded, enc, dec, reference, lsqa, work)
+                    row = record(image, codec, threads, encoded, encoded_decoded, enc, dec, reference, lsqa, work, payload['metadata'])
                     row.update(image=name, experiment='scaling', decoder_stream_sha256=sha(fixed))
                     rows.append(row)
                     save()
             print(name, 'scaling complete', flush=True)
             if name not in generation_images:
                 continue
-            for codec in ['SIXEL default', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80', 'WebP lossless', 'AVIF 80', 'HEIC 80']:
-                modes = ['indexed'] if codec in ['SIXEL default', 'GIF'] else ['RGB']
+            for codec in settings:
+                modes = ['indexed'] if codec in ['SIXEL -d none', 'GIF'] else ['RGB']
                 for mode in modes:
                     current = image
                     first_rgb = None
                     for generation in range(1, args.generations + 1):
                         encoded, enc = sampled(lambda: codecs.encode(current, codec, 1), args.runs)
                         decoded, dec = sampled(lambda: codecs.decode(encoded, codec, 1, mode == 'indexed'), args.runs)
-                        row = record(current, codec, 1, encoded, decoded, enc, dec, reference, lsqa, work)
+                        row = record(current, codec, 1, encoded, decoded, enc, dec, reference, lsqa, work, payload['metadata'])
                         rgb = decoded.convert('RGB').tobytes()
                         first_rgb = rgb if first_rgb is None else first_rgb
                         row.update(image=name, experiment='generation', mode=mode, generation=generation, exact_generation_one=rgb == first_rgb)
