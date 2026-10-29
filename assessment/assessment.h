@@ -98,7 +98,7 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
 #define SIXEL_ASSESSMENT_INDEX_MASK      0x00000fff
 #define SIXEL_ASSESSMENT_INDEX(value) \
     ((value) & SIXEL_ASSESSMENT_INDEX_MASK)
-#define SIXEL_ASSESSMENT_METRIC_COUNT    30
+#define SIXEL_ASSESSMENT_METRIC_COUNT    31
 
 #define SIXEL_ASSESSMENT_METRIC_MS_SSIM \
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
@@ -191,6 +191,9 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
 #define SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX \
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
      SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x001d)
+#define SIXEL_ASSESSMENT_METRIC_VIF_P \
+    (SIXEL_ASSESSMENT_KIND_RELATIVE | \
+     SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x001e)
 
 #define SIXEL_ASSESSMENT_METRIC_MASK(metric_id) \
     (1u << SIXEL_ASSESSMENT_INDEX(metric_id))
