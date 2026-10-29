@@ -35,7 +35,7 @@ At most one lower and one upper bound may be supplied for each canonical metric.
 
 `lsqa` compares a reference image `x` with a test image `y` over their common top-left rectangle of `W × H` pixels. Two kinds of signal are used:
 
-- **Spatial and luma metrics** (MS-SSIM, GMSD, PSNR-Y, HighFreqRatio, StripeScore, BandingIndex, and the luma ClipRate) read a single-channel comparison signal. By default it is encoded sRGB luma `Y' = 0.2126 R' + 0.7152 G' + 0.0722 B'` with the ITU-R BT.709 coefficients on gamma-encoded samples in the nominal range 0 to 1. `--compare-colorspace` can select linear `Y` instead; see [physical color and comparison signal](color-evaluation.md#physical-color-and-comparison-signal).
+- **Spatial and luma metrics** (MS-SSIM, VIF-P, GMSD, PSNR-Y, HighFreqRatio, StripeScore, BandingIndex, and the luma ClipRate) read a single-channel comparison signal. By default it is encoded sRGB luma `Y' = 0.2126 R' + 0.7152 G' + 0.0722 B'` with the ITU-R BT.709 coefficients on gamma-encoded samples in the nominal range 0 to 1. `--compare-colorspace` can select linear `Y` instead; see [physical color and comparison signal](color-evaluation.md#physical-color-and-comparison-signal).
 - **Color metrics** (`Δ E00_mean`, `DE00_max`, `Δ Chroma_mean`, the regional ΔE00 values, and S-CIELAB) read CIELAB computed from physical XYZ with the ICC D50 white. They do not depend on the comparison-signal options.
 
 `Y'` is *luma*, a weighted sum of gamma-encoded components. It is not CIE luminance `Y`, and with saturated colors it departs from the lightness that a viewer perceives (the non-constant-luminance error of video luma). It is nevertheless roughly perceptually uniform in the way that encoded sRGB is, which is why it remains the default.
@@ -47,6 +47,7 @@ Formulas use plain-text notation: `Σ` is a sum, `Π` a product, `E[·]` an aver
 | Metric | Signal | Better | Family |
 | --- | --- | --- | --- |
 | `MS-SSIM` | luma | higher, 1 = identical | reference five-scale MS-SSIM product |
+| `VIF-P` | luma | higher, 1 = informative identity; may exceed 1 | four-scale pixel-domain information fidelity |
 | `GMSD` | luma | lower, 0 = identical | gradient similarity |
 | `PSNR_Y` | luma | higher, 99 = identical | error power |
 | `Δ E00_mean`, `DE00_max` | CIELAB | lower | per-pixel color difference |
@@ -150,6 +151,50 @@ Scores use an absolute tolerance of `1.5e-5`, not bit identity. The reference be
 ### What it measures
 
 MS-SSIM is sensitive to changes in local mean, contrast, and correlation of the luma signal, summarized over five scales. It is insensitive to chroma, because only luma is compared, and to errors that preserve local statistics. On dithered output its finest scale sees the dither pattern as lost correlation, while coarser scales see the locally averaged tone, which is closer to what a viewer perceives at a distance. See [why multiscale structure matters](#why-multiscale-structure-matters). Its weights assume a viewing density of 32 pixels per degree; see [viewing geometry of each metric](#viewing-geometry-of-each-metric).
+
+## Information fidelity: VIF-P
+
+### Origin
+
+Sheikh and Bovik introduced Visual Information Fidelity (VIF) in "Image information and visual quality" (IEEE Transactions on Image Processing 15(2), 2006). It compares the reference information available through a model of visual noise with the information preserved after distortion. Their [pixel-domain implementation](https://live.ece.utexas.edu/research/quality/VIF.htm) uses a scalar statistical model and Gaussian filtering at multiple scales. `VIF-P` names that variant explicitly; it is not the original wavelet-domain vector model and does not reproduce VMAF's separately exposed VIF features.
+
+### Definition
+
+The reference is `x` and the output is `y`; exchanging them generally changes the score. Local Gaussian moments estimate a gain `g` and residual distortion variance `sv²` at every valid window. The following information ratio pools all windows at all four scales before division:
+
+```text
+vx = max(0, E[x²] − E[x]²)       vy = max(0, E[y²] − E[y]²)
+c  = E[xy] − E[x] E[y]
+g  = c / (vx + epsilon)          sv² = vy − g c
+
+VIF-P = Σ log(1 + g² vx / (sv² + sn²)) / Σ log(1 + vx / sn²)
+epsilon = 10⁻¹⁰                 sn² = 2
+```
+
+The existing [comparison signal](color-evaluation.md#physical-color-and-comparison-signal) supplies BT.709-weighted luma, multiplied by 255 before evaluating these constants. This is a floating-point rescaling, not 8-bit quantization or clipping. The default is encoded sRGB luma; choosing another comparison space or precision changes the input signal and must be recorded with the score. No additional VIF-P parameter, trained model, or viewing distance is required.
+
+Each scale uses the following normalized Gaussian window. Valid filtering discards the border where the complete window would not fit; it does not pad or reflect samples. At scales 2 through 4, low-pass filtering and subsampling precede the moment calculation, using that scale's same window for both operations.
+
+| Scale | Gaussian window | Standard deviation | Input reduction |
+| --- | --- | --- | --- |
+| 1 | 17 × 17 | 3.4 | None |
+| 2 | 9 × 9 | 1.8 | Valid filter, then retain rows/columns 0, 2, 4, ... |
+| 3 | 5 × 5 | 1.0 | Valid filter, then retain rows/columns 0, 2, 4, ... |
+| 4 | 3 × 3 | 0.6 | Valid filter, then retain rows/columns 0, 2, 4, ... |
+
+After estimating gain and residual, a reference variance below `epsilon` sets `vx = 0`, `g = 0` and `sv² = vy`. Next, an output variance below `epsilon` sets `g = 0` and `sv² = 0`. A negative gain sets `g = 0` and `sv² = vy`. Finally, `sv²` is floored at `epsilon`. Flat targets and negative correlations therefore transmit no reference information. Statistics, Gaussian coefficients and information sums use double precision; the final result uses the existing float metric storage.
+
+### Availability and interpretation
+
+Both aligned dimensions must be at least 41 pixels: valid filtering and subsampling reduce 41 to 17, 7 and 3, leaving a complete final window. The evaluator does not enlarge smaller inputs or omit scales. A reference carrying zero information makes the ratio undefined, even when both images are the same uniform color. Such results, and nonfinite comparison samples reaching the kernel, are unavailable: scalar output is `nan`, JSON is `null`, and any required bound fails with exit code 5. Other selected metrics remain available.
+
+An informative identical pair scores one to numerical precision. Ordinary information loss lowers the score toward zero, but contrast enhancement can raise it above one; the implementation does not clamp that gain. VIF-P is insensitive to a constant luma offset without clipping and does not directly measure chroma. Fine dither affects local correlation and residual noise, while coarser scales measure filtered structure. Use it alongside color differences and direct visual checks; its score is neither an MS-SSIM threshold nor a calibrated measure of all visible SIXEL artifacts.
+
+### Numerical validation
+
+The [independent reference generator](../../tests/data/assessment/vif_p_reference.py) reads the committed 64 × 64 snake BMP directly and uses dense two-dimensional Gaussian windows. It regenerates deterministic blur/noise, odd-size, contrast and boundary specimens offline, without calling the production filter or `lsqa`. The CLI tests check the resulting literal expectations through two-sided bounds: approximately `0.496366304262` for blur/noise, `0.496192151663` for its 63 × 61 crop, `0.512388752434` for the reversed pair and `1.316261244854` for contrast gain.
+
+The reference begins with ideal byte samples and BT.709 coefficients. A `4e-7` relative input budget covers float32 normalization, coefficient representation, weighted products and summation. Positive normalized filters do not enlarge the absolute sample perturbation. The generator propagates variance and covariance bounds through gain, residual variance, the logarithms and the final ratio. Its conservative input-error bounds are below `2.02e-4` for the first three specimens and `2.52e-3` for contrast gain. Test tolerances are respectively `2.2e-4` and `2.6e-3`, including headroom for double arithmetic, float result storage, six-decimal JSON collection and gate rounding. These budgets apply to the specified specimens; unavailable states and exact zero results are asserted separately.
 
 ## Gradient metric: GMSD
 
@@ -286,6 +331,7 @@ Every spatial metric assumes, explicitly or implicitly, how large one image pixe
 | `GMSD`, `HighFreqRatio_delta`, `StripeScore_rel`, `BandingIndex_*` | Fixed filters in pixel units, no ppd parameter | The same pixel-domain scale corresponds to a different visual angle at a different density |
 | `DE00_region_mean`, `DE00_region_max` | Square tiles of 8 to 64 pixels, default 16 | A 16-pixel tile spans 0.5° at 32 ppd and about 0.27° at 60 ppd |
 | `MS-SSIM` | Implicitly 32 ppd at scale 1 | The published scale weights were calibrated at that density |
+| `VIF-P` | Four Gaussian scales in pixel units, no ppd parameter | Information is pooled across the fixed pyramid without display calibration |
 | `S-CIELAB` | Explicit, `-v PPD`, default 60 | The opponent filters are defined in degrees of visual angle |
 
 The MS-SSIM weights were fitted in a psychophysical experiment that used ten 64 × 64 grayscale images viewed at 32 pixels per degree (Wang, Simoncelli and Bovik, 2003, section 3.2). `lsqa` treats the input pixels as scale 1, so its MS-SSIM assumes that each image pixel subtends 1/32 of a degree: the density of the SIXEL terminals of the 1980s and of the desktop LCDs of the 2000s, and coarser than the high-density displays that followed. At a higher effective density the viewer integrates fine-scale error that the finest factors still count. Error diffusion and blue-noise dithering, which place their error at the highest frequencies, are therefore penalized more than a viewer at that density sees. `lsqa` has no viewing-geometry option for MS-SSIM. To approximate an effective density of `P` ppd, reduce the reference and the output by the same integer factor near `P / 32` with an area filter before the comparison, keeping both images at least 176 pixels in each dimension, and report the factor with the score.
@@ -384,7 +430,7 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 
 ### Behavioral contract tests
 
-This inventory covers reference MS-SSIM, S-CIELAB, and their coexistence with the other metrics. It does not claim to independently validate every other metric described in this document; color-coordinate coverage is owned by [color-aware evaluation](color-evaluation.md#test-coverage).
+This inventory covers reference MS-SSIM, VIF-P, S-CIELAB, and their coexistence with the other metrics. It does not claim to independently validate every other metric described in this document; color-coordinate coverage is owned by [color-aware evaluation](color-evaluation.md#test-coverage).
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -421,6 +467,30 @@ This inventory covers reference MS-SSIM, S-CIELAB, and their coexistence with th
 | SC-15 | A target read from standard input has the same score. | [tests/quality_gate/scielab/0007_stdin.t](../../tests/quality_gate/scielab/0007_stdin.t) |
 | SC-16 | Nonfinite PPD is rejected by the CLI. | [tests/quality_gate/scielab/0008_ppd_nonfinite.t](../../tests/quality_gate/scielab/0008_ppd_nonfinite.t) |
 | SC-17 | Default JSON includes both metrics at 60 PPD. | [tests/quality_gate/scielab/0009_json_default.t](../../tests/quality_gate/scielab/0009_json_default.t) |
+
+### VIF-P contracts
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| VP-01 | VIF-P identity selection is case-insensitive. | [tests/quality_gate/vif_p/0001_identity.t](../../tests/quality_gate/vif_p/0001_identity.t) |
+| VP-02 | VIF-P even reference. | [tests/quality_gate/vif_p/0002_even_reference.t](../../tests/quality_gate/vif_p/0002_even_reference.t) |
+| VP-03 | VIF-P odd reference. | [tests/quality_gate/vif_p/0003_odd_reference.t](../../tests/quality_gate/vif_p/0003_odd_reference.t) |
+| VP-04 | VIF-P reference order. | [tests/quality_gate/vif_p/0004_reverse_reference.t](../../tests/quality_gate/vif_p/0004_reverse_reference.t) |
+| VP-05 | VIF-P contrast gain above one. | [tests/quality_gate/vif_p/0005_contrast_gain.t](../../tests/quality_gate/vif_p/0005_contrast_gain.t) |
+| VP-06 | VIF-P accepts the complete 41x41 pyramid. | [tests/quality_gate/vif_p/0006_minimum_size.t](../../tests/quality_gate/vif_p/0006_minimum_size.t) |
+| VP-07 | VIF-P rejects width below 41. | [tests/quality_gate/vif_p/0007_narrow_unavailable.t](../../tests/quality_gate/vif_p/0007_narrow_unavailable.t) |
+| VP-08 | VIF-P rejects height below 41. | [tests/quality_gate/vif_p/0008_short_unavailable.t](../../tests/quality_gate/vif_p/0008_short_unavailable.t) |
+| VP-09 | VIF-P zero reference information is unavailable. | [tests/quality_gate/vif_p/0009_flat_reference.t](../../tests/quality_gate/vif_p/0009_flat_reference.t) |
+| VP-10 | VIF-P flat target transmits zero information. | [tests/quality_gate/vif_p/0010_flat_target.t](../../tests/quality_gate/vif_p/0010_flat_target.t) |
+| VP-11 | VIF-P negative correlation transmits zero information. | [tests/quality_gate/vif_p/0011_negative_correlation.t](../../tests/quality_gate/vif_p/0011_negative_correlation.t) |
+| VP-12 | VIF-P coexists with an unavailable selected metric. | [tests/quality_gate/vif_p/0012_selected_json.t](../../tests/quality_gate/vif_p/0012_selected_json.t) |
+| VP-13 | VIF-P appears in the full JSON report. | [tests/quality_gate/vif_p/0013_full_json.t](../../tests/quality_gate/vif_p/0013_full_json.t) |
+| VP-14 | VIF-P rejects a finite score below its bound. | [tests/quality_gate/vif_p/0014_finite_gate.t](../../tests/quality_gate/vif_p/0014_finite_gate.t) |
+| VP-15 | VIF-P unavailable result fails even a zero bound. | [tests/quality_gate/vif_p/0015_unavailable_gate.t](../../tests/quality_gate/vif_p/0015_unavailable_gate.t) |
+| VP-16 | VIF-P unavailable JSON retains other metric results. | [tests/quality_gate/vif_p/0016_unavailable_json.t](../../tests/quality_gate/vif_p/0016_unavailable_json.t) |
+| VP-17 | VIF-P accepts the existing metric and baseline environment. | [tests/quality_gate/vif_p/0017_environment.t](../../tests/quality_gate/vif_p/0017_environment.t) |
+| VP-18 | VIF-P is included in the verbose metric report. | [tests/quality_gate/vif_p/0018_verbose.t](../../tests/quality_gate/vif_p/0018_verbose.t) |
+| VP-19 | VIF-P participates in video mean selection and bounds. | [tests/quality_gate/vif_p/0019_video_mean.t](../../tests/quality_gate/vif_p/0019_video_mean.t) |
 
 ### Metric selection and gate contracts
 

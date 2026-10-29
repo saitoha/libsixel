@@ -899,6 +899,7 @@ typedef struct Metrics {
     float scielab;
     float scielab_max;
     float ms_ssim;
+    float vif_p;
     float high_freq_out;
     float high_freq_ref;
     float high_freq_delta;
@@ -946,6 +947,8 @@ static const MetricBinding g_metric_bindings[] = {
      SIXEL_ASSESSMENT_METRIC_REGION_MAX},
     {"MS-SSIM", offsetof(Metrics, ms_ssim),
      SIXEL_ASSESSMENT_METRIC_MS_SSIM},
+    {"VIF-P", offsetof(Metrics, vif_p),
+     SIXEL_ASSESSMENT_METRIC_VIF_P},
     {"HighFreqRatio_out", offsetof(Metrics, high_freq_out),
      SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT},
     {"HighFreqRatio_ref", offsetof(Metrics, high_freq_ref),
@@ -1012,6 +1015,7 @@ static const MetricSpec sixel_metric_specs[] = {
     {"DE00_region_max", "DE00_region_max",
      SIXEL_ASSESSMENT_METRIC_REGION_MAX},
     {"MS-SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
+    {"VIF-P", "VIF-P", SIXEL_ASSESSMENT_METRIC_VIF_P},
     /* Keep established prefixes, including -mm, on the canonical name. */
     {"M", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
     {"MS", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
@@ -1433,6 +1437,7 @@ verbose_print(const Metrics *m)
         {"S-CIELAB", m->scielab},
         {"S-CIELAB_max", m->scielab_max},
         {"MS-SSIM", m->ms_ssim},
+        {"VIF-P", m->vif_p},
         {"HighFreqRatio_out", m->high_freq_out},
         {"HighFreqRatio_ref", m->high_freq_ref},
         {"HighFreqRatio_delta", m->high_freq_delta},
@@ -2653,6 +2658,12 @@ show_help(void)
             "MS-SSIM metric:\n"
             "  MS-SSIM         reference five-scale product (>=176x176)\n"
             "                  unavailable results print nan; JSON uses null\n"
+            "\n"
+            "VIF-P metric:\n"
+            "  VIF-P           four-scale pixel-domain VIF (>=41x41)\n"
+            "                  neural noise variance 2 (0--255 luma)\n"
+            "                  higher is better; contrast gains may exceed 1\n"
+            "                  zero reference information is unavailable\n"
             "\n"
             "Environment overrides:\n"
             "  LSQA_METRICS=NAME[,NAME...] (CLI replaces the list)\n"

@@ -139,6 +139,7 @@ typedef struct sixel_assessment_complex {
 typedef struct sixel_assessment_metrics {
     unsigned int valid_mask; /* bit mask for computed metrics */
     float ms_ssim;
+    float vif_p;
     float high_freq_out;
     float high_freq_ref;
     float high_freq_delta;
@@ -1574,6 +1575,226 @@ ms_ssim_luma(sixel_assessment_float_buffer_t const *ref,
     free(workspace);
     return (float)(product > 1.0 ? 1.0 : product);
 }
+/* Pixel-domain VIF uses four valid Gaussian windows (17, 9, 5, 3), with
+ * sigma = window / 5. At scales 2--4, filter with that scale's window and
+ * retain samples 0, 2, ... before computing local moments. These helpers
+ * implement the scalar model, not the wavelet/vector VIF formulation. */
+static void
+vif_p_downsample(double *pixels, double *horizontal, int width, int height,
+                 double const *kernel, int size)
+{
+    double sum;
+    size_t source;
+    size_t target;
+    int valid_width;
+    int row;
+    int column;
+    int tap;
+
+    valid_width = width - size + 1;
+    for (row = 0; row < height; ++row) {
+        for (column = 0; column < valid_width; ++column) {
+            source = (size_t)row * (size_t)width + (size_t)column;
+            sum = 0.0;
+            for (tap = 0; tap < size; ++tap) {
+                sum += kernel[tap] * pixels[source + (size_t)tap];
+            }
+            horizontal[(size_t)row * (size_t)valid_width +
+                (size_t)column] = sum;
+        }
+    }
+    /* Every horizontal input is saved before compacting pixels in place. */
+    target = 0u;
+    for (row = 0; row <= height - size; row += 2) {
+        for (column = 0; column < valid_width; column += 2) {
+            sum = 0.0;
+            for (tap = 0; tap < size; ++tap) {
+                source = (size_t)(row + tap) * (size_t)valid_width +
+                    (size_t)column;
+                sum += kernel[tap] * horizontal[source];
+            }
+            pixels[target++] = sum;
+        }
+    }
+}
+
+static void
+vif_p_scale(double const *a, double const *b, double *horizontal,
+             int width, int height, double const *kernel, int size,
+             double *numerator, double *denominator)
+{
+    double const epsilon = 1e-10;
+    double moments[5];
+    double const *window_rows[17];
+    double av;
+    double bv;
+    double weight;
+    double variance_a;
+    double variance_b;
+    double covariance;
+    double gain;
+    double residual;
+    size_t source;
+    size_t target;
+    int valid_width;
+    int row;
+    int column;
+    int tap;
+    int moment;
+
+    valid_width = width - size + 1;
+    for (row = 0; row < height; ++row) {
+        /* Retain only the horizontal rows in the current vertical window.
+         * Double moments limit cancellation for nearly uniform patches. */
+        for (column = 0; column < valid_width; ++column) {
+            memset(moments, 0, sizeof(moments));
+            source = (size_t)row * (size_t)width + (size_t)column;
+            for (tap = 0; tap < size; ++tap) {
+                av = a[source + (size_t)tap];
+                bv = b[source + (size_t)tap];
+                weight = kernel[tap];
+                moments[0] += weight * av;
+                moments[1] += weight * bv;
+                moments[2] += weight * av * av;
+                moments[3] += weight * bv * bv;
+                moments[4] += weight * av * bv;
+            }
+            target = ((size_t)(row % size) * (size_t)valid_width +
+                (size_t)column) * 5u;
+            memcpy(horizontal + target, moments, sizeof(moments));
+        }
+        if (row < size - 1) {
+            continue;
+        }
+        for (tap = 0; tap < size; ++tap) {
+            window_rows[tap] = horizontal +
+                (size_t)((row - size + 1 + tap) % size) *
+                (size_t)valid_width * 5u;
+        }
+        for (column = 0; column < valid_width; ++column) {
+            memset(moments, 0, sizeof(moments));
+            source = (size_t)column * 5u;
+            for (tap = 0; tap < size; ++tap) {
+                for (moment = 0; moment < 5; ++moment) {
+                    moments[moment] += kernel[tap] *
+                        window_rows[tap][source + (size_t)moment];
+                }
+            }
+            av = moments[0];
+            bv = moments[1];
+            variance_a = fmax(0.0, moments[2] - av * av);
+            variance_b = fmax(0.0, moments[3] - bv * bv);
+            covariance = moments[4] - av * bv;
+            gain = covariance / (variance_a + epsilon);
+            residual = variance_b - gain * covariance;
+            /* Flat reference patches carry no information. Flat targets
+             * and negative correlations cannot transmit reference detail.
+             * Keep these corrections in the reference algorithm's order. */
+            if (variance_a < epsilon) {
+                gain = 0.0;
+                residual = variance_b;
+                variance_a = 0.0;
+            }
+            if (variance_b < epsilon) {
+                gain = 0.0;
+                residual = 0.0;
+            }
+            if (gain < 0.0) {
+                residual = variance_b;
+                gain = 0.0;
+            }
+            residual = fmax(residual, epsilon);
+            /* Neural noise variance is 2 in the 0--255 signal domain.
+             * Pool information across scales before taking the ratio;
+             * averaging four individual ratios defines a different score. */
+            *numerator += log1p(gain * gain * variance_a /
+                               (residual + 2.0));
+            *denominator += log1p(variance_a / 2.0);
+        }
+    }
+}
+
+static float
+vif_p_luma(sixel_assessment_float_buffer_t const *ref,
+            sixel_assessment_float_buffer_t const *out,
+            int width, int height)
+{
+    double kernel[17];
+    double sum;
+    double coordinate;
+    double numerator;
+    double denominator;
+    double *workspace;
+    double *a;
+    double *b;
+    double *horizontal;
+    size_t count;
+    size_t scratch;
+    size_t index;
+    int level;
+    int size;
+    int tap;
+
+    /* 41 becomes 17, 7, 3 after valid filtering and subsampling. Anything
+     * smaller lacks a complete final window; do not reduce the scale count. */
+    if (width < 41 || height < 41) {
+        return NAN;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        assessment_fail(SIXEL_BAD_ALLOCATION, "VIF-P image size overflow");
+    }
+    count = (size_t)width * (size_t)height;
+    /* Two images plus scratch: max(one image, 17 rows of five moments).
+     * Height >= 41 makes the scratch strictly smaller than three images. */
+    if (count > SIZE_MAX / (5u * sizeof(double))) {
+        assessment_fail(SIXEL_BAD_ALLOCATION,
+                        "VIF-P workspace size overflow");
+    }
+    for (index = 0u; index < count; ++index) {
+        if (!isfinite(ref->values[index]) || !isfinite(out->values[index])) {
+            return NAN;
+        }
+    }
+    scratch = (size_t)(width - 16) * 17u * 5u;
+    if (scratch < count) {
+        scratch = count;
+    }
+    workspace = (double *)xmalloc((2u * count + scratch) * sizeof(double));
+    a = workspace;
+    b = a + count;
+    horizontal = b + count;
+    for (index = 0u; index < count; ++index) {
+        a[index] = (double)ref->values[index] * 255.0;
+        b[index] = (double)out->values[index] * 255.0;
+    }
+    numerator = 0.0;
+    denominator = 0.0;
+    for (level = 0; level < 4; ++level) {
+        size = (1 << (4 - level)) + 1;
+        sum = 0.0;
+        for (tap = 0; tap < size; ++tap) {
+            coordinate = (double)(tap - size / 2) / ((double)size / 5.0);
+            kernel[tap] = exp(-0.5 * coordinate * coordinate);
+            sum += kernel[tap];
+        }
+        for (tap = 0; tap < size; ++tap) {
+            kernel[tap] /= sum;
+        }
+        if (level != 0) {
+            vif_p_downsample(a, horizontal, width, height, kernel, size);
+            vif_p_downsample(b, horizontal, width, height, kernel, size);
+            width = (width - size + 2) / 2;
+            height = (height - size + 2) / 2;
+        }
+        vif_p_scale(a, b, horizontal, width, height, kernel, size,
+                     &numerator, &denominator);
+    }
+    free(workspace);
+    /* An information-free reference makes the ratio undefined, even for
+     * identity. Preserve gains above one for contrast-enhanced targets. */
+    return denominator > 0.0 ? (float)(numerator / denominator) : NAN;
+}
+
 /*
  * FFT helpers for spectral metrics
  */
@@ -2634,6 +2855,7 @@ evaluate_metrics(sixel_assessment_t *assessment,
     int threshold;
 
     int want_ms_ssim;
+    int want_vif_p;
     int want_high_freq_out;
     int want_high_freq_ref;
     int want_high_freq_delta;
@@ -2684,6 +2906,8 @@ evaluate_metrics(sixel_assessment_t *assessment,
 
     want_ms_ssim = assessment_metric_selected(assessment,
                    SIXEL_ASSESSMENT_METRIC_MS_SSIM);
+    want_vif_p = assessment_metric_selected(assessment,
+                  SIXEL_ASSESSMENT_METRIC_VIF_P);
     want_high_freq_delta = assessment_metric_selected(assessment,
                            SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA);
     want_high_freq_out = assessment_metric_selected(assessment,
@@ -2754,7 +2978,7 @@ evaluate_metrics(sixel_assessment_t *assessment,
                  SIXEL_ASSESSMENT_METRIC_GMSD);
     want_psnr_y = assessment_metric_selected(assessment,
                    SIXEL_ASSESSMENT_METRIC_PSNR_Y);
-    need_luma = want_ms_ssim ||
+    need_luma = want_ms_ssim || want_vif_p ||
                 want_high_freq_out || want_high_freq_ref ||
                 want_stripe_out || want_stripe_ref || want_banding_run_rel ||
                 want_banding_grad_rel || want_gmsd || want_psnr_y;
@@ -2771,6 +2995,11 @@ evaluate_metrics(sixel_assessment_t *assessment,
                                       width, height);
         assessment_metric_mark(&metrics,
             SIXEL_ASSESSMENT_METRIC_MS_SSIM, metrics.ms_ssim);
+    }
+    if (want_vif_p) {
+        metrics.vif_p = vif_p_luma(&ref_luma, &out_luma, width, height);
+        assessment_metric_mark(&metrics,
+            SIXEL_ASSESSMENT_METRIC_VIF_P, metrics.vif_p);
     }
     if (need_luma && (want_high_freq_out || want_high_freq_delta)) {
         high_freq_out_value = high_frequency_ratio(&out_luma,
@@ -3076,6 +3305,7 @@ static const MetricDescriptor g_metric_table[] = {
     {SIXEL_ASSESSMENT_METRIC_SCIELAB, "S-CIELAB"},
     {SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX, "S-CIELAB_max"},
     {SIXEL_ASSESSMENT_METRIC_MS_SSIM, "MS-SSIM"},
+    {SIXEL_ASSESSMENT_METRIC_VIF_P, "VIF-P"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT, "HighFreqRatio_out"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF, "HighFreqRatio_ref"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA, "HighFreqRatio_delta"},
@@ -3136,6 +3366,10 @@ store_metrics(sixel_assessment_t *assessment,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_MS_SSIM,
                           metrics->ms_ssim);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_VIF_P,
+                          metrics->vif_p);
     store_metric_if_valid(results,
                           mask,
                           SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT,
