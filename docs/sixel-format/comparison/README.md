@@ -82,29 +82,34 @@ SIXEL's simpler run-length expansion can therefore be faster than a more compact
 
 ## What is measured
 
-The workloads come from the [saitoha/libsixel-dataset](https://github.com/saitoha/libsixel-dataset) repository, measured at commit `fd6bcc838d10fbe673bcbb4953b4a641c9667d15`. The photographs are its photo set. The set holds 100 photographs from the Wikimedia Commons Featured pictures collection under CC0, public-domain, CC BY or CC BY-SA terms; the dataset's `photo/manifest.json` records each title, author, license and source revision. The photographic workload is its `photo/crop-640x480` directory: one 640 × 480 center crop of each original at 1:1, with no resampling, color transform or orientation change, so the measurement sees the camera and JPEG output rather than a scaling filter. Six crops carry an Adobe RGB (1998) profile; they are converted to sRGB with a relative colorimetric intent and the profile is dropped, so every codec and the quality reference receive the same untagged sRGB samples. The other 94 crops are untagged and treated as sRGB. A separate size sweep, described with its figure below, crops the dataset's `photo/original` files at four sizes. The second workload is the dataset's chart set, `chart/crop-640x480`: 100 rendered charts and color-mapped images at 640 × 480, generated with matplotlib from seeded data and released under CC0. It covers heatmaps and color-map strips, line, bar, scatter, contour and pie plots, distributions, spectrograms, fractals and 3-D surfaces in light and dark themes, so thin anti-aliased lines and text on flat backgrounds meet long smooth color ramps; many frames have more than 256 distinct colors, which makes GIF and SIXEL lossy on them too. The chart PNGs are untagged and treated as sRGB. Neither corpus is stored with the results: the [raw results](figures/results.json) record the SHA-256 of each source file and of each prepared input.
+The workloads come from the [saitoha/libsixel-dataset](https://github.com/saitoha/libsixel-dataset) repository, measured at commit `fd6bcc838d10fbe673bcbb4953b4a641c9667d15`. The photo set holds 100 photographs from the Wikimedia Commons Featured pictures collection under CC0, public-domain, CC BY or CC BY-SA terms; the dataset's `photo/manifest.json` records each title, author, license and source revision. The photographic workload is its `photo/crop-640x480` directory: one 640 × 480 center crop of each original at 1:1, with no resampling, color transform or orientation change, so the measurement sees the camera and JPEG output rather than a scaling filter. Six crops carry an Adobe RGB (1998) profile; they are converted to sRGB with a relative colorimetric intent and the profile is dropped. The other 94 crops are untagged and treated as sRGB. Of the measured subset, only `photo-016` carries such a profile. Every codec and the quality reference receive the same untagged sRGB samples. A separate size sweep, described with its figure below, crops the dataset's `photo/original` files at four sizes.
 
-The checked-in run measures every fifth image of each corpus by name, 20 photographs (`photo-001`, `photo-006`, …, `photo-096`) and 20 charts, a subset used while the implementation changes; a full run measures all 100 of each. No alpha, animation, metadata preservation, terminal painting, display upload, or hardware codec work is measured.
+The second workload is the dataset's chart set, `chart/crop-640x480`: 100 rendered charts and color-mapped images at 640 × 480, generated with matplotlib from seeded data and released under CC0. It covers heatmaps and color-map strips, line, bar, scatter, contour and pie plots, distributions, spectrograms, fractals and 3-D surfaces in light and dark themes, so thin anti-aliased lines and text on flat backgrounds meet long smooth color ramps; many frames have more than 256 distinct colors, which makes GIF and SIXEL lossy on them too. The chart PNGs are untagged and treated as sRGB. Neither corpus is stored with the results: the [raw results](figures/results.json) record the SHA-256 of each source file and of each prepared input.
+
+The checked-in run measures every fifth image of each corpus by name, 20 photographs (`photo-001`, `photo-006`, …, `photo-096`) and 20 charts; a full run measures all 100 of each. No alpha, animation, metadata preservation, terminal painting, display upload, or hardware codec work is measured.
 
 Each encode starts with pixels in memory and ends with complete image bytes in memory. Each decode starts with bytes in memory and ends with a loaded RGB image, except for the explicitly labeled retained-index generation path. Timings include the Python/native adapters, input/output copies, allocation and cleanup; they exclude disk I/O, process startup, LSQA, Base64 conversion and terminal rendering. They are application-call latencies, not isolated inner-loop throughput. Different wrapper overheads remain a limitation, especially for sub-millisecond JPEG calls. SIXEL decoding uses `sixel_decode_pixels` directly; no downstream PNG writer is included.
 
 | Implementation | Settings |
 | --- | --- |
-| libsixel, default | Archived committed source; optimized C99 build; 256 colors; `--precision-policy=8bit`, `--gpu-policy=off`, `-E fast`; default diffusion; borrowed RGB8 or PAL8 frame API |
-| libsixel, quality | The same build and API with the equivalent of `img2sixel -Qk -Fw -Wc -Xc -dl`: K-means palette, Ward final merge, CIELAB clustering and working color spaces, LSO2 diffusion; `--gpu-policy=off` and library defaults otherwise. The thread budget follows the 1/2/4/8 axis rather than a fixed `-=` value |
-| Pillow JPEG / libjpeg-turbo | Quality 60, 80 and 95; 4:2:0; no optimized Huffman table pass |
+| libsixel, `SIXEL -d none` | Archived committed source; optimized C99 build; 256 colors; `--precision-policy=8bit`, `--gpu-policy=off`, `-E fast`, `-d none`; library defaults otherwise; borrowed RGB8 or PAL8 frame API. Diffusion is disabled to match Pillow's GIF path, whose `quantize()` without a supplied palette does not dither |
+| Pillow JPEG / libjpeg-turbo | Quality 80; 4:2:0; no optimized Huffman table pass |
 | Pillow GIF | 256-color median-cut quantization for RGB input; existing indices for retained-index input; `optimize=False` |
 | Pillow PNG / zlib | RGB PNG; compression level 6 |
 | QOI | The [`qoi`](https://pypi.org/project/qoi/) Python package, which wraps the reference C implementation; RGB arrays |
-| libwebp | Quality 60, 80 and 95, method 4; separate lossless quality/effort 80, method 4; native API multithreading switch |
-| Pillow AVIF / libavif | Quality 60 and 80, speed 6, 4:2:0; aom encoder and dav1d decoder; the encoder `max_threads` and the decoder thread count receive the budget |
-| pillow-heif HEIC / libheif | Quality 60 and 80 on libheif's scale, 4:2:0; x265 encoder with its default preset and libde265 decoder; `x265:pools` and the decoder thread count receive the budget |
+| libwebp | Quality 80, method 4; separate lossless quality/effort 80, method 4; native API multithreading switch |
+| Pillow AVIF / libavif | Quality 80, speed 6, 4:2:0; aom encoder and dav1d decoder; the encoder `max_threads` and the decoder thread count receive the budget |
+| pillow-heif HEIC / libheif | Quality 80 on libheif's scale, 4:2:0; x265 encoder with its default preset and libde265 decoder; `x265:pools` and the decoder thread count receive the budget |
 
-Seven samples follow two warm-ups per cell. For each image, the figures use the median of its seven samples; latency panels show the distribution of those per-image medians as box plots, and quality, size, scaling and generation panels show their means. Both corpora are drawn the same way. Timed repetitions within a generation start from the same preceding-generation image; only the final result advances the chain. The generation experiment runs on every fifth image of each corpus by name, which in the checked-in subset is every measured image. Quality is measured with the repository's `lsqa`, against the prepared input for every generation, using MS-SSIM and mean Delta E00; identical decoded pixels are evaluated once. PNG, QOI and lossless WebP are also checked for exact RGB equality; perceptual scores do not substitute for this check. Values below the project's usual 0.98/0.95 quality gates are reported as failed quality operating points, not accepted regression thresholds.
+Seven samples follow two warm-ups per cell. For each image, the figures use the median of its seven samples; latency panels show the distribution of those per-image medians as box plots, and quality, size, scaling and generation panels show their means. Both corpora are drawn the same way. Timed repetitions within a generation start from the same preceding-generation image; only the final result advances the chain. The generation experiment runs on every fifth image of each corpus by name, which in the checked-in subset is every measured image.
+
+Quality is measured with the repository's `lsqa`, against the prepared input for every generation, using MS-SSIM and mean [S-CIELAB at 60 pixels per degree](../../quality/metrics.md#spatial-color-difference-s-cielab); identical decoded pixels are evaluated once. Per-pixel ΔE00 counts high-frequency chroma error, such as 4:2:0 subsampling, in full. S-CIELAB filters luminance and opponent-color channels by visual angle, comparing palette quantization, banding and compression artifacts at a stated viewing geometry. The 60 ppd value is an assumption, not a measurement of the reader's display or viewing distance. S-CIELAB uses CIE76, so ΔE00 thresholds do not apply. Mean ΔE00 (`delta_e`) and the S-CIELAB maximum (`scielab_max`) are retained in the raw results but are not plotted.
+
+PNG, QOI and lossless WebP are also checked for exact RGB equality; perceptual scores do not substitute for this check. Values below the project's usual 0.98/0.95 MS-SSIM quality gates are reported as failed quality operating points, not accepted regression thresholds.
 
 The 1/2/4/8 axis is a **configured worker budget**, not CPU affinity or reserved cores. SIXEL, AVIF and HEIC receive that count. The [WebP API](https://developers.google.com/speed/webp/docs/api) receives `thread_level=1` / `use_threads=1` for every budget above one, because these are Boolean controls rather than exact counts. The measured Pillow JPEG/GIF/PNG paths and QOI remain serial for a single image. Thus their additional-budget points do not imply use of 2/4/8 workers. All runs are sequential; there is no multi-image throughput benchmark. Other host activity and scheduling can affect the results.
 
-Decoder scaling always uses the same bytes produced by the one-thread encoder. Encoder scaling also records quality and size at each budget. Automatic palette sampling selects the same policy at every budget, so the palette does not depend on the worker count; the dithered pixels still differ slightly, because error diffusion runs over work bands whose boundaries depend on the budget. In the recorded run, mean MS-SSIM and Delta E00 of both SIXEL settings agree at budgets one and eight to four decimal places and mean size within 0.1%. These graphs must not present a changed-quality encoder as a pure same-output speedup. Equal numerical quality settings in JPEG, WebP, AVIF and HEIC likewise do not mean equal quality: libheif's scale in particular produces quality-80 HEIC files about 2.7 times the size of quality-80 JPEG files here. Consult the measured quality/size points.
+Decoder scaling always uses the same bytes produced by the one-thread encoder. Encoder scaling also records quality and size at each budget. For `SIXEL -d none`, budgets one and eight have identical `rgb_sha256` values for all 20 photographs and all 20 charts: their decoded pixels and quality scores agree exactly. The `stream_sha256` values agree for only 11 photographs and 4 charts, so this is equal-pixel scaling, not byte-identical encoding. Equal numerical quality settings in JPEG, WebP, AVIF and HEIC likewise do not mean equal quality: libheif's scale in particular produces quality-80 HEIC files about 2.6 times the size of quality-80 JPEG files here. Consult the measured quality/size points.
 
 ## Why these implementations
 
@@ -125,45 +130,45 @@ The roughly 33% expansion changes the comparison but does not guarantee a SIXEL 
 ## Reading these results
 
 - **One host, one implementation per format.** Every number on this page comes from a single machine, one implementation of each format and a few operating points. Another host, another implementation or other settings can produce different latencies, sizes and rankings.
-- **Implementations differ in maturity.** libjpeg-turbo has decades of SIMD work behind it; Pillow's GIF path uses a simple median-cut quantizer rather than a modern palette optimizer; the AVIF and HEIC encoders run at their libraries' default speed presets. A result here describes the implementation and setting that was measured and does not mark the limit of its format.
+- **One fixed lossy setting.** Each lossy codec is shown at quality 80, a representative operating point rather than a quality-matched point; matching a quality target would require a per-codec search.
+- **Implementations differ in maturity.** libjpeg-turbo has decades of SIMD work behind it; Pillow's GIF path uses a simple median-cut quantizer rather than a modern palette optimizer; AVIF uses speed 6 and HEIC uses x265's default preset. A result here describes the implementation and setting that was measured and does not mark the limit of its format.
 - **Speed depends strongly on the environment.** CPU architecture and SIMD width, compiler and build options, library versions, hardware codec availability, thread scheduling, and power or thermal state can change latencies by large factors. Codecs whose hot paths are hand-vectorized for one instruction set are especially sensitive, so latency rankings are the least portable part of this page.
 - **Not a ranking of formats.** These measurements are inputs for choosing an operating point for a particular workload and transport. They should not be used on their own to declare one format better than another; a meaningful comparison names the implementation, settings, workload, quality target and host.
 
 ## Observed results on the recorded host
 
-The checked-in run used an Apple M3 Max (14 logical CPUs), macOS 27.0.1, Apple Clang 21 with `-O3`, and libsixel revision `8b2a7bc3d5d0eeb465157c57cc6833181bff8474`. The other implementations were Pillow 12.3.0 with libjpeg-turbo 3.1.4.1, zlib-ng reporting 1.3.1.zlib-ng and libavif 1.4.2 (aom 3.14.1, dav1d 1.5.3); pillow-heif 1.8.1 with libheif 1.23.6 (x265 4.3, libde265 1.1.3); `qoi` 0.7.2; and libwebp 1.6.0, driven from Python 3.12.0. Plotting used matplotlib 3.10.3. The source revision identifies the isolated codec build, not unrelated work in the shared checkout.
+The checked-in run used an Apple M3 Max (14 logical CPUs), macOS 27.0.1, Apple Clang 21.0.0 with `-O3`, and libsixel revision `441f9ce78bc4c279a39049846adc5a4818f3764e`. The other implementations were Pillow 12.3.0 with libjpeg-turbo 3.1.4.1, zlib-ng reporting 1.3.1.zlib-ng and libavif 1.4.2 (aom 3.14.1, dav1d 1.5.3); pillow-heif 1.8.1 with libheif 1.23.6 (x265 4.3+1-e9b8812, libde265 1.1.3); `qoi` 0.7.2; and libwebp 1.6.0, driven from Python 3.12.0. These versions and the build configuration are recorded in the results metadata. The source revision identifies the isolated codec build, not unrelated work in the shared checkout.
 
 | Observation over the 20 photographs | Mean of per-photograph medians or scores |
 | --- | --- |
-| Default SIXEL encode, budget 1 → 8 | 25.5 → 9.8 ms (median per-photograph speedup 2.6×); mean MS-SSIM 0.9958, mean Delta E00 2.42 at both budgets |
-| Quality SIXEL encode, budget 1 → 8 | 47.4 → 17.2 ms (2.8×); mean MS-SSIM 0.9979, mean Delta E00 2.11 at both budgets |
-| Default SIXEL decode, identical bytes, budget 1 → 8 | 1.84 → 1.14 ms (median per-photograph speedup 1.5×) |
-| PNG / QOI, budget 1 | encode 15.1 / 1.83 ms, decode 4.13 / 1.40 ms; both lossless |
+| `SIXEL -d none` encode, budget 1 → 8 | 12.9 → 9.2 ms (median per-photograph speedup 1.4×); mean MS-SSIM 0.9962, mean S-CIELAB 1.13 at both budgets |
+| `SIXEL -d none` decode, identical bytes, budget 1 → 8 | 1.82 → 1.14 ms (median per-photograph speedup 1.5×) |
+| PNG / QOI, budget 1 | encode 15.2 / 1.86 ms, decode 4.17 / 1.40 ms; both lossless |
 | JPEG quality 80, budget 1 | 0.53 ms encode, 0.62 ms decode; mean MS-SSIM 0.9966 |
-| AVIF / HEIC quality 80, budget 1 → 8 | encode 155.0 → 49.4 / 369.5 → 131.4 ms; decode 4.20 → 2.87 / 17.0 → 16.2 ms; mean MS-SSIM 0.9978 / 0.9997 |
-| Transport payload per photograph | default SIXEL 588 KiB, quality SIXEL 549 KiB, PNG 671 KiB, QOI 758 KiB, JPEG 80 77 KiB, WebP 80 59 KiB, AVIF 80 80 KiB, HEIC 80 203 KiB |
-| Retained-index encode, generation 1 → 2 | SIXEL 25.8 → 5.4 ms, GIF 60.8 → 2.8 ms; generations 2–8 preserve generation-one RGB exactly |
+| AVIF / HEIC quality 80, budget 1 → 8 | encode 154.4 → 47.9 / 364.8 → 126.6 ms; decode 4.13 → 2.72 / 15.91 → 16.01 ms; budget-one mean MS-SSIM 0.9978 / 0.9997 |
+| Transport payload per photograph, budget 1 | `SIXEL -d none` 538 KiB, GIF 320 KiB, PNG 671 KiB, QOI 758 KiB, JPEG 80 77 KiB, WebP 80 59 KiB, lossless WebP 488 KiB, AVIF 80 80 KiB, HEIC 80 203 KiB |
+| Retained-index encode, generation 1 → 2 | `SIXEL -d none` 13.0 → 5.0 ms, GIF 60.8 → 2.8 ms; generations 2–8 preserve generation-one RGB exactly |
 
-Per photograph, one-budget default SIXEL decoding is faster than PNG, quality-95 and lossless WebP, quality-80 AVIF and both HEIC settings for every photograph, and than quality-80 WebP for 18 of the 20; it is slower than JPEG for every photograph, than GIF for 15 and than QOI for 14. At budget eight, where only SIXEL, AVIF and lossy WebP decoders use additional workers, it is faster than PNG and GIF for every photograph, than quality-80 WebP for 19 and than QOI for 16, and still slower than quality-60 and quality-80 JPEG for every photograph.
+Per photograph, one-budget `SIXEL -d none` decoding is faster than PNG, lossless WebP, AVIF 80 and HEIC 80 for all 20 photographs, and than WebP 80 for 19; it is slower than JPEG 80 for all 20, than GIF for 12 and than QOI for 15. At budget eight it is faster than PNG, GIF, lossless WebP, AVIF 80 and HEIC 80 for all 20 photographs, than WebP 80 for 19 and than QOI for 16, and still slower than JPEG 80 for all 20. A configured decoder budget does not imply that every implementation can use it effectively.
 
-One-budget default SIXEL encoding is faster than Pillow's GIF, lossless WebP, AVIF and HEIC for every photograph, close to quality-95 WebP (faster for 11), and slower than PNG for 18 and than quality-60/80 WebP, QOI and JPEG for every or all but one photograph. At budget eight it is faster than PNG and every WebP setting for every photograph, while QOI and JPEG remain faster. Default SIXEL's transport payload is smaller than PNG's for 17 photographs, smaller than QOI's for every photograph and smaller than lossless WebP's for 3; it is lossy and larger than GIF and every lossy configuration for every photograph.
+One-budget `SIXEL -d none` encoding is faster than Pillow's GIF, both WebP modes, AVIF 80 and HEIC 80 for all 20 photographs, and than PNG for 16; QOI and JPEG 80 are faster for all 20. At budget eight it is faster than PNG as well as GIF, both WebP modes, AVIF 80 and HEIC 80 for all 20 photographs, while QOI and JPEG 80 remain faster for all 20. Its budget-one transport payload is smaller than PNG's for 19 photographs, smaller than QOI's for all 20 and smaller than lossless WebP's for 8; it is lossy and larger than GIF and each measured lossy codec for all 20 photographs.
 
-Every photograph scores at least 0.98 MS-SSIM with every measured setting; the lowest SIXEL scores are 0.989 (default) and 0.995 (quality) on `photo-066`. Default SIXEL's mean Delta E00 of 2.42 is at the level of quality-60 JPEG and WebP (2.45 and 2.42). The quality settings reduce it to 2.11, near GIF and quality-80 WebP and JPEG (2.06, 2.03 and 1.98).
+Every photograph scores at least 0.98 MS-SSIM with every measured setting and budget; the lowest `SIXEL -d none` score is 0.9894 on `photo-066`. At budget one its mean S-CIELAB is 1.13, below GIF's 1.55 but above WebP 80's 1.00, AVIF 80's 0.95, JPEG 80's 0.74 and HEIC 80's 0.26. These are color differences at the stated 60 ppd assumption, not interchangeable with ΔE00 scores.
 
-On the 20 charts, which run at a quarter of the photographic payload, default SIXEL encodes in 9.9 ms with one worker and 4.9 ms with eight, against 5.9 ms for PNG, 12.2 ms for quality-80 WebP and 14.1 ms for GIF, and it decodes in about 1.0 ms at either budget, against 1.6 ms for PNG, 1.2 ms for quality-80 WebP, 1.0 ms for GIF and 0.6 ms for QOI. Its 160 KiB payload is larger than PNG's 133 KiB for 15 charts and larger than GIF's 104 KiB for 18, while scoring 0.9976 MS-SSIM and 0.49 mean Delta E00; the quality settings reach 0.9995 and 0.27 at 157 KiB. Lossy JPEG and WebP are much smaller but leave Delta E00 near 1 at quality 80, so on charts the comparison is closer to the lossless coders than on photographs. These are workload-dependent tradeoffs, not a Huffman-versus-RLE law or a matched-quality victory.
+On the 20 charts, `SIXEL -d none` carries about a third of its photographic payload. It encodes in 4.5 ms with one worker and 4.7 ms with eight, against budget-one means of 6.1 ms for PNG, 12.6 ms for WebP 80 and 14.5 ms for GIF. It decodes in 1.08 → 1.07 ms, against budget-one means of 1.63 ms for PNG, 1.30 ms for WebP 80, 0.99 ms for GIF and 0.64 ms for QOI. Its budget-one 178 KiB payload is larger than PNG's 133 KiB for 14 charts and larger than GIF's 104 KiB for 18, while scoring 0.9994 MS-SSIM and 0.22 mean S-CIELAB. JPEG 80 and WebP 80 average 44 and 24 KiB but leave S-CIELAB at 1.06 and 1.15. The smaller streams trade away color fidelity on this workload; these are not matched-quality points or a Huffman-versus-RLE law.
 
 ## Photographic workload
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-profile-mobile.svg">
-  <img alt="Photographic workload: encoder and RGB decoder latency, measured quality against Base64-adjusted payload size, and native versus transport bytes for SIXEL, GIF, PNG, QOI, JPEG, WebP, AVIF and HEIC over 20 640 × 480 photographs." src="figures/photo-profile-wide.svg">
+  <img alt="Photographic workload: encoder and RGB decoder latency, MS-SSIM against Base64-adjusted payload size, and native versus transport bytes for SIXEL -d none, GIF, PNG, QOI, JPEG, WebP, AVIF and HEIC over 20 640 × 480 photographs." src="figures/photo-profile-wide.svg">
 </picture>
 
-The latency boxes compare all sampled codec configurations across the corpus; the quality plot shows why file size and latency cannot be interpreted without distortion, with each photograph as a small mark and each configuration's mean as a numbered mark. Points far below the others are counted in the panel rather than stretching its axis. The native/transport panel uses representative quality-80 JPEG/WebP/AVIF/HEIC rows, both SIXEL settings, GIF, PNG, QOI and lossless WebP.
+The latency boxes compare all sampled codec configurations across the corpus; the MS-SSIM plot shows why file size and latency cannot be interpreted without distortion, with each photograph as a small mark and each configuration's mean as a numbered mark. Points far below the others are counted in the panel rather than stretching its axis. The native/transport panel uses quality-80 JPEG/WebP/AVIF/HEIC, `SIXEL -d none`, GIF, PNG, QOI and lossless WebP.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-scaling-mobile.svg">
-  <img alt="Photo under budgets one, two, four and eight: encode latency, fixed-stream RGB decode latency, encoder MS-SSIM and encoder size; SIXEL, AVIF and HEIC receive the worker count, WebP uses a Boolean parallel switch, and Pillow JPEG/GIF/PNG and QOI stay serial." src="figures/photo-scaling-wide.svg">
+  <img alt="Photos under budgets one, two, four and eight: encode latency, fixed-stream RGB decode latency, encoder MS-SSIM and encoder size; SIXEL -d none, AVIF and HEIC receive the worker count, WebP uses a Boolean parallel switch, and Pillow JPEG/GIF/PNG and QOI stay serial." src="figures/photo-scaling-wide.svg">
 </picture>
 
 ## Latency against image size
@@ -175,40 +180,43 @@ The corpus fixes one image size, while fixed per-image costs and thread start-up
   <img alt="Encode and decode latency against pixel count for 1:1 crops from 160 × 120 to 1280 × 960 at budgets one and eight; lines are means over ten photographs and dots are individual photographs." src="figures/photo-sizes-wide.svg">
 </picture>
 
-One-budget default SIXEL encoding has a fixed cost: 3.6 ms at 160 × 120 (about 190 ns per pixel) against 84 ms at 1280 × 960 (about 68 ns per pixel), whereas PNG grows from 0.72 to 61 ms almost in proportion to the pixel count. It is therefore slower than PNG at every measured size, by 5.0 times at the smallest size and 1.4 times at the largest. The eight-worker budget does not help small images: at 160 × 120 it encodes in 4.5 ms, slower than one worker, and at 320 × 240 it is still slower than PNG; from 640 × 480 it is faster than PNG, 21 versus 61 ms at 1280 × 960. Quality SIXEL gains more from the budget, 4.6 times at 1280 × 960 (155 → 34 ms). SIXEL decoding is faster than PNG at every size with one worker, but eight workers are slower than one at 160 × 120 (0.33 versus 0.13 ms) and equal at 320 × 240, and they overtake QOI only from 640 × 480. The quality-60 AVIF encoder gains most from size: eight workers speed it up 1.1 times at 160 × 120 and 5.7 times at 1280 × 960. A ranking measured at one image size does not transfer to another.
+One-budget `SIXEL -d none` encoding has substantial per-image costs: 3.35 ms at 160 × 120 (about 174 ns per pixel) against 34.0 ms at 1280 × 960 (about 28 ns per pixel), whereas PNG grows from 0.75 to 62.5 ms. SIXEL is slower than PNG at the two smaller sizes, by 4.5 times at the smallest, but faster at 640 × 480 and 1280 × 960. Eight workers do not help at the two smaller sizes: encoding takes 5.00 ms at 160 × 120 and 6.13 ms at 320 × 240, against 3.35 and 5.60 ms with one worker. At 1280 × 960, eight-worker SIXEL takes 18.5 ms against PNG's 63.0 ms at that budget.
+
+SIXEL decoding is faster than PNG at every size with one worker, but eight workers are slower than one at 160 × 120 (0.35 versus 0.14 ms) and slightly slower at 320 × 240 (0.53 versus 0.52 ms). With eight workers it overtakes QOI only from 640 × 480. AVIF 80 encoding gains more from the worker budget as image size grows: its mean-latency speedup is 1.1 times at 160 × 120 and 5.9 times at 1280 × 960. A ranking measured at one image size does not transfer to another.
 
 ## Where encoding time goes
 
-An encoder's work falls into two kinds. Some work is done once per image regardless of its size: building a palette from a color histogram, for example, depends mostly on how many distinct colors there are, not on how many pixels carry them. Other work is done once per pixel: assigning every pixel its palette entry, diffusing its error, and writing the compressed output. Work of the first kind costs about the same for a small image and a large one, so it weighs heavily per pixel on small images and fades on large ones; work of the second kind stays at a constant cost per pixel. Comparing one encoder at two image sizes separates the two.
+An encoder's work falls into two kinds. Some work is done once per image: building a palette from a color histogram, for example, depends mostly on how many distinct colors there are, not on how many pixels carry them. Other work is done once per pixel: assigning every pixel its palette entry and writing the compressed output. Per-image work weighs heavily per pixel on small images, while purely per-pixel work has a constant cost per pixel. Comparing one encoder at two image sizes helps distinguish the two, although crop content and memory access also affect the cost.
 
 The stage chart encodes 1:1 center crops of nine originals (the size-sweep photographs except `photo-031`, whose original is narrower than 1920 pixels) at VGA, 640 × 480, and at FHD, 1920 × 1080, with one worker, and splits each encode into stages. The left panel shows milliseconds per image; the right panel divides the same bars by the pixel count, so a stage that keeps its height between the two bars scales with the pixels and a stage that shrinks is fixed work. Dotted lines join the same stage boundary at the two sizes.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-stages-mobile.svg">
-  <img alt="Stacked bars of one-worker encoding time for default SIXEL, quality SIXEL, Pillow GIF and Pillow PNG at VGA and FHD, per image and per pixel, split into color conversion, sampling, palette search, lookup setup, lookup and dither, PNG row filter, output coding and other; dotted lines join matching stage boundaries." src="figures/photo-stages-wide.svg">
+  <img alt="Stacked bars of one-worker encoding time for SIXEL -d none, Pillow GIF and Pillow PNG at VGA and FHD, per image and per pixel, split into sampling, palette search, lookup setup, lookup, PNG row filter, output coding and other; dotted lines join matching stage boundaries." src="figures/photo-stages-wide.svg">
 </picture>
 
 The stages come from each implementation's own boundaries. SIXEL stages are read from libsixel's timeline log (`SIXEL_LOG_PATH`) of the same in-memory encoder call that the comparison times. Sampling covers sample extraction, the conversion of the samples to the clustering color space and palette initialization up to the first refinement step (the histogram for median cut); palette search covers the refinement and final merge; color conversion is the full-frame working-space conversion on the encoding thread; lookup setup ends where palette application starts, and SIXEL encoding is the six-row band jobs. Pillow does not report its stages, so GIF and PNG use the same Pillow version rebuilt from source with timers at its own stage boundaries: color hashing (sampling), median cut and palette computation (palette search), distance tables and pixel mapping (lookup, without dithering), and LZW coding; and for PNG the time inside zlib's `deflate()` against the rest of the encoder, which is mostly row filtering. The rebuilt Pillow links the wheel's own zlib-ng, and its GIF and PNG bytes are verified to equal the wheel's for every crop, so the breakdown describes the implementation measured elsewhere on this page.
 
-| One worker, mean of nine photographs | VGA | FHD | Per pixel, VGA → FHD |
-| --- | --- | --- | --- |
-| Default SIXEL | 26.1 ms | 135.2 ms | 85 → 65 ns |
-| Quality SIXEL | 47.4 ms | 249.1 ms | 154 → 120 ns |
-| Pillow GIF | 60.1 ms | 164.0 ms | 196 → 79 ns |
-| Pillow PNG | 14.9 ms | 103.4 ms | 49 → 50 ns |
+The table follows the stacked bars: each stage contributes the mean of its per-photograph sample medians, and those contributions are summed. Taking the median of each complete encode instead can give slightly different totals.
 
-PNG is almost purely per-pixel work: DEFLATE takes about 83% of its time and the cost per pixel does not change with size. Pillow's GIF carries the largest fixed stage, its median-cut palette search, which takes 34–44 ms at both sizes and therefore falls from 110 to 21 ns per pixel. Default SIXEL spends little on its palette (sampling and search together take 1.3 ms at VGA and 3.2 ms at FHD); lookup with error diffusion dominates, at 62 ns per pixel at VGA and 49 ns at FHD, followed by band coding at 19 and 15 ns. Quality SIXEL first converts every pixel to its CIELAB working space, a stage that costs a constant 28 ns per pixel, less than a third of its lookup and diffusion (93 ns at VGA and 74 ns at FHD). A one-worker SIXEL encode is therefore not slower than PNG because of a large fixed setup: it performs a nearest-color search and error diffusion for every pixel, work that a lossless coder does not have.
+| One worker, sum of mean stage medians over nine photographs | VGA | FHD | Per pixel, VGA → FHD |
+| --- | --- | --- | --- |
+| `SIXEL -d none` | 13.9 ms | 52.9 ms | 45.1 → 25.5 ns |
+| Pillow GIF | 65.1 ms | 172.4 ms | 212 → 83 ns |
+| Pillow PNG | 15.5 ms | 107.3 ms | 51 → 52 ns |
+
+PNG is close to per-pixel work: DEFLATE takes about 83–84% of its time and the cost per pixel is similar at both sizes. Pillow's GIF carries the largest per-image stage, its median-cut palette search, which takes 37–46 ms and falls from 122 to 22 ns per pixel. `SIXEL -d none` spends 1.5 ms at VGA and 3.4 ms at FHD on sampling and palette search together. Its lookup costs about 21 and 10 ns per pixel, and band coding 19 and 14 ns; band coding is the largest stage at FHD. There is no full-frame working-space conversion or error diffusion in this measured setting. The one-worker SIXEL encode is faster than PNG at both sizes, but still pays for nearest-color lookup and band serialization, whose per-pixel costs depend on the workload.
 
 ## Worker budgets and serial stages
 
-More workers shorten only the stages that are divided among them. The worker chart encodes the FHD crops of the same nine photographs with one and with eight workers. With several workers, lookup with error diffusion and band coding run as one pipeline over horizontal work bands, and quality SIXEL builds its palette while the color conversion is still running, so stages overlap in time. Each bar therefore partitions the elapsed time: every interval is labeled with the stage that runs in it, the pipelined lookup, diffusion and coding form one segment, and palette work that overlaps the conversion is hatched. Dotted lines join the ends of palette construction, lookup setup, the lookup and coding phase, and the whole encode.
+More workers shorten only the stages that are divided among them. The worker chart encodes the FHD crops of the same nine photographs with `SIXEL -d none` and budgets of one and eight workers. With several workers, lookup and band coding run as one pipeline over horizontal work bands. Each bar therefore partitions the elapsed time: every interval is labeled with the work running in it, and pipelined lookup and coding form one segment. This setting has no full-frame color-conversion interval. Dotted lines join the ends of palette construction, lookup setup, the lookup and coding phase, and the whole encode.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-threads-mobile.svg">
-  <img alt="Stacked bars of FHD encoding time for default and quality SIXEL with one and eight workers: the pipelined lookup, dither and band coding phase and the quality setting's color conversion both shrink with eight workers." src="figures/photo-threads-wide.svg">
+  <img alt="Stacked bars of FHD encoding time for SIXEL -d none with one and eight workers: lookup and band coding share a shorter pipelined segment with eight workers; sampling also shrinks, while palette search is nearly unchanged." src="figures/photo-threads-wide.svg">
 </picture>
 
-Default SIXEL falls from 136.8 to 31.7 ms with eight workers. Its lookup, diffusion and coding phase shrinks from 133 to 30 ms. Sample extraction has to finish before palette construction and preprocessing may start, but it is divided among the workers and falls from 2.2 to 0.9 ms. Quality SIXEL falls from 251.7 to 51.4 ms: the pipelined phase shrinks from 185 to 39 ms and the CIELAB conversion from 58.5 to 11.4 ms of elapsed time, of which 5.9 ms run beside sampling and palette construction. While palette construction overlaps the conversion, the encoder first gives each side half of the budget; when palette construction finishes, its workers join the conversion, which is cut into small chunks so that late workers still find work. A serial stage, or one confined to part of the budget, bounds what more workers can achieve; it has to be divided further or made cheaper itself.
+The sum of mean segment medians falls from 52.6 to 26.1 ms with eight workers. Lookup and coding together shrink from 49.1 to 23.9 ms. Sample extraction has to finish before palette construction starts, but it is divided among the workers and falls from 2.23 to 0.91 ms. Palette search stays near 1.14 → 1.13 ms. The lookup and coding phase still dominates elapsed time; an eight-worker budget does not divide it by eight. Serial work, scheduling and available parallel work all limit what more workers can achieve, and this chart alone does not isolate their individual contributions.
 
 ## Repeated encoding is a state contract
 
@@ -217,18 +225,20 @@ The generation experiment decodes GIF/SIXEL into its index plane and palette and
 This indexed path reflects ordinary `img2sixel` SIXEL-to-SIXEL conversion. The [encoder](../../../src/encoder.c) enables palette retention for ordinary input without resizing or a color override, and the SIXEL loader in [loader-builtin.c](../../../src/loader-builtin.c) returns PAL8 pixels with their palette when the requested palette capacity suffices. The command sequence is:
 
 ```sh
-img2sixel --threading-policy=greedy:global_budget=1 -o generation1.six photo.png
-img2sixel --threading-policy=greedy:global_budget=1 -o generation2.six generation1.six
-img2sixel --threading-policy=greedy:global_budget=1 -o generation3.six generation2.six
+img2sixel -d none --threading-policy=greedy:global_budget=1 -o generation1.six photo.png
+img2sixel -d none --threading-policy=greedy:global_budget=1 -o generation2.six generation1.six
+img2sixel -d none --threading-policy=greedy:global_budget=1 -o generation3.six generation2.six
 ```
 
-A separate CLI verification using a libsixel source build repeated this operation through generation eight for photographs and charts. Every generation's decoded RGB pixels matched generation one exactly. This verifies the actual file-loader/encoder path; the graphed timings remain the in-memory API measurements described above and do not include CLI startup or file I/O.
+The commands illustrate the file-loader/encoder path. The saved generation timings and equality checks cover the in-memory API measurements described above; they do not measure CLI startup or file I/O.
 
-The generation graphs therefore retain one native representation path per codec. SIXEL/GIF preserve first-generation pixels in all measured generations, including the initial quantization error. PNG, QOI and lossless WebP preserve the original RGB pixels from generation one without needing a palette; indexed PNG could also reuse palette state, although that mode is not measured here. Lossy JPEG/WebP/AVIF/HEIC can accumulate distortion, but the amount depends on the codec, the image and the settings; a sequence can approach a stable point rather than losing the same amount at every step. Over eight generations of the 20 photographs, quality-80 JPEG and HEIC stay close to their first generation (mean Delta E00 1.98 → 2.01 and 1.10 → 1.14), quality-80 WebP drifts from 2.03 to 2.72 with MS-SSIM falling from 0.9945 to 0.9871, and quality-80 AVIF drifts from 1.63 to 4.36 in Delta E00 while its MS-SSIM barely changes (0.9978 → 0.9971): a color shift that a structural metric alone would hide. The charts drift more for JPEG (0.98 → 1.28), as their sharp edges are re-quantized each time, and AVIF again shifts most (0.66 → 1.87).
+The generation graphs therefore retain one native representation path per codec. `SIXEL -d none` and GIF preserve first-generation pixels in all measured generations of both corpora, including the initial quantization error. PNG, QOI and lossless WebP preserve the original RGB pixels from generation one without needing a palette; indexed PNG could also reuse palette state, although that mode is not measured here. Lossy JPEG/WebP/AVIF/HEIC can accumulate distortion, but the amount depends on the codec, the image and the settings; a sequence can approach a stable point rather than losing the same amount at every step.
+
+Over eight generations of the 20 photographs, JPEG 80 and HEIC 80 stay close to their first-generation mean S-CIELAB (0.74 → 0.79 and 0.26 → 0.29). WebP 80 drifts from 1.00 to 2.06 with MS-SSIM falling from 0.9945 to 0.9871, and AVIF 80 drifts from 0.95 to 5.05 in S-CIELAB while its MS-SSIM barely changes (0.9978 → 0.9971): a color shift that a structural metric alone would hide. These color scores use the same 60 ppd assumption at every generation.
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/photo-generations-mobile.svg">
-  <img alt="Eight photographic encode/decode generations: MS-SSIM and Delta E00 against the original, encoding latency, and decoding latency. GIF/SIXEL retain their decoded palettes and indices between generations." src="figures/photo-generations-wide.svg">
+  <img alt="Eight photographic encode/decode generations: MS-SSIM and mean S-CIELAB at 60 ppd against the original, encoding latency, and decoding latency. GIF and SIXEL -d none retain their decoded palettes and indices between generations." src="figures/photo-generations-wide.svg">
 </picture>
 
 Indexed decode times have a different output contract from RGB decode times and must not be ranked as interchangeable decoder performance. All generation quality measurements expand indices to RGB outside the timed region.
@@ -237,9 +247,11 @@ Indexed decode times have a different output contract from RGB decode times and 
 
 Photographs hide the favorable long runs in flat graphics. The chart corpus keeps that workload separate instead of averaging it into the photographs, and is measured and drawn the same way.
 
+The worker-budget plot shows no mean encoding benefit for `SIXEL -d none` on these charts: 4.50 → 4.75 ms from one to eight workers, with identical decoded pixels. Retaining palette state reduces its mean encode time from 4.48 ms in generation one to 2.01 ms in generation two. Across eight generations, mean S-CIELAB stays at 0.22 for SIXEL and 0.16 for GIF, while JPEG 80 rises from 1.06 to 1.73, WebP 80 from 1.15 to 2.40 and AVIF 80 from 1.03 to 3.84. Flat areas and sharp edges therefore expose a different balance of latency, size and color error from photographs.
+
 <picture>
   <source media="(max-width: 640px)" srcset="figures/chart-profile-mobile.svg">
-  <img alt="Chart workload: encoder and RGB decoder latency, measured quality against Base64-adjusted payload size, and native versus transport bytes for every codec setting over 20 640 × 480 rendered charts." src="figures/chart-profile-wide.svg">
+  <img alt="Chart workload: encoder and RGB decoder latency, MS-SSIM against Base64-adjusted payload size, and native versus transport bytes for every measured codec setting over 20 640 × 480 rendered charts." src="figures/chart-profile-wide.svg">
 </picture>
 
 <picture>
@@ -249,7 +261,7 @@ Photographs hide the favorable long runs in flat graphics. The chart corpus keep
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/chart-generations-mobile.svg">
-  <img alt="Eight chart encode/decode generations: MS-SSIM and Delta E00 against the original, encoding latency, and decoding latency. GIF/SIXEL retain their decoded palettes and indices between generations." src="figures/chart-generations-wide.svg">
+  <img alt="Eight chart encode/decode generations: MS-SSIM and mean S-CIELAB at 60 ppd against the original, encoding latency, and decoding latency. GIF and SIXEL -d none retain their decoded palettes and indices between generations." src="figures/chart-generations-wide.svg">
 </picture>
 
 ## Reproduction and provenance
@@ -260,13 +272,15 @@ Install Python dependencies (`Pillow` with AVIF support, `pillow-heif`, `numpy`,
 
 ```sh
 PYTHON=/path/to/venv/bin/python \
+    REVISION=441f9ce78bc4c279a39049846adc5a4818f3764e \
+    CORPUS_STRIDE=5 \
     PHOTOS=/path/to/libsixel-dataset/photo/crop-640x480 \
     CHARTS=/path/to/libsixel-dataset/chart/crop-640x480 \
     SIZE_PHOTOS=/path/to/libsixel-dataset/photo/original \
     tools/reproduce_format_comparison.sh
 ```
 
-The checked-in run with `CORPUS_STRIDE=5` took about one hour and twenty-five minutes, including the stage and worker charts; a full run of both corpora takes roughly four and a half hours.
+The checked-in wrapper run with `CORPUS_STRIDE=5` took about one hour and four minutes, from 00:51 to 01:55 local time, including the stage and worker charts. These are wrapper wall-clock times; the JSON timestamps do not delimit the whole run. Omit `CORPUS_STRIDE=5` to measure the full corpora; no full-corpus duration is established by this run.
 
 The stage and worker charts additionally need a Pillow rebuilt with stage timers. [build_stage_pillow.sh](../../../tools/format-comparison/build_stage_pillow.sh) builds the wheel's Pillow version from source with [pillow_stage_timers.py](../../../tools/format-comparison/pillow_stage_timers.py) into a separate virtual environment and, on macOS, binds it to the wheel's bundled zlib. Pass that environment's interpreter as `STAGE_PILLOW_PYTHON`, together with `SIZE_PHOTOS`, to run [stages.py](../../../tools/format-comparison/stages.py); it rejects a build whose GIF or PNG bytes differ from the wheel's. The stage data come from the same run and revision; [stages.json](figures/stages.json) keeps every sample with its revision, script and patch digests. Keep the host awake and on power for the whole run: a sleep inside a timed region inflates that sample.
 
