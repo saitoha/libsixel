@@ -196,6 +196,17 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_OPTION_ATOMICITY \
+    -DBUILD_TEST_0002_STAGGERED_COVERAGE \
+    -DBUILD_TEST_0003_SKIPPED_DEADLINES \
+    -DBUILD_TEST_0004_REPEATED_CLOCK \
+    -DBUILD_TEST_0005_BACKWARD_CLOCK \
+    -DBUILD_TEST_0006_CPU_PLAYBACK \
+    -DBUILD_TEST_0007_GPU_PLAYBACK \
+    -DBUILD_TEST_0008_LEGACY_OPTIONS \
+    -DBUILD_TEST_0009_FAILED_OUTPUT \
+    -DBUILD_TEST_0010_LATEST_PLAYBACK \
+    -DBUILD_REFRESH_TEST_COMMON \
     -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
     -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
     -DBUILD_TEST_0018_RANGE_RECOVERABLE_TONES \
@@ -5698,6 +5709,17 @@ test_runner_SOURCES = test_runner.c \
     processing/delta-residual/0028_gpu_metric_x.c \
     processing/delta-residual/0029_gpu_cells_a.c \
     processing/delta-residual/0030_gpu_cells_x.c \
+    processing/delta-refresh/0001_option_atomicity.c \
+    processing/delta-refresh/0002_staggered_coverage.c \
+    processing/delta-refresh/0003_skipped_deadlines.c \
+    processing/delta-refresh/0004_repeated_clock.c \
+    processing/delta-refresh/0005_backward_clock.c \
+    processing/delta-refresh/0006_cpu_playback.c \
+    processing/delta-refresh/0007_gpu_playback.c \
+    processing/delta-refresh/0008_legacy_options.c \
+    processing/delta-refresh/0009_failed_output.c \
+    processing/delta-refresh/0010_latest_playback.c \
+    processing/delta-refresh/refresh_test_common.c \
     processing/delta-residual/gate_test_common.c \
     processing/delta-residual/residual_test_common.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \

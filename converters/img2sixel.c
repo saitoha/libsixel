@@ -1027,6 +1027,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "      residual_threshold=0..255 (:Hvalue, default 1.5)\n"
         "      residual_keep_threshold=0..255 (:Kvalue, default 0)\n"
         "      residual_frames=1..255 (:Fvalue, default 3)\n"
+        "      refresh_ms=0..10000 (:Jvalue, default 0/off)\n"
+        "    Experimental J staggers local T0 re-evaluation by elapsed time.\n"
+        "    It cannot combine with R1/P1 and does not force repainting.\n"
         "    delta:R1:T8 lowers T in persistent residual cells. Auto metric\n"
         "    selects rgb241 for R1, max otherwise. Requires opaque full-plane\n"
         "    gamma RGB8, RGB output, none/a_dither/x_dither/bluenoise; no P1.\n"
@@ -1569,6 +1572,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_UPDATE_DELTA_RESIDUAL_FRAMES",
         "set delta:residual_frames (1..255, default 3).\n"
         "Does not enable delta. Explicit suboptions take precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_REFRESH_MS",
+        "set delta:refresh_ms (0..10000 ms, default 0/off).\n"
+        "Does not enable delta. Experimental staggered T0 re-evaluation."
     },
     {
         "SIXEL_UPDATE_DELTA_ERROR",

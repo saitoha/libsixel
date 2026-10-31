@@ -144,6 +144,74 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
     return threshold;
 }
 
+void
+sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
+    int width, int height, unsigned int period_ms, uint64_t time_us,
+    int history_valid)
+{
+    uint64_t period, previous, current, offset, epoch;
+    unsigned int columns, rows, gx, gy, phase, bit;
+    size_t cell;
+    int reset, selected, x0, x1, y0, y1, bands;
+
+    memset(&state->mask, 0, sizeof(state->mask));
+    memset(state->next_age, 0, sizeof(state->next_age));
+    state->selected_pixels = 0U;
+    state->pending = 1;
+    state->mask.width = width;
+    state->mask.height = height;
+    state->refresh_next_us = time_us;
+    state->refresh_next_valid = 1;
+    reset = !state->refresh_valid || !history_valid ||
+        state->width != width || state->height != height ||
+        time_us < state->refresh_last_us;
+    epoch = reset ? time_us : state->refresh_epoch_us;
+    state->refresh_next_epoch_us = epoch;
+    if (period_ms == 0U || width <= 0 || height <= 0) {
+        state->refresh_next_valid = 0;
+        return;
+    }
+    period = (uint64_t)period_ms * 1000U;
+    previous = reset ? 0U : state->refresh_last_us - epoch;
+    current = time_us - epoch;
+    columns = width < 64 ? (unsigned int)width : 64U;
+    rows = height < 64 ? (unsigned int)height : 64U;
+    /* When possible, keep cell edges on SIXEL bands without increasing the
+     * fixed 4096-cell mask. A partial final band uses the ordinary grid. */
+    if (height % 6 == 0) {
+        bands = height / 6;
+        rows = bands < 64 ? (unsigned int)bands : 64U;
+        while (rows > 1U && (unsigned int)bands % rows != 0U) --rows;
+    }
+    state->mask.columns = columns;
+    state->mask.rows = rows;
+    for (gy = 0; gy < rows; ++gy) {
+        y0 = (int)((size_t)gy * height / rows);
+        y1 = (int)((size_t)(gy + 1U) * height / rows);
+        for (gx = 0; gx < columns; ++gx) {
+            /* The 8x8 Bayer permutation distributes each of 64 phases once
+             * per tile. The phase is fixed in screen space, not re-randomized
+             * per frame; repeated timestamps therefore do no extra work. */
+            phase = 0U;
+            for (bit = 0U; bit < 3U; ++bit) {
+                phase = (phase << 2) |
+                    ((((gx >> bit) ^ (gy >> bit)) & 1U) << 1) |
+                    ((gy >> bit) & 1U);
+            }
+            offset = ((uint64_t)phase + 1U) * period / 64U;
+            selected = reset ? history_valid : current >= offset &&
+                (previous < offset || (current - offset) / period >
+                                      (previous - offset) / period);
+            if (!selected) continue;
+            cell = (size_t)gy * columns + gx;
+            state->mask.cells[cell / 32U] |= (uint32_t)1 << (cell % 32U);
+            x0 = (int)((size_t)gx * width / columns);
+            x1 = (int)((size_t)(gx + 1U) * width / columns);
+            state->selected_pixels += (size_t)(x1 - x0) * (y1 - y0);
+        }
+    }
+}
+
 int
 sixel_delta_rgb241_within(unsigned char const *a, unsigned char const *b,
     unsigned int threshold)

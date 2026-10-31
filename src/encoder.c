@@ -1137,6 +1137,7 @@ typedef struct sixel_encoder_frame_handoff_meta {
     int origin_x;
     int origin_y;
     unsigned int threshold_limit;
+    uint64_t refresh_time_us;
     double admitted_at;
     double started_at;
     int cancelled;              /* complete with SIXEL_INTERRUPTED unencoded */
@@ -2857,13 +2858,15 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
     encoder->residual_keep_override = 0;
     encoder->residual_frames = 3U;
     encoder->residual_frames_override = 0;
+    encoder->refresh_ms = 0U;
+    encoder->refresh_ms_override = 0;
 }
 
 static SIXELSTATUS
 sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
     int attached_repair)
 {
-    if (!encoder->residual_enabled &&
+    if (!encoder->residual_enabled && encoder->refresh_ms == 0U &&
             sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
         return SIXEL_OK;
     }
@@ -2881,6 +2884,13 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
         sixel_helper_set_additional_message(
             "delta residual/rgb241 requires gamma RGB8, RGB output "
             "and none, a_dither, x_dither or bluenoise dither.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (encoder->refresh_ms != 0U &&
+            (encoder->residual_enabled || encoder->progressive_enabled ||
+             attached_repair)) {
+        sixel_helper_set_additional_message(
+            "delta refresh_ms cannot combine with residual/progressive.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (encoder->residual_enabled &&
@@ -2905,10 +2915,11 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
     unsigned char const *valid;
     unsigned int threshold;
     size_t i, count;
+    uint64_t time_us;
     int width, height;
     SIXELSTATUS status;
 
-    if (!encoder->residual_enabled &&
+    if (!encoder->residual_enabled && encoder->refresh_ms == 0U &&
             sixel_encoder_delta_metric(encoder) != SIXEL_DELTA_METRIC_RGB241) {
         return SIXEL_OK;
     }
@@ -2929,7 +2940,7 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             "none, a_dither, x_dither or bluenoise application.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (!encoder->residual_enabled) return SIXEL_OK;
+    if (!encoder->residual_enabled && !encoder->refresh_ms) return SIXEL_OK;
     if (encoder->sixdelta_origin_x || encoder->sixdelta_origin_y ||
             (encoder->sixdelta_plane_width &&
              (encoder->sixdelta_plane_width != width ||
@@ -2963,6 +2974,18 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             encoder->accumulation_valid_mask_size >= count) {
         acc = encoder->accumulation_pixels;
         valid = encoder->accumulation_valid_mask;
+    }
+    if (encoder->refresh_ms != 0U) {
+        time_us = encoder->refresh_time_override ? encoder->refresh_time_us
+            : (uint64_t)(sixel_timer_now() * 1000000.0);
+        sixel_delta_refresh_prepare(&encoder->residual_state,
+            width, height, encoder->refresh_ms, time_us, acc != NULL);
+        sixel_trace_topic_message("delta_refresh",
+            "LSXREF1|time_us=%llu|period_ms=%u|selected=%lu|pixels=%lu",
+            (unsigned long long)time_us, encoder->refresh_ms,
+            (unsigned long)encoder->residual_state.selected_pixels,
+            (unsigned long)count);
+        return SIXEL_OK;
     }
     sixel_delta_residual_prepare(&encoder->residual_state, target, acc, valid,
         width, height, encoder->residual_threshold, encoder->residual_frames,
@@ -10735,7 +10758,7 @@ sixel_encoder_output_without_macro(
         goto end;
     }
     dither->pipeline_6delta_metric = sixel_encoder_delta_metric(encoder);
-    if (encoder->residual_enabled) {
+    if (encoder->residual_enabled || encoder->refresh_ms != 0U) {
         dither->pipeline_residual_mask = encoder->residual_state.mask;
     }
     status = sixel_encode(p, width, height, depth, dither, output);
@@ -11881,6 +11904,12 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
             encoder->residual_state.width = encoder->residual_state.mask.width;
             encoder->residual_state.height =
                 encoder->residual_state.mask.height;
+            encoder->residual_state.refresh_epoch_us =
+                encoder->residual_state.refresh_next_epoch_us;
+            encoder->residual_state.refresh_last_us =
+                encoder->residual_state.refresh_next_us;
+            encoder->residual_state.refresh_valid =
+                encoder->residual_state.refresh_next_valid;
             encoder->residual_state.pending = 0;
         }
         sixel_encoder_revision_advance(encoder, &encoder->history_revision);
@@ -15848,7 +15877,8 @@ sixel_encoder_setopt_owned(
 end:
     if (status == SIXEL_OK) {
         /* Reapplying the same effective policy preserves persistence. */
-        if (encoder->residual_enabled != destination->residual_enabled ||
+        if (encoder->refresh_ms != destination->refresh_ms ||
+                encoder->residual_enabled != destination->residual_enabled ||
                 sixel_encoder_delta_metric(encoder) !=
                     sixel_encoder_delta_metric(destination) ||
                 (encoder->residual_enabled &&
@@ -16035,6 +16065,9 @@ sixel_encoder_playback_frame_begin(sixel_encoder_frame_pipeline_t *pipeline,
         return SIXEL_OK;
     }
     meta->started_at = sixel_timer_now();
+    pipeline->encoder->refresh_time_override =
+        (meta->option_flags & SIXEL_PLAYBACK_OPTION_REFRESH_TIME) != 0;
+    pipeline->encoder->refresh_time_us = meta->refresh_time_us;
     if ((meta->option_flags & SIXEL_PLAYBACK_OPTION_ORIGIN) != 0) {
         status = sixel_encoder_set_6delta_plane_origin_owned(
             pipeline->encoder, meta->origin_x, meta->origin_y);
@@ -20077,6 +20110,9 @@ sixel_playback_options_init(sixel_playback_options_t *options,
     supported = offsetof(sixel_playback_options_t, palette_source);
     if (struct_size >= sizeof(*options)) {
         supported = sizeof(*options);
+    } else if (struct_size ==
+            offsetof(sixel_playback_options_t, refresh_time_us)) {
+        supported = struct_size;
     } else if (struct_size != supported) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -20104,6 +20140,7 @@ sixel_playback_destroy(sixel_playback_t *playback)
     }
     sixel_encoder_operation_lock(encoder);
     encoder->playback_attached = 0;
+    encoder->refresh_time_override = 0;
     if (encoder->operation_initialized) {
         sixel_cond_broadcast(&encoder->operation_cond);
     }
@@ -20379,13 +20416,20 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
     if (frame == NULL ||
             (options != NULL && options->struct_size < sizeof(*options) &&
              options->struct_size !=
-                 offsetof(sixel_playback_options_t, palette_source))) {
+                 offsetof(sixel_playback_options_t, palette_source) &&
+             options->struct_size !=
+                 offsetof(sixel_playback_options_t, refresh_time_us))) {
         sixel_playback_release_reservation(playback, ticket);
         return SIXEL_BAD_ARGUMENT;
     }
     if (options != NULL) {
         memcpy(&defaults, options, options->struct_size < sizeof(defaults)
             ? options->struct_size : sizeof(defaults));
+    }
+    if ((defaults.flags & SIXEL_PLAYBACK_OPTION_REFRESH_TIME) != 0 &&
+            options != NULL && options->struct_size < sizeof(*options)) {
+        sixel_playback_release_reservation(playback, ticket);
+        return SIXEL_BAD_ARGUMENT;
     }
     if (defaults.palette_source != NULL &&
             (defaults.palette_source == frame ||
@@ -20416,6 +20460,7 @@ sixel_playback_submit_reserved(sixel_playback_t *playback,
     metadata.origin_x = defaults.origin_x;
     metadata.origin_y = defaults.origin_y;
     metadata.threshold_limit = defaults.threshold_limit;
+    metadata.refresh_time_us = defaults.refresh_time_us;
     metadata.admitted_at = sixel_timer_now();
     ticket->owner = NULL;
     ticket->id = 0u;

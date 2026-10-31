@@ -2291,6 +2291,8 @@ typedef struct sixel_playback sixel_playback_t;
 /* sixel_playback_options_t.flags */
 #define SIXEL_PLAYBACK_OPTION_ORIGIN          0x1  /* apply origin_x/y */
 #define SIXEL_PLAYBACK_OPTION_THRESHOLD_LIMIT 0x2  /* apply threshold_limit */
+#define SIXEL_PLAYBACK_OPTION_REFRESH_TIME    0x4  /* apply refresh_time_us */
+#define SIXEL_HAVE_PLAYBACK_REFRESH_TIME 1
 
 typedef struct sixel_playback_result {
     size_t struct_size;
@@ -2335,6 +2337,10 @@ typedef struct sixel_playback_options {
     unsigned int threshold_limit;   /* as set_6delta_threshold_limit() */
     uint64_t user_tag;
     sixel_frame_t *palette_source;
+    /* Optional monotonic presentation clock for delta:refresh_ms. Without
+     * the flag, use the encoder's monotonic clock. Backward time restarts
+     * the schedule; equal time does not age it. This does not pace output. */
+    uint64_t refresh_time_us;
 } sixel_playback_options_t;
 
 /* A reservation; valid until submitted or released. */

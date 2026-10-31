@@ -340,6 +340,17 @@ int test_residual_0027(int argc, char **argv);
 int test_residual_0028(int argc, char **argv);
 int test_residual_0029(int argc, char **argv);
 int test_residual_0030(int argc, char **argv);
+int test_refresh_0001(int argc, char **argv);
+int test_refresh_0002(int argc, char **argv);
+int test_refresh_0003(int argc, char **argv);
+int test_refresh_0004(int argc, char **argv);
+int test_refresh_0005(int argc, char **argv);
+int test_refresh_0006(int argc, char **argv);
+int test_refresh_0007(int argc, char **argv);
+int test_refresh_0008(int argc, char **argv);
+int test_refresh_0009(int argc, char **argv);
+int test_refresh_0010(int argc, char **argv);
+
 int test_progressive_0001(int argc, char **argv);
 int test_progressive_0002(int argc, char **argv);
 int test_progressive_0003(int argc, char **argv);
@@ -5497,6 +5508,26 @@ static test_entry_t const test_entries[] = {
       test_progressive_0187 },
     { "progressive/0191_gpu_video_pair",
       test_progressive_0191 },
+    { "delta-refresh/0001_option_atomicity",
+      test_refresh_0001 },
+    { "delta-refresh/0002_staggered_coverage",
+      test_refresh_0002 },
+    { "delta-refresh/0003_skipped_deadlines",
+      test_refresh_0003 },
+    { "delta-refresh/0004_repeated_clock",
+      test_refresh_0004 },
+    { "delta-refresh/0005_backward_clock",
+      test_refresh_0005 },
+    { "delta-refresh/0006_cpu_playback",
+      test_refresh_0006 },
+    { "delta-refresh/0007_gpu_playback",
+      test_refresh_0007 },
+    { "delta-refresh/0008_legacy_options",
+      test_refresh_0008 },
+    { "delta-refresh/0009_failed_output",
+      test_refresh_0009 },
+    { "delta-refresh/0010_latest_playback",
+      test_refresh_0010 },
     { "delta-residual/0001_defaults", test_residual_0001 },
     { "delta-residual/0002_option_routes", test_residual_0002 },
     { "delta-residual/0003_invalid_option_atomicity", test_residual_0003 },

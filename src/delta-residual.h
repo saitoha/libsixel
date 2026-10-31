@@ -55,6 +55,13 @@ typedef struct sixel_delta_residual {
     int height;
     int pending;
     size_t selected_pixels;
+    /* Periodic refresh publishes its clock only with successful output. */
+    uint64_t refresh_epoch_us;
+    uint64_t refresh_last_us;
+    uint64_t refresh_next_epoch_us;
+    uint64_t refresh_next_us;
+    int refresh_valid;
+    int refresh_next_valid;
 } sixel_delta_residual_t;
 
 /* Prepare from immutable target/display colors. This never commits age;
@@ -64,6 +71,13 @@ sixel_delta_residual_prepare(sixel_delta_residual_t *state,
     unsigned char const *target, unsigned char const *acc,
     unsigned char const *valid, int width, int height,
     double threshold, unsigned int frames, unsigned int keep_threshold);
+
+/* Select cells whose staggered deadline was crossed since the last output.
+ * No source scan, random starvation or frame-rate-dependent age is needed. */
+SIXEL_INTERNAL_API void
+sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
+    int width, int height, unsigned int period_ms, uint64_t time_us,
+    int history_valid);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
