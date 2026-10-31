@@ -42,9 +42,10 @@ extern "C" {
  * The GPU path is intentionally below lookup-policy and dither-policy.  It sees
  * the same normalized RGB888 source, byte palette, transparent mask, and
  * positional controls that the CPU lookup would read, then materializes the
- * indexed SIXEL buffer in one dispatch.  NONE uses the exact direct scan;
+ * indexed SIXEL buffer. NONE uses the exact direct scan;
  * BLOCKCULL culls each pixel block's candidates before the same exact
- * scan; EYTZINGER uses the one-dimensional projected lookup.  Unsupported shapes
+ * scan; GRIDLUT builds and reuses fixed RGB-cell candidates; EYTZINGER
+ * uses the one-dimensional projected lookup. Unsupported shapes
  * return SIXEL_FALSE for policy=auto so the caller can continue through the
  * CPU path.
  */

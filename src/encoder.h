@@ -123,6 +123,8 @@ struct sixel_encoder {
     int option_clear_cache;
     int option_invalidate_history;
     int reqcolors;
+    unsigned int reserved_palette_count;
+    unsigned char reserved_palette[SIXEL_PALETTE_MAX * 3];
     sixel_threading_policy_options_t threading;
     int palette_sampling_policy;  /* requested sampling-stage policy */
     int palette_sampling_override; /* non-zero when explicitly configured */
@@ -426,6 +428,10 @@ struct sixel_encoder {
     int residual_keep_override;
     unsigned int residual_frames;
     int residual_frames_override;
+    unsigned int refresh_ms;
+    int refresh_ms_override;
+    uint64_t refresh_time_us;
+    int refresh_time_override;
     /* Tentative observations live here until the output owner commits. */
     sixel_delta_residual_t residual_state;
     /* Runtime ceiling does not mutate the configured maximum or history. */

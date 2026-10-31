@@ -340,6 +340,17 @@ int test_residual_0027(int argc, char **argv);
 int test_residual_0028(int argc, char **argv);
 int test_residual_0029(int argc, char **argv);
 int test_residual_0030(int argc, char **argv);
+int test_refresh_0001(int argc, char **argv);
+int test_refresh_0002(int argc, char **argv);
+int test_refresh_0003(int argc, char **argv);
+int test_refresh_0004(int argc, char **argv);
+int test_refresh_0005(int argc, char **argv);
+int test_refresh_0006(int argc, char **argv);
+int test_refresh_0007(int argc, char **argv);
+int test_refresh_0008(int argc, char **argv);
+int test_refresh_0009(int argc, char **argv);
+int test_refresh_0010(int argc, char **argv);
+
 int test_progressive_0001(int argc, char **argv);
 int test_progressive_0002(int argc, char **argv);
 int test_progressive_0003(int argc, char **argv);
@@ -1272,6 +1283,7 @@ int test_gpupal_0018_wire_a(int argc, char **argv);
 int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
+int test_gpupal_0022_gridlut_exact(int argc, char **argv);
 int test_gpupal_0012_a_candidates(int argc, char **argv);
 int test_gpupal_0013_x_candidates(int argc, char **argv);
 int test_gpupal_0014_a_auto_strength(int argc, char **argv);
@@ -1376,6 +1388,15 @@ int test_plan_0002_resize_alloc_failure(int argc, char **argv);
 int test_plan_0006_byte_precision_auto(int argc, char **argv);
 int test_plan_0007_explicit_working_auto_clustering(int argc, char **argv);
 int test_playback_0096(int argc, char **argv);
+int test_reserved_0097(int argc, char **argv);
+int test_reserved_0098(int argc, char **argv);
+int test_reserved_0099(int argc, char **argv);
+int test_reserved_0100(int argc, char **argv);
+int test_reserved_0101(int argc, char **argv);
+int test_reserved_0102(int argc, char **argv);
+int test_reserved_0103(int argc, char **argv);
+int test_reserved_0104(int argc, char **argv);
+
 int test_plan_0003_default_colorspace_auto(int argc, char **argv);
 int test_plan_0004_reset_colorspace_auto(int argc, char **argv);
 int test_plan_0005_explicit_clustering_auto_working(int argc, char **argv);
@@ -1473,6 +1494,7 @@ int test_lookup_0031_delaunay_float_distance(int argc, char **argv);
 int test_lookup_0032_delaunay_float_bulk(int argc, char **argv);
 int test_lookup_0034_delaunay_byte_bulk(int argc, char **argv);
 int test_lookup_0035_blockcull_exact(int argc, char **argv);
+int test_lookup_0037_gridlut_exact(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
@@ -5157,6 +5179,8 @@ static test_entry_t const test_entries[] = {
     { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0021_blockcull_exact",
       test_gpupal_0021_blockcull_exact },
+    { "gpu-palette/0022_gridlut_exact",
+      test_gpupal_0022_gridlut_exact },
     { "gpu-palette/0012_a_candidates",
       test_gpupal_0012_a_candidates },
     { "gpu-palette/0013_x_candidates",
@@ -5330,6 +5354,23 @@ static test_entry_t const test_entries[] = {
       test_plan_0007_explicit_working_auto_clustering },
     { "planner/pipeline/0096_playback_auto_colorspaces",
       test_playback_0096 },
+    { "planner/pipeline/0097_reserved_rgb8_source",
+      test_reserved_0097 },
+    { "planner/pipeline/0098_reserved_float_source",
+      test_reserved_0098 },
+    { "planner/pipeline/0099_reserved_latest_source",
+      test_reserved_0099 },
+    { "planner/pipeline/0100_reserved_auto_source",
+      test_reserved_0100 },
+    { "planner/pipeline/0101_reserved_validation",
+      test_reserved_0101 },
+    { "planner/pipeline/0102_reserved_options_abi",
+      test_reserved_0102 },
+    { "planner/pipeline/0103_reserved_full_source",
+      test_reserved_0103 },
+    { "planner/pipeline/0104_reserved_cancel_source",
+      test_reserved_0104 },
+
     { "planner/0003_default_colorspace_auto",
       test_plan_0003_default_colorspace_auto },
     { "planner/0004_reset_colorspace_auto",
@@ -5471,6 +5512,26 @@ static test_entry_t const test_entries[] = {
       test_progressive_0187 },
     { "progressive/0191_gpu_video_pair",
       test_progressive_0191 },
+    { "delta-refresh/0001_option_atomicity",
+      test_refresh_0001 },
+    { "delta-refresh/0002_staggered_coverage",
+      test_refresh_0002 },
+    { "delta-refresh/0003_skipped_deadlines",
+      test_refresh_0003 },
+    { "delta-refresh/0004_repeated_clock",
+      test_refresh_0004 },
+    { "delta-refresh/0005_backward_clock",
+      test_refresh_0005 },
+    { "delta-refresh/0006_cpu_playback",
+      test_refresh_0006 },
+    { "delta-refresh/0007_gpu_playback",
+      test_refresh_0007 },
+    { "delta-refresh/0008_legacy_options",
+      test_refresh_0008 },
+    { "delta-refresh/0009_failed_output",
+      test_refresh_0009 },
+    { "delta-refresh/0010_latest_playback",
+      test_refresh_0010 },
     { "delta-residual/0001_defaults", test_residual_0001 },
     { "delta-residual/0002_option_routes", test_residual_0002 },
     { "delta-residual/0003_invalid_option_atomicity", test_residual_0003 },
@@ -6429,6 +6490,8 @@ static test_entry_t const test_entries[] = {
       test_lookup_0034_delaunay_byte_bulk },
     { "lookup/0035_blockcull_exact",
       test_lookup_0035_blockcull_exact },
+    { "lookup/0037_gridlut_exact",
+      test_lookup_0037_gridlut_exact },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",

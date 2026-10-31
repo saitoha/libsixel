@@ -1257,7 +1257,8 @@ static sixel_option_value_schema_t const g_lookup_values[] = {
     },
     {
         "blockcull", SIXEL_LUT_POLICY_BLOCKCULL, 0u
-    }
+    },
+    { "gridlut", SIXEL_LUT_POLICY_GRIDLUT, 0u }
 };
 
 enum {
@@ -1856,6 +1857,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         NULL, NULL, 1.0, 255.0, 0,
         "residual_frames must be an integer in range 1..255.",
         residual_frames, residual_frames_override),
+    SIXEL_REGISTRY_ENCODER_UINT(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "refresh_ms", 'J', "SIXEL_UPDATE_DELTA_REFRESH_MS", NULL, NULL,
+        0.0, 10000.0, 1,
+        "refresh_ms must be an integer in range 0..10000.",
+        refresh_ms, refresh_ms_override),
     SIXEL_REGISTRY_ENCODER_BOOLEAN(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "progressive", 'P', "SIXEL_UPDATE_DELTA_PROGRESSIVE", NULL, NULL,

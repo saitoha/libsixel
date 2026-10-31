@@ -196,6 +196,17 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_OPTION_ATOMICITY \
+    -DBUILD_TEST_0002_STAGGERED_COVERAGE \
+    -DBUILD_TEST_0003_SKIPPED_DEADLINES \
+    -DBUILD_TEST_0004_REPEATED_CLOCK \
+    -DBUILD_TEST_0005_BACKWARD_CLOCK \
+    -DBUILD_TEST_0006_CPU_PLAYBACK \
+    -DBUILD_TEST_0007_GPU_PLAYBACK \
+    -DBUILD_TEST_0008_LEGACY_OPTIONS \
+    -DBUILD_TEST_0009_FAILED_OUTPUT \
+    -DBUILD_TEST_0010_LATEST_PLAYBACK \
+    -DBUILD_REFRESH_TEST_COMMON \
     -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
     -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
     -DBUILD_TEST_0018_RANGE_RECOVERABLE_TONES \
@@ -278,6 +289,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0019_WIRE_X \
     -DBUILD_TEST_0020_DIRECT_EXACT \
     -DBUILD_TEST_0021_BLOCKCULL_EXACT \
+    -DBUILD_TEST_0022_GRIDLUT_EXACT \
     -DBUILD_TEST_0026_SCIELAB_IDENTITY \
     -DBUILD_TEST_0027_SCIELAB_UNIFORM \
     -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
@@ -431,6 +443,14 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0094_PALETTE_AUTO_CONTENT_CHANGE \
     -DBUILD_TEST_0095_PALETTE_AUTO_UNCERTAIN_PAIRS \
     -DBUILD_TEST_0096_PLAYBACK_AUTO_COLORSPACES \
+    -DBUILD_TEST_0097_RESERVED_RGB8_SOURCE \
+    -DBUILD_TEST_0098_RESERVED_FLOAT_SOURCE \
+    -DBUILD_TEST_0099_RESERVED_LATEST_SOURCE \
+    -DBUILD_TEST_0100_RESERVED_AUTO_SOURCE \
+    -DBUILD_TEST_0101_RESERVED_VALIDATION \
+    -DBUILD_TEST_0102_RESERVED_OPTIONS_ABI \
+    -DBUILD_TEST_0103_RESERVED_FULL_SOURCE \
+    -DBUILD_TEST_0104_RESERVED_CANCEL_SOURCE \
     -DBUILD_TEST_0006_BYTE_PRECISION_AUTO \
     -DBUILD_TEST_0007_EXPLICIT_WORKING_AUTO_CLUSTERING \
     -DBUILD_TEST_0092_PALETTE_AUTO_STORE_PROFILE \
@@ -460,6 +480,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0057_LATEST_KNOWN_OWN_FAILURE \
     -DBUILD_PALETTE_LAUNCH_TEST_COMMON \
     -DBUILD_PLAYBACK_TEST_COMMON \
+    -DBUILD_RESERVED_PALETTE_TEST_COMMON \
     -DBUILD_PARALLEL_FLOAT_COMMON \
     -DBUILD_TEST_0001_FRAME_BITS \
     -DBUILD_TEST_0002_HELPER_BITS \
@@ -2183,6 +2204,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0032_DELAUNAY_FLOAT_BULK \
     -DBUILD_TEST_0034_DELAUNAY_BYTE_BULK \
     -DBUILD_TEST_0035_BLOCKCULL_EXACT \
+    -DBUILD_TEST_0037_GRIDLUT_EXACT \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -5151,6 +5173,16 @@ test_runner_SOURCES = test_runner.c \
     planner/pipeline/0094_palette_auto_content_change.c \
     planner/pipeline/0095_palette_auto_uncertain_pairs.c \
     planner/pipeline/0096_playback_auto_colorspaces.c \
+    planner/pipeline/0097_reserved_rgb8_source.c \
+    planner/pipeline/0098_reserved_float_source.c \
+    planner/pipeline/0099_reserved_latest_source.c \
+    planner/pipeline/0100_reserved_auto_source.c \
+    planner/pipeline/0101_reserved_validation.c \
+    planner/pipeline/0102_reserved_options_abi.c \
+    planner/pipeline/0103_reserved_full_source.c \
+    planner/pipeline/0104_reserved_cancel_source.c \
+    planner/pipeline/reserved_palette_test_common.c \
+    planner/pipeline/reserved_palette_test_common.h \
     planner/pipeline/0092_palette_auto_store_profile.c \
     planner/pipeline/palette_auto_test_common.c \
     planner/pipeline/palette_auto_test_common.h \
@@ -5679,6 +5711,17 @@ test_runner_SOURCES = test_runner.c \
     processing/delta-residual/0028_gpu_metric_x.c \
     processing/delta-residual/0029_gpu_cells_a.c \
     processing/delta-residual/0030_gpu_cells_x.c \
+    processing/delta-refresh/0001_option_atomicity.c \
+    processing/delta-refresh/0002_staggered_coverage.c \
+    processing/delta-refresh/0003_skipped_deadlines.c \
+    processing/delta-refresh/0004_repeated_clock.c \
+    processing/delta-refresh/0005_backward_clock.c \
+    processing/delta-refresh/0006_cpu_playback.c \
+    processing/delta-refresh/0007_gpu_playback.c \
+    processing/delta-refresh/0008_legacy_options.c \
+    processing/delta-refresh/0009_failed_output.c \
+    processing/delta-refresh/0010_latest_playback.c \
+    processing/delta-refresh/refresh_test_common.c \
     processing/delta-residual/gate_test_common.c \
     processing/delta-residual/residual_test_common.c \
     processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
@@ -5704,6 +5747,7 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0011_comparison_short.c \
     processing/gpu-palette/0020_direct_exact.c \
     processing/gpu-palette/0021_blockcull_exact.c \
+    processing/gpu-palette/0022_gridlut_exact.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -5874,6 +5918,7 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0021_delaunay_byte_exact.c \
     processing/lookup/0034_delaunay_byte_bulk.c \
     processing/lookup/0035_blockcull_exact.c \
+    processing/lookup/0037_gridlut_exact.c \
     processing/dither/0001_dither_policy.c \
     processing/dither/perturb/0018_perturb_keep_lookup.c \
     processing/dither/perturb/0017_perturb_keep_early.c \

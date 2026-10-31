@@ -1169,6 +1169,16 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	planner/pipeline/0094_palette_auto_content_change.c \
 	planner/pipeline/0095_palette_auto_uncertain_pairs.c \
 	planner/pipeline/0096_playback_auto_colorspaces.c \
+	planner/pipeline/0097_reserved_rgb8_source.c \
+	planner/pipeline/0098_reserved_float_source.c \
+	planner/pipeline/0099_reserved_latest_source.c \
+	planner/pipeline/0100_reserved_auto_source.c \
+	planner/pipeline/0101_reserved_validation.c \
+	planner/pipeline/0102_reserved_options_abi.c \
+	planner/pipeline/0103_reserved_full_source.c \
+	planner/pipeline/0104_reserved_cancel_source.c \
+	planner/pipeline/reserved_palette_test_common.c \
+	planner/pipeline/reserved_palette_test_common.h \
 	planner/pipeline/0092_palette_auto_store_profile.c \
 	planner/pipeline/palette_auto_test_common.c \
 	planner/pipeline/palette_auto_test_common.h \
@@ -1694,6 +1704,17 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/delta-residual/0028_gpu_metric_x.c \
 	processing/delta-residual/0029_gpu_cells_a.c \
 	processing/delta-residual/0030_gpu_cells_x.c \
+	processing/delta-refresh/0001_option_atomicity.c \
+	processing/delta-refresh/0002_staggered_coverage.c \
+	processing/delta-refresh/0003_skipped_deadlines.c \
+	processing/delta-refresh/0004_repeated_clock.c \
+	processing/delta-refresh/0005_backward_clock.c \
+	processing/delta-refresh/0006_cpu_playback.c \
+	processing/delta-refresh/0007_gpu_playback.c \
+	processing/delta-refresh/0008_legacy_options.c \
+	processing/delta-refresh/0009_failed_output.c \
+	processing/delta-refresh/0010_latest_playback.c \
+	processing/delta-refresh/refresh_test_common.c \
 	processing/delta-residual/gate_test_common.c \
 	processing/delta-residual/residual_test_common.c \
 	processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
@@ -1719,6 +1740,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gpu-palette/0011_comparison_short.c \
 	processing/gpu-palette/0020_direct_exact.c \
 	processing/gpu-palette/0021_blockcull_exact.c \
+	processing/gpu-palette/0022_gridlut_exact.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -1889,6 +1911,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/lookup/0021_delaunay_byte_exact.c \
 	processing/lookup/0034_delaunay_byte_bulk.c \
 	processing/lookup/0035_blockcull_exact.c \
+	processing/lookup/0037_gridlut_exact.c \
 	processing/dither/0001_dither_policy.c \
 	processing/dither/perturb/0018_perturb_keep_lookup.c \
 	processing/dither/perturb/0017_perturb_keep_early.c \
@@ -5109,6 +5132,15 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0094_palette_auto_content_change.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0095_palette_auto_uncertain_pairs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0096_playback_auto_colorspaces.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0097_reserved_rgb8_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0098_reserved_float_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0099_reserved_latest_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0100_reserved_auto_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0101_reserved_validation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0102_reserved_options_abi.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0103_reserved_full_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0104_reserved_cancel_source.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-reserved_palette_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0092_palette_auto_store_profile.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-palette_auto_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0072_palette_snapshot_allocation.$(OBJEXT) \
@@ -5625,6 +5657,17 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0028_gpu_metric_x.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0029_gpu_cells_a.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-0030_gpu_cells_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0001_option_atomicity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0002_staggered_coverage.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0003_skipped_deadlines.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0004_repeated_clock.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0005_backward_clock.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0006_cpu_playback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0007_gpu_playback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0008_legacy_options.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0009_failed_output.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-0010_latest_playback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-refresh/test_runner-refresh_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-gate_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/delta-residual/test_runner-residual_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0001_gpu_palette_threshold_strtoul.$(OBJEXT) \
@@ -5650,6 +5693,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0011_comparison_short.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0020_direct_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0021_blockcull_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0022_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
@@ -5813,6 +5857,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0021_delaunay_byte_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0034_delaunay_byte_bulk.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0035_blockcull_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0037_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0018_perturb_keep_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0017_perturb_keep_early.$(OBJEXT) \
@@ -9732,6 +9777,14 @@ am__depfiles_remade =  \
 	planner/pipeline/$(DEPDIR)/test_runner-0094_palette_auto_content_change.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0095_palette_auto_uncertain_pairs.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-0096_playback_auto_colorspaces.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po \
@@ -9740,6 +9793,7 @@ am__depfiles_remade =  \
 	planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po \
 	planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po \
+	planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Po \
 	platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po \
 	processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po \
@@ -10086,6 +10140,17 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Po \
+	processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po \
 	processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -10503,6 +10568,7 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0021_blockcull_exact.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo \
@@ -10521,6 +10587,7 @@ am__depfiles_remade =  \
 	processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0034_delaunay_byte_bulk.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0035_blockcull_exact.Po \
+	processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po \
 	processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po \
@@ -12606,6 +12673,17 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_OPTION_ATOMICITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_STAGGERED_COVERAGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_SKIPPED_DEADLINES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_REPEATED_CLOCK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_BACKWARD_CLOCK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_CPU_PLAYBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_GPU_PLAYBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_LEGACY_OPTIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_FAILED_OUTPUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LATEST_PLAYBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_REFRESH_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_RANGE_RECOVERABLE_TONES \
@@ -12688,6 +12766,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_WIRE_X \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_DIRECT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_BLOCKCULL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_GRIDLUT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_SCIELAB_IDENTITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_SCIELAB_UNIFORM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_SCIELAB_DENSE_REFERENCE \
@@ -12841,6 +12920,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0094_PALETTE_AUTO_CONTENT_CHANGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_PALETTE_AUTO_UNCERTAIN_PAIRS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_PLAYBACK_AUTO_COLORSPACES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_RESERVED_RGB8_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_RESERVED_FLOAT_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_RESERVED_LATEST_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_RESERVED_AUTO_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0101_RESERVED_VALIDATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_RESERVED_OPTIONS_ABI \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0103_RESERVED_FULL_SOURCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0104_RESERVED_CANCEL_SOURCE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_BYTE_PRECISION_AUTO \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_EXPLICIT_WORKING_AUTO_CLUSTERING \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0092_PALETTE_AUTO_STORE_PROFILE \
@@ -12870,6 +12957,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_LATEST_KNOWN_OWN_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PALETTE_LAUNCH_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PLAYBACK_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RESERVED_PALETTE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARALLEL_FLOAT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_BITS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_HELPER_BITS \
@@ -14593,6 +14681,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_DELAUNAY_FLOAT_BULK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0034_DELAUNAY_BYTE_BULK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_BLOCKCULL_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_GRIDLUT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_COVER_ANCHOR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -17593,6 +17682,16 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0094_palette_auto_content_change.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0095_palette_auto_uncertain_pairs.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0096_playback_auto_colorspaces.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0097_reserved_rgb8_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0098_reserved_float_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0099_reserved_latest_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0100_reserved_auto_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0101_reserved_validation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0102_reserved_options_abi.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0103_reserved_full_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0104_reserved_cancel_source.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/reserved_palette_test_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/reserved_palette_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0092_palette_auto_store_profile.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_auto_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/palette_auto_test_common.h \
@@ -18121,6 +18220,17 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0028_gpu_metric_x.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0029_gpu_cells_a.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/0030_gpu_cells_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0001_option_atomicity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0002_staggered_coverage.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0003_skipped_deadlines.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0004_repeated_clock.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0005_backward_clock.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0006_cpu_playback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0007_gpu_playback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0008_legacy_options.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0009_failed_output.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/0010_latest_playback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-refresh/refresh_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/gate_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/delta-residual/residual_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0001_gpu_palette_threshold_strtoul.c \
@@ -18146,6 +18256,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0011_comparison_short.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0020_direct_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0021_blockcull_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0022_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -18316,6 +18427,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0021_delaunay_byte_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0034_delaunay_byte_bulk.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0035_blockcull_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0037_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0018_perturb_keep_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0017_perturb_keep_early.c \
@@ -23937,6 +24049,33 @@ planner/pipeline/test_runner-0095_palette_auto_uncertain_pairs.$(OBJEXT):  \
 planner/pipeline/test_runner-0096_playback_auto_colorspaces.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0097_reserved_rgb8_source.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0098_reserved_float_source.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0099_reserved_latest_source.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0100_reserved_auto_source.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0101_reserved_validation.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0102_reserved_options_abi.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0103_reserved_full_source.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-0104_reserved_cancel_source.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+planner/pipeline/test_runner-reserved_palette_test_common.$(OBJEXT):  \
+	planner/pipeline/$(am__dirstamp) \
+	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 planner/pipeline/test_runner-0092_palette_auto_store_profile.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
@@ -25550,6 +25689,45 @@ processing/delta-residual/test_runner-0029_gpu_cells_a.$(OBJEXT):  \
 processing/delta-residual/test_runner-0030_gpu_cells_x.$(OBJEXT):  \
 	processing/delta-residual/$(am__dirstamp) \
 	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/$(am__dirstamp):
+	@$(MKDIR_P) processing/delta-refresh
+	@: >>processing/delta-refresh/$(am__dirstamp)
+processing/delta-refresh/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/delta-refresh/$(DEPDIR)
+	@: >>processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0001_option_atomicity.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0002_staggered_coverage.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0003_skipped_deadlines.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0004_repeated_clock.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0005_backward_clock.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0006_cpu_playback.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0007_gpu_playback.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0008_legacy_options.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0009_failed_output.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-0010_latest_playback.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+processing/delta-refresh/test_runner-refresh_test_common.$(OBJEXT):  \
+	processing/delta-refresh/$(am__dirstamp) \
+	processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
 processing/delta-residual/test_runner-gate_test_common.$(OBJEXT):  \
 	processing/delta-residual/$(am__dirstamp) \
 	processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
@@ -25629,6 +25807,9 @@ processing/gpu-palette/test_runner-0020_direct_exact.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-palette/test_runner-0021_blockcull_exact.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0022_gridlut_exact.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-dequant/$(am__dirstamp):
@@ -26202,6 +26383,9 @@ processing/lookup/test_runner-0034_delaunay_byte_bulk.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/test_runner-0035_blockcull_exact.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-0037_gridlut_exact.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 processing/dither/$(am__dirstamp):
@@ -33308,6 +33492,7 @@ mostlyclean-compile:
 	-rm -f processing/colorspace/*.$(OBJEXT)
 	-rm -f processing/colorspace/parallel/*.$(OBJEXT)
 	-rm -f processing/decoder/*.$(OBJEXT)
+	-rm -f processing/delta-refresh/*.$(OBJEXT)
 	-rm -f processing/delta-residual/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/dither/bluenoise/*.$(OBJEXT)
@@ -35051,6 +35236,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0094_palette_auto_content_change.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0095_palette_auto_uncertain_pairs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0096_playback_auto_colorspaces.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po@am__quote@ # am--include-marker
@@ -35059,6 +35252,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-palette_store_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-pipeline_worker_counts_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-playback_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/path/$(DEPDIR)/test_runner-0001_path_to_libc_runtime.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0001_ciede2000_reference.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/assessment/$(DEPDIR)/test_runner-0002_same_physical_coordinates.Po@am__quote@ # am--include-marker
@@ -35405,6 +35599,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/delta-residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -35822,6 +36027,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0019_wire_x.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0020_direct_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0021_blockcull_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo@am__quote@ # am--include-marker
@@ -35840,6 +36046,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0034_delaunay_byte_bulk.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0035_blockcull_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_build_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po@am__quote@ # am--include-marker
@@ -51403,6 +51610,132 @@ planner/pipeline/test_runner-0096_playback_auto_colorspaces.obj: planner/pipelin
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0096_playback_auto_colorspaces.obj `if test -f 'planner/pipeline/0096_playback_auto_colorspaces.c'; then $(CYGPATH_W) 'planner/pipeline/0096_playback_auto_colorspaces.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0096_playback_auto_colorspaces.c'; fi`
 
+planner/pipeline/test_runner-0097_reserved_rgb8_source.o: planner/pipeline/0097_reserved_rgb8_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0097_reserved_rgb8_source.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Tpo -c -o planner/pipeline/test_runner-0097_reserved_rgb8_source.o `test -f 'planner/pipeline/0097_reserved_rgb8_source.c' || echo '$(srcdir)/'`planner/pipeline/0097_reserved_rgb8_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0097_reserved_rgb8_source.c' object='planner/pipeline/test_runner-0097_reserved_rgb8_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0097_reserved_rgb8_source.o `test -f 'planner/pipeline/0097_reserved_rgb8_source.c' || echo '$(srcdir)/'`planner/pipeline/0097_reserved_rgb8_source.c
+
+planner/pipeline/test_runner-0097_reserved_rgb8_source.obj: planner/pipeline/0097_reserved_rgb8_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0097_reserved_rgb8_source.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Tpo -c -o planner/pipeline/test_runner-0097_reserved_rgb8_source.obj `if test -f 'planner/pipeline/0097_reserved_rgb8_source.c'; then $(CYGPATH_W) 'planner/pipeline/0097_reserved_rgb8_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0097_reserved_rgb8_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0097_reserved_rgb8_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0097_reserved_rgb8_source.c' object='planner/pipeline/test_runner-0097_reserved_rgb8_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0097_reserved_rgb8_source.obj `if test -f 'planner/pipeline/0097_reserved_rgb8_source.c'; then $(CYGPATH_W) 'planner/pipeline/0097_reserved_rgb8_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0097_reserved_rgb8_source.c'; fi`
+
+planner/pipeline/test_runner-0098_reserved_float_source.o: planner/pipeline/0098_reserved_float_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0098_reserved_float_source.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Tpo -c -o planner/pipeline/test_runner-0098_reserved_float_source.o `test -f 'planner/pipeline/0098_reserved_float_source.c' || echo '$(srcdir)/'`planner/pipeline/0098_reserved_float_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0098_reserved_float_source.c' object='planner/pipeline/test_runner-0098_reserved_float_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0098_reserved_float_source.o `test -f 'planner/pipeline/0098_reserved_float_source.c' || echo '$(srcdir)/'`planner/pipeline/0098_reserved_float_source.c
+
+planner/pipeline/test_runner-0098_reserved_float_source.obj: planner/pipeline/0098_reserved_float_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0098_reserved_float_source.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Tpo -c -o planner/pipeline/test_runner-0098_reserved_float_source.obj `if test -f 'planner/pipeline/0098_reserved_float_source.c'; then $(CYGPATH_W) 'planner/pipeline/0098_reserved_float_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0098_reserved_float_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0098_reserved_float_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0098_reserved_float_source.c' object='planner/pipeline/test_runner-0098_reserved_float_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0098_reserved_float_source.obj `if test -f 'planner/pipeline/0098_reserved_float_source.c'; then $(CYGPATH_W) 'planner/pipeline/0098_reserved_float_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0098_reserved_float_source.c'; fi`
+
+planner/pipeline/test_runner-0099_reserved_latest_source.o: planner/pipeline/0099_reserved_latest_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0099_reserved_latest_source.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Tpo -c -o planner/pipeline/test_runner-0099_reserved_latest_source.o `test -f 'planner/pipeline/0099_reserved_latest_source.c' || echo '$(srcdir)/'`planner/pipeline/0099_reserved_latest_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0099_reserved_latest_source.c' object='planner/pipeline/test_runner-0099_reserved_latest_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0099_reserved_latest_source.o `test -f 'planner/pipeline/0099_reserved_latest_source.c' || echo '$(srcdir)/'`planner/pipeline/0099_reserved_latest_source.c
+
+planner/pipeline/test_runner-0099_reserved_latest_source.obj: planner/pipeline/0099_reserved_latest_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0099_reserved_latest_source.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Tpo -c -o planner/pipeline/test_runner-0099_reserved_latest_source.obj `if test -f 'planner/pipeline/0099_reserved_latest_source.c'; then $(CYGPATH_W) 'planner/pipeline/0099_reserved_latest_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0099_reserved_latest_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0099_reserved_latest_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0099_reserved_latest_source.c' object='planner/pipeline/test_runner-0099_reserved_latest_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0099_reserved_latest_source.obj `if test -f 'planner/pipeline/0099_reserved_latest_source.c'; then $(CYGPATH_W) 'planner/pipeline/0099_reserved_latest_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0099_reserved_latest_source.c'; fi`
+
+planner/pipeline/test_runner-0100_reserved_auto_source.o: planner/pipeline/0100_reserved_auto_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0100_reserved_auto_source.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Tpo -c -o planner/pipeline/test_runner-0100_reserved_auto_source.o `test -f 'planner/pipeline/0100_reserved_auto_source.c' || echo '$(srcdir)/'`planner/pipeline/0100_reserved_auto_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0100_reserved_auto_source.c' object='planner/pipeline/test_runner-0100_reserved_auto_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0100_reserved_auto_source.o `test -f 'planner/pipeline/0100_reserved_auto_source.c' || echo '$(srcdir)/'`planner/pipeline/0100_reserved_auto_source.c
+
+planner/pipeline/test_runner-0100_reserved_auto_source.obj: planner/pipeline/0100_reserved_auto_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0100_reserved_auto_source.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Tpo -c -o planner/pipeline/test_runner-0100_reserved_auto_source.obj `if test -f 'planner/pipeline/0100_reserved_auto_source.c'; then $(CYGPATH_W) 'planner/pipeline/0100_reserved_auto_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0100_reserved_auto_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0100_reserved_auto_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0100_reserved_auto_source.c' object='planner/pipeline/test_runner-0100_reserved_auto_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0100_reserved_auto_source.obj `if test -f 'planner/pipeline/0100_reserved_auto_source.c'; then $(CYGPATH_W) 'planner/pipeline/0100_reserved_auto_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0100_reserved_auto_source.c'; fi`
+
+planner/pipeline/test_runner-0101_reserved_validation.o: planner/pipeline/0101_reserved_validation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0101_reserved_validation.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Tpo -c -o planner/pipeline/test_runner-0101_reserved_validation.o `test -f 'planner/pipeline/0101_reserved_validation.c' || echo '$(srcdir)/'`planner/pipeline/0101_reserved_validation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Tpo planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0101_reserved_validation.c' object='planner/pipeline/test_runner-0101_reserved_validation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0101_reserved_validation.o `test -f 'planner/pipeline/0101_reserved_validation.c' || echo '$(srcdir)/'`planner/pipeline/0101_reserved_validation.c
+
+planner/pipeline/test_runner-0101_reserved_validation.obj: planner/pipeline/0101_reserved_validation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0101_reserved_validation.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Tpo -c -o planner/pipeline/test_runner-0101_reserved_validation.obj `if test -f 'planner/pipeline/0101_reserved_validation.c'; then $(CYGPATH_W) 'planner/pipeline/0101_reserved_validation.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0101_reserved_validation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Tpo planner/pipeline/$(DEPDIR)/test_runner-0101_reserved_validation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0101_reserved_validation.c' object='planner/pipeline/test_runner-0101_reserved_validation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0101_reserved_validation.obj `if test -f 'planner/pipeline/0101_reserved_validation.c'; then $(CYGPATH_W) 'planner/pipeline/0101_reserved_validation.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0101_reserved_validation.c'; fi`
+
+planner/pipeline/test_runner-0102_reserved_options_abi.o: planner/pipeline/0102_reserved_options_abi.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0102_reserved_options_abi.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Tpo -c -o planner/pipeline/test_runner-0102_reserved_options_abi.o `test -f 'planner/pipeline/0102_reserved_options_abi.c' || echo '$(srcdir)/'`planner/pipeline/0102_reserved_options_abi.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Tpo planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0102_reserved_options_abi.c' object='planner/pipeline/test_runner-0102_reserved_options_abi.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0102_reserved_options_abi.o `test -f 'planner/pipeline/0102_reserved_options_abi.c' || echo '$(srcdir)/'`planner/pipeline/0102_reserved_options_abi.c
+
+planner/pipeline/test_runner-0102_reserved_options_abi.obj: planner/pipeline/0102_reserved_options_abi.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0102_reserved_options_abi.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Tpo -c -o planner/pipeline/test_runner-0102_reserved_options_abi.obj `if test -f 'planner/pipeline/0102_reserved_options_abi.c'; then $(CYGPATH_W) 'planner/pipeline/0102_reserved_options_abi.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0102_reserved_options_abi.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Tpo planner/pipeline/$(DEPDIR)/test_runner-0102_reserved_options_abi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0102_reserved_options_abi.c' object='planner/pipeline/test_runner-0102_reserved_options_abi.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0102_reserved_options_abi.obj `if test -f 'planner/pipeline/0102_reserved_options_abi.c'; then $(CYGPATH_W) 'planner/pipeline/0102_reserved_options_abi.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0102_reserved_options_abi.c'; fi`
+
+planner/pipeline/test_runner-0103_reserved_full_source.o: planner/pipeline/0103_reserved_full_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0103_reserved_full_source.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Tpo -c -o planner/pipeline/test_runner-0103_reserved_full_source.o `test -f 'planner/pipeline/0103_reserved_full_source.c' || echo '$(srcdir)/'`planner/pipeline/0103_reserved_full_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0103_reserved_full_source.c' object='planner/pipeline/test_runner-0103_reserved_full_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0103_reserved_full_source.o `test -f 'planner/pipeline/0103_reserved_full_source.c' || echo '$(srcdir)/'`planner/pipeline/0103_reserved_full_source.c
+
+planner/pipeline/test_runner-0103_reserved_full_source.obj: planner/pipeline/0103_reserved_full_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0103_reserved_full_source.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Tpo -c -o planner/pipeline/test_runner-0103_reserved_full_source.obj `if test -f 'planner/pipeline/0103_reserved_full_source.c'; then $(CYGPATH_W) 'planner/pipeline/0103_reserved_full_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0103_reserved_full_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0103_reserved_full_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0103_reserved_full_source.c' object='planner/pipeline/test_runner-0103_reserved_full_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0103_reserved_full_source.obj `if test -f 'planner/pipeline/0103_reserved_full_source.c'; then $(CYGPATH_W) 'planner/pipeline/0103_reserved_full_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0103_reserved_full_source.c'; fi`
+
+planner/pipeline/test_runner-0104_reserved_cancel_source.o: planner/pipeline/0104_reserved_cancel_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0104_reserved_cancel_source.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Tpo -c -o planner/pipeline/test_runner-0104_reserved_cancel_source.o `test -f 'planner/pipeline/0104_reserved_cancel_source.c' || echo '$(srcdir)/'`planner/pipeline/0104_reserved_cancel_source.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0104_reserved_cancel_source.c' object='planner/pipeline/test_runner-0104_reserved_cancel_source.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0104_reserved_cancel_source.o `test -f 'planner/pipeline/0104_reserved_cancel_source.c' || echo '$(srcdir)/'`planner/pipeline/0104_reserved_cancel_source.c
+
+planner/pipeline/test_runner-0104_reserved_cancel_source.obj: planner/pipeline/0104_reserved_cancel_source.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0104_reserved_cancel_source.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Tpo -c -o planner/pipeline/test_runner-0104_reserved_cancel_source.obj `if test -f 'planner/pipeline/0104_reserved_cancel_source.c'; then $(CYGPATH_W) 'planner/pipeline/0104_reserved_cancel_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0104_reserved_cancel_source.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Tpo planner/pipeline/$(DEPDIR)/test_runner-0104_reserved_cancel_source.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0104_reserved_cancel_source.c' object='planner/pipeline/test_runner-0104_reserved_cancel_source.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0104_reserved_cancel_source.obj `if test -f 'planner/pipeline/0104_reserved_cancel_source.c'; then $(CYGPATH_W) 'planner/pipeline/0104_reserved_cancel_source.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0104_reserved_cancel_source.c'; fi`
+
+planner/pipeline/test_runner-reserved_palette_test_common.o: planner/pipeline/reserved_palette_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-reserved_palette_test_common.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Tpo -c -o planner/pipeline/test_runner-reserved_palette_test_common.o `test -f 'planner/pipeline/reserved_palette_test_common.c' || echo '$(srcdir)/'`planner/pipeline/reserved_palette_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/reserved_palette_test_common.c' object='planner/pipeline/test_runner-reserved_palette_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-reserved_palette_test_common.o `test -f 'planner/pipeline/reserved_palette_test_common.c' || echo '$(srcdir)/'`planner/pipeline/reserved_palette_test_common.c
+
+planner/pipeline/test_runner-reserved_palette_test_common.obj: planner/pipeline/reserved_palette_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-reserved_palette_test_common.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Tpo -c -o planner/pipeline/test_runner-reserved_palette_test_common.obj `if test -f 'planner/pipeline/reserved_palette_test_common.c'; then $(CYGPATH_W) 'planner/pipeline/reserved_palette_test_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/reserved_palette_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Tpo planner/pipeline/$(DEPDIR)/test_runner-reserved_palette_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/reserved_palette_test_common.c' object='planner/pipeline/test_runner-reserved_palette_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-reserved_palette_test_common.obj `if test -f 'planner/pipeline/reserved_palette_test_common.c'; then $(CYGPATH_W) 'planner/pipeline/reserved_palette_test_common.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/reserved_palette_test_common.c'; fi`
+
 planner/pipeline/test_runner-0092_palette_auto_store_profile.o: planner/pipeline/0092_palette_auto_store_profile.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0092_palette_auto_store_profile.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0092_palette_auto_store_profile.Tpo -c -o planner/pipeline/test_runner-0092_palette_auto_store_profile.o `test -f 'planner/pipeline/0092_palette_auto_store_profile.c' || echo '$(srcdir)/'`planner/pipeline/0092_palette_auto_store_profile.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0092_palette_auto_store_profile.Tpo planner/pipeline/$(DEPDIR)/test_runner-0092_palette_auto_store_profile.Po
@@ -58627,6 +58960,160 @@ processing/delta-residual/test_runner-0030_gpu_cells_x.obj: processing/delta-res
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-residual/test_runner-0030_gpu_cells_x.obj `if test -f 'processing/delta-residual/0030_gpu_cells_x.c'; then $(CYGPATH_W) 'processing/delta-residual/0030_gpu_cells_x.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-residual/0030_gpu_cells_x.c'; fi`
 
+processing/delta-refresh/test_runner-0001_option_atomicity.o: processing/delta-refresh/0001_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0001_option_atomicity.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Tpo -c -o processing/delta-refresh/test_runner-0001_option_atomicity.o `test -f 'processing/delta-refresh/0001_option_atomicity.c' || echo '$(srcdir)/'`processing/delta-refresh/0001_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0001_option_atomicity.c' object='processing/delta-refresh/test_runner-0001_option_atomicity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0001_option_atomicity.o `test -f 'processing/delta-refresh/0001_option_atomicity.c' || echo '$(srcdir)/'`processing/delta-refresh/0001_option_atomicity.c
+
+processing/delta-refresh/test_runner-0001_option_atomicity.obj: processing/delta-refresh/0001_option_atomicity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0001_option_atomicity.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Tpo -c -o processing/delta-refresh/test_runner-0001_option_atomicity.obj `if test -f 'processing/delta-refresh/0001_option_atomicity.c'; then $(CYGPATH_W) 'processing/delta-refresh/0001_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0001_option_atomicity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0001_option_atomicity.c' object='processing/delta-refresh/test_runner-0001_option_atomicity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0001_option_atomicity.obj `if test -f 'processing/delta-refresh/0001_option_atomicity.c'; then $(CYGPATH_W) 'processing/delta-refresh/0001_option_atomicity.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0001_option_atomicity.c'; fi`
+
+processing/delta-refresh/test_runner-0002_staggered_coverage.o: processing/delta-refresh/0002_staggered_coverage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0002_staggered_coverage.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Tpo -c -o processing/delta-refresh/test_runner-0002_staggered_coverage.o `test -f 'processing/delta-refresh/0002_staggered_coverage.c' || echo '$(srcdir)/'`processing/delta-refresh/0002_staggered_coverage.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0002_staggered_coverage.c' object='processing/delta-refresh/test_runner-0002_staggered_coverage.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0002_staggered_coverage.o `test -f 'processing/delta-refresh/0002_staggered_coverage.c' || echo '$(srcdir)/'`processing/delta-refresh/0002_staggered_coverage.c
+
+processing/delta-refresh/test_runner-0002_staggered_coverage.obj: processing/delta-refresh/0002_staggered_coverage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0002_staggered_coverage.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Tpo -c -o processing/delta-refresh/test_runner-0002_staggered_coverage.obj `if test -f 'processing/delta-refresh/0002_staggered_coverage.c'; then $(CYGPATH_W) 'processing/delta-refresh/0002_staggered_coverage.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0002_staggered_coverage.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0002_staggered_coverage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0002_staggered_coverage.c' object='processing/delta-refresh/test_runner-0002_staggered_coverage.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0002_staggered_coverage.obj `if test -f 'processing/delta-refresh/0002_staggered_coverage.c'; then $(CYGPATH_W) 'processing/delta-refresh/0002_staggered_coverage.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0002_staggered_coverage.c'; fi`
+
+processing/delta-refresh/test_runner-0003_skipped_deadlines.o: processing/delta-refresh/0003_skipped_deadlines.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0003_skipped_deadlines.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo -c -o processing/delta-refresh/test_runner-0003_skipped_deadlines.o `test -f 'processing/delta-refresh/0003_skipped_deadlines.c' || echo '$(srcdir)/'`processing/delta-refresh/0003_skipped_deadlines.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0003_skipped_deadlines.c' object='processing/delta-refresh/test_runner-0003_skipped_deadlines.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0003_skipped_deadlines.o `test -f 'processing/delta-refresh/0003_skipped_deadlines.c' || echo '$(srcdir)/'`processing/delta-refresh/0003_skipped_deadlines.c
+
+processing/delta-refresh/test_runner-0003_skipped_deadlines.obj: processing/delta-refresh/0003_skipped_deadlines.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0003_skipped_deadlines.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo -c -o processing/delta-refresh/test_runner-0003_skipped_deadlines.obj `if test -f 'processing/delta-refresh/0003_skipped_deadlines.c'; then $(CYGPATH_W) 'processing/delta-refresh/0003_skipped_deadlines.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0003_skipped_deadlines.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0003_skipped_deadlines.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0003_skipped_deadlines.c' object='processing/delta-refresh/test_runner-0003_skipped_deadlines.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0003_skipped_deadlines.obj `if test -f 'processing/delta-refresh/0003_skipped_deadlines.c'; then $(CYGPATH_W) 'processing/delta-refresh/0003_skipped_deadlines.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0003_skipped_deadlines.c'; fi`
+
+processing/delta-refresh/test_runner-0004_repeated_clock.o: processing/delta-refresh/0004_repeated_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0004_repeated_clock.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo -c -o processing/delta-refresh/test_runner-0004_repeated_clock.o `test -f 'processing/delta-refresh/0004_repeated_clock.c' || echo '$(srcdir)/'`processing/delta-refresh/0004_repeated_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0004_repeated_clock.c' object='processing/delta-refresh/test_runner-0004_repeated_clock.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0004_repeated_clock.o `test -f 'processing/delta-refresh/0004_repeated_clock.c' || echo '$(srcdir)/'`processing/delta-refresh/0004_repeated_clock.c
+
+processing/delta-refresh/test_runner-0004_repeated_clock.obj: processing/delta-refresh/0004_repeated_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0004_repeated_clock.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo -c -o processing/delta-refresh/test_runner-0004_repeated_clock.obj `if test -f 'processing/delta-refresh/0004_repeated_clock.c'; then $(CYGPATH_W) 'processing/delta-refresh/0004_repeated_clock.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0004_repeated_clock.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0004_repeated_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0004_repeated_clock.c' object='processing/delta-refresh/test_runner-0004_repeated_clock.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0004_repeated_clock.obj `if test -f 'processing/delta-refresh/0004_repeated_clock.c'; then $(CYGPATH_W) 'processing/delta-refresh/0004_repeated_clock.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0004_repeated_clock.c'; fi`
+
+processing/delta-refresh/test_runner-0005_backward_clock.o: processing/delta-refresh/0005_backward_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0005_backward_clock.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo -c -o processing/delta-refresh/test_runner-0005_backward_clock.o `test -f 'processing/delta-refresh/0005_backward_clock.c' || echo '$(srcdir)/'`processing/delta-refresh/0005_backward_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0005_backward_clock.c' object='processing/delta-refresh/test_runner-0005_backward_clock.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0005_backward_clock.o `test -f 'processing/delta-refresh/0005_backward_clock.c' || echo '$(srcdir)/'`processing/delta-refresh/0005_backward_clock.c
+
+processing/delta-refresh/test_runner-0005_backward_clock.obj: processing/delta-refresh/0005_backward_clock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0005_backward_clock.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo -c -o processing/delta-refresh/test_runner-0005_backward_clock.obj `if test -f 'processing/delta-refresh/0005_backward_clock.c'; then $(CYGPATH_W) 'processing/delta-refresh/0005_backward_clock.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0005_backward_clock.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0005_backward_clock.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0005_backward_clock.c' object='processing/delta-refresh/test_runner-0005_backward_clock.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0005_backward_clock.obj `if test -f 'processing/delta-refresh/0005_backward_clock.c'; then $(CYGPATH_W) 'processing/delta-refresh/0005_backward_clock.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0005_backward_clock.c'; fi`
+
+processing/delta-refresh/test_runner-0006_cpu_playback.o: processing/delta-refresh/0006_cpu_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0006_cpu_playback.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Tpo -c -o processing/delta-refresh/test_runner-0006_cpu_playback.o `test -f 'processing/delta-refresh/0006_cpu_playback.c' || echo '$(srcdir)/'`processing/delta-refresh/0006_cpu_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0006_cpu_playback.c' object='processing/delta-refresh/test_runner-0006_cpu_playback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0006_cpu_playback.o `test -f 'processing/delta-refresh/0006_cpu_playback.c' || echo '$(srcdir)/'`processing/delta-refresh/0006_cpu_playback.c
+
+processing/delta-refresh/test_runner-0006_cpu_playback.obj: processing/delta-refresh/0006_cpu_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0006_cpu_playback.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Tpo -c -o processing/delta-refresh/test_runner-0006_cpu_playback.obj `if test -f 'processing/delta-refresh/0006_cpu_playback.c'; then $(CYGPATH_W) 'processing/delta-refresh/0006_cpu_playback.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0006_cpu_playback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0006_cpu_playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0006_cpu_playback.c' object='processing/delta-refresh/test_runner-0006_cpu_playback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0006_cpu_playback.obj `if test -f 'processing/delta-refresh/0006_cpu_playback.c'; then $(CYGPATH_W) 'processing/delta-refresh/0006_cpu_playback.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0006_cpu_playback.c'; fi`
+
+processing/delta-refresh/test_runner-0007_gpu_playback.o: processing/delta-refresh/0007_gpu_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0007_gpu_playback.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Tpo -c -o processing/delta-refresh/test_runner-0007_gpu_playback.o `test -f 'processing/delta-refresh/0007_gpu_playback.c' || echo '$(srcdir)/'`processing/delta-refresh/0007_gpu_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0007_gpu_playback.c' object='processing/delta-refresh/test_runner-0007_gpu_playback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0007_gpu_playback.o `test -f 'processing/delta-refresh/0007_gpu_playback.c' || echo '$(srcdir)/'`processing/delta-refresh/0007_gpu_playback.c
+
+processing/delta-refresh/test_runner-0007_gpu_playback.obj: processing/delta-refresh/0007_gpu_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0007_gpu_playback.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Tpo -c -o processing/delta-refresh/test_runner-0007_gpu_playback.obj `if test -f 'processing/delta-refresh/0007_gpu_playback.c'; then $(CYGPATH_W) 'processing/delta-refresh/0007_gpu_playback.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0007_gpu_playback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0007_gpu_playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0007_gpu_playback.c' object='processing/delta-refresh/test_runner-0007_gpu_playback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0007_gpu_playback.obj `if test -f 'processing/delta-refresh/0007_gpu_playback.c'; then $(CYGPATH_W) 'processing/delta-refresh/0007_gpu_playback.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0007_gpu_playback.c'; fi`
+
+processing/delta-refresh/test_runner-0008_legacy_options.o: processing/delta-refresh/0008_legacy_options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0008_legacy_options.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Tpo -c -o processing/delta-refresh/test_runner-0008_legacy_options.o `test -f 'processing/delta-refresh/0008_legacy_options.c' || echo '$(srcdir)/'`processing/delta-refresh/0008_legacy_options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0008_legacy_options.c' object='processing/delta-refresh/test_runner-0008_legacy_options.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0008_legacy_options.o `test -f 'processing/delta-refresh/0008_legacy_options.c' || echo '$(srcdir)/'`processing/delta-refresh/0008_legacy_options.c
+
+processing/delta-refresh/test_runner-0008_legacy_options.obj: processing/delta-refresh/0008_legacy_options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0008_legacy_options.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Tpo -c -o processing/delta-refresh/test_runner-0008_legacy_options.obj `if test -f 'processing/delta-refresh/0008_legacy_options.c'; then $(CYGPATH_W) 'processing/delta-refresh/0008_legacy_options.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0008_legacy_options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0008_legacy_options.c' object='processing/delta-refresh/test_runner-0008_legacy_options.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0008_legacy_options.obj `if test -f 'processing/delta-refresh/0008_legacy_options.c'; then $(CYGPATH_W) 'processing/delta-refresh/0008_legacy_options.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0008_legacy_options.c'; fi`
+
+processing/delta-refresh/test_runner-0009_failed_output.o: processing/delta-refresh/0009_failed_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0009_failed_output.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Tpo -c -o processing/delta-refresh/test_runner-0009_failed_output.o `test -f 'processing/delta-refresh/0009_failed_output.c' || echo '$(srcdir)/'`processing/delta-refresh/0009_failed_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0009_failed_output.c' object='processing/delta-refresh/test_runner-0009_failed_output.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0009_failed_output.o `test -f 'processing/delta-refresh/0009_failed_output.c' || echo '$(srcdir)/'`processing/delta-refresh/0009_failed_output.c
+
+processing/delta-refresh/test_runner-0009_failed_output.obj: processing/delta-refresh/0009_failed_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0009_failed_output.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Tpo -c -o processing/delta-refresh/test_runner-0009_failed_output.obj `if test -f 'processing/delta-refresh/0009_failed_output.c'; then $(CYGPATH_W) 'processing/delta-refresh/0009_failed_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0009_failed_output.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0009_failed_output.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0009_failed_output.c' object='processing/delta-refresh/test_runner-0009_failed_output.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0009_failed_output.obj `if test -f 'processing/delta-refresh/0009_failed_output.c'; then $(CYGPATH_W) 'processing/delta-refresh/0009_failed_output.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0009_failed_output.c'; fi`
+
+processing/delta-refresh/test_runner-0010_latest_playback.o: processing/delta-refresh/0010_latest_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0010_latest_playback.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Tpo -c -o processing/delta-refresh/test_runner-0010_latest_playback.o `test -f 'processing/delta-refresh/0010_latest_playback.c' || echo '$(srcdir)/'`processing/delta-refresh/0010_latest_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0010_latest_playback.c' object='processing/delta-refresh/test_runner-0010_latest_playback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0010_latest_playback.o `test -f 'processing/delta-refresh/0010_latest_playback.c' || echo '$(srcdir)/'`processing/delta-refresh/0010_latest_playback.c
+
+processing/delta-refresh/test_runner-0010_latest_playback.obj: processing/delta-refresh/0010_latest_playback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-0010_latest_playback.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Tpo -c -o processing/delta-refresh/test_runner-0010_latest_playback.obj `if test -f 'processing/delta-refresh/0010_latest_playback.c'; then $(CYGPATH_W) 'processing/delta-refresh/0010_latest_playback.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0010_latest_playback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-0010_latest_playback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/0010_latest_playback.c' object='processing/delta-refresh/test_runner-0010_latest_playback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-0010_latest_playback.obj `if test -f 'processing/delta-refresh/0010_latest_playback.c'; then $(CYGPATH_W) 'processing/delta-refresh/0010_latest_playback.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/0010_latest_playback.c'; fi`
+
+processing/delta-refresh/test_runner-refresh_test_common.o: processing/delta-refresh/refresh_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-refresh_test_common.o -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Tpo -c -o processing/delta-refresh/test_runner-refresh_test_common.o `test -f 'processing/delta-refresh/refresh_test_common.c' || echo '$(srcdir)/'`processing/delta-refresh/refresh_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/refresh_test_common.c' object='processing/delta-refresh/test_runner-refresh_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-refresh_test_common.o `test -f 'processing/delta-refresh/refresh_test_common.c' || echo '$(srcdir)/'`processing/delta-refresh/refresh_test_common.c
+
+processing/delta-refresh/test_runner-refresh_test_common.obj: processing/delta-refresh/refresh_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-refresh/test_runner-refresh_test_common.obj -MD -MP -MF processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Tpo -c -o processing/delta-refresh/test_runner-refresh_test_common.obj `if test -f 'processing/delta-refresh/refresh_test_common.c'; then $(CYGPATH_W) 'processing/delta-refresh/refresh_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/refresh_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Tpo processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/delta-refresh/refresh_test_common.c' object='processing/delta-refresh/test_runner-refresh_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/delta-refresh/test_runner-refresh_test_common.obj `if test -f 'processing/delta-refresh/refresh_test_common.c'; then $(CYGPATH_W) 'processing/delta-refresh/refresh_test_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/delta-refresh/refresh_test_common.c'; fi`
+
 processing/delta-residual/test_runner-gate_test_common.o: processing/delta-residual/gate_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/delta-residual/test_runner-gate_test_common.o -MD -MP -MF processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Tpo -c -o processing/delta-residual/test_runner-gate_test_common.o `test -f 'processing/delta-residual/gate_test_common.c' || echo '$(srcdir)/'`processing/delta-residual/gate_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Tpo processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po
@@ -58976,6 +59463,20 @@ processing/gpu-palette/test_runner-0021_blockcull_exact.obj: processing/gpu-pale
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0021_blockcull_exact.c' object='processing/gpu-palette/test_runner-0021_blockcull_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0021_blockcull_exact.obj `if test -f 'processing/gpu-palette/0021_blockcull_exact.c'; then $(CYGPATH_W) 'processing/gpu-palette/0021_blockcull_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0021_blockcull_exact.c'; fi`
+
+processing/gpu-palette/test_runner-0022_gridlut_exact.o: processing/gpu-palette/0022_gridlut_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0022_gridlut_exact.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Tpo -c -o processing/gpu-palette/test_runner-0022_gridlut_exact.o `test -f 'processing/gpu-palette/0022_gridlut_exact.c' || echo '$(srcdir)/'`processing/gpu-palette/0022_gridlut_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0022_gridlut_exact.c' object='processing/gpu-palette/test_runner-0022_gridlut_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0022_gridlut_exact.o `test -f 'processing/gpu-palette/0022_gridlut_exact.c' || echo '$(srcdir)/'`processing/gpu-palette/0022_gridlut_exact.c
+
+processing/gpu-palette/test_runner-0022_gridlut_exact.obj: processing/gpu-palette/0022_gridlut_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0022_gridlut_exact.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Tpo -c -o processing/gpu-palette/test_runner-0022_gridlut_exact.obj `if test -f 'processing/gpu-palette/0022_gridlut_exact.c'; then $(CYGPATH_W) 'processing/gpu-palette/0022_gridlut_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0022_gridlut_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0022_gridlut_exact.c' object='processing/gpu-palette/test_runner-0022_gridlut_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0022_gridlut_exact.obj `if test -f 'processing/gpu-palette/0022_gridlut_exact.c'; then $(CYGPATH_W) 'processing/gpu-palette/0022_gridlut_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0022_gridlut_exact.c'; fi`
 
 processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
@@ -61258,6 +61759,20 @@ processing/lookup/test_runner-0035_blockcull_exact.obj: processing/lookup/0035_b
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0035_blockcull_exact.c' object='processing/lookup/test_runner-0035_blockcull_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0035_blockcull_exact.obj `if test -f 'processing/lookup/0035_blockcull_exact.c'; then $(CYGPATH_W) 'processing/lookup/0035_blockcull_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0035_blockcull_exact.c'; fi`
+
+processing/lookup/test_runner-0037_gridlut_exact.o: processing/lookup/0037_gridlut_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0037_gridlut_exact.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Tpo -c -o processing/lookup/test_runner-0037_gridlut_exact.o `test -f 'processing/lookup/0037_gridlut_exact.c' || echo '$(srcdir)/'`processing/lookup/0037_gridlut_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Tpo processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0037_gridlut_exact.c' object='processing/lookup/test_runner-0037_gridlut_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0037_gridlut_exact.o `test -f 'processing/lookup/0037_gridlut_exact.c' || echo '$(srcdir)/'`processing/lookup/0037_gridlut_exact.c
+
+processing/lookup/test_runner-0037_gridlut_exact.obj: processing/lookup/0037_gridlut_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0037_gridlut_exact.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Tpo -c -o processing/lookup/test_runner-0037_gridlut_exact.obj `if test -f 'processing/lookup/0037_gridlut_exact.c'; then $(CYGPATH_W) 'processing/lookup/0037_gridlut_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0037_gridlut_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Tpo processing/lookup/$(DEPDIR)/test_runner-0037_gridlut_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0037_gridlut_exact.c' object='processing/lookup/test_runner-0037_gridlut_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0037_gridlut_exact.obj `if test -f 'processing/lookup/0037_gridlut_exact.c'; then $(CYGPATH_W) 'processing/lookup/0037_gridlut_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0037_gridlut_exact.c'; fi`
 
 processing/dither/test_runner-0001_dither_policy.o: processing/dither/0001_dither_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/test_runner-0001_dither_policy.o -MD -MP -MF processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo -c -o processing/dither/test_runner-0001_dither_policy.o `test -f 'processing/dither/0001_dither_policy.c' || echo '$(srcdir)/'`processing/dither/0001_dither_policy.c
@@ -92413,6 +92928,8 @@ distclean-generic:
 	-$(am__rm_f) processing/colorspace/parallel/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/decoder/$(am__dirstamp)
+	-$(am__rm_f) processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/delta-refresh/$(am__dirstamp)
 	-$(am__rm_f) processing/delta-residual/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/delta-residual/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(DEPDIR)/$(am__dirstamp)

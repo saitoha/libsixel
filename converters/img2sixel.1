@@ -971,6 +971,8 @@ fhedt    -> Voronoi grid built via a 3-pass 3D EDT with optional
 .br
 delaunay -> Exact Delaunay graph walk; lowest index at distance ties.
 .br
+gridlut -> Exact RGB cell candidate lookup (float32 uses block culling)
+.br
 blockcull -> Exact scan after culling colors that cannot be nearest
              anywhere in a pixel block; lowest index at distance ties.
 .br
@@ -994,7 +996,7 @@ The lookup policies honour the following environment variables.  A matching
 command-line sub-option takes precedence:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
-fhedt, vptree, delaunay, blockcull, rbc, or mahalanobis; default auto)
+fhedt, vptree, delaunay, blockcull, gridlut, rbc, or mahalanobis; default auto)
 .br
 SIXEL_LOOKUP_PACKING (linear, morton, or hilbert; default linear) selects
 dense LUT packing for 5bit/6bit lookups; other policies ignore it.
@@ -1221,8 +1223,9 @@ Defaults are threshold=0, error=diffuse and progressive=0; full accepts no subop
 The delta suboption \fB:residual=0|1\fP (:Rvalue, default 0) lowers the early-keep threshold in persistent residual cells without sending extra packets. Use \fB-Zdelta:R1:T8\fP.
 \fB:threshold_metric=auto|max|rgb241\fP (:Dvalue, default auto) selects the early-keep metric. Auto resolves to max for R0 and rgb241 for R1. Max uses the greatest component difference; rgb241 compares (2*dR*dR+4*dG*dG+dB*dB)/7 with T*T in gamma RGB8 units.
 \fB:residual_threshold=0..255\fP (:Hvalue, finite, default 1.5) is the strict threshold on signed Gaussian-filtered residual magnitude, not Delta E. \fB:residual_keep_threshold=0..255\fP (:Kvalue, integer, default 0) caps T in selected cells. \fB:residual_frames=1..255\fP (:Fvalue, integer, default 3) counts consecutive successful input observations.
-The mask uses sigma 4 pixels, radius 12, and up to 64 by 64 screen cells. History commits only after successful output. Source drops do not count; frame numbers need not be consecutive. No extra work runs after the last input.
-R1 requires full-plane opaque gamma RGB8 targets, RGB output and none, a_dither, x_dither or bluenoise application; CPU and Metal use the same mask. R1 conflicts with P1 and explicit max metric. Other workspaces, float targets, alpha holes and partial updates are unsupported. R0 preserves ordinary delta behavior.
+Experimental \fB:refresh_ms=0..10000\fP (:Jvalue, default 0/off) periodically lowers T to zero at blue-noise-distributed pixel positions. For example, :T8:J80 re-evaluates pixels every 80 ms of the encoder clock; skipped deadlines are caught up on the next frame. Post-lookup keeps still apply. This is not a guarantee of repainting or invisible residuals. Requires opaque full-plane gamma RGB8 and none/a_dither/x_dither/bluenoise; incompatible with R1 and progressive. See docs/encoder/output/delta-encoding.md.
+The R1 mask uses sigma 4 pixels, radius 12, and up to 64 by 64 screen cells. History commits only after successful output. Source drops do not count; frame numbers need not be consecutive. No extra work runs after the last input.
+R1 requires full-plane opaque gamma RGB8 targets, RGB output and none, a_dither, x_dither or bluenoise application; CPU and Metal use the same mask. R1 conflicts with P1 and explicit max metric. Other workspaces, float targets, alpha holes and partial updates are unsupported. With periodic refresh disabled, R0 preserves ordinary delta behavior.
 Each -Z selection resets its suboptions to defaults, environment, then explicit suffixes. R1 alone preserves the default T0, which already bypasses approximate early keeps.
 
 The delta suboption \fB:progressive=1|0\fP (short form :P1 or :P0) pairs ordinary animation updates with at most one non-overlapping repair image per source interval, using an independent residual palette.
@@ -1595,7 +1598,7 @@ clustering and working
 coordinates accept gamma, linear, Oklab, CIELAB or DIN99d independently.
 It accepts K-means, K-center, K-medoids or Heckbert (including auto selection),
 any sampling policy,
-lookup none/certlut/5bit/6bit/auto/vptree/delaunay/blockcull/rbc/mahalanobis/eytzinger/fhedt,
+lookup none/certlut/5bit/6bit/auto/vptree/delaunay/blockcull/gridlut/rbc/mahalanobis/eytzinger/fhedt,
 none, CPU spatial error diffusion (including auto), or positional dithering,
 none or Ward merge,
 cover auto/off or soft/hard, destination-aware palette snap, and RGB SIXEL output.
@@ -2736,7 +2739,7 @@ Accepts 0.0-1.0, default 0.85.
 .B SIXEL_DITHER_LOOKUP_POLICY
 .br
 select palette lookup policy (auto, 5bit, 6bit, none, certlut,
-eytzinger, fhedt, vptree, delaunay, blockcull, rbc, or mahalanobis).
+eytzinger, fhedt, vptree, delaunay, blockcull, gridlut, rbc, or mahalanobis).
 .TP 5
 .B SIXEL_LOOKUP_PACKING
 .br

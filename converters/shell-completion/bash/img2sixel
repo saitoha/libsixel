@@ -898,6 +898,7 @@ _img2sixel()
                                    vptree \
                                    delaunay \
                                    blockcull \
+                                   gridlut \
                                    rbc \
                                    mahalanobis' -- "$cur" ) )
         return 0

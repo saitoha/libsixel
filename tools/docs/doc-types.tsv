@@ -179,4 +179,5 @@ docs/encoder/palette-application/lookup-policy/none.md	reference	both	policy-spe
 docs/encoder/palette-application/lookup-policy/rbc.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/vptree.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/delaunay.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/lookup-policy/gridlut.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/blockcull.md	reference	both	policy-specific mathematics and cost

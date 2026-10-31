@@ -26,6 +26,7 @@ lookup-policy-eytzinger.c
 lookup-policy-fhedt.c
 lookup-policy-vptree.c
 lookup-policy-delaunay.c
+lookup-policy-gridlut.c
 lookup-policy-blockcull.c
 lookup-policy-rbc.c
 lookup-policy-mahalanobis.c
