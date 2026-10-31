@@ -17,7 +17,7 @@ test_qa_0026(int argc, char **argv)
         image[i] = (i * 17 % 61 - 5) / 32.0;
     }
     if (SIXEL_FAILED(sixel_qa_scielab(image, image, 5, 4, 60,
-            &mean, &maximum, map)) || mean != 0 || maximum != 0) {
+            &mean, &maximum, map, NULL, NULL)) || mean != 0 || maximum != 0) {
         return EXIT_FAILURE;
     }
     for (i = 0; i < 20; ++i) {

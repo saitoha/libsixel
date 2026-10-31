@@ -294,6 +294,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0036_PERSISTENCE_DURATION_WEIGHTING \
     -DBUILD_TEST_0037_PERSISTENCE_PIXEL_RESET \
     -DBUILD_TEST_0038_PERSISTENCE_PARTITION_INVARIANCE \
+    -DBUILD_TEST_0039_SCIEDE2000_UNIFORM \
+    -DBUILD_TEST_0040_SCIEDE2000_DENSE_REFERENCE \
+    -DBUILD_TEST_0041_SCIEDE2000_SPATIAL_CANCELLATION \
+    -DBUILD_TEST_0042_SCIEDE2000_SELECTION_REUSE \
+    -DBUILD_TEST_0043_SCIEDE2000_INVALID \
+    -DBUILD_TEST_0044_SCIEDE2000_PHYSICAL_SIGNAL \
     -DBUILD_TEST_0001_WEIGHTED_LLOYD \
     -DBUILD_TEST_0002_BYTE_ROUNDING \
     -DBUILD_TEST_0003_EMPTY_CLUSTER \
@@ -4463,6 +4469,12 @@ test_runner_SOURCES = test_runner.c \
     processing/assessment/0036_persistence_duration_weighting.c \
     processing/assessment/0037_persistence_pixel_reset.c \
     processing/assessment/0038_persistence_partition_invariance.c \
+    processing/assessment/0039_sciede2000_uniform.c \
+    processing/assessment/0040_sciede2000_dense_reference.c \
+    processing/assessment/0041_sciede2000_spatial_cancellation.c \
+    processing/assessment/0042_sciede2000_selection_reuse.c \
+    processing/assessment/0043_sciede2000_invalid.c \
+    processing/assessment/0044_sciede2000_physical_signal.c \
     processing/decoder/0087_animation_palette_carry.c \
     processing/decoder/0088_animation_clear_canvas.c \
     processing/decoder/0089_animation_malformed_tail.c \

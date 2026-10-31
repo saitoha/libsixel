@@ -137,7 +137,7 @@ typedef struct sixel_assessment_complex {
 } sixel_assessment_complex_t;
 
 typedef struct sixel_assessment_metrics {
-    unsigned int valid_mask; /* bit mask for computed metrics */
+    sixel_assessment_mask_t valid_mask; /* bit mask for computed metrics */
     float ms_ssim;
     float vif_p;
     float high_freq_out;
@@ -174,21 +174,17 @@ typedef struct sixel_assessment_capture {
 static sixel_assessment_t *g_assessment_context = NULL;
 static sixel_assessment_t *g_active_encode_assessment = NULL;
 
-static unsigned int
+static sixel_assessment_mask_t
 assessment_metric_mask_all(void)
 {
-#if SIXEL_ASSESSMENT_METRIC_COUNT >= 32
-    return 0xffffffffu;
-#else
-    return (1u << SIXEL_ASSESSMENT_METRIC_COUNT) - 1u;
-#endif
+    return SIXEL_ASSESSMENT_METRIC_MASK_ALL;
 }
 
 static int
 assessment_metric_selected(sixel_assessment_t const *assessment,
                            int metric_id)
 {
-    unsigned int mask;
+    sixel_assessment_mask_t mask;
     unsigned int index;
 
     if (assessment == NULL) {
@@ -199,7 +195,7 @@ assessment_metric_selected(sixel_assessment_t const *assessment,
         return 0;
     }
     mask = assessment->metrics_mask;
-    return (mask & (1u << index)) != 0u;
+    return (mask & (UINT64_C(1) << index)) != 0u;
 }
 
 typedef struct assessment_stage_descriptor {
@@ -937,9 +933,9 @@ sixel_assessment_select_sections(sixel_assessment_t *assessment,
 
 SIXELAPI void
 sixel_assessment_select_metrics(sixel_assessment_t *assessment,
-                                unsigned int metrics)
+                                sixel_assessment_mask_t metrics)
 {
-    unsigned int mask;
+    sixel_assessment_mask_t mask;
 
     if (assessment == NULL) {
         return;
@@ -3304,6 +3300,8 @@ typedef struct MetricDescriptor {
 static const MetricDescriptor g_metric_table[] = {
     {SIXEL_ASSESSMENT_METRIC_SCIELAB, "S-CIELAB"},
     {SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX, "S-CIELAB_max"},
+    {SIXEL_ASSESSMENT_METRIC_SCIEDE2000, "S-CIEDE2000"},
+    {SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX, "S-CIEDE2000_max"},
     {SIXEL_ASSESSMENT_METRIC_MS_SSIM, "MS-SSIM"},
     {SIXEL_ASSESSMENT_METRIC_VIF_P, "VIF-P"},
     {SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT, "HighFreqRatio_out"},
@@ -3337,7 +3335,7 @@ static const MetricDescriptor g_metric_table[] = {
 
 static void
 store_metric_if_valid(double *results,
-                      unsigned int mask,
+                      sixel_assessment_mask_t mask,
                       int metric_id,
                       double value)
 {
@@ -3352,7 +3350,7 @@ store_metrics(sixel_assessment_t *assessment,
               const sixel_assessment_metrics_t *metrics)
 {
     double *results;
-    unsigned int mask;
+    sixel_assessment_mask_t mask;
 
     if (assessment == NULL || metrics == NULL) {
         return;
@@ -3665,7 +3663,7 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
     assessment->signal_space = -1;
     assessment->signal_bytes = 0;
     assessment->grayscale = 0;
-    assessment->scielab_ppd = SIXEL_QA_SCIELAB_PPD_DEFAULT;
+    assessment->ppd = SIXEL_QA_PPD_DEFAULT;
     assessment->scielab_map = NULL;
     assessment->scielab_map_capacity = 0U;
     assessment->region_window = 16;
@@ -3750,8 +3748,11 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     int need_xyz;
     int need_regions;
     int need_scielab;
+    int need_sciede2000;
     double scielab_mean;
     double scielab_max;
+    double sciede2000_mean;
+    double sciede2000_max;
 
     if (assessment == NULL || reference == NULL || output == NULL
             || (assessment->region_window != 8
@@ -3850,12 +3851,16 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
         || assessment_metric_selected(assessment,
         SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX)
         || assessment->scielab_map != NULL;
+    need_sciede2000 = assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_SCIEDE2000)
+        || assessment_metric_selected(assessment,
+        SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX);
     if (assessment->scielab_map != NULL
             && assessment->scielab_map_capacity < pixels) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    need_xyz = need_regions || need_scielab
+    need_xyz = need_regions || need_scielab || need_sciede2000
         || assessment_metric_selected(assessment,
         SIXEL_ASSESSMENT_METRIC_DELTA_E00)
         || assessment_metric_selected(assessment,
@@ -3914,10 +3919,13 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
         assessment->results[26] = region_max;
         assessment->results_valid_mask |= 1u << 26;
     }
-    if (need_scielab) {
+    if (need_scielab || need_sciede2000) {
         status = sixel_qa_scielab(buffers->ref_xyz, buffers->out_xyz,
-            ref_width, ref_height, assessment->scielab_ppd,
-            &scielab_mean, &scielab_max, assessment->scielab_map);
+            ref_width, ref_height, assessment->ppd,
+            need_scielab ? &scielab_mean : NULL,
+            need_scielab ? &scielab_max : NULL, assessment->scielab_map,
+            need_sciede2000 ? &sciede2000_mean : NULL,
+            need_sciede2000 ? &sciede2000_max : NULL);
         if (SIXEL_FAILED(status)) {
             assessment->results_valid_mask = 0u;
             goto cleanup;
@@ -3935,6 +3943,20 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
                 SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX)] = scielab_max;
             assessment->results_valid_mask |= SIXEL_ASSESSMENT_METRIC_MASK(
                 SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX);
+        }
+        if (assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_SCIEDE2000)) {
+            assessment->results[SIXEL_ASSESSMENT_INDEX(
+                SIXEL_ASSESSMENT_METRIC_SCIEDE2000)] = sciede2000_mean;
+            assessment->results_valid_mask |= SIXEL_ASSESSMENT_METRIC_MASK(
+                SIXEL_ASSESSMENT_METRIC_SCIEDE2000);
+        }
+        if (assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX)) {
+            assessment->results[SIXEL_ASSESSMENT_INDEX(
+                SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX)] = sciede2000_max;
+            assessment->results_valid_mask |= SIXEL_ASSESSMENT_METRIC_MASK(
+                SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX);
         }
     }
     assessment->results_ready = 1;
@@ -4059,9 +4081,11 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         "    \"signal_range\": \"%s\",\n"
         "    \"pcs_precision\": \"float64 from current samples\",\n"
         "    \"grayscale_signal\": %s,\n"
-        "    \"scielab_ppd\": %.17g,\n"
+        "    \"ppd\": %.17g,\n"
         "    \"scielab_model\": \"zhang-wandell-1998-unit-dc\",\n"
         "    \"scielab_difference\": \"CIE76\",\n"
+        "    \"sciede2000_difference\": \"CIEDE2000\",\n"
+        "    \"sciede2000_parameters\": {\"kL\": 1, \"kC\": 1, \"kH\": 1},\n"
         "    \"scielab_boundary\": \"edge-repeating reflection\",\n"
         "    \"region_window\": %d,\n"
         "    \"region_count\": %zu,\n"
@@ -4077,7 +4101,7 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
         assessment->signal_bytes ? "8bit" : "float32",
         assessment->signal_bytes ? "0..1" : "extended, nominal 0..1",
         assessment->grayscale ? "true" : "false",
-        assessment->scielab_ppd,
+        assessment->ppd,
         assessment->region_window, assessment->region_count);
     if (n < 0 || (size_t)n >= sizeof(line)) {
         return SIXEL_RUNTIME_ERROR;

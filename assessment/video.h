@@ -14,7 +14,7 @@ typedef struct lsqa_video_options {
     char const *loaders;
     char const *target_colorspace;
     unsigned char const *background;
-    unsigned int metrics;
+    sixel_assessment_mask_t metrics;
     double ppd;
     double threshold;
     double reference_fps;
@@ -33,6 +33,7 @@ typedef struct lsqa_video_options {
  * Caller receives duration-weighted means only after complete validation. */
 SIXEL_INTERNAL_API SIXELSTATUS
 lsqa_video_run(lsqa_video_options_t const *options,
-    sixel_allocator_t *allocator, double *means, unsigned int *valid_mask);
+    sixel_allocator_t *allocator, double *means,
+    sixel_assessment_mask_t *valid_mask);
 
 #endif

@@ -22,7 +22,7 @@ test_qa_0028(int argc, char **argv)
     for (i = 0; i < 4; ++i) {
         if (SIXEL_FAILED(sixel_qa_scielab(scielab_reference_xyz,
                 scielab_output_xyz, 5, 4, scielab_reference_ppd[i],
-                &mean, &maximum, map)) || !isfinite(mean)
+                &mean, &maximum, map, NULL, NULL)) || !isfinite(mean)
                 || !isfinite(maximum)
                 || fabs(mean - scielab_reference_mean[i]) > 1e-6
                 || fabs(maximum - scielab_reference_max[i]) > 1e-6) {

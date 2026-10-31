@@ -93,7 +93,7 @@ Unchanged sRGB gamma/linear samples retain the existing luma coefficients and fl
 
 `-P / --compare-precision=reference|8bit|float32` controls this signal. The reference default follows its storage. Eight-bit signals are clipped to 0..1 and rounded to 255 intervals; float32 signals retain extended values, with a nominal range of 0..1. PSNR-Y uses a unit peak, and spatial metric constants retain that nominal range. Clip-rate metrics describe this comparison signal. They cannot prove how much color an earlier loader or encoder clipped.
 
-`-g` makes the comparison signal grayscale. Color difference, region color means and S-CIELAB still measure the physical input colors. Neither `-W`, `-P`, nor `-g` changes the XYZ used for those color measurements.
+`-g` makes the comparison signal grayscale. Color difference, region color means, S-CIELAB and S-CIEDE2000 still measure the physical input colors. Neither `-W`, `-P`, nor `-g` changes the XYZ used for those color measurements.
 
 Explicit SIXEL inputs use linear float32 after interpretation. Unpainted pixels use the requested `-B` background, or black, interpreted as encoded sRGB independently of the palette definition. The paint mask distinguishes holes from painted pixels even when all 256 palette entries are used. For `auto` inputs without `-D`, legacy loader/frame alpha-composition behavior is retained; it is path-dependent and must be tested separately.
 
@@ -118,7 +118,7 @@ Use an explicit upper bound such as `-b DE00_region_max:max=VALUE` for color dif
 
 ## Spatial color filtering
 
-[S-CIELAB](metrics.md#spatial-color-difference-s-cielab) uses the same physical XYZ D50 inputs, with separate achromatic and chromatic spatial filters before Lab conversion. `-m S-CIELAB` reports mean CIE76 error and `-m S-CIELAB_max` reports its maximum; `-v` / `--scielab-ppd` sets the viewing geometry. The legacy `-b METRIC:VALUE` form uses an upper bound for these two metrics. Their owning metric reference specifies the kernels, default geometry, units, boundary extension, numeric tests and limitations. Full JSON adds the requested PPD and the implemented model, difference formula and boundary rule to `color_evaluation`.
+[Spatial color differences](metrics.md#spatial-color-difference-s-cielab) use the same physical XYZ D50 inputs, with separate achromatic and chromatic spatial filters before Lab conversion. S-CIELAB evaluates CIE76 and S-CIEDE2000 evaluates CIEDE2000 on those filtered colors; `-v` / `--ppd` sets their shared viewing geometry. Their owning metric reference specifies names, gates, kernels, default geometry, units, boundary extension, numeric tests and limitations. Full JSON identifies the common PPD and filter model, both difference formulas, fixed CIEDE2000 factors and boundary rule in `color_evaluation`.
 
 ## Independent validation
 
