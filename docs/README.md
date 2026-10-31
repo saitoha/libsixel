@@ -169,6 +169,7 @@ The encoder and decoder in data-flow order, from loading an image to writing SIX
 - [Delaunay lookup](encoder/palette-application/lookup-policy/delaunay.md) describes exact graph walks, representation boundaries, SIMD arithmetic and their tests.
 - [Blockcull lookup](encoder/palette-application/lookup-policy/blockcull.md) describes exact per-block candidate culling, its Metal kernel and their tests.
 - [Grid LUT lookup](encoder/palette-application/lookup-policy/gridlut.md) describes exact RGB cell candidates, GPU construction, palette reuse, and float fallback.
+- [Ordered lookup](encoder/palette-application/lookup-policy/ordered.md) describes exact radius pruning, distance-sorted candidates, and CPU/Metal seed grids.
 - [Dithering](encoder/palette-application/dithering/README.md) explains `-d`, each error-diffusion and positional method, and their cost and measured quality.
 - [Dither clamp policy](encoder/palette-application/clamp-policy.md) explains `-0` and how extended source values and diffusion feedback are clamped.
 

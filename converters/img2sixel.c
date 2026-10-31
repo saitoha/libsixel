@@ -825,6 +825,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      delaunay  -> exact Delaunay graph walk lookup\n"
         "      blockcull -> exact scan after per-block candidate culling\n"
         "      gridlut -> exact RGB cell candidate lookup\n"
+        "      ordered -> exact distance-ordered candidate lookup\n"
         "      vptree    -> VP-tree lookup built from palette entries\n"
         "      rbc       -> Random Ball Cover cluster pruning\n"
         "      mahalanobis -> exhaustive normalized scan in RBC cluster order\n"
@@ -841,9 +842,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    encoder sub-option:\n"
         "      :palette_threshold=PIXELS (:PPIXELS)\n"
         "      set the auto-policy minimum palette-apply pixel count\n"
-        "    gates -Qkmeans:backend=gpu and accelerates exact\n"
-        "    --lookup-policy=none and one-dimensional\n"
-        "    --lookup-policy=eytzinger palette apply\n"
+        "    gates -Qkmeans:backend=gpu and accelerates RGB8 palette apply\n"
+        "    for none, eytzinger, blockcull, gridlut and ordered lookup\n"
     },
     {
         'j',
@@ -1284,7 +1284,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    P3: effective float precision; -X/-W accept all five spaces;\n"
         "    -Qauto|kmeans|center|medoids|heckbert; any sampling;\n"
         "    lookup none/certlut/5bit/6bit/auto/vptree/delaunay/"
-        "blockcull/gridlut/rbc/mahalanobis/eytzinger/fhedt;\n"
+        "blockcull/gridlut/ordered/rbc/mahalanobis/eytzinger/fhedt;\n"
         "    binning: kmeans any, center none/exact/hard/auto,\n"
         "    medoids/heckbert none/auto;\n"
         "    none/CPU spatial or positional diffusion/auto;\n"
@@ -2406,8 +2406,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "eytzinger, fhedt, vptree, delaunay, blockcull, gridlut, rbc, or "
-        "mahalanobis; "
+        "eytzinger, fhedt, vptree, delaunay, blockcull, gridlut, ordered,\n"
+        "rbc, or mahalanobis; "
         "default is auto)."
     },
     {
@@ -2415,7 +2415,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "set default upper-level GPU accelerator policy. Accepts off, auto,\n"
         "or force. Invalid values keep the built-in default off.\n"
         "Overridden by -G/--gpu-policy. Gates GPU k-means and accelerates\n"
-        "exact --lookup-policy=none palette apply."
+        "eligible RGB8 palette application."
     },
     {
         "SIXEL_GPU_PALETTE_THRESHOLD",

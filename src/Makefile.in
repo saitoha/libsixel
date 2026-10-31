@@ -201,6 +201,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-vptree.c \
 	$(srcdir)/lookup-policy-delaunay.c \
 	$(srcdir)/lookup-policy-gridlut.c \
+	$(srcdir)/lookup-policy-ordered.c \
 	$(srcdir)/lookup-policy-blockcull.c \
 	$(srcdir)/lookup-policy-rbc.c \
 	$(srcdir)/lookup-policy-mahalanobis.c $(srcdir)/factory.c \
@@ -226,6 +227,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-vptree.h \
 	$(srcdir)/lookup-policy-delaunay.h \
 	$(srcdir)/lookup-policy-gridlut.h \
+	$(srcdir)/lookup-policy-ordered.h \
 	$(srcdir)/lookup-policy-blockcull.h \
 	$(srcdir)/lookup-policy-rbc.h \
 	$(srcdir)/lookup-policy-mahalanobis.h $(srcdir)/factory.h \
@@ -428,6 +430,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-vptree.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-delaunay.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-gridlut.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-ordered.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-blockcull.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-rbc.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mahalanobis.lo \
@@ -731,6 +734,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy.Plo \
@@ -1165,6 +1169,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-vptree.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-delaunay.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-gridlut.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-ordered.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-blockcull.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-rbc.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mahalanobis.c \
@@ -1195,6 +1200,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-vptree.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-delaunay.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-gridlut.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-ordered.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-blockcull.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-rbc.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mahalanobis.h \
@@ -1597,6 +1603,7 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-vptree.h \
     $(srcdir)/lookup-policy-delaunay.h \
     $(srcdir)/lookup-policy-gridlut.h \
+    $(srcdir)/lookup-policy-ordered.h \
     $(srcdir)/lookup-policy-blockcull.h
 
 DITHER_POLICY_CLASSID_INPUTS = \
@@ -1869,6 +1876,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy.Plo@am__quote@ # am--include-marker
@@ -2118,6 +2126,13 @@ libsixel_la-lookup-policy-gridlut.lo: lookup-policy-gridlut.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-gridlut.c' object='libsixel_la-lookup-policy-gridlut.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-gridlut.lo `test -f 'lookup-policy-gridlut.c' || echo '$(srcdir)/'`lookup-policy-gridlut.c
+
+libsixel_la-lookup-policy-ordered.lo: lookup-policy-ordered.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-ordered.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-ordered.Tpo -c -o libsixel_la-lookup-policy-ordered.lo `test -f 'lookup-policy-ordered.c' || echo '$(srcdir)/'`lookup-policy-ordered.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-ordered.Tpo $(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-ordered.c' object='libsixel_la-lookup-policy-ordered.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-ordered.lo `test -f 'lookup-policy-ordered.c' || echo '$(srcdir)/'`lookup-policy-ordered.c
 
 libsixel_la-lookup-policy-blockcull.lo: lookup-policy-blockcull.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-blockcull.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-blockcull.Tpo -c -o libsixel_la-lookup-policy-blockcull.lo `test -f 'lookup-policy-blockcull.c' || echo '$(srcdir)/'`lookup-policy-blockcull.c
@@ -3558,6 +3573,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo
@@ -3784,6 +3800,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-ordered.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo

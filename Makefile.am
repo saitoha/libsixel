@@ -823,6 +823,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/encoder/palette-application/lookup-policy/delaunay.md \
 	docs/encoder/palette-application/lookup-policy/blockcull.md \
 	docs/encoder/palette-application/lookup-policy/gridlut.md \
+	docs/encoder/palette-application/lookup-policy/ordered.md \
 	docs/encoder/palette-application/lookup-policy/6bit.md \
 	docs/encoder/palette-application/lookup-policy/auto.md \
 	docs/encoder/palette-application/lookup-policy/certlut.md \

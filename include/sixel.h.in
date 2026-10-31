@@ -158,6 +158,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_DELAUNAY 0xb /* Delaunay-graph walk lookup */
 #define SIXEL_LUT_POLICY_BLOCKCULL 0xc /* block candidate culling */
 #define SIXEL_LUT_POLICY_GRIDLUT   0xd /* exact RGB cell candidates */
+#define SIXEL_LUT_POLICY_ORDERED   0xe /* exact distance-ordered candidates */
 
 /* Upper-level GPU policy for selected accelerator stages */
 #define SIXEL_GPU_POLICY_OFF     0x0  /* keep all stages on CPU */

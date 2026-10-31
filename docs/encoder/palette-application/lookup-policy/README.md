@@ -38,7 +38,7 @@ An explicit lookup policy applies during palette application with generated pale
 
 RGB666 became the fast lookup baseline during development of the 1.11 line, when commit [`4f57a743c`](https://github.com/saitoha/libsixel/commit/4f57a743c11c4149656cdad6e3f8d59d76c58036) replaced the historical RGB555 table. It remains the selector fallback for an unrecognized policy value, but it is no longer what `auto` selects. Commit [`2e1cc0639`](https://github.com/saitoha/libsixel/commit/2e1cc06396009a452f25ecd9baf078e16e0d4d27) changed the built-in default from `eytzinger` to `certlut`; the default later became `auto`, resolved to `vptree`. Statements that call `6bit` "the 1.11 default" must therefore name the exact revision or release; this document describes the current source tree.
 
-`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `vptree`), `vptree`, `delaunay`, `blockcull`, `gridlut`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
+`-U display-p3` accepts `none`, `certlut`, `5bit`, `6bit`, `auto` (resolved to `vptree`), `vptree`, `delaunay`, `blockcull`, `gridlut`, `ordered`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt`. On that path, and on the ordinary sRGB float path that uses the same preparation, lookup retains the unrounded float working palette; separately converted and rounded RGB101 codes serve only serialization; see [Output color space](../../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
 ## Contract
 
@@ -64,6 +64,7 @@ The labels apply to one already-adjusted color candidate. They do not imply that
 | `fhedt`, float32 | Approximate | Even `R = 256` discretizes a continuous working space |
 | `delaunay` | Scan-index exact | Closed Voronoi graph walk with lowest-index ties and exhaustive float fallback outside its box |
 | `gridlut` | Scan-index exact | Fixed RGB cells retain all possible winners; float32 delegates to blockcull |
+| `ordered` | Scan-index exact | Distance-sorted byte candidates with exact radius pruning; float32 delegates to blockcull |
 | `blockcull` | Scan-index exact | Colors that cannot be nearest anywhere in a run or pixel block are skipped before a palette-order scan |
 | `vptree` | Nearest-distance exact | Tree pruning and the default safe cache preserve the policy minimum |
 | `rbc`, float32 | Nearest-distance exact | Ball-radius lower bounds use the same normalized metric as final comparisons |
@@ -75,11 +76,11 @@ The labels apply to one already-adjusted color candidate. They do not imply that
 
 ### Extended float coordinates
 
-The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree`, `delaunay`, `blockcull`, `gridlut`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt` lookup. The separately clipped RGB101 wire palette does not replace these working entries. FHEDT retains these coordinates separately from its approximate finite grid, as described in [FHEDT](fhedt.md).
+The selected [CPU float palette path](../../output/output-colorspace.md#display-p3-selected-cpu-float-path) retains negative, above-nominal and fractional coordinates in `none`, `certlut`, `5bit`, `6bit`, `vptree`, `delaunay`, `blockcull`, `gridlut`, `ordered`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt` lookup. The separately clipped RGB101 wire palette does not replace these working entries. FHEDT retains these coordinates separately from its approximate finite grid, as described in [FHEDT](fhedt.md).
 
-`certlut`, `5bit`, `6bit`, `vptree`, `delaunay`, `blockcull`, `gridlut`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt` derive their normalized metric from the declared channel ranges, rather than the observed palette extent. [FHEDT](fhedt.md#float-palette-domain-and-metric) additionally applies its configurable channel ratios, including L emphasis by default in perceptual spaces. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, RBC ball radii, and Eytzinger projection keys and stopping bounds must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Working palette values and nominal metric coefficients retain float32 precision. Most classes store float32 search copies; `mahalanobis`, `eytzinger` and `fhedt` widen those exact values into a private double copy at preparation to avoid repeated conversion during candidate comparisons. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
+`certlut`, `5bit`, `6bit`, `vptree`, `delaunay`, `blockcull`, `gridlut`, `ordered`, `rbc`, `mahalanobis`, `eytzinger` and `fhedt` derive their normalized metric from the declared channel ranges, rather than the observed palette extent. [FHEDT](fhedt.md#float-palette-domain-and-metric) additionally applies its configurable channel ratios, including L emphasis by default in perceptual spaces. Unlike `none`, this rescales the opponent axes in CIELAB and DIN99d. Float storage does not mean float arithmetic throughout: these classes subtract, square and accumulate distances in double. Construction metadata uses the same precision: `certlut` split-plane bounds, VP-tree radii and safe-cache thresholds, RBC ball radii, and Eytzinger projection keys and stopping bounds must not narrow distances back to float before pruning. This avoids overflow and underflow of squared distances for finite binary32 coordinates without clipping them. Working palette values and nominal metric coefficients retain float32 precision. Most classes store float32 search copies; `mahalanobis`, `eytzinger` and `fhedt` widen those exact values into a private double copy at preparation to avoid repeated conversion during candidate comparisons. It does not promise exact real arithmetic or identical index choice at numerically indistinguishable ties. General error-budget rules are in the [testing guide](../../../testing/guide.md#intermediate-floating-point-error).
 
-Prepared float lookup objects own their palette copies. Repreparing one instance replaces its palette and search structure without changing another instance. For `certlut`, `5bit` and `6bit`, worker sharing is limited to immutable prepared float data. VP-tree, Delaunay, blockcull, gridlut, RBC, Mahalanobis and Eytzinger use worker-local instances. VP-tree and Delaunay keep previous-index hints in the caller, so their prepared search data retains no scan history. No query mutates the working palette or its wire cache.
+Prepared float lookup objects own their palette copies. Repreparing one instance replaces its palette and search structure without changing another instance. For `certlut`, `5bit` and `6bit`, worker sharing is limited to immutable prepared float data. VP-tree, Delaunay, blockcull, gridlut, ordered, RBC, Mahalanobis and Eytzinger use worker-local instances. VP-tree and Delaunay keep previous-index hints in the caller, so their prepared search data retains no scan history. No query mutates the working palette or its wire cache.
 
 ## Precedence and interactions
 
@@ -179,6 +180,7 @@ Each policy has its own page because the algorithms, correctness arguments, and 
 | [`fhedt`](fhedt.md) | Separable three-dimensional Euclidean distance transform |
 | [`delaunay`](delaunay.md) | Closed Voronoi adjacency with exact scalar and SIMD graph walks |
 | [`gridlut`](gridlut.md) | Exact RGB cell candidate LUT, GPU construction and palette-identity reuse |
+| [`ordered`](ordered.md) | Exact distance-sorted candidates, seed grids and CPU/Metal construction |
 | [`blockcull`](blockcull.md) | Per-block candidate culling before an exact scan, with a Metal matrix-product kernel |
 | [`vptree`](vptree.md) | Metric VP-tree with neighbor-list refinement from a caller hint |
 | [`rbc`](rbc.md) | Random Ball Cover cluster pruning |
@@ -208,6 +210,7 @@ The fixed three color dimensions are omitted. Preparation cost, one-query cost, 
 | `eytzinger` | `Theta(K log K)` | 8-bit `Theta(log K)`; float32 `O(log K + V)`, worst `Theta(K)` | `Theta(K)` |
 | `fhedt` | `Theta(R^3 + K)` | `Theta(1)` | `Theta(R^3 + K)` |
 | `gridlut` (byte) | `Theta(C K)`; unchanged palette `Theta(K)` | `Theta(V)`; overflow `Theta(K)` | `Theta(C + K)` for fixed candidate capacity |
+| `ordered` (byte CPU) | `Theta(K^2 + G K)` with radix sorting; unchanged palette `Theta(K)` | `Theta(V)`; worst `Theta(K)` | Fixed row capacity plus `G = 512` seeds |
 | `blockcull` | `Theta(K)` | alone `Theta(K)`; a run of `S` samples `Theta(K + S V)` | `Theta(K)` |
 | `vptree` | `Theta(K^2)` safe-radius preparation plus tree construction | typical balanced `O(log K)`; worst `Theta(K)` | `Theta(K)` |
 | `rbc`, float32 | `Theta(K J)` | `O(J + V)`; worst `Theta(K)` | `Theta(K + J)` |

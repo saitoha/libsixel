@@ -357,6 +357,7 @@ SIXEL_LUT_POLICY_MAHALANOBIS = 0xa  # Mahalanobis-aware lookup
 SIXEL_LUT_POLICY_DELAUNAY = 0xb  # Exact Delaunay graph lookup
 SIXEL_LUT_POLICY_BLOCKCULL = 0xc  # Exact block candidate culling
 SIXEL_LUT_POLICY_GRIDLUT = 0xd  # Exact RGB cell candidates
+SIXEL_LUT_POLICY_ORDERED = 0xe  # Exact distance-ordered candidates
 
 SIXEL_GPU_POLICY_OFF       = 0x0  # keep CPU palette apply
 SIXEL_GPU_POLICY_AUTO      = 0x1  # probe GPU above internal threshold

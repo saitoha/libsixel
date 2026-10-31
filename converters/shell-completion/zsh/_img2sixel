@@ -105,6 +105,7 @@ _lookuppolicy() {
     'delaunay[Exact Delaunay graph walk lookup]' \
     'blockcull[Exact scan after per-block candidate culling]' \
     'gridlut[Exact RGB cell candidate lookup]' \
+    'ordered[Exact distance-ordered candidate lookup]' \
     'rbc[Random Ball Cover cluster pruning]' \
     'mahalanobis[RBC pruning with Mahalanobis lower bounds]'
 }

@@ -123,6 +123,10 @@ static char const g_lookup_policy_name_gridlut_8bit[] =
     "lookup/gridlut.8bit";
 static char const g_lookup_policy_name_gridlut_float32[] =
     "lookup/gridlut.float32";
+static char const g_lookup_policy_name_ordered_8bit[] =
+    "lookup/ordered.8bit";
+static char const g_lookup_policy_name_ordered_float32[] =
+    "lookup/ordered.float32";
 static char const g_lookup_policy_name_blockcull_8bit[] =
     "lookup/blockcull.8bit";
 static char const g_lookup_policy_name_blockcull_float32[] =
@@ -194,6 +198,11 @@ sixel_lookup_policy_name_from_lut_policy(int lut_policy,
             return g_lookup_policy_name_gridlut_float32;
         }
         return g_lookup_policy_name_gridlut_8bit;
+    case SIXEL_LUT_POLICY_ORDERED:
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_ordered_float32;
+        }
+        return g_lookup_policy_name_ordered_8bit;
     case SIXEL_LUT_POLICY_BLOCKCULL:
         if (prefer_float32 != 0) {
             return g_lookup_policy_name_blockcull_float32;
@@ -231,7 +240,8 @@ sixel_lookup_policy_normalize_fast_lut_policy(
         && normalized != SIXEL_LUT_POLICY_MAHALANOBIS
         && normalized != SIXEL_LUT_POLICY_DELAUNAY
         && normalized != SIXEL_LUT_POLICY_BLOCKCULL
-        && normalized != SIXEL_LUT_POLICY_GRIDLUT) {
+        && normalized != SIXEL_LUT_POLICY_GRIDLUT
+        && normalized != SIXEL_LUT_POLICY_ORDERED) {
         normalized = SIXEL_LUT_POLICY_6BIT;
     }
 

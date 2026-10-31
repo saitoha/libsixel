@@ -44,7 +44,8 @@ extern "C" {
  * positional controls that the CPU lookup would read, then materializes the
  * indexed SIXEL buffer. NONE uses the exact direct scan;
  * BLOCKCULL culls each pixel block's candidates before the same exact
- * scan; GRIDLUT builds and reuses fixed RGB-cell candidates; EYTZINGER
+ * scan; GRIDLUT reuses fixed RGB-cell candidates; ORDERED reuses
+ * distance-sorted rows and seed colors; EYTZINGER
  * uses the one-dimensional projected lookup. Unsupported shapes
  * return SIXEL_FALSE for policy=auto so the caller can continue through the
  * CPU path.

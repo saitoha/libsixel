@@ -899,6 +899,7 @@ _img2sixel()
                                    delaunay \
                                    blockcull \
                                    gridlut \
+                                   ordered \
                                    rbc \
                                    mahalanobis' -- "$cur" ) )
         return 0

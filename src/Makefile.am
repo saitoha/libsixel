@@ -106,6 +106,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-vptree.c \
                 $(srcdir)/lookup-policy-delaunay.c \
                 $(srcdir)/lookup-policy-gridlut.c \
+                $(srcdir)/lookup-policy-ordered.c \
                 $(srcdir)/lookup-policy-blockcull.c \
                 $(srcdir)/lookup-policy-rbc.c \
                 $(srcdir)/lookup-policy-mahalanobis.c \
@@ -136,6 +137,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-vptree.h \
                 $(srcdir)/lookup-policy-delaunay.h \
                 $(srcdir)/lookup-policy-gridlut.h \
+                $(srcdir)/lookup-policy-ordered.h \
                 $(srcdir)/lookup-policy-blockcull.h \
                 $(srcdir)/lookup-policy-rbc.h \
                 $(srcdir)/lookup-policy-mahalanobis.h \
@@ -581,6 +583,7 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-vptree.h \
     $(srcdir)/lookup-policy-delaunay.h \
     $(srcdir)/lookup-policy-gridlut.h \
+    $(srcdir)/lookup-policy-ordered.h \
     $(srcdir)/lookup-policy-blockcull.h
 
 DITHER_POLICY_CLASSID_INPUTS = \
