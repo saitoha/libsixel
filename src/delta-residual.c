@@ -29,6 +29,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "delta-residual.h"
+#include "bluenoise_64x64.h"
 
 /* Filter signed components before measuring distance: alternating dither
  * errors cancel, while persistent low-frequency color offsets survive.
@@ -137,8 +138,13 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
             x < 0 || y < 0 || x >= mask->width || y >= mask->height) {
         return threshold;
     }
-    cell = (((size_t)(y + 1) * mask->rows - 1U) / mask->height) *
-        mask->columns + ((size_t)(x + 1) * mask->columns - 1U) / mask->width;
+    if (mask->tiled) {
+        cell = ((unsigned int)y & 63U) * 64U + ((unsigned int)x & 63U);
+    } else {
+        cell = (((size_t)(y + 1) * mask->rows - 1U) / mask->height) *
+            mask->columns +
+            ((size_t)(x + 1) * mask->columns - 1U) / mask->width;
+    }
     if ((mask->cells[cell / 32U] & ((uint32_t)1 << (cell % 32U))) &&
             mask->threshold < threshold) return mask->threshold;
     return threshold;
@@ -150,9 +156,10 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     int history_valid)
 {
     uint64_t period, previous, current, offset, epoch;
-    unsigned int columns, rows, gx, gy, phase, bit;
-    size_t cell;
-    int reset, selected, x0, x1, y0, y1, bands;
+    uint32_t phases[2];
+    unsigned int gx, gy, phase;
+    size_t cell, nx, ny;
+    int reset, selected;
 
     memset(&state->mask, 0, sizeof(state->mask));
     memset(state->next_age, 0, sizeof(state->next_age));
@@ -174,40 +181,34 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     period = (uint64_t)period_ms * 1000U;
     previous = reset ? 0U : state->refresh_last_us - epoch;
     current = time_us - epoch;
-    columns = width < 64 ? (unsigned int)width : 64U;
-    rows = height < 64 ? (unsigned int)height : 64U;
-    /* When possible, keep cell edges on SIXEL bands without increasing the
-     * fixed 4096-cell mask. A partial final band uses the ordinary grid. */
-    if (height % 6 == 0) {
-        bands = height / 6;
-        rows = bands < 64 ? (unsigned int)bands : 64U;
-        while (rows > 1U && (unsigned int)bands % rows != 0U) --rows;
+    state->mask.columns = 64U;
+    state->mask.rows = 64U;
+    state->mask.tiled = 1U;
+    memset(phases, 0, sizeof(phases));
+    for (phase = 0U; phase < 64U; ++phase) {
+        offset = ((uint64_t)phase + 1U) * period / 64U;
+        selected = reset ? history_valid : current >= offset &&
+            (previous < offset || (current - offset) / period >
+                                  (previous - offset) / period);
+        if (selected) phases[phase / 32U] |= (uint32_t)1 << (phase % 32U);
     }
-    state->mask.columns = columns;
-    state->mask.rows = rows;
-    for (gy = 0; gy < rows; ++gy) {
-        y0 = (int)((size_t)gy * height / rows);
-        y1 = (int)((size_t)(gy + 1U) * height / rows);
-        for (gx = 0; gx < columns; ++gx) {
-            /* The 8x8 Bayer permutation distributes each of 64 phases once
-             * per tile. The phase is fixed in screen space, not re-randomized
-             * per frame; repeated timestamps therefore do no extra work. */
-            phase = 0U;
-            for (bit = 0U; bit < 3U; ++bit) {
-                phase = (phase << 2) |
-                    ((((gx >> bit) ^ (gy >> bit)) & 1U) << 1) |
-                    ((gy >> bit) & 1U);
-            }
-            offset = ((uint64_t)phase + 1U) * period / 64U;
-            selected = reset ? history_valid : current >= offset &&
-                (previous < offset || (current - offset) / period >
-                                      (previous - offset) / period);
-            if (!selected) continue;
-            cell = (size_t)gy * columns + gx;
+    /* A pixel-scale blue-noise tile avoids coherent block boundaries on
+     * smooth fades. Fixed phases keep the deadline bound; independently
+     * rerandomizing each frame could indefinitely miss individual pixels.
+     * Translate the tile to avoid sharing phases with color dithering. */
+    for (gy = 0U; gy < 64U; ++gy) {
+        ny = (size_t)height / 64U + (gy < (unsigned int)height % 64U);
+        for (gx = 0U; gx < 64U; ++gx) {
+            phase = sixel_bn64[((gy + 17U) & 63U) * 64U +
+                              ((gx + 37U) & 63U)] >> 2;
+            if (!(phases[phase / 32U] & ((uint32_t)1 << (phase % 32U))))
+                continue;
+            cell = (size_t)gy * 64U + gx;
             state->mask.cells[cell / 32U] |= (uint32_t)1 << (cell % 32U);
-            x0 = (int)((size_t)gx * width / columns);
-            x1 = (int)((size_t)(gx + 1U) * width / columns);
-            state->selected_pixels += (size_t)(x1 - x0) * (y1 - y0);
+            /* Count repetitions and clipped edges without scanning source
+             * pixels. CPU and Metal consume this same 512-byte tile. */
+            nx = (size_t)width / 64U + (gx < (unsigned int)width % 64U);
+            state->selected_pixels += nx * ny;
         }
     }
 }

@@ -1028,7 +1028,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      residual_keep_threshold=0..255 (:Kvalue, default 0)\n"
         "      residual_frames=1..255 (:Fvalue, default 3)\n"
         "      refresh_ms=0..10000 (:Jvalue, default 0/off)\n"
-        "    Experimental J staggers local T0 re-evaluation by elapsed time.\n"
+        "    Experimental J staggers pixel T0 re-evaluation with blue noise.\n"
         "    It cannot combine with R1/P1 and does not force repainting.\n"
         "    delta:R1:T8 lowers T in persistent residual cells. Auto metric\n"
         "    selects rgb241 for R1, max otherwise. Requires opaque full-plane\n"

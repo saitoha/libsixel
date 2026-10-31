@@ -8,6 +8,7 @@
 #include <sixel.h>
 #include "src/encoder.h"
 #include "src/delta-residual.h"
+#include "src/bluenoise_64x64.h"
 
 #define REQUIRE(x) do { if (!(x)) { \
     fprintf(stderr, "refresh %d line %d: %s (%s)\n", mode, __LINE__, #x, \
@@ -64,11 +65,12 @@ test_delta_refresh(int mode)
     sixel_playback_options_t options;
     sixel_frame_t *frame;
     refresh_output_t out;
-    unsigned char pixels[64 * 48 * 3];
+    unsigned char pixels[130 * 77 * 3];
+    size_t const paint_counts[] = {10010U, 2497U, 2502U, 2493U, 2518U};
     uint32_t seen[128];
     uint64_t timestamp;
     size_t expected, changed, i, legacy_size;
-    unsigned int tick;
+    unsigned int tick, rank;
     int ok;
     SIXELSTATUS status;
 
@@ -81,35 +83,35 @@ test_delta_refresh(int mode)
     memset(&out, 0, sizeof(out));
     memset(seen, 0, sizeof(seen));
     if (mode >= 2 && mode <= 5) {
-        sixel_delta_refresh_prepare(&state, 64, 48, 64, 1000000U, 0);
+        sixel_delta_refresh_prepare(&state, 128, 128, 64, 1000000U, 0);
         REQUIRE(state.selected_pixels == 0U);
         refresh_commit(&state);
         if (mode == 2) {
             for (tick = 1U; tick <= 4U; ++tick) {
-                sixel_delta_refresh_prepare(&state, 64, 48, 64,
+                sixel_delta_refresh_prepare(&state, 128, 128, 64,
                     1000000U + tick * 16000U, 1);
-                REQUIRE(state.selected_pixels == 768U);
-                for (i = 0; i < 16U; ++i) {
+                REQUIRE(state.selected_pixels == 4096U);
+                for (i = 0; i < 128U; ++i) {
                     REQUIRE((seen[i] & state.mask.cells[i]) == 0U);
                     seen[i] |= state.mask.cells[i];
                 }
                 refresh_commit(&state);
             }
-            for (i = 0; i < 16U; ++i) REQUIRE(seen[i] == UINT32_MAX);
+            for (i = 0; i < 128U; ++i) REQUIRE(seen[i] == UINT32_MAX);
         } else if (mode == 3) {
-            sixel_delta_refresh_prepare(&state, 64, 48, 64, 1090000U, 1);
-            REQUIRE(state.selected_pixels == 3072U);
+            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1090000U, 1);
+            REQUIRE(state.selected_pixels == 16384U);
         } else if (mode == 4) {
-            sixel_delta_refresh_prepare(&state, 64, 48, 64, 1016000U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1016000U, 1);
             refresh_commit(&state);
-            sixel_delta_refresh_prepare(&state, 64, 48, 64, 1016000U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1016000U, 1);
             REQUIRE(state.selected_pixels == 0U);
         } else {
-            sixel_delta_refresh_prepare(&state, 64, 48, 64, 999999U, 1);
-            REQUIRE(state.selected_pixels == 3072U);
+            sixel_delta_refresh_prepare(&state, 128, 128, 64, 999999U, 1);
+            REQUIRE(state.selected_pixels == 16384U);
             refresh_commit(&state);
-            sixel_delta_refresh_prepare(&state, 64, 48, 64, 1015999U, 1);
-            REQUIRE(state.selected_pixels == 768U);
+            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1015999U, 1);
+            REQUIRE(state.selected_pixels == 4096U);
         }
         ok = 1;
         goto end;
@@ -154,7 +156,7 @@ test_delta_refresh(int mode)
         == SIXEL_OK);
     REQUIRE(sixel_frame_new(&frame, NULL) == SIXEL_OK);
     memset(pixels, 102, sizeof(pixels));
-    REQUIRE(sixel_frame_init_borrowed(frame, pixels, 64, 48,
+    REQUIRE(sixel_frame_init_borrowed(frame, pixels, 130, 77,
         SIXEL_PIXELFORMAT_RGB888, NULL, 0) == SIXEL_OK);
     if (mode == 8) {
         legacy_size = offsetof(sixel_playback_options_t, refresh_time_us);
@@ -193,17 +195,27 @@ test_delta_refresh(int mode)
             goto end;
         }
         REQUIRE(status == SIXEL_OK);
-        expected = tick ? 768U : 3072U;
+        expected = paint_counts[tick];
         REQUIRE(out.painted == expected);
+        REQUIRE(encoder->residual_state.selected_pixels ==
+            (tick ? expected : 0U));
         REQUIRE(encoder->residual_state.refresh_last_us == timestamp);
         changed = 0U;
-        for (i = 0; i < 3072U; ++i) {
+        for (i = 0; i < 10010U; ++i) {
+            /* Check positions as well as counts: a scaled tile has the same
+             * histogram but leaves coherent blocks in a uniform fade. */
+            rank = sixel_bn64[(((i / 130U) + 17U) & 63U) * 64U +
+                              (((i % 130U) + 37U) & 63U)];
+            expected = rank < tick * 64U ? 107U : 102U;
+            REQUIRE(encoder->accumulation_pixels[i * 3U] == expected);
             if (encoder->accumulation_pixels[i * 3U] != 102) {
                 REQUIRE(encoder->accumulation_pixels[i * 3U] == 107);
                 ++changed;
             }
         }
-        REQUIRE(changed == tick * 768U);
+        expected = 0U;
+        for (i = 1U; i <= tick; ++i) expected += paint_counts[i];
+        REQUIRE(changed == expected);
     }
     ok = 1;
 end:

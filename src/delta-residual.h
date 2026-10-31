@@ -35,9 +35,10 @@ enum sixel_delta_metric {
     SIXEL_DELTA_METRIC_RGB241 = 2
 };
 
-/* A fixed-size screen grid bounds analysis and CPU-to-GPU transfer cost.
+/* A fixed-size mask bounds analysis and CPU-to-GPU transfer cost.
  * Cell edges are floor(i * extent / grid). The inverse mapping must match
- * these edges, including when the extent is not divisible by the grid. */
+ * these edges, including when the extent is not divisible by the grid.
+ * Periodic refresh instead repeats a 64x64 pixel tile without scaling it. */
 typedef struct sixel_delta_mask {
     uint32_t cells[128];
     unsigned int columns;
@@ -45,6 +46,7 @@ typedef struct sixel_delta_mask {
     int width;
     int height;
     unsigned int threshold;
+    unsigned int tiled;
 } sixel_delta_mask_t;
 
 typedef struct sixel_delta_residual {
@@ -72,7 +74,7 @@ sixel_delta_residual_prepare(sixel_delta_residual_t *state,
     unsigned char const *valid, int width, int height,
     double threshold, unsigned int frames, unsigned int keep_threshold);
 
-/* Select cells whose staggered deadline was crossed since the last output.
+/* Select pixels whose staggered deadline was crossed since the last output.
  * No source scan, random starvation or frame-rate-dependent age is needed. */
 SIXEL_INTERNAL_API void
 sixel_delta_refresh_prepare(sixel_delta_residual_t *state,

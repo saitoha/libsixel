@@ -72,6 +72,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t sixdelta_metric;
     uint32_t residual_threshold;
     uint32_t residual_columns, residual_rows;
+    uint32_t residual_tiled;
     uint32_t residual_cells[128];
     uint32_t accumulation_result_mask_size;
     float positional_strength;
@@ -535,6 +536,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint sixdelta_metric;\n"
 "    uint residual_threshold;\n"
 "    uint residual_columns, residual_rows;\n"
+"    uint residual_tiled;\n"
 "    uint residual_cells[128];\n"
 "    uint accumulation_result_mask_size;\n"
 "    float positional_strength;\n"
@@ -771,9 +773,13 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "        db = db < 0 ? -db : db;\n"
 "        local_threshold = params.sixdelta_threshold;\n"
 "        if (params.residual_columns != 0u) {\n"
-"            cell = (((y + 1u) * params.residual_rows - 1u) /\n"
-"                params.height) * params.residual_columns +\n"
-"                ((x + 1u) * params.residual_columns - 1u) / params.width;\n"
+"            if (params.residual_tiled != 0u)\n"
+"                cell = (y & 63u) * 64u + (x & 63u);\n"
+"            else\n"
+"                cell = (((y + 1u) * params.residual_rows - 1u) /\n"
+"                    params.height) * params.residual_columns +\n"
+"                    ((x + 1u) * params.residual_columns - 1u) /\n"
+"                    params.width;\n"
 "            if ((params.residual_cells[cell / 32u] &\n"
 "                    (1u << (cell % 32u))) != 0u)\n"
 "                local_threshold = min(local_threshold,\n"
@@ -1576,6 +1582,7 @@ sixel_gpu_palette_metal_fill_params(
         if (request->residual_mask != NULL) {
             params->residual_columns = request->residual_mask->columns;
             params->residual_rows = request->residual_mask->rows;
+            params->residual_tiled = request->residual_mask->tiled;
             params->residual_threshold = request->residual_mask->threshold;
             memcpy(params->residual_cells, request->residual_mask->cells,
                    sizeof(params->residual_cells));
