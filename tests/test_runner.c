@@ -1283,6 +1283,7 @@ int test_gpupal_0018_wire_a(int argc, char **argv);
 int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
+int test_gpupal_0022_gridlut_exact(int argc, char **argv);
 int test_gpupal_0012_a_candidates(int argc, char **argv);
 int test_gpupal_0013_x_candidates(int argc, char **argv);
 int test_gpupal_0014_a_auto_strength(int argc, char **argv);
@@ -1493,6 +1494,7 @@ int test_lookup_0031_delaunay_float_distance(int argc, char **argv);
 int test_lookup_0032_delaunay_float_bulk(int argc, char **argv);
 int test_lookup_0034_delaunay_byte_bulk(int argc, char **argv);
 int test_lookup_0035_blockcull_exact(int argc, char **argv);
+int test_lookup_0037_gridlut_exact(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
@@ -5177,6 +5179,8 @@ static test_entry_t const test_entries[] = {
     { "gpu-palette/0020_direct_exact", test_gpupal_0020_direct_exact },
     { "gpu-palette/0021_blockcull_exact",
       test_gpupal_0021_blockcull_exact },
+    { "gpu-palette/0022_gridlut_exact",
+      test_gpupal_0022_gridlut_exact },
     { "gpu-palette/0012_a_candidates",
       test_gpupal_0012_a_candidates },
     { "gpu-palette/0013_x_candidates",
@@ -6486,6 +6490,8 @@ static test_entry_t const test_entries[] = {
       test_lookup_0034_delaunay_byte_bulk },
     { "lookup/0035_blockcull_exact",
       test_lookup_0035_blockcull_exact },
+    { "lookup/0037_gridlut_exact",
+      test_lookup_0037_gridlut_exact },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",

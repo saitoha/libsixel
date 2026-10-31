@@ -971,6 +971,8 @@ fhedt    -> Voronoi grid built via a 3-pass 3D EDT with optional
 .br
 delaunay -> Exact Delaunay graph walk; lowest index at distance ties.
 .br
+gridlut -> Exact RGB cell candidate lookup (float32 uses block culling)
+.br
 blockcull -> Exact scan after culling colors that cannot be nearest
              anywhere in a pixel block; lowest index at distance ties.
 .br
@@ -994,7 +996,7 @@ The lookup policies honour the following environment variables.  A matching
 command-line sub-option takes precedence:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
-fhedt, vptree, delaunay, blockcull, rbc, or mahalanobis; default auto)
+fhedt, vptree, delaunay, blockcull, gridlut, rbc, or mahalanobis; default auto)
 .br
 SIXEL_LOOKUP_PACKING (linear, morton, or hilbert; default linear) selects
 dense LUT packing for 5bit/6bit lookups; other policies ignore it.
@@ -1596,7 +1598,7 @@ clustering and working
 coordinates accept gamma, linear, Oklab, CIELAB or DIN99d independently.
 It accepts K-means, K-center, K-medoids or Heckbert (including auto selection),
 any sampling policy,
-lookup none/certlut/5bit/6bit/auto/vptree/delaunay/blockcull/rbc/mahalanobis/eytzinger/fhedt,
+lookup none/certlut/5bit/6bit/auto/vptree/delaunay/blockcull/gridlut/rbc/mahalanobis/eytzinger/fhedt,
 none, CPU spatial error diffusion (including auto), or positional dithering,
 none or Ward merge,
 cover auto/off or soft/hard, destination-aware palette snap, and RGB SIXEL output.
@@ -2737,7 +2739,7 @@ Accepts 0.0-1.0, default 0.85.
 .B SIXEL_DITHER_LOOKUP_POLICY
 .br
 select palette lookup policy (auto, 5bit, 6bit, none, certlut,
-eytzinger, fhedt, vptree, delaunay, blockcull, rbc, or mahalanobis).
+eytzinger, fhedt, vptree, delaunay, blockcull, gridlut, rbc, or mahalanobis).
 .TP 5
 .B SIXEL_LOOKUP_PACKING
 .br

@@ -1479,6 +1479,9 @@ sixel_encoder_palette_lut_name(int lut_policy)
     if (lut_policy == SIXEL_LUT_POLICY_DELAUNAY) {
         return "delaunay";
     }
+    if (lut_policy == SIXEL_LUT_POLICY_GRIDLUT) {
+        return "gridlut";
+    }
     if (lut_policy == SIXEL_LUT_POLICY_BLOCKCULL) {
         return "blockcull";
     }
@@ -1624,6 +1627,8 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
         sixel_encoder_emit_contract_code(stderr, &first, "LUT_VPTREE");
     } else if (encoder->lut_policy == SIXEL_LUT_POLICY_DELAUNAY) {
         sixel_encoder_emit_contract_code(stderr, &first, "LUT_DELAUNAY");
+    } else if (encoder->lut_policy == SIXEL_LUT_POLICY_GRIDLUT) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_GRIDLUT");
     } else if (encoder->lut_policy == SIXEL_LUT_POLICY_BLOCKCULL) {
         sixel_encoder_emit_contract_code(stderr, &first, "LUT_BLOCKCULL");
     } else if (encoder->lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
@@ -7981,6 +7986,7 @@ sixel_encoder_rgb101_restriction(sixel_encoder_t const *encoder)
     case SIXEL_LUT_POLICY_RBC:
     case SIXEL_LUT_POLICY_MAHALANOBIS:
     case SIXEL_LUT_POLICY_DELAUNAY:
+    case SIXEL_LUT_POLICY_GRIDLUT:
     case SIXEL_LUT_POLICY_BLOCKCULL:
     case SIXEL_LUT_POLICY_EYTZINGER:
     case SIXEL_LUT_POLICY_FHEDT:

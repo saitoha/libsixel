@@ -824,6 +824,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          worker affinity: -= *:pin=0|1\n"
         "      delaunay  -> exact Delaunay graph walk lookup\n"
         "      blockcull -> exact scan after per-block candidate culling\n"
+        "      gridlut -> exact RGB cell candidate lookup\n"
         "      vptree    -> VP-tree lookup built from palette entries\n"
         "      rbc       -> Random Ball Cover cluster pruning\n"
         "      mahalanobis -> exhaustive normalized scan in RBC cluster order\n"
@@ -1283,7 +1284,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "    P3: effective float precision; -X/-W accept all five spaces;\n"
         "    -Qauto|kmeans|center|medoids|heckbert; any sampling;\n"
         "    lookup none/certlut/5bit/6bit/auto/vptree/delaunay/"
-        "blockcull/rbc/mahalanobis/eytzinger/fhedt;\n"
+        "blockcull/gridlut/rbc/mahalanobis/eytzinger/fhedt;\n"
         "    binning: kmeans any, center none/exact/hard/auto,\n"
         "    medoids/heckbert none/auto;\n"
         "    none/CPU spatial or positional diffusion/auto;\n"
@@ -2405,7 +2406,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "eytzinger, fhedt, vptree, delaunay, blockcull, rbc, or "
+        "eytzinger, fhedt, vptree, delaunay, blockcull, gridlut, rbc, or "
         "mahalanobis; "
         "default is auto)."
     },

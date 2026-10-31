@@ -104,6 +104,7 @@ _lookuppolicy() {
     'vptree[VP-tree lookup built from palette entries]' \
     'delaunay[Exact Delaunay graph walk lookup]' \
     'blockcull[Exact scan after per-block candidate culling]' \
+    'gridlut[Exact RGB cell candidate lookup]' \
     'rbc[Random Ball Cover cluster pruning]' \
     'mahalanobis[RBC pruning with Mahalanobis lower bounds]'
 }

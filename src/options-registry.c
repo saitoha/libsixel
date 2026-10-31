@@ -1257,7 +1257,8 @@ static sixel_option_value_schema_t const g_lookup_values[] = {
     },
     {
         "blockcull", SIXEL_LUT_POLICY_BLOCKCULL, 0u
-    }
+    },
+    { "gridlut", SIXEL_LUT_POLICY_GRIDLUT, 0u }
 };
 
 enum {
