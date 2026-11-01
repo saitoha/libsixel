@@ -1742,6 +1742,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/gpu-palette/0021_blockcull_exact.c \
 	processing/gpu-palette/0022_gridlut_exact.c \
 	processing/gpu-palette/0023_ordered_exact.c \
+	processing/gpu-palette/ordered_state_common.c \
+	processing/gpu-palette/ordered_state_common.h \
+	processing/gpu-palette/0024_ordered_cache_transitions.c \
+	processing/gpu-palette/0025_ordered_parallel_cache.c \
+	processing/gpu-palette/0026_ordered_delta_history.c \
 	processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -1914,6 +1919,39 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/lookup/0035_blockcull_exact.c \
 	processing/lookup/0037_gridlut_exact.c \
 	processing/lookup/0039_ordered_exact.c \
+	processing/lookup/ordered/0001_ord_gamma_range.c \
+	processing/lookup/ordered/0002_ord_linear_range.c \
+	processing/lookup/ordered/0003_ord_oklab_range.c \
+	processing/lookup/ordered/0004_ord_cielab_range.c \
+	processing/lookup/ordered/0005_ord_din99d_range.c \
+	processing/lookup/ordered/0006_ord_gamma_fraction.c \
+	processing/lookup/ordered/0007_ord_linear_fraction.c \
+	processing/lookup/ordered/0008_ord_oklab_fraction.c \
+	processing/lookup/ordered/0009_ord_cielab_fraction.c \
+	processing/lookup/ordered/0010_ord_din99d_fraction.c \
+	processing/lookup/ordered/0011_ord_gamma_oracle.c \
+	processing/lookup/ordered/0012_ord_linear_oracle.c \
+	processing/lookup/ordered/0013_ord_oklab_oracle.c \
+	processing/lookup/ordered/0014_ord_cielab_oracle.c \
+	processing/lookup/ordered/0015_ord_din99d_oracle.c \
+	processing/lookup/ordered/0016_ord_gamma_oracle_large.c \
+	processing/lookup/ordered/0017_ord_linear_oracle_large.c \
+	processing/lookup/ordered/0018_ord_oklab_oracle_large.c \
+	processing/lookup/ordered/0019_ord_cielab_oracle_large.c \
+	processing/lookup/ordered/0020_ord_din99d_oracle_large.c \
+	processing/lookup/ordered/0021_ord_gamma_oracle_small.c \
+	processing/lookup/ordered/0022_ord_linear_oracle_small.c \
+	processing/lookup/ordered/0023_ord_oklab_oracle_small.c \
+	processing/lookup/ordered/0024_ord_cielab_oracle_small.c \
+	processing/lookup/ordered/0025_ord_din99d_oracle_small.c \
+	processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c \
+	processing/lookup/ordered/0027_ord_linear_oracle_mixed.c \
+	processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c \
+	processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c \
+	processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c \
+	processing/lookup/ordered/0031_ord_cielab_metric.c \
+	processing/lookup/ordered/0032_ord_din99d_metric.c \
+	processing/lookup/ordered/0033_ord_instance_isolation.c \
 	processing/dither/0001_dither_policy.c \
 	processing/dither/perturb/0018_perturb_keep_lookup.c \
 	processing/dither/perturb/0017_perturb_keep_early.c \
@@ -5697,6 +5735,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0021_blockcull_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0022_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0023_ordered_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-ordered_state_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0024_ordered_cache_transitions.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0025_ordered_parallel_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-palette/test_runner-0026_ordered_delta_history.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
@@ -5862,6 +5904,39 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0035_blockcull_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0037_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0039_ordered_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0001_ord_gamma_range.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0002_ord_linear_range.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0003_ord_oklab_range.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0004_ord_cielab_range.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0005_ord_din99d_range.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0007_ord_linear_fraction.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0012_ord_linear_oracle.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0031_ord_cielab_metric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0032_ord_din99d_metric.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/ordered/test_runner-0033_ord_instance_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0018_perturb_keep_lookup.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/perturb/test_runner-0017_perturb_keep_early.$(OBJEXT) \
@@ -10574,7 +10649,11 @@ am__depfiles_remade =  \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0021_blockcull_exact.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-0023_ordered_exact.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
+	processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po \
 	processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo \
 	processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Plo \
@@ -10749,6 +10828,39 @@ am__depfiles_remade =  \
 	processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po \
 	processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po \
 	processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Po \
+	processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Po \
 	processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po \
 	processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po \
 	processing/planner/$(DEPDIR)/test_runner-0003_default_colorspace_auto.Po \
@@ -14690,6 +14802,43 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0035_BLOCKCULL_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0037_GRIDLUT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_ORDERED_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_ORDERED_CACHE_TRANSITIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_ORDERED_PARALLEL_CACHE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_ORDERED_DELTA_HISTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ORDERED_STATE_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ORD_GAMMA_RANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ORD_LINEAR_RANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ORD_OKLAB_RANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_ORD_CIELAB_RANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_ORD_DIN99D_RANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_ORD_GAMMA_FRACTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_ORD_LINEAR_FRACTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_ORD_OKLAB_FRACTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_ORD_CIELAB_FRACTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_ORD_DIN99D_FRACTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_ORD_GAMMA_ORACLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_ORD_LINEAR_ORACLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_ORD_OKLAB_ORACLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_ORD_CIELAB_ORACLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_ORD_DIN99D_ORACLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_ORD_GAMMA_ORACLE_LARGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_ORD_LINEAR_ORACLE_LARGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_ORD_OKLAB_ORACLE_LARGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_ORD_CIELAB_ORACLE_LARGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_ORD_DIN99D_ORACLE_LARGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_ORD_GAMMA_ORACLE_SMALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_ORD_LINEAR_ORACLE_SMALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_ORD_OKLAB_ORACLE_SMALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_ORD_CIELAB_ORACLE_SMALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_ORD_DIN99D_ORACLE_SMALL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_ORD_GAMMA_ORACLE_MIXED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_ORD_LINEAR_ORACLE_MIXED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_ORD_OKLAB_ORACLE_MIXED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_ORD_CIELAB_ORACLE_MIXED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_ORD_DIN99D_ORACLE_MIXED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_ORD_CIELAB_METRIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_ORD_DIN99D_METRIC \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0033_ORD_INSTANCE_ISOLATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_COVER_ANCHOR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -18266,6 +18415,11 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0021_blockcull_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0022_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0023_ordered_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/ordered_state_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/ordered_state_common.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0024_ordered_cache_transitions.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0025_ordered_parallel_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-palette/0026_ordered_delta_history.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -18438,6 +18592,39 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0035_blockcull_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0037_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0039_ordered_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0001_ord_gamma_range.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0002_ord_linear_range.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0003_ord_oklab_range.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0004_ord_cielab_range.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0005_ord_din99d_range.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0006_ord_gamma_fraction.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0007_ord_linear_fraction.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0008_ord_oklab_fraction.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0009_ord_cielab_fraction.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0010_ord_din99d_fraction.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0011_ord_gamma_oracle.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0012_ord_linear_oracle.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0013_ord_oklab_oracle.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0014_ord_cielab_oracle.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0015_ord_din99d_oracle.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0016_ord_gamma_oracle_large.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0017_ord_linear_oracle_large.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0018_ord_oklab_oracle_large.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0019_ord_cielab_oracle_large.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0020_ord_din99d_oracle_large.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0021_ord_gamma_oracle_small.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0022_ord_linear_oracle_small.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0023_ord_oklab_oracle_small.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0024_ord_cielab_oracle_small.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0025_ord_din99d_oracle_small.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0027_ord_linear_oracle_mixed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0031_ord_cielab_metric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0032_ord_din99d_metric.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/ordered/0033_ord_instance_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0018_perturb_keep_lookup.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/perturb/0017_perturb_keep_early.c \
@@ -25825,6 +26012,18 @@ processing/gpu-palette/test_runner-0022_gridlut_exact.$(OBJEXT):  \
 processing/gpu-palette/test_runner-0023_ordered_exact.$(OBJEXT):  \
 	processing/gpu-palette/$(am__dirstamp) \
 	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-ordered_state_common.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0024_ordered_cache_transitions.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0025_ordered_parallel_cache.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+processing/gpu-palette/test_runner-0026_ordered_delta_history.$(OBJEXT):  \
+	processing/gpu-palette/$(am__dirstamp) \
+	processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 processing/gpu-dequant/$(am__dirstamp):
 	@$(MKDIR_P) processing/gpu-dequant
 	@: >>processing/gpu-dequant/$(am__dirstamp)
@@ -26404,6 +26603,111 @@ processing/lookup/test_runner-0037_gridlut_exact.$(OBJEXT):  \
 processing/lookup/test_runner-0039_ordered_exact.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/ordered
+	@: >>processing/lookup/ordered/$(am__dirstamp)
+processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/ordered/$(DEPDIR)
+	@: >>processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0001_ord_gamma_range.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0002_ord_linear_range.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0003_ord_oklab_range.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0004_ord_cielab_range.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0005_ord_din99d_range.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0007_ord_linear_fraction.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0012_ord_linear_oracle.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0031_ord_cielab_metric.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0032_ord_din99d_metric.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/ordered/test_runner-0033_ord_instance_isolation.$(OBJEXT):  \
+	processing/lookup/ordered/$(am__dirstamp) \
+	processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
 processing/dither/$(am__dirstamp):
 	@$(MKDIR_P) processing/dither
 	@: >>processing/dither/$(am__dirstamp)
@@ -33534,6 +33838,7 @@ mostlyclean-compile:
 	-rm -f processing/lookup/fhedt_weight/*.$(OBJEXT)
 	-rm -f processing/lookup/mahalanobis/*.$(OBJEXT)
 	-rm -f processing/lookup/mono_float/*.$(OBJEXT)
+	-rm -f processing/lookup/ordered/*.$(OBJEXT)
 	-rm -f processing/planner/*.$(OBJEXT)
 	-rm -f processing/precision/*.$(OBJEXT)
 	-rm -f processing/progressive/*.$(OBJEXT)
@@ -36045,7 +36350,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0021_blockcull_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0022_gridlut_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0023_ordered_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0018_lookup_float_batch_exact.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/libfloatlookuptests_la-0019_lookup_float_simd_distance.Plo@am__quote@ # am--include-marker
@@ -36220,6 +36529,39 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0008_encoder_dark.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0009_encoder_light.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/mono_float/$(DEPDIR)/test_runner-0010_encoder_fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0001_resize_linear_float32.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0002_resize_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/planner/$(DEPDIR)/test_runner-0003_default_colorspace_auto.Po@am__quote@ # am--include-marker
@@ -59510,6 +59852,62 @@ processing/gpu-palette/test_runner-0023_ordered_exact.obj: processing/gpu-palett
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0023_ordered_exact.obj `if test -f 'processing/gpu-palette/0023_ordered_exact.c'; then $(CYGPATH_W) 'processing/gpu-palette/0023_ordered_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0023_ordered_exact.c'; fi`
 
+processing/gpu-palette/test_runner-ordered_state_common.o: processing/gpu-palette/ordered_state_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-ordered_state_common.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Tpo -c -o processing/gpu-palette/test_runner-ordered_state_common.o `test -f 'processing/gpu-palette/ordered_state_common.c' || echo '$(srcdir)/'`processing/gpu-palette/ordered_state_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/ordered_state_common.c' object='processing/gpu-palette/test_runner-ordered_state_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-ordered_state_common.o `test -f 'processing/gpu-palette/ordered_state_common.c' || echo '$(srcdir)/'`processing/gpu-palette/ordered_state_common.c
+
+processing/gpu-palette/test_runner-ordered_state_common.obj: processing/gpu-palette/ordered_state_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-ordered_state_common.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Tpo -c -o processing/gpu-palette/test_runner-ordered_state_common.obj `if test -f 'processing/gpu-palette/ordered_state_common.c'; then $(CYGPATH_W) 'processing/gpu-palette/ordered_state_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/ordered_state_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/ordered_state_common.c' object='processing/gpu-palette/test_runner-ordered_state_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-ordered_state_common.obj `if test -f 'processing/gpu-palette/ordered_state_common.c'; then $(CYGPATH_W) 'processing/gpu-palette/ordered_state_common.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/ordered_state_common.c'; fi`
+
+processing/gpu-palette/test_runner-0024_ordered_cache_transitions.o: processing/gpu-palette/0024_ordered_cache_transitions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0024_ordered_cache_transitions.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Tpo -c -o processing/gpu-palette/test_runner-0024_ordered_cache_transitions.o `test -f 'processing/gpu-palette/0024_ordered_cache_transitions.c' || echo '$(srcdir)/'`processing/gpu-palette/0024_ordered_cache_transitions.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0024_ordered_cache_transitions.c' object='processing/gpu-palette/test_runner-0024_ordered_cache_transitions.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0024_ordered_cache_transitions.o `test -f 'processing/gpu-palette/0024_ordered_cache_transitions.c' || echo '$(srcdir)/'`processing/gpu-palette/0024_ordered_cache_transitions.c
+
+processing/gpu-palette/test_runner-0024_ordered_cache_transitions.obj: processing/gpu-palette/0024_ordered_cache_transitions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0024_ordered_cache_transitions.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Tpo -c -o processing/gpu-palette/test_runner-0024_ordered_cache_transitions.obj `if test -f 'processing/gpu-palette/0024_ordered_cache_transitions.c'; then $(CYGPATH_W) 'processing/gpu-palette/0024_ordered_cache_transitions.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0024_ordered_cache_transitions.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0024_ordered_cache_transitions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0024_ordered_cache_transitions.c' object='processing/gpu-palette/test_runner-0024_ordered_cache_transitions.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0024_ordered_cache_transitions.obj `if test -f 'processing/gpu-palette/0024_ordered_cache_transitions.c'; then $(CYGPATH_W) 'processing/gpu-palette/0024_ordered_cache_transitions.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0024_ordered_cache_transitions.c'; fi`
+
+processing/gpu-palette/test_runner-0025_ordered_parallel_cache.o: processing/gpu-palette/0025_ordered_parallel_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0025_ordered_parallel_cache.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Tpo -c -o processing/gpu-palette/test_runner-0025_ordered_parallel_cache.o `test -f 'processing/gpu-palette/0025_ordered_parallel_cache.c' || echo '$(srcdir)/'`processing/gpu-palette/0025_ordered_parallel_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0025_ordered_parallel_cache.c' object='processing/gpu-palette/test_runner-0025_ordered_parallel_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0025_ordered_parallel_cache.o `test -f 'processing/gpu-palette/0025_ordered_parallel_cache.c' || echo '$(srcdir)/'`processing/gpu-palette/0025_ordered_parallel_cache.c
+
+processing/gpu-palette/test_runner-0025_ordered_parallel_cache.obj: processing/gpu-palette/0025_ordered_parallel_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0025_ordered_parallel_cache.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Tpo -c -o processing/gpu-palette/test_runner-0025_ordered_parallel_cache.obj `if test -f 'processing/gpu-palette/0025_ordered_parallel_cache.c'; then $(CYGPATH_W) 'processing/gpu-palette/0025_ordered_parallel_cache.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0025_ordered_parallel_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0025_ordered_parallel_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0025_ordered_parallel_cache.c' object='processing/gpu-palette/test_runner-0025_ordered_parallel_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0025_ordered_parallel_cache.obj `if test -f 'processing/gpu-palette/0025_ordered_parallel_cache.c'; then $(CYGPATH_W) 'processing/gpu-palette/0025_ordered_parallel_cache.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0025_ordered_parallel_cache.c'; fi`
+
+processing/gpu-palette/test_runner-0026_ordered_delta_history.o: processing/gpu-palette/0026_ordered_delta_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0026_ordered_delta_history.o -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Tpo -c -o processing/gpu-palette/test_runner-0026_ordered_delta_history.o `test -f 'processing/gpu-palette/0026_ordered_delta_history.c' || echo '$(srcdir)/'`processing/gpu-palette/0026_ordered_delta_history.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0026_ordered_delta_history.c' object='processing/gpu-palette/test_runner-0026_ordered_delta_history.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0026_ordered_delta_history.o `test -f 'processing/gpu-palette/0026_ordered_delta_history.c' || echo '$(srcdir)/'`processing/gpu-palette/0026_ordered_delta_history.c
+
+processing/gpu-palette/test_runner-0026_ordered_delta_history.obj: processing/gpu-palette/0026_ordered_delta_history.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-palette/test_runner-0026_ordered_delta_history.obj -MD -MP -MF processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Tpo -c -o processing/gpu-palette/test_runner-0026_ordered_delta_history.obj `if test -f 'processing/gpu-palette/0026_ordered_delta_history.c'; then $(CYGPATH_W) 'processing/gpu-palette/0026_ordered_delta_history.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0026_ordered_delta_history.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Tpo processing/gpu-palette/$(DEPDIR)/test_runner-0026_ordered_delta_history.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/gpu-palette/0026_ordered_delta_history.c' object='processing/gpu-palette/test_runner-0026_ordered_delta_history.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/gpu-palette/test_runner-0026_ordered_delta_history.obj `if test -f 'processing/gpu-palette/0026_ordered_delta_history.c'; then $(CYGPATH_W) 'processing/gpu-palette/0026_ordered_delta_history.c'; else $(CYGPATH_W) '$(srcdir)/processing/gpu-palette/0026_ordered_delta_history.c'; fi`
+
 processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o: processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o -MD -MP -MF processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo -c -o processing/gpu-dequant/test_runner-0001_gpu_dequant_threshold_strtoul.o `test -f 'processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c' || echo '$(srcdir)/'`processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Tpo processing/gpu-dequant/$(DEPDIR)/test_runner-0001_gpu_dequant_threshold_strtoul.Po
@@ -61819,6 +62217,468 @@ processing/lookup/test_runner-0039_ordered_exact.obj: processing/lookup/0039_ord
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0039_ordered_exact.c' object='processing/lookup/test_runner-0039_ordered_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0039_ordered_exact.obj `if test -f 'processing/lookup/0039_ordered_exact.c'; then $(CYGPATH_W) 'processing/lookup/0039_ordered_exact.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0039_ordered_exact.c'; fi`
+
+processing/lookup/ordered/test_runner-0001_ord_gamma_range.o: processing/lookup/ordered/0001_ord_gamma_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0001_ord_gamma_range.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Tpo -c -o processing/lookup/ordered/test_runner-0001_ord_gamma_range.o `test -f 'processing/lookup/ordered/0001_ord_gamma_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0001_ord_gamma_range.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0001_ord_gamma_range.c' object='processing/lookup/ordered/test_runner-0001_ord_gamma_range.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0001_ord_gamma_range.o `test -f 'processing/lookup/ordered/0001_ord_gamma_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0001_ord_gamma_range.c
+
+processing/lookup/ordered/test_runner-0001_ord_gamma_range.obj: processing/lookup/ordered/0001_ord_gamma_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0001_ord_gamma_range.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Tpo -c -o processing/lookup/ordered/test_runner-0001_ord_gamma_range.obj `if test -f 'processing/lookup/ordered/0001_ord_gamma_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0001_ord_gamma_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0001_ord_gamma_range.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0001_ord_gamma_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0001_ord_gamma_range.c' object='processing/lookup/ordered/test_runner-0001_ord_gamma_range.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0001_ord_gamma_range.obj `if test -f 'processing/lookup/ordered/0001_ord_gamma_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0001_ord_gamma_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0001_ord_gamma_range.c'; fi`
+
+processing/lookup/ordered/test_runner-0002_ord_linear_range.o: processing/lookup/ordered/0002_ord_linear_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0002_ord_linear_range.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Tpo -c -o processing/lookup/ordered/test_runner-0002_ord_linear_range.o `test -f 'processing/lookup/ordered/0002_ord_linear_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0002_ord_linear_range.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0002_ord_linear_range.c' object='processing/lookup/ordered/test_runner-0002_ord_linear_range.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0002_ord_linear_range.o `test -f 'processing/lookup/ordered/0002_ord_linear_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0002_ord_linear_range.c
+
+processing/lookup/ordered/test_runner-0002_ord_linear_range.obj: processing/lookup/ordered/0002_ord_linear_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0002_ord_linear_range.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Tpo -c -o processing/lookup/ordered/test_runner-0002_ord_linear_range.obj `if test -f 'processing/lookup/ordered/0002_ord_linear_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0002_ord_linear_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0002_ord_linear_range.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0002_ord_linear_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0002_ord_linear_range.c' object='processing/lookup/ordered/test_runner-0002_ord_linear_range.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0002_ord_linear_range.obj `if test -f 'processing/lookup/ordered/0002_ord_linear_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0002_ord_linear_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0002_ord_linear_range.c'; fi`
+
+processing/lookup/ordered/test_runner-0003_ord_oklab_range.o: processing/lookup/ordered/0003_ord_oklab_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0003_ord_oklab_range.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Tpo -c -o processing/lookup/ordered/test_runner-0003_ord_oklab_range.o `test -f 'processing/lookup/ordered/0003_ord_oklab_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0003_ord_oklab_range.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0003_ord_oklab_range.c' object='processing/lookup/ordered/test_runner-0003_ord_oklab_range.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0003_ord_oklab_range.o `test -f 'processing/lookup/ordered/0003_ord_oklab_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0003_ord_oklab_range.c
+
+processing/lookup/ordered/test_runner-0003_ord_oklab_range.obj: processing/lookup/ordered/0003_ord_oklab_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0003_ord_oklab_range.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Tpo -c -o processing/lookup/ordered/test_runner-0003_ord_oklab_range.obj `if test -f 'processing/lookup/ordered/0003_ord_oklab_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0003_ord_oklab_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0003_ord_oklab_range.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0003_ord_oklab_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0003_ord_oklab_range.c' object='processing/lookup/ordered/test_runner-0003_ord_oklab_range.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0003_ord_oklab_range.obj `if test -f 'processing/lookup/ordered/0003_ord_oklab_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0003_ord_oklab_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0003_ord_oklab_range.c'; fi`
+
+processing/lookup/ordered/test_runner-0004_ord_cielab_range.o: processing/lookup/ordered/0004_ord_cielab_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0004_ord_cielab_range.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Tpo -c -o processing/lookup/ordered/test_runner-0004_ord_cielab_range.o `test -f 'processing/lookup/ordered/0004_ord_cielab_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0004_ord_cielab_range.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0004_ord_cielab_range.c' object='processing/lookup/ordered/test_runner-0004_ord_cielab_range.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0004_ord_cielab_range.o `test -f 'processing/lookup/ordered/0004_ord_cielab_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0004_ord_cielab_range.c
+
+processing/lookup/ordered/test_runner-0004_ord_cielab_range.obj: processing/lookup/ordered/0004_ord_cielab_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0004_ord_cielab_range.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Tpo -c -o processing/lookup/ordered/test_runner-0004_ord_cielab_range.obj `if test -f 'processing/lookup/ordered/0004_ord_cielab_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0004_ord_cielab_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0004_ord_cielab_range.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0004_ord_cielab_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0004_ord_cielab_range.c' object='processing/lookup/ordered/test_runner-0004_ord_cielab_range.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0004_ord_cielab_range.obj `if test -f 'processing/lookup/ordered/0004_ord_cielab_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0004_ord_cielab_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0004_ord_cielab_range.c'; fi`
+
+processing/lookup/ordered/test_runner-0005_ord_din99d_range.o: processing/lookup/ordered/0005_ord_din99d_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0005_ord_din99d_range.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Tpo -c -o processing/lookup/ordered/test_runner-0005_ord_din99d_range.o `test -f 'processing/lookup/ordered/0005_ord_din99d_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0005_ord_din99d_range.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0005_ord_din99d_range.c' object='processing/lookup/ordered/test_runner-0005_ord_din99d_range.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0005_ord_din99d_range.o `test -f 'processing/lookup/ordered/0005_ord_din99d_range.c' || echo '$(srcdir)/'`processing/lookup/ordered/0005_ord_din99d_range.c
+
+processing/lookup/ordered/test_runner-0005_ord_din99d_range.obj: processing/lookup/ordered/0005_ord_din99d_range.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0005_ord_din99d_range.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Tpo -c -o processing/lookup/ordered/test_runner-0005_ord_din99d_range.obj `if test -f 'processing/lookup/ordered/0005_ord_din99d_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0005_ord_din99d_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0005_ord_din99d_range.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0005_ord_din99d_range.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0005_ord_din99d_range.c' object='processing/lookup/ordered/test_runner-0005_ord_din99d_range.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0005_ord_din99d_range.obj `if test -f 'processing/lookup/ordered/0005_ord_din99d_range.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0005_ord_din99d_range.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0005_ord_din99d_range.c'; fi`
+
+processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.o: processing/lookup/ordered/0006_ord_gamma_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.o `test -f 'processing/lookup/ordered/0006_ord_gamma_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0006_ord_gamma_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0006_ord_gamma_fraction.c' object='processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.o `test -f 'processing/lookup/ordered/0006_ord_gamma_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0006_ord_gamma_fraction.c
+
+processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.obj: processing/lookup/ordered/0006_ord_gamma_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.obj `if test -f 'processing/lookup/ordered/0006_ord_gamma_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0006_ord_gamma_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0006_ord_gamma_fraction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0006_ord_gamma_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0006_ord_gamma_fraction.c' object='processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0006_ord_gamma_fraction.obj `if test -f 'processing/lookup/ordered/0006_ord_gamma_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0006_ord_gamma_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0006_ord_gamma_fraction.c'; fi`
+
+processing/lookup/ordered/test_runner-0007_ord_linear_fraction.o: processing/lookup/ordered/0007_ord_linear_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0007_ord_linear_fraction.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0007_ord_linear_fraction.o `test -f 'processing/lookup/ordered/0007_ord_linear_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0007_ord_linear_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0007_ord_linear_fraction.c' object='processing/lookup/ordered/test_runner-0007_ord_linear_fraction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0007_ord_linear_fraction.o `test -f 'processing/lookup/ordered/0007_ord_linear_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0007_ord_linear_fraction.c
+
+processing/lookup/ordered/test_runner-0007_ord_linear_fraction.obj: processing/lookup/ordered/0007_ord_linear_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0007_ord_linear_fraction.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0007_ord_linear_fraction.obj `if test -f 'processing/lookup/ordered/0007_ord_linear_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0007_ord_linear_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0007_ord_linear_fraction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0007_ord_linear_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0007_ord_linear_fraction.c' object='processing/lookup/ordered/test_runner-0007_ord_linear_fraction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0007_ord_linear_fraction.obj `if test -f 'processing/lookup/ordered/0007_ord_linear_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0007_ord_linear_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0007_ord_linear_fraction.c'; fi`
+
+processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.o: processing/lookup/ordered/0008_ord_oklab_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.o `test -f 'processing/lookup/ordered/0008_ord_oklab_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0008_ord_oklab_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0008_ord_oklab_fraction.c' object='processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.o `test -f 'processing/lookup/ordered/0008_ord_oklab_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0008_ord_oklab_fraction.c
+
+processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.obj: processing/lookup/ordered/0008_ord_oklab_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.obj `if test -f 'processing/lookup/ordered/0008_ord_oklab_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0008_ord_oklab_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0008_ord_oklab_fraction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0008_ord_oklab_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0008_ord_oklab_fraction.c' object='processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0008_ord_oklab_fraction.obj `if test -f 'processing/lookup/ordered/0008_ord_oklab_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0008_ord_oklab_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0008_ord_oklab_fraction.c'; fi`
+
+processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.o: processing/lookup/ordered/0009_ord_cielab_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.o `test -f 'processing/lookup/ordered/0009_ord_cielab_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0009_ord_cielab_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0009_ord_cielab_fraction.c' object='processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.o `test -f 'processing/lookup/ordered/0009_ord_cielab_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0009_ord_cielab_fraction.c
+
+processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.obj: processing/lookup/ordered/0009_ord_cielab_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.obj `if test -f 'processing/lookup/ordered/0009_ord_cielab_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0009_ord_cielab_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0009_ord_cielab_fraction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0009_ord_cielab_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0009_ord_cielab_fraction.c' object='processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0009_ord_cielab_fraction.obj `if test -f 'processing/lookup/ordered/0009_ord_cielab_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0009_ord_cielab_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0009_ord_cielab_fraction.c'; fi`
+
+processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.o: processing/lookup/ordered/0010_ord_din99d_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.o `test -f 'processing/lookup/ordered/0010_ord_din99d_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0010_ord_din99d_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0010_ord_din99d_fraction.c' object='processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.o `test -f 'processing/lookup/ordered/0010_ord_din99d_fraction.c' || echo '$(srcdir)/'`processing/lookup/ordered/0010_ord_din99d_fraction.c
+
+processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.obj: processing/lookup/ordered/0010_ord_din99d_fraction.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Tpo -c -o processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.obj `if test -f 'processing/lookup/ordered/0010_ord_din99d_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0010_ord_din99d_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0010_ord_din99d_fraction.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0010_ord_din99d_fraction.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0010_ord_din99d_fraction.c' object='processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0010_ord_din99d_fraction.obj `if test -f 'processing/lookup/ordered/0010_ord_din99d_fraction.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0010_ord_din99d_fraction.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0010_ord_din99d_fraction.c'; fi`
+
+processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.o: processing/lookup/ordered/0011_ord_gamma_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.o `test -f 'processing/lookup/ordered/0011_ord_gamma_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0011_ord_gamma_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0011_ord_gamma_oracle.c' object='processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.o `test -f 'processing/lookup/ordered/0011_ord_gamma_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0011_ord_gamma_oracle.c
+
+processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.obj: processing/lookup/ordered/0011_ord_gamma_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.obj `if test -f 'processing/lookup/ordered/0011_ord_gamma_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0011_ord_gamma_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0011_ord_gamma_oracle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0011_ord_gamma_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0011_ord_gamma_oracle.c' object='processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0011_ord_gamma_oracle.obj `if test -f 'processing/lookup/ordered/0011_ord_gamma_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0011_ord_gamma_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0011_ord_gamma_oracle.c'; fi`
+
+processing/lookup/ordered/test_runner-0012_ord_linear_oracle.o: processing/lookup/ordered/0012_ord_linear_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0012_ord_linear_oracle.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0012_ord_linear_oracle.o `test -f 'processing/lookup/ordered/0012_ord_linear_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0012_ord_linear_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0012_ord_linear_oracle.c' object='processing/lookup/ordered/test_runner-0012_ord_linear_oracle.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0012_ord_linear_oracle.o `test -f 'processing/lookup/ordered/0012_ord_linear_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0012_ord_linear_oracle.c
+
+processing/lookup/ordered/test_runner-0012_ord_linear_oracle.obj: processing/lookup/ordered/0012_ord_linear_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0012_ord_linear_oracle.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0012_ord_linear_oracle.obj `if test -f 'processing/lookup/ordered/0012_ord_linear_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0012_ord_linear_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0012_ord_linear_oracle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0012_ord_linear_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0012_ord_linear_oracle.c' object='processing/lookup/ordered/test_runner-0012_ord_linear_oracle.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0012_ord_linear_oracle.obj `if test -f 'processing/lookup/ordered/0012_ord_linear_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0012_ord_linear_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0012_ord_linear_oracle.c'; fi`
+
+processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.o: processing/lookup/ordered/0013_ord_oklab_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.o `test -f 'processing/lookup/ordered/0013_ord_oklab_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0013_ord_oklab_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0013_ord_oklab_oracle.c' object='processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.o `test -f 'processing/lookup/ordered/0013_ord_oklab_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0013_ord_oklab_oracle.c
+
+processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.obj: processing/lookup/ordered/0013_ord_oklab_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.obj `if test -f 'processing/lookup/ordered/0013_ord_oklab_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0013_ord_oklab_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0013_ord_oklab_oracle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0013_ord_oklab_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0013_ord_oklab_oracle.c' object='processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0013_ord_oklab_oracle.obj `if test -f 'processing/lookup/ordered/0013_ord_oklab_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0013_ord_oklab_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0013_ord_oklab_oracle.c'; fi`
+
+processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.o: processing/lookup/ordered/0014_ord_cielab_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.o `test -f 'processing/lookup/ordered/0014_ord_cielab_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0014_ord_cielab_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0014_ord_cielab_oracle.c' object='processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.o `test -f 'processing/lookup/ordered/0014_ord_cielab_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0014_ord_cielab_oracle.c
+
+processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.obj: processing/lookup/ordered/0014_ord_cielab_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.obj `if test -f 'processing/lookup/ordered/0014_ord_cielab_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0014_ord_cielab_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0014_ord_cielab_oracle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0014_ord_cielab_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0014_ord_cielab_oracle.c' object='processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0014_ord_cielab_oracle.obj `if test -f 'processing/lookup/ordered/0014_ord_cielab_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0014_ord_cielab_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0014_ord_cielab_oracle.c'; fi`
+
+processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.o: processing/lookup/ordered/0015_ord_din99d_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.o `test -f 'processing/lookup/ordered/0015_ord_din99d_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0015_ord_din99d_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0015_ord_din99d_oracle.c' object='processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.o `test -f 'processing/lookup/ordered/0015_ord_din99d_oracle.c' || echo '$(srcdir)/'`processing/lookup/ordered/0015_ord_din99d_oracle.c
+
+processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.obj: processing/lookup/ordered/0015_ord_din99d_oracle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Tpo -c -o processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.obj `if test -f 'processing/lookup/ordered/0015_ord_din99d_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0015_ord_din99d_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0015_ord_din99d_oracle.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0015_ord_din99d_oracle.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0015_ord_din99d_oracle.c' object='processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0015_ord_din99d_oracle.obj `if test -f 'processing/lookup/ordered/0015_ord_din99d_oracle.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0015_ord_din99d_oracle.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0015_ord_din99d_oracle.c'; fi`
+
+processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.o: processing/lookup/ordered/0016_ord_gamma_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.o `test -f 'processing/lookup/ordered/0016_ord_gamma_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0016_ord_gamma_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0016_ord_gamma_oracle_large.c' object='processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.o `test -f 'processing/lookup/ordered/0016_ord_gamma_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0016_ord_gamma_oracle_large.c
+
+processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.obj: processing/lookup/ordered/0016_ord_gamma_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.obj `if test -f 'processing/lookup/ordered/0016_ord_gamma_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0016_ord_gamma_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0016_ord_gamma_oracle_large.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0016_ord_gamma_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0016_ord_gamma_oracle_large.c' object='processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0016_ord_gamma_oracle_large.obj `if test -f 'processing/lookup/ordered/0016_ord_gamma_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0016_ord_gamma_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0016_ord_gamma_oracle_large.c'; fi`
+
+processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.o: processing/lookup/ordered/0017_ord_linear_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.o `test -f 'processing/lookup/ordered/0017_ord_linear_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0017_ord_linear_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0017_ord_linear_oracle_large.c' object='processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.o `test -f 'processing/lookup/ordered/0017_ord_linear_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0017_ord_linear_oracle_large.c
+
+processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.obj: processing/lookup/ordered/0017_ord_linear_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.obj `if test -f 'processing/lookup/ordered/0017_ord_linear_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0017_ord_linear_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0017_ord_linear_oracle_large.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0017_ord_linear_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0017_ord_linear_oracle_large.c' object='processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0017_ord_linear_oracle_large.obj `if test -f 'processing/lookup/ordered/0017_ord_linear_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0017_ord_linear_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0017_ord_linear_oracle_large.c'; fi`
+
+processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.o: processing/lookup/ordered/0018_ord_oklab_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.o `test -f 'processing/lookup/ordered/0018_ord_oklab_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0018_ord_oklab_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0018_ord_oklab_oracle_large.c' object='processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.o `test -f 'processing/lookup/ordered/0018_ord_oklab_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0018_ord_oklab_oracle_large.c
+
+processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.obj: processing/lookup/ordered/0018_ord_oklab_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.obj `if test -f 'processing/lookup/ordered/0018_ord_oklab_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0018_ord_oklab_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0018_ord_oklab_oracle_large.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0018_ord_oklab_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0018_ord_oklab_oracle_large.c' object='processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0018_ord_oklab_oracle_large.obj `if test -f 'processing/lookup/ordered/0018_ord_oklab_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0018_ord_oklab_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0018_ord_oklab_oracle_large.c'; fi`
+
+processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.o: processing/lookup/ordered/0019_ord_cielab_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.o `test -f 'processing/lookup/ordered/0019_ord_cielab_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0019_ord_cielab_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0019_ord_cielab_oracle_large.c' object='processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.o `test -f 'processing/lookup/ordered/0019_ord_cielab_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0019_ord_cielab_oracle_large.c
+
+processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.obj: processing/lookup/ordered/0019_ord_cielab_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.obj `if test -f 'processing/lookup/ordered/0019_ord_cielab_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0019_ord_cielab_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0019_ord_cielab_oracle_large.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0019_ord_cielab_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0019_ord_cielab_oracle_large.c' object='processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0019_ord_cielab_oracle_large.obj `if test -f 'processing/lookup/ordered/0019_ord_cielab_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0019_ord_cielab_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0019_ord_cielab_oracle_large.c'; fi`
+
+processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.o: processing/lookup/ordered/0020_ord_din99d_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.o `test -f 'processing/lookup/ordered/0020_ord_din99d_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0020_ord_din99d_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0020_ord_din99d_oracle_large.c' object='processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.o `test -f 'processing/lookup/ordered/0020_ord_din99d_oracle_large.c' || echo '$(srcdir)/'`processing/lookup/ordered/0020_ord_din99d_oracle_large.c
+
+processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.obj: processing/lookup/ordered/0020_ord_din99d_oracle_large.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Tpo -c -o processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.obj `if test -f 'processing/lookup/ordered/0020_ord_din99d_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0020_ord_din99d_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0020_ord_din99d_oracle_large.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0020_ord_din99d_oracle_large.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0020_ord_din99d_oracle_large.c' object='processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0020_ord_din99d_oracle_large.obj `if test -f 'processing/lookup/ordered/0020_ord_din99d_oracle_large.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0020_ord_din99d_oracle_large.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0020_ord_din99d_oracle_large.c'; fi`
+
+processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.o: processing/lookup/ordered/0021_ord_gamma_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.o `test -f 'processing/lookup/ordered/0021_ord_gamma_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0021_ord_gamma_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0021_ord_gamma_oracle_small.c' object='processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.o `test -f 'processing/lookup/ordered/0021_ord_gamma_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0021_ord_gamma_oracle_small.c
+
+processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.obj: processing/lookup/ordered/0021_ord_gamma_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.obj `if test -f 'processing/lookup/ordered/0021_ord_gamma_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0021_ord_gamma_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0021_ord_gamma_oracle_small.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0021_ord_gamma_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0021_ord_gamma_oracle_small.c' object='processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0021_ord_gamma_oracle_small.obj `if test -f 'processing/lookup/ordered/0021_ord_gamma_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0021_ord_gamma_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0021_ord_gamma_oracle_small.c'; fi`
+
+processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.o: processing/lookup/ordered/0022_ord_linear_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.o `test -f 'processing/lookup/ordered/0022_ord_linear_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0022_ord_linear_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0022_ord_linear_oracle_small.c' object='processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.o `test -f 'processing/lookup/ordered/0022_ord_linear_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0022_ord_linear_oracle_small.c
+
+processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.obj: processing/lookup/ordered/0022_ord_linear_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.obj `if test -f 'processing/lookup/ordered/0022_ord_linear_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0022_ord_linear_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0022_ord_linear_oracle_small.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0022_ord_linear_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0022_ord_linear_oracle_small.c' object='processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0022_ord_linear_oracle_small.obj `if test -f 'processing/lookup/ordered/0022_ord_linear_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0022_ord_linear_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0022_ord_linear_oracle_small.c'; fi`
+
+processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.o: processing/lookup/ordered/0023_ord_oklab_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.o `test -f 'processing/lookup/ordered/0023_ord_oklab_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0023_ord_oklab_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0023_ord_oklab_oracle_small.c' object='processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.o `test -f 'processing/lookup/ordered/0023_ord_oklab_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0023_ord_oklab_oracle_small.c
+
+processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.obj: processing/lookup/ordered/0023_ord_oklab_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.obj `if test -f 'processing/lookup/ordered/0023_ord_oklab_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0023_ord_oklab_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0023_ord_oklab_oracle_small.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0023_ord_oklab_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0023_ord_oklab_oracle_small.c' object='processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0023_ord_oklab_oracle_small.obj `if test -f 'processing/lookup/ordered/0023_ord_oklab_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0023_ord_oklab_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0023_ord_oklab_oracle_small.c'; fi`
+
+processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.o: processing/lookup/ordered/0024_ord_cielab_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.o `test -f 'processing/lookup/ordered/0024_ord_cielab_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0024_ord_cielab_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0024_ord_cielab_oracle_small.c' object='processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.o `test -f 'processing/lookup/ordered/0024_ord_cielab_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0024_ord_cielab_oracle_small.c
+
+processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.obj: processing/lookup/ordered/0024_ord_cielab_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.obj `if test -f 'processing/lookup/ordered/0024_ord_cielab_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0024_ord_cielab_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0024_ord_cielab_oracle_small.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0024_ord_cielab_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0024_ord_cielab_oracle_small.c' object='processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0024_ord_cielab_oracle_small.obj `if test -f 'processing/lookup/ordered/0024_ord_cielab_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0024_ord_cielab_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0024_ord_cielab_oracle_small.c'; fi`
+
+processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.o: processing/lookup/ordered/0025_ord_din99d_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.o `test -f 'processing/lookup/ordered/0025_ord_din99d_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0025_ord_din99d_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0025_ord_din99d_oracle_small.c' object='processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.o `test -f 'processing/lookup/ordered/0025_ord_din99d_oracle_small.c' || echo '$(srcdir)/'`processing/lookup/ordered/0025_ord_din99d_oracle_small.c
+
+processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.obj: processing/lookup/ordered/0025_ord_din99d_oracle_small.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Tpo -c -o processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.obj `if test -f 'processing/lookup/ordered/0025_ord_din99d_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0025_ord_din99d_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0025_ord_din99d_oracle_small.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0025_ord_din99d_oracle_small.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0025_ord_din99d_oracle_small.c' object='processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0025_ord_din99d_oracle_small.obj `if test -f 'processing/lookup/ordered/0025_ord_din99d_oracle_small.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0025_ord_din99d_oracle_small.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0025_ord_din99d_oracle_small.c'; fi`
+
+processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.o: processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.o `test -f 'processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.o `test -f 'processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c
+
+processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.obj: processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0026_ord_gamma_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0026_ord_gamma_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c'; fi`
+
+processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.o: processing/lookup/ordered/0027_ord_linear_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.o `test -f 'processing/lookup/ordered/0027_ord_linear_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0027_ord_linear_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0027_ord_linear_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.o `test -f 'processing/lookup/ordered/0027_ord_linear_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0027_ord_linear_oracle_mixed.c
+
+processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.obj: processing/lookup/ordered/0027_ord_linear_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0027_ord_linear_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0027_ord_linear_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0027_ord_linear_oracle_mixed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0027_ord_linear_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0027_ord_linear_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0027_ord_linear_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0027_ord_linear_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0027_ord_linear_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0027_ord_linear_oracle_mixed.c'; fi`
+
+processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.o: processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.o `test -f 'processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.o `test -f 'processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c
+
+processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.obj: processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0028_ord_oklab_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0028_ord_oklab_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c'; fi`
+
+processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.o: processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.o `test -f 'processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.o `test -f 'processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c
+
+processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.obj: processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0029_ord_cielab_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0029_ord_cielab_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c'; fi`
+
+processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.o: processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.o `test -f 'processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.o `test -f 'processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c' || echo '$(srcdir)/'`processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c
+
+processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.obj: processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Tpo -c -o processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0030_ord_din99d_oracle_mixed.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c' object='processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0030_ord_din99d_oracle_mixed.obj `if test -f 'processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c'; fi`
+
+processing/lookup/ordered/test_runner-0031_ord_cielab_metric.o: processing/lookup/ordered/0031_ord_cielab_metric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0031_ord_cielab_metric.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Tpo -c -o processing/lookup/ordered/test_runner-0031_ord_cielab_metric.o `test -f 'processing/lookup/ordered/0031_ord_cielab_metric.c' || echo '$(srcdir)/'`processing/lookup/ordered/0031_ord_cielab_metric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0031_ord_cielab_metric.c' object='processing/lookup/ordered/test_runner-0031_ord_cielab_metric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0031_ord_cielab_metric.o `test -f 'processing/lookup/ordered/0031_ord_cielab_metric.c' || echo '$(srcdir)/'`processing/lookup/ordered/0031_ord_cielab_metric.c
+
+processing/lookup/ordered/test_runner-0031_ord_cielab_metric.obj: processing/lookup/ordered/0031_ord_cielab_metric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0031_ord_cielab_metric.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Tpo -c -o processing/lookup/ordered/test_runner-0031_ord_cielab_metric.obj `if test -f 'processing/lookup/ordered/0031_ord_cielab_metric.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0031_ord_cielab_metric.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0031_ord_cielab_metric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0031_ord_cielab_metric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0031_ord_cielab_metric.c' object='processing/lookup/ordered/test_runner-0031_ord_cielab_metric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0031_ord_cielab_metric.obj `if test -f 'processing/lookup/ordered/0031_ord_cielab_metric.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0031_ord_cielab_metric.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0031_ord_cielab_metric.c'; fi`
+
+processing/lookup/ordered/test_runner-0032_ord_din99d_metric.o: processing/lookup/ordered/0032_ord_din99d_metric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0032_ord_din99d_metric.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Tpo -c -o processing/lookup/ordered/test_runner-0032_ord_din99d_metric.o `test -f 'processing/lookup/ordered/0032_ord_din99d_metric.c' || echo '$(srcdir)/'`processing/lookup/ordered/0032_ord_din99d_metric.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0032_ord_din99d_metric.c' object='processing/lookup/ordered/test_runner-0032_ord_din99d_metric.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0032_ord_din99d_metric.o `test -f 'processing/lookup/ordered/0032_ord_din99d_metric.c' || echo '$(srcdir)/'`processing/lookup/ordered/0032_ord_din99d_metric.c
+
+processing/lookup/ordered/test_runner-0032_ord_din99d_metric.obj: processing/lookup/ordered/0032_ord_din99d_metric.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0032_ord_din99d_metric.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Tpo -c -o processing/lookup/ordered/test_runner-0032_ord_din99d_metric.obj `if test -f 'processing/lookup/ordered/0032_ord_din99d_metric.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0032_ord_din99d_metric.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0032_ord_din99d_metric.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0032_ord_din99d_metric.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0032_ord_din99d_metric.c' object='processing/lookup/ordered/test_runner-0032_ord_din99d_metric.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0032_ord_din99d_metric.obj `if test -f 'processing/lookup/ordered/0032_ord_din99d_metric.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0032_ord_din99d_metric.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0032_ord_din99d_metric.c'; fi`
+
+processing/lookup/ordered/test_runner-0033_ord_instance_isolation.o: processing/lookup/ordered/0033_ord_instance_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0033_ord_instance_isolation.o -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Tpo -c -o processing/lookup/ordered/test_runner-0033_ord_instance_isolation.o `test -f 'processing/lookup/ordered/0033_ord_instance_isolation.c' || echo '$(srcdir)/'`processing/lookup/ordered/0033_ord_instance_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0033_ord_instance_isolation.c' object='processing/lookup/ordered/test_runner-0033_ord_instance_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0033_ord_instance_isolation.o `test -f 'processing/lookup/ordered/0033_ord_instance_isolation.c' || echo '$(srcdir)/'`processing/lookup/ordered/0033_ord_instance_isolation.c
+
+processing/lookup/ordered/test_runner-0033_ord_instance_isolation.obj: processing/lookup/ordered/0033_ord_instance_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/ordered/test_runner-0033_ord_instance_isolation.obj -MD -MP -MF processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Tpo -c -o processing/lookup/ordered/test_runner-0033_ord_instance_isolation.obj `if test -f 'processing/lookup/ordered/0033_ord_instance_isolation.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0033_ord_instance_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0033_ord_instance_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Tpo processing/lookup/ordered/$(DEPDIR)/test_runner-0033_ord_instance_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/ordered/0033_ord_instance_isolation.c' object='processing/lookup/ordered/test_runner-0033_ord_instance_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/ordered/test_runner-0033_ord_instance_isolation.obj `if test -f 'processing/lookup/ordered/0033_ord_instance_isolation.c'; then $(CYGPATH_W) 'processing/lookup/ordered/0033_ord_instance_isolation.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/ordered/0033_ord_instance_isolation.c'; fi`
 
 processing/dither/test_runner-0001_dither_policy.o: processing/dither/0001_dither_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/test_runner-0001_dither_policy.o -MD -MP -MF processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo -c -o processing/dither/test_runner-0001_dither_policy.o `test -f 'processing/dither/0001_dither_policy.c' || echo '$(srcdir)/'`processing/dither/0001_dither_policy.c
@@ -93024,6 +93884,8 @@ distclean-generic:
 	-$(am__rm_f) processing/lookup/mahalanobis/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mono_float/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/mono_float/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/ordered/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/planner/$(am__dirstamp)
 	-$(am__rm_f) processing/precision/$(DEPDIR)/$(am__dirstamp)

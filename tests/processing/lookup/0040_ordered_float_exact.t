@@ -1,6 +1,6 @@
 #!/bin/sh
 # Policy: docs/encoder/palette-application/lookup-policy/ordered.md
-# Bulk float ordered lookup equals its exhaustive scan and the VP-tree metric.
+# Bulk float lookup equals an independent scan, including nonfinite queries.
 set -eux
 
 echo "1..1"

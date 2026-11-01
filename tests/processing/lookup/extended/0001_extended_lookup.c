@@ -16,7 +16,8 @@ static int const lookup_formats[] = {
 static char const *const lookup_classes[] = {
     "lookup/certlut.float32", "lookup/5bit.float32", "lookup/6bit.float32",
     "lookup/vptree.float32", "lookup/rbc.float32",
-    "lookup/mahalanobis.float32", "lookup/eytzinger.float32"
+    "lookup/mahalanobis.float32", "lookup/eytzinger.float32",
+    "lookup/ordered.float32"
 };
 
 static int
@@ -305,7 +306,8 @@ test_extended_lookup(int argc, char **argv)
     }
     backend = atoi(argv[2]);
     space = atoi(argv[3]);
-    if (backend < 0 || backend > 6 || space < 0 || space > 4) {
+    if (backend < 0 || backend >= (int)(sizeof(lookup_classes)
+            / sizeof(lookup_classes[0])) || space < 0 || space > 4) {
         return EXIT_FAILURE;
     }
     allocator = NULL;

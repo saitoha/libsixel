@@ -1,5 +1,6 @@
 /*
  * SPDX-License-Identifier: MIT
+ * Policy: docs/encoder/palette-application/lookup-policy/ordered.md
  *
  * Policy: docs/encoder/palette-application/lookup-policy/delaunay.md
  * Policy: docs/encoder/palette-application/lookup-policy/blockcull.md
@@ -276,6 +277,8 @@ test_lookup_0015_batch_contract(int argc, char **argv)
         "lookup/delaunay.float32",
         "lookup/blockcull.8bit",
         "lookup/blockcull.float32",
+        "lookup/ordered.8bit",
+        "lookup/ordered.float32",
         "lookup/rbc.8bit",
         "lookup/rbc.float32",
         "lookup/mahalanobis.8bit",

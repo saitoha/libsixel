@@ -1285,6 +1285,9 @@ int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
 int test_gpupal_0023_ordered_exact(int argc, char **argv);
+int test_gpupal_0024_ordered_cache_transitions(int argc, char **argv);
+int test_gpupal_0025_ordered_parallel_cache(int argc, char **argv);
+int test_gpupal_0026_ordered_delta_history(int argc, char **argv);
 int test_gpupal_0012_a_candidates(int argc, char **argv);
 int test_gpupal_0013_x_candidates(int argc, char **argv);
 int test_gpupal_0014_a_auto_strength(int argc, char **argv);
@@ -1497,6 +1500,39 @@ int test_lookup_0034_delaunay_byte_bulk(int argc, char **argv);
 int test_lookup_0035_blockcull_exact(int argc, char **argv);
 int test_lookup_0037_gridlut_exact(int argc, char **argv);
 int test_lookup_0039_ordered_exact(int argc, char **argv);
+int test_ordered_lookup_0001(int argc, char **argv);
+int test_ordered_lookup_0002(int argc, char **argv);
+int test_ordered_lookup_0003(int argc, char **argv);
+int test_ordered_lookup_0004(int argc, char **argv);
+int test_ordered_lookup_0005(int argc, char **argv);
+int test_ordered_lookup_0006(int argc, char **argv);
+int test_ordered_lookup_0007(int argc, char **argv);
+int test_ordered_lookup_0008(int argc, char **argv);
+int test_ordered_lookup_0009(int argc, char **argv);
+int test_ordered_lookup_0010(int argc, char **argv);
+int test_ordered_lookup_0011(int argc, char **argv);
+int test_ordered_lookup_0012(int argc, char **argv);
+int test_ordered_lookup_0013(int argc, char **argv);
+int test_ordered_lookup_0014(int argc, char **argv);
+int test_ordered_lookup_0015(int argc, char **argv);
+int test_ordered_lookup_0016(int argc, char **argv);
+int test_ordered_lookup_0017(int argc, char **argv);
+int test_ordered_lookup_0018(int argc, char **argv);
+int test_ordered_lookup_0019(int argc, char **argv);
+int test_ordered_lookup_0020(int argc, char **argv);
+int test_ordered_lookup_0021(int argc, char **argv);
+int test_ordered_lookup_0022(int argc, char **argv);
+int test_ordered_lookup_0023(int argc, char **argv);
+int test_ordered_lookup_0024(int argc, char **argv);
+int test_ordered_lookup_0025(int argc, char **argv);
+int test_ordered_lookup_0026(int argc, char **argv);
+int test_ordered_lookup_0027(int argc, char **argv);
+int test_ordered_lookup_0028(int argc, char **argv);
+int test_ordered_lookup_0029(int argc, char **argv);
+int test_ordered_lookup_0030(int argc, char **argv);
+int test_ordered_lookup_0031(int argc, char **argv);
+int test_ordered_lookup_0032(int argc, char **argv);
+int test_ordered_lookup_0033(int argc, char **argv);
 
 int test_probe_0001_probe_parse(int argc, char **argv);
 int test_status_0001_status_timeout(int argc, char **argv);
@@ -5185,6 +5221,12 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0022_gridlut_exact },
     { "gpu-palette/0023_ordered_exact",
       test_gpupal_0023_ordered_exact },
+    { "gpu-palette/0024_ordered_cache_transitions",
+      test_gpupal_0024_ordered_cache_transitions },
+    { "gpu-palette/0025_ordered_parallel_cache",
+      test_gpupal_0025_ordered_parallel_cache },
+    { "gpu-palette/0026_ordered_delta_history",
+      test_gpupal_0026_ordered_delta_history },
     { "gpu-palette/0012_a_candidates",
       test_gpupal_0012_a_candidates },
     { "gpu-palette/0013_x_candidates",
@@ -6498,6 +6540,72 @@ static test_entry_t const test_entries[] = {
       test_lookup_0037_gridlut_exact },
     { "lookup/0039_ordered_exact",
       test_lookup_0039_ordered_exact },
+    { "lookup/ordered/0001_ord_gamma_range",
+      test_ordered_lookup_0001 },
+    { "lookup/ordered/0002_ord_linear_range",
+      test_ordered_lookup_0002 },
+    { "lookup/ordered/0003_ord_oklab_range",
+      test_ordered_lookup_0003 },
+    { "lookup/ordered/0004_ord_cielab_range",
+      test_ordered_lookup_0004 },
+    { "lookup/ordered/0005_ord_din99d_range",
+      test_ordered_lookup_0005 },
+    { "lookup/ordered/0006_ord_gamma_fraction",
+      test_ordered_lookup_0006 },
+    { "lookup/ordered/0007_ord_linear_fraction",
+      test_ordered_lookup_0007 },
+    { "lookup/ordered/0008_ord_oklab_fraction",
+      test_ordered_lookup_0008 },
+    { "lookup/ordered/0009_ord_cielab_fraction",
+      test_ordered_lookup_0009 },
+    { "lookup/ordered/0010_ord_din99d_fraction",
+      test_ordered_lookup_0010 },
+    { "lookup/ordered/0011_ord_gamma_oracle",
+      test_ordered_lookup_0011 },
+    { "lookup/ordered/0012_ord_linear_oracle",
+      test_ordered_lookup_0012 },
+    { "lookup/ordered/0013_ord_oklab_oracle",
+      test_ordered_lookup_0013 },
+    { "lookup/ordered/0014_ord_cielab_oracle",
+      test_ordered_lookup_0014 },
+    { "lookup/ordered/0015_ord_din99d_oracle",
+      test_ordered_lookup_0015 },
+    { "lookup/ordered/0016_ord_gamma_oracle_large",
+      test_ordered_lookup_0016 },
+    { "lookup/ordered/0017_ord_linear_oracle_large",
+      test_ordered_lookup_0017 },
+    { "lookup/ordered/0018_ord_oklab_oracle_large",
+      test_ordered_lookup_0018 },
+    { "lookup/ordered/0019_ord_cielab_oracle_large",
+      test_ordered_lookup_0019 },
+    { "lookup/ordered/0020_ord_din99d_oracle_large",
+      test_ordered_lookup_0020 },
+    { "lookup/ordered/0021_ord_gamma_oracle_small",
+      test_ordered_lookup_0021 },
+    { "lookup/ordered/0022_ord_linear_oracle_small",
+      test_ordered_lookup_0022 },
+    { "lookup/ordered/0023_ord_oklab_oracle_small",
+      test_ordered_lookup_0023 },
+    { "lookup/ordered/0024_ord_cielab_oracle_small",
+      test_ordered_lookup_0024 },
+    { "lookup/ordered/0025_ord_din99d_oracle_small",
+      test_ordered_lookup_0025 },
+    { "lookup/ordered/0026_ord_gamma_oracle_mixed",
+      test_ordered_lookup_0026 },
+    { "lookup/ordered/0027_ord_linear_oracle_mixed",
+      test_ordered_lookup_0027 },
+    { "lookup/ordered/0028_ord_oklab_oracle_mixed",
+      test_ordered_lookup_0028 },
+    { "lookup/ordered/0029_ord_cielab_oracle_mixed",
+      test_ordered_lookup_0029 },
+    { "lookup/ordered/0030_ord_din99d_oracle_mixed",
+      test_ordered_lookup_0030 },
+    { "lookup/ordered/0031_ord_cielab_metric",
+      test_ordered_lookup_0031 },
+    { "lookup/ordered/0032_ord_din99d_metric",
+      test_ordered_lookup_0032 },
+    { "lookup/ordered/0033_ord_instance_isolation",
+      test_ordered_lookup_0033 },
     { "probe/0001_probe_parse", test_probe_0001_probe_parse },
     { "status/0001_status_timeout", test_status_0001_status_timeout },
     { "icc/0001_icc_builtin_rgb_gray_v4_paths",

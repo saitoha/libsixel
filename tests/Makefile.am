@@ -2207,6 +2207,43 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0035_BLOCKCULL_EXACT \
     -DBUILD_TEST_0037_GRIDLUT_EXACT \
     -DBUILD_TEST_0039_ORDERED_EXACT \
+    -DBUILD_TEST_0024_ORDERED_CACHE_TRANSITIONS \
+    -DBUILD_TEST_0025_ORDERED_PARALLEL_CACHE \
+    -DBUILD_TEST_0026_ORDERED_DELTA_HISTORY \
+    -DBUILD_ORDERED_STATE_COMMON \
+    -DBUILD_TEST_0001_ORD_GAMMA_RANGE \
+    -DBUILD_TEST_0002_ORD_LINEAR_RANGE \
+    -DBUILD_TEST_0003_ORD_OKLAB_RANGE \
+    -DBUILD_TEST_0004_ORD_CIELAB_RANGE \
+    -DBUILD_TEST_0005_ORD_DIN99D_RANGE \
+    -DBUILD_TEST_0006_ORD_GAMMA_FRACTION \
+    -DBUILD_TEST_0007_ORD_LINEAR_FRACTION \
+    -DBUILD_TEST_0008_ORD_OKLAB_FRACTION \
+    -DBUILD_TEST_0009_ORD_CIELAB_FRACTION \
+    -DBUILD_TEST_0010_ORD_DIN99D_FRACTION \
+    -DBUILD_TEST_0011_ORD_GAMMA_ORACLE \
+    -DBUILD_TEST_0012_ORD_LINEAR_ORACLE \
+    -DBUILD_TEST_0013_ORD_OKLAB_ORACLE \
+    -DBUILD_TEST_0014_ORD_CIELAB_ORACLE \
+    -DBUILD_TEST_0015_ORD_DIN99D_ORACLE \
+    -DBUILD_TEST_0016_ORD_GAMMA_ORACLE_LARGE \
+    -DBUILD_TEST_0017_ORD_LINEAR_ORACLE_LARGE \
+    -DBUILD_TEST_0018_ORD_OKLAB_ORACLE_LARGE \
+    -DBUILD_TEST_0019_ORD_CIELAB_ORACLE_LARGE \
+    -DBUILD_TEST_0020_ORD_DIN99D_ORACLE_LARGE \
+    -DBUILD_TEST_0021_ORD_GAMMA_ORACLE_SMALL \
+    -DBUILD_TEST_0022_ORD_LINEAR_ORACLE_SMALL \
+    -DBUILD_TEST_0023_ORD_OKLAB_ORACLE_SMALL \
+    -DBUILD_TEST_0024_ORD_CIELAB_ORACLE_SMALL \
+    -DBUILD_TEST_0025_ORD_DIN99D_ORACLE_SMALL \
+    -DBUILD_TEST_0026_ORD_GAMMA_ORACLE_MIXED \
+    -DBUILD_TEST_0027_ORD_LINEAR_ORACLE_MIXED \
+    -DBUILD_TEST_0028_ORD_OKLAB_ORACLE_MIXED \
+    -DBUILD_TEST_0029_ORD_CIELAB_ORACLE_MIXED \
+    -DBUILD_TEST_0030_ORD_DIN99D_ORACLE_MIXED \
+    -DBUILD_TEST_0031_ORD_CIELAB_METRIC \
+    -DBUILD_TEST_0032_ORD_DIN99D_METRIC \
+    -DBUILD_TEST_0033_ORD_INSTANCE_ISOLATION \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -5751,6 +5788,11 @@ test_runner_SOURCES = test_runner.c \
     processing/gpu-palette/0021_blockcull_exact.c \
     processing/gpu-palette/0022_gridlut_exact.c \
     processing/gpu-palette/0023_ordered_exact.c \
+    processing/gpu-palette/ordered_state_common.c \
+    processing/gpu-palette/ordered_state_common.h \
+    processing/gpu-palette/0024_ordered_cache_transitions.c \
+    processing/gpu-palette/0025_ordered_parallel_cache.c \
+    processing/gpu-palette/0026_ordered_delta_history.c \
     processing/gpu-dequant/0001_gpu_dequant_threshold_strtoul.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
@@ -5923,6 +5965,39 @@ test_runner_SOURCES = test_runner.c \
     processing/lookup/0035_blockcull_exact.c \
     processing/lookup/0037_gridlut_exact.c \
     processing/lookup/0039_ordered_exact.c \
+    processing/lookup/ordered/0001_ord_gamma_range.c \
+    processing/lookup/ordered/0002_ord_linear_range.c \
+    processing/lookup/ordered/0003_ord_oklab_range.c \
+    processing/lookup/ordered/0004_ord_cielab_range.c \
+    processing/lookup/ordered/0005_ord_din99d_range.c \
+    processing/lookup/ordered/0006_ord_gamma_fraction.c \
+    processing/lookup/ordered/0007_ord_linear_fraction.c \
+    processing/lookup/ordered/0008_ord_oklab_fraction.c \
+    processing/lookup/ordered/0009_ord_cielab_fraction.c \
+    processing/lookup/ordered/0010_ord_din99d_fraction.c \
+    processing/lookup/ordered/0011_ord_gamma_oracle.c \
+    processing/lookup/ordered/0012_ord_linear_oracle.c \
+    processing/lookup/ordered/0013_ord_oklab_oracle.c \
+    processing/lookup/ordered/0014_ord_cielab_oracle.c \
+    processing/lookup/ordered/0015_ord_din99d_oracle.c \
+    processing/lookup/ordered/0016_ord_gamma_oracle_large.c \
+    processing/lookup/ordered/0017_ord_linear_oracle_large.c \
+    processing/lookup/ordered/0018_ord_oklab_oracle_large.c \
+    processing/lookup/ordered/0019_ord_cielab_oracle_large.c \
+    processing/lookup/ordered/0020_ord_din99d_oracle_large.c \
+    processing/lookup/ordered/0021_ord_gamma_oracle_small.c \
+    processing/lookup/ordered/0022_ord_linear_oracle_small.c \
+    processing/lookup/ordered/0023_ord_oklab_oracle_small.c \
+    processing/lookup/ordered/0024_ord_cielab_oracle_small.c \
+    processing/lookup/ordered/0025_ord_din99d_oracle_small.c \
+    processing/lookup/ordered/0026_ord_gamma_oracle_mixed.c \
+    processing/lookup/ordered/0027_ord_linear_oracle_mixed.c \
+    processing/lookup/ordered/0028_ord_oklab_oracle_mixed.c \
+    processing/lookup/ordered/0029_ord_cielab_oracle_mixed.c \
+    processing/lookup/ordered/0030_ord_din99d_oracle_mixed.c \
+    processing/lookup/ordered/0031_ord_cielab_metric.c \
+    processing/lookup/ordered/0032_ord_din99d_metric.c \
+    processing/lookup/ordered/0033_ord_instance_isolation.c \
     processing/dither/0001_dither_policy.c \
     processing/dither/perturb/0018_perturb_keep_lookup.c \
     processing/dither/perturb/0017_perturb_keep_early.c \

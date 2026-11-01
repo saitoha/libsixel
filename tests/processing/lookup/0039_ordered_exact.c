@@ -13,6 +13,7 @@
 #endif
 
 #include <limits.h>
+#include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,6 +159,37 @@ ordered_exact_create(char const *class_name, sixel_allocator_t *allocator)
     return policy;
 }
 
+/* RGBFLOAT32 has unit channel ranges. Evaluate the distance independently
+ * in double, including nonfinite queries: no finite winner selects zero.
+ * Comparing bulk output only to its own scalar method would miss a shared
+ * regression in the delegated float backend. */
+static int
+ordered_exact_float_oracle(float const *palette, int ncolors,
+                           float const *pixel)
+{
+    double minimum;
+    double distance;
+    double d;
+    int best;
+    int i;
+    int c;
+
+    best = 0;
+    minimum = DBL_MAX;
+    for (i = 0; i < ncolors; ++i) {
+        distance = 0.0;
+        for (c = 0; c < 3; ++c) {
+            d = (double)pixel[c] - (double)palette[i * 3 + c];
+            distance += d * d;
+        }
+        if (distance < minimum) {
+            minimum = distance;
+            best = i;
+        }
+    }
+    return best;
+}
+
 static int
 ordered_exact_run(sixel_allocator_t *allocator, int is_float, int ncolors)
 {
@@ -250,7 +282,8 @@ ordered_exact_run(sixel_allocator_t *allocator, int is_float, int ncolors)
                 direction, NULL);
             for (q = 0; q < length; ++q) {
                 expected = is_float
-                    ? policy->vtbl->map_pixel(policy, query + q * stride)
+                    ? ordered_exact_float_oracle(palette_float, ncolors,
+                                                  pixels_float + q * 3)
                     : ordered_exact_byte_oracle(palette, ncolors,
                                                   pixels + q * 3);
                 if ((!is_float && policy->vtbl->map_pixel_hint(policy,

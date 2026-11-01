@@ -1,5 +1,6 @@
 /*
  * SPDX-License-Identifier: MIT
+ * Policy: docs/encoder/palette-application/lookup-policy/ordered.md
  *
  * Verify that every lookup policy returns from map_pixel_hint() exactly what
  * map_pixel() returns, whatever the hint.
@@ -232,6 +233,8 @@ test_lookup_0014_hint_contract(int argc, char **argv)
         "lookup/fhedt.float32",
         "lookup/vptree.8bit",
         "lookup/vptree.float32",
+        "lookup/ordered.8bit",
+        "lookup/ordered.float32",
         "lookup/rbc.8bit",
         "lookup/rbc.float32",
         "lookup/mahalanobis.8bit",
