@@ -68,7 +68,7 @@ pad_numbers(char const *src, char *dst, size_t size)
             return -1;
         }
         if (*src == '$' && current >= 0) {
-            n += (size_t)sprintf(dst + n, "#%06d", current);
+            n += (size_t)snprintf(dst + n, size - n, "#%06d", current);
         }
         dst[n++] = *src;
         if ((*src == '#' || *src == '!') &&
@@ -81,7 +81,7 @@ pad_numbers(char const *src, char *dst, size_t size)
             if (selection) {
                 current = value;
             }
-            n += (size_t)sprintf(dst + n, "%06d", value);
+            n += (size_t)snprintf(dst + n, size - n, "%06d", value);
             continue;
         }
         ++src;

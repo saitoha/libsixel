@@ -20,11 +20,11 @@ int
 test_lookup_0031_delaunay_float_distance(int argc, char **argv)
 {
     sixel_lookup_delaunay_float32_t graph;
-    sixel_delaunay_float_block_t block;
     double palette[12], actual[2], expected[2], diff;
     float pixel[3];
     int q, lane, c, half;
 #if SIXEL_DLF_SIMD
+    sixel_delaunay_float_block_t block;
     sixel_delaunay_distance2_t result, r, g, b;
     double channels[3][2];
     float queries[2][3];
@@ -49,9 +49,11 @@ test_lookup_0031_delaunay_float_distance(int argc, char **argv)
                     (float)((q * 37 + lane * 11 + c * 23) % 255 - 127),
                     q % 240 - 125), INFINITY);
             }
+#if SIXEL_DLF_SIMD
             block.x[lane] = palette[lane * 3];
             block.y[lane] = palette[lane * 3 + 1];
             block.z[lane] = palette[lane * 3 + 2];
+#endif
         }
         for (half = 0; half < 4; half += 2) {
             for (lane = 0; lane < 2; ++lane) {

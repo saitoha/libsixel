@@ -1115,7 +1115,8 @@ ts_run(char const *directory, int fixture, int engine, int managed,
     sixel_chunk_t *chunk;
     sixel_loader_component_t *component;
     void *object;
-    unsigned char original[4096];
+    /* Legacy GCC also analyzes zero-length copies as an unread snapshot. */
+    unsigned char original[4096] = {0};
     size_t bytes;
     SIXELSTATUS status;
     char path[4096];

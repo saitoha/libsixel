@@ -11,6 +11,59 @@ import sys
 import tempfile
 
 
+def meson_link_errors(source):
+    """Keep the large inventory behind a whole-linked static archive."""
+    source = re.sub(r"#[^\n]*", "", source)
+    archive = re.search(
+        r"(\w+)\s*=\s*static_library\('test_runner_cases',([^)]*)\)", source)
+    runner = re.search(
+        r"executable\('test_runner',([\s\S]*?)install:\s*false\s*\)", source)
+    if not archive or not runner:
+        return True
+    body = runner[1]
+    if not re.search(r"\btest_runner_sources\b", archive[2]):
+        return True
+    if re.search(r"\btest_runner_sources\b", body):
+        return True
+    if not re.search(r"link_whole:\s*" + re.escape(archive[1]) + r"\b", body):
+        return True
+    if re.search(re.escape(archive[1]) + r"\s*\.\s*extract", body):
+        return True
+    for key in ('include_directories', 'dependencies'):
+        pattern = key + r":\s*([^,\n]+)"
+        left = re.search(pattern, archive[2])
+        right = re.search(pattern, body)
+        if not left or not right or left[1] != right[1]:
+            return True
+    flags = r'c_args:\s*([\s\S]*?),\s*build_by_default:'
+    left = re.search(flags, archive[2])
+    right = re.search(flags, body)
+    if not left or not right or re.sub(r'\s+', '', left[1]) != re.sub(r'\s+', '', right[1]):
+        return True
+    return False
+
+
+def check_meson_archive(root):
+    source = (root / 'tests/meson.build').read_text()
+    if meson_link_errors(source):
+        raise RuntimeError('Meson runner must whole-link its case archive with matching compile inputs')
+    # Mutate the actual graph: restoring a flat list, losing whole-archive
+    # semantics, or dropping compile dependencies must each be rejected.
+    mutations = [
+        source.replace("executable('test_runner',", "executable('test_runner', test_runner_sources,"),
+        source.replace('link_whole: test_runner_cases', 'link_with: test_runner_cases'),
+        source.replace('link_whole: test_runner_cases', 'objects: test_runner_cases.extract_all_objects()'),
+    ]
+    # Change the case archive rather than the earlier SIMD helper archive.
+    start = source.index("static_library('test_runner_cases'")
+    mutations.append(source[:start] + source[start:].replace(
+        'dependencies: test_runner_deps', 'dependencies: []', 1))
+    mutations.append(source[:start] + source[start:].replace(
+        '-DSIXEL_PIXBUF_LOADER_TESTING', '-DWRONG_CASE_FLAGS', 1))
+    if any(not meson_link_errors(mutant) for mutant in mutations):
+        raise RuntimeError('Meson archive mutation escaped the link check')
+
+
 def check_openvms_archives(root):
     """Check the config.status repair with a lost Automake dependency list."""
     make = shutil.which('gmake') or shutil.which('make')
@@ -158,6 +211,7 @@ def check(root):
 
 
 try:
+    check_meson_archive(Path(sys.argv[1]).resolve())
     check(Path(sys.argv[1]).resolve())
     check_openvms_archives(Path(sys.argv[1]).resolve())
 except (OSError, RuntimeError) as error:

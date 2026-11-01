@@ -22,6 +22,9 @@
 #if SIXEL_DECODER_NEON
 static unsigned long g_state = 12345u;
 
+#if defined(__clang__)
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
 static unsigned int
 next_random(void)
 {

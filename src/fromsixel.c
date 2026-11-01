@@ -339,7 +339,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
             if (image->depth == 1) {
                 bytes = image->pixels.in_bytes + row;
                 for (x = x0; x < image->width; ++x) {
-                    mask = 0u - (uint32_t)((columns[x] >> (48 + r)) & 1u);
+                    mask = ((columns[x] >> (48 + r)) & 1u) ? UINT32_MAX : 0u;
                     value = (unsigned char)(columns[x] >> shift);
                     bytes[x] = (unsigned char)((bytes[x] & ~mask) |
                                                (value & mask));
@@ -347,7 +347,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
             } else if (image->depth == 2) {
                 shorts = image->pixels.in_shorts + row;
                 for (x = x0; x < image->width; ++x) {
-                    mask = 0u - (uint32_t)((columns[x] >> (48 + r)) & 1u);
+                    mask = ((columns[x] >> (48 + r)) & 1u) ? UINT32_MAX : 0u;
                     value = (unsigned char)(columns[x] >> shift);
                     shorts[x] = (unsigned short)((shorts[x] & ~mask) |
                                                  (value & mask));
@@ -355,7 +355,7 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
             } else {
                 bytes = image->pixels.in_bytes + row * 4u;
                 for (x = x0; x < image->width; ++x) {
-                    mask = 0u - (uint32_t)((columns[x] >> (48 + r)) & 1u);
+                    mask = ((columns[x] >> (48 + r)) & 1u) ? UINT32_MAX : 0u;
                     memcpy(&value, bytes + (size_t)x * 4u, sizeof(value));
                     value = (value & ~mask) |
                         (lut[(columns[x] >> shift) & 255u] & mask);
@@ -365,8 +365,8 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
             if (image->paint_mask != NULL) {
                 coverage = image->paint_mask + row;
                 for (x = x0; x < image->width; ++x) {
-                    coverage[x] |= (unsigned char)(0u -
-                        (unsigned int)((columns[x] >> (48 + r)) & 1u));
+                    coverage[x] |= (unsigned char)(
+                        ((columns[x] >> (48 + r)) & 1u) ? 255u : 0u);
                 }
             }
         }

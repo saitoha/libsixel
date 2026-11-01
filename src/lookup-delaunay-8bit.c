@@ -507,7 +507,8 @@ sixel_lookup_delaunay_8bit_map(sixel_lookup_delaunay_8bit_t const *graph,
     }
     key = ((unsigned int)pixel[0] << 16)
         | ((unsigned int)pixel[1] << 8) | pixel[2];
-    slot = (key * 2654435761U) >> (32 - SIXEL_DELAUNAY_BYTE_MEMO_BITS);
+    slot = (uint32_t)((uint64_t)key * 2654435761U)
+            >> (32 - SIXEL_DELAUNAY_BYTE_MEMO_BITS);
     /* A complete RGB key and index share one relaxed atomic word. The
      * all-ones sentinel (white -> index 255) must never be published. */
     if (graph->memo != NULL) {
@@ -701,7 +702,7 @@ sixel_lookup_delaunay_8bit_map_pixels(
             | ((unsigned int)pixels[1] << 8) | pixels[2];
 #if SIXEL_DL8_SIMD
         if (graph != NULL && graph->memo != NULL && key != previous) {
-            slot = (key * 2654435761U)
+            slot = (uint32_t)((uint64_t)key * 2654435761U)
                 >> (32 - SIXEL_DELAUNAY_BYTE_MEMO_BITS);
             entry = (unsigned int)sixel_atomic_load_relaxed_i32(
                 &graph->memo[slot]);

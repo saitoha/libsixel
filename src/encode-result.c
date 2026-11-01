@@ -389,7 +389,8 @@ sixel_indexed_frame_publish_internal(sixel_indexed_frame_t *image, int rows,
          * legacy kernel. Normalize it before publication, in this same scan. */
         if (applied && (int)image->indexes[i] == image->description.keycolor &&
                 code == SIXEL_INDEXED_PAINT) {
-            image->skip[i] = code = SIXEL_INDEXED_KEEP;
+            code = SIXEL_INDEXED_KEEP;
+            image->skip[i] = (unsigned char)code;
         }
         if (code != SIXEL_INDEXED_PAINT) {
             if (!image->description.transparent_background ||

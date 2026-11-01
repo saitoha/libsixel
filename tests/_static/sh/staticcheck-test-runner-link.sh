@@ -1,6 +1,8 @@
 #!/bin/sh
 # Validate link recipes, object lists and archive prerequisites without C.
 # Policy: docs/build/test-harness.md
+# Policy: docs/testing/staticcheck.md
+# Meson graph: docs/build/meson.md
 # Policy: docs/misc/platforms/openvms.md
 # Coverage: OV-21
 set -eux

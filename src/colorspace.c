@@ -2286,9 +2286,9 @@ sixel_float_memo_slot(uint32_t const key[3])
 
     /* Mix exponent and mantissa bits before masking the low index bits.
      * Unsigned wraparound is intentional; equality still checks 96 bits. */
-    hash = key[0] * UINT32_C(0x9e3779b1);
-    hash ^= key[1] * UINT32_C(0x85ebca77);
-    hash ^= key[2] * UINT32_C(0xc2b2ae3d);
+    hash = (uint32_t)((uint64_t)key[0] * UINT32_C(0x9e3779b1));
+    hash ^= (uint32_t)((uint64_t)key[1] * UINT32_C(0x85ebca77));
+    hash ^= (uint32_t)((uint64_t)key[2] * UINT32_C(0xc2b2ae3d));
     hash ^= hash >> 16;
     return (size_t)(hash & (SIXEL_FLOAT_MEMO_SIZE - 1U));
 }
@@ -2660,7 +2660,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                         &controller);
                 }
             }
-            for (; job_index + 1U < job_count; ++job_index) {
+            /* Only a live pool accepts jobs; the caller handles any suffix. */
+            for (; pool != NULL && job_index + 1U < job_count; ++job_index) {
                 job.band_index = (int)job_index;
                 status = pool->vtbl->push(pool, job);
                 if (status != SIXEL_OK) {

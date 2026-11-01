@@ -2054,8 +2054,8 @@ static int stbi__build_huffman(stbi__huffman *h, int *count)
    code = 0;
    k = 0;
    for(j=1; j <= 16; ++j) {
-      // compute delta to add to code to compute symbol id
-      h->delta[j] = k - code;
+      // Code widths fit int; the symbol offset can be negative.
+      h->delta[j] = k - (int)code;
       if (h->size[k] == j) {
          while (h->size[k] == j)
             h->code[k++] = (stbi__uint16) (code++);
@@ -2100,7 +2100,7 @@ static void stbi__build_fast_ac(stbi__int16 *fast_ac, stbi__huffman *h)
             // magnitude code followed by receive_extend code
             int k = ((i << len) & ((1 << FAST_BITS) - 1)) >> (FAST_BITS - magbits);
             int m = 1 << (magbits - 1);
-            if (k < m) k += (~0U << magbits) + 1;
+            if (k < m) k -= (1 << magbits) - 1;
             // if the result is small enough, we can fit it in fast_ac table
             if (k >= -128 && k <= 127)
                fast_ac[i] = (stbi__int16) ((k * 256) + (run * 16) + (len + magbits));
@@ -2179,7 +2179,8 @@ stbi_inline static int stbi__jpeg_huff_decode(stbi__jpeg *j, stbi__huffman *h)
       return -1;
 
    // convert the huffman code to the symbol id
-   c = ((j->code_buffer >> (32 - k)) & stbi__bmask[k]) + h->delta[k];
+   c = (int)((j->code_buffer >> (32 - k)) & stbi__bmask[k]) +
+       h->delta[k];
    if(c < 0 || c >= 256) // symbol id out of bounds!
        return -1;
    STBI_ASSERT((((j->code_buffer) >> (32 - h->size[c])) & stbi__bmask[h->size[c]]) == h->code[c]);
@@ -2214,7 +2215,7 @@ stbi_inline static int stbi__extend_receive(stbi__jpeg *j, int n)
    j->code_buffer = k & ~stbi__bmask[n];
    k &= stbi__bmask[n];
    j->code_bits -= n;
-   return k + (stbi__jbias[n] & (sgn - 1));
+   return (int)k + (stbi__jbias[n] & (sgn - 1));
 }
 
 // get some unsigned bits
@@ -2244,7 +2245,7 @@ stbi_inline static int stbi__jpeg_get_bit(stbi__jpeg *j)
    k = j->code_buffer;
    j->code_buffer <<= 1;
    --j->code_bits;
-   return k & 0x80000000;
+   return (int)(k & 0x80000000);
 }
 
 // given a value that's at position X in the zigzag stream,
@@ -4411,12 +4412,14 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
       }
       if (z->img_comp[i].raw_data == NULL)
          return stbi__free_jpeg_components(z, i+1, stbi__err("outofmem", "Out of memory"));
-      // align blocks for idct using mmx/sse
+      // Align blocks for idct using mmx/sse; complement in pointer width.
       if (z->lossless || z->data_precision > 8 || z->hierarchical) {
          z->img_comp[i].data = NULL;
-         z->img_comp[i].data16 = (stbi__uint16*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
+         z->img_comp[i].data16 = (stbi__uint16*)
+             (((size_t)z->img_comp[i].raw_data + 15) & ~(size_t)15);
       } else {
-         z->img_comp[i].data = (stbi_uc*) (((size_t) z->img_comp[i].raw_data + 15) & ~15);
+         z->img_comp[i].data = (stbi_uc*)
+             (((size_t)z->img_comp[i].raw_data + 15) & ~(size_t)15);
          z->img_comp[i].data16 = NULL;
       }
       if (z->arithmetic && z->lossless) {
@@ -4436,7 +4439,8 @@ static int stbi__process_frame_header(stbi__jpeg *z, int scan)
          z->img_comp[i].raw_coeff = stbi__malloc_mad3(z->img_comp[i].w2, z->img_comp[i].h2, sizeof(short), 15);
          if (z->img_comp[i].raw_coeff == NULL)
             return stbi__free_jpeg_components(z, i+1, stbi__err("outofmem", "Out of memory"));
-         z->img_comp[i].coeff = (short*) (((size_t) z->img_comp[i].raw_coeff + 15) & ~15);
+         z->img_comp[i].coeff = (short*)
+             (((size_t)z->img_comp[i].raw_coeff + 15) & ~(size_t)15);
          memset(z->img_comp[i].coeff, 0,
                 z->img_comp[i].w2 * z->img_comp[i].h2 * sizeof(short));
       }
@@ -5070,7 +5074,9 @@ static void stbi__YCbCr_to_RGB_row(stbi_uc *out, const stbi_uc *y, const stbi_uc
       int cr = pcr[i] - 128;
       int cb = pcb[i] - 128;
       r = y_fixed +  cr* stbi__float2fixed(1.40200f);
-      g = y_fixed + (cr*-stbi__float2fixed(0.71414f)) + ((cb*-stbi__float2fixed(0.34414f)) & 0xffff0000);
+      // Mask bits unsigned, then restore the signed chroma contribution.
+      g = y_fixed + cr*-stbi__float2fixed(0.71414f) +
+          (int)((unsigned int)(cb*-stbi__float2fixed(0.34414f)) & 0xffff0000u);
       b = y_fixed                                     +   cb* stbi__float2fixed(1.77200f);
       r >>= 20;
       g >>= 20;
@@ -5241,7 +5247,9 @@ static void stbi__YCbCr_to_RGB_simd(stbi_uc *out, stbi_uc const *y, stbi_uc cons
       int cr = pcr[i] - 128;
       int cb = pcb[i] - 128;
       r = y_fixed + cr* stbi__float2fixed(1.40200f);
-      g = y_fixed + cr*-stbi__float2fixed(0.71414f) + ((cb*-stbi__float2fixed(0.34414f)) & 0xffff0000);
+      // Mask bits unsigned, then restore the signed chroma contribution.
+      g = y_fixed + cr*-stbi__float2fixed(0.71414f) +
+          (int)((unsigned int)(cb*-stbi__float2fixed(0.34414f)) & 0xffff0000u);
       b = y_fixed                                   +   cb* stbi__float2fixed(1.77200f);
       r >>= 20;
       g >>= 20;
@@ -6232,7 +6240,7 @@ static int stbi__zhuffman_decode_slowpath(stbi__zbuf *a, stbi__zhuffman *z)
    int b,s,k;
    // not resolved by fast table, so compute it the slow way
    // use jpeg approach, which requires MSbits at top
-   k = stbi__bit_reverse(a->code_buffer, 16);
+   k = stbi__bit_reverse((int)(a->code_buffer & 0xffffu), 16);
    for (s=STBI__ZFAST_BITS+1; ; ++s)
       if (k < z->maxcode[s])
          break;
@@ -6351,12 +6359,13 @@ static int stbi__parse_huffman_block(stbi__zbuf *a)
             if (!stbi__zexpand(a, zout, len)) return 0;
             zout = a->zout;
          }
+         /* DEFLATE copies byte representations into the char buffer. */
          p = (stbi_uc *) (zout - dist);
          if (dist == 1) { // run of one byte; common in images.
             stbi_uc v = *p;
-            if (len) { do *zout++ = v; while (--len); }
+            if (len) { do *zout++ = (char)v; while (--len); }
          } else {
-            if (len) { do *zout++ = *p++; while (--len); }
+            if (len) { do *zout++ = (char)*p++; while (--len); }
          }
       }
    }
@@ -6808,20 +6817,20 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
             for (i=0; i < nsmp; ++i) {
                if ((i & 1) == 0) inb = *in++;
                *out++ = scale * (inb >> 4);
-               inb <<= 4;
+               inb = (stbi_uc)(inb << 4);
             }
          } else if (depth == 2) {
             for (i=0; i < nsmp; ++i) {
                if ((i & 3) == 0) inb = *in++;
                *out++ = scale * (inb >> 6);
-               inb <<= 2;
+               inb = (stbi_uc)(inb << 2);
             }
          } else {
             STBI_ASSERT(depth == 1);
             for (i=0; i < nsmp; ++i) {
                if ((i & 7) == 0) inb = *in++;
                *out++ = scale * (inb >> 7);
-               inb <<= 1;
+               inb = (stbi_uc)(inb << 1);
             }
          }
 
@@ -6886,8 +6895,10 @@ static int stbi__create_png_image(stbi__png *a, stbi_uc *image_data, stbi__uint3
       int yspc[]  = { 8,8,8,4,4,2,2 };
       int i,j,x,y;
       // pass1_x[4] = 0, pass1_x[5] = 1, pass1_x[12] = 1
-      x = (a->s->img_x - xorig[p] + xspc[p]-1) / xspc[p];
-      y = (a->s->img_y - yorig[p] + yspc[p]-1) / yspc[p];
+      // PNG dimensions were bounded by STBI_MAX_DIMENSIONS before decoding.
+      // Signed intermediates represent an empty pass before rounding up.
+      x = ((int)a->s->img_x - xorig[p] + xspc[p]-1) / xspc[p];
+      y = ((int)a->s->img_y - yorig[p] + yspc[p]-1) / yspc[p];
       if (x && y) {
          stbi__uint32 img_len = ((((a->s->img_n * x * depth) + 7) >> 3) + 1) * y;
          if (!stbi__create_png_image_raw(a, image_data, image_data_len, out_n, x, y, depth, color)) {

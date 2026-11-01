@@ -47,13 +47,27 @@ sixel_repair_predict_less(sixel_repair_predict_point_t const *a,
         (a->priority == b->priority && a->position < b->position);
 }
 
+/* The fixed-seed SplitMix64 permutation is arithmetic modulo 2^64. */
+#if defined(__clang__)
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
+static uint64_t
+sixel_repair_predict_priority(size_t position)
+{
+    uint64_t hash;
+
+    hash = (uint64_t)position + UINT64_C(0x9e3779b97f4a7c15);
+    hash = (hash ^ (hash >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+    hash = (hash ^ (hash >> 27)) * UINT64_C(0x94d049bb133111eb);
+    return hash ^ (hash >> 31);
+}
+
 void
 sixel_repair_predict_add(sixel_repair_predict_model_t *model,
     size_t position, float const target[3], double error)
 {
     sixel_repair_predict_point_t point;
     sixel_repair_predict_band_t *band;
-    uint64_t hash;
     size_t slot;
     size_t parent;
     size_t child;
@@ -64,10 +78,7 @@ sixel_repair_predict_add(sixel_repair_predict_model_t *model,
     band->maximum = fmax(band->maximum, error);
     /* SplitMix64's permutation with a fixed seed. This is deterministic
      * sampling, not a probabilistic coverage claim or a quality bound. */
-    hash = (uint64_t)position + UINT64_C(0x9e3779b97f4a7c15);
-    hash = (hash ^ (hash >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
-    hash = (hash ^ (hash >> 27)) * UINT64_C(0x94d049bb133111eb);
-    point.priority = hash ^ (hash >> 31);
+    point.priority = sixel_repair_predict_priority(position);
     point.position = position;
     point.error = error;
     memcpy(point.target, target, sizeof(point.target));

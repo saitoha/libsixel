@@ -25,7 +25,8 @@
 static unsigned int
 hint_contract_next(unsigned int *state)
 {
-    *state = *state * 1103515245U + 12345U;
+    *state = (unsigned int)((uint64_t)*state * 1103515245U
+        + 12345U);
     return (*state >> 8) & 0xffffffU;
 }
 

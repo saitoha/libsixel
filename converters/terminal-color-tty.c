@@ -283,8 +283,9 @@ img2sixel_color_tty_begin(img2sixel_color_tty_t *tty)
         return IMG2SIXEL_COLOR_IO_ERROR;
     }
     mode = tty->saved_termios;
-    mode.c_iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL | IXON | IXOFF | PARMRK);
-    mode.c_lflag &= ~(ICANON | ECHO | ECHONL | IEXTEN);
+    mode.c_iflag &= ~(tcflag_t)(ISTRIP | INLCR | IGNCR | ICRNL |
+                                  IXON | IXOFF | PARMRK);
+    mode.c_lflag &= ~(tcflag_t)(ICANON | ECHO | ECHONL | IEXTEN);
     /* SUB is a protocol cancellation byte, normally also bound to Ctrl-Z.
      * VSUSP would signal and may flush input before the parser sees it.
      * Keep ISIG/SIGINT handling, but suspend keys are protocol input until

@@ -166,6 +166,7 @@ heckbert_policy_check(int scenario)
     policy_tupletable2 output;
     sixel_allocator_t *allocator;
     sixel_heckbert_options_t options;
+    sixel_palette_heckbert_colormap_request_t request;
     sixel_palette_rep_stats_t stats[2];
     unsigned long cluster_weights[2];
     double cluster_sums[6];
@@ -193,6 +194,7 @@ heckbert_policy_check(int scenario)
 
     allocator = NULL;
     memset(&options, 0, sizeof(options));
+    memset(&request, 0, sizeof(request));
     memset(&output, 0, sizeof(output));
     memset(boxes, 0, sizeof(boxes));
     memset(actual, 0, sizeof(actual));
@@ -240,7 +242,7 @@ heckbert_policy_check(int scenario)
         status = policy_mediancut(table, 3, 1, SIXEL_LARGE_NORM,
             method, 0, SIXEL_FINAL_MERGE_WARD,
             SIXEL_PIXELFORMAT_RGBFLOAT32, &output, allocator,
-            NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &options);
+            &request, &options);
         ok = SIXEL_SUCCEEDED(status) && output.size == 1 &&
             fabs(output.table[0]->policy_tuple[0] - expected) < 1e-12;
         sixel_set_final_merge_target_factor_override(0, 1.81);

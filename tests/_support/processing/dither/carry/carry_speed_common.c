@@ -271,7 +271,8 @@ carry_speed_numeric(int boundary)
          */
         for (i = 0; i < 10000; ++i) {
             for (n = 0; n < 3; ++n) {
-                random = random * 1664525u + 1013904223u;
+                random = (unsigned int)((uint64_t)random * 1664525u
+                    + 1013904223u);
                 source[n] = (unsigned char)(random >> 24);
                 carry[n] = (int32_t)(random % 58490881u) - 29245440;
             }
@@ -556,7 +557,8 @@ carry_speed_stencil(void)
     }
     random = 314159265u;
     for (n = 0; n < (int)sizeof(source); ++n) {
-        random = random * 1664525u + 1013904223u;
+        random = (unsigned int)((uint64_t)random * 1664525u
+            + 1013904223u);
         source[n] = (unsigned char)(random >> 24);
     }
     for (n = 0; n < (int)sizeof(mask); ++n) {
@@ -682,7 +684,8 @@ carry_speed_contract(int observation)
             for (i = 0; i < 2000; ++i) {
                 threshold = i & 1 ? 1.01 : 16.0;
                 for (n = 0; n < depth; ++n) {
-                    random = random * 1664525u + 1013904223u;
+                    random = (unsigned int)((uint64_t)random * 1664525u
+                        + 1013904223u);
                     source[n] = (unsigned char)(random >> 24);
                     carry[n] = (int32_t)(random % 58490881u) - 29245440;
                     if (i % 4 == 0) carry[n] =

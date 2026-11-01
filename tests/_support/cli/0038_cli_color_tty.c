@@ -771,10 +771,10 @@ test_cli_0038_color_tty(int argc, char **argv)
          * Darwin waits for another read and Linux does not re-echo it.
          * Observe unread input without that line-discipline side effect.
          * The other scripts still check restoration with ECHO enabled. */
-        mode.c_lflag &= ~ECHO;
+        mode.c_lflag &= ~(tcflag_t)ECHO;
     }
     if (strcmp(argv[1], "noncanonical") == 0) {
-        mode.c_lflag &= ~ICANON;
+        mode.c_lflag &= ~(tcflag_t)ICANON;
         mode.c_cc[VMIN] = 3;
         mode.c_cc[VTIME] = 7;
     }

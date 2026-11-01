@@ -282,8 +282,9 @@ psd_color_test(int specimen)
         if (compression == 3u) {
             for (n = 0u; n < rows; ++n) {
                 for (offset = row_bytes - 1u; offset > 0u; --offset) {
-                    raw[n * row_bytes + offset] -=
-                        raw[n * row_bytes + offset - 1u];
+                    raw[n * row_bytes + offset] = (unsigned char)(
+                        raw[n * row_bytes + offset] -
+                        raw[n * row_bytes + offset - 1u]);
                 }
             }
         }

@@ -33,7 +33,8 @@ enum {
 static unsigned int
 gpupal_direct_next(unsigned int *state)
 {
-    *state = *state * 1103515245U + 12345U;
+    *state = (unsigned int)((uint64_t)*state * 1103515245U
+        + 12345U);
     return (*state >> 16) & 0x7fffU;
 }
 

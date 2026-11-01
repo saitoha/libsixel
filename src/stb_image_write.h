@@ -879,12 +879,13 @@ static unsigned int stbiw__zlib_countm(unsigned char *a, unsigned char *b, int l
 static unsigned int stbiw__zhash(unsigned char *data)
 {
    stbiw_uint32 hash = data[0] + (data[1] << 8) + (data[2] << 16);
+   /* Project the sum back to the hash's modulo-2^32 domain. */
    hash ^= hash << 3;
-   hash += hash >> 5;
+   hash = (stbiw_uint32)((unsigned long long)hash + (hash >> 5));
    hash ^= hash << 4;
-   hash += hash >> 17;
+   hash = (stbiw_uint32)((unsigned long long)hash + (hash >> 17));
    hash ^= hash << 25;
-   hash += hash >> 6;
+   hash = (stbiw_uint32)((unsigned long long)hash + (hash >> 6));
    return hash;
 }
 
@@ -1128,24 +1129,58 @@ static void stbiw__encode_png_line(unsigned char *pixels, int stride_bytes, int 
       return;
    }
 
+   // PNG residuals retain their low byte, interpreted as signed for scoring.
    // first loop isn't optimized since it's just one pixel
    for (i = 0; i < n; ++i) {
       switch (type) {
-         case 1: line_buffer[i] = z[i]; break;
-         case 2: line_buffer[i] = z[i] - z[i-signed_stride]; break;
-         case 3: line_buffer[i] = z[i] - (z[i-signed_stride]>>1); break;
-         case 4: line_buffer[i] = (signed char) (z[i] - stbiw__paeth(0,z[i-signed_stride],0)); break;
-         case 5: line_buffer[i] = z[i]; break;
-         case 6: line_buffer[i] = z[i]; break;
+         case 1:
+            line_buffer[i] = (signed char)(z[i]);
+            break;
+         case 2:
+            line_buffer[i] = (signed char)(z[i] - z[i-signed_stride]);
+            break;
+         case 3:
+            line_buffer[i] = (signed char)(z[i] - (z[i-signed_stride]>>1));
+            break;
+         case 4:
+            line_buffer[i] = (signed char)(z[i] -
+                stbiw__paeth(0,z[i-signed_stride],0));
+            break;
+         case 5:
+            line_buffer[i] = (signed char)(z[i]);
+            break;
+         case 6:
+            line_buffer[i] = (signed char)(z[i]);
+            break;
       }
    }
    switch (type) {
-      case 1: for (i=n; i < width*n; ++i) line_buffer[i] = z[i] - z[i-n]; break;
-      case 2: for (i=n; i < width*n; ++i) line_buffer[i] = z[i] - z[i-signed_stride]; break;
-      case 3: for (i=n; i < width*n; ++i) line_buffer[i] = z[i] - ((z[i-n] + z[i-signed_stride])>>1); break;
-      case 4: for (i=n; i < width*n; ++i) line_buffer[i] = z[i] - stbiw__paeth(z[i-n], z[i-signed_stride], z[i-signed_stride-n]); break;
-      case 5: for (i=n; i < width*n; ++i) line_buffer[i] = z[i] - (z[i-n]>>1); break;
-      case 6: for (i=n; i < width*n; ++i) line_buffer[i] = z[i] - stbiw__paeth(z[i-n], 0,0); break;
+      case 1:
+         for (i=n; i < width*n; ++i)
+            line_buffer[i] = (signed char)(z[i] - z[i-n]);
+         break;
+      case 2:
+         for (i=n; i < width*n; ++i)
+            line_buffer[i] = (signed char)(z[i] - z[i-signed_stride]);
+         break;
+      case 3:
+         for (i=n; i < width*n; ++i)
+            line_buffer[i] = (signed char)(z[i] -
+                ((z[i-n] + z[i-signed_stride])>>1));
+         break;
+      case 4:
+         for (i=n; i < width*n; ++i)
+            line_buffer[i] = (signed char)(z[i] -
+                stbiw__paeth(z[i-n], z[i-signed_stride], z[i-signed_stride-n]));
+         break;
+      case 5:
+         for (i=n; i < width*n; ++i)
+            line_buffer[i] = (signed char)(z[i] - (z[i-n]>>1));
+         break;
+      case 6:
+         for (i=n; i < width*n; ++i)
+            line_buffer[i] = (signed char)(z[i] - stbiw__paeth(z[i-n], 0,0));
+         break;
    }
 }
 

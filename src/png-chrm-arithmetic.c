@@ -149,7 +149,8 @@ png_chrm_plus(sixel_png_chrm_integer_t a, sixel_png_chrm_integer_t b)
     for (i = 0; i < PNG_CHRM_WORDS; ++i) {
         value = (uint64_t)b.w[i] + carry;
         carry = (uint64_t)a.w[i] < value;
-        r.w[i] = (uint32_t)((uint64_t)a.w[i] - value);
+        /* Add one limb before subtracting; the cast retains its low bits. */
+        r.w[i] = (uint32_t)((UINT64_C(1) << 32) + a.w[i] - value);
     }
     assert(carry == 0);
     return r;

@@ -98,7 +98,8 @@ fhedt_build_encode(int quality, int overlap, char const *path)
     }
     random = 1U;
     for (i = 0; i < size * size * 3; ++i) {
-        random = random * 1664525U + 1013904223U;
+        random = (unsigned int)((uint64_t)random * 1664525U
+            + 1013904223U);
         pixels[i] = (unsigned char)(random >> 24);
     }
     ok = 0;

@@ -256,9 +256,11 @@ sixel_bluenoise_sample(int x, int y, unsigned int phase_x,
 
     /* Reduce before adding the second tap: coordinates and signed phase
      * offsets are periodic, not a reason to overflow a signed sum. */
-    ix0 = (int)(((unsigned int)x + phase_x +
+    ix0 = (int)((((unsigned int)x & (SIXEL_BN_W - 1u)) +
+                 (phase_x & (SIXEL_BN_W - 1u)) +
                  (unsigned int)channel_x) & (SIXEL_BN_W - 1u));
-    iy0 = (int)(((unsigned int)y + phase_y +
+    iy0 = (int)((((unsigned int)y & (SIXEL_BN_H - 1u)) +
+                 (phase_y & (SIXEL_BN_H - 1u)) +
                  (unsigned int)channel_y) & (SIXEL_BN_H - 1u));
     ix1 = ix0 + 13;
     iy1 = iy0 + 29;

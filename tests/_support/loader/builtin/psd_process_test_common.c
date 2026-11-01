@@ -303,7 +303,8 @@ psd_process_test(int specimen)
         if (compression == 3u) {
             for (k = 0u; k < channels; ++k) {
                 for (n = row - 1u; n > 0u; --n) {
-                    raw[k * row + n] -= raw[k * row + n - 1u];
+                    raw[k * row + n] = (unsigned char)(raw[k * row + n] -
+                            raw[k * row + n - 1u]);
                 }
             }
         }

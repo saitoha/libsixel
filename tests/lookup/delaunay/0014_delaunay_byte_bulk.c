@@ -45,7 +45,8 @@ test_lookup_0034_delaunay_byte_bulk(int argc, char **argv)
     state = 27;
     for (i = 0; i < 257; ++i) {
         for (c = 0; c < 3; ++c) {
-            state = state * 1664525U + 1013904223U;
+            state = (unsigned int)((uint64_t)state * 1664525U
+                + 1013904223U);
             palette[i * 3 + c] = (unsigned char)(state >> 24);
             if (i > 0 && i % 5 == 0) {
                 palette[i * 3 + c] = palette[(i - 1) * 3 + c];
@@ -57,7 +58,8 @@ test_lookup_0034_delaunay_byte_bulk(int argc, char **argv)
     memset(palette + 255 * 3, 255, 3);
     for (i = 0; i < 65; ++i) {
         for (c = 0; c < 3; ++c) {
-            state = state * 1664525U + 1013904223U;
+            state = (unsigned int)((uint64_t)state * 1664525U
+                + 1013904223U);
             pixels[i][c] = (unsigned char)(state >> 24);
         }
         pixels[i][3] = 0x55;
@@ -71,9 +73,10 @@ test_lookup_0034_delaunay_byte_bulk(int argc, char **argv)
     memset(pixels[8], 255, 3);
     key = ((unsigned int)pixels[23][0] << 16)
         | ((unsigned int)pixels[23][1] << 8) | pixels[23][2];
-    slot = (key * 2654435761U) >> (32 - SIXEL_DELAUNAY_BYTE_MEMO_BITS);
+    slot = (uint32_t)((uint64_t)key * 2654435761U)
+        >> (32 - SIXEL_DELAUNAY_BYTE_MEMO_BITS);
     for (collision = 0; collision < (1U << 24); ++collision) {
-        if (collision != key && (collision * 2654435761U)
+        if (collision != key && (uint32_t)((uint64_t)collision * 2654435761U)
                 >> (32 - SIXEL_DELAUNAY_BYTE_MEMO_BITS) == slot) {
             break;
         }

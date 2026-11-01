@@ -351,12 +351,12 @@ sixel_carry_hard(unsigned char const *source, int32_t const *carry,
                         sixel_carry_round(rounded, DEN); \
                 } \
             } else if ( \
-                    (uint32_t)candidate[0] - \
-                        (uint32_t)bounds->lower > bounds->span || \
-                    (uint32_t)candidate[1] - \
-                        (uint32_t)bounds->lower > bounds->span || \
-                    (uint32_t)candidate[2] - \
-                        (uint32_t)bounds->lower > bounds->span) { \
+                    (uint32_t)((int64_t)candidate[0] - \
+                        bounds->lower) > bounds->span || \
+                    (uint32_t)((int64_t)candidate[1] - \
+                        bounds->lower) > bounds->span || \
+                    (uint32_t)((int64_t)candidate[2] - \
+                        bounds->lower) > bounds->span) { \
                 sixel_carry_soft(bounds, source, carry, 3, DEN, \
                                  candidate, pixel); \
             } else { \

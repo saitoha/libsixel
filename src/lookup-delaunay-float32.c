@@ -571,9 +571,9 @@ sixel_delaunay_float_memo_slot(uint32_t const *key)
 {
     uint32_t hash;
 
-    hash = key[0] * 0x9e3779b1U;
-    hash = (hash ^ key[1]) * 0x85ebca6bU;
-    hash = (hash ^ key[2]) * 0xc2b2ae35U;
+    hash = (uint32_t)((uint64_t)key[0] * 0x9e3779b1U);
+    hash = (uint32_t)((uint64_t)(hash ^ key[1]) * 0x85ebca6bU);
+    hash = (uint32_t)((uint64_t)(hash ^ key[2]) * 0xc2b2ae35U);
     hash ^= hash >> 16;
     return hash & (SIXEL_DELAUNAY_FLOAT_MEMO_SIZE - 1U);
 }

@@ -516,12 +516,13 @@ psd_alpha_test(int specimen)
                 for (n = row - depth / 8u; n > 0u; n -= depth / 8u) {
                     i = (unsigned int)(k * row + n);
                     if (depth == 16u) {
-                        code = (raw[i] * 256u + raw[i + 1u] -
+                        code = (65536u + raw[i] * 256u + raw[i + 1u] -
                             raw[i - 2u] * 256u - raw[i - 1u]) & 65535u;
                         raw[i] = (unsigned char)(code >> 8);
                         raw[i + 1u] = (unsigned char)code;
                     } else {
-                        raw[i] -= raw[i - 1u];
+                        raw[i] = (unsigned char)(raw[i] -
+                            raw[i - 1u]);
                     }
                 }
             }

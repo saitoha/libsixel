@@ -39,6 +39,8 @@ Compiler and runtime adapters are still part of this build. Examples include com
 
 [tests/meson.build](../../tests/meson.build) discovers runnable scripts through the same `read-check-test-list.sh` helper used by Autotools. It separately scans test C and header files, excludes `*.inc.c` fragments and private environment/artifact trees, and constructs a single `test_runner` executable. That executable also includes selected converter and extension helper sources and depends on `libsixel_dep`.
 
+The C case inventory is compiled into the private `test_runner_cases` static library and linked whole into the runner. This keeps the executable link command bounded even with older Meson/LLD combinations that do not put object paths into response files. The archiver retains Meson's own response-file handling. This changes neither translation-unit boundaries nor dispatch registration; the separately flagged float lookup tests remain separate objects. The archive is built only when the runner is requested. Native build validation must check the generated archive and executable links, since source-list checks alone cannot establish a platform's command-length limit.
+
 Each discovered script becomes a separate Meson `test()` registration in the `tap` suite, with a 90-second per-file timeout. Meson schedules and parses ordinary TAP tests itself. The configured [meson-python-tap-wrapper.sh](../../tests/meson-python-tap-wrapper.sh), despite its historical name, prepares shell tests and multiple binding languages: it selects executable paths, handles runtime environments, and lazily prepares shared binding environments and large fixtures with coordination between workers.
 
 In a standalone build, common environment exports are stored once in the `ci` test setup, which is also the default, and inherited by the `installcheck` setup. The artifact directory and small timing-registration metadata are stored on each test. This avoids interpreting and serializing the same feature and tool settings thousands of times during setup. When libsixel is a Meson subproject, each test retains a copy of the common environment so the parent project keeps control of its default test setup. Test names, individual scheduling, dependencies, timeouts, and expected-failure handling are the same in both cases.
@@ -62,6 +64,8 @@ meson test -C builddir --list
 Automatic C source discovery does not create a C dispatch-table entry or a TAP wrapper. Those still belong to the test's implementation. It also differs from the explicit Autotools C source list and amalgamated runner defines; see [test registration](test-harness.md#shared-discovery-and-c-test-dispatch).
 
 ## Static checks, installed commands, and documentation
+
+The [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) source check rejects flattening the case archive into the executable, losing whole-archive linking, or diverging compile dependencies. It tests mutations of the production graph without compiling C; actual archive creation and linking remain build observations.
 
 The `staticcheck` run target invokes the shared `tests/_static/sh/staticcheck-suite.sh`. The source-level invariant set is shared, but checks that require configured Autotools Makefiles can skip in a Meson build. That is a coverage boundary, not proof that a skipped compiler or linkage contract passed.
 

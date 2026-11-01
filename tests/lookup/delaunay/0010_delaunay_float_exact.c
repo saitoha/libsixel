@@ -65,7 +65,8 @@ test_lookup_0030_delaunay_float_exact(int argc, char **argv)
         weights[2] = 1.0f / 65025.0f;
         for (i = 0; i < n; ++i) {
             for (c = 0; c < 3; ++c) {
-                state = state * 1664525U + 1013904223U;
+                state = (unsigned int)((uint64_t)state * 1664525U
+                    + 1013904223U);
                 palette[i * 3 + c] = (float)(state >> 8) / 8388608.0f - 1;
                 if (kind == 3) {
                     palette[i * 3 + c] *= 1.0e30f;
@@ -91,7 +92,8 @@ test_lookup_0030_delaunay_float_exact(int argc, char **argv)
         }
         for (q = 0; q < 24000; ++q) {
             for (c = 0; c < 3; ++c) {
-                state = state * 1664525U + 1013904223U;
+                state = (unsigned int)((uint64_t)state * 1664525U
+                    + 1013904223U);
                 pixel[c] = (float)(state >> 8) / 2097152.0f - 4;
                 if (q % 7 == 0) {
                     pixel[c] = palette[(q % n) * 3 + c];

@@ -192,6 +192,7 @@ Use the [image-quality measurement policy](../quality/measurement-policy.md) for
 - Use harness-provided `TOP_SRCDIR`, `TOP_BUILDDIR`, `ARTIFACT_LOCAL_DIR`, executable paths, feature flags, and runtime prefix.
 - Do not assume GNU-only flags, `/proc`, a case-sensitive filesystem, executable suffixes, or Unix path separators unless the test is platform-specific.
 - Keep optional-feature detection explicit and early.
+- Express intentional integer projections explicitly: test fixtures, deterministic generators, and format encoders must remain usable with implicit-conversion and unsigned-overflow sanitizers. Use a wider intermediate followed by an explicit cast for modulo-2^32 arithmetic, mask periodic coordinates before combining them, and cast termios masks to `tcflag_t` before complementing them. When an algorithm intrinsically needs a modulo-2^64 product, confine any unsigned-overflow sanitizer exception to that documented arithmetic helper; allocation sizes, bounds, counters, and callers retain their checks.
 - Aborttrace TAP tests that invoke the shared abort helper must emit a whole-file skip for both `wine` and `wine64` before the normal TAP plan and before invoking the helper. Wine can leave the combined test runner alive after an aborttrace policy probe, while the converter-level regression suite covers the policy under Wine without that helper path.
 - Avoid timing-sensitive sleeps. Prefer an observable readiness or completion condition.
 

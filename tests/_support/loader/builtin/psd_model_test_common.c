@@ -323,11 +323,12 @@ psd_model_test(int specimen)
                 for (i = 7u; i > 0u; --i) {
                     n = k * row + i * (depth / 8u);
                     if (depth == 8u) {
-                        raw[n] -= raw[n - 1u];
+                        raw[n] = (unsigned char)(raw[n] -
+                            raw[n - 1u]);
                     } else {
                         code = raw[n] * 256u + raw[n + 1u];
                         previous = raw[n - 2u] * 256u + raw[n - 1u];
-                        code = (code - previous) & 65535u;
+                        code = (code + 65536u - previous) & 65535u;
                         raw[n] = (unsigned char)(code >> 8);
                         raw[n + 1u] = (unsigned char)code;
                     }

@@ -743,7 +743,8 @@ sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
         key = ((unsigned int)pixel[0] << 16)
             | ((unsigned int)pixel[1] << 8)
             | (unsigned int)pixel[2];
-        slot = (key * 2654435761U) >> (32 - SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
+        slot = (uint32_t)((uint64_t)key * 2654435761U)
+            >> (32 - SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
         entry = (unsigned int)sixel_atomic_load_relaxed_i32(&tree->memo[slot]);
         if ((entry >> 8) == key
                 && entry != (unsigned int)SIXEL_LOOKUP_VPTREE_8BIT_MEMO_EMPTY) {
@@ -908,7 +909,7 @@ sixel_lookup_vptree_8bit_map_pixels(
             | ((unsigned int)pixels[1] << 8) | pixels[2];
 #if (HAVE_NEON && HAVE_ARM_NEON_H) || (HAVE_SSE2 && HAVE_EMMINTRIN_H)
         if (tree->memo != NULL && key != previous) {
-            slot = (key * 2654435761U)
+            slot = (uint32_t)((uint64_t)key * 2654435761U)
                 >> (32 - SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
             entry = (unsigned int)sixel_atomic_load_relaxed_i32(
                 &tree->memo[slot]);

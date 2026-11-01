@@ -4,7 +4,11 @@
 #if !defined(SIXEL_AMALGAMATION)
 #define sixel_lookup_policy_6bit_8bit_new filtered_6_byte_new
 #define sixel_lookup_policy_6bit_float32_new filtered_6_float_new
+/* Every external definition in the included unit needs a private name. */
+#define sixel_lookup_policy_6bit_shared_instance_enabled \
+    filtered_6_shared_instance_enabled
 #include "src/lookup-policy-6bit.c"
+#undef sixel_lookup_policy_6bit_shared_instance_enabled
 #undef sixel_lookup_policy_6bit_8bit_new
 #undef sixel_lookup_policy_6bit_float32_new
 #define FILTER_NEW filtered_6_float_new

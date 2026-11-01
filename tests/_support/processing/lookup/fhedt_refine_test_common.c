@@ -172,7 +172,8 @@ fh_refine_setup(struct fh_refine_fixture *f, int weighted)
     state = 1741;
     for (index = 0; index < 257; ++index) {
         for (axis = 0; axis < 3; ++axis) {
-            state = state * 1664525U + 1013904223U;
+            state = (unsigned int)((uint64_t)state * 1664525U
+                + 1013904223U);
             value = (int)(state >> 24);
             if (index < 2) {
                 value = index * 255;
@@ -274,7 +275,8 @@ test_fh_refine_common(int floating, int resolution)
         state = 981;
         for (sample = 0; sample < samples + 8; ++sample) {
             for (axis = 0; axis < 3; ++axis) {
-                state = state * 1664525U + 1013904223U;
+                state = (unsigned int)((uint64_t)state * 1664525U
+                    + 1013904223U);
                 coord = resolution == 64 ?
                     (sample >> (axis * 6)) & 63 :
                     (int)((state >> 16) % (unsigned)resolution);

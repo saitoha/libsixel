@@ -207,7 +207,8 @@ sixel_repair_candidate_hash(sixel_palette_emitted_color_t const *color)
 
     hash = (uint32_t)color->type;
     for (channel = 0; channel < 3; ++channel) {
-        hash = hash * UINT32_C(16777619) ^ (uint32_t)color->fields[channel];
+        hash = (uint32_t)((uint64_t)hash * UINT32_C(16777619))
+            ^ (uint32_t)color->fields[channel];
     }
     return hash;
 }

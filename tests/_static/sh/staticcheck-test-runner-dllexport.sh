@@ -1,5 +1,6 @@
 #!/bin/sh
 # Emit TAP for test_runner calls that require dllexport in visible headers.
+# Policy: docs/testing/staticcheck.md
 
 set -eu
 source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh

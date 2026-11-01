@@ -30,9 +30,11 @@ test_perturb_0001_weights(int argc, char **argv)
     for (i = 0; i < 3; ++i) {
         for (j = 0; j < 10000; ++j) {
             /* Test-only pseudorandom coordinates include nonzero band rows. */
-            state = state * 1664525u + 1013904223u;
+            state = (unsigned int)((uint64_t)state * 1664525u
+                + 1013904223u);
             x = (int)(state & 0x7fffffffu);
-            state = state * 1664525u + 1013904223u;
+            state = (unsigned int)((uint64_t)state * 1664525u
+                + 1013904223u);
             y = (int)(state & 0x7fffffffu);
             sixel_dither_perturb_init(&context, amounts[i], -j);
             sixel_dither_perturb_weights(&context, x, y, num);

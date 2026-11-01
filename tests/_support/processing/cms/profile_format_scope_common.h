@@ -28,8 +28,9 @@ profile_format_outside(int engine, int format, int destination)
     memset(output, 0xa5, sizeof(output));
     memcpy(input + 32u, samples, sizeof(samples));
     memcpy(original, input, sizeof(original));
-    transform = sixel_cms_create_transform(source, format, target,
-        destination, SIXEL_CMS_TRANSFORM_DEFAULT);
+    transform = sixel_cms_create_transform(source,
+        (sixel_cms_pixel_format_t)format, target,
+        (sixel_cms_pixel_format_t)destination, SIXEL_CMS_TRANSFORM_DEFAULT);
     ok = source != NULL && target != NULL;
     /* Invalid formats retain builtin apply failure and ColorSync creation
      * failure. The byte convenience paths retain exact neutral bytes. */

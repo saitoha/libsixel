@@ -31,7 +31,8 @@ enum {
 static unsigned int
 gridlut_exact_next(unsigned int *state)
 {
-    *state = *state * 1664525U + 1013904223U;
+    *state = (unsigned int)((uint64_t)*state * 1664525U
+        + 1013904223U);
     return *state >> 8;
 }
 

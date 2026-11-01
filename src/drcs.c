@@ -299,10 +299,11 @@ sixel_drcs_emit_drcsmmv2_chars(sixel_encoder_t *encoder,
 
     for (row = 0; row < num_rows; row++) {
         for (col = 0; col < num_cols; col++) {
-            *(buf_p++) = ((code >> 18) & 0x07) | 0xf0;
-            *(buf_p++) = ((code >> 12) & 0x3f) | 0x80;
-            *(buf_p++) = ((code >> 6) & 0x3f) | 0x80;
-            *(buf_p++) = (code & 0x3f) | 0x80;
+            /* Emit UTF-8 byte representations through the char buffer. */
+            *(buf_p++) = (char)(((code >> 18) & 0x07) | 0xf0);
+            *(buf_p++) = (char)(((code >> 12) & 0x3f) | 0x80);
+            *(buf_p++) = (char)(((code >> 6) & 0x3f) | 0x80);
+            *(buf_p++) = (char)((code & 0x3f) | 0x80);
             code++;
             if (!fill) {
                 if ((code & 0x7f) == 0x0) {

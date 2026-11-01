@@ -3324,6 +3324,29 @@ end:
     return status;
 }
 
+/* PCC debug-info generation can fail on long stack parameter lists.
+ * Share this request across colormap construction and median-cut telemetry. */
+typedef struct sixel_palette_heckbert_colormap_request {
+    sixel_palette_t *palette;
+    unsigned char const *data;
+    unsigned int length;
+    unsigned int depth;
+    int use_reversible;
+    tupletable2 *colormap;
+    unsigned int *origcolors;
+    unsigned int pixel_stride;
+    int pixelformat;
+    sixel_allocator_t *allocator;
+    sixel_timeline_logger_t *logger;
+    int *job_seq;
+    char const *engine_name;
+    double *iterate_ms;
+    unsigned int *iterate_count;
+    double *merge_ms;
+    unsigned int *merge_iterate_count;
+    int *merge_mode;
+} sixel_palette_heckbert_colormap_request_t;
+
 static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
           unsigned int depth,
@@ -3335,14 +3358,7 @@ mediancut(tupletable2 const colorfreqtable,
           int pixelformat,
           tupletable2 *colormapP,
           sixel_allocator_t *allocator,
-          sixel_timeline_logger_t *logger,
-          int *job_seq,
-          char const *engine_name,
-          double *iterate_ms,
-          unsigned int *iterate_count,
-          double *merge_ms,
-          unsigned int *merge_iterate_count,
-          int *merge_mode,
+          sixel_palette_heckbert_colormap_request_t const *request,
           sixel_heckbert_options_t const *options)
 {
     SIXELSTATUS status;
@@ -3438,9 +3454,9 @@ mediancut(tupletable2 const colorfreqtable,
         sixel_thread_work_checkpoint();
         iteration_wall_start = sixel_timer_now();
         boxes_before = boxes;
-        job_iteration = sixel_palette_heckbert_log_start(logger,
-                                                         job_seq,
-                                                         engine_name,
+        job_iteration = sixel_palette_heckbert_log_start(request->logger,
+                                                         request->job_seq,
+                                                         request->engine_name,
                                                          "palette/iterate",
                                                          "iterate");
         for (bi = 0U; bi < boxes && bv[bi].colors < 2U; ++bi) {
@@ -3459,21 +3475,21 @@ mediancut(tupletable2 const colorfreqtable,
                               pca_workspace_capacity, options, pixelformat);
             if (SIXEL_FAILED(status)) {
                 iteration_wall_stop = sixel_timer_now();
-                if (iterate_ms != NULL) {
-                    *iterate_ms += (iteration_wall_stop - iteration_wall_start)
-                                   * 1000.0;
+                if (request->iterate_ms != NULL) {
+                    *request->iterate_ms +=
+                        (iteration_wall_stop - iteration_wall_start) * 1000.0;
                 }
-                if (iterate_count != NULL) {
-                    *iterate_count += 1U;
+                if (request->iterate_count != NULL) {
+                    *request->iterate_count += 1U;
                 }
                 (void)snprintf(log_detail,
                                sizeof(log_detail),
                                "boxes=%u->%u split=failed",
                                boxes_before,
                                boxes);
-                sixel_palette_heckbert_log_finish(logger,
+                sixel_palette_heckbert_log_finish(request->logger,
                                                   job_iteration,
-                                                  engine_name,
+                                                  request->engine_name,
                                                   "palette/iterate",
                                                   "iterate",
                                                   log_detail);
@@ -3482,12 +3498,12 @@ mediancut(tupletable2 const colorfreqtable,
         }
         iteration_wall_stop = sixel_timer_now();
         boxes_after = boxes;
-        if (iterate_ms != NULL) {
-            *iterate_ms += (iteration_wall_stop - iteration_wall_start)
+        if (request->iterate_ms != NULL) {
+            *request->iterate_ms += (iteration_wall_stop - iteration_wall_start)
                            * 1000.0;
         }
-        if (iterate_count != NULL) {
-            *iterate_count += 1U;
+        if (request->iterate_count != NULL) {
+            *request->iterate_count += 1U;
         }
         (void)snprintf(log_detail,
                        sizeof(log_detail),
@@ -3495,9 +3511,9 @@ mediancut(tupletable2 const colorfreqtable,
                        boxes_before,
                        boxes_after,
                        multicolorBoxesExist);
-        sixel_palette_heckbert_log_finish(logger,
+        sixel_palette_heckbert_log_finish(request->logger,
                                           job_iteration,
-                                          engine_name,
+                                          request->engine_name,
                                           "palette/iterate",
                                           "iterate",
                                           log_detail);
@@ -3570,9 +3586,9 @@ mediancut(tupletable2 const colorfreqtable,
             }
         }
         merge_wall_start = sixel_timer_now();
-        job_merge = sixel_palette_heckbert_log_start(logger,
-                                                     job_seq,
-                                                     engine_name,
+        job_merge = sixel_palette_heckbert_log_start(request->logger,
+                                                     request->job_seq,
+                                                     request->engine_name,
                                                      "palette/merge",
                                                      "merge");
         cluster_total = sixel_palette_merge_representatives(cluster_weight,
@@ -3627,14 +3643,14 @@ mediancut(tupletable2 const colorfreqtable,
             colormapP, colorfreqtable.preserve_extended, methodForRep,
             rep_stats, allocator);
         merge_wall_stop = sixel_timer_now();
-        if (merge_ms != NULL) {
-            *merge_ms += (merge_wall_stop - merge_wall_start) * 1000.0;
+        if (request->merge_ms != NULL) {
+            *request->merge_ms += (merge_wall_stop - merge_wall_start) * 1000.0;
         }
-        if (merge_iterate_count != NULL) {
-            *merge_iterate_count += iteration_actual;
+        if (request->merge_iterate_count != NULL) {
+            *request->merge_iterate_count += iteration_actual;
         }
-        if (merge_mode != NULL) {
-            *merge_mode = resolved_merge;
+        if (request->merge_mode != NULL) {
+            *request->merge_mode = resolved_merge;
         }
         (void)snprintf(log_detail,
                        sizeof(log_detail),
@@ -3643,9 +3659,9 @@ mediancut(tupletable2 const colorfreqtable,
                        cluster_total,
                        resolved_merge,
                        iteration_actual);
-        sixel_palette_heckbert_log_finish(logger,
+        sixel_palette_heckbert_log_finish(request->logger,
                                           job_merge,
-                                          engine_name,
+                                          request->engine_name,
                                           "palette/merge",
                                           "merge",
                                           log_detail);
@@ -3802,27 +3818,7 @@ end:
     return status;
 }
 
-/* pcc may ICE on very long parameter lists; bundle into one request object. */
-typedef struct sixel_palette_heckbert_colormap_request {
-    sixel_palette_t *palette;
-    unsigned char const *data;
-    unsigned int length;
-    unsigned int depth;
-    int use_reversible;
-    tupletable2 *colormap;
-    unsigned int *origcolors;
-    unsigned int pixel_stride;
-    int pixelformat;
-    sixel_allocator_t *allocator;
-    sixel_timeline_logger_t *logger;
-    int *job_seq;
-    char const *engine_name;
-    double *iterate_ms;
-    unsigned int *iterate_count;
-    double *merge_ms;
-    unsigned int *merge_iterate_count;
-    int *merge_mode;
-} sixel_palette_heckbert_colormap_request_t;
+
 
 static SIXELSTATUS
 sixel_palette_heckbert_colormap(
@@ -3841,14 +3837,6 @@ sixel_palette_heckbert_colormap(
     unsigned int pixel_stride;
     int pixelformat;
     sixel_allocator_t *allocator;
-    sixel_timeline_logger_t *logger;
-    int *job_seq;
-    char const *engine_name;
-    double *iterate_ms;
-    unsigned int *iterate_count;
-    double *merge_ms;
-    unsigned int *merge_iterate_count;
-    int *merge_mode;
     tupletable2 colorfreqtable;
     unsigned int i;
     unsigned int n;
@@ -3885,14 +3873,6 @@ sixel_palette_heckbert_colormap(
     pixel_stride = request->pixel_stride;
     pixelformat = request->pixelformat;
     allocator = request->allocator;
-    logger = request->logger;
-    job_seq = request->job_seq;
-    engine_name = request->engine_name;
-    iterate_ms = request->iterate_ms;
-    iterate_count = request->iterate_count;
-    merge_ms = request->merge_ms;
-    merge_iterate_count = request->merge_iterate_count;
-    merge_mode = request->merge_mode;
 
     colormapP->size = 0U;
     colormapP->table = NULL;
@@ -3966,14 +3946,7 @@ sixel_palette_heckbert_colormap(
                            pixelformat,
                            colormapP,
                            allocator,
-                           logger,
-                           job_seq,
-                           engine_name,
-                           iterate_ms,
-                           iterate_count,
-                           merge_ms,
-                           merge_iterate_count,
-                           merge_mode,
+                           request,
                            options);
         if (SIXEL_FAILED(status)) {
             goto end;

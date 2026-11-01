@@ -20,6 +20,9 @@ sixel_ormode_spread(unsigned int index)
 
 /* Extract row r from all eight planes. The multiply packs the isolated
  * bits into one byte; the unsigned overflow is intentional. */
+#if defined(__clang__)
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
 static inline unsigned int
 sixel_ormode_gather(uint64_t word, int row)
 {

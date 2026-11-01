@@ -739,7 +739,12 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
             return 0;
         }
         elapsed = color_auto_now() - started;
-        return elapsed >= minimum && elapsed < 0.150;
+        if (elapsed < minimum || elapsed >= 0.150) {
+            fprintf(stderr, "CLI color auto: timeout observation %.6f s "
+                "outside [%.6f, 0.150)\n", elapsed, minimum);
+            return 0;
+        }
+        return 1;
     }
     if (color_auto_is(name, "silent") ||
         color_auto_is(name, "multiple-silent")) {

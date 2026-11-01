@@ -14,8 +14,24 @@ function start_header(name) {
     escaped = 0
     directive = 0
 }
-function emit_declaration(    text, prefix, name, offset, location, exported) {
+function emit_declaration(    text, prefix, name, offset, location, exported,
+                                i, depth, ch, last) {
     text = declaration
+    # Attributes can precede storage classes and contain nested calls. Blank
+    # their balanced argument lists, retaining newlines for diagnostics.
+    while (match(text, /__(attribute__|declspec)[[:space:]]*\(/)) {
+        offset = RSTART
+        last = RSTART + RLENGTH - 1
+        depth = 0
+        for (i = last; i <= length(text); ++i) {
+            ch = substr(text, i, 1)
+            if (ch == "(") ++depth
+            if (ch == ")" && --depth == 0) break
+        }
+        prefix = substr(text, offset, i - offset + 1)
+        gsub(/[^\n]/, " ", prefix)
+        text = substr(text, 1, offset - 1) prefix substr(text, i + 1)
+    }
     if (text ~ /(^|[[:space:]])typedef([[:space:]]|$)/ || text ~ /=/) {
         return
     }
@@ -131,7 +147,10 @@ BEGIN {
     scan_line("SIXEL_INTERNAL_API int wrapped(void);", 6)
     scan_line("}", 7)
     scan_line("SIXEL_COMPAT_API int compatible(void);", 8)
-    scan_line("SIXELAPI", 9)
+    scan_line("__attribute__((no_sanitize(\"unsigned-integer-overflow\")))", 9)
+    scan_line("static inline int attributed(void) { hidden(); }", 10)
+    scan_line("__declspec(dllexport) int attributed_external(void);", 11)
+    scan_line("SIXELAPI", 12)
     start_header("negative")
     scan_line("int unmarked(void);", 1)
     scan_line("SIXELAPI int first(void); int second(void);", 2)
@@ -144,7 +163,9 @@ BEGIN {
         observed["compatible"] != 1 || observed["wrapped"] != 1 || observed["unmarked"] != 0 ||
         !("unmarked" in observed) || !("second" in observed) ||
         observed["first"] != 1 || observed["second"] != 0 ||
-        ("split" in observed)) {
+        ("split" in observed) || ("attributed" in observed) ||
+        ("__attribute__" in observed) || ("__declspec" in observed) ||
+        !("attributed_external" in observed)) {
         print "dllexport declaration scanner self-test failed" > "/dev/stderr"
         exit 1
     }

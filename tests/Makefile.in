@@ -21914,6 +21914,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-amalgamation-test-fragments.sh \
 	_static/sh/staticcheck-test-runner-link.sh \
 	_static/python/test_runner_link.py \
+	_static/python/c_preprocessor_portability.py \
+	_static/sh/staticcheck-c-preprocessor-portability.sh \
 	_static/sh/staticcheck-command-dependencies.sh \
 	_static/python/command_dependencies.py \
 	_static/python/command-dependencies-requirements.txt \

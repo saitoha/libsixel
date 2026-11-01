@@ -3254,6 +3254,9 @@ end:
 
 /* Compare all eight bytes without borrowing into a neighboring byte, then
  * gather their equality bits. Packed colors use shifts, not host byte order. */
+#if defined(__clang__)
+__attribute__((no_sanitize("unsigned-integer-overflow")))
+#endif
 static unsigned int
 sixel_band_color_mask(uint64_t word, unsigned int color)
 {

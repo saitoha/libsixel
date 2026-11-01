@@ -134,8 +134,8 @@ sixel_dither_x_noise(int x, int y, int c, float strength)
     unsigned int phase;
 
     /* Define the pattern modulo 512 without signed coordinate overflow. */
-    phase = (((unsigned int)x + (unsigned int)c * 29u) ^
-             ((unsigned int)y * 149u)) * 1234u;
+    phase = ((((unsigned int)x & 511u) + ((unsigned int)c & 511u) * 29u) ^
+             (((unsigned int)y & 511u) * 149u)) * 1234u;
     return ((float)(phase & 511u) / 256.0f - 1.0f) * strength;
 }
 

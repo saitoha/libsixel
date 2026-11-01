@@ -34,7 +34,8 @@ test_dl21_sample(unsigned int q, unsigned int *state,
             q /= 17U;
         }
     } else if (q < 9009U) {
-        *state = *state * 1664525U + 1013904223U;
+        *state = (unsigned int)((uint64_t)*state * 1664525U
+            + 1013904223U);
         for (c = 0; c < 3; ++c) {
             pixel[c] = (unsigned char)(*state >> (8 * c));
         }
@@ -104,7 +105,8 @@ test_lookup_0021_delaunay_byte_exact(int argc, char **argv)
     state = 1841U;
     for (i = 0; i < n; ++i) {
         for (c = 0; c < 3; ++c) {
-            state = state * 1664525U + 1013904223U;
+            state = (unsigned int)((uint64_t)state * 1664525U
+                + 1013904223U);
             palette[i * 3 + c] = (unsigned char)(state >> 24);
             if (kind == 1 && i >= 40) {
                 palette[i * 3 + c] = palette[(i % 40) * 3 + c];

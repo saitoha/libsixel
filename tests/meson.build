@@ -245,7 +245,19 @@ float_lookup_tests = static_library('sixel_float_lookup_tests',
   build_by_default: false,
   install: false)
 
-test_runner_exe = executable('test_runner', test_runner_sources,
+# Older Meson LLD backends do not use response files for executable links.
+# Archive the case inventory so only a bounded library list reaches LLD.
+test_runner_cases = static_library('test_runner_cases', test_runner_sources,
+  include_directories: test_runner_inc,
+  dependencies: test_runner_deps,
+  c_args: libsixel_posix_defs + ['-DGDK_PIXBUF_ENABLE_BACKEND',
+                                 '-DSIXEL_PIXBUF_LOADER_TESTING',
+                                 '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
+  build_by_default: false,
+  install: false)
+
+test_runner_exe = executable('test_runner',
+  link_whole: test_runner_cases,
   objects: float_lookup_tests.extract_all_objects(recursive: true),
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,

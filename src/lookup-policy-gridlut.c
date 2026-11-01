@@ -159,8 +159,8 @@ sixel_lookup_policy_gridlut_candidates_8bit(
     int const low[3], int const high[3], int *candidates)
 {
     int bound;
-    int far;
-    int near;
+    int farthest_distance;
+    int nearest_distance;
     int a;
     int b;
     int gr;
@@ -180,9 +180,9 @@ sixel_lookup_policy_gridlut_candidates_8bit(
         a = object->blue[i] - low[2];
         b = high[2] - object->blue[i];
         gb = a > b ? a : b;
-        far = gr * gr + gg * gg + gb * gb;
-        if (far < bound) {
-            bound = far;
+        farthest_distance = gr * gr + gg * gg + gb * gb;
+        if (farthest_distance < bound) {
+            bound = farthest_distance;
         }
     }
     count = 0;
@@ -193,8 +193,8 @@ sixel_lookup_policy_gridlut_candidates_8bit(
             : (object->green[i] > high[1] ? object->green[i] - high[1] : 0);
         gb = object->blue[i] < low[2] ? low[2] - object->blue[i]
             : (object->blue[i] > high[2] ? object->blue[i] - high[2] : 0);
-        near = gr * gr + gg * gg + gb * gb;
-        if (near <= bound) {
+        nearest_distance = gr * gr + gg * gg + gb * gb;
+        if (nearest_distance <= bound) {
             candidates[count++] = i;
         }
     }

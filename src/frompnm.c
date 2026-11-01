@@ -43,11 +43,12 @@
 # include <math.h>
 #endif  /* HAVE_MATH_H */
 
+#include <sixel.h>
+
+/* Load the public header's integer limits before supplying a fallback. */
 #ifndef SIZE_MAX
 # define SIZE_MAX ((size_t)-1)
 #endif
-
-#include <sixel.h>
 
 #include "compat_stub.h"
 #include "loader-common.h"

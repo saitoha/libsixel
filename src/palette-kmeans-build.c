@@ -704,7 +704,7 @@ sixel_kmeans_float_unique(double const *points, unsigned int count,
         bytes = (unsigned char const *)(void const *)key;
         hash = 2166136261u;
         for (byte = 0; byte < sizeof(key); ++byte) {
-            hash = (hash ^ bytes[byte]) * (uint32_t)16777619u;
+            hash = (uint32_t)((uint64_t)(hash ^ bytes[byte]) * 16777619u);
         }
         slot = hash & (size - 1u);
         while (table[slot] != 0) {

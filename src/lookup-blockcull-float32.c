@@ -182,8 +182,8 @@ sixel_blockcull_float_candidates(
     double low[3];
     double high[3];
     double bound;
-    double far;
-    double near;
+    double farthest_distance;
+    double nearest_distance;
     double a;
     double b;
     double gap;
@@ -212,15 +212,15 @@ sixel_blockcull_float_candidates(
     bound = DBL_MAX;
     for (i = 0; i < lookup->count; ++i) {
         entry = lookup->palette + (size_t)i * 3U;
-        far = 0.0;
+        farthest_distance = 0.0;
         for (c = 0; c < 3; ++c) {
             a = entry[c] - low[c];
             b = high[c] - entry[c];
             gap = a > b ? a : b;
-            far += gap * gap * lookup->weights[c];
+            farthest_distance += gap * gap * lookup->weights[c];
         }
-        if (far < bound) {
-            bound = far;
+        if (farthest_distance < bound) {
+            bound = farthest_distance;
         }
     }
     bound *= SIXEL_BLOCKCULL_FLOAT_SLACK;
@@ -230,7 +230,7 @@ sixel_blockcull_float_candidates(
     count = 0;
     for (i = 0; i < lookup->count; ++i) {
         entry = lookup->palette + (size_t)i * 3U;
-        near = 0.0;
+        nearest_distance = 0.0;
         for (c = 0; c < 3; ++c) {
             gap = 0.0;
             if (entry[c] < low[c]) {
@@ -238,9 +238,9 @@ sixel_blockcull_float_candidates(
             } else if (entry[c] > high[c]) {
                 gap = entry[c] - high[c];
             }
-            near += gap * gap * lookup->weights[c];
+            nearest_distance += gap * gap * lookup->weights[c];
         }
-        if (near <= bound) {
+        if (nearest_distance <= bound) {
             candidates[count++] = i;
         }
     }

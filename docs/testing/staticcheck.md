@@ -102,6 +102,8 @@ meson compile -C build staticcheck-tiff-uint16-oracles
 
 Both targets run the [independent oracle auditor](../../tools/verify_color_oracles.py) with the configured host Python interpreter and only its standard library. The PNG check independently derives the stored cHRM exact values, error bounds, and binary32 rounding certificates. The TIFF check covers every UINT16 normalization and MINISWHITE complement, then the separate-plane source tables for orientations 1–4. These checks require neither optional image libraries nor a CMS or built converter; a missing Python interpreter is reported as a skip. A mismatch fails the target and the umbrella suite. They verify stored expectations, while loader value assertions and final-image MS-SSIM regressions remain separate runtime observations.
 
+The preprocessor portability check scans maintained C sources and headers, including test helpers, for `near` and `far` identifiers that collide with Windows macros. Comments and string literals are excluded. It also requires `<stdint.h>`, `<inttypes.h>`, or the public `<sixel.h>` (directly or through a maintained quoted header) before a `SIZE_MAX` fallback definition, because `<limits.h>` alone does not prevent later redefinition. This conservative source check inspects all conditional branches; it does not replace compilation on each platform.
+
 ## Adding or changing a staticcheck
 
 1. State one repository invariant and identify its authoritative and derived representations. Do not start from a preferred parsing trick.
@@ -147,6 +149,12 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-11 | Header/modeline scanning preserves the 120-line SPDX, 160-line license and final 40-line modeline windows, checks Git-file worktrees and rejects failed inventories. | [tests/_static/sh/staticcheck-c-header-modeline-controls.sh](../../tests/_static/sh/staticcheck-c-header-modeline-controls.sh) |
 | SC-12 | Identifier-length and SIZE_MAX checks use one awk process per check while retaining per-file duplicate suppression, line numbers, provider state, empty/deleted-file handling and include-fragment exclusions. Git-file worktrees receive the same checks; inventory and source-read failures cannot become successful skips. | [tests/_static/sh/staticcheck-c-source-batch-controls.sh](../../tests/_static/sh/staticcheck-c-source-batch-controls.sh) |
 | SC-13 | ShellCheck reuses independent per-file results across batch and inventory changes, preserves failures, invalidates changed tools and malformed results, and rechecks uncertain source dependencies and configured invocations. | [tests/_static/sh/staticcheck-shellcheck-cache-controls.sh](../../tests/_static/sh/staticcheck-shellcheck-cache-controls.sh) |
+
+| SC-14 | Macro collision and integer-fallback ordering scans reject bad specimens and accept comments, strings and ordered providers without a target compiler. | [tests/_static/sh/staticcheck-c-preprocessor-portability.sh](../../tests/_static/sh/staticcheck-c-preprocessor-portability.sh) |
+
+| SC-15 | The Meson case inventory remains in a whole-linked archive with matching compile inputs; mutations that flatten objects or drop archive semantics and dependencies are rejected. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
+
+| SC-16 | The DLL declaration scanner ignores balanced compiler attributes while preserving local storage classes, external declarations and source locations; literal controls reject treating attributes or their arguments as function names. | [tests/_static/sh/staticcheck-test-runner-dllexport.sh](../../tests/_static/sh/staticcheck-test-runner-dllexport.sh) |
 
 ### Coverage boundary
 

@@ -136,8 +136,8 @@ sixel_dither_a_noise(int x, int y, int c, float strength)
 
     /* Only the low bits define the pattern. Unsigned arithmetic preserves
      * that modular definition even at large absolute image coordinates. */
-    phase = ((unsigned int)x + (unsigned int)c * 67u +
-             (unsigned int)y * 236u) * 119u;
+    phase = (((unsigned int)x & 255u) + ((unsigned int)c & 255u) * 67u +
+             ((unsigned int)y & 255u) * 236u) * 119u;
     return ((float)(phase & 255u) / 128.0f - 1.0f) * strength;
 }
 

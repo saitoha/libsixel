@@ -78,9 +78,9 @@ static uint32_t
 sixel_dither_perturb_mix32(uint32_t v)
 {
     v ^= v >> 16;
-    v *= 0x7feb352du;
+    v = (uint32_t)((uint64_t)v * 0x7feb352du);
     v ^= v >> 15;
-    v *= 0x846ca68bu;
+    v = (uint32_t)((uint64_t)v * 0x846ca68bu);
     v ^= v >> 16;
     return v;
 }
@@ -90,9 +90,12 @@ sixel_dither_perturb_hash(int x, int absolute_y, uint32_t seed, int pair)
 {
     uint32_t h;
 
-    h = sixel_dither_perturb_mix32((uint32_t)x + seed * 0x9e3779b9u);
-    h = sixel_dither_perturb_mix32(h + (uint32_t)absolute_y);
-    h = sixel_dither_perturb_mix32(h + (uint32_t)(pair + 1) * 0x9e3779b9u);
+    h = sixel_dither_perturb_mix32((uint32_t)((uint64_t)(uint32_t)x +
+        (uint64_t)seed * 0x9e3779b9u));
+    h = sixel_dither_perturb_mix32((uint32_t)((uint64_t)h +
+        (uint32_t)absolute_y));
+    h = sixel_dither_perturb_mix32((uint32_t)((uint64_t)h +
+        (uint64_t)((uint32_t)pair + 1U) * 0x9e3779b9u));
     return h;
 }
 

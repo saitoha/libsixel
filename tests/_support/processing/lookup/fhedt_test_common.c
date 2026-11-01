@@ -102,7 +102,8 @@ fhedt_grid(sixel_lookup_fhedt_float32_t *lookup, int space, int expanded,
      * far below the deliberately unequal winning-distance witnesses. */
     for (sample = 0; sample < 701; ++sample) {
         for (axis = 0; axis < 3; ++axis) {
-            state = state * 1664525U + 1013904223U;
+            state = (unsigned int)((uint64_t)state * 1664525U
+                + 1013904223U);
             coord[axis] = (int)((state >> 16) % (unsigned)resolution);
             query[axis] = (float)(minimum[axis] +
                 span[axis] * coord[axis] / limit);

@@ -90,7 +90,8 @@ sixel_snap_grid_cached(sixel_snap_grid_t *grid, unsigned int code,
 {
     sixel_snap_grid_cell_t *cell;
 
-    cell = &grid->cache[(code * 2654435761U) % SIXEL_SNAP_GRID_SLOTS];
+    cell = &grid->cache[(uint32_t)((uint64_t)code * 2654435761U)
+        % SIXEL_SNAP_GRID_SLOTS];
     if (cell->key == code + 1U) {
         ++grid->hits;
         memcpy(target, cell->value, sizeof(cell->value));

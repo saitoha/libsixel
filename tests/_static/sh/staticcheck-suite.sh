@@ -386,6 +386,10 @@ run_case_tap "staticcheck-positional-bluenoise-threadsafe-init" \
     sh "$src_root/tests/_static/sh/staticcheck-positional-bluenoise-threadsafe-init.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-c-preprocessor-portability" \
+    sh "$src_root/tests/_static/sh/staticcheck-c-preprocessor-portability.sh" \
+    "$src_root" "$python_bin" || fail_and_exit $?
+
 run_case_tap "staticcheck-c-size-max-header" \
     "$src_root/tests/_static/sh/staticcheck-c-size-max-header.sh" \
     "$src_root" || fail_and_exit $?
