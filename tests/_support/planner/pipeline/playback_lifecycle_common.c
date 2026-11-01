@@ -203,8 +203,10 @@ playback_lifecycle_test(int mode)
         LIFE_CHECK(!lifecycle_source_freed);
         LIFE_CHECK(sixel_playback_cancel(s.playback) == SIXEL_OK);
     } else if (mode == 6) {
+        /* Only expiry with a held slot matters here, not a one-second
+         * latency. Keep a positive deadline to exercise the wait path. */
         LIFE_CHECK(sixel_playback_reserve(s.playback, SIXEL_PLAYBACK_WAIT,
-            1000, &s.ticket) == SIXEL_TIMEOUT);
+            1, &s.ticket) == SIXEL_TIMEOUT);
         sixel_playback_release_reservation(s.playback, &held);
         LIFE_CHECK(sixel_playback_reserve(s.playback, SIXEL_PLAYBACK_NOWAIT,
             0, &s.ticket) == SIXEL_OK);
