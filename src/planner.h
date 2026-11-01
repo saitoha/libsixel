@@ -169,7 +169,8 @@ void sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
                                  sixel_frame_t *frame,
                                  int palette_ready);
-void sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
+SIXEL_INTERNAL_API void
+sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
                                    struct sixel_encoder *encoder,
                                    sixel_frame_t *frame,
                                    int palette_ready);

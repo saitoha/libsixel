@@ -22,6 +22,8 @@ test_gamut_0068_filter_dag(int argc, char **argv)
         SIXEL_SUCCEEDED(sixel_frame_init_borrowed(frame, pixels, 2, 2,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, 0)) &&
         SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder,
+            SIXEL_OPTFLAG_THREADING_POLICY, "greedy:global_budget=1")) &&
+        SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder,
             SIXEL_OPTFLAG_WORKING_COLORSPACE, "oklab")) &&
         SIXEL_SUCCEEDED(sixel_encoder_setopt(encoder,
             SIXEL_OPTFLAG_OUTPUT_COLORSPACE, "gamma:gamut=edge-seeker"));
@@ -31,6 +33,9 @@ test_gamut_0068_filter_dag(int argc, char **argv)
         sixel_encoding_planner_analyze(&plan, encoder, frame);
         ok = SIXEL_SUCCEEDED(sixel_encoding_planner_schedule(&plan,
             encoder, frame, SIXEL_PALETTE_SAMPLING_FULL_FRAME));
+        /* The encoder rebuilds the graph after scheduling even when a
+         * single-slot schedule has no asynchronous work to plan. */
+        sixel_encoding_planner_replan(&plan, encoder, frame, 0);
         for (i = 0; i < plan.dag_node_count; ++i) {
             if (plan.dag_nodes[i].kind == SIXEL_PLANNER_NODE_GAMUT) {
                 gamut = i;

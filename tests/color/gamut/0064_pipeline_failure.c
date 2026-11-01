@@ -36,7 +36,7 @@ test_gamut_0064_pipeline_failure(int argc, char **argv)
                     ? SIXEL_PIXELFORMAT_OKLABFLOAT32
                     : SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
                 SIXEL_GAMUT_RAY_TRACE) &&
-            gamut_filter_scope(&scope, "balanced:global_budget=2");
+            gamut_filter_scope(&scope, "greedy:global_budget=2");
         if (ok) {
             left_status = gamut_filter_serial(&a);
             snprintf(detail, sizeof(detail), "%s",

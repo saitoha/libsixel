@@ -43,7 +43,7 @@ test_gamut_0067_pipeline_mask(int argc, char **argv)
                     f.mapper, expected, count, SIXEL_COLORSPACE_LINEAR,
                     mask.transparent_mask, mask.transparent_mask_size));
         }
-        ok = ok && gamut_filter_scope(&scope, "balanced:global_budget=4");
+        ok = ok && gamut_filter_scope(&scope, "greedy:global_budget=4");
         if (ok) {
             ok = sixel_filter_pipeline_run(f.color, f.gamut,
                 f.allocator, NULL) == SIXEL_OK &&

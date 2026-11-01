@@ -42,7 +42,8 @@ test_gamut_0063_pipeline_bits(int argc, char **argv)
             policies[policy]) && gamut_filter_init(&b, right, count,
             SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, formats[target],
             policies[policy]);
-        snprintf(text, sizeof(text), "balanced:global_budget=%d",
+        /* Preserve the requested slots even on a single-CPU host. */
+        snprintf(text, sizeof(text), "greedy:global_budget=%d",
             budget);
         ok = ok && gamut_filter_scope(&scope, text);
         if (ok) {
