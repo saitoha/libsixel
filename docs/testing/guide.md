@@ -57,6 +57,19 @@ Keep numerical portability and defect detection together: the accepted interval 
 
 Shell TAP tests normally declare `1..1`. A whole-file skip declares `1..0 # SKIP`. Tests in other languages must also follow the repository's single-observation plan policy.
 
+Design test categories as `tests/<owning subsystem>/<behavior or method>/NNNN_<observation>.<extension>`. These are exactly two classification levels. Classify by the behavior asserted: a loader quality regression belongs to its loader, while a test of the quality metric's calculation belongs to assessment. Precision, execution backend, error conditions and issue provenance normally qualify the case name rather than adding another directory level. Shared helpers, fixtures, staticcheck infrastructure and generated artifacts are outside this classification tree; they must not be used to hide test cases from its inventory.
+
+| Limit | Counted unit | Maximum |
+| --- | --- | ---: |
+| X | Test-entry files directly in one leaf category | 200 |
+| Y | Immediate category subdirectories of one parent, including the classified children of `tests/` | 24 |
+
+Count each independently invoked case once, including static and installed-product cases and cases skipped on the current platform. Do not count a TAP wrapper's C implementation again, or count common helpers, fixtures and generated reports as cases. The [harness inventory boundaries](../build/test-harness.md#shared-discovery-and-c-test-dispatch) distinguish classification from execution registration. A leaf has no category subdirectories; reserved support directories do not contribute to Y.
+
+When a category would exceed either limit, split it by an independently describable contract or reorganize it together with neighboring categories in the same change. Review both limits after the reorganization: adding leaves can solve X while violating Y. Do not add a third classification level, divide by numeric ranges or names such as `part1` and `part2`, combine observations into fewer test files, or create category-specific limit exceptions to fit the count. Small categories need no artificial minimum; combine them only when they have the same ownership boundary. These are maintainability limits, not measured performance thresholds or targets to fill.
+
+A classification review includes a complete old-to-new case inventory, counts for every leaf, and child-category counts for every parent. Every source case must have exactly one destination, and its execution mode and one-observation contract must remain intact. Update numbering, registrations, documentation links, coverage generators and timing allowances together. Runtime discovery must never implement a category limit by truncating or skipping tests. Category-size and depth enforcement are review requirements until the corresponding staticcheck is registered; the coverage table below does not claim an automated layout check.
+
 ## Shell TAP tests
 
 Shell TAP files under `tests/` must be stored with Git mode `100755` and normally have filesystem mode `0755`. Set that mode when creating or generating a test. Both the Autotools and Meson harnesses explicitly invoke a shell, so a passing test through either harness does not detect missing execute permissions.

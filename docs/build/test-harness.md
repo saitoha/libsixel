@@ -19,6 +19,10 @@ The ordinary Autotools path resolves the inventory once per make invocation and 
 
 The [testing guide](../testing/guide.md) owns one-observation rules, numbering, shell structure, and validation. This chapter describes the infrastructure around those tests.
 
+The classification inventory is broader than the ordinary runtime inventory. Its counted unit is an independently invoked test-entry file, not every numbered source file and not only the cases enabled by one configuration. Runtime TAP scripts and numbered binding scripts, numbered static regression cases, and numbered installed-product cases each count once. For example, the discovery checks under `tests/build/discovery/` are Python cases run by staticcheck, and the PowerShell cases under `tests/extension/wic-installed/` belong to installed Windows product validation. Their placement under `tests/` does not register them with ordinary `make check`.
+
+C implementations behind TAP wrappers, common language helpers, fixture payloads, umbrella staticcheck implementations and generated `.log` or `.trs` files are support rather than additional case entries. A classification move must preserve the owning suite's registration and capability requirements; blindly collecting every Python or PowerShell file changes execution semantics. The [organization rules](../testing/guide.md#organization-and-naming) own category counts and limits, while the shared runtime helper and each additional suite remain responsible for execution selection.
+
 ## Autotools execution path
 
 The current [tests/Makefile.am](../../tests/Makefile.am) overrides Automake's `check-TESTS` recipe. Its work can be read as five stages:
