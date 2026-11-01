@@ -2914,6 +2914,11 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
     return SIXEL_OK;
 }
 
+static int
+sixel_encoder_resolve_6delta_plane(sixel_encoder_t const *encoder,
+    int view_width, int view_height, int *plane_width_out,
+    int *plane_height_out, int *origin_x_out, int *origin_y_out);
+
 /* Analyze the preprocessed target before output can write a cursor prefix.
  * Palette construction and lookup do not participate in this measurement. */
 static SIXELSTATUS
@@ -2927,7 +2932,8 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
     unsigned int threshold;
     size_t i, count;
     uint64_t time_us;
-    int width, height;
+    int width, height, plane_width, plane_height, origin_x, origin_y;
+    int history_valid;
     SIXELSTATUS status;
 
     if (!encoder->residual_enabled && encoder->refresh_ms == 0U &&
@@ -2952,14 +2958,6 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
         return SIXEL_BAD_ARGUMENT;
     }
     if (!encoder->residual_enabled && !encoder->refresh_ms) return SIXEL_OK;
-    if (encoder->sixdelta_origin_x || encoder->sixdelta_origin_y ||
-            (encoder->sixdelta_plane_width &&
-             (encoder->sixdelta_plane_width != width ||
-              encoder->sixdelta_plane_height != height))) {
-        sixel_helper_set_additional_message(
-            "delta residual requires a full-plane frame at origin zero.");
-        return SIXEL_BAD_ARGUMENT;
-    }
     status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (status != SIXEL_OK) return status;
     count = (size_t)width * height;
@@ -2973,6 +2971,41 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             }
         }
     }
+    if (encoder->refresh_ms != 0U) {
+        /* Refresh needs no color analysis. Keep its clock local to the last
+         * successfully presented rectangle; switching regions reevaluates
+         * the new region at T0 without erasing the rest of the retained plane.
+         * This bounded state deliberately favors correctness over reusing
+         * clocks across alternating or overlapping damage rectangles. */
+        if (!sixel_encoder_resolve_6delta_plane(encoder, width, height,
+                &plane_width, &plane_height, &origin_x, &origin_y)) {
+            sixel_helper_set_additional_message(
+                "delta refresh rectangle does not fit the retained plane.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        history_valid = sixel_encoder_6delta_accumulation_active(encoder) &&
+            encoder->accumulation_width == plane_width &&
+            encoder->accumulation_height == plane_height;
+        time_us = encoder->refresh_time_override ? encoder->refresh_time_us
+            : (uint64_t)(sixel_timer_now() * 1000000.0);
+        sixel_delta_refresh_prepare(&encoder->residual_state,
+            width, height, origin_x, origin_y, encoder->refresh_ms,
+            time_us, history_valid);
+        sixel_trace_topic_message("delta_refresh",
+            "LSXREF1|time_us=%llu|period_ms=%u|selected=%lu|pixels=%lu",
+            (unsigned long long)time_us, encoder->refresh_ms,
+            (unsigned long)encoder->residual_state.selected_pixels,
+            (unsigned long)count);
+        return SIXEL_OK;
+    }
+    if (encoder->sixdelta_origin_x || encoder->sixdelta_origin_y ||
+            (encoder->sixdelta_plane_width &&
+             (encoder->sixdelta_plane_width != width ||
+              encoder->sixdelta_plane_height != height))) {
+        sixel_helper_set_additional_message(
+            "delta residual requires a full-plane frame at origin zero.");
+        return SIXEL_BAD_ARGUMENT;
+    }
     threshold = encoder->sixdelta_threshold < encoder->sixdelta_threshold_limit
         ? encoder->sixdelta_threshold : encoder->sixdelta_threshold_limit;
     target = sixel_frame_get_pixels(frame);
@@ -2985,18 +3018,6 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             encoder->accumulation_valid_mask_size >= count) {
         acc = encoder->accumulation_pixels;
         valid = encoder->accumulation_valid_mask;
-    }
-    if (encoder->refresh_ms != 0U) {
-        time_us = encoder->refresh_time_override ? encoder->refresh_time_us
-            : (uint64_t)(sixel_timer_now() * 1000000.0);
-        sixel_delta_refresh_prepare(&encoder->residual_state,
-            width, height, encoder->refresh_ms, time_us, acc != NULL);
-        sixel_trace_topic_message("delta_refresh",
-            "LSXREF1|time_us=%llu|period_ms=%u|selected=%lu|pixels=%lu",
-            (unsigned long long)time_us, encoder->refresh_ms,
-            (unsigned long)encoder->residual_state.selected_pixels,
-            (unsigned long)count);
-        return SIXEL_OK;
     }
     sixel_delta_residual_prepare(&encoder->residual_state, target, acc, valid,
         width, height, encoder->residual_threshold, encoder->residual_frames,
@@ -11923,6 +11944,10 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
                 encoder->residual_state.refresh_next_epoch_us;
             encoder->residual_state.refresh_last_us =
                 encoder->residual_state.refresh_next_us;
+            encoder->residual_state.refresh_origin_x =
+                encoder->residual_state.refresh_next_origin_x;
+            encoder->residual_state.refresh_origin_y =
+                encoder->residual_state.refresh_next_origin_y;
             encoder->residual_state.refresh_valid =
                 encoder->residual_state.refresh_next_valid;
             encoder->residual_state.pending = 0;
@@ -12976,7 +13001,8 @@ sixel_encoder_set_6delta_plane_origin_owned(
             "origin must not be negative.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (encoder->sixdelta_origin_x != x || encoder->sixdelta_origin_y != y) {
+    if (encoder->refresh_ms == 0U && (encoder->sixdelta_origin_x != x ||
+            encoder->sixdelta_origin_y != y)) {
         memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
     }
     encoder->sixdelta_origin_x = x;

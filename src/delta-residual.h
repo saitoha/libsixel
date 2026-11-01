@@ -62,6 +62,10 @@ typedef struct sixel_delta_residual {
     uint64_t refresh_last_us;
     uint64_t refresh_next_epoch_us;
     uint64_t refresh_next_us;
+    int refresh_origin_x;
+    int refresh_origin_y;
+    int refresh_next_origin_x;
+    int refresh_next_origin_y;
     int refresh_valid;
     int refresh_next_valid;
 } sixel_delta_residual_t;
@@ -75,10 +79,13 @@ sixel_delta_residual_prepare(sixel_delta_residual_t *state,
     double threshold, unsigned int frames, unsigned int keep_threshold);
 
 /* Select pixels whose staggered deadline was crossed since the last output.
+ * Coordinates anchor phases to the retained plane. A different rectangle
+ * restarts with T0 so an absent region cannot consume another region's debt.
  * No source scan, random starvation or frame-rate-dependent age is needed. */
 SIXEL_INTERNAL_API void
 sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
-    int width, int height, unsigned int period_ms, uint64_t time_us,
+    int width, int height, int origin_x, int origin_y,
+    unsigned int period_ms, uint64_t time_us,
     int history_valid);
 
 SIXEL_INTERNAL_API unsigned int

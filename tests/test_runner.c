@@ -435,6 +435,20 @@ int test_residual_0027(int argc, char **argv);
 int test_residual_0028(int argc, char **argv);
 int test_residual_0029(int argc, char **argv);
 int test_residual_0030(int argc, char **argv);
+int test_refresh_0011(int argc, char **argv);
+int test_refresh_0012(int argc, char **argv);
+int test_refresh_0013(int argc, char **argv);
+int test_refresh_0014(int argc, char **argv);
+int test_refresh_0015(int argc, char **argv);
+int test_refresh_0016(int argc, char **argv);
+int test_refresh_0017(int argc, char **argv);
+int test_refresh_0018(int argc, char **argv);
+int test_refresh_0019(int argc, char **argv);
+int test_refresh_0020(int argc, char **argv);
+int test_refresh_0021(int argc, char **argv);
+int test_refresh_0022(int argc, char **argv);
+int test_refresh_0023(int argc, char **argv);
+int test_refresh_0024(int argc, char **argv);
 int test_refresh_0001(int argc, char **argv);
 int test_refresh_0002(int argc, char **argv);
 int test_refresh_0003(int argc, char **argv);
@@ -5919,6 +5933,20 @@ static test_entry_t const test_entries[] = {
       test_progressive_0187 },
     { "progressive/0191_gpu_video_pair",
       test_progressive_0191 },
+    { "delta-refresh/0011_partial_direct", test_refresh_0011 },
+    { "delta-refresh/0012_partial_ahead", test_refresh_0012 },
+    { "delta-refresh/0013_partial_latest", test_refresh_0013 },
+    { "delta-refresh/0014_partial_move_x", test_refresh_0014 },
+    { "delta-refresh/0015_partial_resize", test_refresh_0015 },
+    { "delta-refresh/0016_partial_move_y", test_refresh_0016 },
+    { "delta-refresh/0017_partial_repeat_time", test_refresh_0017 },
+    { "delta-refresh/0018_partial_gap", test_refresh_0018 },
+    { "delta-refresh/0019_partial_output_failure", test_refresh_0019 },
+    { "delta-refresh/0020_partial_out_of_bounds", test_refresh_0020 },
+    { "delta-refresh/0021_partial_alpha_rejected", test_refresh_0021 },
+    { "delta-refresh/0022_partial_move_same_time", test_refresh_0022 },
+    { "delta-refresh/0023_partial_return", test_refresh_0023 },
+    { "delta-refresh/0024_partial_height", test_refresh_0024 },
     { "delta-refresh/0001_option_atomicity",
       test_refresh_0001 },
     { "delta-refresh/0002_staggered_coverage",

@@ -322,6 +322,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_LEGACY_OPTIONS \
     -DBUILD_TEST_0009_FAILED_OUTPUT \
     -DBUILD_TEST_0010_LATEST_PLAYBACK \
+    -DBUILD_TEST_0011_PARTIAL_DIRECT \
+    -DBUILD_TEST_0012_PARTIAL_AHEAD \
+    -DBUILD_TEST_0013_PARTIAL_LATEST \
+    -DBUILD_TEST_0014_PARTIAL_MOVE_X \
+    -DBUILD_TEST_0015_PARTIAL_RESIZE \
+    -DBUILD_TEST_0016_PARTIAL_MOVE_Y \
+    -DBUILD_TEST_0017_PARTIAL_REPEAT_TIME \
+    -DBUILD_TEST_0018_PARTIAL_GAP \
+    -DBUILD_TEST_0019_PARTIAL_OUTPUT_FAILURE \
+    -DBUILD_TEST_0020_PARTIAL_OUT_OF_BOUNDS \
+    -DBUILD_TEST_0021_PARTIAL_ALPHA_REJECTED \
+    -DBUILD_TEST_0022_PARTIAL_MOVE_SAME_TIME \
+    -DBUILD_TEST_0023_PARTIAL_RETURN \
+    -DBUILD_TEST_0024_PARTIAL_HEIGHT \
+    -DBUILD_PARTIAL_TEST_COMMON \
     -DBUILD_REFRESH_TEST_COMMON \
     -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
     -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
@@ -6086,6 +6101,21 @@ test_runner_SOURCES = test_runner.c \
     delta/residual/0028_gpu_metric_x.c \
     delta/residual/0029_gpu_cells_a.c \
     delta/residual/0030_gpu_cells_x.c \
+    delta/refresh/0011_partial_direct.c \
+    delta/refresh/0012_partial_ahead.c \
+    delta/refresh/0013_partial_latest.c \
+    delta/refresh/0014_partial_move_x.c \
+    delta/refresh/0015_partial_resize.c \
+    delta/refresh/0016_partial_move_y.c \
+    delta/refresh/0017_partial_repeat_time.c \
+    delta/refresh/0018_partial_gap.c \
+    delta/refresh/0019_partial_output_failure.c \
+    delta/refresh/0020_partial_out_of_bounds.c \
+    delta/refresh/0021_partial_alpha_rejected.c \
+    delta/refresh/0022_partial_move_same_time.c \
+    delta/refresh/0023_partial_return.c \
+    delta/refresh/0024_partial_height.c \
+    _support/processing/delta-refresh/partial_test_common.c \
     delta/refresh/0001_option_atomicity.c \
     delta/refresh/0002_staggered_coverage.c \
     delta/refresh/0003_skipped_deadlines.c \

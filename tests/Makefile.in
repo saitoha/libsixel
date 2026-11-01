@@ -1800,6 +1800,21 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	delta/residual/0028_gpu_metric_x.c \
 	delta/residual/0029_gpu_cells_a.c \
 	delta/residual/0030_gpu_cells_x.c \
+	delta/refresh/0011_partial_direct.c \
+	delta/refresh/0012_partial_ahead.c \
+	delta/refresh/0013_partial_latest.c \
+	delta/refresh/0014_partial_move_x.c \
+	delta/refresh/0015_partial_resize.c \
+	delta/refresh/0016_partial_move_y.c \
+	delta/refresh/0017_partial_repeat_time.c \
+	delta/refresh/0018_partial_gap.c \
+	delta/refresh/0019_partial_output_failure.c \
+	delta/refresh/0020_partial_out_of_bounds.c \
+	delta/refresh/0021_partial_alpha_rejected.c \
+	delta/refresh/0022_partial_move_same_time.c \
+	delta/refresh/0023_partial_return.c \
+	delta/refresh/0024_partial_height.c \
+	_support/processing/delta-refresh/partial_test_common.c \
 	delta/refresh/0001_option_atomicity.c \
 	delta/refresh/0002_staggered_coverage.c \
 	delta/refresh/0003_skipped_deadlines.c \
@@ -5967,6 +5982,21 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/residual/test_runner-0028_gpu_metric_x.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/residual/test_runner-0029_gpu_cells_a.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/residual/test_runner-0030_gpu_cells_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0011_partial_direct.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0012_partial_ahead.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0013_partial_latest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0014_partial_move_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0015_partial_resize.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0016_partial_move_y.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0017_partial_repeat_time.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0018_partial_gap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0019_partial_output_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0020_partial_out_of_bounds.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0021_partial_alpha_rejected.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0022_partial_move_same_time.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0023_partial_return.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0024_partial_height.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-partial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0001_option_atomicity.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0002_staggered_coverage.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0003_skipped_deadlines.$(OBJEXT) \
@@ -8877,6 +8907,7 @@ am__depfiles_remade =  \
 	_support/processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po \
 	_support/processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po \
 	_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po \
+	_support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po \
 	_support/processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po \
 	_support/processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po \
 	_support/processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po \
@@ -9673,6 +9704,20 @@ am__depfiles_remade =  \
 	delta/refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0009_failed_output.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0010_latest_playback.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -13428,6 +13473,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_LEGACY_OPTIONS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_FAILED_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LATEST_PLAYBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_PARTIAL_DIRECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_PARTIAL_AHEAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_PARTIAL_LATEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_PARTIAL_MOVE_X \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_PARTIAL_RESIZE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_PARTIAL_MOVE_Y \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PARTIAL_REPEAT_TIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_PARTIAL_GAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_PARTIAL_OUTPUT_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_PARTIAL_OUT_OF_BOUNDS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_PARTIAL_ALPHA_REJECTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_PARTIAL_MOVE_SAME_TIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_PARTIAL_RETURN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_PARTIAL_HEIGHT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARTIAL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_REFRESH_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
@@ -19224,6 +19284,21 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/residual/0028_gpu_metric_x.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/residual/0029_gpu_cells_a.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/residual/0030_gpu_cells_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0011_partial_direct.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0012_partial_ahead.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0013_partial_latest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0014_partial_move_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0015_partial_resize.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0016_partial_move_y.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0017_partial_repeat_time.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0018_partial_gap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0019_partial_output_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0020_partial_out_of_bounds.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0021_partial_alpha_rejected.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0022_partial_move_same_time.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0023_partial_return.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0024_partial_height.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/partial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0001_option_atomicity.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0002_staggered_coverage.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0003_skipped_deadlines.c \
@@ -27342,6 +27417,57 @@ delta/refresh/$(am__dirstamp):
 delta/refresh/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) delta/refresh/$(DEPDIR)
 	@: >>delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0011_partial_direct.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0012_partial_ahead.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0013_partial_latest.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0014_partial_move_x.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0015_partial_resize.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0016_partial_move_y.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0017_partial_repeat_time.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0018_partial_gap.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0019_partial_output_failure.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0020_partial_out_of_bounds.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0021_partial_alpha_rejected.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0022_partial_move_same_time.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0023_partial_return.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0024_partial_height.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+_support/processing/delta-refresh/$(am__dirstamp):
+	@$(MKDIR_P) _support/processing/delta-refresh
+	@: >>_support/processing/delta-refresh/$(am__dirstamp)
+_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/processing/delta-refresh/$(DEPDIR)
+	@: >>_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
+_support/processing/delta-refresh/test_runner-partial_test_common.$(OBJEXT):  \
+	_support/processing/delta-refresh/$(am__dirstamp) \
+	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
 delta/refresh/test_runner-0001_option_atomicity.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
@@ -27372,12 +27498,6 @@ delta/refresh/test_runner-0009_failed_output.$(OBJEXT):  \
 delta/refresh/test_runner-0010_latest_playback.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
-_support/processing/delta-refresh/$(am__dirstamp):
-	@$(MKDIR_P) _support/processing/delta-refresh
-	@: >>_support/processing/delta-refresh/$(am__dirstamp)
-_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/processing/delta-refresh/$(DEPDIR)
-	@: >>_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-refresh/test_runner-refresh_test_common.$(OBJEXT):  \
 	_support/processing/delta-refresh/$(am__dirstamp) \
 	_support/processing/delta-refresh/$(DEPDIR)/$(am__dirstamp)
@@ -36075,6 +36195,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-multi_pass_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-ormode_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/decoder/$(DEPDIR)/test_runner-palette_map_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-refresh/$(DEPDIR)/test_runner-refresh_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-residual/$(DEPDIR)/test_runner-gate_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/delta-residual/$(DEPDIR)/test_runner-residual_test_common.Po@am__quote@ # am--include-marker
@@ -36871,6 +36992,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0008_legacy_options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0009_failed_output.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0010_latest_playback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -62709,6 +62844,216 @@ delta/residual/test_runner-0030_gpu_cells_x.obj: delta/residual/0030_gpu_cells_x
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/residual/0030_gpu_cells_x.c' object='delta/residual/test_runner-0030_gpu_cells_x.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/residual/test_runner-0030_gpu_cells_x.obj `if test -f 'delta/residual/0030_gpu_cells_x.c'; then $(CYGPATH_W) 'delta/residual/0030_gpu_cells_x.c'; else $(CYGPATH_W) '$(srcdir)/delta/residual/0030_gpu_cells_x.c'; fi`
+
+delta/refresh/test_runner-0011_partial_direct.o: delta/refresh/0011_partial_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0011_partial_direct.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Tpo -c -o delta/refresh/test_runner-0011_partial_direct.o `test -f 'delta/refresh/0011_partial_direct.c' || echo '$(srcdir)/'`delta/refresh/0011_partial_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0011_partial_direct.c' object='delta/refresh/test_runner-0011_partial_direct.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0011_partial_direct.o `test -f 'delta/refresh/0011_partial_direct.c' || echo '$(srcdir)/'`delta/refresh/0011_partial_direct.c
+
+delta/refresh/test_runner-0011_partial_direct.obj: delta/refresh/0011_partial_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0011_partial_direct.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Tpo -c -o delta/refresh/test_runner-0011_partial_direct.obj `if test -f 'delta/refresh/0011_partial_direct.c'; then $(CYGPATH_W) 'delta/refresh/0011_partial_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0011_partial_direct.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0011_partial_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0011_partial_direct.c' object='delta/refresh/test_runner-0011_partial_direct.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0011_partial_direct.obj `if test -f 'delta/refresh/0011_partial_direct.c'; then $(CYGPATH_W) 'delta/refresh/0011_partial_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0011_partial_direct.c'; fi`
+
+delta/refresh/test_runner-0012_partial_ahead.o: delta/refresh/0012_partial_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0012_partial_ahead.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Tpo -c -o delta/refresh/test_runner-0012_partial_ahead.o `test -f 'delta/refresh/0012_partial_ahead.c' || echo '$(srcdir)/'`delta/refresh/0012_partial_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0012_partial_ahead.c' object='delta/refresh/test_runner-0012_partial_ahead.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0012_partial_ahead.o `test -f 'delta/refresh/0012_partial_ahead.c' || echo '$(srcdir)/'`delta/refresh/0012_partial_ahead.c
+
+delta/refresh/test_runner-0012_partial_ahead.obj: delta/refresh/0012_partial_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0012_partial_ahead.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Tpo -c -o delta/refresh/test_runner-0012_partial_ahead.obj `if test -f 'delta/refresh/0012_partial_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0012_partial_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0012_partial_ahead.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0012_partial_ahead.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0012_partial_ahead.c' object='delta/refresh/test_runner-0012_partial_ahead.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0012_partial_ahead.obj `if test -f 'delta/refresh/0012_partial_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0012_partial_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0012_partial_ahead.c'; fi`
+
+delta/refresh/test_runner-0013_partial_latest.o: delta/refresh/0013_partial_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0013_partial_latest.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Tpo -c -o delta/refresh/test_runner-0013_partial_latest.o `test -f 'delta/refresh/0013_partial_latest.c' || echo '$(srcdir)/'`delta/refresh/0013_partial_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0013_partial_latest.c' object='delta/refresh/test_runner-0013_partial_latest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0013_partial_latest.o `test -f 'delta/refresh/0013_partial_latest.c' || echo '$(srcdir)/'`delta/refresh/0013_partial_latest.c
+
+delta/refresh/test_runner-0013_partial_latest.obj: delta/refresh/0013_partial_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0013_partial_latest.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Tpo -c -o delta/refresh/test_runner-0013_partial_latest.obj `if test -f 'delta/refresh/0013_partial_latest.c'; then $(CYGPATH_W) 'delta/refresh/0013_partial_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0013_partial_latest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0013_partial_latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0013_partial_latest.c' object='delta/refresh/test_runner-0013_partial_latest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0013_partial_latest.obj `if test -f 'delta/refresh/0013_partial_latest.c'; then $(CYGPATH_W) 'delta/refresh/0013_partial_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0013_partial_latest.c'; fi`
+
+delta/refresh/test_runner-0014_partial_move_x.o: delta/refresh/0014_partial_move_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0014_partial_move_x.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Tpo -c -o delta/refresh/test_runner-0014_partial_move_x.o `test -f 'delta/refresh/0014_partial_move_x.c' || echo '$(srcdir)/'`delta/refresh/0014_partial_move_x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Tpo delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0014_partial_move_x.c' object='delta/refresh/test_runner-0014_partial_move_x.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0014_partial_move_x.o `test -f 'delta/refresh/0014_partial_move_x.c' || echo '$(srcdir)/'`delta/refresh/0014_partial_move_x.c
+
+delta/refresh/test_runner-0014_partial_move_x.obj: delta/refresh/0014_partial_move_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0014_partial_move_x.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Tpo -c -o delta/refresh/test_runner-0014_partial_move_x.obj `if test -f 'delta/refresh/0014_partial_move_x.c'; then $(CYGPATH_W) 'delta/refresh/0014_partial_move_x.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0014_partial_move_x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Tpo delta/refresh/$(DEPDIR)/test_runner-0014_partial_move_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0014_partial_move_x.c' object='delta/refresh/test_runner-0014_partial_move_x.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0014_partial_move_x.obj `if test -f 'delta/refresh/0014_partial_move_x.c'; then $(CYGPATH_W) 'delta/refresh/0014_partial_move_x.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0014_partial_move_x.c'; fi`
+
+delta/refresh/test_runner-0015_partial_resize.o: delta/refresh/0015_partial_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0015_partial_resize.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Tpo -c -o delta/refresh/test_runner-0015_partial_resize.o `test -f 'delta/refresh/0015_partial_resize.c' || echo '$(srcdir)/'`delta/refresh/0015_partial_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Tpo delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0015_partial_resize.c' object='delta/refresh/test_runner-0015_partial_resize.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0015_partial_resize.o `test -f 'delta/refresh/0015_partial_resize.c' || echo '$(srcdir)/'`delta/refresh/0015_partial_resize.c
+
+delta/refresh/test_runner-0015_partial_resize.obj: delta/refresh/0015_partial_resize.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0015_partial_resize.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Tpo -c -o delta/refresh/test_runner-0015_partial_resize.obj `if test -f 'delta/refresh/0015_partial_resize.c'; then $(CYGPATH_W) 'delta/refresh/0015_partial_resize.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0015_partial_resize.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Tpo delta/refresh/$(DEPDIR)/test_runner-0015_partial_resize.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0015_partial_resize.c' object='delta/refresh/test_runner-0015_partial_resize.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0015_partial_resize.obj `if test -f 'delta/refresh/0015_partial_resize.c'; then $(CYGPATH_W) 'delta/refresh/0015_partial_resize.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0015_partial_resize.c'; fi`
+
+delta/refresh/test_runner-0016_partial_move_y.o: delta/refresh/0016_partial_move_y.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0016_partial_move_y.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Tpo -c -o delta/refresh/test_runner-0016_partial_move_y.o `test -f 'delta/refresh/0016_partial_move_y.c' || echo '$(srcdir)/'`delta/refresh/0016_partial_move_y.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Tpo delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0016_partial_move_y.c' object='delta/refresh/test_runner-0016_partial_move_y.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0016_partial_move_y.o `test -f 'delta/refresh/0016_partial_move_y.c' || echo '$(srcdir)/'`delta/refresh/0016_partial_move_y.c
+
+delta/refresh/test_runner-0016_partial_move_y.obj: delta/refresh/0016_partial_move_y.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0016_partial_move_y.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Tpo -c -o delta/refresh/test_runner-0016_partial_move_y.obj `if test -f 'delta/refresh/0016_partial_move_y.c'; then $(CYGPATH_W) 'delta/refresh/0016_partial_move_y.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0016_partial_move_y.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Tpo delta/refresh/$(DEPDIR)/test_runner-0016_partial_move_y.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0016_partial_move_y.c' object='delta/refresh/test_runner-0016_partial_move_y.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0016_partial_move_y.obj `if test -f 'delta/refresh/0016_partial_move_y.c'; then $(CYGPATH_W) 'delta/refresh/0016_partial_move_y.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0016_partial_move_y.c'; fi`
+
+delta/refresh/test_runner-0017_partial_repeat_time.o: delta/refresh/0017_partial_repeat_time.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0017_partial_repeat_time.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo -c -o delta/refresh/test_runner-0017_partial_repeat_time.o `test -f 'delta/refresh/0017_partial_repeat_time.c' || echo '$(srcdir)/'`delta/refresh/0017_partial_repeat_time.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0017_partial_repeat_time.c' object='delta/refresh/test_runner-0017_partial_repeat_time.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0017_partial_repeat_time.o `test -f 'delta/refresh/0017_partial_repeat_time.c' || echo '$(srcdir)/'`delta/refresh/0017_partial_repeat_time.c
+
+delta/refresh/test_runner-0017_partial_repeat_time.obj: delta/refresh/0017_partial_repeat_time.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0017_partial_repeat_time.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo -c -o delta/refresh/test_runner-0017_partial_repeat_time.obj `if test -f 'delta/refresh/0017_partial_repeat_time.c'; then $(CYGPATH_W) 'delta/refresh/0017_partial_repeat_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0017_partial_repeat_time.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0017_partial_repeat_time.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0017_partial_repeat_time.c' object='delta/refresh/test_runner-0017_partial_repeat_time.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0017_partial_repeat_time.obj `if test -f 'delta/refresh/0017_partial_repeat_time.c'; then $(CYGPATH_W) 'delta/refresh/0017_partial_repeat_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0017_partial_repeat_time.c'; fi`
+
+delta/refresh/test_runner-0018_partial_gap.o: delta/refresh/0018_partial_gap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0018_partial_gap.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo -c -o delta/refresh/test_runner-0018_partial_gap.o `test -f 'delta/refresh/0018_partial_gap.c' || echo '$(srcdir)/'`delta/refresh/0018_partial_gap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0018_partial_gap.c' object='delta/refresh/test_runner-0018_partial_gap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0018_partial_gap.o `test -f 'delta/refresh/0018_partial_gap.c' || echo '$(srcdir)/'`delta/refresh/0018_partial_gap.c
+
+delta/refresh/test_runner-0018_partial_gap.obj: delta/refresh/0018_partial_gap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0018_partial_gap.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo -c -o delta/refresh/test_runner-0018_partial_gap.obj `if test -f 'delta/refresh/0018_partial_gap.c'; then $(CYGPATH_W) 'delta/refresh/0018_partial_gap.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0018_partial_gap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Tpo delta/refresh/$(DEPDIR)/test_runner-0018_partial_gap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0018_partial_gap.c' object='delta/refresh/test_runner-0018_partial_gap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0018_partial_gap.obj `if test -f 'delta/refresh/0018_partial_gap.c'; then $(CYGPATH_W) 'delta/refresh/0018_partial_gap.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0018_partial_gap.c'; fi`
+
+delta/refresh/test_runner-0019_partial_output_failure.o: delta/refresh/0019_partial_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0019_partial_output_failure.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo -c -o delta/refresh/test_runner-0019_partial_output_failure.o `test -f 'delta/refresh/0019_partial_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0019_partial_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0019_partial_output_failure.c' object='delta/refresh/test_runner-0019_partial_output_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0019_partial_output_failure.o `test -f 'delta/refresh/0019_partial_output_failure.c' || echo '$(srcdir)/'`delta/refresh/0019_partial_output_failure.c
+
+delta/refresh/test_runner-0019_partial_output_failure.obj: delta/refresh/0019_partial_output_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0019_partial_output_failure.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo -c -o delta/refresh/test_runner-0019_partial_output_failure.obj `if test -f 'delta/refresh/0019_partial_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0019_partial_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0019_partial_output_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0019_partial_output_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0019_partial_output_failure.c' object='delta/refresh/test_runner-0019_partial_output_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0019_partial_output_failure.obj `if test -f 'delta/refresh/0019_partial_output_failure.c'; then $(CYGPATH_W) 'delta/refresh/0019_partial_output_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0019_partial_output_failure.c'; fi`
+
+delta/refresh/test_runner-0020_partial_out_of_bounds.o: delta/refresh/0020_partial_out_of_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0020_partial_out_of_bounds.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.o `test -f 'delta/refresh/0020_partial_out_of_bounds.c' || echo '$(srcdir)/'`delta/refresh/0020_partial_out_of_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0020_partial_out_of_bounds.c' object='delta/refresh/test_runner-0020_partial_out_of_bounds.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.o `test -f 'delta/refresh/0020_partial_out_of_bounds.c' || echo '$(srcdir)/'`delta/refresh/0020_partial_out_of_bounds.c
+
+delta/refresh/test_runner-0020_partial_out_of_bounds.obj: delta/refresh/0020_partial_out_of_bounds.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0020_partial_out_of_bounds.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.obj `if test -f 'delta/refresh/0020_partial_out_of_bounds.c'; then $(CYGPATH_W) 'delta/refresh/0020_partial_out_of_bounds.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0020_partial_out_of_bounds.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Tpo delta/refresh/$(DEPDIR)/test_runner-0020_partial_out_of_bounds.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0020_partial_out_of_bounds.c' object='delta/refresh/test_runner-0020_partial_out_of_bounds.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0020_partial_out_of_bounds.obj `if test -f 'delta/refresh/0020_partial_out_of_bounds.c'; then $(CYGPATH_W) 'delta/refresh/0020_partial_out_of_bounds.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0020_partial_out_of_bounds.c'; fi`
+
+delta/refresh/test_runner-0021_partial_alpha_rejected.o: delta/refresh/0021_partial_alpha_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0021_partial_alpha_rejected.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.o `test -f 'delta/refresh/0021_partial_alpha_rejected.c' || echo '$(srcdir)/'`delta/refresh/0021_partial_alpha_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0021_partial_alpha_rejected.c' object='delta/refresh/test_runner-0021_partial_alpha_rejected.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.o `test -f 'delta/refresh/0021_partial_alpha_rejected.c' || echo '$(srcdir)/'`delta/refresh/0021_partial_alpha_rejected.c
+
+delta/refresh/test_runner-0021_partial_alpha_rejected.obj: delta/refresh/0021_partial_alpha_rejected.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0021_partial_alpha_rejected.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.obj `if test -f 'delta/refresh/0021_partial_alpha_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0021_partial_alpha_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0021_partial_alpha_rejected.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Tpo delta/refresh/$(DEPDIR)/test_runner-0021_partial_alpha_rejected.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0021_partial_alpha_rejected.c' object='delta/refresh/test_runner-0021_partial_alpha_rejected.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0021_partial_alpha_rejected.obj `if test -f 'delta/refresh/0021_partial_alpha_rejected.c'; then $(CYGPATH_W) 'delta/refresh/0021_partial_alpha_rejected.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0021_partial_alpha_rejected.c'; fi`
+
+delta/refresh/test_runner-0022_partial_move_same_time.o: delta/refresh/0022_partial_move_same_time.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0022_partial_move_same_time.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo -c -o delta/refresh/test_runner-0022_partial_move_same_time.o `test -f 'delta/refresh/0022_partial_move_same_time.c' || echo '$(srcdir)/'`delta/refresh/0022_partial_move_same_time.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0022_partial_move_same_time.c' object='delta/refresh/test_runner-0022_partial_move_same_time.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0022_partial_move_same_time.o `test -f 'delta/refresh/0022_partial_move_same_time.c' || echo '$(srcdir)/'`delta/refresh/0022_partial_move_same_time.c
+
+delta/refresh/test_runner-0022_partial_move_same_time.obj: delta/refresh/0022_partial_move_same_time.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0022_partial_move_same_time.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo -c -o delta/refresh/test_runner-0022_partial_move_same_time.obj `if test -f 'delta/refresh/0022_partial_move_same_time.c'; then $(CYGPATH_W) 'delta/refresh/0022_partial_move_same_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0022_partial_move_same_time.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Tpo delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0022_partial_move_same_time.c' object='delta/refresh/test_runner-0022_partial_move_same_time.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0022_partial_move_same_time.obj `if test -f 'delta/refresh/0022_partial_move_same_time.c'; then $(CYGPATH_W) 'delta/refresh/0022_partial_move_same_time.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0022_partial_move_same_time.c'; fi`
+
+delta/refresh/test_runner-0023_partial_return.o: delta/refresh/0023_partial_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0023_partial_return.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo -c -o delta/refresh/test_runner-0023_partial_return.o `test -f 'delta/refresh/0023_partial_return.c' || echo '$(srcdir)/'`delta/refresh/0023_partial_return.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0023_partial_return.c' object='delta/refresh/test_runner-0023_partial_return.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0023_partial_return.o `test -f 'delta/refresh/0023_partial_return.c' || echo '$(srcdir)/'`delta/refresh/0023_partial_return.c
+
+delta/refresh/test_runner-0023_partial_return.obj: delta/refresh/0023_partial_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0023_partial_return.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo -c -o delta/refresh/test_runner-0023_partial_return.obj `if test -f 'delta/refresh/0023_partial_return.c'; then $(CYGPATH_W) 'delta/refresh/0023_partial_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0023_partial_return.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0023_partial_return.c' object='delta/refresh/test_runner-0023_partial_return.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0023_partial_return.obj `if test -f 'delta/refresh/0023_partial_return.c'; then $(CYGPATH_W) 'delta/refresh/0023_partial_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0023_partial_return.c'; fi`
+
+delta/refresh/test_runner-0024_partial_height.o: delta/refresh/0024_partial_height.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0024_partial_height.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo -c -o delta/refresh/test_runner-0024_partial_height.o `test -f 'delta/refresh/0024_partial_height.c' || echo '$(srcdir)/'`delta/refresh/0024_partial_height.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0024_partial_height.c' object='delta/refresh/test_runner-0024_partial_height.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0024_partial_height.o `test -f 'delta/refresh/0024_partial_height.c' || echo '$(srcdir)/'`delta/refresh/0024_partial_height.c
+
+delta/refresh/test_runner-0024_partial_height.obj: delta/refresh/0024_partial_height.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0024_partial_height.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo -c -o delta/refresh/test_runner-0024_partial_height.obj `if test -f 'delta/refresh/0024_partial_height.c'; then $(CYGPATH_W) 'delta/refresh/0024_partial_height.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0024_partial_height.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Tpo delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0024_partial_height.c' object='delta/refresh/test_runner-0024_partial_height.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0024_partial_height.obj `if test -f 'delta/refresh/0024_partial_height.c'; then $(CYGPATH_W) 'delta/refresh/0024_partial_height.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0024_partial_height.c'; fi`
+
+_support/processing/delta-refresh/test_runner-partial_test_common.o: _support/processing/delta-refresh/partial_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-partial_test_common.o -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-partial_test_common.o `test -f '_support/processing/delta-refresh/partial_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/partial_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Tpo _support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/partial_test_common.c' object='_support/processing/delta-refresh/test_runner-partial_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-partial_test_common.o `test -f '_support/processing/delta-refresh/partial_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/partial_test_common.c
+
+_support/processing/delta-refresh/test_runner-partial_test_common.obj: _support/processing/delta-refresh/partial_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-partial_test_common.obj -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-partial_test_common.obj `if test -f '_support/processing/delta-refresh/partial_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/partial_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/partial_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Tpo _support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/delta-refresh/partial_test_common.c' object='_support/processing/delta-refresh/test_runner-partial_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/delta-refresh/test_runner-partial_test_common.obj `if test -f '_support/processing/delta-refresh/partial_test_common.c'; then $(CYGPATH_W) '_support/processing/delta-refresh/partial_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/delta-refresh/partial_test_common.c'; fi`
 
 delta/refresh/test_runner-0001_option_atomicity.o: delta/refresh/0001_option_atomicity.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0001_option_atomicity.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0001_option_atomicity.Tpo -c -o delta/refresh/test_runner-0001_option_atomicity.o `test -f 'delta/refresh/0001_option_atomicity.c' || echo '$(srcdir)/'`delta/refresh/0001_option_atomicity.c
