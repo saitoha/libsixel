@@ -841,7 +841,8 @@ typedef struct sixel_writer_image_header {
  * publishes a receipt only after the complete image has reached the configured
  * callback boundary successfully. It reserves receipt capacity before the
  * first image byte. A NULL receipt output requests no receipt. Failure never
- * publishes one. The session drains PaletteApply/body work before end_image.
+ * publishes one. An untracked image does not allocate or return a receipt.
+ * The session drains PaletteApply/body work before end_image.
  * Buffered callbacks accept ordered packets ahead of physical display; a
  * later discarded packet invalidates every dependent delta suffix.
  * abort_image best-effort closes framing without creating a receipt.
@@ -953,11 +954,14 @@ typedef struct sixel_encoder_core_prepare_request {
     sixel_body_byte_sink_t sink;
     int threads;
     int queue_bands;
+    int worker_capacity; /* Zero uses threads; tail may grow after COMPLETE. */
+    sixel_timeline_logger_t *logger; /* Borrowed through finish/abort. */
 } sixel_encoder_core_prepare_request_t;
 
 /*
- * prepare retains image, validates options and reserves scratch without
- * emitting bytes. An instance owns at most one active image. consume accepts
+ * prepare retains image, validates options and reserves controller scratch
+ * without emitting bytes. Worker fragments can allocate during consumption.
+ * An instance owns at most one active image. consume accepts
  * a monotonically growing count of published source rows; complete six-row
  * encoded bands can run immediately, including before PaletteApply finishes.
  * Source readiness is translated through encoded_y; empty leading bands do
@@ -1351,6 +1355,8 @@ typedef struct sixel_lookup_policy_prepare_request {
 
 typedef int sixel_lookup_policy_result_t;
 
+    /* SIXEL_LUT_POLICY_* algorithm identity; negative for custom policies.
+     * Execution planners use this description without inspecting vtables. */
 /*
  * IDL responsibility:
  * - map pixels to palette indexes
@@ -1387,6 +1393,7 @@ typedef int sixel_lookup_policy_result_t;
  *         in int result_stride,
  *         inout void *workspace);
  *     [const] size_t workspace_size();
+ *     [const] int get_kind();
  * };
  */
 
@@ -1412,6 +1419,7 @@ typedef struct sixel_lookup_policy_vtbl {
         int result_stride,
         void *workspace);
     size_t (*workspace_size)(sixel_lookup_policy_interface_t const *self);
+    int (*get_kind)(sixel_lookup_policy_interface_t const *self);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy_interface {
@@ -1436,12 +1444,98 @@ typedef struct sixel_dither_policy_select_request {
     int pixelformat;
 } sixel_dither_policy_select_request_t;
 
+/* Packed selection uses bit (y * columns + x), low bit first in each word.
+ * Without tiling, cell edges are floor(i * extent / grid). Tiling requires
+ * a 64x64 grid and repeats in frame-local pixel coordinates, matching the
+ * current refresh mask. It is not shifted by the retained-plane origin.
+ * Coordinates outside width/height and NULL words select no cells.
+ * Selected cells use min(selected_threshold, frame threshold).
+ * The caller owns this immutable map through run and all its workers. */
+typedef struct sixel_delta_threshold_map {
+    uint32_t const *words;
+    size_t word_count;
+    unsigned int columns;
+    unsigned int rows;
+    int width;
+    int height;
+    int tiled;
+    unsigned int selected_threshold;
+} sixel_delta_threshold_map_t;
+
+/* Resolved values, with no environment precedence flags or frame pointers.
+ * prepare copies these settings; callers may release or change their source
+ * configuration afterwards. apply never reads a mutable legacy handle. */
+typedef struct sixel_dither_policy_options {
+    int method_for_diffuse;
+    int ncolors;
+    int keycolor_reserved;
+    int use_rgb101_palette;
+    int clamp_policy;
+    double clamp_threshold;
+    double diffusion_deadzone;
+    float diffusion_perturb;
+    int diffusion_perturb_seed;
+    float a_dither_strength;
+    float x_dither_strength;
+    float bluenoise_strength;
+    int bluenoise_phase_x;
+    int bluenoise_phase_y;
+    int bluenoise_channel_rgb;
+    int bluenoise_size;
+    float bluenoise_gradient_factor;
+} sixel_dither_policy_options_t;
+
 typedef struct sixel_dither_policy_prepare_request {
-    sixel_dither_t *dither;
-    int depth;
+    sixel_dither_policy_options_t options;
     int method_for_scan;
     int pixelformat;
 } sixel_dither_policy_prepare_request_t;
+
+/* All execution views are borrowed through apply completion. Parallel bands
+ * use distinct scratch and disjoint output rows. A row callback may originate
+ * from any worker; PaletteApply serializes contiguous-prefix publication. */
+typedef void (*sixel_dither_row_ready_function_t)(
+    void *context,
+    int row);
+
+typedef struct sixel_dither_execution {
+    sixel_palette_t *working_palette;
+    sixel_allocator_t *allocator;
+    sixel_index_t *indexes;
+    int width;
+    int height;
+    unsigned char const *transparent_mask;
+    size_t transparent_size;
+    int keycolor;
+    unsigned char const *retained_rgb;
+    size_t retained_rgb_size;
+    unsigned char const *retained_valid;
+    size_t retained_valid_size;
+    int plane_width;
+    int plane_height;
+    int origin_x;
+    int origin_y;
+    int delta_enabled;
+    unsigned int delta_threshold;
+    int delta_metric;
+    int delta_error_mode;
+    int delta_keycolor;
+    int delta_rgb101;
+    int delta_hls;
+    unsigned char const *hls_rgb;
+    unsigned int hls_count;
+    sixel_delta_threshold_map_t selection;
+    unsigned char *skip;
+    size_t skip_size;
+    unsigned char const *gradient;
+    size_t gradient_size;
+    int gradient_width;
+    int gradient_height;
+    sixel_dither_row_ready_function_t row_ready;
+    void *row_context;
+    sixel_timeline_logger_t *logger;
+    int band_height;
+} sixel_dither_execution_t;
 
 typedef struct sixel_dither_policy_apply_request {
     sixel_index_t *result;
@@ -1452,10 +1546,8 @@ typedef struct sixel_dither_policy_apply_request {
     int output_start;
     int depth;
     unsigned char *palette;
-    int method_for_scan;
     sixel_lookup_policy_interface_t *lookup_policy;
-    sixel_dither_t *dither;
-    int pixelformat;
+    sixel_dither_execution_t const *execution;
 } sixel_dither_policy_apply_request_t;
 
 typedef int sixel_dither_policy_supports_parallel_result_t;
@@ -1483,6 +1575,8 @@ typedef int sixel_dither_policy_supports_parallel_result_t;
  *     void unref();
  *     [mutates]
  *     SIXELSTATUS prepare(in dither_policy_prepare_request const *request);
+ *     [const] SIXELSTATUS get_configuration(
+ *         out dither_policy_prepare_request *configuration);
  *     SIXELSTATUS apply(in dither_policy_apply_request const *request);
  *     [const] dither_policy_supports_parallel_result supports_parallel_bands();
  * };
@@ -1494,6 +1588,9 @@ typedef struct sixel_dither_policy_vtbl {
     SIXELSTATUS (*prepare)(
         sixel_dither_policy_interface_t *self,
         sixel_dither_policy_prepare_request_t const *request);
+    SIXELSTATUS (*get_configuration)(
+        sixel_dither_policy_interface_t const *self,
+        sixel_dither_policy_prepare_request_t *configuration);
     SIXELSTATUS (*apply)(
         sixel_dither_policy_interface_t *self,
         sixel_dither_policy_apply_request_t const *request);
@@ -1506,26 +1603,9 @@ struct sixel_dither_policy_interface {
     sixel_dither_policy_vtbl_t const *vtbl;
 };
 
-/* Packed selection uses bit (y * columns + x), low bit first in each word.
- * Without tiling, cell edges are floor(i * extent / grid). Tiling requires
- * a 64x64 grid and repeats in frame-local pixel coordinates, matching the
- * current refresh mask. It is not shifted by the retained-plane origin.
- * Coordinates outside width/height and NULL words select no cells.
- * Selected cells use min(selected_threshold, frame threshold).
- * The caller owns this immutable map through run and all its workers. */
-typedef struct sixel_delta_threshold_map {
-    uint32_t const *words;
-    size_t word_count;
-    unsigned int columns;
-    unsigned int rows;
-    int width;
-    int height;
-    int tiled;
-    unsigned int selected_threshold;
-} sixel_delta_threshold_map_t;
-
 typedef struct sixel_palette_apply_delta {
     int enabled;
+    int error_mode;
     unsigned int threshold;
     int metric;
     sixel_delta_threshold_map_t selection;
@@ -1540,6 +1620,8 @@ typedef struct sixel_palette_apply_prepare_request {
     int colorspace;
     int scan;
     int worker_threads;
+    int band_height;
+    int band_overlap;
     int gpu_policy;
     size_t gpu_auto_threshold;
 } sixel_palette_apply_prepare_request_t;
@@ -1558,6 +1640,7 @@ typedef struct sixel_palette_apply_run_request {
     sixel_retained_read_t *baseline;
     sixel_indexed_frame_t *result;
     sixel_palette_apply_delta_t delta;
+    sixel_timeline_logger_t *logger; /* Borrowed through run. */
     sixel_indexed_rows_ready_function_t rows_ready;
     void *rows_context;
     sixel_cancel_function cancel;

@@ -56,32 +56,6 @@
 static void
 sixel_encoder_core_init_defaults(sixel_output_t *output,
                                  sixel_allocator_t *allocator);
-static sixel_output_t *
-sixel_encoder_core_from_interface(sixel_encoder_core_t *output);
-static void
-sixel_encoder_core_vtbl_ref(sixel_encoder_core_t *output);
-static void
-sixel_encoder_core_vtbl_unref(sixel_encoder_core_t *output);
-static SIXELSTATUS
-sixel_encoder_core_vtbl_set_options(
-    sixel_encoder_core_t *output,
-    sixel_encoder_core_options_t const *options);
-static SIXELSTATUS
-sixel_encoder_core_vtbl_get_options(sixel_encoder_core_t *output,
-                               sixel_encoder_core_options_t *options);
-static SIXELSTATUS
-sixel_encoder_core_vtbl_encode(
-    sixel_encoder_core_t *output,
-    sixel_encoder_core_encode_request_t const *request);
-
-static sixel_encoder_core_vtbl_t const g_sixel_encoder_core_vtbl = {
-    sixel_encoder_core_vtbl_ref,
-    sixel_encoder_core_vtbl_unref,
-    sixel_encoder_core_vtbl_set_options,
-    sixel_encoder_core_vtbl_get_options,
-    sixel_encoder_core_vtbl_encode
-};
-
 static long long
 sixel_encoder_core_monotonic_now_usec(void)
 {
@@ -119,17 +93,19 @@ sixel_encoder_core_flag_to_byte(int value)
     return flag;
 }
 
-SIXEL_INTERNAL_API sixel_encoder_core_t *
-sixel_output_as_encoder_core(sixel_output_t const *output)
-{
-    return (sixel_encoder_core_t *)output;
-}
-
 static void
 sixel_encoder_core_init_defaults(sixel_output_t *output,
                                  sixel_allocator_t *allocator)
 {
-    output->encoder_core_interface.vtbl = &g_sixel_encoder_core_vtbl;
+    output->core = NULL;
+    output->session = NULL;
+    output->indexed_disabled = 0;
+    output->indexed_count = 0;
+    output->body_status = SIXEL_OK;
+    output->wire_colors = NULL;
+    output->encoded_width = 0;
+    output->encoded_height = 0;
+    memset(&output->body_sink, 0, sizeof(output->body_sink));
     output->ref = 1U;
     output->writer = NULL;
     memset(&output->writer_controls, 0, sizeof(output->writer_controls));
@@ -162,107 +138,26 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->allocator = allocator;
 }
 
-static sixel_output_t *
-sixel_encoder_core_from_interface(sixel_encoder_core_t *output)
+SIXEL_INTERNAL_API void
+sixel_output_storage_ref(sixel_output_t *output)
 {
-    return (sixel_output_t *)(void *)output;
-}
-
-static void
-sixel_encoder_core_vtbl_ref(sixel_encoder_core_t *output)
-{
-    sixel_output_t *storage;
-
-    if (output == NULL) {
-        return;
-    }
-
-    storage = sixel_encoder_core_from_interface(output);
-    (void)sixel_atomic_fetch_add_u32(&storage->ref, 1U);
-}
-
-static void
-sixel_encoder_core_vtbl_unref(sixel_encoder_core_t *output)
-{
-    sixel_output_t *storage;
-    unsigned int previous;
-
-    if (output == NULL) {
-        return;
-    }
-
-    storage = sixel_encoder_core_from_interface(output);
-    previous = sixel_atomic_fetch_sub_u32(&storage->ref, 1U);
-    if (previous == 1U) {
-        sixel_encoder_core_destroy(storage);
+    if (output != NULL) {
+        (void)sixel_atomic_fetch_add_u32(&output->ref, 1);
     }
 }
 
-static SIXELSTATUS
-sixel_encoder_core_vtbl_set_options(
-    sixel_encoder_core_t *output,
-    sixel_encoder_core_options_t const *options)
+SIXEL_INTERNAL_API void
+sixel_output_storage_unref(sixel_output_t *output)
 {
-    sixel_output_t *storage;
-
-    if (output == NULL || options == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+    if (output != NULL &&
+            sixel_atomic_fetch_sub_u32(&output->ref, 1) == 1) {
+        sixel_encoder_core_destroy(output);
     }
-
-    storage = sixel_encoder_core_from_interface(output);
-    storage->has_gri_arg_limit =
-        sixel_encoder_core_flag_to_byte(options->has_gri_arg_limit);
-    storage->palette_type = (unsigned char)options->palette_type;
-    storage->encode_policy = options->encode_policy;
-    storage->ormode = options->ormode;
-    storage->transparent_policy = options->transparent_policy;
-    storage->transparent_offset_left = options->transparent_offset_left;
-    storage->transparent_offset_top = options->transparent_offset_top;
-    storage->pixelformat = options->pixelformat;
-    storage->source_colorspace = options->source_colorspace;
-    storage->colorspace = options->colorspace;
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-sixel_encoder_core_vtbl_get_options(sixel_encoder_core_t *output,
-                               sixel_encoder_core_options_t *options)
-{
-    sixel_output_t *storage;
-
-    if (output == NULL || options == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    storage = sixel_encoder_core_from_interface(output);
-    options->has_gri_arg_limit = storage->has_gri_arg_limit;
-    options->palette_type = storage->palette_type;
-    options->encode_policy = storage->encode_policy;
-    options->ormode = storage->ormode;
-    options->transparent_policy = storage->transparent_policy;
-    options->transparent_offset_left = storage->transparent_offset_left;
-    options->transparent_offset_top = storage->transparent_offset_top;
-    options->pixelformat = storage->pixelformat;
-    options->source_colorspace = storage->source_colorspace;
-    options->colorspace = storage->colorspace;
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-sixel_encoder_core_vtbl_encode(
-    sixel_encoder_core_t *output,
-    sixel_encoder_core_encode_request_t const *request)
-{
-    if (output == NULL || request == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return sixel_encoder_core_encode_dispatch(request);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_get_encoder_options(sixel_output_t *output,
-                                 sixel_encoder_core_options_t *options)
+                                 sixel_output_options_t *options)
 {
     if (output == NULL || options == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -285,7 +180,7 @@ sixel_output_get_encoder_options(sixel_output_t *output,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_set_encoder_options(
     sixel_output_t *output,
-    sixel_encoder_core_options_t const *options)
+    sixel_output_options_t const *options)
 {
     if (output == NULL || options == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -495,7 +390,7 @@ sixel_output_begin_image(sixel_output_t *output,
     header.height = height;
     header.use_raster_attributes = use_raster_attributes;
 
-    return output->writer->vtbl->begin_image(output->writer, &header);
+    return output->writer->vtbl->begin_image(output->writer, &header, NULL);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -503,6 +398,13 @@ sixel_output_write_bytes(sixel_output_t *output,
                          char const *data,
                          int size)
 {
+    if (output != NULL && output->body_sink.write != NULL) {
+        if (SIXEL_SUCCEEDED(output->body_status)) {
+            output->body_status = output->body_sink.write(data, (size_t)size,
+                output->body_sink.context);
+        }
+        return output->body_status;
+    }
     if (output == NULL || output->writer == NULL ||
         output->writer->vtbl == NULL ||
         output->writer->vtbl->write == NULL) {
@@ -521,11 +423,12 @@ sixel_output_end_image(sixel_output_t *output)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return output->writer->vtbl->end_image(output->writer);
+    return output->writer->vtbl->end_image(output->writer, NULL);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object)
+sixel_output_storage_new(sixel_allocator_t *allocator,
+    sixel_output_t **object, int with_writer)
 {
     sixel_output_t *output;
     SIXELSTATUS status;
@@ -543,41 +446,21 @@ sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object)
     output = (sixel_output_t *)sixel_allocator_malloc(allocator, size);
     if (output == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_encoder_core_factory_new: sixel_allocator_malloc() failed.");
+            "sixel_output_storage_new: sixel_allocator_malloc() failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
     sixel_encoder_core_init_defaults(output, allocator);
     sixel_allocator_ref(allocator);
-    status = sixel_writer_factory_new(allocator, (void **)&output->writer);
+    status = with_writer ? sixel_writer_factory_new(allocator,
+        (void **)&output->writer) : SIXEL_OK;
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, output);
         sixel_allocator_unref(allocator);
         return status;
     }
-    *object = sixel_output_as_encoder_core(output);
+    *object = output;
     return SIXEL_OK;
-}
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_encoder_core_normal_factory_new(sixel_allocator_t *allocator,
-                                      void **object)
-{
-    return sixel_encoder_core_factory_new(allocator, object);
-}
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_encoder_core_highcolor_factory_new(sixel_allocator_t *allocator,
-                                         void **object)
-{
-    return sixel_encoder_core_factory_new(allocator, object);
-}
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_encoder_core_ormode_factory_new(sixel_allocator_t *allocator,
-                                      void **object)
-{
-    return sixel_encoder_core_factory_new(allocator, object);
 }
 
 SIXEL_INTERNAL_API void
@@ -587,6 +470,9 @@ sixel_encoder_core_destroy(sixel_output_t *output)
 
     if (output) {
         allocator = output->allocator;
+        if (output->core != NULL) {
+            output->core->vtbl->unref(output->core);
+        }
         if (output->writer != NULL && output->writer->vtbl != NULL &&
             output->writer->vtbl->unref != NULL) {
             output->writer->vtbl->unref(output->writer);
@@ -613,3 +499,10 @@ sixel_encoder_core_require_keep_header(sixel_output_t *output, int required)
 /* emacs End:                  */
 /* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */
+
+SIXEL_INTERNAL_API void
+sixel_output_bind_session(sixel_output_t *output,
+    sixel_encode_session_t *session)
+{
+    output->session = session;
+}

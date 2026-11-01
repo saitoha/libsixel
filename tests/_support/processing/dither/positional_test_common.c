@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/lookup-policy.h"
 #include "src/encoder.h"
 #include "src/palette.h"
@@ -116,7 +117,8 @@ positional_observe_hint(sixel_lookup_policy_interface_t const *self,
 
 static sixel_lookup_policy_vtbl_t const positional_observer_vtbl = {
     NULL, NULL, NULL, positional_observe, positional_observe_hint,
-    sixel_lookup_policy_map_pixels_default, NULL
+    sixel_lookup_policy_map_pixels_default, NULL,
+    NULL
 };
 
 static void
@@ -170,6 +172,7 @@ positional_query_test(int method, int mode, int space)
     sixel_dither_policy_interface_t *policy;
     sixel_dither_policy_prepare_request_t prepare;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     positional_observer_t observer;
     void *object;
     int pass;
@@ -205,8 +208,8 @@ positional_query_test(int method, int mode, int space)
     observer.mode = mode;
     observer.origin = mode == 4 ? INT_MAX - 17
         : (mode == 3 || mode == 7) ? 6 : 0;
-    request.dither = prepare.dither = dither;
-    request.depth = prepare.depth = 3;
+    request.execution = &request_execution;
+    request.depth = 3;
     request.width = 3;
     request.height = 18;
     request.band_origin = observer.origin;
@@ -264,6 +267,8 @@ positional_query_test(int method, int mode, int space)
         for (n = 0; n < 54; ++n) {
             result[n] = 123;
         }
+        sixel_dither_policy_capture_options(dither, &prepare.options);
+        sixel_dither_policy_capture_execution(dither, &request_execution);
         if (SIXEL_FAILED(policy->vtbl->prepare(policy, &prepare)) ||
                 SIXEL_FAILED(policy->vtbl->apply(policy, &request)) ||
                 observer.failed || observer.calls != 54 ||

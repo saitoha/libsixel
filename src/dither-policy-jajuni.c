@@ -37,6 +37,7 @@
 #include "compat_stub.h"
 #include "dither-policy-jajuni.h"
 #include "dither.h"
+#include "dither-policy-private.h"
 #include "dither-carry.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
@@ -446,13 +447,7 @@ sixel_dither_apply_jajuni_float32(
  * }
  */
 
-typedef struct sixel_dither_policy_jajuni_object {
-    sixel_dither_policy_interface_t base;
-    sixel_atomic_u32_t ref;
-    sixel_allocator_t *allocator;
-    int method_for_scan;
-    int pixelformat;
-} sixel_dither_policy_jajuni_object_t;
+typedef sixel_dither_policy_object_t sixel_dither_policy_jajuni_object_t;
 
 static sixel_dither_policy_jajuni_object_t *
 sixel_dither_policy_jajuni_from_base(sixel_dither_policy_interface_t *policy)
@@ -522,6 +517,9 @@ sixel_dither_policy_jajuni_prepare(
     object = sixel_dither_policy_jajuni_from_base(policy);
     object->method_for_scan = request->method_for_scan;
     object->pixelformat = request->pixelformat;
+    object->options = request->options;
+    object->options.method_for_diffuse = SIXEL_DIFFUSE_JAJUNI;
+    object->prepared = 1;
     return SIXEL_OK;
 }
 
@@ -529,7 +527,7 @@ static SIXELSTATUS
 sixel_dither_policy_jajuni_make_effective_request(
     sixel_dither_policy_interface_t const *policy,
     sixel_dither_policy_apply_request_t const *request,
-    sixel_dither_policy_apply_request_t *effective)
+    sixel_dither_policy_effective_t *effective)
 {
     sixel_dither_policy_jajuni_object_t const *object;
 
@@ -539,15 +537,12 @@ sixel_dither_policy_jajuni_make_effective_request(
     }
 
     object = sixel_dither_policy_jajuni_from_base_const(policy);
-    *effective = *request;
-    effective->method_for_scan = object->method_for_scan;
-    effective->pixelformat = object->pixelformat;
-    return SIXEL_OK;
+    return sixel_dither_policy_bind(object, request, effective);
 }
 
 static SIXELSTATUS
 sixel_dither_policy_jajuni_build_context(
-    sixel_dither_policy_apply_request_t const *request,
+    sixel_dither_policy_effective_t const *request,
     sixel_dither_policy_jajuni_context_t *context)
 {
     sixel_dither_t *dither;
@@ -626,7 +621,7 @@ sixel_dither_policy_jajuni_apply_8bit(
     sixel_dither_policy_apply_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_effective_t effective;
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
@@ -648,7 +643,7 @@ sixel_dither_policy_jajuni_apply_float32(
     sixel_dither_policy_apply_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_effective_t effective;
     sixel_dither_policy_jajuni_context_t context;
 
     status = SIXEL_FALSE;
@@ -697,6 +692,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_jajuni_ref,
     sixel_dither_policy_jajuni_unref,
     sixel_dither_policy_jajuni_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_jajuni_apply_8bit,
     sixel_dither_policy_jajuni_supports_parallel_bands
 };
@@ -727,6 +723,7 @@ sixel_dither_policy_jajuni_new(
     object->base.vtbl = &g_sixel_dither_policy_jajuni_vtbl;
     object->ref = 1U;
     object->allocator = allocator;
+    object->prepared = 0;
     sixel_allocator_ref(allocator);
     object->method_for_scan = SIXEL_SCAN_AUTO;
     object->pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -743,6 +740,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_jajuni_ref,
     sixel_dither_policy_jajuni_unref,
     sixel_dither_policy_jajuni_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_jajuni_apply_8bit,
     sixel_dither_policy_jajuni_supports_parallel_bands
 };
@@ -752,6 +750,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_jajuni_ref,
     sixel_dither_policy_jajuni_unref,
     sixel_dither_policy_jajuni_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_jajuni_apply_float32,
     sixel_dither_policy_jajuni_supports_parallel_bands
 };

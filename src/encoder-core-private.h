@@ -26,6 +26,7 @@
 #define LIBSIXEL_ENCODER_CORE_PRIVATE_H
 
 #include "encoder-core.h"
+#include "output.h"
 #include "sixel-writer.h"
 #include "sixel_atomic.h"
 
@@ -43,12 +44,21 @@ typedef struct sixel_node {
 } sixel_node_t;
 
 /*
- * Private storage backing the legacy sixel_output_t handle.  The first field
- * is the 6cells encoder_core dispatch header, so a public sixel_output_t can be
- * cast to sixel_encoder_core_t without changing the public ABI.
+ * Legacy output adapter and reusable serializer scratch. Body-only instances
+ * have no writer and route byte chunks to body_sink. No component interface
+ * aliases this public opaque handle.
  */
 struct sixel_output {
-    sixel_encoder_core_t encoder_core_interface;
+    sixel_encoder_core_t *core;
+    sixel_encode_session_t *session;
+    /* Private validation switch and successful native-path observation. */
+    int indexed_disabled;
+    unsigned long indexed_count;
+    sixel_body_byte_sink_t body_sink;
+    SIXELSTATUS body_status;
+    sixel_wire_color_t const *wire_colors;
+    int encoded_width;
+    int encoded_height;
 
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
@@ -115,7 +125,7 @@ sixel_output_compute_transparent_extent(sixel_output_t const *output,
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_encode_dispatch(
-    sixel_encoder_core_encode_request_t const *request);
+    sixel_legacy_encode_request_t const *request);
 
 /*
  * Emit OR-mode body bytes from a complete contiguous palette-index image.

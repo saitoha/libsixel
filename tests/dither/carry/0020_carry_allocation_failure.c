@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/dither-carry.h"
 #include "src/lookup-policy.h"
 static int carry_fail_armed;
@@ -30,7 +31,7 @@ test_carry_0020(int argc, char **argv)
 {
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
-    sixel_dither_policy_apply_request_t request;
+    sixel_dither_policy_effective_t request;
     sixel_lookup_policy_interface_t lookup;
     sixel_lookup_policy_vtbl_t vtbl;
     unsigned char pixels[3] = {128,128,128};

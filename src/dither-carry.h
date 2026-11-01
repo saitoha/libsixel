@@ -26,7 +26,7 @@
 #define LIBSIXEL_DITHER_CARRY_H
 
 #include <stdint.h>
-#include <6cells.h>
+#include "dither-policy-private.h"
 
 typedef struct sixel_dither_carry_tap {
     int dx;
@@ -52,7 +52,7 @@ sixel_dither_carry_candidate(unsigned char const *source,
                             int32_t *candidate, unsigned char *lookup);
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
+sixel_dither_carry_apply(sixel_dither_policy_effective_t const *request,
                         int method);
 
 #endif /* LIBSIXEL_DITHER_CARRY_H */

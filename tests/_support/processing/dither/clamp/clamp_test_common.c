@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/lookup-policy.h"
 #include "src/encoder.h"
 #include "src/dither-policy-fs.h"
@@ -133,7 +134,8 @@ clamp_lookup_pixel_hint(sixel_lookup_policy_interface_t const *self,
 
 static sixel_lookup_policy_vtbl_t const clamp_lookup_vtbl = {
     NULL, NULL, NULL, clamp_lookup_pixel, clamp_lookup_pixel_hint,
-    sixel_lookup_policy_map_pixels_default, NULL
+    sixel_lookup_policy_map_pixels_default, NULL,
+    NULL
 };
 
 int
@@ -159,6 +161,7 @@ clamp_test_kernel(int method)
     sixel_dither_policy_interface_t *policy;
     sixel_dither_policy_prepare_request_t prepare;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     clamp_lookup_t lookup;
     SIXELSTATUS status;
     void *object;
@@ -233,8 +236,7 @@ clamp_test_kernel(int method)
         goto end;
     }
     policy = object;
-    prepare.dither = dither;
-    prepare.depth = 3;
+    sixel_dither_policy_capture_options(dither, &prepare.options);
     prepare.pixelformat = pixelformat;
     prepare.method_for_scan = serpentine ? SIXEL_SCAN_SERPENTINE
                                         : SIXEL_SCAN_RASTER;
@@ -242,12 +244,11 @@ clamp_test_kernel(int method)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    request.dither = dither;
+    sixel_dither_policy_capture_execution(dither, &request_execution);
+    request.execution = &request_execution;
     request.width = 2;
     request.height = spatial ? 2 : 1;
     request.depth = 3;
-    request.pixelformat = prepare.pixelformat;
-    request.method_for_scan = prepare.method_for_scan;
     request.data = (unsigned char *)(void *)pixels;
     request.palette = palette;
     request.result = result;

@@ -136,6 +136,13 @@ typedef struct sixel_gpu_palette_request {
 SIXEL_INTERNAL_API size_t
 sixel_gpu_palette_auto_threshold(void);
 
+/* Component plans resolve availability before output. A prepared dispatch
+ * neither rereads options nor retries a failed GPU frame on the CPU. */
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_plan_available(void);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request);
 

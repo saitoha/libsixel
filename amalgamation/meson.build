@@ -35,6 +35,9 @@ endif
 
 amalgamation_units = files(
   '../src/output.c',
+  '../src/encode-result.c',
+  '../src/retained-plane.c',
+  '../src/palette-apply.c',
   '../src/sixel-writer.c',
   '../src/encoder-core.c',
   '../src/fromsixel.c',
@@ -90,6 +93,7 @@ amalgamation_units = files(
   '../src/palette.c',
   '../src/dither.c',
   '../src/dither-policy.c',
+  '../src/dither-policy-contract.c',
   '../src/dither-policy-none.c',
   '../src/dither-policy-fs.c',
   '../src/dither-policy-atkinson.c',

@@ -32,6 +32,7 @@
 #include "compat_stub.h"
 #include "dither-policy-a-dither.h"
 #include "dither.h"
+#include "dither-policy-private.h"
 #include "dither-common-pipeline.h"
 #include "options.h"
 #include "pixelformat.h"
@@ -69,6 +70,9 @@ sixel_dither_get_a_strength(sixel_dither_t const *dither)
 {
     float value;
 
+    if (dither != NULL && dither->a_dither_strength_override) {
+        return dither->a_dither_strength;
+    }
     value = sixel_dither_positional_auto_strength(
         SIXEL_DIFFUSE_A_DITHER, sixel_dither_lookup_ncolors(dither));
     (void)sixel_option_resolve_registered_float_binding(
@@ -529,13 +533,7 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
  *   supports_parallel_bands();
  * }
  */
-typedef struct sixel_dither_policy_a_dither_object {
-    sixel_dither_policy_interface_t base;
-    sixel_atomic_u32_t ref;
-    sixel_allocator_t *allocator;
-    int method_for_scan;
-    int pixelformat;
-} sixel_dither_policy_a_dither_object_t;
+typedef sixel_dither_policy_object_t sixel_dither_policy_a_dither_object_t;
 
 static sixel_dither_policy_a_dither_object_t *
 sixel_dither_policy_a_dither_from_base(sixel_dither_policy_interface_t *policy)
@@ -605,6 +603,9 @@ sixel_dither_policy_a_dither_prepare(
     object = sixel_dither_policy_a_dither_from_base(policy);
     object->method_for_scan = request->method_for_scan;
     object->pixelformat = request->pixelformat;
+    object->options = request->options;
+    object->options.method_for_diffuse = SIXEL_DIFFUSE_A_DITHER;
+    object->prepared = 1;
     return SIXEL_OK;
 }
 
@@ -612,7 +613,7 @@ static SIXELSTATUS
 sixel_dither_policy_a_dither_make_effective_request(
     sixel_dither_policy_interface_t const *policy,
     sixel_dither_policy_apply_request_t const *request,
-    sixel_dither_policy_apply_request_t *effective)
+    sixel_dither_policy_effective_t *effective)
 {
     sixel_dither_policy_a_dither_object_t const *object;
 
@@ -622,15 +623,12 @@ sixel_dither_policy_a_dither_make_effective_request(
     }
 
     object = sixel_dither_policy_a_dither_from_base_const(policy);
-    *effective = *request;
-    effective->method_for_scan = object->method_for_scan;
-    effective->pixelformat = object->pixelformat;
-    return SIXEL_OK;
+    return sixel_dither_policy_bind(object, request, effective);
 }
 
 static SIXELSTATUS
 sixel_dither_policy_a_dither_build_context(
-    sixel_dither_policy_apply_request_t const *request,
+    sixel_dither_policy_effective_t const *request,
     sixel_dither_policy_a_dither_context_t *context)
 {
     sixel_dither_t *dither;
@@ -686,7 +684,7 @@ sixel_dither_policy_a_dither_apply_8bit(
     sixel_dither_policy_apply_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_effective_t effective;
     sixel_dither_policy_a_dither_context_t context;
 
     status = SIXEL_FALSE;
@@ -716,7 +714,7 @@ sixel_dither_policy_a_dither_apply_float32(
     sixel_dither_policy_apply_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_effective_t effective;
     sixel_dither_policy_a_dither_context_t context;
 
     status = SIXEL_FALSE;
@@ -753,6 +751,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_a_dither_ref,
     sixel_dither_policy_a_dither_unref,
     sixel_dither_policy_a_dither_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_a_dither_apply_8bit,
     sixel_dither_policy_a_dither_supports_parallel_bands
 };
@@ -783,6 +782,7 @@ sixel_dither_policy_a_dither_new(
     object->base.vtbl = &g_sixel_dither_policy_a_dither_vtbl;
     object->ref = 1U;
     object->allocator = allocator;
+    object->prepared = 0;
     sixel_allocator_ref(allocator);
     object->method_for_scan = SIXEL_SCAN_AUTO;
     object->pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -799,6 +799,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_a_dither_ref,
     sixel_dither_policy_a_dither_unref,
     sixel_dither_policy_a_dither_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_a_dither_apply_8bit,
     sixel_dither_policy_a_dither_supports_parallel_bands
 };
@@ -808,6 +809,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_a_dither_ref,
     sixel_dither_policy_a_dither_unref,
     sixel_dither_policy_a_dither_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_a_dither_apply_float32,
     sixel_dither_policy_a_dither_supports_parallel_bands
 };

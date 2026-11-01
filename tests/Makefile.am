@@ -2361,6 +2361,82 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0041_ORD_DIN99D_METRIC \
     -DBUILD_TEST_0042_ORD_INSTANCE_ISOLATION \
     -DBUILD_TEST_0001_DITHER_POLICY \
+    -DBUILD_INDEXED_EQUIVALENCE_COMMON \
+    -DBUILD_TEST_0026_NONE_CPU_RGB_BYTES \
+    -DBUILD_TEST_0027_NONE_CPU_RGB_HISTORY \
+    -DBUILD_TEST_0028_BLUENOISE_CPU_RGB_BYTES \
+    -DBUILD_TEST_0029_BLUENOISE_CPU_RGB_HISTORY \
+    -DBUILD_TEST_0030_FS_CPU_RGB_BYTES \
+    -DBUILD_TEST_0031_FS_CPU_RGB_HISTORY \
+    -DBUILD_TEST_0032_NONE_CPU_HLS_BYTES \
+    -DBUILD_TEST_0033_NONE_CPU_HLS_HISTORY \
+    -DBUILD_TEST_0034_NONE_GPU_RGB_BYTES \
+    -DBUILD_TEST_0035_NONE_GPU_RGB_HISTORY \
+    -DBUILD_TEST_0036_BLUENOISE_GPU_RGB_BYTES \
+    -DBUILD_TEST_0037_BLUENOISE_GPU_RGB_HISTORY \
+    -DBUILD_TEST_0038_WIRE_RGB_ROUNDING \
+    -DBUILD_TEST_0039_WIRE_HLS_ROUNDING \
+    -DBUILD_TEST_0040_INDEXED_TAKE_FAILURE \
+    -DBUILD_TEST_0041_CORE_UNPUBLISHED_ROWS \
+    -DBUILD_TEST_0042_CORE_EARLY_FINISH \
+    -DBUILD_TEST_0043_CORE_NORMAL_FACTORY \
+    -DBUILD_TEST_0044_CORE_ORMODE_FACTORY \
+    -DBUILD_INDEXED_COMPONENT_COMMON \
+    -DBUILD_TEST_0001_RETAINED_ORIGIN \
+    -DBUILD_TEST_0002_RETAINED_APPROXIMATE \
+    -DBUILD_TEST_0003_RETAINED_PAINT_COUNT \
+    -DBUILD_TEST_0004_RETAINED_PAINT_MARKS \
+    -DBUILD_TEST_0005_RETAINED_SEQUENCE \
+    -DBUILD_TEST_0006_RETAINED_DUPLICATE \
+    -DBUILD_TEST_0007_RETAINED_WRONG_RECEIPT \
+    -DBUILD_TEST_0008_RETAINED_READER_PIN \
+    -DBUILD_TEST_0009_RETAINED_USER_PIN \
+    -DBUILD_TEST_0010_RETAINED_FAILED_IMAGE \
+    -DBUILD_TEST_0011_RETAINED_ABORT \
+    -DBUILD_TEST_0012_RETAINED_INVALIDATE \
+    -DBUILD_TEST_0013_RETAINED_BUSY_INVALIDATE \
+    -DBUILD_TEST_0014_INDEXED_UNPUBLISHED \
+    -DBUILD_TEST_0015_INDEXED_KEPT_SENTINEL \
+    -DBUILD_TEST_0016_INDEXED_INVALID_PAINT \
+    -DBUILD_TEST_0017_INDEXED_EARLY_COMPLETE \
+    -DBUILD_TEST_0018_INDEXED_PUBLISHED_LIFETIME \
+    -DBUILD_TEST_0019_WRITER_FAILED_HEADER \
+    -DBUILD_TEST_0020_WRITER_FAILED_BODY \
+    -DBUILD_TEST_0021_WRITER_ABORT \
+    -DBUILD_TEST_0022_WRITER_REUSE_AFTER_FAILURE \
+    -DBUILD_TEST_0023_RETAINED_INVALID_KEEP \
+    -DBUILD_TEST_0024_RETAINED_EXACT_KEEP \
+    -DBUILD_TEST_0025_RETAINED_DEFERRED_ABORT \
+    -DBUILD_PREPARED_OPTIONS_COMMON \
+    -DBUILD_TEST_0022_NONE_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0023_NONE_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0024_FS_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0025_FS_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0026_ATKINSON_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0027_ATKINSON_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0028_JAJUNI_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0029_JAJUNI_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0030_STUCKI_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0031_STUCKI_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0032_BURKES_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0033_BURKES_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0034_SIERRA1_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0035_SIERRA1_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0036_SIERRA2_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0037_SIERRA2_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0038_SIERRA3_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0039_SIERRA3_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0040_LSO2_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0041_LSO2_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0042_A_DITHER_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0043_A_DITHER_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0044_X_DITHER_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0045_X_DITHER_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0046_BLUENOISE_BYTE_PREPARED_OPTIONS \
+    -DBUILD_TEST_0047_BLUENOISE_FLOAT_PREPARED_OPTIONS \
+    -DBUILD_TEST_0048_A_DITHER_PREPARED_APPLY \
+    -DBUILD_TEST_0049_X_DITHER_PREPARED_APPLY \
+    -DBUILD_TEST_0050_BLUENOISE_PREPARED_APPLY \
     -DBUILD_TEST_0005_COVER_ANCHOR \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
     -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
@@ -6259,6 +6335,82 @@ test_runner_SOURCES = test_runner.c \
     lookup/ordered/0041_ord_din99d_metric.c \
     lookup/ordered/0042_ord_instance_isolation.c \
     dither/dispatch/0001_dither_policy.c \
+    dither/dispatch/0048_a_dither_prepared_apply.c \
+    dither/dispatch/0049_x_dither_prepared_apply.c \
+    dither/dispatch/0050_bluenoise_prepared_apply.c \
+    _support/codec/indexed_equivalence_common.c \
+    encoder/indexed/0026_none_cpu_rgb_bytes.c \
+    encoder/indexed/0027_none_cpu_rgb_history.c \
+    encoder/indexed/0028_bluenoise_cpu_rgb_bytes.c \
+    encoder/indexed/0029_bluenoise_cpu_rgb_history.c \
+    encoder/indexed/0030_fs_cpu_rgb_bytes.c \
+    encoder/indexed/0031_fs_cpu_rgb_history.c \
+    encoder/indexed/0032_none_cpu_hls_bytes.c \
+    encoder/indexed/0033_none_cpu_hls_history.c \
+    encoder/indexed/0034_none_gpu_rgb_bytes.c \
+    encoder/indexed/0035_none_gpu_rgb_history.c \
+    encoder/indexed/0036_bluenoise_gpu_rgb_bytes.c \
+    encoder/indexed/0037_bluenoise_gpu_rgb_history.c \
+    encoder/indexed/0038_wire_rgb_rounding.c \
+    encoder/indexed/0039_wire_hls_rounding.c \
+    encoder/indexed/0040_indexed_take_failure.c \
+    encoder/indexed/0041_core_unpublished_rows.c \
+    encoder/indexed/0042_core_early_finish.c \
+    encoder/indexed/0043_core_normal_factory.c \
+    encoder/indexed/0044_core_ormode_factory.c \
+    _support/codec/indexed_component_common.c \
+    encoder/indexed/0001_retained_origin.c \
+    encoder/indexed/0002_retained_approximate.c \
+    encoder/indexed/0003_retained_paint_count.c \
+    encoder/indexed/0004_retained_paint_marks.c \
+    encoder/indexed/0005_retained_sequence.c \
+    encoder/indexed/0006_retained_duplicate.c \
+    encoder/indexed/0007_retained_wrong_receipt.c \
+    encoder/indexed/0008_retained_reader_pin.c \
+    encoder/indexed/0009_retained_user_pin.c \
+    encoder/indexed/0010_retained_failed_image.c \
+    encoder/indexed/0011_retained_abort.c \
+    encoder/indexed/0012_retained_invalidate.c \
+    encoder/indexed/0013_retained_busy_invalidate.c \
+    encoder/indexed/0014_indexed_unpublished.c \
+    encoder/indexed/0015_indexed_kept_sentinel.c \
+    encoder/indexed/0016_indexed_invalid_paint.c \
+    encoder/indexed/0017_indexed_early_complete.c \
+    encoder/indexed/0018_indexed_published_lifetime.c \
+    encoder/indexed/0019_writer_failed_header.c \
+    encoder/indexed/0020_writer_failed_body.c \
+    encoder/indexed/0021_writer_abort.c \
+    encoder/indexed/0022_writer_reuse_after_failure.c \
+    encoder/indexed/0023_retained_invalid_keep.c \
+    encoder/indexed/0024_retained_exact_keep.c \
+    encoder/indexed/0025_retained_deferred_abort.c \
+    _support/processing/dither/prepared_options_common.c \
+    dither/dispatch/0022_none_byte_prepared_options.c \
+    dither/dispatch/0023_none_float_prepared_options.c \
+    dither/dispatch/0024_fs_byte_prepared_options.c \
+    dither/dispatch/0025_fs_float_prepared_options.c \
+    dither/dispatch/0026_atkinson_byte_prepared_options.c \
+    dither/dispatch/0027_atkinson_float_prepared_options.c \
+    dither/dispatch/0028_jajuni_byte_prepared_options.c \
+    dither/dispatch/0029_jajuni_float_prepared_options.c \
+    dither/dispatch/0030_stucki_byte_prepared_options.c \
+    dither/dispatch/0031_stucki_float_prepared_options.c \
+    dither/dispatch/0032_burkes_byte_prepared_options.c \
+    dither/dispatch/0033_burkes_float_prepared_options.c \
+    dither/dispatch/0034_sierra1_byte_prepared_options.c \
+    dither/dispatch/0035_sierra1_float_prepared_options.c \
+    dither/dispatch/0036_sierra2_byte_prepared_options.c \
+    dither/dispatch/0037_sierra2_float_prepared_options.c \
+    dither/dispatch/0038_sierra3_byte_prepared_options.c \
+    dither/dispatch/0039_sierra3_float_prepared_options.c \
+    dither/dispatch/0040_lso2_byte_prepared_options.c \
+    dither/dispatch/0041_lso2_float_prepared_options.c \
+    dither/dispatch/0042_a_dither_byte_prepared_options.c \
+    dither/dispatch/0043_a_dither_float_prepared_options.c \
+    dither/dispatch/0044_x_dither_byte_prepared_options.c \
+    dither/dispatch/0045_x_dither_float_prepared_options.c \
+    dither/dispatch/0046_bluenoise_byte_prepared_options.c \
+    dither/dispatch/0047_bluenoise_float_prepared_options.c \
     dither/perturb/0018_perturb_keep_lookup.c \
     dither/perturb/0017_perturb_keep_early.c \
     dither/perturb/0002_perturb_api.c \
@@ -10709,3 +10861,5 @@ EXTRA_DIST += build/test-plan/fixture.py \
     build/test-plan/0007_scope_not_inferred.py
 
 EXTRA_DIST += build/discovery/0009_windows_source_exclusion.py
+
+EXTRA_DIST += _support/codec/indexed_component_common.h

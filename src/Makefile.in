@@ -183,10 +183,14 @@ libsixel_la_DEPENDENCIES = $(FLOAT_LOOKUP_LIB) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/output-factory.h $(srcdir)/sixel-writer.c \
+	$(srcdir)/output-factory.h $(srcdir)/encode-result.c \
+	$(srcdir)/encode-result.h $(srcdir)/retained-plane.c \
+	$(srcdir)/palette-apply.c $(srcdir)/sixel-writer.c \
 	$(srcdir)/sixel-writer.h $(srcdir)/encoder-core.c \
 	$(srcdir)/encoder-core.h $(srcdir)/encoder-core-private.h \
-	$(srcdir)/encoder-core-packet.h $(srcdir)/timer.c \
+	$(srcdir)/encoder-core-packet.h \
+	$(srcdir)/encoder-core-indexed.inc.h \
+	$(srcdir)/encoder-core-session.inc.h $(srcdir)/timer.c \
 	$(srcdir)/timer.h $(srcdir)/sleep.c $(srcdir)/sleep.h \
 	$(srcdir)/fromsixel.c $(srcdir)/encoder-core-encode.c \
 	$(srcdir)/encoder-core-highcolor.c \
@@ -270,8 +274,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette.h $(srcdir)/palette-private.h \
 	$(srcdir)/dither.c $(srcdir)/dither.h \
 	$(srcdir)/oklch-lattice256.h $(srcdir)/dither-policy.c \
-	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-none.c \
-	$(srcdir)/dither-policy-fs.c \
+	$(srcdir)/dither-policy-contract.c \
+	$(srcdir)/dither-policy-private.h $(srcdir)/dither-policy.h \
+	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
 	$(srcdir)/dither-policy-atkinson.c \
 	$(srcdir)/dither-policy-jajuni.c \
 	$(srcdir)/dither-policy-stucki.c \
@@ -411,6 +416,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encode-result.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-apply.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel-writer.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-core.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-timer.lo \
@@ -473,6 +481,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-contract.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-none.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-fs.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-atkinson.lo \
@@ -639,6 +648,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-contract.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo \
@@ -651,6 +661,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-policy.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
 	./$(DEPDIR)/libsixel_la-drcs.Plo \
+	./$(DEPDIR)/libsixel_la-encode-result.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo \
 	./$(DEPDIR)/libsixel_la-encoder-core.Plo \
@@ -744,6 +755,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-options-registry.Plo \
 	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
+	./$(DEPDIR)/libsixel_la-palette-apply.Plo \
 	./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-cover.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
@@ -778,6 +790,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-progressive-video.Plo \
 	./$(DEPDIR)/libsixel_la-progressive.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
+	./$(DEPDIR)/libsixel_la-retained-plane.Plo \
 	./$(DEPDIR)/libsixel_la-sample-statistics.Plo \
 	./$(DEPDIR)/libsixel_la-sample-stream.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
@@ -1143,12 +1156,18 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output-factory.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encode-result.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encode-result.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-apply.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel-writer.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel-writer.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-packet.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-indexed.inc.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder-core-session.inc.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \
@@ -1269,6 +1288,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/oklch-lattice256.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-contract.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fs.c \
@@ -1639,6 +1660,7 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
+    $(srcdir)/encode-result.h \
     $(srcdir)/sixel-writer.h \
     $(srcdir)/encoder-core.h \
     $(srcdir)/chunk.h \
@@ -1781,6 +1803,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-contract.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo@am__quote@ # am--include-marker
@@ -1793,6 +1816,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-drcs.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encode-result.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder-core.Plo@am__quote@ # am--include-marker
@@ -1886,6 +1910,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options-registry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-apply.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-cover.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
@@ -1920,6 +1945,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-video.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-statistics.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-stream.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
@@ -1993,6 +2019,27 @@ libsixel_la-output.lo: output.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='output.c' object='libsixel_la-output.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-output.lo `test -f 'output.c' || echo '$(srcdir)/'`output.c
+
+libsixel_la-encode-result.lo: encode-result.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-encode-result.lo -MD -MP -MF $(DEPDIR)/libsixel_la-encode-result.Tpo -c -o libsixel_la-encode-result.lo `test -f 'encode-result.c' || echo '$(srcdir)/'`encode-result.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-encode-result.Tpo $(DEPDIR)/libsixel_la-encode-result.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encode-result.c' object='libsixel_la-encode-result.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-encode-result.lo `test -f 'encode-result.c' || echo '$(srcdir)/'`encode-result.c
+
+libsixel_la-retained-plane.lo: retained-plane.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-retained-plane.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane.Tpo -c -o libsixel_la-retained-plane.lo `test -f 'retained-plane.c' || echo '$(srcdir)/'`retained-plane.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-retained-plane.Tpo $(DEPDIR)/libsixel_la-retained-plane.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='retained-plane.c' object='libsixel_la-retained-plane.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-retained-plane.lo `test -f 'retained-plane.c' || echo '$(srcdir)/'`retained-plane.c
+
+libsixel_la-palette-apply.lo: palette-apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-apply.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-apply.Tpo -c -o libsixel_la-palette-apply.lo `test -f 'palette-apply.c' || echo '$(srcdir)/'`palette-apply.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-apply.Tpo $(DEPDIR)/libsixel_la-palette-apply.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-apply.c' object='libsixel_la-palette-apply.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-apply.lo `test -f 'palette-apply.c' || echo '$(srcdir)/'`palette-apply.c
 
 libsixel_la-sixel-writer.lo: sixel-writer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel-writer.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel-writer.Tpo -c -o libsixel_la-sixel-writer.lo `test -f 'sixel-writer.c' || echo '$(srcdir)/'`sixel-writer.c
@@ -2427,6 +2474,13 @@ libsixel_la-dither-policy.lo: dither-policy.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy.c' object='libsixel_la-dither-policy.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy.lo `test -f 'dither-policy.c' || echo '$(srcdir)/'`dither-policy.c
+
+libsixel_la-dither-policy-contract.lo: dither-policy-contract.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-contract.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-contract.Tpo -c -o libsixel_la-dither-policy-contract.lo `test -f 'dither-policy-contract.c' || echo '$(srcdir)/'`dither-policy-contract.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-contract.Tpo $(DEPDIR)/libsixel_la-dither-policy-contract.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-contract.c' object='libsixel_la-dither-policy-contract.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-contract.lo `test -f 'dither-policy-contract.c' || echo '$(srcdir)/'`dither-policy-contract.c
 
 libsixel_la-dither-policy-none.lo: dither-policy-none.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-none.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-none.Tpo -c -o libsixel_la-dither-policy-none.lo `test -f 'dither-policy-none.c' || echo '$(srcdir)/'`dither-policy-none.c
@@ -3478,6 +3532,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-contract.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
@@ -3490,6 +3545,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-encode-result.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
@@ -3583,6 +3639,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
@@ -3617,6 +3674,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-statistics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
@@ -3705,6 +3763,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-contract.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
@@ -3717,6 +3776,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-encode-result.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core-highcolor.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder-core.Plo
@@ -3810,6 +3870,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-options-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-bin-histogram.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-cover.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
@@ -3844,6 +3905,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-statistics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo

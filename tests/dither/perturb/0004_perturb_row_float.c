@@ -8,6 +8,7 @@
 #include <math.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/lookup-policy.h"
 #include "src/dither-policy-fs.h"
 
@@ -43,6 +44,7 @@ test_perturb_0004_row_float(int argc, char **argv)
     void *object;
     sixel_dither_policy_prepare_request_t prep;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     sixel_lookup_policy_vtbl_t vtbl;
     sixel_lookup_policy_interface_t lookup;
     sixel_index_t result[2];
@@ -80,8 +82,7 @@ test_perturb_0004_row_float(int argc, char **argv)
     if (SIXEL_FAILED(sixel_dither_set_diffusion_perturb(dither, 0.5f))) {
         goto end;
     }
-    prep.dither = dither;
-    prep.depth = 3;
+    sixel_dither_policy_capture_options(dither, &prep.options);
     prep.method_for_scan = SIXEL_SCAN_SERPENTINE;
     prep.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     if (SIXEL_FAILED(policy->vtbl->prepare(policy, &prep))) {
@@ -96,8 +97,8 @@ test_perturb_0004_row_float(int argc, char **argv)
     request.depth = 3;
     request.palette = palette;
     request.lookup_policy = &lookup;
-    request.dither = dither;
-    request.pixelformat = prep.pixelformat;
+    sixel_dither_policy_capture_execution(dither, &request_execution);
+    request.execution = &request_execution;
     sixel_dither_perturb_init(&perturb, 0.5f, 0);
     sixel_dither_perturb_float(&perturb, 1, 17, weights);
     expected = 0.25f * weights[0];

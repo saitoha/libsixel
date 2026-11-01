@@ -93,6 +93,7 @@
 #include "lookup-policy.h"
 #include "tty.h"
 #include "encoder.h"
+#include "encode-result.h"
 #include "encoder-palette.h"
 #include "encoder-palette-store.h"
 #include "presentation.h"
@@ -3069,39 +3070,6 @@ sixel_encoder_ensure_accumulation_mask(sixel_encoder_t *encoder,
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_encoder_ensure_accumulation_valid_mask(sixel_encoder_t *encoder,
-                                             size_t pixel_count)
-{
-    unsigned char *resized;
-
-    resized = NULL;
-    if (encoder == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (pixel_count == 0u) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (encoder->accumulation_valid_mask != NULL &&
-        encoder->accumulation_valid_mask_size >= pixel_count) {
-        return SIXEL_OK;
-    }
-
-    resized = (unsigned char *)sixel_allocator_realloc(
-        encoder->allocator,
-        encoder->accumulation_valid_mask,
-        pixel_count);
-    if (resized == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_ensure_accumulation_valid_mask: "
-            "sixel_allocator_realloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-    encoder->accumulation_valid_mask = resized;
-    encoder->accumulation_valid_mask_size = pixel_count;
-
-    return SIXEL_OK;
-}
 
 static int
 sixel_encoder_frame_mask_covers_pixel(
@@ -3438,49 +3406,46 @@ sixel_encoder_bind_transparent_mask(
  */
 static SIXELSTATUS
 sixel_encoder_reset_6delta_plane(sixel_encoder_t *encoder,
-                                 int plane_width,
-                                 int plane_height)
+    int plane_width, int plane_height)
 {
+    sixel_retained_plane_description_t description;
+    void *object;
     SIXELSTATUS status;
-    unsigned char *plane;
-    size_t plane_rgb_size;
-    size_t plane_pixel_count;
 
-    status = SIXEL_FALSE;
-    plane = NULL;
-    plane_rgb_size = sixel_encoder_6delta_plane_rgb_bytes(plane_width,
-                                                          plane_height);
-    if (encoder == NULL || plane_rgb_size == 0u) {
+    if (encoder == NULL || plane_width <= 0 || plane_height <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
-    plane_pixel_count = plane_rgb_size / 3u;
-
-    status = sixel_encoder_ensure_accumulation_valid_mask(encoder,
-                                                          plane_pixel_count);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (encoder->retained_plane == NULL) {
+        object = NULL;
+        status = sixel_retained_plane_factory_new(encoder->allocator, &object);
+        if (SIXEL_FAILED(status)) return status;
+        encoder->retained_plane = object;
     }
-    plane = (unsigned char *)sixel_allocator_malloc(encoder->allocator,
-                                                    plane_rgb_size);
-    if (plane == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_reset_6delta_plane: "
-            "sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-    memset(plane, 0, plane_rgb_size);
-    memset(encoder->accumulation_valid_mask, 0, plane_pixel_count);
-
-    sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
-    encoder->accumulation_pixels = plane;
-    encoder->accumulation_pixels_size = plane_rgb_size;
+    description.width = plane_width;
+    description.height = plane_height;
+    description.color_definition = encoder->output_color_definition;
+    description.colorspace = encoder->output_colorspace;
+    status = encoder->retained_plane->vtbl->configure(encoder->retained_plane,
+        &description);
+    if (SIXEL_FAILED(status)) return status;
+    status = encoder->retained_plane->vtbl->invalidate(encoder->retained_plane,
+        SIXEL_RETAINED_GEOMETRY);
+    if (SIXEL_FAILED(status)) return status;
+    /* Rebind synchronous legacy aliases without an allocation after the
+     * component's atomic configure. Only the component owns these buffers. */
+    status = sixel_retained_plane_legacy_map(encoder->retained_plane,
+        &encoder->accumulation_pixels, &encoder->accumulation_valid_mask);
+    if (SIXEL_FAILED(status)) return status;
+    encoder->accumulation_pixels_size =
+        (size_t)plane_width * (size_t)plane_height * 3;
+    encoder->accumulation_valid_mask_size =
+        (size_t)plane_width * (size_t)plane_height;
     encoder->accumulation_width = plane_width;
     encoder->accumulation_height = plane_height;
     encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    encoder->accumulation_color_definition =
-        encoder->output_color_definition;
+    encoder->accumulation_color_definition = encoder->output_color_definition;
     encoder->accumulation_colorspace = encoder->output_colorspace;
-
+    sixel_retained_plane_legacy_unmap(encoder->retained_plane);
     return SIXEL_OK;
 }
 
@@ -3668,21 +3633,8 @@ sixel_encoder_update_accumulation_from_frame(
     }
     if (encoder->accumulation_valid_mask == NULL ||
             encoder->accumulation_valid_mask_size < plane_pixel_count) {
-        status = sixel_encoder_ensure_accumulation_valid_mask(
-            encoder,
-            plane_pixel_count);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        if (encoder->accumulation_valid_mask == NULL ||
-                encoder->accumulation_valid_mask_size < plane_pixel_count) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_update_accumulation_from_frame: "
-                "accumulation valid mask is unavailable.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        memset(encoder->accumulation_valid_mask, 0, plane_pixel_count);
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
     }
 
     /*
@@ -3705,6 +3657,9 @@ sixel_encoder_update_accumulation_from_frame(
     paint_marks = encoder->presentation != NULL &&
         encoder->presentation->video_pair
         ? encoder->presentation->ordinary_paint : NULL;
+    status = sixel_retained_plane_legacy_map(encoder->retained_plane,
+        &encoder->accumulation_pixels, &encoder->accumulation_valid_mask);
+    if (SIXEL_FAILED(status)) goto end;
     for (row = 0; row < view.height; ++row) {
         plane_row_base = (size_t)(origin_y + row) * (size_t)plane_width
             + (size_t)origin_x;
@@ -3734,6 +3689,7 @@ sixel_encoder_update_accumulation_from_frame(
             encoder->accumulation_valid_mask[plane_index] = 1u;
         }
     }
+    sixel_retained_plane_legacy_unmap(encoder->retained_plane);
     encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     encoder->accumulation_color_definition =
         encoder->output_color_definition;
@@ -7394,7 +7350,7 @@ sixel_encoder_set_output_transparent_policy(sixel_output_t *output,
                                             int transparent_policy)
 {
     SIXELSTATUS status;
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
 
     status = SIXEL_FALSE;
     memset(&options, 0, sizeof(options));
@@ -7414,7 +7370,7 @@ sixel_encoder_set_output_transparent_offset(sixel_output_t *output,
                                             int top)
 {
     SIXELSTATUS status;
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
 
     status = SIXEL_FALSE;
     memset(&options, 0, sizeof(options));
@@ -10632,7 +10588,9 @@ sixel_encoder_output_without_macro(
     size_t size;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     int output_colorspace;
+    sixel_encode_session_t session;
 
+    memset(&session, 0, sizeof(session));
     p = NULL;
     output_colorspace = SIXEL_COLORSPACE_GAMMA;
     if (encoder == NULL) {
@@ -10765,6 +10723,37 @@ sixel_encoder_output_without_macro(
                                               frame_no,
                                               loop_no,
                                               multiframe);
+    if (sixel_encoder_6delta_accumulation_requested(encoder) &&
+            encoder->output_color_definition == SIXEL_PALETTE_OUTPUT_LEGACY &&
+            output_colorspace == SIXEL_COLORSPACE_GAMMA && !encoder->ormode &&
+            sixel_encoder_resolve_6delta_plane(encoder, width, height,
+                &session.plane_width, &session.plane_height,
+                &session.origin_x, &session.origin_y)) {
+        if (!encoder->accumulation_valid ||
+                encoder->accumulation_width != session.plane_width ||
+                encoder->accumulation_height != session.plane_height ||
+                encoder->accumulation_color_definition !=
+                    encoder->output_color_definition ||
+                encoder->accumulation_colorspace != output_colorspace) {
+            status = sixel_encoder_reset_6delta_plane(encoder,
+                session.plane_width, session.plane_height);
+            if (SIXEL_FAILED(status)) goto end;
+            /* A configured plane may contain only invalid holes. The per-
+             * pixel validity, not this geometry flag, permits delta keeps. */
+            encoder->accumulation_valid = 1;
+        }
+        session.plane = encoder->retained_plane;
+        session.record_paint = encoder->presentation != NULL &&
+            encoder->presentation->video_pair;
+        if (session.record_paint) {
+            status = sixel_presentation_capture_owned(encoder->presentation,
+                width, height);
+            if (SIXEL_FAILED(status)) goto end;
+        }
+        session.cancel = sixel_encoder_loader_cancel;
+        session.cancel_context = encoder;
+        sixel_output_bind_session(output, &session);
+    }
     status = sixel_encoder_bind_transparent_mask(encoder, dither, frame);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -10786,14 +10775,28 @@ sixel_encoder_output_without_macro(
             goto end;
         }
     }
-    status = sixel_encoder_update_accumulation_from_frame(encoder,
-                                                          frame,
-                                                          dither);
+    if (session.committed) {
+        encoder->sixdelta_refinement_needed = session.stats.refinement_needed;
+        encoder->sixdelta_painted_pixels = session.stats.painted_pixels;
+        if (session.record_paint) {
+            memcpy(encoder->presentation->ordinary_paint, session.stats.paint,
+                session.stats.paint_size);
+        }
+    } else {
+        status = sixel_encoder_update_accumulation_from_frame(encoder,
+            frame, dither);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
 end:
+    if (output != NULL) sixel_output_bind_session(output, NULL);
+    sixel_retained_update_unref(session.update);
+    if (SIXEL_FAILED(status) &&
+            (session.partial_output || session.committed)) {
+        (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
+    }
     if (SIXEL_SUCCEEDED(status)) {
         sixel_encoder_log_stage(encoder,
                                 frame,
@@ -12470,6 +12473,7 @@ sixel_encoder_new(
     (*ppencoder)->background_policy_override = 0;
     (*ppencoder)->transparent_offset_left = 0;
     (*ppencoder)->transparent_offset_top = 0;
+    (*ppencoder)->retained_plane = NULL;
     (*ppencoder)->accumulation_pixels   = NULL;
     (*ppencoder)->accumulation_pixels_size = 0;
     (*ppencoder)->accumulation_valid_mask = NULL;
@@ -12830,8 +12834,9 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         }
         encoder->clipboard_output_active = 0;
         encoder->clipboard_output_format[0] = '\0';
-        sixel_allocator_free(allocator, encoder->accumulation_pixels);
-        sixel_allocator_free(allocator, encoder->accumulation_valid_mask);
+        if (encoder->retained_plane != NULL) {
+            encoder->retained_plane->vtbl->unref(encoder->retained_plane);
+        }
         sixel_allocator_free(allocator, encoder->accumulation_mask);
         sixel_allocator_free(allocator, encoder->capture_palette);
         sixel_allocator_free(allocator, encoder->png_output_path);
@@ -12998,7 +13003,12 @@ sixel_encoder_invalidate_6delta_plane_owned(
 
     memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
     sixel_encoder_revision_advance(encoder, &encoder->history_revision);
-    sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
+    if (encoder->retained_plane != NULL) {
+        encoder->retained_plane->vtbl->unref(encoder->retained_plane);
+        encoder->retained_plane = NULL;
+    }
+    encoder->accumulation_valid_mask = NULL;
+    encoder->accumulation_valid_mask_size = 0;
     encoder->accumulation_pixels = NULL;
     encoder->accumulation_pixels_size = 0u;
     encoder->accumulation_width = 0;
@@ -13010,12 +13020,7 @@ sixel_encoder_invalidate_6delta_plane_owned(
     encoder->accumulation_valid = 0;
     encoder->sixdelta_refinement_needed = 0;
     encoder->sixdelta_painted_pixels = 0u;
-    if (encoder->accumulation_valid_mask != NULL &&
-            encoder->accumulation_valid_mask_size > 0u) {
-        memset(encoder->accumulation_valid_mask,
-               0,
-               encoder->accumulation_valid_mask_size);
-    }
+
 
     return SIXEL_OK;
 }
@@ -13026,11 +13031,18 @@ sixel_encoder_commit_repair(sixel_encoder_t *encoder,
 {
     size_t i;
 
+    if (SIXEL_FAILED(sixel_retained_plane_legacy_map(encoder->retained_plane,
+            &encoder->accumulation_pixels,
+            &encoder->accumulation_valid_mask))) {
+        (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
+        return;
+    }
     for (i = 0; i < count; ++i) {
         memcpy(encoder->accumulation_pixels + records[i].position * 3,
                records[i].rgb, 3);
         encoder->accumulation_valid_mask[records[i].position] = 1;
     }
+    sixel_retained_plane_legacy_unmap(encoder->retained_plane);
     sixel_encoder_revision_advance(encoder, &encoder->history_revision);
     encoder->sixdelta_painted_pixels = count;
     /* This reports the latest frame's approximate early keeps, not whether
@@ -13086,10 +13098,10 @@ sixel_encoder_set_accumulation_buffer_owned(
     }
 
     if (pixels == NULL) {
-        sixel_allocator_free(encoder->allocator,
-                             encoder->accumulation_pixels);
-        sixel_allocator_free(encoder->allocator,
-                             encoder->accumulation_valid_mask);
+        if (encoder->retained_plane != NULL) {
+            encoder->retained_plane->vtbl->unref(encoder->retained_plane);
+            encoder->retained_plane = NULL;
+        }
         sixel_allocator_free(encoder->allocator,
                              encoder->accumulation_mask);
         encoder->accumulation_pixels = NULL;
@@ -13120,31 +13132,14 @@ sixel_encoder_set_accumulation_buffer_owned(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    status = sixel_encoder_ensure_accumulation_valid_mask(
-        encoder,
-        rgb_size / 3u);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    if (encoder->accumulation_valid_mask == NULL ||
-            encoder->accumulation_valid_mask_size < rgb_size / 3u) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_set_accumulation_buffer: "
-            "accumulation valid mask is unavailable.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
+    status = sixel_encoder_reset_6delta_plane(encoder, width, height);
+    if (SIXEL_FAILED(status)) goto end;
+    status = sixel_retained_plane_legacy_map(encoder->retained_plane,
+        &encoder->accumulation_pixels, &encoder->accumulation_valid_mask);
+    if (SIXEL_FAILED(status)) goto end;
+    memcpy(encoder->accumulation_pixels, rgb, rgb_size);
     memset(encoder->accumulation_valid_mask, 1, rgb_size / 3u);
-
-    sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
-    encoder->accumulation_pixels = rgb;
-    encoder->accumulation_pixels_size = rgb_size;
-    encoder->accumulation_width = width;
-    encoder->accumulation_height = height;
-    encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    encoder->accumulation_color_definition =
-        encoder->output_color_definition;
-    encoder->accumulation_colorspace = encoder->output_colorspace;
+    sixel_retained_plane_legacy_unmap(encoder->retained_plane);
     encoder->accumulation_valid = 1;
     /*
      * The supplied buffer is the retained plane, so it also defines the plane
@@ -13153,7 +13148,6 @@ sixel_encoder_set_accumulation_buffer_owned(
      */
     encoder->sixdelta_plane_width = width;
     encoder->sixdelta_plane_height = height;
-    rgb = NULL;
     memset(&encoder->residual_state, 0, sizeof(encoder->residual_state));
     sixel_encoder_revision_advance(encoder, &encoder->history_revision);
     status = SIXEL_OK;

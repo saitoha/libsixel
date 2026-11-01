@@ -362,6 +362,8 @@ BEGIN {
 
     inline_once["stb_image.h"] = 1;
     inline_once["stb_image_write.h"] = 1;
+    inline_once["encoder-core-indexed.inc.h"] = 1;
+    inline_once["encoder-core-session.inc.h"] = 1;
 }
 {
     if ($0 ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
@@ -463,8 +465,12 @@ emit_all_headers() {
     while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
         case "${unit}" in
+            tests/_support/bindings/perl-attach-gnu.h|tests/_support/bindings/perl-attach-declspec.h)
+                # Parser fixtures are input text, not compilable library headers.
+                continue
+                ;;
             *.inc.h)
-                # Include fragments are expanded inside policy source files.
+                # Include fragments are expanded inside their owning source.
                 continue
                 ;;
         esac

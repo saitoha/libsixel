@@ -36,9 +36,9 @@ extern "C" {
 #endif
 
 /*
- * Internal encoder-core construction goes through the class factory so src/
- * callers depend on the codec/encoder-core contract rather than the public
- * constructor. Public boundary code should keep using sixel_output_new().
+ * The indexed body component is created by class id. The legacy output
+ * wrapper has its own lifetime and owns terminal framing; it must never be
+ * obtained by casting a body component. Public callers use sixel_output_new.
  */
 static inline SIXELSTATUS
 sixel_encoder_core_create_interface_from_factory(
@@ -94,39 +94,23 @@ sixel_encoder_core_create_output_from_factory(sixel_output_t **output_out,
                                               sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
-    sixel_encoder_core_t *core;
-
-    status = SIXEL_FALSE;
-    core = NULL;
+    sixel_output_t *output;
 
     if (output_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *output_out = NULL;
-
-    status = sixel_encoder_core_create_interface_from_factory(allocator,
-                                                              &core);
+    output = NULL;
+    status = sixel_output_storage_new(allocator, &output, 1);
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    if (core == NULL || core->vtbl == NULL ||
-        core->vtbl->unref == NULL) {
-        if (core != NULL && core->vtbl != NULL &&
-            core->vtbl->unref != NULL) {
-            core->vtbl->unref(core);
-        }
-        return SIXEL_LOGIC_ERROR;
-    }
-
-    status = sixel_output_init_writer((sixel_output_t *)core,
-                                      fn_write,
-                                      priv);
+    status = sixel_output_init_writer(output, fn_write, priv);
     if (SIXEL_FAILED(status)) {
-        core->vtbl->unref(core);
+        sixel_output_storage_unref(output);
         return status;
     }
-
-    *output_out = (sixel_output_t *)core;
+    *output_out = output;
     return SIXEL_OK;
 }
 

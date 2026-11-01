@@ -45,7 +45,8 @@
   "implementation_anchors": {
     "apply": [
       "src/dither.c:sixel_dither_apply_palette",
-      "src/dither.c:sixel_dither_resolve_indexes"
+      "src/dither.c:sixel_dither_resolve_indexes",
+      "src/palette-apply.c:sixel_palette_apply_run"
     ],
     "loader": [
       "src/loader-manager.c:sixel_loader_manager_load",
@@ -57,7 +58,10 @@
     ],
     "output": [
       "src/encoder-core-encode.c:sixel_encode_dither",
-      "src/encoder-core-encode.c:output_hls_palette_definition"
+      "src/encoder-core-encode.c:output_hls_palette_definition",
+      "src/encoder-core-session.inc.h:sixel_encode_indexed_session",
+      "src/encoder-core-indexed.inc.h:sixel_indexed_core_consume",
+      "src/retained-plane.c:sixel_retained_plane_commit"
     ],
     "palette": [
       "src/encoder.c:sixel_encoder_prepare_palette",

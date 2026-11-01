@@ -135,7 +135,7 @@ For the mathematical objective and detailed sub-algorithms of each family, see [
 
 <picture>
   <source media="(max-width: 640px)" srcset="figures/palette-apply-output-mobile.svg">
-  <img alt="A working palette can build FHEDT, VP-tree, or Eytzinger lookup state eagerly after palette collection, while other lookup policies prepare or reuse their state when palette application begins. Each dither policy scans pixels in its own order, checks transparency, forms a candidate, calls lookup map_pixel, emits an index, and updates diffusion or ordered state. The core copies the working palette, converts it to output colorspace, emits RGB percentages or converts RGB to DEC HLS, and serializes ordered SIXEL bands." src="figures/palette-apply-output-wide.svg">
+  <img alt="A working palette can build FHEDT, VP-tree, or Eytzinger lookup state eagerly after palette collection, while other lookup policies prepare or reuse their state when palette application begins. Each dither policy scans pixels in its own order, checks transparency, forms a candidate, calls lookup map_pixel, emits an index, and updates diffusion or ordered state. The indexed path publishes final indexes and coverage, serializes exact WirePalette definitions through encoder_core and SixelWriter, then commits painted indexes after a stream receipt." src="figures/palette-apply-output-wide.svg">
 </picture>
 
 *Figure 4. The final mapping and wire stages. “Read sample” means a sample in the current working pixelformat and colorspace plus separate transparency metadata; it does not mean RGBA.*
@@ -166,11 +166,29 @@ The exact order has specialized fences for 6delta, inter-frame modes, accumulati
 
 When eligible, the CPU pipeline divides PaletteApply into overlapped row bands and notifies SIXEL band workers as output rows become ready. Lookup state can be shared or worker-local according to policy. A writer thread flushes encoded band buffers in image order. GPU PaletteApply instead produces a complete index plane after its command-buffer wait, so CPU workers are assigned to encoding after the result becomes visible.
 
+### Prepared dither configuration
+
+`dither_policy.prepare()` takes resolved values and copies them into the policy: scan order, working pixel format, palette count and reserved-slot interpretation, clamp/deadzone/perturbation settings, and positional-dither strength, phase, channel and table size. `get_configuration()` returns those prepared values. Changing or releasing the prepare request does not change later applications. Reconfiguration requires another successful prepare before any application workers start.
+
+`dither_policy.apply()` takes borrowed execution views: source and result rows, prepared lookup, working palette, transparency, retained RGB and validity, delta selection, optional gradient analysis, and row notifications. These views live through the completion of all consuming workers. The policy owns no source, output, retained plane or per-frame diffusion buffer between calls. Scan order and pixel format come from prepare; apply cannot override them.
+
+The legacy `sixel_dither_t` adapter resolves option precedence at preparation and translates frame hints into these execution views. It is not part of the subordinate component interface. Existing CPU kernels use an invocation-local compatibility context populated only from the prepared values and borrowed views; it is not a second mutable settings owner. PaletteApply obtains the same prepared configuration for its GPU dispatch and rejects a mismatched source format or scan plan before output.
+
+### Indexed encode components
+
+The ordinary byte RGB path executes a typed subgraph in [`encoder-core-session.inc.h`](../../../src/encoder-core-session.inc.h). `PaletteApply` owns policy dispatch and publishes `IndexedFrame` rows. `WirePalette` owns the exact serialized definitions and their decoded display RGB. `encoder_core` consumes published indexes and final skip coverage and emits ordered body bytes; it has no dither, source-frame, writer or retained-plane dependency. `SixelWriter` owns framing and callback acceptance and returns a `StreamReceipt`. `RetainedPlane` accepts that receipt and commits painted indexes directly into its RGB/validity storage.
+
+The physical `indexed-sixel-stream` filter drives its `palette-apply` producer while ready CPU bands flow to body workers. Its typed output is a receipt; the following `retained-commit` filter consumes that receipt and the indexed image after releasing the baseline read lease. This synchronous subgraph does not change the six-node macro scheduler. Filter edges identify working frames, indexed frames, retained reads and receipts separately. Timeline events describe actual apply, body and commit work rather than a fictitious RGB conversion filter.
+
+A native commit scans final skip coverage once, expands only painted indexes at their destination, and computes paint count, approximate-keep status and optional presentation marks in that loop. It allocates nothing after stream acceptance. It creates no full-frame emitted-RGB intermediate. This does not remove GPU baseline uploads, index validation or the body encoder's coverage scans.
+
+Admission occurs before output. Highcolor, OR mode, non-gamma interpretation, authoritative float palettes, source-mask adapters, worker-local lookup policies and gradient-modulated application use the explicit legacy adapter until their representation and lifetime contracts are migrated. The legacy low-level API can also supply retained pointers without a RetainedPlane owner; those requests retain their existing path. Unsupported plans never retry after external output has started, and no mode is changed to qualify for native execution.
+
 ### Palette serialization and RGB/HLS output
 
-The core copies byte and, when available, float palette entries so the reusable dither palette remains in `-W`. It converts the private copy from the core's source colorspace to `-U`, preferring the float copy to avoid an unnecessary byte-rounding cycle. Indexed rows and the converted palette then enter SIXEL serialization.
+The legacy adapter copies byte and, when available, float palette entries so the reusable dither palette remains in `-W`. It converts the private copy from the core's source colorspace to `-U`, preferring the float copy to avoid an unnecessary byte-rounding cycle. Indexed rows and the converted palette then enter SIXEL serialization.
 
-RGB palette output emits DECGCI type 2 with integer component percentages. HLS palette output reads the RGB components, calculates lightness and saturation, rotates hue by 120 degrees to DEC's blue-zero convention, and emits DECGCI type 1. The encoder then emits palette selections, six-pixel-high raster bands, runs, carriage movement, and the configured DCS envelope.
+RGB palette output emits DECGCI type 2 with integer component percentages. HLS palette output reads the RGB components, calculates lightness and saturation, rotates hue by 120 degrees to DEC's blue-zero convention, and emits DECGCI type 1. For the indexed subgraph, the adapter constructs immutable WirePalette definitions before output; encoder_core serializes those same fields, and RetainedPlane uses the RGB derived from them. No HLS definition is reconstructed from rounded retained RGB. Body serialization emits palette selections, six-pixel-high raster bands, runs and carriage movement; SixelWriter adds the configured DCS envelope.
 
 ## Implementation landmarks
 
@@ -197,3 +215,67 @@ tools/reproduce_encoder_execution_map_figures.sh --check
 ```
 
 The semantic roles and implementation anchors used by the generator are recorded in [`encoder-execution-map-figures.json`](figures/encoder-execution-map-figures.json). When any referenced execution boundary changes, update the prose, both aspect-ratio variants, and the manifest together.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+These tests cover prepared configuration ownership at the dither-policy boundary. They do not establish terminal presentation timing or end-to-end playback throughput.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DP-01 | Stored configuration survives request reuse: none byte prepared options | [tests/dither/dispatch/0022_none_byte_prepared_options.t](../../../tests/dither/dispatch/0022_none_byte_prepared_options.t) |
+| DP-02 | Stored configuration survives request reuse: none float prepared options | [tests/dither/dispatch/0023_none_float_prepared_options.t](../../../tests/dither/dispatch/0023_none_float_prepared_options.t) |
+| DP-03 | Stored configuration survives request reuse: fs byte prepared options | [tests/dither/dispatch/0024_fs_byte_prepared_options.t](../../../tests/dither/dispatch/0024_fs_byte_prepared_options.t) |
+| DP-04 | Stored configuration survives request reuse: fs float prepared options | [tests/dither/dispatch/0025_fs_float_prepared_options.t](../../../tests/dither/dispatch/0025_fs_float_prepared_options.t) |
+| DP-05 | Stored configuration survives request reuse: atkinson byte prepared options | [tests/dither/dispatch/0026_atkinson_byte_prepared_options.t](../../../tests/dither/dispatch/0026_atkinson_byte_prepared_options.t) |
+| DP-06 | Stored configuration survives request reuse: atkinson float prepared options | [tests/dither/dispatch/0027_atkinson_float_prepared_options.t](../../../tests/dither/dispatch/0027_atkinson_float_prepared_options.t) |
+| DP-07 | Stored configuration survives request reuse: jajuni byte prepared options | [tests/dither/dispatch/0028_jajuni_byte_prepared_options.t](../../../tests/dither/dispatch/0028_jajuni_byte_prepared_options.t) |
+| DP-08 | Stored configuration survives request reuse: jajuni float prepared options | [tests/dither/dispatch/0029_jajuni_float_prepared_options.t](../../../tests/dither/dispatch/0029_jajuni_float_prepared_options.t) |
+| DP-09 | Stored configuration survives request reuse: stucki byte prepared options | [tests/dither/dispatch/0030_stucki_byte_prepared_options.t](../../../tests/dither/dispatch/0030_stucki_byte_prepared_options.t) |
+| DP-10 | Stored configuration survives request reuse: stucki float prepared options | [tests/dither/dispatch/0031_stucki_float_prepared_options.t](../../../tests/dither/dispatch/0031_stucki_float_prepared_options.t) |
+| DP-11 | Stored configuration survives request reuse: burkes byte prepared options | [tests/dither/dispatch/0032_burkes_byte_prepared_options.t](../../../tests/dither/dispatch/0032_burkes_byte_prepared_options.t) |
+| DP-12 | Stored configuration survives request reuse: burkes float prepared options | [tests/dither/dispatch/0033_burkes_float_prepared_options.t](../../../tests/dither/dispatch/0033_burkes_float_prepared_options.t) |
+| DP-13 | Stored configuration survives request reuse: sierra1 byte prepared options | [tests/dither/dispatch/0034_sierra1_byte_prepared_options.t](../../../tests/dither/dispatch/0034_sierra1_byte_prepared_options.t) |
+| DP-14 | Stored configuration survives request reuse: sierra1 float prepared options | [tests/dither/dispatch/0035_sierra1_float_prepared_options.t](../../../tests/dither/dispatch/0035_sierra1_float_prepared_options.t) |
+| DP-15 | Stored configuration survives request reuse: sierra2 byte prepared options | [tests/dither/dispatch/0036_sierra2_byte_prepared_options.t](../../../tests/dither/dispatch/0036_sierra2_byte_prepared_options.t) |
+| DP-16 | Stored configuration survives request reuse: sierra2 float prepared options | [tests/dither/dispatch/0037_sierra2_float_prepared_options.t](../../../tests/dither/dispatch/0037_sierra2_float_prepared_options.t) |
+| DP-17 | Stored configuration survives request reuse: sierra3 byte prepared options | [tests/dither/dispatch/0038_sierra3_byte_prepared_options.t](../../../tests/dither/dispatch/0038_sierra3_byte_prepared_options.t) |
+| DP-18 | Stored configuration survives request reuse: sierra3 float prepared options | [tests/dither/dispatch/0039_sierra3_float_prepared_options.t](../../../tests/dither/dispatch/0039_sierra3_float_prepared_options.t) |
+| DP-19 | Stored configuration survives request reuse: lso2 byte prepared options | [tests/dither/dispatch/0040_lso2_byte_prepared_options.t](../../../tests/dither/dispatch/0040_lso2_byte_prepared_options.t) |
+| DP-20 | Stored configuration survives request reuse: lso2 float prepared options | [tests/dither/dispatch/0041_lso2_float_prepared_options.t](../../../tests/dither/dispatch/0041_lso2_float_prepared_options.t) |
+| DP-21 | Stored configuration survives request reuse: a dither byte prepared options | [tests/dither/dispatch/0042_a_dither_byte_prepared_options.t](../../../tests/dither/dispatch/0042_a_dither_byte_prepared_options.t) |
+| DP-22 | Stored configuration survives request reuse: a dither float prepared options | [tests/dither/dispatch/0043_a_dither_float_prepared_options.t](../../../tests/dither/dispatch/0043_a_dither_float_prepared_options.t) |
+| DP-23 | Stored configuration survives request reuse: x dither byte prepared options | [tests/dither/dispatch/0044_x_dither_byte_prepared_options.t](../../../tests/dither/dispatch/0044_x_dither_byte_prepared_options.t) |
+| DP-24 | Stored configuration survives request reuse: x dither float prepared options | [tests/dither/dispatch/0045_x_dither_float_prepared_options.t](../../../tests/dither/dispatch/0045_x_dither_float_prepared_options.t) |
+| DP-25 | Stored configuration survives request reuse: bluenoise byte prepared options | [tests/dither/dispatch/0046_bluenoise_byte_prepared_options.t](../../../tests/dither/dispatch/0046_bluenoise_byte_prepared_options.t) |
+| DP-26 | Stored configuration survives request reuse: bluenoise float prepared options | [tests/dither/dispatch/0047_bluenoise_float_prepared_options.t](../../../tests/dither/dispatch/0047_bluenoise_float_prepared_options.t) |
+| DP-27 | Prepared strength controls the actual lookup candidate: a dither prepared apply | [tests/dither/dispatch/0048_a_dither_prepared_apply.t](../../../tests/dither/dispatch/0048_a_dither_prepared_apply.t) |
+| DP-28 | Prepared strength controls the actual lookup candidate: x dither prepared apply | [tests/dither/dispatch/0049_x_dither_prepared_apply.t](../../../tests/dither/dispatch/0049_x_dither_prepared_apply.t) |
+| DP-29 | Prepared strength controls the actual lookup candidate: bluenoise prepared apply | [tests/dither/dispatch/0050_bluenoise_prepared_apply.t](../../../tests/dither/dispatch/0050_bluenoise_prepared_apply.t) |
+
+### Indexed subgraph equivalence
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| IE-01 | none CPU RGB preserves legacy stream bytes. | [tests/encoder/indexed/0026_none_cpu_rgb_bytes.t](../../../tests/encoder/indexed/0026_none_cpu_rgb_bytes.t) |
+| IE-02 | none CPU RGB preserves legacy retained pixels and validity. | [tests/encoder/indexed/0027_none_cpu_rgb_history.t](../../../tests/encoder/indexed/0027_none_cpu_rgb_history.t) |
+| IE-03 | bluenoise CPU RGB preserves legacy stream bytes. | [tests/encoder/indexed/0028_bluenoise_cpu_rgb_bytes.t](../../../tests/encoder/indexed/0028_bluenoise_cpu_rgb_bytes.t) |
+| IE-04 | bluenoise CPU RGB preserves legacy retained pixels and validity. | [tests/encoder/indexed/0029_bluenoise_cpu_rgb_history.t](../../../tests/encoder/indexed/0029_bluenoise_cpu_rgb_history.t) |
+| IE-05 | fs CPU RGB preserves legacy stream bytes. | [tests/encoder/indexed/0030_fs_cpu_rgb_bytes.t](../../../tests/encoder/indexed/0030_fs_cpu_rgb_bytes.t) |
+| IE-06 | fs CPU RGB preserves legacy retained pixels and validity. | [tests/encoder/indexed/0031_fs_cpu_rgb_history.t](../../../tests/encoder/indexed/0031_fs_cpu_rgb_history.t) |
+| IE-07 | none CPU HLS preserves legacy stream bytes. | [tests/encoder/indexed/0032_none_cpu_hls_bytes.t](../../../tests/encoder/indexed/0032_none_cpu_hls_bytes.t) |
+| IE-08 | none CPU HLS preserves legacy retained pixels and validity. | [tests/encoder/indexed/0033_none_cpu_hls_history.t](../../../tests/encoder/indexed/0033_none_cpu_hls_history.t) |
+| IE-09 | none GPU RGB preserves legacy stream bytes. | [tests/encoder/indexed/0034_none_gpu_rgb_bytes.t](../../../tests/encoder/indexed/0034_none_gpu_rgb_bytes.t) |
+| IE-10 | none GPU RGB preserves legacy retained pixels and validity. | [tests/encoder/indexed/0035_none_gpu_rgb_history.t](../../../tests/encoder/indexed/0035_none_gpu_rgb_history.t) |
+| IE-11 | bluenoise GPU RGB preserves legacy stream bytes. | [tests/encoder/indexed/0036_bluenoise_gpu_rgb_bytes.t](../../../tests/encoder/indexed/0036_bluenoise_gpu_rgb_bytes.t) |
+| IE-12 | bluenoise GPU RGB preserves legacy retained pixels and validity. | [tests/encoder/indexed/0037_bluenoise_gpu_rgb_history.t](../../../tests/encoder/indexed/0037_bluenoise_gpu_rgb_history.t) |
+| IB-01 | Wire RGB percentages determine retained bytes. | [tests/encoder/indexed/0038_wire_rgb_rounding.t](../../../tests/encoder/indexed/0038_wire_rgb_rounding.t) |
+| IB-02 | DEC blue-zero HLS determines retained bytes. | [tests/encoder/indexed/0039_wire_hls_rounding.t](../../../tests/encoder/indexed/0039_wire_hls_rounding.t) |
+| IB-03 | Failed import leaves both source allocations with the caller. | [tests/encoder/indexed/0040_indexed_take_failure.t](../../../tests/encoder/indexed/0040_indexed_take_failure.t) |
+| IB-04 | The body encoder refuses rows the producer has not published. | [tests/encoder/indexed/0041_core_unpublished_rows.t](../../../tests/encoder/indexed/0041_core_unpublished_rows.t) |
+| IB-05 | The body encoder refuses an incomplete producer at finish. | [tests/encoder/indexed/0042_core_early_finish.t](../../../tests/encoder/indexed/0042_core_early_finish.t) |
+| IB-06 | The normal factory publishes the indexed body interface. | [tests/encoder/indexed/0043_core_normal_factory.t](../../../tests/encoder/indexed/0043_core_normal_factory.t) |
+| IB-07 | The ormode factory publishes the indexed body interface. | [tests/encoder/indexed/0044_core_ormode_factory.t](../../../tests/encoder/indexed/0044_core_ormode_factory.t) |

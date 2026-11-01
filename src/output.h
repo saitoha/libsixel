@@ -27,6 +27,49 @@
 
 #include <6cells.h>
 
+typedef struct sixel_output_options {
+    int has_gri_arg_limit;
+    int palette_type;
+    int encode_policy;
+    int ormode;
+    int transparent_policy;
+    int transparent_offset_left;
+    int transparent_offset_top;
+    int pixelformat;
+    int source_colorspace;
+    int colorspace;
+} sixel_output_options_t;
+
+typedef struct sixel_legacy_encode_request {
+    unsigned char *pixels;
+    int width;
+    int height;
+    int depth;
+    sixel_dither_t *dither;
+    sixel_output_t *output;
+} sixel_legacy_encode_request_t;
+
+/* Invocation-owned composition state, never part of encoder_core. A
+ * successful session retains update only while optional paint is consumed. */
+typedef struct sixel_encode_session {
+    sixel_retained_plane_interface_t *plane;
+    sixel_retained_update_t *update;
+    sixel_retained_update_stats_t stats;
+    int plane_width;
+    int plane_height;
+    int origin_x;
+    int origin_y;
+    int record_paint;
+    int committed;
+    int partial_output;
+    sixel_cancel_function cancel;
+    void *cancel_context;
+} sixel_encode_session_t;
+
+SIXEL_INTERNAL_API void
+sixel_output_bind_session(sixel_output_t *output,
+    sixel_encode_session_t *session);
+
 typedef struct sixel_output_frame_delay {
     int elapsed_usec;
     unsigned int target_usec;
@@ -52,11 +95,11 @@ sixel_output_set_writer_controls(
     sixel_writer_controls_t const *controls);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_get_encoder_options(sixel_output_t *output,
-                                 sixel_encoder_core_options_t *options);
+                                 sixel_output_options_t *options);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_set_encoder_options(
     sixel_output_t *output,
-    sixel_encoder_core_options_t const *options);
+    sixel_output_options_t const *options);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_output_set_encoder_format(sixel_output_t *output,
                                 int pixelformat,

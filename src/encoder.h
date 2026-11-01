@@ -400,6 +400,8 @@ struct sixel_encoder {
     int background_policy_override;
     int transparent_offset_left;
     int transparent_offset_top;
+    sixel_retained_plane_interface_t *retained_plane;
+    /* Borrowed aliases for legacy readers, owned by retained_plane. */
     unsigned char *accumulation_pixels;
     size_t accumulation_pixels_size;
     unsigned char *accumulation_valid_mask;

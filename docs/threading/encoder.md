@@ -81,7 +81,7 @@ Geometry overrides alone do not disable staging; a work-band count can differ fr
 
 Changing the dither reservation changes the independent error histories and can change decoded pixels even at the same total budget. Staging preserves the existing band algorithm; it does not promise serial-equivalent diffusion. The [band-seam quality guidance](measurement.md#band-seam-quality-protocol) describes the required comparison. Stateless methods retain exact pixels across these automatic geometry choices.
 
-Queue depth is three times the initial encode reservation, capped by the number of six-row bands. A row pipeline grows its encode pool only after palette application returns and its dither workers have joined. A staged path creates its encode pool after that same join boundary. Neither path requires scheduler fairness or guarantees that every reserved worker executes a job.
+Queue depth is three times the initial encode reservation, capped by the number of six-row bands. A row pipeline grows its encode pool only after palette application returns and its dither workers have joined. A staged path admits encode jobs after that same join boundary; the indexed component can reserve an idle pool earlier during prepare. Neither path requires scheduler fairness or guarantees that every reserved worker executes a job.
 
 ### Historical allocation measurements
 
@@ -137,6 +137,12 @@ can be submitted as empty bands so the ordered writer still advances.
 The writer and the thread performing palette application are not counted as
 encode workers. Therefore a two-worker encode can show a caller/controller,
 two encode workers, and one writer in the operating-system thread timeline.
+
+### Typed row publication and drain
+
+In the indexed component path, IndexedFrame owns index and final skip storage. PaletteApply publishes only a completed contiguous source-row prefix, using release/acquire synchronization. encoder_core translates source readiness through the encoded top offset and schedules complete six-row output bands; it accepts the final partial band only after every source row is published. CPU policy scan order and warm-up overlap remain part of the selected policy. GPU completion publishes the whole image once and does not emulate per-row notifications.
+
+The stream filter retains the image through producer completion and body-worker drain. Active resource users also pin its retained update, so abandoning a caller reference cannot free an in-flight transaction. A failed producer seals the image FAILED; abort drains body workers before releasing storage. Commit waits until baseline readers and body users are gone and the writer has accepted a complete stream. This is an encode-order boundary, independent of physical display timing. See the [component responsibilities](../encoder/execution-map/README.md#indexed-encode-components) and [commit coverage](../encoder/output/delta-encoding.md#indexed-commit-and-writer-coverage).
 
 ## Timeline interpretation
 

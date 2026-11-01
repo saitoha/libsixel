@@ -80,12 +80,18 @@ libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
                 $(srcdir)/output-factory.h \
+                $(srcdir)/encode-result.c \
+                $(srcdir)/encode-result.h \
+                $(srcdir)/retained-plane.c \
+                $(srcdir)/palette-apply.c \
                 $(srcdir)/sixel-writer.c \
                 $(srcdir)/sixel-writer.h \
                 $(srcdir)/encoder-core.c \
                 $(srcdir)/encoder-core.h \
                 $(srcdir)/encoder-core-private.h \
                 $(srcdir)/encoder-core-packet.h \
+                $(srcdir)/encoder-core-indexed.inc.h \
+                $(srcdir)/encoder-core-session.inc.h \
                 $(srcdir)/timer.c \
                 $(srcdir)/timer.h \
                 $(srcdir)/sleep.c \
@@ -206,6 +212,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither.h \
                 $(srcdir)/oklch-lattice256.h \
                 $(srcdir)/dither-policy.c \
+                $(srcdir)/dither-policy-contract.c \
+                $(srcdir)/dither-policy-private.h \
                 $(srcdir)/dither-policy.h \
                 $(srcdir)/dither-policy-none.c \
                 $(srcdir)/dither-policy-fs.c \
@@ -619,6 +627,7 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
+    $(srcdir)/encode-result.h \
     $(srcdir)/sixel-writer.h \
     $(srcdir)/encoder-core.h \
     $(srcdir)/chunk.h \

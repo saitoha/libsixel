@@ -745,6 +745,14 @@ sixel_lookup_policy_delaunay_workspace_size_float32(
         object->state_float.graph);
 }
 
+static int
+sixel_lookup_policy_delaunay_get_kind(
+    sixel_lookup_policy_interface_t const *policy)
+{
+    (void)policy;
+    return SIXEL_LUT_POLICY_DELAUNAY;
+}
+
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_delaunay_8bit_vtbl = {
     sixel_lookup_policy_delaunay_ref,
@@ -754,6 +762,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_delaunay_map_pixel_hint_8bit,
     sixel_lookup_policy_delaunay_map_pixels_8bit,
     NULL,
+    sixel_lookup_policy_delaunay_get_kind,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -765,6 +774,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_delaunay_map_pixel_hint_float32,
     sixel_lookup_policy_delaunay_map_pixels_float32,
     sixel_lookup_policy_delaunay_workspace_size_float32,
+    sixel_lookup_policy_delaunay_get_kind,
 };
 
 SIXELSTATUS

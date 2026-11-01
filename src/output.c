@@ -108,34 +108,14 @@ sixel_output_destroy(sixel_output_t *output)
 SIXELAPI void
 sixel_output_ref(sixel_output_t *output)
 {
-    sixel_encoder_core_t *core;
-
-    if (output == NULL) {
-        return;
-    }
-
-    core = sixel_output_as_encoder_core(output);
-    if (core != NULL && core->vtbl != NULL &&
-        core->vtbl->ref != NULL) {
-        core->vtbl->ref(core);
-    }
+    sixel_output_storage_ref(output);
 }
 
 /* decrease reference count of output context object (thread-safe) */
 SIXELAPI void
 sixel_output_unref(sixel_output_t *output)
 {
-    sixel_encoder_core_t *core;
-
-    if (output == NULL) {
-        return;
-    }
-
-    core = sixel_output_as_encoder_core(output);
-    if (core != NULL && core->vtbl != NULL &&
-        core->vtbl->unref != NULL) {
-        core->vtbl->unref(core);
-    }
+    sixel_output_storage_unref(output);
 }
 
 /* get 8bit output mode which indicates whether it uses C1 control characters */
@@ -171,7 +151,7 @@ sixel_output_set_gri_arg_limit(
     int            /* in */ value)   /* 0: don't limit arguments of DECGRI
                                         1: limit arguments of DECGRI to 255 */
 {
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
 
     if (SIXEL_FAILED(sixel_output_get_encoder_options(output, &options))) {
         return;
@@ -222,7 +202,7 @@ sixel_output_set_skip_header(sixel_output_t *output, int skip)
 SIXELAPI void
 sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 {
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
 
     if (SIXEL_FAILED(sixel_output_get_encoder_options(output, &options))) {
         return;
@@ -234,7 +214,7 @@ sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 SIXELAPI void
 sixel_output_set_ormode(sixel_output_t *output, int ormode)
 {
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
 
     if (SIXEL_FAILED(sixel_output_get_encoder_options(output, &options))) {
         return;
@@ -247,7 +227,7 @@ sixel_output_set_ormode(sixel_output_t *output, int ormode)
 SIXELAPI void
 sixel_output_set_encode_policy(sixel_output_t *output, int encode_policy)
 {
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
 
     if (SIXEL_FAILED(sixel_output_get_encoder_options(output, &options))) {
         return;

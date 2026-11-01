@@ -1478,7 +1478,7 @@ sixel_repair_context_step(sixel_repair_context_t *context,
     sixel_thread_budget_scope_t policy_scope;
     sixel_encoder_t *encoder;
     sixel_writer_controls_t controls;
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
     SIXELSTATUS status;
     int ready;
     int next_full;

@@ -109,7 +109,7 @@ test_sixel_writer_case(sixel_factory_t *factory,
     header.width = 2;
     header.height = 3;
     header.use_raster_attributes = 1;
-    status = writer->vtbl->begin_image(writer, &header);
+    status = writer->vtbl->begin_image(writer, &header, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -117,7 +117,7 @@ test_sixel_writer_case(sixel_factory_t *factory,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    status = writer->vtbl->end_image(writer);
+    status = writer->vtbl->end_image(writer, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

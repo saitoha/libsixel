@@ -12,6 +12,7 @@
 #include <sixel.h>
 #include <6cells.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/factory.h"
 #include "src/palette.h"
 
@@ -39,6 +40,7 @@ test_lookup_0017_none_batch_fences(int argc, char **argv)
     sixel_lookup_policy_prepare_request_t lp;
     sixel_dither_policy_prepare_request_t dp;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     sixel_palette_float32_entries_request_t entries;
     unsigned char palette[12] = { 0, 0, 0, 100, 100, 100,
                                  200, 200, 200, 255, 255, 255 };
@@ -88,9 +90,7 @@ test_lookup_0017_none_batch_fences(int argc, char **argv)
     lp.depth = 3;
     lp.reqcolor = 4;
     lp.allocator = allocator;
-    dp.dither = dither;
-    dp.depth = 3;
-    request.dither = dither;
+    request.execution = &request_execution;
     request.result = result;
     request.width = 17;
     request.height = 3;
@@ -130,10 +130,10 @@ test_lookup_0017_none_batch_fences(int argc, char **argv)
             goto end;
         }
         request.lookup_policy = lookup;
-        request.pixelformat = lp.pixelformat;
         for (scan = 0; scan < 2; ++scan) {
             dp.method_for_scan = scan ? SIXEL_SCAN_SERPENTINE
                                       : SIXEL_SCAN_RASTER;
+            sixel_dither_policy_capture_options(dither, &dp.options);
             if (SIXEL_FAILED(policy->vtbl->prepare(policy, &dp))) {
                 goto end;
             }
@@ -162,6 +162,8 @@ test_lookup_0017_none_batch_fences(int argc, char **argv)
                 }
                 none_batch_rows = request.output_start;
                 none_batch_order = 1;
+                sixel_dither_policy_capture_execution(dither,
+                    &request_execution);
                 if (SIXEL_FAILED(policy->vtbl->apply(policy, &request))
                         || none_batch_rows != 3 || !none_batch_order) {
                     goto end;

@@ -1577,6 +1577,83 @@ int test_decoder_0025_decoder_paint_create_failure_clean(int argc,
 int test_decoder_0026_parallel_converging_bands(int argc,
                                                            char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
+int test_indexed_retained_origin(int argc, char **argv);
+int test_indexed_retained_approximate(int argc, char **argv);
+int test_indexed_retained_paint_count(int argc, char **argv);
+int test_indexed_retained_paint_marks(int argc, char **argv);
+int test_indexed_retained_sequence(int argc, char **argv);
+int test_indexed_retained_duplicate(int argc, char **argv);
+int test_indexed_retained_wrong_receipt(int argc, char **argv);
+int test_indexed_retained_reader_pin(int argc, char **argv);
+int test_indexed_retained_user_pin(int argc, char **argv);
+int test_indexed_retained_failed_image(int argc, char **argv);
+int test_indexed_retained_abort(int argc, char **argv);
+int test_indexed_retained_invalidate(int argc, char **argv);
+int test_indexed_retained_busy_invalidate(int argc, char **argv);
+int test_indexed_indexed_unpublished(int argc, char **argv);
+int test_indexed_indexed_kept_sentinel(int argc, char **argv);
+int test_indexed_indexed_invalid_paint(int argc, char **argv);
+int test_indexed_indexed_early_complete(int argc, char **argv);
+int test_indexed_indexed_published_lifetime(int argc, char **argv);
+int test_indexed_writer_failed_header(int argc, char **argv);
+int test_indexed_writer_failed_body(int argc, char **argv);
+int test_indexed_writer_abort(int argc, char **argv);
+int test_indexed_writer_reuse_after_failure(int argc, char **argv);
+int test_indexed_retained_invalid_keep(int argc, char **argv);
+int test_indexed_retained_exact_keep(int argc, char **argv);
+int test_indexed_retained_deferred_abort(int argc, char **argv);
+
+int test_indexed_equivalence_26(int argc, char **argv);
+int test_indexed_equivalence_27(int argc, char **argv);
+int test_indexed_equivalence_28(int argc, char **argv);
+int test_indexed_equivalence_29(int argc, char **argv);
+int test_indexed_equivalence_30(int argc, char **argv);
+int test_indexed_equivalence_31(int argc, char **argv);
+int test_indexed_equivalence_32(int argc, char **argv);
+int test_indexed_equivalence_33(int argc, char **argv);
+int test_indexed_equivalence_34(int argc, char **argv);
+int test_indexed_equivalence_35(int argc, char **argv);
+int test_indexed_equivalence_36(int argc, char **argv);
+int test_indexed_equivalence_37(int argc, char **argv);
+int test_indexed_wire_rgb_rounding(int argc, char **argv);
+int test_indexed_wire_hls_rounding(int argc, char **argv);
+int test_indexed_indexed_take_failure(int argc, char **argv);
+int test_indexed_core_unpublished_rows(int argc, char **argv);
+int test_indexed_core_early_finish(int argc, char **argv);
+int test_indexed_core_normal_factory(int argc, char **argv);
+int test_indexed_core_ormode_factory(int argc, char **argv);
+
+int test_prepared_query_48(int argc, char **argv);
+int test_prepared_query_49(int argc, char **argv);
+int test_prepared_query_50(int argc, char **argv);
+
+int test_prepared_options_22(int argc, char **argv);
+int test_prepared_options_23(int argc, char **argv);
+int test_prepared_options_24(int argc, char **argv);
+int test_prepared_options_25(int argc, char **argv);
+int test_prepared_options_26(int argc, char **argv);
+int test_prepared_options_27(int argc, char **argv);
+int test_prepared_options_28(int argc, char **argv);
+int test_prepared_options_29(int argc, char **argv);
+int test_prepared_options_30(int argc, char **argv);
+int test_prepared_options_31(int argc, char **argv);
+int test_prepared_options_32(int argc, char **argv);
+int test_prepared_options_33(int argc, char **argv);
+int test_prepared_options_34(int argc, char **argv);
+int test_prepared_options_35(int argc, char **argv);
+int test_prepared_options_36(int argc, char **argv);
+int test_prepared_options_37(int argc, char **argv);
+int test_prepared_options_38(int argc, char **argv);
+int test_prepared_options_39(int argc, char **argv);
+int test_prepared_options_40(int argc, char **argv);
+int test_prepared_options_41(int argc, char **argv);
+int test_prepared_options_42(int argc, char **argv);
+int test_prepared_options_43(int argc, char **argv);
+int test_prepared_options_44(int argc, char **argv);
+int test_prepared_options_45(int argc, char **argv);
+int test_prepared_options_46(int argc, char **argv);
+int test_prepared_options_47(int argc, char **argv);
+
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 int test_lookup_0012_packing_registry_direct(int argc, char **argv);
 int test_lookup_0013_parallel_dense_cache(int argc, char **argv);
@@ -6788,6 +6865,154 @@ static test_entry_t const test_entries[] = {
     { "decoder/0026_parallel_converging_bands",
       test_decoder_0026_parallel_converging_bands },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
+    { "encoder/indexed/0001_retained_origin",
+      test_indexed_retained_origin },
+    { "encoder/indexed/0002_retained_approximate",
+      test_indexed_retained_approximate },
+    { "encoder/indexed/0003_retained_paint_count",
+      test_indexed_retained_paint_count },
+    { "encoder/indexed/0004_retained_paint_marks",
+      test_indexed_retained_paint_marks },
+    { "encoder/indexed/0005_retained_sequence",
+      test_indexed_retained_sequence },
+    { "encoder/indexed/0006_retained_duplicate",
+      test_indexed_retained_duplicate },
+    { "encoder/indexed/0007_retained_wrong_receipt",
+      test_indexed_retained_wrong_receipt },
+    { "encoder/indexed/0008_retained_reader_pin",
+      test_indexed_retained_reader_pin },
+    { "encoder/indexed/0009_retained_user_pin",
+      test_indexed_retained_user_pin },
+    { "encoder/indexed/0010_retained_failed_image",
+      test_indexed_retained_failed_image },
+    { "encoder/indexed/0011_retained_abort",
+      test_indexed_retained_abort },
+    { "encoder/indexed/0012_retained_invalidate",
+      test_indexed_retained_invalidate },
+    { "encoder/indexed/0013_retained_busy_invalidate",
+      test_indexed_retained_busy_invalidate },
+    { "encoder/indexed/0014_indexed_unpublished",
+      test_indexed_indexed_unpublished },
+    { "encoder/indexed/0015_indexed_kept_sentinel",
+      test_indexed_indexed_kept_sentinel },
+    { "encoder/indexed/0016_indexed_invalid_paint",
+      test_indexed_indexed_invalid_paint },
+    { "encoder/indexed/0017_indexed_early_complete",
+      test_indexed_indexed_early_complete },
+    { "encoder/indexed/0018_indexed_published_lifetime",
+      test_indexed_indexed_published_lifetime },
+    { "encoder/indexed/0019_writer_failed_header",
+      test_indexed_writer_failed_header },
+    { "encoder/indexed/0020_writer_failed_body",
+      test_indexed_writer_failed_body },
+    { "encoder/indexed/0021_writer_abort",
+      test_indexed_writer_abort },
+    { "encoder/indexed/0022_writer_reuse_after_failure",
+      test_indexed_writer_reuse_after_failure },
+    { "encoder/indexed/0023_retained_invalid_keep",
+      test_indexed_retained_invalid_keep },
+    { "encoder/indexed/0024_retained_exact_keep",
+      test_indexed_retained_exact_keep },
+    { "encoder/indexed/0025_retained_deferred_abort",
+      test_indexed_retained_deferred_abort },
+    { "encoder/indexed/0026_none_cpu_rgb_bytes",
+      test_indexed_equivalence_26 },
+    { "encoder/indexed/0027_none_cpu_rgb_history",
+      test_indexed_equivalence_27 },
+    { "encoder/indexed/0028_bluenoise_cpu_rgb_bytes",
+      test_indexed_equivalence_28 },
+    { "encoder/indexed/0029_bluenoise_cpu_rgb_history",
+      test_indexed_equivalence_29 },
+    { "encoder/indexed/0030_fs_cpu_rgb_bytes",
+      test_indexed_equivalence_30 },
+    { "encoder/indexed/0031_fs_cpu_rgb_history",
+      test_indexed_equivalence_31 },
+    { "encoder/indexed/0032_none_cpu_hls_bytes",
+      test_indexed_equivalence_32 },
+    { "encoder/indexed/0033_none_cpu_hls_history",
+      test_indexed_equivalence_33 },
+    { "encoder/indexed/0034_none_gpu_rgb_bytes",
+      test_indexed_equivalence_34 },
+    { "encoder/indexed/0035_none_gpu_rgb_history",
+      test_indexed_equivalence_35 },
+    { "encoder/indexed/0036_bluenoise_gpu_rgb_bytes",
+      test_indexed_equivalence_36 },
+    { "encoder/indexed/0037_bluenoise_gpu_rgb_history",
+      test_indexed_equivalence_37 },
+    { "encoder/indexed/0038_wire_rgb_rounding",
+      test_indexed_wire_rgb_rounding },
+    { "encoder/indexed/0039_wire_hls_rounding",
+      test_indexed_wire_hls_rounding },
+    { "encoder/indexed/0040_indexed_take_failure",
+      test_indexed_indexed_take_failure },
+    { "encoder/indexed/0041_core_unpublished_rows",
+      test_indexed_core_unpublished_rows },
+    { "encoder/indexed/0042_core_early_finish",
+      test_indexed_core_early_finish },
+    { "encoder/indexed/0043_core_normal_factory",
+      test_indexed_core_normal_factory },
+    { "encoder/indexed/0044_core_ormode_factory",
+      test_indexed_core_ormode_factory },
+    { "dither/dispatch/0048_a_dither_prepared_apply",
+      test_prepared_query_48 },
+    { "dither/dispatch/0049_x_dither_prepared_apply",
+      test_prepared_query_49 },
+    { "dither/dispatch/0050_bluenoise_prepared_apply",
+      test_prepared_query_50 },
+
+    { "dither/dispatch/0022_none_byte_prepared_options",
+      test_prepared_options_22 },
+    { "dither/dispatch/0023_none_float_prepared_options",
+      test_prepared_options_23 },
+    { "dither/dispatch/0024_fs_byte_prepared_options",
+      test_prepared_options_24 },
+    { "dither/dispatch/0025_fs_float_prepared_options",
+      test_prepared_options_25 },
+    { "dither/dispatch/0026_atkinson_byte_prepared_options",
+      test_prepared_options_26 },
+    { "dither/dispatch/0027_atkinson_float_prepared_options",
+      test_prepared_options_27 },
+    { "dither/dispatch/0028_jajuni_byte_prepared_options",
+      test_prepared_options_28 },
+    { "dither/dispatch/0029_jajuni_float_prepared_options",
+      test_prepared_options_29 },
+    { "dither/dispatch/0030_stucki_byte_prepared_options",
+      test_prepared_options_30 },
+    { "dither/dispatch/0031_stucki_float_prepared_options",
+      test_prepared_options_31 },
+    { "dither/dispatch/0032_burkes_byte_prepared_options",
+      test_prepared_options_32 },
+    { "dither/dispatch/0033_burkes_float_prepared_options",
+      test_prepared_options_33 },
+    { "dither/dispatch/0034_sierra1_byte_prepared_options",
+      test_prepared_options_34 },
+    { "dither/dispatch/0035_sierra1_float_prepared_options",
+      test_prepared_options_35 },
+    { "dither/dispatch/0036_sierra2_byte_prepared_options",
+      test_prepared_options_36 },
+    { "dither/dispatch/0037_sierra2_float_prepared_options",
+      test_prepared_options_37 },
+    { "dither/dispatch/0038_sierra3_byte_prepared_options",
+      test_prepared_options_38 },
+    { "dither/dispatch/0039_sierra3_float_prepared_options",
+      test_prepared_options_39 },
+    { "dither/dispatch/0040_lso2_byte_prepared_options",
+      test_prepared_options_40 },
+    { "dither/dispatch/0041_lso2_float_prepared_options",
+      test_prepared_options_41 },
+    { "dither/dispatch/0042_a_dither_byte_prepared_options",
+      test_prepared_options_42 },
+    { "dither/dispatch/0043_a_dither_float_prepared_options",
+      test_prepared_options_43 },
+    { "dither/dispatch/0044_x_dither_byte_prepared_options",
+      test_prepared_options_44 },
+    { "dither/dispatch/0045_x_dither_float_prepared_options",
+      test_prepared_options_45 },
+    { "dither/dispatch/0046_bluenoise_byte_prepared_options",
+      test_prepared_options_46 },
+    { "dither/dispatch/0047_bluenoise_float_prepared_options",
+      test_prepared_options_47 },
+
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
     { "lookup/0012_lookup_packing_registry_direct",

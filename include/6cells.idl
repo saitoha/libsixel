@@ -543,7 +543,8 @@ struct writer_image_header {
  * publishes a receipt only after the complete image has reached the configured
  * callback boundary successfully. It reserves receipt capacity before the
  * first image byte. A NULL receipt output requests no receipt. Failure never
- * publishes one. The session drains PaletteApply/body work before end_image.
+ * publishes one. An untracked image does not allocate or return a receipt.
+ * The session drains PaletteApply/body work before end_image.
  * Buffered callbacks accept ordered packets ahead of physical display; a
  * later discarded packet invalidates every dependent delta suffix.
  * abort_image best-effort closes framing without creating a receipt.
@@ -600,11 +601,14 @@ struct encoder_core_prepare_request {
     body_byte_sink sink;
     int threads;
     int queue_bands;
+    int worker_capacity; /* Zero uses threads; tail may grow after COMPLETE. */
+    timeline_logger *logger; /* Borrowed through finish/abort. */
 };
 
 /*
- * prepare retains image, validates options and reserves scratch without
- * emitting bytes. An instance owns at most one active image. consume accepts
+ * prepare retains image, validates options and reserves controller scratch
+ * without emitting bytes. Worker fragments can allocate during consumption.
+ * An instance owns at most one active image. consume accepts
  * a monotonically growing count of published source rows; complete six-row
  * encoded bands can run immediately, including before PaletteApply finishes.
  * Source readiness is translated through encoded_y; empty leading bands do
@@ -896,6 +900,9 @@ interface lookup_policy {
         in int result_stride,
         inout void *workspace);
     [const] size_t workspace_size();
+    /* SIXEL_LUT_POLICY_* algorithm identity; negative for custom policies.
+     * Execution planners use this description without inspecting vtables. */
+    [const] int get_kind();
 };
 
 /*
@@ -916,44 +923,6 @@ struct dither_policy_select_request {
     int pixelformat;
 };
 
-struct dither_policy_prepare_request {
-    sixel_dither_t *dither;
-    int depth;
-    int method_for_scan;
-    int pixelformat;
-};
-
-struct dither_policy_apply_request {
-    sixel_index_t *result;
-    unsigned char *data;
-    int width;
-    int height;
-    int band_origin;
-    int output_start;
-    int depth;
-    unsigned char *palette;
-    int method_for_scan;
-    lookup_policy *lookup_policy;
-    sixel_dither_t *dither;
-    int pixelformat;
-};
-
-typedef int dither_policy_supports_parallel_result;
-
-[component, refcounted]
-[responsibility("apply dithering from pixels and lookup policy")]
-[forbid_state("input_owner", "output_owner")]
-interface dither_policy {
-    [lifetime(retained)]
-    void ref();
-    [lifetime(release)]
-    void unref();
-    [mutates]
-    SIXELSTATUS prepare(in dither_policy_prepare_request const *request);
-    SIXELSTATUS apply(in dither_policy_apply_request const *request);
-    [const] dither_policy_supports_parallel_result supports_parallel_bands();
-};
-
 /* Packed selection uses bit (y * columns + x), low bit first in each word.
  * Without tiling, cell edges are floor(i * extent / grid). Tiling requires
  * a 64x64 grid and repeats in frame-local pixel coordinates, matching the
@@ -972,8 +941,115 @@ struct delta_threshold_map {
     unsigned int selected_threshold;
 };
 
+
+/* Resolved values, with no environment precedence flags or frame pointers.
+ * prepare copies these settings; callers may release or change their source
+ * configuration afterwards. apply never reads a mutable legacy handle. */
+struct dither_policy_options {
+    int method_for_diffuse;
+    int ncolors;
+    int keycolor_reserved;
+    int use_rgb101_palette;
+    int clamp_policy;
+    double clamp_threshold;
+    double diffusion_deadzone;
+    float diffusion_perturb;
+    int diffusion_perturb_seed;
+    float a_dither_strength;
+    float x_dither_strength;
+    float bluenoise_strength;
+    int bluenoise_phase_x;
+    int bluenoise_phase_y;
+    int bluenoise_channel_rgb;
+    int bluenoise_size;
+    float bluenoise_gradient_factor;
+};
+
+struct dither_policy_prepare_request {
+    dither_policy_options options;
+    int method_for_scan;
+    int pixelformat;
+};
+
+/* All execution views are borrowed through apply completion. Parallel bands
+ * use distinct scratch and disjoint output rows. A row callback may originate
+ * from any worker; PaletteApply serializes contiguous-prefix publication. */
+typedef void (*sixel_dither_row_ready_function_t)(void *context, int row);
+
+struct dither_execution {
+    palette *working_palette;
+    allocator *allocator;
+    sixel_index_t *indexes;
+    int width;
+    int height;
+    unsigned char const *transparent_mask;
+    size_t transparent_size;
+    int keycolor;
+    unsigned char const *retained_rgb;
+    size_t retained_rgb_size;
+    unsigned char const *retained_valid;
+    size_t retained_valid_size;
+    int plane_width;
+    int plane_height;
+    int origin_x;
+    int origin_y;
+    int delta_enabled;
+    unsigned int delta_threshold;
+    int delta_metric;
+    int delta_error_mode;
+    int delta_keycolor;
+    int delta_rgb101;
+    int delta_hls;
+    unsigned char const *hls_rgb;
+    unsigned int hls_count;
+    delta_threshold_map selection;
+    unsigned char *skip;
+    size_t skip_size;
+    unsigned char const *gradient;
+    size_t gradient_size;
+    int gradient_width;
+    int gradient_height;
+    sixel_dither_row_ready_function_t row_ready;
+    void *row_context;
+    timeline_logger *logger;
+    int band_height;
+};
+
+struct dither_policy_apply_request {
+    sixel_index_t *result;
+    unsigned char *data;
+    int width;
+    int height;
+    int band_origin;
+    int output_start;
+    int depth;
+    unsigned char *palette;
+    lookup_policy *lookup_policy;
+    dither_execution const *execution;
+};
+
+typedef int dither_policy_supports_parallel_result;
+
+[component, refcounted]
+[responsibility("apply dithering from pixels and lookup policy")]
+[forbid_state("input_owner", "output_owner")]
+interface dither_policy {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    [mutates]
+    SIXELSTATUS prepare(in dither_policy_prepare_request const *request);
+    [const] SIXELSTATUS get_configuration(
+        out dither_policy_prepare_request *configuration);
+    SIXELSTATUS apply(in dither_policy_apply_request const *request);
+    [const] dither_policy_supports_parallel_result supports_parallel_bands();
+};
+
+
 struct palette_apply_delta {
     int enabled;
+    int error_mode;
     unsigned int threshold;
     int metric;
     delta_threshold_map selection;
@@ -988,6 +1064,8 @@ struct palette_apply_prepare_request {
     int colorspace;
     int scan;
     int worker_threads;
+    int band_height;
+    int band_overlap;
     int gpu_policy;
     size_t gpu_auto_threshold;
 };
@@ -1004,6 +1082,7 @@ struct palette_apply_run_request {
     retained_read *baseline;
     indexed_frame *result;
     palette_apply_delta delta;
+    timeline_logger *logger; /* Borrowed through run. */
     sixel_indexed_rows_ready_function_t rows_ready;
     void *rows_context;
     sixel_cancel_function cancel;

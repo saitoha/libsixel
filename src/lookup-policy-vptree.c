@@ -734,6 +734,14 @@ sixel_lookup_policy_vptree_workspace_size_float32(
         object->state_float.vptree);
 }
 
+static int
+sixel_lookup_policy_vptree_get_kind(
+    sixel_lookup_policy_interface_t const *policy)
+{
+    (void)policy;
+    return SIXEL_LUT_POLICY_VPTREE;
+}
+
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_vptree_8bit_vtbl = {
     sixel_lookup_policy_vptree_ref,
@@ -743,6 +751,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_vptree_map_pixel_hint_8bit,
     sixel_lookup_policy_vptree_map_pixels_8bit,
     NULL,
+    sixel_lookup_policy_vptree_get_kind,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -754,6 +763,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_vptree_map_pixel_hint_float32,
     sixel_lookup_policy_vptree_map_pixels_float32,
     sixel_lookup_policy_vptree_workspace_size_float32,
+    sixel_lookup_policy_vptree_get_kind,
 };
 
 SIXELSTATUS

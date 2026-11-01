@@ -57,6 +57,9 @@ typedef enum sixel_filter_kind {
     SIXEL_FILTER_KIND_BINNING,
     SIXEL_FILTER_KIND_PALETTE_COLORS,
     SIXEL_FILTER_KIND_GAMUT,
+    SIXEL_FILTER_KIND_PALETTE_APPLY,
+    SIXEL_FILTER_KIND_SIXEL_STREAM,
+    SIXEL_FILTER_KIND_RETAINED_COMMIT,
 } sixel_filter_kind_t;
 
 typedef enum sixel_filter_flags {
@@ -83,6 +86,14 @@ typedef struct sixel_filter_io {
      * from input.slot and may replace *output.slot with a new frame.
      */
     sixel_frame_t **slot;
+
+    /* Encode subgraph edges borrow owner slots through the synchronous run.
+     * PaletteApply reads frame + retained and publishes indexed; the stream
+     * consumes indexed and publishes receipt; commit consumes both. These
+     * slots must never masquerade as a working RGB frame. */
+    sixel_indexed_frame_t **indexed;
+    sixel_retained_read_t **retained;
+    sixel_stream_receipt_t **receipt;
 
     /*
      * Typed sampling edge. It is mutually exclusive with slot and

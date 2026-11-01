@@ -11,6 +11,7 @@
 #include <sixel.h>
 #include <6cells.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/factory.h"
 
 static size_t float_workspace_fail_size;
@@ -37,6 +38,7 @@ test_lookup_0020_float_workspace_failure(int argc, char **argv)
     sixel_lookup_policy_prepare_request_t lp;
     sixel_dither_policy_prepare_request_t dp;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     unsigned char palette[12] = { 0, 0, 0, 85, 85, 85,
                                  170, 170, 170, 255, 255, 255 };
     float native[12] = { -0.01f, 0, 0, 0.333f, 0.334f, 0.335f,
@@ -74,8 +76,7 @@ test_lookup_0020_float_workspace_failure(int argc, char **argv)
     lp.reqcolor = 4;
     lp.allocator = allocator;
     lp.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    dp.dither = dither;
-    dp.depth = 3;
+    sixel_dither_policy_capture_options(dither, &dp.options);
     dp.pixelformat = lp.pixelformat;
     if (SIXEL_FAILED(factory->vtbl->create(factory, "lookup/vptree.float32",
                                          allocator, (void **)&lookup))
@@ -92,7 +93,8 @@ test_lookup_0020_float_workspace_failure(int argc, char **argv)
         expected[i] = (sixel_index_t)lookup->vtbl->map_pixel(lookup,
             (unsigned char const *)(pixels + i * 3));
     }
-    request.dither = dither;
+    sixel_dither_policy_capture_execution(dither, &request_execution);
+    request.execution = &request_execution;
     request.lookup_policy = lookup;
     request.data = (unsigned char *)pixels;
     request.result = actual;
@@ -100,7 +102,6 @@ test_lookup_0020_float_workspace_failure(int argc, char **argv)
     request.height = 3;
     request.depth = 3;
     request.palette = palette;
-    request.pixelformat = lp.pixelformat;
     float_workspace_fail_size = lookup->vtbl->workspace_size(lookup);
     if (float_workspace_fail_size == 0
             || SIXEL_FAILED(policy->vtbl->apply(policy, &request))

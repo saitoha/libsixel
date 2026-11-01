@@ -308,7 +308,7 @@ carry_speed_numeric(int boundary)
 
 /* Frozen generic scatter/scan loop, including masks, keep and overflow. */
 static SIXELSTATUS
-carry_speed_apply_reference(sixel_dither_policy_apply_request_t const *request,
+carry_speed_apply_reference(sixel_dither_policy_effective_t const *request,
                         int method)
 {
     sixel_dither_carry_kernel_t const *kernel;
@@ -513,7 +513,8 @@ carry_speed_lookup(sixel_lookup_policy_interface_t const *base,
 
 static sixel_lookup_policy_vtbl_t const carry_speed_vtbl = {
     NULL, NULL, NULL, NULL, carry_speed_lookup,
-    sixel_lookup_policy_map_pixels_default, NULL
+    sixel_lookup_policy_map_pixels_default, NULL,
+    NULL
 };
 
 int
@@ -523,7 +524,7 @@ carry_speed_stencil(void)
         SIXEL_DIFFUSE_JAJUNI, SIXEL_DIFFUSE_STUCKI, SIXEL_DIFFUSE_BURKES,
         SIXEL_DIFFUSE_SIERRA1, SIXEL_DIFFUSE_SIERRA2, SIXEL_DIFFUSE_SIERRA3};
     sixel_dither_t *dither[2] = {NULL, NULL};
-    sixel_dither_policy_apply_request_t request;
+    sixel_dither_policy_effective_t request;
     carry_speed_capture_t capture[2];
     unsigned char source[9 * 6 * 3];
     unsigned char retained[9 * 8 * 3];

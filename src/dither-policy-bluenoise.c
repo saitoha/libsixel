@@ -34,6 +34,7 @@
 
 #include "dither-policy-bluenoise.h"
 #include "dither.h"
+#include "dither-policy-private.h"
 #include "dither-common-pipeline.h"
 #include "options.h"
 #include "pixelformat.h"
@@ -207,6 +208,22 @@ sixel_bluenoise_conf_apply_dither_overrides(sixel_bluenoise_conf_t *conf,
         conf->phase_x = (int)(hash & 63U);
         conf->phase_y = (int)((hash >> 8) & 63U);
     }
+}
+
+SIXEL_INTERNAL_API void
+sixel_bluenoise_prepare_options(sixel_dither_t const *dither,
+    sixel_dither_policy_options_t *options)
+{
+    sixel_bluenoise_conf_t conf;
+
+    sixel_bluenoise_conf_init(&conf, sixel_dither_lookup_ncolors(dither));
+    sixel_bluenoise_conf_apply_dither_overrides(&conf, dither);
+    options->bluenoise_strength = conf.strength;
+    options->bluenoise_gradient_factor = conf.gradient_factor;
+    options->bluenoise_channel_rgb = conf.channel_rgb;
+    options->bluenoise_size = conf.size;
+    options->bluenoise_phase_x = conf.phase_x;
+    options->bluenoise_phase_y = conf.phase_y;
 }
 
 float
@@ -454,8 +471,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_bluenoise_conf_init(&bluenoise_conf,
-                             sixel_dither_lookup_ncolors(dither));
+    memset(&bluenoise_conf, 0, sizeof(bluenoise_conf));
     sixel_bluenoise_conf_apply_dither_overrides(&bluenoise_conf, dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -663,8 +679,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_bluenoise_conf_init(&bluenoise_conf,
-                             sixel_dither_lookup_ncolors(dither));
+    memset(&bluenoise_conf, 0, sizeof(bluenoise_conf));
     sixel_bluenoise_conf_apply_dither_overrides(&bluenoise_conf, dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -786,13 +801,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
  *   supports_parallel_bands();
  * }
  */
-typedef struct sixel_dither_policy_bluenoise_object {
-    sixel_dither_policy_interface_t base;
-    sixel_atomic_u32_t ref;
-    sixel_allocator_t *allocator;
-    int method_for_scan;
-    int pixelformat;
-} sixel_dither_policy_bluenoise_object_t;
+typedef sixel_dither_policy_object_t sixel_dither_policy_bluenoise_object_t;
 
 static sixel_dither_policy_bluenoise_object_t *
 sixel_dither_policy_bluenoise_from_base(sixel_dither_policy_interface_t *policy)
@@ -862,6 +871,9 @@ sixel_dither_policy_bluenoise_prepare(
     object = sixel_dither_policy_bluenoise_from_base(policy);
     object->method_for_scan = request->method_for_scan;
     object->pixelformat = request->pixelformat;
+    object->options = request->options;
+    object->options.method_for_diffuse = SIXEL_DIFFUSE_BLUENOISE_DITHER;
+    object->prepared = 1;
     return SIXEL_OK;
 }
 
@@ -869,7 +881,7 @@ static SIXELSTATUS
 sixel_dither_policy_bluenoise_make_effective_request(
     sixel_dither_policy_interface_t const *policy,
     sixel_dither_policy_apply_request_t const *request,
-    sixel_dither_policy_apply_request_t *effective)
+    sixel_dither_policy_effective_t *effective)
 {
     sixel_dither_policy_bluenoise_object_t const *object;
 
@@ -879,15 +891,12 @@ sixel_dither_policy_bluenoise_make_effective_request(
     }
 
     object = sixel_dither_policy_bluenoise_from_base_const(policy);
-    *effective = *request;
-    effective->method_for_scan = object->method_for_scan;
-    effective->pixelformat = object->pixelformat;
-    return SIXEL_OK;
+    return sixel_dither_policy_bind(object, request, effective);
 }
 
 static SIXELSTATUS
 sixel_dither_policy_bluenoise_build_context(
-    sixel_dither_policy_apply_request_t const *request,
+    sixel_dither_policy_effective_t const *request,
     sixel_dither_policy_bluenoise_context_t *context)
 {
     sixel_dither_t *dither;
@@ -950,7 +959,7 @@ sixel_dither_policy_bluenoise_apply_8bit(
     sixel_dither_policy_apply_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_effective_t effective;
     sixel_dither_policy_bluenoise_context_t context;
 
     status = SIXEL_FALSE;
@@ -980,7 +989,7 @@ sixel_dither_policy_bluenoise_apply_float32(
     sixel_dither_policy_apply_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_effective_t effective;
     sixel_dither_policy_bluenoise_context_t context;
 
     status = SIXEL_FALSE;
@@ -1017,6 +1026,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_bluenoise_ref,
     sixel_dither_policy_bluenoise_unref,
     sixel_dither_policy_bluenoise_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_bluenoise_apply_8bit,
     sixel_dither_policy_bluenoise_supports_parallel_bands
 };
@@ -1047,6 +1057,7 @@ sixel_dither_policy_bluenoise_new(
     object->base.vtbl = &g_sixel_dither_policy_bluenoise_vtbl;
     object->ref = 1U;
     object->allocator = allocator;
+    object->prepared = 0;
     sixel_allocator_ref(allocator);
     object->method_for_scan = SIXEL_SCAN_AUTO;
     object->pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1063,6 +1074,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_bluenoise_ref,
     sixel_dither_policy_bluenoise_unref,
     sixel_dither_policy_bluenoise_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_bluenoise_apply_8bit,
     sixel_dither_policy_bluenoise_supports_parallel_bands
 };
@@ -1072,6 +1084,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_bluenoise_ref,
     sixel_dither_policy_bluenoise_unref,
     sixel_dither_policy_bluenoise_prepare,
+    sixel_dither_policy_get_configuration,
     sixel_dither_policy_bluenoise_apply_float32,
     sixel_dither_policy_bluenoise_supports_parallel_bands
 };

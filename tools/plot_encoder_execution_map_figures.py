@@ -606,8 +606,8 @@ def apply_output_wide() -> str:
                     "lookup interface", ("map_pixel(candidate)", "shared or worker-local state"),
                     TEAL, TEAL_LIGHT, 19, 14))
     body.append(arrow("M 355 265 H 455", MAGENTA, 3.8))
-    body.append(arrow("M 355 285 H 900 Q 920 285 920 265", BLUE, 3.8))
-    body.append(arrow("M 815 265 H 1385", PURPLE, 3.8))
+    body.append(arrow("M 355 285 H 405 V 355 H 900 V 285 H 920", BLUE, 3.8))
+    body.append(arrow("M 815 220 H 865 V 165 H 1335 V 240 H 1385", PURPLE, 3.8))
     body.append(arrow("M 1280 265 H 1385", BLUE, 3.8))
 
     body.append(panel(35, 410, 1690, 330,
@@ -640,15 +640,15 @@ def apply_output_wide() -> str:
     body.append(panel(35, 780, 1690, 260,
                       "Wire serialization", GOLD))
     output = (
-        (70, "index rows", ("serial plane or", "completed bands"),
-         TEAL, TEAL_LIGHT),
-        (390, "palette copy", ("keep reusable -W", "palette unchanged"),
+        (70, "WirePalette", ("immutable definitions", "and emitted display RGB"),
          MAGENTA, MAGENTA_LIGHT),
-        (710, "convert -W -> -U", ("float when available", "then byte representation"),
+        (390, "IndexedFrame", ("published index rows", "skip + wire palette owner"),
+         TEAL, TEAL_LIGHT),
+        (710, "encoder_core", ("indexes + wire palette", "ordered body bytes"),
          BLUE, BLUE_LIGHT),
-        (1050, "RGB or HLS", ("DECGCI type 2 RGB %", "or RGB -> DEC HLS type 1"),
+        (1050, "SixelWriter", ("framing + callback", "StreamReceipt on success"),
          PURPLE, PURPLE_LIGHT),
-        (1390, "SIXEL bands", ("palette definitions, runs,", "DCS envelope + ordered I/O"),
+        (1390, "RetainedPlane", ("painted index -> RGB", "commit after receipt"),
          GOLD, GOLD_LIGHT),
     )
     output_widths = (240, 240, 270, 275, 290)
@@ -659,13 +659,13 @@ def apply_output_wide() -> str:
     for x1, x2 in ((310, 390), (630, 710), (980, 1050), (1325, 1390)):
         body.append(arrow(f"M {x1} 920 H {x2}", GOLD, 3.8))
     body.append(pill(520, 1000, 720,
-                     "band workers may overlap PaletteApply; writer preserves output order",
+                     "RetainedPlane also reads IndexedFrame; CPU rows overlap body workers",
                      PURPLE, PURPLE_LIGHT))
     return svg_document(
         width,
         height,
         "Palette application and SIXEL output",
-        "Selected lookup policies are prepared eagerly after palette collection while others prepare or reuse their policy at palette application. Dither policy implementations scan pixels, respect transparency, form candidates, call map_pixel, emit indices, and update diffusion state. The core copies and converts the working palette to output color space, optionally converts RGB to DEC HLS percentages, and emits ordered SIXEL bands.",
+        "Selected lookup policies are prepared eagerly after palette collection while others prepare or reuse their policy at palette application. Dither policy implementations scan pixels, respect transparency, form candidates, call map_pixel, emit indices, and update diffusion state. The byte indexed path passes IndexedFrame and WirePalette through encoder_core and SixelWriter, then commits painted indexes after stream acceptance.",
         "\n".join(body),
     )
 
@@ -717,15 +717,15 @@ def apply_output_mobile() -> str:
                      "transparent pixels may bypass lookup",
                      RED, RED_LIGHT))
 
-    body.append(panel(30, 1605, 700, 595,
+    body.append(panel(30, 1605, 700, 625,
                       "SIXEL wire serialization", GOLD))
     output = (
-        (1665, "index rows / ready bands", TEAL, TEAL_LIGHT),
-        (1780, "copy palette; keep reusable -W", MAGENTA, MAGENTA_LIGHT),
-        (1895, "convert palette -W -> -U", BLUE, BLUE_LIGHT),
-        (2010, "emit RGB % or convert RGB -> DEC HLS", PURPLE,
+        (1665, "WirePalette: exact fields + display RGB", MAGENTA, MAGENTA_LIGHT),
+        (1780, "IndexedFrame: indexes + skip + palette owner", TEAL, TEAL_LIGHT),
+        (1895, "encoder_core: ordered body bytes", BLUE, BLUE_LIGHT),
+        (2010, "SixelWriter: framing + StreamReceipt", PURPLE,
          PURPLE_LIGHT),
-        (2125, "palette definitions + SIXEL bands", GOLD, GOLD_LIGHT),
+        (2125, "RetainedPlane: painted-index commit", GOLD, GOLD_LIGHT),
     )
     for y, title_value, accent, fill in output:
         body.append(box(75, y, 610, 80, title_value, ("",),
@@ -736,7 +736,7 @@ def apply_output_mobile() -> str:
         width,
         height,
         "Apply and output",
-        "Portrait map of lookup preparation, the policy-owned per-pixel palette application loop, working-to-output palette color conversion, optional RGB-to-DEC-HLS conversion, and ordered SIXEL output.",
+        "Portrait map of lookup preparation, the policy-owned per-pixel palette application loop, typed indexed and wire-palette ownership, ordered SIXEL output and retained commit after a receipt.",
         "\n".join(body),
     )
 
@@ -774,10 +774,14 @@ def manifest() -> dict[str, object]:
             "apply": [
                 "src/dither.c:sixel_dither_apply_palette",
                 "src/dither.c:sixel_dither_resolve_indexes",
+                "src/palette-apply.c:sixel_palette_apply_run",
             ],
             "output": [
                 "src/encoder-core-encode.c:sixel_encode_dither",
                 "src/encoder-core-encode.c:output_hls_palette_definition",
+                "src/encoder-core-session.inc.h:sixel_encode_indexed_session",
+                "src/encoder-core-indexed.inc.h:sixel_indexed_core_consume",
+                "src/retained-plane.c:sixel_retained_plane_commit",
             ],
         },
         "color_roles": {

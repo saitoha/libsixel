@@ -37,6 +37,7 @@
 #include "sixel-writer.h"
 #include "sixel_atomic.h"
 #include "threading.h"
+#include "encode-result.h"
 
 #define DCS_START_7BIT       "\033P"
 #define DCS_START_7BIT_SIZE  (sizeof(DCS_START_7BIT) - 1)
@@ -59,6 +60,9 @@ typedef struct sixel_writer_storage {
     sixel_mutex_t mutex;
     int used_penetration;
     int mutex_ready;
+    int image_active;
+    SIXELSTATUS image_status;
+    sixel_stream_receipt_t *receipt;
 } sixel_writer_storage_t;
 
 static sixel_writer_storage_t *
@@ -79,11 +83,17 @@ sixel_writer_write_penetrated_locked(sixel_writer_storage_t *storage,
                                      int size);
 static SIXELSTATUS
 sixel_writer_vtbl_begin_image(sixel_writer_t *self,
-                              sixel_writer_image_header_t const *header);
+                              sixel_writer_image_header_t const *header,
+                              sixel_encode_identity_t const *identity);
 static SIXELSTATUS
 sixel_writer_vtbl_write(sixel_writer_t *self, char const *data, int size);
 static SIXELSTATUS
-sixel_writer_vtbl_end_image(sixel_writer_t *self);
+sixel_writer_vtbl_end_image(sixel_writer_t *self,
+                              sixel_stream_receipt_t **receipt);
+static SIXELSTATUS
+sixel_writer_vtbl_abort_image(sixel_writer_t *self);
+static SIXELSTATUS
+sixel_writer_close_locked(sixel_writer_storage_t *storage);
 static void
 sixel_writer_vtbl_ref(sixel_writer_t *self);
 static void
@@ -106,7 +116,8 @@ static sixel_writer_vtbl_t const g_sixel_writer_vtbl = {
     sixel_writer_vtbl_get_controls,
     sixel_writer_vtbl_begin_image,
     sixel_writer_vtbl_write,
-    sixel_writer_vtbl_end_image
+    sixel_writer_vtbl_end_image,
+    sixel_writer_vtbl_abort_image
 };
 
 static sixel_writer_storage_t *
@@ -168,10 +179,11 @@ sixel_writer_write_raw_locked(sixel_writer_storage_t *storage,
     sixel_thread_work_begin();
     if (result < 0) {
 #if HAVE_ERRNO_H
-        return (SIXEL_LIBC_ERROR | (errno & 0xff));
+        storage->image_status = SIXEL_LIBC_ERROR | (errno & 0xff);
 #else
-        return SIXEL_LIBC_ERROR;
+        storage->image_status = SIXEL_LIBC_ERROR;
 #endif
+        return storage->image_status;
     }
 
     return SIXEL_OK;
@@ -259,6 +271,7 @@ sixel_writer_vtbl_unref(sixel_writer_t *self)
         sixel_mutex_destroy(&storage->mutex);
     }
     allocator = storage->allocator;
+    sixel_stream_receipt_unref(storage->receipt);
     sixel_allocator_free(allocator, storage);
     sixel_allocator_unref(allocator);
 }
@@ -274,8 +287,14 @@ sixel_writer_vtbl_init(sixel_writer_t *self,
     }
 
     storage = sixel_writer_storage_from_interface(self);
+    sixel_writer_lock(storage);
+    if (storage->image_active) {
+        sixel_writer_unlock(storage);
+        return SIXEL_LOGIC_ERROR;
+    }
     storage->fn_write = request->fn_write;
     storage->priv = request->priv;
+    sixel_writer_unlock(storage);
 
     return SIXEL_OK;
 }
@@ -292,6 +311,10 @@ sixel_writer_vtbl_set_controls(sixel_writer_t *self,
 
     storage = sixel_writer_storage_from_interface(self);
     sixel_writer_lock(storage);
+    if (storage->image_active) {
+        sixel_writer_unlock(storage);
+        return SIXEL_LOGIC_ERROR;
+    }
     storage->controls.has_8bit_control =
         sixel_writer_flag_to_byte(controls->has_8bit_control);
     storage->controls.has_sixel_scrolling =
@@ -329,7 +352,8 @@ sixel_writer_vtbl_get_controls(sixel_writer_t *self,
 
 static SIXELSTATUS
 sixel_writer_vtbl_begin_image(sixel_writer_t *self,
-                              sixel_writer_image_header_t const *header)
+                              sixel_writer_image_header_t const *header,
+                              sixel_encode_identity_t const *identity)
 {
     SIXELSTATUS status;
     sixel_writer_storage_t *storage;
@@ -365,6 +389,20 @@ sixel_writer_vtbl_begin_image(sixel_writer_t *self,
     }
 
     sixel_writer_lock(storage);
+    if (storage->image_active) {
+        sixel_writer_unlock(storage);
+        return SIXEL_LOGIC_ERROR;
+    }
+    /* Receipt allocation must not fail after externally visible output. */
+    status = identity != NULL
+        ? sixel_stream_receipt_new(&storage->receipt, identity,
+            storage->allocator) : SIXEL_OK;
+    if (SIXEL_FAILED(status)) {
+        sixel_writer_unlock(storage);
+        return status;
+    }
+    storage->image_active = 1;
+    storage->image_status = SIXEL_OK;
     storage->used_penetration = 0;
     if (!storage->controls.skip_dcs_envelope &&
         !storage->controls.penetrate_multiplexer) {
@@ -378,8 +416,7 @@ sixel_writer_vtbl_begin_image(sixel_writer_t *self,
                                                    DCS_START_7BIT_SIZE);
         }
         if (SIXEL_FAILED(status)) {
-            sixel_writer_unlock(storage);
-            return status;
+            goto failed;
         }
     }
 
@@ -388,8 +425,7 @@ sixel_writer_vtbl_begin_image(sixel_writer_t *self,
             ? sixel_writer_write_penetrated_locked(storage, buffer, nwrite)
             : sixel_writer_write_raw_locked(storage, buffer, nwrite);
         if (SIXEL_FAILED(status)) {
-            sixel_writer_unlock(storage);
-            return status;
+            goto failed;
         }
     }
     if (header->use_raster_attributes) {
@@ -397,20 +433,30 @@ sixel_writer_vtbl_begin_image(sixel_writer_t *self,
                           header->width,
                           header->height);
         if (nwrite < 0 || nwrite >= (int)sizeof(buffer)) {
-            sixel_writer_unlock(storage);
-            return SIXEL_RUNTIME_ERROR;
+            status = SIXEL_RUNTIME_ERROR;
+            goto failed;
         }
         status = storage->controls.penetrate_multiplexer
             ? sixel_writer_write_penetrated_locked(storage, buffer, nwrite)
             : sixel_writer_write_raw_locked(storage, buffer, nwrite);
         if (SIXEL_FAILED(status)) {
-            sixel_writer_unlock(storage);
-            return status;
+            goto failed;
         }
     }
 
     sixel_writer_unlock(storage);
     return SIXEL_OK;
+
+failed:
+    /* No acceptance receipt survives a failed header. Close the envelope
+     * best-effort and allow the caller to reuse the writer after recovery. */
+    (void)sixel_writer_close_locked(storage);
+    sixel_stream_receipt_unref(storage->receipt);
+    storage->receipt = NULL;
+    storage->image_active = 0;
+    storage->used_penetration = 0;
+    sixel_writer_unlock(storage);
+    return status;
 }
 
 static SIXELSTATUS
@@ -433,28 +479,21 @@ sixel_writer_vtbl_write(sixel_writer_t *self, char const *data, int size)
     return status;
 }
 
+/* Closing framing is shared with abort, but only successful end_image may
+ * publish the preallocated receipt. No terminal-display acknowledgement is
+ * implied by a callback-backed byte sink accepting a complete image. */
 static SIXELSTATUS
-sixel_writer_vtbl_end_image(sixel_writer_t *self)
+sixel_writer_close_locked(sixel_writer_storage_t *storage)
 {
-    SIXELSTATUS status;
-    sixel_writer_storage_t *storage;
     char const *end;
     int end_size;
 
-    if (self == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    storage = sixel_writer_storage_from_interface(self);
     if (storage->controls.skip_dcs_envelope &&
-        !storage->controls.penetrate_multiplexer) {
+            !storage->controls.penetrate_multiplexer) {
         return SIXEL_OK;
     }
-
-    sixel_writer_lock(storage);
     if (storage->controls.penetrate_multiplexer) {
         if (!storage->used_penetration) {
-            sixel_writer_unlock(storage);
             return SIXEL_OK;
         }
         end = DCS_7BIT("\033") DCS_7BIT("\\");
@@ -466,10 +505,59 @@ sixel_writer_vtbl_end_image(sixel_writer_t *self)
         end = DCS_END_7BIT;
         end_size = DCS_END_7BIT_SIZE;
     }
-    status = sixel_writer_write_raw_locked(storage, end, end_size);
+    return sixel_writer_write_raw_locked(storage, end, end_size);
+}
+
+static SIXELSTATUS
+sixel_writer_vtbl_end_image(sixel_writer_t *self,
+    sixel_stream_receipt_t **receipt)
+{
+    sixel_writer_storage_t *storage;
+    SIXELSTATUS status;
+
+    if (self == NULL || (receipt != NULL && *receipt != NULL)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = sixel_writer_storage_from_interface(self);
+    sixel_writer_lock(storage);
+    if (!storage->image_active) {
+        sixel_writer_unlock(storage);
+        return SIXEL_LOGIC_ERROR;
+    }
+    status = sixel_writer_close_locked(storage);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = storage->image_status;
+    }
+    if (SIXEL_SUCCEEDED(status) && receipt != NULL) {
+        *receipt = storage->receipt;
+        storage->receipt = NULL;
+    }
+    sixel_stream_receipt_unref(storage->receipt);
+    storage->receipt = NULL;
+    storage->image_active = 0;
     storage->used_penetration = 0;
     sixel_writer_unlock(storage);
+    return status;
+}
 
+static SIXELSTATUS
+sixel_writer_vtbl_abort_image(sixel_writer_t *self)
+{
+    sixel_writer_storage_t *storage;
+    SIXELSTATUS status;
+
+    if (self == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    storage = sixel_writer_storage_from_interface(self);
+    sixel_writer_lock(storage);
+    status = storage->image_active
+        ? sixel_writer_close_locked(storage) : SIXEL_OK;
+    sixel_stream_receipt_unref(storage->receipt);
+    storage->receipt = NULL;
+    storage->image_active = 0;
+    storage->used_penetration = 0;
+    sixel_writer_unlock(storage);
     return status;
 }
 

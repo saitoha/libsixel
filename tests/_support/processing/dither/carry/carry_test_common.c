@@ -141,7 +141,8 @@ carry_test_hint(sixel_lookup_policy_interface_t const *self,
 
 static sixel_lookup_policy_vtbl_t const carry_test_lookup_vtbl = {
     NULL, NULL, NULL, carry_test_lookup, carry_test_hint,
-    sixel_lookup_policy_map_pixels_default, NULL
+    sixel_lookup_policy_map_pixels_default, NULL,
+    NULL
 };
 
 int
@@ -150,7 +151,7 @@ carry_test_bias(int method)
     static int const grays[] = {64,80,96,112,127,128,143,159,175,191};
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
-    sixel_dither_policy_apply_request_t request;
+    sixel_dither_policy_effective_t request;
     sixel_lookup_policy_interface_t lookup;
     unsigned char palette[6] = {51,51,51,204,204,204};
     unsigned char *pixels;
@@ -256,7 +257,8 @@ carry_capture_hint(sixel_lookup_policy_interface_t const *base,
 
 static sixel_lookup_policy_vtbl_t const carry_capture_vtbl = {
     NULL, NULL, NULL, carry_capture_pixel, carry_capture_hint,
-    sixel_lookup_policy_map_pixels_default, NULL
+    sixel_lookup_policy_map_pixels_default, NULL,
+    NULL
 };
 
 int
@@ -264,7 +266,7 @@ carry_test_keep(int method, int use_perturb, int early)
 {
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
-    sixel_dither_policy_apply_request_t request;
+    sixel_dither_policy_effective_t request;
     carry_capture_lookup_t lookup;
     sixel_dither_perturb_t perturb;
     unsigned char palette[6] = {0,0,0,255,255,255};
@@ -351,7 +353,7 @@ int
 carry_test_keep_incoming(int early)
 {
     sixel_dither_t *dither;
-    sixel_dither_policy_apply_request_t request;
+    sixel_dither_policy_effective_t request;
     carry_capture_lookup_t lookup;
     unsigned char palette[6] = {0,0,0,255,255,255};
     unsigned char pixels[9] = {64,64,64,132,132,132,130,130,130};
@@ -407,7 +409,7 @@ carry_test_pipeline(int scenario)
 {
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
-    sixel_dither_policy_apply_request_t request;
+    sixel_dither_policy_effective_t request;
     sixel_dither_carry_kernel_t const *kernel;
     carry_capture_lookup_t lookup;
     unsigned char pixels[75];

@@ -16,6 +16,7 @@
 
 #include "src/factory.h"
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/dither-policy.h"
 #include "src/lookup-policy.h"
 
@@ -150,6 +151,7 @@ test_dither_policy_named_classes_contract(void)
     sixel_dither_policy_interface_t *dither_policy;
     sixel_dither_policy_prepare_request_t prepare_request;
     sixel_dither_policy_apply_request_t apply_request;
+    sixel_dither_execution_t apply_request_execution;
     sixel_palette_entries_request_t palette_request;
     sixel_palette_entries_view_t entries_view;
     unsigned char palette[6];
@@ -284,8 +286,7 @@ test_dither_policy_named_classes_contract(void)
         }
 
         memset(&prepare_request, 0, sizeof(prepare_request));
-        prepare_request.dither = dither;
-        prepare_request.depth = 3;
+        sixel_dither_policy_capture_options(dither, &prepare_request.options);
         prepare_request.method_for_scan = SIXEL_SCAN_RASTER;
         prepare_request.pixelformat = pixelformat;
 
@@ -315,10 +316,9 @@ test_dither_policy_named_classes_contract(void)
         apply_request.output_start = 0;
         apply_request.depth = 3;
         apply_request.palette = entries_view.entries;
-        apply_request.method_for_scan = SIXEL_SCAN_RASTER;
         apply_request.lookup_policy = lookup_policy;
-        apply_request.dither = dither;
-        apply_request.pixelformat = pixelformat;
+        sixel_dither_policy_capture_execution(dither, &apply_request_execution);
+    apply_request.execution = &apply_request_execution;
         if (is_float_class) {
             apply_request.data = (unsigned char *)(void *)pixel_float;
         }

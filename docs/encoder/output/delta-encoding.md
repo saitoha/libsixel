@@ -435,6 +435,16 @@ No universal speedup or quality threshold is claimed here. Per-pixel RGB selecti
 - [GPU request checks](../../../src/gpu-palette.c) and [Metal implementation](../../../src/gpu-palette-metal.m): retained-plane capability and per-pixel GPU decisions.
 - [Option registry](../../../src/options-registry.c), [CLI help](../../../converters/img2sixel.c), and [manual](../../../converters/img2sixel.1): accepted controls and environment defaults.
 
+## Indexed retained-state transactions
+
+The ordinary byte indexed path stores retained RGB and validity in the `image/retained-plane` component. A read lease pins one stream, epoch and committed sequence. `begin_update` binds an unpublished indexed image to that baseline and reserves optional paint-mark storage before output. Read leases and producer/body users must drain before commit. The result is immutable after publication; source pixels and a predicted palette are not evidence of the image that was sent.
+
+A successful writer receipt identifies the stream, epoch, base sequence and new sequence accepted by the callback. Commit requires a complete indexed result and a matching receipt; it rejects a foreign, stale, duplicate or busy transaction. In one allocation-free pass it preserves skipped pixels, expands painted indexes through the exact wire palette, sets validity and reports paint statistics. Skipped sentinel indexes are never palette addresses. Origin coordinates address the retained plane; SIXEL padding belongs only to serialization.
+
+Aborting an update preserves the prior committed plane. A partial external write instead makes that plane unknown: the session drains workers, aborts framing and invalidates history before another dependent delta frame. Seek, geometry or interpretation changes and discarded queued packets likewise require admission to stop, dependent work to drain and history to be invalidated. Receipt acceptance means ordered packet construction or callback acceptance, not physical terminal display. Transport owners must preserve packet order or discard the dependent suffix and request a fresh baseline.
+
+Legacy highcolor and specialized repair adapters borrow the same component-owned storage exclusively; they do not own a second retained RGB plane. Their existing wire projection and recovery contracts remain in effect. The indexed component protocol itself does not acknowledge a downstream terminal queue or detect a later transport failure.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -982,3 +992,33 @@ The CPU comparison establishes backend consistency, not an independent reference
 | DR-0032 | CPU/Metal X dither uses unperturbed targets and emitted RGB/HLS colors for post-lookup acceptance with direct/Eytzinger lookup. | [tests/dither/x-dither/0045_wire_x.t](../../../tests/dither/x-dither/0045_wire_x.t) |
 
 These numeric and decoded-output witnesses cover configured mask semantics, not a general perceptual quality gain. GPU tests require an available Metal application backend. Filter scale is in pixels; gains measured at one resolution do not establish gains at another.
+
+### Indexed commit and writer coverage
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| IC-01 | A painted index updates only its declared plane origin. | [tests/encoder/indexed/0001_retained_origin.t](../../../tests/encoder/indexed/0001_retained_origin.t) |
+| IC-02 | An approximate keep requests refinement. | [tests/encoder/indexed/0002_retained_approximate.t](../../../tests/encoder/indexed/0002_retained_approximate.t) |
+| IC-03 | Paint count excludes kept pixels. | [tests/encoder/indexed/0003_retained_paint_count.t](../../../tests/encoder/indexed/0003_retained_paint_count.t) |
+| IC-04 | Presentation marks identify accepted paint only. | [tests/encoder/indexed/0004_retained_paint_marks.t](../../../tests/encoder/indexed/0004_retained_paint_marks.t) |
+| IC-05 | Accepted packets advance the baseline without display waits. | [tests/encoder/indexed/0005_retained_sequence.t](../../../tests/encoder/indexed/0005_retained_sequence.t) |
+| IC-06 | A duplicate receipt cannot commit the update twice. | [tests/encoder/indexed/0006_retained_duplicate.t](../../../tests/encoder/indexed/0006_retained_duplicate.t) |
+| IC-07 | A foreign receipt cannot change retained history. | [tests/encoder/indexed/0007_retained_wrong_receipt.t](../../../tests/encoder/indexed/0007_retained_wrong_receipt.t) |
+| IC-08 | A live baseline reader blocks commit. | [tests/encoder/indexed/0008_retained_reader_pin.t](../../../tests/encoder/indexed/0008_retained_reader_pin.t) |
+| IC-09 | An active body consumer blocks commit. | [tests/encoder/indexed/0009_retained_user_pin.t](../../../tests/encoder/indexed/0009_retained_user_pin.t) |
+| IC-10 | A failed producer cannot commit an accepted stream. | [tests/encoder/indexed/0010_retained_failed_image.t](../../../tests/encoder/indexed/0010_retained_failed_image.t) |
+| IC-11 | Abort leaves the previous committed bytes intact. | [tests/encoder/indexed/0011_retained_abort.t](../../../tests/encoder/indexed/0011_retained_abort.t) |
+| IC-12 | Invalidation clears validity without inventing replacement RGB. | [tests/encoder/indexed/0012_retained_invalidate.t](../../../tests/encoder/indexed/0012_retained_invalidate.t) |
+| IC-13 | Invalidation cannot race a prepared update. | [tests/encoder/indexed/0013_retained_busy_invalidate.t](../../../tests/encoder/indexed/0013_retained_busy_invalidate.t) |
+| IC-14 | Unpublished rows cannot be consumed. | [tests/encoder/indexed/0014_indexed_unpublished.t](../../../tests/encoder/indexed/0014_indexed_unpublished.t) |
+| IC-15 | A skipped sentinel is never interpreted as a palette index. | [tests/encoder/indexed/0015_indexed_kept_sentinel.t](../../../tests/encoder/indexed/0015_indexed_kept_sentinel.t) |
+| IC-16 | An out-of-range painted index seals the producer as failed. | [tests/encoder/indexed/0016_indexed_invalid_paint.t](../../../tests/encoder/indexed/0016_indexed_invalid_paint.t) |
+| IC-17 | Completion requires every source row to be published. | [tests/encoder/indexed/0017_indexed_early_complete.t](../../../tests/encoder/indexed/0017_indexed_early_complete.t) |
+| IC-18 | Published rows survive release of the producer reference. | [tests/encoder/indexed/0018_indexed_published_lifetime.t](../../../tests/encoder/indexed/0018_indexed_published_lifetime.t) |
+| IC-19 | A rejected header never issues an acceptance receipt. | [tests/encoder/indexed/0019_writer_failed_header.t](../../../tests/encoder/indexed/0019_writer_failed_header.t) |
+| IC-20 | A rejected body remains sticky through end_image. | [tests/encoder/indexed/0020_writer_failed_body.t](../../../tests/encoder/indexed/0020_writer_failed_body.t) |
+| IC-21 | Abort closes framing without an acceptance receipt. | [tests/encoder/indexed/0021_writer_abort.t](../../../tests/encoder/indexed/0021_writer_abort.t) |
+| IC-22 | A failed header drains writer state for the next image. | [tests/encoder/indexed/0022_writer_reuse_after_failure.t](../../../tests/encoder/indexed/0022_writer_reuse_after_failure.t) |
+| IC-23 | Keeping an uninitialized hole leaves it invalid. | [tests/encoder/indexed/0023_retained_invalid_keep.t](../../../tests/encoder/indexed/0023_retained_invalid_keep.t) |
+| IC-24 | An exact keep preserves the committed wire color. | [tests/encoder/indexed/0024_retained_exact_keep.t](../../../tests/encoder/indexed/0024_retained_exact_keep.t) |
+| IC-25 | The last resource user safely drains an abandoned update. | [tests/encoder/indexed/0025_retained_deferred_abort.t](../../../tests/encoder/indexed/0025_retained_deferred_abort.t) |

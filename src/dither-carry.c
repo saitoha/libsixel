@@ -591,7 +591,7 @@ sixel_dither_carry_candidate(unsigned char const *source,
  */
 #define SIXEL_CARRY_DEFINE(NAME, DEN, ROWS, TAPS, MASK, PERTURB) \
 static SIXELSTATUS \
-sixel_carry_rgb_##NAME(sixel_dither_policy_apply_request_t const *request, \
+sixel_carry_rgb_##NAME(sixel_dither_policy_effective_t const *request, \
                        int32_t *rows, sixel_carry_bounds_t const *bounds, \
                        sixel_dither_perturb_t const *perturb) \
 { \
@@ -723,7 +723,7 @@ SIXEL_CARRY_DEFINE(perturb_1, 4096, 2,
 #undef SIXEL_CARRY_PERTURB
 
 static SIXELSTATUS
-sixel_carry_rgb_dispatch(sixel_dither_policy_apply_request_t const *request,
+sixel_carry_rgb_dispatch(sixel_dither_policy_effective_t const *request,
                          int method, int32_t *rows,
                          sixel_carry_bounds_t const *bounds,
                          sixel_dither_perturb_t const *perturb)
@@ -771,7 +771,7 @@ sixel_carry_rgb_dispatch(sixel_dither_policy_apply_request_t const *request,
 }
 
 SIXELSTATUS
-sixel_dither_carry_apply(sixel_dither_policy_apply_request_t const *request,
+sixel_dither_carry_apply(sixel_dither_policy_effective_t const *request,
                         int method)
 {
     sixel_dither_carry_kernel_t const *kernel;

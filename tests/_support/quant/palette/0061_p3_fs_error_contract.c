@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/lookup-policy.h"
 #include "src/palette.h"
 #include "src/dither-policy-fs.h"
@@ -47,6 +48,7 @@ test_palette_0061_p3_fs_error(int argc, char **argv)
     sixel_lookup_policy_vtbl_t capture_vtbl;
     sixel_dither_policy_prepare_request_t prep;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     sixel_palette_entries_request_t byte_request;
     sixel_palette_float32_entries_request_t float_request;
     sixel_palette_entries_view_t bytes;
@@ -140,8 +142,7 @@ test_palette_0061_p3_fs_error(int argc, char **argv)
      * Hard feedback limits compensation without clipping the source itself. */
     dither->clamp_policy = hard
         ? SIXEL_DITHER_CLAMP_HARD : SIXEL_DITHER_CLAMP_NONE;
-    prep.dither = dither;
-    prep.depth = 3;
+    sixel_dither_policy_capture_options(dither, &prep.options);
     prep.method_for_scan = SIXEL_SCAN_RASTER;
     prep.pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     if (SIXEL_FAILED(policy->vtbl->prepare(policy, &prep))) {
@@ -154,8 +155,8 @@ test_palette_0061_p3_fs_error(int argc, char **argv)
     request.depth = 3;
     request.palette = bytes.entries;
     request.lookup_policy = &capture;
-    request.dither = dither;
-    request.pixelformat = prep.pixelformat;
+    sixel_dither_policy_capture_execution(dither, &request_execution);
+    request.execution = &request_execution;
     if (strcmp(argv[1], "finite") == 0) {
         pixels[0] = NAN;
         status = policy->vtbl->apply(policy, &request);

@@ -7,7 +7,7 @@ BEGIN {
     pending_classid = ""
     pending_condition = ""
     constructor_pattern = "sixel_(lookup_policy|dither_policy|loader|"
-    constructor_pattern = constructor_pattern "writer|encoder_core|frame|"
+    constructor_pattern = constructor_pattern "writer|encoder_core|retained_plane|palette_apply|frame|"
     constructor_pattern = constructor_pattern "chunk|palette|timeline_logger)_"
     constructor_pattern = constructor_pattern "[A-Za-z0-9_]+_new"
     has_error = 0

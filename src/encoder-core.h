@@ -31,13 +31,13 @@
 extern "C" {
 #endif
 
-/*
- * The legacy public handle and the component interface share the same address
- * because the vtbl dispatch header is the first field of the private
- * sixel_output storage.
- */
-SIXEL_INTERNAL_API sixel_encoder_core_t *
-sixel_output_as_encoder_core(sixel_output_t const *output);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_storage_new(sixel_allocator_t *allocator,
+    sixel_output_t **output, int with_writer);
+SIXEL_INTERNAL_API void
+sixel_output_storage_ref(sixel_output_t *output);
+SIXEL_INTERNAL_API void
+sixel_output_storage_unref(sixel_output_t *output);
 
 /* @classid codec/encoder-core */
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -47,11 +47,6 @@ sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_normal_factory_new(sixel_allocator_t *allocator,
                                       void **object);
-
-/* @classid codec/encoder-core.highcolor */
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_encoder_core_highcolor_factory_new(sixel_allocator_t *allocator,
-                                         void **object);
 
 /* @classid codec/encoder-core.ormode */
 SIXEL_INTERNAL_API SIXELSTATUS

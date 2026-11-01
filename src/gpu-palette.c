@@ -576,3 +576,22 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
 /* emacs End:                  */
 /* vim: set expandtab ts=4 sts=4 sw=4 : */
 /* EOF */
+
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_plan_available(void)
+{
+    return sixel_gpu_palette_has_engine();
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request)
+{
+    if (!sixel_gpu_palette_request_is_supported(request)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+#if defined(HAVE_METAL)
+    return sixel_gpu_palette_metal_apply(request);
+#else
+    return SIXEL_FEATURE_ERROR;
+#endif
+}

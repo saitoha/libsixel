@@ -25,9 +25,9 @@ if test -z "$src_root"; then
     echo "# src_root argument is required"
     echo "not ok 8 - encoder_core write method stays removed"
     echo "# src_root argument is required"
-    echo "not ok 9 - encoder_core encode is implemented"
+    echo "not ok 9 - encoder_core indexed consumption is implemented"
     echo "# src_root argument is required"
-    echo "not ok 10 - public sixel_encode uses encoder_core vtbl"
+    echo "not ok 10 - public encode delegates to indexed composition or the legacy adapter"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -49,9 +49,9 @@ if test ! -d "$src_root/src"; then
     echo "# missing source directory: $src_root/src"
     echo "not ok 8 - encoder_core write method stays removed"
     echo "# missing source directory: $src_root/src"
-    echo "not ok 9 - encoder_core encode is implemented"
+    echo "not ok 9 - encoder_core indexed consumption is implemented"
     echo "# missing source directory: $src_root/src"
-    echo "not ok 10 - public sixel_encode uses encoder_core vtbl"
+    echo "not ok 10 - public encode delegates to indexed composition or the legacy adapter"
     echo "# missing source directory: $src_root/src"
     exit 1
 fi
@@ -185,7 +185,7 @@ if awk '
     print "legacy terminal classid remains: " FNR ":" $0
 }
 END {
-    exit (seen_canonical && seen_normal && seen_highcolor &&
+    exit (seen_canonical && seen_normal && !seen_highcolor &&
           seen_ormode && seen_writer) ? 0 : 1
 }
 ' "$classid_gperf" > "$tmpdir/classid.txt"; then
@@ -220,7 +220,7 @@ else
     echo "ok 5 - legacy emitter projection names stay removed"
 fi
 
-sh "$source_files_helper" "$src_root/src" --name '*.c' --name '*.h' --exclude-name 'encoder-core.c' --exclude-name 'encoder-core-encode.c' --exclude-name 'encoder-core-highcolor.c' --exclude-name 'encoder-core-private.h' --exec awk '
+sh "$source_files_helper" "$src_root/src" --name '*.c' --name '*.h' --exclude-name 'encoder-core.c' --exclude-name 'encoder-core-encode.c' --exclude-name 'encoder-core-highcolor.c' --exclude-name 'encoder-core-private.h' --exclude-name 'encoder-core-indexed.inc.h' --exclude-name 'encoder-core-session.inc.h' --exec awk '
 BEGIN {
     output_fields = "(ref|allocator|writer|writer_controls|has_8bit_control|has_sixel_scrolling|has_gri_arg_limit|has_sdm_glitch|skip_dcs_envelope|skip_header|palette_type|colorspace|source_colorspace|pixelformat|save_pixel|save_count|active_palette|node_top|node_free|penetrate_multiplexer|encode_policy|ormode|transparent_policy|last_frame_time_usec|pos|buffer)"
 }
@@ -289,7 +289,7 @@ fi
 
 awk '
 {
-    if ($0 ~ /^sixel_encoder_core_vtbl_encode[ \t]*\(/) {
+    if ($0 ~ /^sixel_indexed_core_consume[ \t]*\(/) {
         seen_name = 1
     }
     if (seen_name && $0 ~ /\{/) {
@@ -315,17 +315,17 @@ awk '
 }
 END {
     if (!seen_function) {
-        print "sixel_encoder_core_vtbl_encode not found"
+        print "sixel_indexed_core_consume not found"
     }
 }
-' "$src_root/src/encoder-core.c" > "$encoder_notimpl"
+' "$src_root/src/encoder-core-indexed.inc.h" > "$encoder_notimpl"
 
 if test -s "$encoder_notimpl"; then
-    echo "not ok 9 - encoder_core encode is implemented"
+    echo "not ok 9 - encoder_core indexed consumption is implemented"
     sed 's/^/# encoder_core encode: /' "$encoder_notimpl"
     failed=1
 else
-    echo "ok 9 - encoder_core encode is implemented"
+    echo "ok 9 - encoder_core indexed consumption is implemented"
 fi
 
 awk '
@@ -341,11 +341,8 @@ awk '
         next
     }
     if (in_function) {
-        if ($0 ~ /sixel_output_as_encoder_core/) {
-            seen_as_encoder_core = 1
-        }
-        if ($0 ~ /->[ \t]*vtbl->[ \t]*encode/) {
-            seen_vtbl_encode = 1
+        if ($0 ~ /sixel_encoder_core_encode_dispatch/) {
+            seen_dispatch = 1
         }
         if ($0 ~ /sixel_encode_(dither|highcolor)[ \t]*\(/) {
             print FILENAME ":" FNR ":direct helper dispatch: " $0
@@ -364,22 +361,19 @@ END {
     if (!seen_function) {
         print "public sixel_encode not found"
     } else {
-        if (!seen_as_encoder_core) {
-            print "public sixel_encode does not bind encoder_core"
-        }
-        if (!seen_vtbl_encode) {
-            print "public sixel_encode does not call vtbl encode"
+        if (!seen_dispatch) {
+            print "public sixel_encode does not enter its composition adapter"
         }
     }
 }
 ' "$src_root/src/encoder-core-encode.c" > "$public_encode"
 
 if test -s "$public_encode"; then
-    echo "not ok 10 - public sixel_encode uses encoder_core vtbl"
+    echo "not ok 10 - public encode delegates to indexed composition or the legacy adapter"
     sed 's/^/# public encode: /' "$public_encode"
     failed=1
 else
-    echo "ok 10 - public sixel_encode uses encoder_core vtbl"
+    echo "ok 10 - public encode delegates to indexed composition or the legacy adapter"
 fi
 
 exit "$failed"

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/lookup-policy.h"
 #include "src/palette.h"
 #include "src/dither-policy-fs.h"
@@ -193,8 +194,9 @@ spatial_residual(spatial_method_t const *method, int p3, int space)
 {
     static sixel_lookup_policy_vtbl_t const vtbl = {
         NULL, NULL, NULL, spatial_lookup_pixel, spatial_lookup_pixel_hint,
-        sixel_lookup_policy_map_pixels_default, NULL
-    };
+        sixel_lookup_policy_map_pixels_default, NULL,
+    NULL
+};
     static int const colors[] = {
         SIXEL_COLORSPACE_GAMMA, SIXEL_COLORSPACE_LINEAR,
         SIXEL_COLORSPACE_OKLAB, SIXEL_COLORSPACE_CIELAB, SIXEL_COLORSPACE_DIN99D
@@ -209,6 +211,7 @@ spatial_residual(spatial_method_t const *method, int p3, int space)
     sixel_dither_policy_interface_t *policy;
     sixel_dither_policy_prepare_request_t prepare;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     sixel_palette_entries_request_t br;
     sixel_palette_float32_entries_request_t fr;
     sixel_palette_entries_view_t bytes;
@@ -295,19 +298,17 @@ spatial_residual(spatial_method_t const *method, int p3, int space)
             SIXEL_DITHER_CLAMP_NONE, 1.01))) {
         goto end;
     }
-    prepare.dither = dither;
-    prepare.depth = 3;
+    sixel_dither_policy_capture_options(dither, &prepare.options);
     prepare.method_for_scan = SIXEL_SCAN_RASTER;
     prepare.pixelformat = formats[space];
     if (SIXEL_FAILED(policy->vtbl->prepare(policy, &prepare))) {
         goto end;
     }
-    request.dither = dither;
+    sixel_dither_policy_capture_execution(dither, &request_execution);
+    request.execution = &request_execution;
     request.width = 2;
     request.height = 1;
     request.depth = 3;
-    request.pixelformat = prepare.pixelformat;
-    request.method_for_scan = prepare.method_for_scan;
     request.data = (unsigned char *)(void *)pixels;
     request.palette = bytes.entries;
     request.result = result;

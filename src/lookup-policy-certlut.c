@@ -1059,6 +1059,14 @@ sixel_lookup_policy_certlut_map_pixel_hint_float32(
     return sixel_lookup_policy_certlut_map_pixel_float32(policy, pixel);
 }
 
+static int
+sixel_lookup_policy_certlut_get_kind(
+    sixel_lookup_policy_interface_t const *policy)
+{
+    (void)policy;
+    return SIXEL_LUT_POLICY_CERTLUT;
+}
+
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_certlut_8bit_vtbl = {
     sixel_lookup_policy_certlut_ref,
@@ -1068,6 +1076,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_certlut_map_pixel_hint_8bit,
     sixel_lookup_policy_map_pixels_default,
     NULL,
+    sixel_lookup_policy_certlut_get_kind,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -1079,6 +1088,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_certlut_map_pixel_hint_float32,
     sixel_lookup_policy_map_pixels_default,
     NULL,
+    sixel_lookup_policy_certlut_get_kind,
 };
 
 /* CERTLUT backend moved from lookup-8bit.c */

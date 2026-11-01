@@ -183,6 +183,9 @@ sixel_filter_bind_input(sixel_filter_t *filter,
         return;
     }
 
+    filter->input.indexed = NULL;
+    filter->input.retained = NULL;
+    filter->input.receipt = NULL;
     filter->input.slot = slot;
     filter->input.sample_stream = NULL;
     filter->input.weighted_points = NULL;
@@ -200,6 +203,9 @@ sixel_filter_bind_output(sixel_filter_t *filter,
         return;
     }
 
+    filter->output.indexed = NULL;
+    filter->output.retained = NULL;
+    filter->output.receipt = NULL;
     filter->output.slot = slot;
     filter->output.sample_stream = NULL;
     filter->output.weighted_points = NULL;
@@ -215,6 +221,9 @@ sixel_filter_bind_sample_input(sixel_filter_t *filter,
         return;
     }
 
+    filter->input.indexed = NULL;
+    filter->input.retained = NULL;
+    filter->input.receipt = NULL;
     filter->input.slot = NULL;
     filter->input.sample_stream = stream;
     filter->input.weighted_points = NULL;
@@ -234,6 +243,9 @@ sixel_filter_bind_sample_output(sixel_filter_t *filter,
         return;
     }
 
+    filter->output.indexed = NULL;
+    filter->output.retained = NULL;
+    filter->output.receipt = NULL;
     filter->output.slot = NULL;
     filter->output.sample_stream = stream;
     filter->output.weighted_points = NULL;
@@ -250,6 +262,9 @@ sixel_filter_bind_weighted_input(
         return;
     }
 
+    filter->input.indexed = NULL;
+    filter->input.retained = NULL;
+    filter->input.receipt = NULL;
     filter->input.slot = NULL;
     filter->input.sample_stream = NULL;
     filter->input.weighted_points = points;
@@ -268,6 +283,9 @@ sixel_filter_bind_weighted_output(
         return;
     }
 
+    filter->output.indexed = NULL;
+    filter->output.retained = NULL;
+    filter->output.receipt = NULL;
     filter->output.slot = NULL;
     filter->output.sample_stream = NULL;
     filter->output.weighted_points = points;

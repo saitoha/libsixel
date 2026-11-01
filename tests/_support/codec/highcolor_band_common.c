@@ -37,7 +37,7 @@ test_highcolor_band(int scenario, int width, int height)
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
     sixel_output_t *output;
-    sixel_encoder_core_options_t options;
+    sixel_output_options_t options;
     hc_band_stream_t *stream;
     unsigned char *source;
     unsigned char *decoded;

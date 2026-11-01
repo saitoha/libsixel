@@ -65,6 +65,8 @@
 #include "compat_stub.h"
 #include "encoder-core-private.h"
 #include "encoder-core-packet.h"
+#include "encode-result.h"
+#include "dither-policy-private.h"
 #include "output-factory.h"
 #include "dither.h"
 #include "colorspace.h"
@@ -72,6 +74,7 @@
 #include "pixelformat.h"
 #include "palette-common-snap.h"
 #include "timeline-logger.h"
+#include "filter.h"
 #include "threading.h"
 #include "encoder-core-highcolor.h"
 #include "gpu-palette.h"
@@ -429,8 +432,10 @@ sixel_output_compute_transparent_extent(sixel_output_t const *output,
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
-    *encoded_width = width + left;
-    *encoded_height = height + top;
+    *encoded_width = output->encoded_width != 0
+        ? output->encoded_width : width + left;
+    *encoded_height = output->encoded_height != 0
+        ? output->encoded_height : height + top;
     return SIXEL_OK;
 }
 
@@ -710,6 +715,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
     state->output->ormode = ctx->output->ormode;
     state->output->keycolor_reserved = ctx->output->keycolor_reserved;
     state->output->transparent_mask = ctx->output->transparent_mask;
+    state->output->wire_colors = ctx->output->wire_colors;
 
     state->initialized = 1;
     state->index = (-1);
@@ -1442,12 +1448,10 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
 
     if (sixel_parallel_context_is_ormode(ctx)) {
         nplanes = sixel_encode_body_ormode_nplanes(ctx->ncolors);
-        status = sixel_encode_body_ormode_band(ctx->pixels,
-                                               ctx->width,
-                                               ctx->height,
-                                               band_index,
-                                               nplanes,
-                                               state->output);
+        status = sixel_encode_body_ormode_band_offset(ctx->pixels,
+            ctx->width, ctx->height, band_index, nplanes,
+            ctx->encoded_width, ctx->encoded_height,
+            ctx->offset_left, ctx->offset_top, state->output);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -2538,7 +2542,10 @@ sixel_put_node(
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
             nwrite = sixel_putnum((char *)output->buffer + output->pos,
-                                  np->pal);
+                output->wire_colors != NULL
+                    ? (int)output->wire_colors[np->pal].definition
+                        .register_index
+                    : np->pal);
             sixel_advance(output, nwrite);
             output->active_palette = np->pal;
         }
@@ -5054,9 +5061,12 @@ end:
     return status;
 }
 
+#include "encoder-core-indexed.inc.h"
+#include "encoder-core-session.inc.h"
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_encode_dispatch(
-    sixel_encoder_core_encode_request_t const *request)
+    sixel_legacy_encode_request_t const *request)
 {
     SIXELSTATUS status;
 
@@ -5076,6 +5086,8 @@ sixel_encoder_core_encode_dispatch(
                                         request->dither,
                                         request->output);
     } else {
+        status = sixel_encode_indexed_session(request);
+        if (status != SIXEL_FALSE) return status;
         status = sixel_encode_dither(request->pixels,
                                      request->width,
                                      request->height,
@@ -5096,8 +5108,7 @@ sixel_encode(
     sixel_output_t /* in */ *output)   /* output context */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_encoder_core_t *core;
-    sixel_encoder_core_encode_request_t request;
+    sixel_legacy_encode_request_t request;
 
     if (pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -5140,19 +5151,13 @@ sixel_encode(
         goto end;
     }
 
-    core = sixel_output_as_encoder_core(output);
-    if (core == NULL || core->vtbl == NULL ||
-        core->vtbl->encode == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
     request.pixels = pixels;
     request.width = width;
     request.height = height;
     request.depth = depth;
     request.dither = dither;
     request.output = output;
-    status = core->vtbl->encode(core, &request);
+    status = sixel_encoder_core_encode_dispatch(&request);
 
 end:
     sixel_output_unref(output);
@@ -5338,7 +5343,9 @@ sixel_indexed_packet_advance(sixel_indexed_packet_t *packet,
         case SIXEL_PACKET_HEADER:
             status = sixel_output_begin_image(output, request->width,
                 request->height, 0, 1, 0, 2, 1);
-            packet->stage = SIXEL_PACKET_DEFINITIONS;
+            if (status == SIXEL_OK) {
+                packet->stage = SIXEL_PACKET_DEFINITIONS;
+            }
             break;
         case SIXEL_PACKET_DEFINITIONS:
             index = packet->color++;

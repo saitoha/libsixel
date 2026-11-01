@@ -10,6 +10,7 @@
 #include <sixel.h>
 #include "src/encoder.h"
 #include "src/dither.h"
+#include "dither-policy-private.h"
 #include "src/lookup-policy.h"
 #include "src/palette.h"
 #include "src/dither-policy-a-dither.h"
@@ -536,7 +537,8 @@ dn_observe_hint(sixel_lookup_policy_interface_t const *self,
 
 static sixel_lookup_policy_vtbl_t const dn_observer_vtbl = {
     NULL, NULL, NULL, dn_observe, dn_observe_hint,
-    sixel_lookup_policy_map_pixels_default, NULL
+    sixel_lookup_policy_map_pixels_default, NULL,
+    NULL
 };
 
 int
@@ -559,6 +561,7 @@ test_delta_positional_query(int method, int band)
     sixel_dither_policy_interface_t *policy;
     sixel_dither_policy_prepare_request_t prepare;
     sixel_dither_policy_apply_request_t request;
+    sixel_dither_execution_t request_execution;
     dn_observer_t observer;
     void *object;
     int pass;
@@ -615,8 +618,8 @@ test_delta_positional_query(int method, int band)
     observer.base.vtbl = &dn_observer_vtbl;
     observer.check_query = !band;
     observer.candidate = !band && method == 2 ? 1 : 0;
-    request.dither = prepare.dither = dither;
-    request.depth = prepare.depth = 3;
+    request.execution = &request_execution;
+    request.depth = 3;
     prepare.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     request.width = band ? 2 : 1;
     request.height = band ? 3 : 1;
@@ -667,6 +670,8 @@ test_delta_positional_query(int method, int band)
             band ? 4 : 1, band ? 10 : 1, band, band,
             request.width, band ? 9 : 1, 2, band || pass != 2,
             !band && pass == 3 ? 50U : 0U, SIXEL_6DELTA_ERROR_DIFFUSE);
+        sixel_dither_policy_capture_options(dither, &prepare.options);
+        sixel_dither_policy_capture_execution(dither, &request_execution);
         if (SIXEL_FAILED(policy->vtbl->prepare(policy, &prepare)) ||
                 SIXEL_FAILED(policy->vtbl->apply(policy, &request)) ||
                 observer.failed || observer.calls != (band ? 5 : 1) ||
