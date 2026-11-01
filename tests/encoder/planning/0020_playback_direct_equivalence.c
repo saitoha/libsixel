@@ -31,7 +31,8 @@ playback_0020_done(sixel_playback_result_t const *result, void *context)
 
 /* Encode the same frame sequence directly and through playback. */
 static int
-playback_0020_compare(int delta, char const *threads, unsigned int capacity)
+playback_0020_compare(int delta, char const *threads, unsigned int capacity,
+    int callbacks)
 {
     playback_test_buffer_t direct;
     playback_test_buffer_t queued;
@@ -55,19 +56,23 @@ playback_0020_compare(int delta, char const *threads, unsigned int capacity)
     queued_output = NULL;
     playback = NULL;
     failed = 1;
-    direct_encoder = playback_test_encoder(delta, threads);
+    direct_encoder = NULL;
+    if (!callbacks) {
+        direct_encoder = playback_test_encoder(delta, threads);
+    }
     queued_encoder = playback_test_encoder(delta, threads);
-    if (direct_encoder == NULL || queued_encoder == NULL ||
-            SIXEL_FAILED(sixel_output_new(&direct_output,
+    if ((!callbacks && direct_encoder == NULL) || queued_encoder == NULL ||
+            (!callbacks && SIXEL_FAILED(sixel_output_new(&direct_output,
                                           playback_test_write, &direct,
-                                          NULL)) ||
+                                          NULL))) ||
             SIXEL_FAILED(sixel_output_new(&queued_output,
                                           playback_test_write, &queued,
                                           NULL))) {
         goto end;
     }
-    for (index = 0; index < PLAYBACK_0020_FRAMES; ++index) {
-        frame = playback_test_frame(index);
+    for (index = 0; !callbacks && index < PLAYBACK_0020_FRAMES;
+            ++index) {
+        frame = playback_test_small_frame(index);
         if (frame == NULL) {
             goto end;
         }
@@ -88,7 +93,7 @@ playback_0020_compare(int delta, char const *threads, unsigned int capacity)
         goto end;
     }
     for (index = 0; index < PLAYBACK_0020_FRAMES; ++index) {
-        frame = playback_test_frame(index);
+        frame = playback_test_small_frame(index);
         if (frame == NULL) {
             goto end;
         }
@@ -104,12 +109,13 @@ playback_0020_compare(int delta, char const *threads, unsigned int capacity)
     }
     sixel_playback_unref(playback);
     playback = NULL;
-    if (order.completed != PLAYBACK_0020_FRAMES || order.ordered == 0) {
+    if (callbacks && (order.completed != PLAYBACK_0020_FRAMES ||
+            order.ordered == 0)) {
         fprintf(stderr, "completion order differs\n");
         goto end;
     }
-    if (direct.size != queued.size ||
-            memcmp(direct.bytes, queued.bytes, direct.size) != 0) {
+    if (!callbacks && (direct.size != queued.size ||
+            memcmp(direct.bytes, queued.bytes, direct.size) != 0)) {
         fprintf(stderr, "playback output differs: delta=%d threads=%s "
                 "capacity=%u\n", delta, threads, capacity);
         goto end;
@@ -132,22 +138,23 @@ end:
 int
 test_playback_0020(int argc, char **argv)
 {
-    static char const *threads[] = { "1", "8" };
-    unsigned int capacity;
     int delta;
-    int index;
+    int threads;
+    int capacity;
+    int callbacks;
 
-    (void)argc;
-    (void)argv;
-    for (index = 0; index < 2; ++index) {
-        for (delta = 0; delta < 2; ++delta) {
-            for (capacity = 1u; capacity <= 4u; capacity *= 2u) {
-                if (playback_0020_compare(delta, threads[index],
-                                          capacity) != 0) {
-                    return EXIT_FAILURE;
-                }
-            }
-        }
+    if (argc != 5) {
+        return EXIT_FAILURE;
     }
-    return EXIT_SUCCESS;
+    delta = atoi(argv[1]);
+    threads = atoi(argv[2]);
+    capacity = atoi(argv[3]);
+    callbacks = atoi(argv[4]);
+    if ((delta != 0 && delta != 1) || (threads != 1 && threads != 8) ||
+            (capacity != 1 && capacity != 2 && capacity != 4) ||
+            (callbacks != 0 && callbacks != 1)) {
+        return EXIT_FAILURE;
+    }
+    return playback_0020_compare(delta, argv[2],
+        (unsigned int)capacity, callbacks) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

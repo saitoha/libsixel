@@ -52,7 +52,7 @@ Keep numerical portability and defect detection together: the accepted interval 
 - Use the category's contiguous numeric sequence. Renumber registrations and neighboring tests when necessary to keep the sequence coherent.
 - Name the file after the behavior and observation it tests.
 - Rename the file when a change alters its purpose or test perspective.
-- Keep one test file to one test observation.
+- Keep one test file to one test observation. Give each selected parameter combination its own file even when the assertion is the same: queue capacities and thread budgets, for example, must be independently reported. Iterating over the pixels of one fixture or the frames of one stateful sequence is part of that observation, not a parameter sweep.
 - Prefer the smallest fixture and command that can expose the behavior.
 
 Shell TAP tests normally declare `1..1`. A whole-file skip declares `1..0 # SKIP`. Tests in other languages must also follow the repository's single-observation plan policy.

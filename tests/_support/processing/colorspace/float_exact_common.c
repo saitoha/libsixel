@@ -72,6 +72,7 @@ test_color_float_exact(int argc, char **argv)
     float value;
     size_t i;
     size_t bytes;
+    size_t count;
     int c;
     unsigned int code;
     int source;
@@ -80,16 +81,55 @@ test_color_float_exact(int argc, char **argv)
     int api;
     int specimen;
     int mode;
+    int first_specimen;
+    int last_specimen;
+    int first_budget;
+    int last_budget;
+    int first_api;
+    int last_api;
+    int first_source;
+    int last_source;
+    int first_target;
+    int last_target;
     int ok;
     int result;
     SIXELSTATUS status;
 
 
-    if (argc != 2) {
+    if (argc != 2 && argc != 7) {
         return EXIT_FAILURE;
     }
     mode = atoi(argv[1]);
-    bytes = EXACT_FLOAT_COUNT * 3U * sizeof(float);
+    first_specimen = first_budget = first_api = 0;
+    last_specimen = 1;
+    last_budget = 4;
+    last_api = 2;
+    first_source = first_target = 0;
+    last_source = last_target = 6;
+    count = EXACT_FLOAT_COUNT;
+    if (mode == 2) {
+        if (argc != 7) return EXIT_FAILURE;
+        first_specimen = atoi(argv[2]);
+        first_api = atoi(argv[3]);
+        first_budget = atoi(argv[4]);
+        first_source = atoi(argv[5]);
+        first_target = atoi(argv[6]);
+        if (first_specimen < 0 || first_specimen >= 4 || first_api < 0 ||
+                first_api >= 2 || first_budget < 0 || first_budget >= 4 ||
+                first_source < 0 || first_source >= 6 || first_target < 0 ||
+                first_target >= 6) {
+            return EXIT_FAILURE;
+        }
+        last_specimen = first_specimen + 1;
+        last_api = first_api + 1;
+        last_budget = first_budget + 1;
+        last_source = first_source + 1;
+        last_target = first_target + 1;
+        /* Each execution slot needs at least 1024 pixels for its memo.
+         * A 256-key cycle leaves repeated hits in every slot. */
+        count = (size_t)budgets[first_budget] * 1024U;
+    }
+    bytes = count * 3U * sizeof(float);
     input = (float *)malloc(bytes);
     expected = (float *)malloc(bytes);
     actual = (float *)malloc(bytes);
@@ -97,12 +137,12 @@ test_color_float_exact(int argc, char **argv)
     if (input == NULL || expected == NULL || actual == NULL) {
         goto end;
     }
-    for (specimen = 0; specimen < (mode == 2 ? 4 : 1); ++specimen) {
-        for (i = 0; i < EXACT_FLOAT_COUNT; ++i) {
+    for (specimen = first_specimen; specimen < last_specimen; ++specimen) {
+        for (i = 0; i < count; ++i) {
             for (c = 0; c < 3; ++c) {
                 /* Every byte code occurs on every channel, with mixed
                  * triplets and repeated blocks in each worker's chunk. */
-                code = (unsigned int)(i % 1024U);
+                code = (unsigned int)(i % (mode == 2 ? 256U : 1024U));
                 value = (float)((double)((code * (2U * c + 1U) + c * 37U
                     + (code / 256U) * (c + 1U) * 17U) % 256U) / 255.0);
                 if (mode == 1) {
@@ -123,18 +163,35 @@ test_color_float_exact(int argc, char **argv)
         if (mode == 2) {
             /* A late failure follows many memo hits. Identity conversions
              * still preserve NaN bits without validation. */
-            input[(EXACT_FLOAT_COUNT - 1U) * 3U] = errors[specimen];
+            input[(count - 1U) * 3U] = errors[specimen];
         }
-        for (source = 0; source < 6; ++source) {
-            for (target = 0; target < 6; ++target) {
-                ok = exact_float_reference(expected, input, EXACT_FLOAT_COUNT,
-                    spaces[source], spaces[target]);
+        for (source = first_source; source < last_source; ++source) {
+            for (target = first_target; target < last_target; ++target) {
+                if (mode == 2) {
+                    /* The prefix repeats the same 256 exact triplets.
+                     * Evaluate each unique reference input once, then the
+                     * exceptional last pixel. The tested API still sees
+                     * the full raster and every worker's repeated hits. */
+                    ok = exact_float_reference(expected, input, 256U,
+                        spaces[source], spaces[target]);
+                    for (i = 256U; ok && i < count; ++i) {
+                        memcpy(expected + i * 3U,
+                            expected + (i % 256U) * 3U, 3U * sizeof(float));
+                    }
+                    ok = ok && exact_float_reference(
+                        expected + (count - 1U) * 3U,
+                        input + (count - 1U) * 3U, 1U,
+                        spaces[source], spaces[target]);
+                } else {
+                    ok = exact_float_reference(expected, input, count,
+                        spaces[source], spaces[target]);
+                }
                 if (!ok) {
                     memcpy(expected, input, bytes);
                 }
-                for (budget = 0; budget < 4; ++budget) {
+                for (budget = first_budget; budget < last_budget; ++budget) {
                     sixel_set_encoder_threads(budgets[budget]);
-                    for (api = 0; api < 2; ++api) {
+                    for (api = first_api; api < last_api; ++api) {
                         memcpy(actual, input, bytes);
                         if (api == 0) {
                             status = sixel_helper_convert_colorspace(
@@ -143,7 +200,7 @@ test_color_float_exact(int argc, char **argv)
                                 spaces[source], spaces[target]);
                         } else {
                             status = sixel_color_convert_frame_rgbf32(actual,
-                                EXACT_FLOAT_COUNT, spaces[source],
+                                count, spaces[source],
                                 spaces[target]);
                         }
                         if (status != (ok ? SIXEL_OK : SIXEL_BAD_INPUT) ||

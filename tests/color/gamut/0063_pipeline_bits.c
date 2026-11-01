@@ -19,42 +19,43 @@ test_gamut_0063_pipeline_bits(int argc, char **argv)
     int ok, policy, target, budget;
     char text[32];
 
-    (void)argc;
-    (void)argv;
+    if (argc != 4) return EXIT_FAILURE;
+    policy = atoi(argv[1]);
+    target = atoi(argv[2]);
+    budget = atoi(argv[3]);
+    if (policy < 0 || policy >= 3 || target < 0 || target >= 5 ||
+            (budget != 2 && budget != 4)) return EXIT_FAILURE;
+    /* Two complete production tiles plus a tail force the pipeline path. */
     count = 262145;
     left = malloc(count * 3 * sizeof(float));
     right = malloc(count * 3 * sizeof(float));
     ok = left != NULL && right != NULL;
-    for (policy = 0; ok && policy < 3; ++policy) {
-        for (target = 0; ok && target < 5; ++target) {
-            for (budget = 2; ok && budget <= 4; budget += 2) {
-                for (i = 0; i < count; ++i) {
-                    left[i * 3] = i % 257 == 0 ? 1.2f : .3f;
-                    left[i * 3 + 1] = .4f;
-                    left[i * 3 + 2] = i % 257 == 0 ? -.1f : .7f;
-                }
-                memcpy(right, left, count * 3 * sizeof(float));
-                ok = gamut_filter_init(&a, left, count,
-                    SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, formats[target],
-                    policies[policy]) && gamut_filter_init(&b, right, count,
-                    SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, formats[target],
-                    policies[policy]);
-                snprintf(text, sizeof(text), "balanced:global_budget=%d",
-                    budget);
-                ok = ok && gamut_filter_scope(&scope, text);
-                if (ok) {
-                    ok = SIXEL_SUCCEEDED(gamut_filter_serial(&a)) &&
-                        sixel_filter_pipeline_run(b.color, b.gamut,
-                            b.allocator, NULL) == SIXEL_OK &&
-                        !memcmp(left, right, count * 3 * sizeof(float)) &&
-                        sixel_frame_get_pixelformat(b.frame) ==
-                            formats[target];
-                    sixel_thread_budget_leave(&scope);
-                }
-                gamut_filter_free(&a);
-                gamut_filter_free(&b);
-            }
+    if (ok) {
+        for (i = 0; i < count; ++i) {
+            left[i * 3] = i % 257 == 0 ? 1.2f : .3f;
+            left[i * 3 + 1] = .4f;
+            left[i * 3 + 2] = i % 257 == 0 ? -.1f : .7f;
         }
+        memcpy(right, left, count * 3 * sizeof(float));
+        ok = gamut_filter_init(&a, left, count,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, formats[target],
+            policies[policy]) && gamut_filter_init(&b, right, count,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, formats[target],
+            policies[policy]);
+        snprintf(text, sizeof(text), "balanced:global_budget=%d",
+            budget);
+        ok = ok && gamut_filter_scope(&scope, text);
+        if (ok) {
+            ok = SIXEL_SUCCEEDED(gamut_filter_serial(&a)) &&
+                sixel_filter_pipeline_run(b.color, b.gamut,
+                    b.allocator, NULL) == SIXEL_OK &&
+                !memcmp(left, right, count * 3 * sizeof(float)) &&
+                sixel_frame_get_pixelformat(b.frame) ==
+                    formats[target];
+            sixel_thread_budget_leave(&scope);
+        }
+        gamut_filter_free(&a);
+        gamut_filter_free(&b);
     }
     free(left);
     free(right);

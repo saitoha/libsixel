@@ -37,8 +37,8 @@ playback_test_write_fail(char *data, int size, void *priv)
     return -1;
 }
 
-sixel_frame_t *
-playback_test_frame(int index)
+static sixel_frame_t *
+playback_frame_sized(int index, int width, int height)
 {
     sixel_frame_t *frame;
     unsigned char *pixels;
@@ -46,36 +46,54 @@ playback_test_frame(int index)
     int x;
     int y;
     int inside;
+    int sx;
+    int sy;
 
     frame = NULL;
-    pixels = (unsigned char *)malloc((size_t)PLAYBACK_TEST_WIDTH
-                                     * PLAYBACK_TEST_HEIGHT * 3u);
+    pixels = (unsigned char *)malloc((size_t)width * height * 3u);
     if (pixels == NULL) {
         return NULL;
     }
-    for (y = 0; y < PLAYBACK_TEST_HEIGHT; ++y) {
-        for (x = 0; x < PLAYBACK_TEST_WIDTH; ++x) {
-            pixel = pixels + ((size_t)y * PLAYBACK_TEST_WIDTH + x) * 3u;
-            inside = (x - index * 7 + 120) % 120 < 24 && y > 12 && y < 36;
-            pixel[0] = inside ? 230 : (unsigned char)(x * 255
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            pixel = pixels + ((size_t)y * width + x) * 3u;
+            /* Scale coordinates, retaining the bar and gradient even in
+             * the small scheduling fixture. Existing large callers keep
+             * their original pixel values. */
+            sx = x * PLAYBACK_TEST_WIDTH / width;
+            sy = y * PLAYBACK_TEST_HEIGHT / height;
+            inside = (sx - index * 7 + 120) % 120 < 24 && sy > 12 && sy < 36;
+            pixel[0] = inside ? 230 : (unsigned char)(sx * 255
                                                       / PLAYBACK_TEST_WIDTH);
-            pixel[1] = inside ? 40 : (unsigned char)(y * 255
+            pixel[1] = inside ? 40 : (unsigned char)(sy * 255
                                                      / PLAYBACK_TEST_HEIGHT);
-            pixel[2] = (unsigned char)((x + y + index * 3) & 255);
+            pixel[2] = (unsigned char)((sx + sy + index * 3) & 255);
         }
     }
     if (SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         free(pixels);
         return NULL;
     }
-    if (SIXEL_FAILED(sixel_frame_init(frame, pixels, PLAYBACK_TEST_WIDTH,
-                                      PLAYBACK_TEST_HEIGHT,
+    if (SIXEL_FAILED(sixel_frame_init(frame, pixels, width, height,
                                       SIXEL_PIXELFORMAT_RGB888,
                                       NULL, -1))) {
         sixel_frame_unref(frame);
         return NULL;
     }
     return frame;
+}
+
+sixel_frame_t *
+playback_test_frame(int index)
+{
+    return playback_frame_sized(index, PLAYBACK_TEST_WIDTH,
+        PLAYBACK_TEST_HEIGHT);
+}
+
+sixel_frame_t *
+playback_test_small_frame(int index)
+{
+    return playback_frame_sized(index, 16, 16);
 }
 
 sixel_encoder_t *

@@ -6,8 +6,9 @@
 /*
  * GPU distance-ordered candidates must equal CPU exhaustive lookup after
  * dither.
- * Include partial rows, palette changes, cache reuse, short rows, duplicate
- * colors, ties and delta-kept pixels. The 129-color palette deliberately
+ * Include partial rows, short rows, duplicate colors, ties and delta-kept
+ * pixels. Cache reuse has its own invocation; invalidation is covered by
+ * ordered_cache_transitions. The 129-color palette deliberately
  * repeats a single coordinate to exercise all equal-distance entries.
  */
 #if defined(HAVE_CONFIG_H)
@@ -22,8 +23,8 @@
 #include "src/dither.h"
 
 enum {
-    GPUPAL_ORDERED_WIDTH = 77,
-    GPUPAL_ORDERED_HEIGHT = 53,
+    GPUPAL_ORDERED_WIDTH = 19,
+    GPUPAL_ORDERED_HEIGHT = 17,
     GPUPAL_ORDERED_PIXELS = GPUPAL_ORDERED_WIDTH * GPUPAL_ORDERED_HEIGHT
 };
 
@@ -75,7 +76,7 @@ gpupal_ordered_pixels(unsigned char *pixels, unsigned char const *palette,
             a = (int)(gpupal_ordered_next(&state) % (unsigned int)ncolors);
             b = (int)(gpupal_ordered_next(&state) % (unsigned int)ncolors);
             for (channel = 0; channel < 3; ++channel) {
-                switch ((y / 9) % 4) {
+                switch (y % 4) {
                 case 0:
                     pixels[pixel * 3 + channel] = (unsigned char)
                         ((x * (channel + 1) + y * 2) & 255);
@@ -191,7 +192,6 @@ gpupal_ordered_apply(sixel_allocator_t *allocator,
 int
 test_gpupal_0023_ordered_exact(int argc, char **argv)
 {
-    static int const sizes[] = {1, 2, 4, 33, 129, 200, 255, 256};
     static unsigned char pixels[GPUPAL_ORDERED_PIXELS * 3];
     static unsigned char retained[GPUPAL_ORDERED_PIXELS * 3];
     static unsigned char valid[GPUPAL_ORDERED_PIXELS];
@@ -208,14 +208,22 @@ test_gpupal_0023_ordered_exact(int argc, char **argv)
     };
     int diffusion;
     int phase;
-    int size;
     int keep;
     int ncolors;
     int pixel;
     int ok;
+    int reuse;
 
-    (void)argc;
-    (void)argv;
+    if (argc != 4) return EXIT_FAILURE;
+    diffusion = atoi(argv[1]);
+    keep = atoi(argv[2]);
+    ncolors = atoi(argv[3]);
+    if (diffusion < 0 || diffusion > 3 || keep < 0 || keep > 1 ||
+            ncolors < 1 || ncolors > (keep ? 255 : 256)) {
+        return EXIT_FAILURE;
+    }
+    reuse = diffusion == 3;
+    if (reuse) diffusion = 0;
     allocator = NULL;
     cpu = NULL;
     gpu = NULL;
@@ -224,70 +232,61 @@ test_gpupal_0023_ordered_exact(int argc, char **argv)
                                          NULL))) {
         goto end;
     }
-    for (diffusion = 0; diffusion < 3; ++diffusion) {
-        for (size = 0; size < (int)(sizeof(sizes) / sizeof(sizes[0])); ++size) {
-            ncolors = sizes[size];
-            for (keep = 0; keep < (ncolors < 256 ? 2 : 1); ++keep) {
-                gpupal_ordered_palette(palette, ncolors,
-                                    (unsigned int)(ncolors * 7 + 1));
-                gpupal_ordered_pixels(pixels, palette, ncolors,
-                                   (unsigned int)(ncolors * 13 + 5));
-                state = (unsigned int)ncolors;
-                for (pixel = 0; pixel < GPUPAL_ORDERED_PIXELS; ++pixel) {
-                    valid[pixel] = (unsigned char)
-                        (gpupal_ordered_next(&state) % 4U != 0U);
-                    if (pixel % 3 == 0) {
-                        memcpy(retained + pixel * 3, pixels + pixel * 3, 3);
-                    } else {
-                        retained[pixel * 3 + 0] =
-                            (unsigned char)(pixels[pixel * 3 + 0] ^ 0x80);
-                        retained[pixel * 3 + 1] =
-                            (unsigned char)(pixels[pixel * 3 + 1] ^ 0x80);
-                        retained[pixel * 3 + 2] =
-                            (unsigned char)(pixels[pixel * 3 + 2] ^ 0x80);
-                    }
-                }
-                for (phase = 0; phase < 3; ++phase) {
-                    /* Same table, then a different palette of equal size. */
-                    if (phase == 2) {
-                        palette[0] ^= 255U;
-                    }
-                    cpu = gpupal_ordered_apply(allocator, palette, ncolors,
-                                            pixels,
-                                            keep, diffusions[diffusion],
-                                            retained, valid,
-                                            SIXEL_GPU_POLICY_OFF, cpu_mask);
-                    gpu = gpupal_ordered_apply(allocator, palette, ncolors,
-                                            pixels,
-                                            keep, diffusions[diffusion],
-                                            retained, valid,
-                                            SIXEL_GPU_POLICY_FORCE, gpu_mask);
-                    if (cpu == NULL || gpu == NULL) {
-                        fprintf(stderr, "apply failed: colors=%d keep=%d\n",
-                                ncolors, keep);
-                        goto end;
-                    }
-                    for (pixel = 0; pixel < GPUPAL_ORDERED_PIXELS; ++pixel) {
-                        if (cpu[pixel] != gpu[pixel] ||
-                                (keep && cpu_mask[pixel] != gpu_mask[pixel]) ||
-                                (!keep && diffusion == 0
-                                    && (int)gpu[pixel] != gpupal_ordered_oracle(
-                                    palette, ncolors, pixels + pixel * 3))) {
-                            fprintf(stderr,
-                                    "mismatch: colors=%d keep=%d pixel=%d "
-                                    "cpu=%d gpu=%d\n",
-                                    ncolors, keep, pixel, (int)cpu[pixel],
-                                    (int)gpu[pixel]);
-                            goto end;
-                        }
-                    }
-                    sixel_allocator_free(allocator, cpu);
-                    sixel_allocator_free(allocator, gpu);
-                    cpu = NULL;
-                    gpu = NULL;
-                }
+    /* Palette size is selected by one independently reported case. */
+    gpupal_ordered_palette(palette, ncolors,
+                        (unsigned int)(ncolors * 7 + 1));
+    gpupal_ordered_pixels(pixels, palette, ncolors,
+                       (unsigned int)(ncolors * 13 + 5));
+    state = (unsigned int)ncolors;
+    for (pixel = 0; pixel < GPUPAL_ORDERED_PIXELS; ++pixel) {
+        valid[pixel] = (unsigned char)
+            (gpupal_ordered_next(&state) % 4U != 0U);
+        if (pixel % 3 == 0) {
+            memcpy(retained + pixel * 3, pixels + pixel * 3, 3);
+        } else {
+            retained[pixel * 3 + 0] =
+                (unsigned char)(pixels[pixel * 3 + 0] ^ 0x80);
+            retained[pixel * 3 + 1] =
+                (unsigned char)(pixels[pixel * 3 + 1] ^ 0x80);
+            retained[pixel * 3 + 2] =
+                (unsigned char)(pixels[pixel * 3 + 2] ^ 0x80);
+        }
+    }
+    for (phase = 0; phase < (reuse ? 2 : 1); ++phase) {
+        /* A dedicated cache observation repeats exactly one palette. */
+        cpu = gpupal_ordered_apply(allocator, palette, ncolors,
+                                pixels,
+                                keep, diffusions[diffusion],
+                                retained, valid,
+                                SIXEL_GPU_POLICY_OFF, cpu_mask);
+        gpu = gpupal_ordered_apply(allocator, palette, ncolors,
+                                pixels,
+                                keep, diffusions[diffusion],
+                                retained, valid,
+                                SIXEL_GPU_POLICY_FORCE, gpu_mask);
+        if (cpu == NULL || gpu == NULL) {
+            fprintf(stderr, "apply failed: colors=%d keep=%d\n",
+                    ncolors, keep);
+            goto end;
+        }
+        for (pixel = 0; pixel < GPUPAL_ORDERED_PIXELS; ++pixel) {
+            if (cpu[pixel] != gpu[pixel] ||
+                    (keep && cpu_mask[pixel] != gpu_mask[pixel]) ||
+                    (!keep && diffusion == 0
+                        && (int)gpu[pixel] != gpupal_ordered_oracle(
+                        palette, ncolors, pixels + pixel * 3))) {
+                fprintf(stderr,
+                        "mismatch: colors=%d keep=%d pixel=%d "
+                        "cpu=%d gpu=%d\n",
+                        ncolors, keep, pixel, (int)cpu[pixel],
+                        (int)gpu[pixel]);
+                goto end;
             }
         }
+        sixel_allocator_free(allocator, cpu);
+        sixel_allocator_free(allocator, gpu);
+        cpu = NULL;
+        gpu = NULL;
     }
     ok = 1;
 

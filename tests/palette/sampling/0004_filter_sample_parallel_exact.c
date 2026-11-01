@@ -1,8 +1,9 @@
 /*
  * SPDX-License-Identifier: MIT
  * Compare the entire ordered sample, including repeated solid weights and
- * transparency, across 1, 2, 4 and 8 threads. At each encoder budget,
- * compare serial and parallel extraction with identical downstream work.
+ * transparency, between serial extraction and one selected thread budget.
+ * Separate integration cases compare encoded bytes for one fixed encoder
+ * budget and sample fixture. Every parameter tuple has its own TAP entry.
  */
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -46,7 +47,7 @@ sample_write(char *data, int size, void *priv)
 }
 
 static int
-sample_case(int format, int clipped, int mode)
+sample_case(int format, int clipped, int mode, int encoded_test, int budget)
 {
     sixel_allocator_t *allocator;
     sixel_frame_t *frame;
@@ -148,8 +149,10 @@ sample_case(int format, int clipped, int mode)
         config.clip_width = 231;
         config.clip_height = 179;
     }
-    for (attempt = 0; attempt < 8; ++attempt) {
-        thread = 1 << (attempt / 2);
+    /* One invocation compares one selected budget with its serial reference.
+     * Other budgets have separate TAP entries and independent verdicts. */
+    for (attempt = 0; attempt < 2; ++attempt) {
+        thread = encoded_test || attempt != 0 ? budget : 1;
         memset(&runtime, 0, sizeof(runtime));
         runtime.sample_parallel_min_pixels_override = 1;
         runtime.sample_parallel_min_pixels = 1;
@@ -180,54 +183,62 @@ sample_case(int format, int clipped, int mode)
         if (SIXEL_FAILED(iface->vtbl->set_transparency(iface, &transparency))) {
             goto end;
         }
-        status = sixel_filter_factory_create_by_kind(
-            SIXEL_FILTER_KIND_SAMPLE, &config, &filter);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        sixel_filter_bind_input(filter, &frame, pixel_format,
-            sixel_frame_get_colorspace(frame));
-        sixel_filter_bind_sample_output(filter, &samples, pixel_format,
-            sixel_frame_get_colorspace(frame));
-        /* A global budget of eight must respect the caller's smaller scope. */
-        sixel_set_encoder_threads(8);
-        sixel_thread_budget_enter(&scope, thread);
-        status = sixel_filter_run(filter, allocator, NULL);
-        sixel_thread_budget_leave(&scope);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        iface = sixel_frame_as_interface(samples.frame);
-        if (SIXEL_FAILED(iface->vtbl->get_transparency(iface, &transparency)) ||
-                transparency.transparent_mask == NULL) {
-            goto end;
-        }
-        size = samples.point_count * (format == 2 ? 12u : 3u);
-        if (attempt == 0) {
-            expected = (unsigned char *)malloc(size);
-            expected_mask = (unsigned char *)malloc(samples.point_count);
-            if (expected == NULL || expected_mask == NULL) {
+        if (!encoded_test) {
+            status = sixel_filter_factory_create_by_kind(
+                SIXEL_FILTER_KIND_SAMPLE, &config, &filter);
+            if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            expected_size = size;
-            expected_width = samples.width;
-            expected_height = samples.height;
-            memcpy(expected, sixel_frame_get_pixels(samples.frame), size);
-            memcpy(expected_mask, transparency.transparent_mask,
-                   samples.point_count);
-        } else if (size != expected_size || samples.width != expected_width ||
-                   samples.height != expected_height ||
-                   memcmp(expected, sixel_frame_get_pixels(samples.frame),
-                          size) != 0 ||
-                   memcmp(expected_mask, transparency.transparent_mask,
-                          samples.point_count) != 0) {
-            fprintf(stderr, "sample mismatch format=%d clip=%d mode=%d t=%d\n",
-                    format, clipped, mode, thread);
-            goto end;
+            sixel_filter_bind_input(filter, &frame, pixel_format,
+                sixel_frame_get_colorspace(frame));
+            sixel_filter_bind_sample_output(filter, &samples, pixel_format,
+                sixel_frame_get_colorspace(frame));
+            /* The global budget of eight must respect the smaller scope. */
+            sixel_set_encoder_threads(8);
+            sixel_thread_budget_enter(&scope, thread);
+            status = sixel_filter_run(filter, allocator, NULL);
+            sixel_thread_budget_leave(&scope);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            iface = sixel_frame_as_interface(samples.frame);
+            if (SIXEL_FAILED(iface->vtbl->get_transparency(
+                    iface, &transparency)) ||
+                    transparency.transparent_mask == NULL) {
+                goto end;
+            }
+            size = samples.point_count * (format == 2 ? 12u : 3u);
+            if (attempt == 0) {
+                expected = (unsigned char *)malloc(size);
+                expected_mask = (unsigned char *)malloc(samples.point_count);
+                if (expected == NULL || expected_mask == NULL) {
+                    goto end;
+                }
+                expected_size = size;
+                expected_width = samples.width;
+                expected_height = samples.height;
+                memcpy(expected, sixel_frame_get_pixels(samples.frame), size);
+                memcpy(expected_mask, transparency.transparent_mask,
+                       samples.point_count);
+            } else if (size != expected_size ||
+                       samples.width != expected_width ||
+                       samples.height != expected_height ||
+                       memcmp(expected, sixel_frame_get_pixels(samples.frame),
+                              size) != 0 ||
+                       memcmp(expected_mask, transparency.transparent_mask,
+                              samples.point_count) != 0) {
+                fprintf(stderr, "sample mismatch format=%d clip=%d "
+                        "mode=%d t=%d\n",
+                        format, clipped, mode, thread);
+                goto end;
+            }
+            sixel_filter_free(filter);
+            filter = NULL;
+            sixel_sample_stream_dispose(&samples);
+            sixel_frame_unref(frame);
+            frame = NULL;
+            continue;
         }
-        sixel_filter_free(filter);
-        filter = NULL;
-        sixel_sample_stream_dispose(&samples);
         if (SIXEL_FAILED(sixel_encoder_new(&encoder, allocator)) ||
                 SIXEL_FAILED(sixel_output_new(&output, sample_write,
                     &encoded, allocator))) {
@@ -315,33 +326,25 @@ test_filter_0046_filter_sample_parallel_exact(int argc, char **argv)
     int format;
     int clipped;
     int mode;
+    int encoded_test;
+    int budget;
 
-    /* Each TAP producer selects one format so the full matrix remains
-     * bounded on slower hosts. Keep every clipping, quality and
-     * thread-budget comparison within that format's observation. */
-    if (argc != 2) {
-        return EXIT_FAILURE;
-    }
-    if (strcmp(argv[1], "rgb888") == 0) {
-        format = 0;
-    } else if (strcmp(argv[1], "pal8") == 0) {
-        format = 1;
-    } else if (strcmp(argv[1], "float32") == 0) {
-        format = 2;
-    } else {
+    if (argc != 6) return EXIT_FAILURE;
+    format = atoi(argv[1]);
+    clipped = atoi(argv[2]);
+    mode = atoi(argv[3]);
+    encoded_test = atoi(argv[4]);
+    budget = atoi(argv[5]);
+    if (format < 0 || format > 2 || clipped < 0 || clipped > 1 ||
+            mode < 0 || mode > 4 || encoded_test < 0 || encoded_test > 1 ||
+            (budget != 1 && budget != 2 && budget != 4 && budget != 8)) {
         return EXIT_FAILURE;
     }
     if (sixel_compat_setenv("SIXEL_SAMPLE_PARALLEL_MIN_PIXELS", "1") != 0) {
         return EXIT_FAILURE;
     }
-    for (clipped = 0; clipped < 2; ++clipped) {
-        for (mode = 0; mode < 5; ++mode) {
-            if (!sample_case(format, clipped, mode)) {
-                return EXIT_FAILURE;
-            }
-        }
-    }
-    return EXIT_SUCCESS;
+    return sample_case(format, clipped, mode, encoded_test, budget)
+        ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

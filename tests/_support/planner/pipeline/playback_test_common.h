@@ -20,6 +20,9 @@ int playback_test_write_fail(char *data, int size, void *priv);
 /* A moving bar over a gradient; frame INDEX shifts the bar. */
 sixel_frame_t *playback_test_frame(int index);
 
+/* The same moving features on a 16x16 fixture for scheduling observations. */
+sixel_frame_t *playback_test_small_frame(int index);
+
 /* FS diffusion with 16 colors; DELTA selects -Z delta. */
 sixel_encoder_t *playback_test_encoder(int delta, char const *threads);
 

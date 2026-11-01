@@ -59,7 +59,7 @@ The typed controls and consumer scopes live in [`options-registry.c`](../../src/
 | ID | Observation | Owning test |
 | --- | --- | --- |
 | RT-01 | The runtime SIMD environment reaches its consumer. | [tests/platform/simd/0001_simd_level_environment_consumer.t](../../tests/platform/simd/0001_simd_level_environment_consumer.t) |
-| RT-02 | The colorspace minimum-work environment reaches its consumer under `balanced`; the test skips when fewer than two performance logical CPUs make that parallel path unavailable. | [tests/color/space/0052_colorspace_parallel_min_environment_consumer.t](../../tests/color/space/0052_colorspace_parallel_min_environment_consumer.t) |
+| RT-02 | The colorspace minimum-work environment reaches its consumer under `balanced`; the test skips when fewer than two performance logical CPUs make that parallel path unavailable. | [tests/color/space/0038_colorspace_parallel_min_environment_consumer.t](../../tests/color/space/0038_colorspace_parallel_min_environment_consumer.t) |
 | RT-03 | The resize-precision environment reaches its consumer. | [tests/frame/resize/0163_resize_precision_environment_consumer.t](../../tests/frame/resize/0163_resize_precision_environment_consumer.t) |
 
 ### Coverage boundary

@@ -278,7 +278,7 @@ auto_playback_done(sixel_playback_result_t const *result, void *context)
 #endif
 
 int
-palette_auto_playback_test(void)
+palette_auto_playback_test(int ahead)
 {
 #if SIXEL_ENABLE_THREADS
     auto_playback_state_t state;
@@ -289,7 +289,6 @@ palette_auto_playback_test(void)
     sixel_playback_config_t config;
     sixel_frame_t *frame;
     SIXELSTATUS status;
-    int ahead;
     int pass;
     int i;
     int failed;
@@ -310,50 +309,48 @@ palette_auto_playback_test(void)
         goto end;
     }
     encoder->palette_test_hooks = &hooks;
-    for (ahead = 0; ahead < 2; ++ahead) {
-        status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
-            ahead ? "greedy:B4:prepare=ahead" : "greedy:B4:prepare=serial");
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+        ahead ? "greedy:B4:prepare=ahead" : "greedy:B4:prepare=serial");
+    if (status != SIXEL_OK) {
+        goto end;
+    }
+    /* Reattach to the same object: every session must start in frame. */
+    for (pass = 0; pass < 2; ++pass) {
+        state.callbacks = state.observations = state.failed = 0;
+        state.latest = state.probes = state.switches = 0;
+        (void)sixel_playback_config_init(&config, sizeof(config));
+        config.palette_mode = SIXEL_PLAYBACK_PALETTE_AUTO;
+        config.capacity = 4;
+        config.done = auto_playback_done;
+        config.done_context = &state;
+        status = sixel_playback_new(&playback, encoder, output,
+            &config, NULL);
         if (status != SIXEL_OK) {
             goto end;
         }
-        /* Reattach to the same object: every session must start in frame. */
-        for (pass = 0; pass < 2; ++pass) {
-            state.callbacks = state.observations = state.failed = 0;
-            state.latest = state.probes = state.switches = 0;
-            (void)sixel_playback_config_init(&config, sizeof(config));
-            config.palette_mode = SIXEL_PLAYBACK_PALETTE_AUTO;
-            config.capacity = 4;
-            config.done = auto_playback_done;
-            config.done_context = &state;
-            status = sixel_playback_new(&playback, encoder, output,
-                &config, NULL);
+        for (i = 0; i < 90; ++i) {
+            frame = playback_test_small_frame(i % 3);
+            if (frame == NULL) {
+                goto end;
+            }
+            status = sixel_playback_submit(playback, frame,
+                SIXEL_PLAYBACK_WAIT, -1, NULL);
+            sixel_frame_unref(frame);
             if (status != SIXEL_OK) {
                 goto end;
             }
-            for (i = 0; i < 90; ++i) {
-                frame = playback_test_frame(i % 3);
-                if (frame == NULL) {
-                    goto end;
-                }
-                status = sixel_playback_submit(playback, frame,
-                    SIXEL_PLAYBACK_WAIT, -1, NULL);
-                sixel_frame_unref(frame);
-                if (status != SIXEL_OK) {
-                    goto end;
-                }
-            }
-            status = sixel_playback_drain(playback, -1);
-            sixel_playback_unref(playback);
-            playback = NULL;
-            if (status != SIXEL_OK || state.failed || state.callbacks != 90 ||
-                    state.observations != 90 || state.probes != 2 ||
-                    state.switches != 2) {
-                fprintf(stderr, "auto playback ahead=%d pass=%d "
-                    "status=%x bad=%d callbacks=%d observed=%d P=%d S=%d\n",
-                    ahead, pass, status, state.failed, state.callbacks,
-                    state.observations, state.probes, state.switches);
-                goto end;
-            }
+        }
+        status = sixel_playback_drain(playback, -1);
+        sixel_playback_unref(playback);
+        playback = NULL;
+        if (status != SIXEL_OK || state.failed || state.callbacks != 90 ||
+                state.observations != 90 || state.probes != 2 ||
+                state.switches != 2) {
+            fprintf(stderr, "auto playback ahead=%d pass=%d "
+                "status=%x bad=%d callbacks=%d observed=%d P=%d S=%d\n",
+                ahead, pass, status, state.failed, state.callbacks,
+                state.observations, state.probes, state.switches);
+            goto end;
         }
     }
     failed = 0;
@@ -364,6 +361,7 @@ end:
     free(state.buffer.bytes);
     return failed;
 #else
+    (void)ahead;
     return EXIT_SUCCESS;
 #endif
 }
@@ -564,7 +562,7 @@ auto_store_done(sixel_playback_result_t const *result, void *context)
 #endif
 
 int
-palette_auto_store_test(int profile_change)
+palette_auto_store_test(int profile_change, int delta, int period)
 {
 #if SIXEL_ENABLE_THREADS
     auto_store_state_t state;
@@ -576,8 +574,6 @@ palette_auto_store_test(int profile_change)
     sixel_frame_t *frame;
     SIXELSTATUS status;
     int ahead;
-    int delta;
-    int period;
     int count;
     int i;
     int failed;
@@ -603,76 +599,68 @@ palette_auto_store_test(int profile_change)
     hooks.build = auto_store_build;
     hooks.before_select = auto_store_before_select;
     hooks.selected = auto_store_selected;
-    for (delta = 0; delta < 2; ++delta) {
-        encoder = playback_test_encoder(delta, "4");
-        if (encoder == NULL || sixel_output_new(&output, playback_test_write,
-                &state.buffer, NULL) != SIXEL_OK) {
-            goto end;
-        }
-        /* Store retention observes schedule, snapshot identity and epochs.
-         * A crop keeps nonuniform colors and default lookup construction,
-         * while avoiding full-size FS application on every history frame. */
-        if (sixel_encoder_setopt(encoder, 'c', "16x16+0+0") != SIXEL_OK) {
-            goto end;
-        }
-        state.encoder = encoder;
-        encoder->palette_test_hooks = &hooks;
-        for (period = profile_change ? 2 : 0;
-                period < (profile_change ? 4 : 6); ++period) {
-            ahead = period % 2;
-            state.return_sequence = period < 2 ? 12 : period < 4 ? 27 : 68;
-            state.retained_sequence = period < 2 ? 9 : 25;
-            count = state.return_sequence + 3;
-            status = sixel_encoder_setopt(encoder,
-                SIXEL_OPTFLAG_THREADING_POLICY,
-                ahead ? "greedy:B4:prepare=ahead"
-                      : "greedy:B4:prepare=serial");
-            if (status != SIXEL_OK) {
-                goto end;
-            }
-            state.callbacks = state.failed = state.selected = state.open = 0;
-            state.joined_before_select = 0;
-            (void)sixel_playback_config_init(&config, sizeof(config));
-            config.palette_mode = SIXEL_PLAYBACK_PALETTE_AUTO;
-            config.capacity = 4;
-            config.done = auto_store_done;
-            config.done_context = &state;
-            status = sixel_playback_new(&playback, encoder, output,
-                &config, NULL);
-            if (status != SIXEL_OK) {
-                goto end;
-            }
-            for (i = 0; i < count; ++i) {
-                frame = playback_test_frame(i % 3);
-                if (frame == NULL) {
-                    goto end;
-                }
-                status = sixel_playback_submit(playback, frame,
-                    SIXEL_PLAYBACK_WAIT, -1, NULL);
-                sixel_frame_unref(frame);
-                if (status != SIXEL_OK) {
-                    goto end;
-                }
-            }
-            status = sixel_playback_drain(playback, -1);
-            sixel_playback_unref(playback);
-            playback = NULL;
-            if (status != SIXEL_OK || state.failed || !state.selected ||
-                    state.callbacks != count) {
-                fprintf(stderr, "auto store profile=%d ahead=%d delta=%d "
-                    "status=%x bad=%d selected=%d callbacks=%d\n",
-                    profile_change, ahead, delta, status, state.failed,
-                    state.selected, state.callbacks);
-                goto end;
-            }
-            sixel_palette_snapshot_unref(state.retained);
-            state.retained = NULL;
-        }
-        sixel_output_unref(output);
-        output = NULL;
-        sixel_encoder_unref(encoder);
-        encoder = NULL;
+    encoder = playback_test_encoder(delta, "4");
+    if (encoder == NULL || sixel_output_new(&output, playback_test_write,
+            &state.buffer, NULL) != SIXEL_OK) {
+        goto end;
     }
+    /* The small nonuniform fixture retains default lookup construction.
+     * The full scheduling history, snapshot identity and epoch checks are
+     * independent of the number of pixels encoded in each frame. */
+    state.encoder = encoder;
+    encoder->palette_test_hooks = &hooks;
+    ahead = period % 2;
+    state.return_sequence = period < 2 ? 12 : period < 4 ? 27 : 68;
+    state.retained_sequence = period < 2 ? 9 : 25;
+    count = state.return_sequence + 3;
+    status = sixel_encoder_setopt(encoder,
+        SIXEL_OPTFLAG_THREADING_POLICY,
+        ahead ? "greedy:B4:prepare=ahead"
+              : "greedy:B4:prepare=serial");
+    if (status != SIXEL_OK) {
+        goto end;
+    }
+    state.callbacks = state.failed = state.selected = state.open = 0;
+    state.joined_before_select = 0;
+    (void)sixel_playback_config_init(&config, sizeof(config));
+    config.palette_mode = SIXEL_PLAYBACK_PALETTE_AUTO;
+    config.capacity = 4;
+    config.done = auto_store_done;
+    config.done_context = &state;
+    status = sixel_playback_new(&playback, encoder, output,
+        &config, NULL);
+    if (status != SIXEL_OK) {
+        goto end;
+    }
+    for (i = 0; i < count; ++i) {
+        frame = playback_test_small_frame(i % 3);
+        if (frame == NULL) {
+            goto end;
+        }
+        status = sixel_playback_submit(playback, frame,
+            SIXEL_PLAYBACK_WAIT, -1, NULL);
+        sixel_frame_unref(frame);
+        if (status != SIXEL_OK) {
+            goto end;
+        }
+    }
+    status = sixel_playback_drain(playback, -1);
+    sixel_playback_unref(playback);
+    playback = NULL;
+    if (status != SIXEL_OK || state.failed || !state.selected ||
+            state.callbacks != count) {
+        fprintf(stderr, "auto store profile=%d ahead=%d delta=%d "
+            "status=%x bad=%d selected=%d callbacks=%d\n",
+            profile_change, ahead, delta, status, state.failed,
+            state.selected, state.callbacks);
+        goto end;
+    }
+    sixel_palette_snapshot_unref(state.retained);
+    state.retained = NULL;
+    sixel_output_unref(output);
+    output = NULL;
+    sixel_encoder_unref(encoder);
+    encoder = NULL;
     failed = 0;
 end:
     sixel_mutex_lock(&state.mutex);
@@ -689,6 +677,8 @@ end:
     return failed;
 #else
     (void)profile_change;
+    (void)delta;
+    (void)period;
     return EXIT_SUCCESS;
 #endif
 }
