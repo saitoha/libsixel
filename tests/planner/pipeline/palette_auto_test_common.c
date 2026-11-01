@@ -609,6 +609,12 @@ palette_auto_store_test(int profile_change)
                 &state.buffer, NULL) != SIXEL_OK) {
             goto end;
         }
+        /* Store retention observes schedule, snapshot identity and epochs.
+         * A crop keeps nonuniform colors and default lookup construction,
+         * while avoiding full-size FS application on every history frame. */
+        if (sixel_encoder_setopt(encoder, 'c', "16x16+0+0") != SIXEL_OK) {
+            goto end;
+        }
         state.encoder = encoder;
         encoder->palette_test_hooks = &hooks;
         for (period = profile_change ? 2 : 0;

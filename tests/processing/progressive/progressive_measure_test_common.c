@@ -64,6 +64,7 @@ test_progressive_measure_case(int mode)
     size_t quantum;
     size_t bytes;
     size_t calls;
+    size_t audit_yields;
     size_t saved_size;
     size_t passes;
     unsigned int flags;
@@ -136,6 +137,7 @@ test_progressive_measure_case(int mode)
             0, 0, 1) == SIXEL_OK);
         MEASURE_REQUIRE(sixel_output_new(&output, measure_test_write,
             &sink, NULL) == SIXEL_OK);
+        audit_yields = 0;
         for (calls = 0; calls < 100000; ++calls) {
             memset(&work, 0, sizeof(work));
             work.pixel_limit = work.distance_limit = quantum;
@@ -157,6 +159,13 @@ test_progressive_measure_case(int mode)
                     MEASURE_REQUIRE(!record.committed &&
                         record.committed_gain == 0);
                 }
+            }
+            if (mode == 120 && !record.audit_complete) {
+                ++audit_yields;
+            } else if (mode == 120) {
+                /* Keep one-unit histogram steps, but do not subdivide
+                 * unrelated palette fitting and packet preparation. */
+                quantum = 1048576;
             }
             if (status != SIXEL_OK ||
                     result.audit.outcome != SIXEL_REPAIR_YIELDED) {
@@ -238,7 +247,7 @@ test_progressive_measure_case(int mode)
                 record.committed_bytes <= bytes);
         }
         if (mode == 120) {
-            MEASURE_REQUIRE(calls > 64);
+            MEASURE_REQUIRE(audit_yields >= 63 && calls > audit_yields);
         }
         if (mode == 123) {
             memcpy(expected_bands, record.bands, sizeof(expected_bands));

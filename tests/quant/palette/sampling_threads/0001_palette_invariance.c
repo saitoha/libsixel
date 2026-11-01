@@ -39,14 +39,14 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
         int flag;
         char const *value;
     } const quality_options[] = {
-        { 'Q', "kmeans:seed=1" }, { 'F', "ward" },
+        { 'Q', "kmeans:seed=1:sample_target=1024" }, { 'F', "ward" },
         { 'W', "cielab" }, { 'X', "cielab" }, { 'd', "lso2" }
     };
     sixel_encoder_t *encoder;
     sixel_frame_t *frame;
     sixel_output_t *output;
     sampling_wire_capture_t capture;
-    unsigned char pixels[256 * 192 * 3];
+    unsigned char pixels[80 * 64 * 3];
     char *cursor;
     int x;
     int y;
@@ -68,11 +68,11 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
     ok = 0;
     definitions = 0;
     memset(palette, 0xff, 256u * 3u * sizeof(int));
-    /* A nonperiodic spatial color distribution exceeds the default target.
-     * The crop also exceeds it; resizing creates interpolated colors. */
-    for (y = 0; y < 192; ++y) {
-        for (x = 0; x < 256; ++x) {
-            index = (y * 256 + x) * 3;
+    /* A nonperiodic distribution and its crop exceed the 1024-sample target.
+     * Quarter-size output falls below it; upscaling interpolates colors. */
+    for (y = 0; y < 64; ++y) {
+        for (x = 0; x < 80; ++x) {
+            index = (y * 80 + x) * 3;
             pixels[index] = (unsigned char)(x + y * 7 + x * y / 23);
             pixels[index + 1] = (unsigned char)(y + x * 3 + x * y / 41);
             pixels[index + 2] = (unsigned char)(x / 2 + y * 5);
@@ -82,14 +82,16 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
             SIXEL_FAILED(sixel_encoder_new(&encoder, NULL)) ||
             SIXEL_FAILED(sixel_frame_new(&frame, NULL)) ||
             SIXEL_FAILED(sixel_frame_init_borrowed(frame, pixels,
-                256, 192, SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||
+                80, 64, SIXEL_PIXELFORMAT_RGB888, NULL, -1)) ||
             SIXEL_FAILED(sixel_output_new(&output, sampling_threads_write,
                 &capture, NULL))) {
         goto end;
     }
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', threading)) ||
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, '4', policy))) {
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, '4', policy)) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'Q',
+                "auto:sample_target=1024"))) {
         goto end;
     }
     if (quality) {
@@ -104,11 +106,11 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
     }
     if ((geometry == 1 &&
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'c',
-                "192x144+31+23"))) ||
+                "64x48+7+5"))) ||
             (geometry == 2 &&
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'w', "64"))) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'w', "20"))) ||
             (geometry == 3 &&
-            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'w', "512"))) ||
+            SIXEL_FAILED(sixel_encoder_setopt(encoder, 'w', "160"))) ||
             SIXEL_FAILED(sixel_encoder_encode_frame(encoder, frame, output))) {
         goto end;
     }
