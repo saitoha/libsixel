@@ -93,6 +93,12 @@ AM_TESTS_ENVIRONMENT += SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
        export SIXEL_MSAN_BUILD;
 AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
        export CROSS_COMPILING;
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_NATIVE_PYTHON='$(PYTHON_STATICCHECK)'; export SIXEL_TEST_NATIVE_PYTHON;
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_CC='$(CC)'; export SIXEL_TEST_CC;
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_MAKE='$(MAKE)'; export SIXEL_TEST_MAKE;
+if BUILD_LSO_TIMEOUT
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_CHILD_TIME='$(abs_top_builddir)/tools/lso-timeout$(EXEEXT)'; export SIXEL_TEST_CHILD_TIME;
+endif
 AM_TESTS_ENVIRONMENT += SIXEL_INSTALLCHECK='$(SIXEL_INSTALLCHECK)'; \
        export SIXEL_INSTALLCHECK;
 AM_TESTS_ENVIRONMENT += ENABLE_PYTHON='@ENABLE_PYTHON@'; export ENABLE_PYTHON;
@@ -10610,37 +10616,18 @@ EXTRA_DIST += build/discovery/fixture.py \
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
 
-# Keep one check-local rule with conditionally selected prerequisites.
-CHECK_LOCAL_TARGETS = check-pkgconfig-headers
-check-local: $(CHECK_LOCAL_TARGETS)
-.PHONY: $(CHECK_LOCAL_TARGETS)
-
-# Check the real installation rules without optional Python bindings.
-check-pkgconfig-headers:
-	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
-	    echo 'SKIP installed headers: native Python runner unavailable'; \
-	else \
-	    "$(PYTHON_STATICCHECK)" \
-	        "$(srcdir)/build/install/0001_pkgconfig_headers.py" \
-	        autotools "$(abs_top_builddir)" "$(MAKE)" \
-	        "$(abs_top_srcdir)" --cc "$(CC)"; \
-	fi
+# These native Python cases use the ordinary discovered TAP/log path.
+# Their interpreter does not depend on optional Python bindings.
 EXTRA_DIST += build/install/0001_pkgconfig_headers.py
-
-# Exercise the native supervisor without enabling optional Python bindings.
-if BUILD_LSO_TIMEOUT
-CHECK_LOCAL_TARGETS += check-child-time-backpressure
-check-child-time-backpressure:
-	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
-	    echo 'SKIP child-time backpressure: native Python runner unavailable'; \
-	else \
-	    $(MAKE) $(AM_MAKEFLAGS) -C "$(top_builddir)/tools" lso-timeout$(EXEEXT) && \
-	    "$(PYTHON_STATICCHECK)" \
-	        "$(srcdir)/tools/child-time/0001_marker_backpressure.py" \
-	        "$(abs_top_builddir)/tools/lso-timeout$(EXEEXT)"; \
-	fi
-endif
 EXTRA_DIST += tools/child-time/0001_marker_backpressure.py
+
+if BUILD_LSO_TIMEOUT
+# Preserve direct `make -C tests check` use before tools have been built.
+check-TESTS: prepare-child-time-executor
+.PHONY: prepare-child-time-executor
+prepare-child-time-executor:
+	$(MAKE) $(AM_MAKEFLAGS) -C "$(top_builddir)/tools" lso-timeout$(EXEEXT)
+endif
 
 EXTRA_DIST += extension/quicklook-lifecycle/private-user.inc.h \
     extension/quicklook-lifecycle/private-mutations.inc.h \

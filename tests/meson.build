@@ -333,6 +333,11 @@ if share_test_env
 endif
 
 foreach t : tests
+  # Native infrastructure checks below have their own arguments and build
+  # dependencies. Do not register them again through the binding wrapper.
+  if t.startswith('build/install/') or t.startswith('tools/child-time/')
+    continue
+  endif
   parts = t.split('/')
   test_base = parts[parts.length() - 1]
   test_category = ''

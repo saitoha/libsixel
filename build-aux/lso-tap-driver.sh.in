@@ -460,8 +460,16 @@ run_with_timeout() {
   case "$test_path" in
     *.py)
       run_desc="python ${test_path}"
-      if [ -n "${SIXEL_TEST_PYTHON}" ] && [ -x "${SIXEL_TEST_PYTHON}" ]; then
-        set -- "$SIXEL_TEST_PYTHON" "$test_path" "$@"
+      # Native infrastructure checks need only the standard library. Keep
+      # their interpreter separate from the optional binding environment.
+      case "$test_path" in
+        */build/install/*.py|build/install/*.py|*/tools/child-time/*.py|tools/child-time/*.py)
+          test_python=${SIXEL_TEST_NATIVE_PYTHON-}
+          ;;
+        *) test_python=$SIXEL_TEST_PYTHON ;;
+      esac
+      if [ -n "$test_python" ] && [ -x "$test_python" ]; then
+        set -- "$test_python" "$test_path" "$@"
       else
         printf '%s\n' '1..0 # SKIP python test interpreter is unavailable' >"$log_file"
         cat >"$trs_file" <<'EOF'

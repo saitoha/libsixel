@@ -11,6 +11,10 @@ import time
 
 
 def check(executor):
+    if os.environ.get('CROSS_COMPILING') == 'yes':
+        return 'child-time supervision requires a native build'
+    if not executor:
+        return 'the native child-time executor is disabled'
     if os.name != 'posix':
         return 'POSIX pipe supervision is unavailable'
     import fcntl
@@ -84,7 +88,9 @@ def check(executor):
 
 
 try:
-    skip = check(str(Path(sys.argv[1]).resolve()))
+    executor = (sys.argv[1] if len(sys.argv) > 1 else
+                os.environ.get('SIXEL_TEST_CHILD_TIME'))
+    skip = check(str(Path(executor).resolve()) if executor else None)
 except (OSError, RuntimeError, subprocess.SubprocessError) as error:
     print('1..1\nnot ok 1 - final child-time record survives backpressure')
     print('# ' + str(error), file=sys.stderr)

@@ -63,7 +63,9 @@ esac
             ./bindings/php/[0-9][0-9][0-9][0-9]_*.php \
             ./bindings/python/[0-9][0-9][0-9][0-9]_*.py \
             ./bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb \
-            ./bindings/perl/[0-9][0-9][0-9][0-9]_*.pl
+            ./bindings/perl/[0-9][0-9][0-9][0-9]_*.pl \
+            ./build/install/[0-9][0-9][0-9][0-9]_*.py \
+            ./tools/child-time/[0-9][0-9][0-9][0-9]_*.py
     ) || printf '%s\n' __SIXEL_TEST_DISCOVERY_FAILED__
 } |
 {

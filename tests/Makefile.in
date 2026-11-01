@@ -93,10 +93,8 @@ TESTS =
 check_PROGRAMS = test_runner$(EXEEXT)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_1 = HAVE_QUICKLOOK_EXTENSION=1; export HAVE_QUICKLOOK_EXTENSION;
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@am__append_2 = HAVE_QUICKLOOK_EXTENSION=0; export HAVE_QUICKLOOK_EXTENSION;
-@AMALGAMATION_NEEDS_OBJC_TRUE@am__append_3 = -x objective-c
-
-# Exercise the native supervisor without enabling optional Python bindings.
-@BUILD_LSO_TIMEOUT_TRUE@am__append_4 = check-child-time-backpressure
+@BUILD_LSO_TIMEOUT_TRUE@am__append_3 = SIXEL_TEST_CHILD_TIME='$(abs_top_builddir)/tools/lso-timeout$(EXEEXT)'; export SIXEL_TEST_CHILD_TIME;
+@AMALGAMATION_NEEDS_OBJC_TRUE@am__append_4 = -x objective-c
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -12985,9 +12983,14 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	export SIXEL_TSAN_BUILD; \
 	SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; export \
 	SIXEL_MSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; export \
-	CROSS_COMPILING; SIXEL_INSTALLCHECK='$(SIXEL_INSTALLCHECK)'; \
-	export SIXEL_INSTALLCHECK; ENABLE_PYTHON='@ENABLE_PYTHON@'; \
-	export ENABLE_PYTHON; ENABLE_RUBY='@ENABLE_RUBY@'; export \
+	CROSS_COMPILING; \
+	SIXEL_TEST_NATIVE_PYTHON='$(PYTHON_STATICCHECK)'; export \
+	SIXEL_TEST_NATIVE_PYTHON; SIXEL_TEST_CC='$(CC)'; export \
+	SIXEL_TEST_CC; SIXEL_TEST_MAKE='$(MAKE)'; export \
+	SIXEL_TEST_MAKE; $(am__append_3) \
+	SIXEL_INSTALLCHECK='$(SIXEL_INSTALLCHECK)'; export \
+	SIXEL_INSTALLCHECK; ENABLE_PYTHON='@ENABLE_PYTHON@'; export \
+	ENABLE_PYTHON; ENABLE_RUBY='@ENABLE_RUBY@'; export \
 	ENABLE_RUBY; ENABLE_PERL='@ENABLE_PERL@'; export ENABLE_PERL; \
 	ENABLE_PHP='@ENABLE_PHP@'; export ENABLE_PHP; \
 	SIXEL_CONFIGURED_RUBY='@RUBY@'; export SIXEL_CONFIGURED_RUBY; \
@@ -13059,7 +13062,7 @@ TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
 TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL) \
-	$(am__append_3)
+	$(am__append_4)
 TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
 TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
@@ -21451,6 +21454,9 @@ sixel_clean_copy_batch_size = $(if $(filter 128,$(sixel_clean_batch_size)),32,16
 TEST_DATA_DIRS = data
 
 # Timing exceptions are checked against completed test runs.
+
+# These native Python cases use the ordinary discovered TAP/log path.
+# Their interpreter does not depend on optional Python bindings.
 EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	writer/png/redefine.six \
 	_support/loader/libpng/chrm_trace_control.sh meson.build \
@@ -21679,9 +21685,6 @@ CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp \
 
 DISTCLEANFILES = check-tests.mk
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
-
-# Keep one check-local rule with conditionally selected prerequisites.
-CHECK_LOCAL_TARGETS = check-pkgconfig-headers $(am__append_4)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -96389,7 +96392,7 @@ distdir-am: $(DISTFILES)
 	  dist-hook
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_LTLIBRARIES)
-	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile
@@ -96861,20 +96864,20 @@ uninstall-am:
 	install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
-	check-am check-local clean clean-checkLTLIBRARIES \
-	clean-checkPROGRAMS clean-generic clean-libtool clean-local \
-	cscopelist-am ctags ctags-am dist-hook distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installcheck-local \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
-	uninstall uninstall-am
+	check-am clean clean-checkLTLIBRARIES clean-checkPROGRAMS \
+	clean-generic clean-libtool clean-local cscopelist-am ctags \
+	ctags-am dist-hook distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installcheck-local installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
+	uninstall-am
 
 .PRECIOUS: Makefile
 
@@ -98793,28 +98796,12 @@ $(COPY_TESTS) $(HELPER_FILES):
 @WITH_SHEBANG_FILE_TRUE@	fi
 
 @WITH_SHEBANG_FILE_TRUE@check-am: apply-shebang-check
-check-local: $(CHECK_LOCAL_TARGETS)
-.PHONY: $(CHECK_LOCAL_TARGETS)
 
-# Check the real installation rules without optional Python bindings.
-check-pkgconfig-headers:
-	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
-	    echo 'SKIP installed headers: native Python runner unavailable'; \
-	else \
-	    "$(PYTHON_STATICCHECK)" \
-	        "$(srcdir)/build/install/0001_pkgconfig_headers.py" \
-	        autotools "$(abs_top_builddir)" "$(MAKE)" \
-	        "$(abs_top_srcdir)" --cc "$(CC)"; \
-	fi
-@BUILD_LSO_TIMEOUT_TRUE@check-child-time-backpressure:
-@BUILD_LSO_TIMEOUT_TRUE@	@if test '@cross_compiling@' = yes || test -z "$(PYTHON_STATICCHECK)"; then \
-@BUILD_LSO_TIMEOUT_TRUE@	    echo 'SKIP child-time backpressure: native Python runner unavailable'; \
-@BUILD_LSO_TIMEOUT_TRUE@	else \
-@BUILD_LSO_TIMEOUT_TRUE@	    $(MAKE) $(AM_MAKEFLAGS) -C "$(top_builddir)/tools" lso-timeout$(EXEEXT) && \
-@BUILD_LSO_TIMEOUT_TRUE@	    "$(PYTHON_STATICCHECK)" \
-@BUILD_LSO_TIMEOUT_TRUE@	        "$(srcdir)/tools/child-time/0001_marker_backpressure.py" \
-@BUILD_LSO_TIMEOUT_TRUE@	        "$(abs_top_builddir)/tools/lso-timeout$(EXEEXT)"; \
-@BUILD_LSO_TIMEOUT_TRUE@	fi
+# Preserve direct `make -C tests check` use before tools have been built.
+@BUILD_LSO_TIMEOUT_TRUE@check-TESTS: prepare-child-time-executor
+@BUILD_LSO_TIMEOUT_TRUE@.PHONY: prepare-child-time-executor
+@BUILD_LSO_TIMEOUT_TRUE@prepare-child-time-executor:
+@BUILD_LSO_TIMEOUT_TRUE@	$(MAKE) $(AM_MAKEFLAGS) -C "$(top_builddir)/tools" lso-timeout$(EXEEXT)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

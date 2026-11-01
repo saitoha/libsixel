@@ -2,7 +2,7 @@
 
 ## Shared discovery and C test dispatch
 
-Runtime test discovery is centralized in [read-check-test-list.sh](../../build-aux/read-check-test-list.sh). The helper scans the test source tree, normalizes relative paths, sorts them deterministically, and selects `.t` scripts and numbered Python, Ruby, Perl, and PHP binding tests. The fixed-depth POSIX shell glob never enters support, artifact or private environment trees. Numbered static-only shell cases use `.sh` and run through their explicit staticcheck registrations.
+Runtime test discovery is centralized in [read-check-test-list.sh](../../build-aux/read-check-test-list.sh). The helper scans the test source tree, normalizes relative paths, sorts them deterministically, and selects `.t` scripts, numbered Python, Ruby, Perl, and PHP binding tests, and native Python checks under `build/install` and `tools/child-time`. The native checks use the standard-library interpreter independently of Python bindings; Meson retains their separate registrations and dependencies. The fixed-depth POSIX shell glob never enters support, artifact or private environment trees. Numbered static-only shell cases use `.sh` and run through their explicit staticcheck registrations.
 
 Autotools discovers runtime scripts when make reads `tests/Makefile`. Adding, removing or renaming scripts is visible to the next `make check` without rerunning configure. Discovery reads the source directory, so stale copies in an out-of-tree build do not keep removed tests registered. A command-line `TESTS=...` selection takes precedence, including an explicitly empty selection.
 

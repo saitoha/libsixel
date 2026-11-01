@@ -18,6 +18,8 @@ def run(command, **kwargs):
 
 
 def check(args):
+    if os.environ.get('CROSS_COMPILING') == 'yes':
+        return 'the staged consumer probe requires a native build'
     pkgconfig = shutil.which('pkg-config')
     if not pkgconfig:
         return 'pkg-config is unavailable'
@@ -74,12 +76,18 @@ def check(args):
 
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('backend', choices=('autotools', 'meson'))
-parser.add_argument('build')
-parser.add_argument('installer')
-parser.add_argument('source')
-parser.add_argument('--cc', required=True)
+# Autotools supplies the configured build through the common TAP environment;
+# Meson retains explicit arguments for its separately registered native test.
+parser.add_argument('backend', choices=('autotools', 'meson'), nargs='?',
+                    default='autotools')
+parser.add_argument('build', nargs='?', default=os.environ.get('TOP_BUILDDIR'))
+parser.add_argument('installer', nargs='?',
+                    default=os.environ.get('SIXEL_TEST_MAKE'))
+parser.add_argument('source', nargs='?', default=os.environ.get('TOP_SRCDIR'))
+parser.add_argument('--cc', default=os.environ.get('SIXEL_TEST_CC'))
 args = parser.parse_args()
+if not all((args.build, args.installer, args.source, args.cc)):
+    parser.error('build, installer, source and compiler must be configured')
 try:
     skip = check(args)
 except (OSError, RuntimeError, subprocess.SubprocessError) as error:
