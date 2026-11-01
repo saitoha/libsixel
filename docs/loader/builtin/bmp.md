@@ -119,7 +119,7 @@ BMP is not intrinsically simple: header-size dialects, signed dimensions, palett
 - Probe and payload boundary used by loader routing: [`frombmp-parser.c`](../../../src/frombmp-parser.c)
 - Nested JPEG/PNG, CMS, alpha, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha/background semantics: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
-- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/bmp`](../../../tests/loader/bmp)
 
 ## Test coverage
 
@@ -131,17 +131,17 @@ The rows below are pipeline landmarks rather than the complete suite. The [BMP/D
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| BMP-01 | An OS/2 DIB is selected and decoded according to its RGB24 field namespace. | [tests/loader/builtin/1414_loader_builtin_bmp_os2_rgb24_decode_numeric.t](../../../tests/loader/builtin/1414_loader_builtin_bmp_os2_rgb24_decode_numeric.t) |
-| BMP-02 | Explicit RGBA without a background becomes the documented RGB-plus-mask frame. | [tests/loader/builtin/1332_loader_builtin_bmp_rgba_mask_no_bg_numeric.t](../../../tests/loader/builtin/1332_loader_builtin_bmp_rgba_mask_no_bg_numeric.t) |
-| BMP-03 | Mixed encoded, absolute, and control records reconstruct an RLE4 raster correctly. | [tests/loader/builtin/1345_loader_builtin_bmp_rle4_mixed_numeric.t](../../../tests/loader/builtin/1345_loader_builtin_bmp_rle4_mixed_numeric.t) |
-| BMP-04 | A 16-bit alpha-bearing BI_PNG child retains PNG CMS/background precision through the BMP wrapper. | [tests/loader/builtin/1456_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t](../../../tests/loader/builtin/1456_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t) |
-| BMP-05 | A V5 embedded RGB ICC profile transforms native BMP pixels when CMS is enabled. | [tests/loader/builtin/1372_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t](../../../tests/loader/builtin/1372_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t) |
-| BMP-06 | RGBA composition over an explicit background preserves the expected float color result. | [tests/loader/builtin/1331_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t](../../../tests/loader/builtin/1331_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t) |
-| BMP-07 | Mixed encoded, absolute, delta, and end records reconstruct an RLE8 raster exactly. | [tests/loader/builtin/1334_loader_builtin_bmp_rle8_decode_numeric.t](../../../tests/loader/builtin/1334_loader_builtin_bmp_rle8_decode_numeric.t) |
-| BMP-08 | The OS/2 Huffman1D path decodes its monochrome scanline to exact samples. | [tests/loader/builtin/1417_loader_builtin_bmp_os2_huffman1d_decode_numeric.t](../../../tests/loader/builtin/1417_loader_builtin_bmp_os2_huffman1d_decode_numeric.t) |
-| BMP-09 | The OS/2 RLE24 path reconstructs exact RGB samples. | [tests/loader/builtin/1418_loader_builtin_bmp_os2_rle24_decode_numeric.t](../../../tests/loader/builtin/1418_loader_builtin_bmp_os2_rle24_decode_numeric.t) |
-| BMP-10 | Native CMYK32 conversion without CMS produces the documented numeric RGB result. | [tests/loader/builtin/1396_loader_builtin_bmp_cmyk_cms_off_numeric.t](../../../tests/loader/builtin/1396_loader_builtin_bmp_cmyk_cms_off_numeric.t) |
-| BMP-11 | A nested BI_JPEG child produces exact pixels through the BMP wrapper with CMS disabled. | [tests/loader/builtin/1382_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t](../../../tests/loader/builtin/1382_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t) |
+| BMP-01 | An OS/2 DIB is selected and decoded according to its RGB24 field namespace. | [tests/loader/bmp/0061_loader_builtin_bmp_os2_rgb24_decode_numeric.t](../../../tests/loader/bmp/0061_loader_builtin_bmp_os2_rgb24_decode_numeric.t) |
+| BMP-02 | Explicit RGBA without a background becomes the documented RGB-plus-mask frame. | [tests/loader/bmp/0002_loader_builtin_bmp_rgba_mask_no_bg_numeric.t](../../../tests/loader/bmp/0002_loader_builtin_bmp_rgba_mask_no_bg_numeric.t) |
+| BMP-03 | Mixed encoded, absolute, and control records reconstruct an RLE4 raster correctly. | [tests/loader/bmp/0015_loader_builtin_bmp_rle4_mixed_numeric.t](../../../tests/loader/bmp/0015_loader_builtin_bmp_rle4_mixed_numeric.t) |
+| BMP-04 | A 16-bit alpha-bearing BI_PNG child retains PNG CMS/background precision through the BMP wrapper. | [tests/loader-png/profile/0007_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t](../../../tests/loader-png/profile/0007_loader_builtin_bmp_bi_png16_alpha_bgcolor_cms_on_numeric.t) |
+| BMP-05 | A V5 embedded RGB ICC profile transforms native BMP pixels when CMS is enabled. | [tests/loader/bmp/0037_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t](../../../tests/loader/bmp/0037_loader_builtin_bmp_v5_embedded_icc_rgb_cms_on_numeric.t) |
+| BMP-06 | RGBA composition over an explicit background preserves the expected float color result. | [tests/loader/bmp/0001_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t](../../../tests/loader/bmp/0001_loader_builtin_bmp_rgba_bgcolor_float32_numeric.t) |
+| BMP-07 | Mixed encoded, absolute, delta, and end records reconstruct an RLE8 raster exactly. | [tests/loader/bmp/0004_loader_builtin_bmp_rle8_decode_numeric.t](../../../tests/loader/bmp/0004_loader_builtin_bmp_rle8_decode_numeric.t) |
+| BMP-08 | The OS/2 Huffman1D path decodes its monochrome scanline to exact samples. | [tests/loader/bmp/0064_loader_builtin_bmp_os2_huffman1d_decode_numeric.t](../../../tests/loader/bmp/0064_loader_builtin_bmp_os2_huffman1d_decode_numeric.t) |
+| BMP-09 | The OS/2 RLE24 path reconstructs exact RGB samples. | [tests/loader/bmp/0065_loader_builtin_bmp_os2_rle24_decode_numeric.t](../../../tests/loader/bmp/0065_loader_builtin_bmp_os2_rle24_decode_numeric.t) |
+| BMP-10 | Native CMYK32 conversion without CMS produces the documented numeric RGB result. | [tests/loader/bmp/0049_loader_builtin_bmp_cmyk_cms_off_numeric.t](../../../tests/loader/bmp/0049_loader_builtin_bmp_cmyk_cms_off_numeric.t) |
+| BMP-11 | A nested BI_JPEG child produces exact pixels through the BMP wrapper with CMS disabled. | [tests/loader-jpeg/decode/0011_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t](../../../tests/loader-jpeg/decode/0011_loader_builtin_bmp_bi_jpeg_cms_off_numeric.t) |
 
 ### Native precision and gamut contracts
 
@@ -149,55 +149,55 @@ These independent value tests cover the native precision boundary. The P3 oracle
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| BMP-101 | V5 P3 RGB24 reaches linear float with negative and above-one components. | [tests/loader/builtin/bmp_precision/0001_bmp_p3_rgb24_numeric.t](../../../tests/loader/builtin/bmp_precision/0001_bmp_p3_rgb24_numeric.t) |
-| BMP-102 | CMS preserves hidden RGB and the zero-alpha mask. | [tests/loader/builtin/bmp_precision/0002_bmp_p3_alpha_numeric.t](../../../tests/loader/builtin/bmp_precision/0002_bmp_p3_alpha_numeric.t) |
-| BMP-103 | P3 partial alpha composites against the explicit background in linear light. | [tests/loader/builtin/bmp_precision/0003_bmp_p3_background_numeric.t](../../../tests/loader/builtin/bmp_precision/0003_bmp_p3_background_numeric.t) |
-| BMP-104 | Gamma target encoding follows linear background composition. | [tests/loader/builtin/bmp_precision/0004_bmp_gamma_background_numeric.t](../../../tests/loader/builtin/bmp_precision/0004_bmp_gamma_background_numeric.t) |
-| BMP-105 | The keep policy retains zero coverage while composing partial alpha. | [tests/loader/builtin/bmp_precision/0005_bmp_keep_background_numeric.t](../../../tests/loader/builtin/bmp_precision/0005_bmp_keep_background_numeric.t) |
-| BMP-106 | Equal calibrated channel gammas retain P3 gamut, including a zero-Z red primary. | [tests/loader/builtin/bmp_precision/0006_bmp_calibrated_common_numeric.t](../../../tests/loader/builtin/bmp_precision/0006_bmp_calibrated_common_numeric.t) |
-| BMP-107 | Distinct calibrated channel gammas remain distinct through float conversion. | [tests/loader/builtin/bmp_precision/0007_bmp_calibrated_split_numeric.t](../../../tests/loader/builtin/bmp_precision/0007_bmp_calibrated_split_numeric.t) |
-| BMP-108 | Indexed RGB expands into the same managed float values as direct pixels. | [tests/loader/builtin/bmp_precision/0008_bmp_indexed_p3_numeric.t](../../../tests/loader/builtin/bmp_precision/0008_bmp_indexed_p3_numeric.t) |
-| BMP-109 | RLE8 reconstruction precedes float RGB CMS. | [tests/loader/builtin/bmp_precision/0009_bmp_rle8_p3_numeric.t](../../../tests/loader/builtin/bmp_precision/0009_bmp_rle8_p3_numeric.t) |
-| BMP-110 | RLE4 reconstruction precedes float RGB CMS. | [tests/loader/builtin/bmp_precision/0010_bmp_rle4_p3_numeric.t](../../../tests/loader/builtin/bmp_precision/0010_bmp_rle4_p3_numeric.t) |
-| BMP-111 | Unmanaged 10-bit components retain their integer ratios in canonical float. | [tests/loader/builtin/bmp_precision/0011_bmp_rgb10_numeric.t](../../../tests/loader/builtin/bmp_precision/0011_bmp_rgb10_numeric.t) |
-| BMP-112 | Managed 10-bit components enter CMS before any byte expansion. | [tests/loader/builtin/bmp_precision/0012_bmp_p3_rgb10_numeric.t](../../../tests/loader/builtin/bmp_precision/0012_bmp_p3_rgb10_numeric.t) |
-| BMP-113 | 11-bit alpha retains its original ratio through background composition. | [tests/loader/builtin/bmp_precision/0013_bmp_alpha11_numeric.t](../../../tests/loader/builtin/bmp_precision/0013_bmp_alpha11_numeric.t) |
-| BMP-114 | CMS uses original 5:6:5 ratios instead of replicated byte values. | [tests/loader/builtin/bmp_precision/0014_bmp_p3_rgb565_numeric.t](../../../tests/loader/builtin/bmp_precision/0014_bmp_p3_rgb565_numeric.t) |
-| BMP-115 | Explicit float precision uses original unprofiled 5:6:5 ratios. | [tests/loader/builtin/bmp_precision/0015_bmp_forced_rgb565_numeric.t](../../../tests/loader/builtin/bmp_precision/0015_bmp_forced_rgb565_numeric.t) |
-| BMP-116 | Top-down 10-bit rows retain placement and values. | [tests/loader/builtin/bmp_precision/0016_bmp_topdown_rgb10_numeric.t](../../../tests/loader/builtin/bmp_precision/0016_bmp_topdown_rgb10_numeric.t) |
-| BMP-117 | CMS disabling ignores embedded color interpretation but retains wide source precision. | [tests/loader/builtin/bmp_precision/0017_bmp_none_rgb10_numeric.t](../../../tests/loader/builtin/bmp_precision/0017_bmp_none_rgb10_numeric.t) |
-| BMP-118 | An unmanaged RGB24 image retains exact byte samples. | [tests/loader/builtin/bmp_precision/0018_bmp_rgb24_byte_numeric.t](../../../tests/loader/builtin/bmp_precision/0018_bmp_rgb24_byte_numeric.t) |
-| BMP-119 | Binary alpha without composition retains exact byte RGB and a coverage mask. | [tests/loader/builtin/bmp_precision/0019_bmp_binary_alpha_byte_numeric.t](../../../tests/loader/builtin/bmp_precision/0019_bmp_binary_alpha_byte_numeric.t) |
-| BMP-120 | An unused background does not promote fully opaque byte pixels. | [tests/loader/builtin/bmp_precision/0020_bmp_opaque_background_byte_numeric.t](../../../tests/loader/builtin/bmp_precision/0020_bmp_opaque_background_byte_numeric.t) |
-| BMP-121 | Actual unmanaged partial-alpha composition requires linear float. | [tests/loader/builtin/bmp_precision/0021_bmp_partial_background_numeric.t](../../../tests/loader/builtin/bmp_precision/0021_bmp_partial_background_numeric.t) |
-| BMP-122 | Unprofiled CMYK retains the existing exact byte device conversion. | [tests/loader/builtin/bmp_precision/0022_bmp_device_cmyk_byte_numeric.t](../../../tests/loader/builtin/bmp_precision/0022_bmp_device_cmyk_byte_numeric.t) |
-| BMP-123 | Managed CMYK32 transforms original ink samples directly to float RGB. | [tests/loader/builtin/bmp_precision/0023_bmp_cmyk32_numeric.t](../../../tests/loader/builtin/bmp_precision/0023_bmp_cmyk32_numeric.t) |
-| BMP-124 | CMYK RLE8 retains its original ink samples through float CMS. | [tests/loader/builtin/bmp_precision/0024_bmp_cmyk_rle8_numeric.t](../../../tests/loader/builtin/bmp_precision/0024_bmp_cmyk_rle8_numeric.t) |
-| BMP-125 | CMYK RLE4 retains its original ink samples through float CMS. | [tests/loader/builtin/bmp_precision/0025_bmp_cmyk_rle4_numeric.t](../../../tests/loader/builtin/bmp_precision/0025_bmp_cmyk_rle4_numeric.t) |
-| BMP-126 | Gamma target retains out-of-sRGB components after float CMS. | [tests/loader/builtin/bmp_precision/0026_bmp_gamma_target_numeric.t](../../../tests/loader/builtin/bmp_precision/0026_bmp_gamma_target_numeric.t) |
-| BMP-127 | Explicit final byte narrowing occurs after float CMS. | [tests/loader/builtin/bmp_precision/0027_bmp_prefer8bit_numeric.t](../../../tests/loader/builtin/bmp_precision/0027_bmp_prefer8bit_numeric.t) |
-| BMP-128 | Actual lcms2 RGB conversion satisfies the independent P3 bound. | [tests/loader/builtin/bmp_precision/0028_bmp_lcms2_numeric.t](../../../tests/loader/builtin/bmp_precision/0028_bmp_lcms2_numeric.t) |
-| BMP-129 | Actual ColorSync RGB conversion satisfies the independent P3 bound. | [tests/loader/builtin/bmp_precision/0029_bmp_colorsync_numeric.t](../../../tests/loader/builtin/bmp_precision/0029_bmp_colorsync_numeric.t) |
-| BMP-130 | An incompatible RGB-source profile retains the historical unmanaged byte interpretation. | [tests/loader/builtin/bmp_precision/0030_bmp_wrong_rgb_domain_byte_numeric.t](../../../tests/loader/builtin/bmp_precision/0030_bmp_wrong_rgb_domain_byte_numeric.t) |
-| BMP-131 | An incompatible CMYK-source profile retains the historical device byte conversion. | [tests/loader/builtin/bmp_precision/0031_bmp_wrong_cmyk_domain_byte_numeric.t](../../../tests/loader/builtin/bmp_precision/0031_bmp_wrong_cmyk_domain_byte_numeric.t) |
-| BMP-132 | A malformed selected RGB profile fails without a frame callback. | [tests/loader/builtin/bmp_precision/0032_bmp_invalid_profile_reject.t](../../../tests/loader/builtin/bmp_precision/0032_bmp_invalid_profile_reject.t) |
-| BMP-133 | A selected CMYK transform failure does not retry unmanaged conversion. | [tests/loader/builtin/bmp_precision/0033_bmp_transform_fail.t](../../../tests/loader/builtin/bmp_precision/0033_bmp_transform_fail.t) |
-| BMP-134 | Float allocation failure emits no frame and a later load can recover. | [tests/loader/builtin/bmp_precision/0034_bmp_float_alloc_fail.t](../../../tests/loader/builtin/bmp_precision/0034_bmp_float_alloc_fail.t) |
-| BMP-135 | Mask allocation failure emits no frame and a later load can recover. | [tests/loader/builtin/bmp_precision/0035_bmp_mask_alloc_fail.t](../../../tests/loader/builtin/bmp_precision/0035_bmp_mask_alloc_fail.t) |
-| BMP-139 | A 30-bit component is normalized without integer overflow. | [tests/loader/builtin/bmp_precision/0039_bmp_rgb30_numeric.t](../../../tests/loader/builtin/bmp_precision/0039_bmp_rgb30_numeric.t) |
-| BMP-140 | Explicit all-zero alpha remains transparent after CMS. | [tests/loader/builtin/bmp_precision/0040_bmp_explicit_zero_alpha_numeric.t](../../../tests/loader/builtin/bmp_precision/0040_bmp_explicit_zero_alpha_numeric.t) |
-| BMP-141 | Implicit BI_RGB all-zero alpha receives the opaque rescue after CMS. | [tests/loader/builtin/bmp_precision/0041_bmp_implicit_zero_alpha_numeric.t](../../../tests/loader/builtin/bmp_precision/0041_bmp_implicit_zero_alpha_numeric.t) |
-| BMP-142 | Actual lcms2 CMYK conversion satisfies the independent affine-LUT bound. | [tests/loader/builtin/bmp_precision/0042_bmp_cmyk_lcms2_numeric.t](../../../tests/loader/builtin/bmp_precision/0042_bmp_cmyk_lcms2_numeric.t) |
-| BMP-143 | Actual ColorSync CMYK conversion satisfies the independent affine-LUT bound. | [tests/loader/builtin/bmp_precision/0043_bmp_cmyk_colorsync_numeric.t](../../../tests/loader/builtin/bmp_precision/0043_bmp_cmyk_colorsync_numeric.t) |
-| BMP-144 | Legacy ASCII profile identifiers also preserve RGB float precision. | [tests/loader/builtin/bmp_precision/0044_bmp_legacy_icc_rgb_numeric.t](../../../tests/loader/builtin/bmp_precision/0044_bmp_legacy_icc_rgb_numeric.t) |
-| BMP-145 | Legacy ASCII profile identifiers also preserve CMYK float precision. | [tests/loader/builtin/bmp_precision/0045_bmp_legacy_icc_cmyk_numeric.t](../../../tests/loader/builtin/bmp_precision/0045_bmp_legacy_icc_cmyk_numeric.t) |
+| BMP-101 | V5 P3 RGB24 reaches linear float with negative and above-one components. | [tests/loader/bmp/0111_bmp_p3_rgb24_numeric.t](../../../tests/loader/bmp/0111_bmp_p3_rgb24_numeric.t) |
+| BMP-102 | CMS preserves hidden RGB and the zero-alpha mask. | [tests/loader/bmp/0112_bmp_p3_alpha_numeric.t](../../../tests/loader/bmp/0112_bmp_p3_alpha_numeric.t) |
+| BMP-103 | P3 partial alpha composites against the explicit background in linear light. | [tests/loader/bmp/0113_bmp_p3_background_numeric.t](../../../tests/loader/bmp/0113_bmp_p3_background_numeric.t) |
+| BMP-104 | Gamma target encoding follows linear background composition. | [tests/loader/bmp/0114_bmp_gamma_background_numeric.t](../../../tests/loader/bmp/0114_bmp_gamma_background_numeric.t) |
+| BMP-105 | The keep policy retains zero coverage while composing partial alpha. | [tests/loader/bmp/0115_bmp_keep_background_numeric.t](../../../tests/loader/bmp/0115_bmp_keep_background_numeric.t) |
+| BMP-106 | Equal calibrated channel gammas retain P3 gamut, including a zero-Z red primary. | [tests/loader/bmp/0116_bmp_calibrated_common_numeric.t](../../../tests/loader/bmp/0116_bmp_calibrated_common_numeric.t) |
+| BMP-107 | Distinct calibrated channel gammas remain distinct through float conversion. | [tests/loader/bmp/0117_bmp_calibrated_split_numeric.t](../../../tests/loader/bmp/0117_bmp_calibrated_split_numeric.t) |
+| BMP-108 | Indexed RGB expands into the same managed float values as direct pixels. | [tests/loader/bmp/0118_bmp_indexed_p3_numeric.t](../../../tests/loader/bmp/0118_bmp_indexed_p3_numeric.t) |
+| BMP-109 | RLE8 reconstruction precedes float RGB CMS. | [tests/loader/bmp/0119_bmp_rle8_p3_numeric.t](../../../tests/loader/bmp/0119_bmp_rle8_p3_numeric.t) |
+| BMP-110 | RLE4 reconstruction precedes float RGB CMS. | [tests/loader/bmp/0120_bmp_rle4_p3_numeric.t](../../../tests/loader/bmp/0120_bmp_rle4_p3_numeric.t) |
+| BMP-111 | Unmanaged 10-bit components retain their integer ratios in canonical float. | [tests/loader/bmp/0121_bmp_rgb10_numeric.t](../../../tests/loader/bmp/0121_bmp_rgb10_numeric.t) |
+| BMP-112 | Managed 10-bit components enter CMS before any byte expansion. | [tests/loader/bmp/0122_bmp_p3_rgb10_numeric.t](../../../tests/loader/bmp/0122_bmp_p3_rgb10_numeric.t) |
+| BMP-113 | 11-bit alpha retains its original ratio through background composition. | [tests/loader/bmp/0123_bmp_alpha11_numeric.t](../../../tests/loader/bmp/0123_bmp_alpha11_numeric.t) |
+| BMP-114 | CMS uses original 5:6:5 ratios instead of replicated byte values. | [tests/loader/bmp/0124_bmp_p3_rgb565_numeric.t](../../../tests/loader/bmp/0124_bmp_p3_rgb565_numeric.t) |
+| BMP-115 | Explicit float precision uses original unprofiled 5:6:5 ratios. | [tests/loader/bmp/0125_bmp_forced_rgb565_numeric.t](../../../tests/loader/bmp/0125_bmp_forced_rgb565_numeric.t) |
+| BMP-116 | Top-down 10-bit rows retain placement and values. | [tests/loader/bmp/0126_bmp_topdown_rgb10_numeric.t](../../../tests/loader/bmp/0126_bmp_topdown_rgb10_numeric.t) |
+| BMP-117 | CMS disabling ignores embedded color interpretation but retains wide source precision. | [tests/loader/bmp/0127_bmp_none_rgb10_numeric.t](../../../tests/loader/bmp/0127_bmp_none_rgb10_numeric.t) |
+| BMP-118 | An unmanaged RGB24 image retains exact byte samples. | [tests/loader/bmp/0128_bmp_rgb24_byte_numeric.t](../../../tests/loader/bmp/0128_bmp_rgb24_byte_numeric.t) |
+| BMP-119 | Binary alpha without composition retains exact byte RGB and a coverage mask. | [tests/loader/bmp/0129_bmp_binary_alpha_byte_numeric.t](../../../tests/loader/bmp/0129_bmp_binary_alpha_byte_numeric.t) |
+| BMP-120 | An unused background does not promote fully opaque byte pixels. | [tests/loader/bmp/0130_bmp_opaque_background_byte_numeric.t](../../../tests/loader/bmp/0130_bmp_opaque_background_byte_numeric.t) |
+| BMP-121 | Actual unmanaged partial-alpha composition requires linear float. | [tests/loader/bmp/0131_bmp_partial_background_numeric.t](../../../tests/loader/bmp/0131_bmp_partial_background_numeric.t) |
+| BMP-122 | Unprofiled CMYK retains the existing exact byte device conversion. | [tests/loader/bmp/0132_bmp_device_cmyk_byte_numeric.t](../../../tests/loader/bmp/0132_bmp_device_cmyk_byte_numeric.t) |
+| BMP-123 | Managed CMYK32 transforms original ink samples directly to float RGB. | [tests/loader/bmp/0133_bmp_cmyk32_numeric.t](../../../tests/loader/bmp/0133_bmp_cmyk32_numeric.t) |
+| BMP-124 | CMYK RLE8 retains its original ink samples through float CMS. | [tests/loader/bmp/0134_bmp_cmyk_rle8_numeric.t](../../../tests/loader/bmp/0134_bmp_cmyk_rle8_numeric.t) |
+| BMP-125 | CMYK RLE4 retains its original ink samples through float CMS. | [tests/loader/bmp/0135_bmp_cmyk_rle4_numeric.t](../../../tests/loader/bmp/0135_bmp_cmyk_rle4_numeric.t) |
+| BMP-126 | Gamma target retains out-of-sRGB components after float CMS. | [tests/loader/bmp/0136_bmp_gamma_target_numeric.t](../../../tests/loader/bmp/0136_bmp_gamma_target_numeric.t) |
+| BMP-127 | Explicit final byte narrowing occurs after float CMS. | [tests/loader/bmp/0137_bmp_prefer8bit_numeric.t](../../../tests/loader/bmp/0137_bmp_prefer8bit_numeric.t) |
+| BMP-128 | Actual lcms2 RGB conversion satisfies the independent P3 bound. | [tests/loader/bmp/0138_bmp_lcms2_numeric.t](../../../tests/loader/bmp/0138_bmp_lcms2_numeric.t) |
+| BMP-129 | Actual ColorSync RGB conversion satisfies the independent P3 bound. | [tests/loader/bmp/0139_bmp_colorsync_numeric.t](../../../tests/loader/bmp/0139_bmp_colorsync_numeric.t) |
+| BMP-130 | An incompatible RGB-source profile retains the historical unmanaged byte interpretation. | [tests/loader/bmp/0140_bmp_wrong_rgb_domain_byte_numeric.t](../../../tests/loader/bmp/0140_bmp_wrong_rgb_domain_byte_numeric.t) |
+| BMP-131 | An incompatible CMYK-source profile retains the historical device byte conversion. | [tests/loader/bmp/0141_bmp_wrong_cmyk_domain_byte_numeric.t](../../../tests/loader/bmp/0141_bmp_wrong_cmyk_domain_byte_numeric.t) |
+| BMP-132 | A malformed selected RGB profile fails without a frame callback. | [tests/loader/bmp/0142_bmp_invalid_profile_reject.t](../../../tests/loader/bmp/0142_bmp_invalid_profile_reject.t) |
+| BMP-133 | A selected CMYK transform failure does not retry unmanaged conversion. | [tests/loader/bmp/0143_bmp_transform_fail.t](../../../tests/loader/bmp/0143_bmp_transform_fail.t) |
+| BMP-134 | Float allocation failure emits no frame and a later load can recover. | [tests/loader/bmp/0144_bmp_float_alloc_fail.t](../../../tests/loader/bmp/0144_bmp_float_alloc_fail.t) |
+| BMP-135 | Mask allocation failure emits no frame and a later load can recover. | [tests/loader/bmp/0145_bmp_mask_alloc_fail.t](../../../tests/loader/bmp/0145_bmp_mask_alloc_fail.t) |
+| BMP-139 | A 30-bit component is normalized without integer overflow. | [tests/loader/bmp/0149_bmp_rgb30_numeric.t](../../../tests/loader/bmp/0149_bmp_rgb30_numeric.t) |
+| BMP-140 | Explicit all-zero alpha remains transparent after CMS. | [tests/loader/bmp/0150_bmp_explicit_zero_alpha_numeric.t](../../../tests/loader/bmp/0150_bmp_explicit_zero_alpha_numeric.t) |
+| BMP-141 | Implicit BI_RGB all-zero alpha receives the opaque rescue after CMS. | [tests/loader/bmp/0151_bmp_implicit_zero_alpha_numeric.t](../../../tests/loader/bmp/0151_bmp_implicit_zero_alpha_numeric.t) |
+| BMP-142 | Actual lcms2 CMYK conversion satisfies the independent affine-LUT bound. | [tests/loader/bmp/0152_bmp_cmyk_lcms2_numeric.t](../../../tests/loader/bmp/0152_bmp_cmyk_lcms2_numeric.t) |
+| BMP-143 | Actual ColorSync CMYK conversion satisfies the independent affine-LUT bound. | [tests/loader/bmp/0153_bmp_cmyk_colorsync_numeric.t](../../../tests/loader/bmp/0153_bmp_cmyk_colorsync_numeric.t) |
+| BMP-144 | Legacy ASCII profile identifiers also preserve RGB float precision. | [tests/loader/bmp/0154_bmp_legacy_icc_rgb_numeric.t](../../../tests/loader/bmp/0154_bmp_legacy_icc_rgb_numeric.t) |
+| BMP-145 | Legacy ASCII profile identifiers also preserve CMYK float precision. | [tests/loader/bmp/0155_bmp_legacy_icc_cmyk_numeric.t](../../../tests/loader/bmp/0155_bmp_legacy_icc_cmyk_numeric.t) |
 
 ### Defensive and malformed-input tests
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| BMP-90 | Overlapping or otherwise invalid color masks are rejected during header/model validation. | [tests/loader/builtin/1360_loader_builtin_bmp_fail_invalid_color_masks_numeric.t](../../../tests/loader/builtin/1360_loader_builtin_bmp_fail_invalid_color_masks_numeric.t) |
+| BMP-90 | Overlapping or otherwise invalid color masks are rejected during header/model validation. | [tests/loader/bmp/0025_loader_builtin_bmp_fail_invalid_color_masks_numeric.t](../../../tests/loader/bmp/0025_loader_builtin_bmp_fail_invalid_color_masks_numeric.t) |
 
 Coverage audit note: direct numeric owners cover OS/2 RGB24, Huffman1D and RLE24, native alpha, RLE4 and RLE8, native CMYK32, nested JPEG and PNG, V5 ICC, and mask rejection. This still does not constitute the full DIB-size × bpp × compression matrix; the generated inventory must be consulted for narrower cases, and unlisted cross-products remain gaps rather than implications of these representatives.
 
-The [native precision suite](../../../tests/loader/builtin/bmp_precision) also rejects noncontiguous, overlapping, and out-of-word masks. These numeric and defensive tests do not establish an image-quality score or exhaust the full header/depth/compression cross-product.
+The [native precision suite](../../../tests/loader/bmp) also rejects noncontiguous, overlapping, and out-of-word masks. These numeric and defensive tests do not establish an image-quality score or exhaust the full header/depth/compression cross-product.

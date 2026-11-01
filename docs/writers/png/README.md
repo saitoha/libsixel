@@ -168,36 +168,36 @@ Each row is one independently reportable observation. Format tests run against w
 
 | ID | Contract | Backend | Owning test |
 | --- | --- | --- | --- |
-| PW-01 | `sixel2png` without an explicit output writes a PNG stream to standard output. | Both | [tests/cli/sixel2png/0005_stdin_default_output.t](../../../tests/cli/sixel2png/0005_stdin_default_output.t) |
-| PW-02 | `img2sixel -o png:-` writes the post-SIXEL PNG snapshot to standard output. | Both | [tests/codec/format/0001_prefixed_png_output_stdout.t](../../../tests/codec/format/0001_prefixed_png_output_stdout.t) |
-| PW-03 | `img2sixel -o png:<path>` writes the PNG snapshot to the requested path. | Both | [tests/codec/format/0002_prefixed_png_output_explicit_path.t](../../../tests/codec/format/0002_prefixed_png_output_explicit_path.t) |
-| PW-04 | A `.png` output suffix selects PNG snapshot output. | Both | [tests/codec/format/0003_filename_driven_png_header.t](../../../tests/codec/format/0003_filename_driven_png_header.t) |
-| PW-05 | The default palette decoder path writes PNG bit depth 8 and color type 3. | Both | [tests/writer/png/0001_indexed8_ihdr.t](../../../tests/writer/png/0001_indexed8_ihdr.t) |
-| PW-06 | The representative dequantized path writes PNG bit depth 8 and color type 2. | Both | [tests/writer/png/0002_rgb8_ihdr.t](../../../tests/writer/png/0002_rgb8_ihdr.t) |
-| PW-07 | Direct decoder output writes PNG bit depth 8 and color type 6. | Both | [tests/writer/png/0003_rgba8_ihdr.t](../../../tests/writer/png/0003_rgba8_ihdr.t) |
-| PW-08 | The builtin indexed writer emits the standards-compliant reflected CRC-32 value for the fixed IHDR vector. | Builtin | [tests/writer/png/0004_builtin_ihdr_crc.t](../../../tests/writer/png/0004_builtin_ihdr_crc.t) |
-| PW-09 | With Floyd-Steinberg dithering selected, the `img2sixel` PNG snapshot is byte-identical to decoding a separately generated SIXEL stream with the same writer backend. | Both | [tests/writer/png/0005_img2sixel_post_sixel_snapshot.t](../../../tests/writer/png/0005_img2sixel_post_sixel_snapshot.t) |
+| PW-01 | `sixel2png` without an explicit output writes a PNG stream to standard output. | Both | [tests/cli/sixel2png/0006_stdin_default_output.t](../../../tests/cli/sixel2png/0006_stdin_default_output.t) |
+| PW-02 | `img2sixel -o png:-` writes the post-SIXEL PNG snapshot to standard output. | Both | [tests/writer/png/0001_prefixed_png_output_stdout.t](../../../tests/writer/png/0001_prefixed_png_output_stdout.t) |
+| PW-03 | `img2sixel -o png:<path>` writes the PNG snapshot to the requested path. | Both | [tests/writer/png/0002_prefixed_png_output_explicit_path.t](../../../tests/writer/png/0002_prefixed_png_output_explicit_path.t) |
+| PW-04 | A `.png` output suffix selects PNG snapshot output. | Both | [tests/writer/png/0003_filename_driven_png_header.t](../../../tests/writer/png/0003_filename_driven_png_header.t) |
+| PW-05 | The default palette decoder path writes PNG bit depth 8 and color type 3. | Both | [tests/writer/png/0004_indexed8_ihdr.t](../../../tests/writer/png/0004_indexed8_ihdr.t) |
+| PW-06 | The representative dequantized path writes PNG bit depth 8 and color type 2. | Both | [tests/writer/png/0005_rgb8_ihdr.t](../../../tests/writer/png/0005_rgb8_ihdr.t) |
+| PW-07 | Direct decoder output writes PNG bit depth 8 and color type 6. | Both | [tests/writer/png/0006_rgba8_ihdr.t](../../../tests/writer/png/0006_rgba8_ihdr.t) |
+| PW-08 | The builtin indexed writer emits the standards-compliant reflected CRC-32 value for the fixed IHDR vector. | Builtin | [tests/writer/png/0007_builtin_ihdr_crc.t](../../../tests/writer/png/0007_builtin_ihdr_crc.t) |
+| PW-09 | With Floyd-Steinberg dithering selected, the `img2sixel` PNG snapshot is byte-identical to decoding a separately generated SIXEL stream with the same writer backend. | Both | [tests/writer/png/0008_img2sixel_post_sixel_snapshot.t](../../../tests/writer/png/0008_img2sixel_post_sixel_snapshot.t) |
 
-| PW-10 | Srgb indexed. | Both | [tests/writer/png/0006_srgb_indexed.t](../../../tests/writer/png/0006_srgb_indexed.t) |
-| PW-11 | P3 indexed. | Both | [tests/writer/png/0007_p3_indexed.t](../../../tests/writer/png/0007_p3_indexed.t) |
-| PW-12 | P3 direct alpha. | Both | [tests/writer/png/0008_p3_direct_alpha.t](../../../tests/writer/png/0008_p3_direct_alpha.t) |
-| PW-13 | P3 register redefinition. | Both | [tests/writer/png/0009_p3_register_redefinition.t](../../../tests/writer/png/0009_p3_register_redefinition.t) |
-| PW-14 | P3 environment. | Both | [tests/writer/png/0010_p3_environment.t](../../../tests/writer/png/0010_p3_environment.t) |
-| PW-15 | Cli overrides environment. | Both | [tests/writer/png/0011_cli_overrides_environment.t](../../../tests/writer/png/0011_cli_overrides_environment.t) |
-| PW-16 | Last interpretation wins. | Both | [tests/writer/png/0012_last_interpretation_wins.t](../../../tests/writer/png/0012_last_interpretation_wins.t) |
-| PW-17 | Long input colorspace. | Both | [tests/writer/png/0013_long_input_colorspace.t](../../../tests/writer/png/0013_long_input_colorspace.t) |
-| PW-18 | Invalid input colorspace. | Both | [tests/writer/png/0014_invalid_input_colorspace.t](../../../tests/writer/png/0014_invalid_input_colorspace.t) |
-| PW-19 | P3 resize coordinates. | Both | [tests/writer/png/0015_p3_resize_coordinates.t](../../../tests/writer/png/0015_p3_resize_coordinates.t) |
-| PW-20 | P3 k undither coordinates. | Both | [tests/writer/png/0016_p3_k_undither_coordinates.t](../../../tests/writer/png/0016_p3_k_undither_coordinates.t) |
-| PW-21 | Legacy writer untagged. | Both | [tests/writer/png/0017_legacy_writer_untagged.t](../../../tests/writer/png/0017_legacy_writer_untagged.t) |
-| PW-22 | Shared rgb p3. | Both | [tests/writer/png/0018_shared_rgb_p3.t](../../../tests/writer/png/0018_shared_rgb_p3.t) |
-| PW-23 | Raw decode unchanged. | Both | [tests/writer/png/0019_raw_decode_unchanged.t](../../../tests/writer/png/0019_raw_decode_unchanged.t) |
-| PW-24 | Icc numeric contract. | Both | [tests/writer/png/0020_icc_numeric_contract.t](../../../tests/writer/png/0020_icc_numeric_contract.t) |
-| PW-25 | P3 lso fs coordinates. | Both | [tests/writer/png/0021_p3_lso_fs_coordinates.t](../../../tests/writer/png/0021_p3_lso_fs_coordinates.t) |
-| PW-26 | P3 lso light coordinates. | Both | [tests/writer/png/0022_p3_lso_light_coordinates.t](../../../tests/writer/png/0022_p3_lso_light_coordinates.t) |
-| PW-27 | P3 selective blur coordinates. | Both | [tests/writer/png/0023_p3_selective_blur_coordinates.t](../../../tests/writer/png/0023_p3_selective_blur_coordinates.t) |
-| PW-28 | P3 direct resize coordinates. | Both | [tests/writer/png/0024_p3_direct_resize_coordinates.t](../../../tests/writer/png/0024_p3_direct_resize_coordinates.t) |
-| PW-29 | P3 direct undither coordinates. | Both | [tests/writer/png/0025_p3_direct_undither_coordinates.t](../../../tests/writer/png/0025_p3_direct_undither_coordinates.t) |
+| PW-10 | Srgb indexed. | Both | [tests/writer/png/0009_srgb_indexed.t](../../../tests/writer/png/0009_srgb_indexed.t) |
+| PW-11 | P3 indexed. | Both | [tests/writer/png/0010_p3_indexed.t](../../../tests/writer/png/0010_p3_indexed.t) |
+| PW-12 | P3 direct alpha. | Both | [tests/writer/png/0011_p3_direct_alpha.t](../../../tests/writer/png/0011_p3_direct_alpha.t) |
+| PW-13 | P3 register redefinition. | Both | [tests/writer/png/0012_p3_register_redefinition.t](../../../tests/writer/png/0012_p3_register_redefinition.t) |
+| PW-14 | P3 environment. | Both | [tests/writer/png/0013_p3_environment.t](../../../tests/writer/png/0013_p3_environment.t) |
+| PW-15 | Cli overrides environment. | Both | [tests/writer/png/0014_cli_overrides_environment.t](../../../tests/writer/png/0014_cli_overrides_environment.t) |
+| PW-16 | Last interpretation wins. | Both | [tests/writer/png/0015_last_interpretation_wins.t](../../../tests/writer/png/0015_last_interpretation_wins.t) |
+| PW-17 | Long input colorspace. | Both | [tests/writer/png/0016_long_input_colorspace.t](../../../tests/writer/png/0016_long_input_colorspace.t) |
+| PW-18 | Invalid input colorspace. | Both | [tests/writer/png/0017_invalid_input_colorspace.t](../../../tests/writer/png/0017_invalid_input_colorspace.t) |
+| PW-19 | P3 resize coordinates. | Both | [tests/writer/png/0018_p3_resize_coordinates.t](../../../tests/writer/png/0018_p3_resize_coordinates.t) |
+| PW-20 | P3 k undither coordinates. | Both | [tests/writer/png/0019_p3_k_undither_coordinates.t](../../../tests/writer/png/0019_p3_k_undither_coordinates.t) |
+| PW-21 | Legacy writer untagged. | Both | [tests/writer/png/0020_legacy_writer_untagged.t](../../../tests/writer/png/0020_legacy_writer_untagged.t) |
+| PW-22 | Shared rgb p3. | Both | [tests/writer/png/0021_shared_rgb_p3.t](../../../tests/writer/png/0021_shared_rgb_p3.t) |
+| PW-23 | Raw decode unchanged. | Both | [tests/writer/png/0022_raw_decode_unchanged.t](../../../tests/writer/png/0022_raw_decode_unchanged.t) |
+| PW-24 | Icc numeric contract. | Both | [tests/writer/png/0023_icc_numeric_contract.t](../../../tests/writer/png/0023_icc_numeric_contract.t) |
+| PW-25 | P3 lso fs coordinates. | Both | [tests/writer/png/0024_p3_lso_fs_coordinates.t](../../../tests/writer/png/0024_p3_lso_fs_coordinates.t) |
+| PW-26 | P3 lso light coordinates. | Both | [tests/writer/png/0025_p3_lso_light_coordinates.t](../../../tests/writer/png/0025_p3_lso_light_coordinates.t) |
+| PW-27 | P3 selective blur coordinates. | Both | [tests/writer/png/0026_p3_selective_blur_coordinates.t](../../../tests/writer/png/0026_p3_selective_blur_coordinates.t) |
+| PW-28 | P3 direct resize coordinates. | Both | [tests/writer/png/0027_p3_direct_resize_coordinates.t](../../../tests/writer/png/0027_p3_direct_resize_coordinates.t) |
+| PW-29 | P3 direct undither coordinates. | Both | [tests/writer/png/0028_p3_direct_undither_coordinates.t](../../../tests/writer/png/0028_p3_direct_undither_coordinates.t) |
 
 
 ### Native snapshot behavioral contracts
@@ -206,23 +206,23 @@ The first four cases exercise PNG destination selection with in-memory SIXEL cap
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| PN-01 | With PNG selected, the linear centroid (.875, .1, .1) survives extended input (2, .1, .1) and (-.25, .1, .1), and emits independently derived HLS fields. | [tests/codec/png_snapshot/0001_srgb_frame_precision.t](../../../tests/codec/png_snapshot/0001_srgb_frame_precision.t) |
-| PN-02 | The same PNG-selected working centroid survives until P3 output conversion, with independent HLS fields. | [tests/codec/png_snapshot/0002_p3_frame_precision.t](../../../tests/codec/png_snapshot/0002_p3_frame_precision.t) |
-| PN-03 | PNG selection preserves byte eligibility and the builtin gray palette. | [tests/codec/png_snapshot/0003_byte_frame_control.t](../../../tests/codec/png_snapshot/0003_byte_frame_control.t) |
-| PN-04 | One PNG-selected encoder transitions P3/HLS to gamma/RGB and back without stale working or output coordinates. | [tests/codec/png_snapshot/0004_frame_output_reuse.t](../../../tests/codec/png_snapshot/0004_frame_output_reuse.t) |
-| PN-05 | Actual RGB snapshot has exact source-primary pixel values and sRGB metadata despite an inherited P3 decoder setting. | [tests/codec/png_snapshot/0005_srgb_rgb_pixels.t](../../../tests/codec/png_snapshot/0005_srgb_rgb_pixels.t) |
-| PN-06 | Actual RGB snapshot has independently derived converted P3 primary values and an independently checked ICC matrix/TRC. | [tests/codec/png_snapshot/0006_p3_rgb_pixels.t](../../../tests/codec/png_snapshot/0006_p3_rgb_pixels.t) |
-| PN-07 | Actual HLS snapshot retains decoded sRGB primary values and explicit sRGB interpretation. | [tests/codec/png_snapshot/0007_srgb_hls_pixels.t](../../../tests/codec/png_snapshot/0007_srgb_hls_pixels.t) |
-| PN-08 | Actual HLS snapshot retains independently derived P3 HLS-decoded values and P3 ICC interpretation. | [tests/codec/png_snapshot/0008_p3_hls_pixels.t](../../../tests/codec/png_snapshot/0008_p3_hls_pixels.t) |
-| PN-09 | P3 PNG rejects macro/DRCS envelopes and OR mode before any body bytes. | [tests/codec/png_snapshot/0009_transport_rejection.t](../../../tests/codec/png_snapshot/0009_transport_rejection.t) |
-| PN-10 | Byte-eligible high-color preserves all 320 independently specified paint colors through register redefinition and writes RGBA8 with sRGB metadata. | [tests/codec/png_snapshot/0024_highcolor_srgb_byte.t](../../../tests/codec/png_snapshot/0024_highcolor_srgb_byte.t) |
-| PN-11 | Float high-color preserves the same independently specified sRGB paint colors and float routing. | [tests/codec/png_snapshot/0025_highcolor_srgb_float.t](../../../tests/codec/png_snapshot/0025_highcolor_srgb_float.t) |
-| PN-12 | High-color P3 RGB snapshots preserve independent converted values after register redefinition and attach the P3 ICC definition. | [tests/codec/png_snapshot/0026_highcolor_p3_rgb.t](../../../tests/codec/png_snapshot/0026_highcolor_p3_rgb.t) |
-| PN-13 | High-color HLS snapshots retain independent P3 primary values and the P3 ICC definition. | [tests/codec/png_snapshot/0027_highcolor_p3_hls.t](../../../tests/codec/png_snapshot/0027_highcolor_p3_hls.t) |
-| PN-14 | High-color P3 snapshots preserve source-alpha holes alongside the other painted colors. | [tests/codec/png_snapshot/0028_highcolor_p3_mask.t](../../../tests/codec/png_snapshot/0028_highcolor_p3_mask.t) |
-| PN-15 | One high-color encoder changes P3 to sRGB and back without stale snapshot pixels or metadata. | [tests/codec/png_snapshot/0029_highcolor_reuse.t](../../../tests/codec/png_snapshot/0029_highcolor_reuse.t) |
-| PN-16 | The automatic .png suffix target preserves high-color P3 values and metadata. | [tests/codec/png_snapshot/0030_highcolor_suffix.t](../../../tests/codec/png_snapshot/0030_highcolor_suffix.t) |
-| PN-17 | Actual high-color CLI stdout PNG has direct primary pixels and P3 metadata despite an inherited sRGB decoder setting. | [tests/codec/png_snapshot/0031_highcolor_stdout.t](../../../tests/codec/png_snapshot/0031_highcolor_stdout.t) |
+| PN-01 | With PNG selected, the linear centroid (.875, .1, .1) survives extended input (2, .1, .1) and (-.25, .1, .1), and emits independently derived HLS fields. | [tests/writer/snapshot/0001_srgb_frame_precision.t](../../../tests/writer/snapshot/0001_srgb_frame_precision.t) |
+| PN-02 | The same PNG-selected working centroid survives until P3 output conversion, with independent HLS fields. | [tests/writer/snapshot/0002_p3_frame_precision.t](../../../tests/writer/snapshot/0002_p3_frame_precision.t) |
+| PN-03 | PNG selection preserves byte eligibility and the builtin gray palette. | [tests/writer/snapshot/0003_byte_frame_control.t](../../../tests/writer/snapshot/0003_byte_frame_control.t) |
+| PN-04 | One PNG-selected encoder transitions P3/HLS to gamma/RGB and back without stale working or output coordinates. | [tests/writer/snapshot/0004_frame_output_reuse.t](../../../tests/writer/snapshot/0004_frame_output_reuse.t) |
+| PN-05 | Actual RGB snapshot has exact source-primary pixel values and sRGB metadata despite an inherited P3 decoder setting. | [tests/writer/snapshot/0005_srgb_rgb_pixels.t](../../../tests/writer/snapshot/0005_srgb_rgb_pixels.t) |
+| PN-06 | Actual RGB snapshot has independently derived converted P3 primary values and an independently checked ICC matrix/TRC. | [tests/writer/snapshot/0006_p3_rgb_pixels.t](../../../tests/writer/snapshot/0006_p3_rgb_pixels.t) |
+| PN-07 | Actual HLS snapshot retains decoded sRGB primary values and explicit sRGB interpretation. | [tests/writer/snapshot/0007_srgb_hls_pixels.t](../../../tests/writer/snapshot/0007_srgb_hls_pixels.t) |
+| PN-08 | Actual HLS snapshot retains independently derived P3 HLS-decoded values and P3 ICC interpretation. | [tests/writer/snapshot/0008_p3_hls_pixels.t](../../../tests/writer/snapshot/0008_p3_hls_pixels.t) |
+| PN-09 | P3 PNG rejects macro/DRCS envelopes and OR mode before any body bytes. | [tests/writer/snapshot/0009_transport_rejection.t](../../../tests/writer/snapshot/0009_transport_rejection.t) |
+| PN-10 | Byte-eligible high-color preserves all 320 independently specified paint colors through register redefinition and writes RGBA8 with sRGB metadata. | [tests/writer/snapshot/0024_highcolor_srgb_byte.t](../../../tests/writer/snapshot/0024_highcolor_srgb_byte.t) |
+| PN-11 | Float high-color preserves the same independently specified sRGB paint colors and float routing. | [tests/writer/snapshot/0025_highcolor_srgb_float.t](../../../tests/writer/snapshot/0025_highcolor_srgb_float.t) |
+| PN-12 | High-color P3 RGB snapshots preserve independent converted values after register redefinition and attach the P3 ICC definition. | [tests/writer/snapshot/0026_highcolor_p3_rgb.t](../../../tests/writer/snapshot/0026_highcolor_p3_rgb.t) |
+| PN-13 | High-color HLS snapshots retain independent P3 primary values and the P3 ICC definition. | [tests/writer/snapshot/0027_highcolor_p3_hls.t](../../../tests/writer/snapshot/0027_highcolor_p3_hls.t) |
+| PN-14 | High-color P3 snapshots preserve source-alpha holes alongside the other painted colors. | [tests/writer/snapshot/0028_highcolor_p3_mask.t](../../../tests/writer/snapshot/0028_highcolor_p3_mask.t) |
+| PN-15 | One high-color encoder changes P3 to sRGB and back without stale snapshot pixels or metadata. | [tests/writer/snapshot/0029_highcolor_reuse.t](../../../tests/writer/snapshot/0029_highcolor_reuse.t) |
+| PN-16 | The automatic .png suffix target preserves high-color P3 values and metadata. | [tests/writer/snapshot/0030_highcolor_suffix.t](../../../tests/writer/snapshot/0030_highcolor_suffix.t) |
+| PN-17 | Actual high-color CLI stdout PNG has direct primary pixels and P3 metadata despite an inherited sRGB decoder setting. | [tests/writer/snapshot/0031_highcolor_stdout.t](../../../tests/writer/snapshot/0031_highcolor_stdout.t) |
 
 ### Coverage audit and boundary
 
@@ -238,11 +238,11 @@ The [named definitions](../../encoder/output/output-colorspace.md#named-destinat
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| PND-01 | Retain Adobe RGB indexed interpretation and samples. | [tests/writer/png/0026_adobe_rgb_indexed.t](../../../tests/writer/png/0026_adobe_rgb_indexed.t) |
-| PND-02 | Retain DCI-P3 indexed interpretation and samples. | [tests/writer/png/0027_dci_p3_indexed.t](../../../tests/writer/png/0027_dci_p3_indexed.t) |
-| PND-03 | Retain Adobe RGB direct interpretation and samples. | [tests/writer/png/0028_adobe_rgb_direct.t](../../../tests/writer/png/0028_adobe_rgb_direct.t) |
-| PND-04 | Retain DCI-P3 direct interpretation and samples. | [tests/writer/png/0029_dci_p3_direct.t](../../../tests/writer/png/0029_dci_p3_direct.t) |
-| PND-05 | Encoder Adobe RGB snapshot preserves converted pixels and matching ICC. | [tests/writer/png/0030_adobe_rgb_snapshot.t](../../../tests/writer/png/0030_adobe_rgb_snapshot.t) |
-| PND-06 | Encoder DCI-P3 snapshot preserves converted pixels and matching ICC. | [tests/writer/png/0031_dci_p3_snapshot.t](../../../tests/writer/png/0031_dci_p3_snapshot.t) |
+| PND-01 | Retain Adobe RGB indexed interpretation and samples. | [tests/writer/png/0029_adobe_rgb_indexed.t](../../../tests/writer/png/0029_adobe_rgb_indexed.t) |
+| PND-02 | Retain DCI-P3 indexed interpretation and samples. | [tests/writer/png/0030_dci_p3_indexed.t](../../../tests/writer/png/0030_dci_p3_indexed.t) |
+| PND-03 | Retain Adobe RGB direct interpretation and samples. | [tests/writer/png/0031_adobe_rgb_direct.t](../../../tests/writer/png/0031_adobe_rgb_direct.t) |
+| PND-04 | Retain DCI-P3 direct interpretation and samples. | [tests/writer/png/0032_dci_p3_direct.t](../../../tests/writer/png/0032_dci_p3_direct.t) |
+| PND-05 | Encoder Adobe RGB snapshot preserves converted pixels and matching ICC. | [tests/writer/png/0033_adobe_rgb_snapshot.t](../../../tests/writer/png/0033_adobe_rgb_snapshot.t) |
+| PND-06 | Encoder DCI-P3 snapshot preserves converted pixels and matching ICC. | [tests/writer/png/0034_dci_p3_snapshot.t](../../../tests/writer/png/0034_dci_p3_snapshot.t) |
 
 Named snapshot primaries use an independent matrix/power oracle followed by RGB101 and byte expansion. The nearest rounding boundary is 0.00277 percentage units away; the propagated conversion budget is 0.002. The signed float witnesses in the output definition tests use larger margins. These values test conversion and metadata, not image quality.

@@ -10,9 +10,9 @@ The `clock_gettime` probe defines `_POSIX_C_SOURCE=200809L` before including `<t
 
 | Clock-dependent observation | Test |
 | --- | --- |
-| Adaptive playback completes both probe transitions. | [tests/planner/pipeline/0086_palette_auto_playback.t](../../tests/planner/pipeline/0086_palette_auto_playback.t) |
-| Frame probes preserve a completed palette for reuse. | [tests/planner/pipeline/0091_palette_auto_store_return.t](../../tests/planner/pipeline/0091_palette_auto_store_return.t) |
-| Profile changes invalidate retained palettes. | [tests/planner/pipeline/0092_palette_auto_store_profile.t](../../tests/planner/pipeline/0092_palette_auto_store_profile.t) |
+| Adaptive playback completes both probe transitions. | [tests/encoder/planning/0086_palette_auto_playback.t](../../tests/encoder/planning/0086_palette_auto_playback.t) |
+| Frame probes preserve a completed palette for reuse. | [tests/encoder/planning/0091_palette_auto_store_return.t](../../tests/encoder/planning/0091_palette_auto_store_return.t) |
+| Profile changes invalidate retained palettes. | [tests/encoder/planning/0092_palette_auto_store_profile.t](../../tests/encoder/planning/0092_palette_auto_store_profile.t) |
 
 ```sh
 # Start at the source root.

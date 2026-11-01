@@ -2,6 +2,7 @@
 # Emit TAP for codespell static check.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 codespell_bin=$2
@@ -64,14 +65,7 @@ trap 'exit 1' HUP INT TERM
 cd "$src_root"
 
 # Keep codespell focused on production sources to avoid long runtimes.
-find src \
-    \( -path 'src/stb_image.h' -o -path 'src/stb_image_write.h' \) -prune -o \
-    -type f \( -name '*.[ch]' -o -name '*.md' -o \
-        -name '*.1' -o -name '*.in' -o -name '*.am' -o \
-        -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o \
-        -name '*.py' -o -name '*.rb' -o -name '*.pl' -o \
-        -name '*.thumbnailer' -o -name '*.sh' \) -print \
-    | LC_ALL=C sort > "$tmpfile"
+sh "$source_files_helper" src --exclude-path 'src/stb_image.h' --exclude-path 'src/stb_image_write.h' --name '*.[ch]' --name '*.md' --name '*.1' --name '*.in' --name '*.am' --name '*.build' --name '*.t' --name 'LICENSE' --name '*.py' --name '*.rb' --name '*.pl' --name '*.thumbnailer' --name '*.sh'| LC_ALL=C sort > "$tmpfile"
 
 total=$(wc -l < "$tmpfile" | awk '{print $1}')
 progress_is_tty=0

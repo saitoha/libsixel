@@ -5,6 +5,7 @@
 # Policy: docs/cli/suboptions.md
 
 set -eux
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 set -v
@@ -32,12 +33,11 @@ test -f "$completion_registry_file" || {
     exit 0
 }
 
-duplicates=$(find "$src_root/src" -maxdepth 1 -type f -name '*.c' \
-    ! -name 'options-registry.c' -exec awk '
+duplicates=$(sh "$source_files_helper" "$src_root/src" --max-depth 1 --name '*.c' --exclude-name 'options-registry.c' --exec awk '
 /static[[:space:]]+sixel_suboption_key_t[[:space:]]+const/ {
     print FILENAME ":" FNR ":" $0
 }
-' {} +)
+')
 
 test -z "$duplicates" || {
     echo "not ok 1 - suboptions use one complete registry"
@@ -46,13 +46,11 @@ test -z "$duplicates" || {
     exit 0
 }
 
-dispatchers=$(find "$src_root/src" -maxdepth 1 -type f -name '*.[ch]' \
-    ! -name 'options.c' ! -name 'options.h' \
-    ! -name 'loader-order-schema.c' -exec awk '
+dispatchers=$(sh "$source_files_helper" "$src_root/src" --max-depth 1 --name '*.[ch]' --exclude-name 'options.c' --exclude-name 'options.h' --exclude-name 'loader-order-schema.c' --exec awk '
 /resolved_key_name|resolved_value_text/ {
     print FILENAME ":" FNR ":" $0
 }
-' {} +)
+')
 
 test -z "$dispatchers" || {
     echo "not ok 1 - suboptions use one complete registry"
@@ -1014,17 +1012,20 @@ END {
     exit 0
 }
 
-regression_dir=$src_root/tests/cli/options/regression
-test -d "$regression_dir" || {
-    echo "not ok 1 - suboptions use one complete registry"
-    echo "# missing per-suboption image regression tests"
-    exit 0
-}
+# This explicit scope survives classification across CLI behavior leaves.
+set -- "$registry_file" "$completion_registry_file"
+while IFS= read -r regression; do
+    test -f "$src_root/$regression" || {
+        echo "not ok 1 - missing registered suboption image case: $regression"
+        exit 0
+    }
+    set -- "$@" "$src_root/$regression"
+done < "$src_root/tests/_static/data/suboption-image-cases.list"
 
 awk -v registry_file="$registry_file" \
     -v completion_registry_file="$completion_registry_file" \
     -f "$src_root/tests/_static/awk/suboption-image-coverage.awk" \
-    "$registry_file" "$completion_registry_file" "$regression_dir"/*.t || {
+    "$@" || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }
@@ -1101,7 +1102,7 @@ END {
 ' "$src_root/converters/terminal-color-job.c" "$help_file" "$man_file" \
     "$src_root/converters/shell-completion/bash/img2sixel" \
     "$src_root/converters/shell-completion/zsh/_img2sixel" \
-    "$src_root/tests/cli/color/session/"*.t || {
+    "$src_root/tests/cli/terminal-color/"*.t || {
     echo "not ok 1 - suboptions use one complete registry"
     exit 0
 }

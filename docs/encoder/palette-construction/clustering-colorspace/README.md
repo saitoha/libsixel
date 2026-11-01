@@ -570,7 +570,7 @@ from timing.
 
 Focused quality tests for all five `-X` values and the `-X`/`-W` cross-product
 are under
-[`tests/quant/palette/usage/`](../../../../tests/quant/palette/usage/). The same
+[`tests/palette`](../../../../tests/palette). The same
 directory verifies that fixed palettes and monochrome paths remain unchanged
 when `-X` is present.
 

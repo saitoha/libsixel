@@ -6,7 +6,7 @@ import sys
 from fixture import Fixture
 
 with Fixture(sys.argv[1]) as fixture:
-    old = fixture.add("0001_old.t")
-    assert fixture.run() == ["0001_old.t"]
+    old = fixture.add("sample/existing/0001_old.t")
+    assert fixture.run() == ["sample/existing/0001_old.t"]
     old.rename(old.with_name("0001_renamed.t"))
-    assert fixture.run() == ["0001_renamed.t"]
+    assert fixture.run() == ["sample/existing/0001_renamed.t"]

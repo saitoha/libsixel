@@ -563,46 +563,36 @@ DIST_SUBDIRS = \
 
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
-    assessment/meson.build \
-    converters/meson.build \
-    examples/meson.build \
-    fuzz/meson.build \
-    gdk-pixbuf-loader/meson.build \
-    images/meson.build \
-    include/meson.build \
-    meson.build \
-    meson_options.txt \
-    php/meson.build \
-    python/meson.build \
-    ruby/lib/libsixel/meson.build \
-    src/meson.build \
-    tools/meson.build \
-    wic/meson.build \
-    fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c \
-    fuzz/fuzz-img2sixel-cli-numeric-afl-persistent.c \
-    tests/data/color-numeric/relative-paired-lut.icc \
-    tests/data/color-numeric/black-offset.icc \
-    tests/data/color-numeric/icc-output.h \
-    LICENSE build.md build-aux/depcomp \
-    build-aux/dependency-bootstrap.am \
-    build-aux/test-runner-link.am \
-    build-aux/clean-test-logs.sh \
-    tools/generate_cms_quality_references.py \
-    tools/generate_color_fixtures.py \
-    tools/generate_palette_space_fixtures.py \
-    tools/generate_cover_anchor_fixtures.py \
-    tools/generate_clamp_band_fixtures.py \
-    tools/generate_snap_native_fixtures.py \
-    tools/generate_destination_snap_fixtures.py \
-    tools/generate_p3_snap_fixtures.py \
-    tools/generate_output_native_fixtures.py \
-    tools/generate_builtin_native_fixtures.py \
-	mkdocs.yml \
-	m4/ax_count_cpus.m4 \
-	package.json.in.in \
-	build-aux/lso-tap-driver.sh.in \
-	build-aux/test-suite-report.awk \
+
+# Perl bindings have no recursive Automake subdirectory.
+EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py \
+	tools/generate_output_icc_fixtures.py assessment/meson.build \
+	converters/meson.build examples/meson.build fuzz/meson.build \
+	gdk-pixbuf-loader/meson.build images/meson.build \
+	include/meson.build meson.build meson_options.txt \
+	php/meson.build python/meson.build \
+	ruby/lib/libsixel/meson.build src/meson.build \
+	tools/meson.build wic/meson.build \
+	fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c \
+	fuzz/fuzz-img2sixel-cli-numeric-afl-persistent.c \
+	tests/data/color-numeric/relative-paired-lut.icc \
+	tests/data/color-numeric/black-offset.icc \
+	tests/data/color-numeric/icc-output.h LICENSE build.md \
+	build-aux/depcomp build-aux/dependency-bootstrap.am \
+	build-aux/test-runner-link.am build-aux/clean-test-logs.sh \
+	build-aux/list-tree-files.sh build-aux/list-test-reports.sh \
+	tools/generate_cms_quality_references.py \
+	tools/generate_color_fixtures.py \
+	tools/generate_palette_space_fixtures.py \
+	tools/generate_cover_anchor_fixtures.py \
+	tools/generate_clamp_band_fixtures.py \
+	tools/generate_snap_native_fixtures.py \
+	tools/generate_destination_snap_fixtures.py \
+	tools/generate_p3_snap_fixtures.py \
+	tools/generate_output_native_fixtures.py \
+	tools/generate_builtin_native_fixtures.py mkdocs.yml \
+	m4/ax_count_cpus.m4 package.json.in.in \
+	build-aux/lso-tap-driver.sh.in build-aux/test-suite-report.awk \
 	build-aux/test-suite-report.sh \
 	build-aux/read-check-test-list.sh \
 	build-aux/cli-color-tty-probe.c \
@@ -615,19 +605,12 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	build-aux/resolve-php-test-venv.sh \
 	build-aux/install-emscripten-sidecar.sh \
 	build-aux/meson-test-with-failures.sh \
-	build-aux/resolve-test-tool-paths.sh.in \
-	docs/AGENTS.md \
-	docs/README.md \
-	docs/build/README.md \
-	docs/build/autotools.md \
-	docs/build/configure-macros.md \
-	docs/build/meson.md \
-	docs/build/meson-history.md \
-	docs/build/support-scripts.md \
-	docs/build/test-harness.md \
-	docs/assets/javascripts/mathjax.js \
-	docs/platform-support.md \
-	docs/project-history.md \
+	build-aux/resolve-test-tool-paths.sh.in docs/AGENTS.md \
+	docs/README.md docs/build/README.md docs/build/autotools.md \
+	docs/build/configure-macros.md docs/build/meson.md \
+	docs/build/meson-history.md docs/build/support-scripts.md \
+	docs/build/test-harness.md docs/assets/javascripts/mathjax.js \
+	docs/platform-support.md docs/project-history.md \
 	docs/sixel-format/README.md \
 	docs/sixel-format/patents-and-royalties.md \
 	docs/misc/algorithm-patents.md \
@@ -704,31 +687,21 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/encoder/output/high-color/figures/high-color-passes-wide.svg \
 	docs/encoder/output/high-color/figures/high-color-register-mobile.svg \
 	docs/encoder/output/high-color/figures/high-color-register-wide.svg \
-	tools/highcolor/study.py \
-	tools/highcolor/requirements.txt \
+	tools/highcolor/study.py tools/highcolor/requirements.txt \
 	tools/plot_encoding_mode_figures.py \
 	tools/reproduce_encoding_mode_figures.sh \
 	docs/encoder/output/or-mode/README.md \
 	docs/encoder/output/terminal-macros.md \
-	docs/encoder/animation.md \
-	docs/encoder/output/drcs.md \
+	docs/encoder/animation.md docs/encoder/output/drcs.md \
 	docs/encoder/palette-construction/fixed-palettes.md \
-	docs/cli/clipboard.md \
-	docs/cli/diagnostics.md \
-	docs/cli/runtime-policy.md \
-	docs/cli/threading-policy.md \
-	docs/loader/patents.md \
-	docs/loader/libjpeg.md \
-	docs/loader/libwebp.md \
-	docs/loader/libtiff.md \
-	docs/loader/librsvg.md \
-	docs/loader/wic.md \
-	docs/loader/coregraphics.md \
-	docs/loader/precision-policy.md \
-	docs/loader/gdk-pixbuf2.md \
-	docs/loader/gd.md \
-	docs/loader/quicklook.md \
-	docs/loader/gnome-thumbnailer.md \
+	docs/cli/clipboard.md docs/cli/diagnostics.md \
+	docs/cli/runtime-policy.md docs/cli/threading-policy.md \
+	docs/loader/patents.md docs/loader/libjpeg.md \
+	docs/loader/libwebp.md docs/loader/libtiff.md \
+	docs/loader/librsvg.md docs/loader/wic.md \
+	docs/loader/coregraphics.md docs/loader/precision-policy.md \
+	docs/loader/gdk-pixbuf2.md docs/loader/gd.md \
+	docs/loader/quicklook.md docs/loader/gnome-thumbnailer.md \
 	docs/encoder/output/or-mode/grid-example/input.png \
 	docs/encoder/output/or-mode/grid-example/normal.six \
 	docs/encoder/output/or-mode/grid-example/or.six \
@@ -754,18 +727,15 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/encoder/output/or-mode/sweeps/summary.json \
 	docs/encoder/output/or-mode/sweeps/thread-curves.png \
 	docs/encoder/output/or-mode/sweeps/thread-observations.json \
-	tools/ormode/decode-bench.c \
-	tools/ormode/sweeps.py \
+	tools/ormode/decode-bench.c tools/ormode/sweeps.py \
 	tools/ormode/render_sweeps.py \
 	docs/encoder/output/or-mode/x68k.md \
 	docs/encoder/output/or-mode/x68k-console.svg \
 	docs/encoder/output/or-mode/x68k-model/metadata.json \
 	docs/encoder/output/or-mode/x68k-model/results.json \
 	docs/encoder/output/or-mode/x68k-model/x68k-model.png \
-	tools/ormode/ite-model.c \
-	tools/ormode/x68k_model.py \
-	tools/ormode/render_x68k.py \
-	tools/ormode/verify-decoder.c \
+	tools/ormode/ite-model.c tools/ormode/x68k_model.py \
+	tools/ormode/render_x68k.py tools/ormode/verify-decoder.c \
 	tools/ormode/verify_decoder.py \
 	docs/encoder/output/or-mode/measurements/alpha.json \
 	docs/encoder/output/or-mode/measurements/comparison.png \
@@ -779,12 +749,9 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/encoder/output/or-mode/measurements/results.json \
 	docs/encoder/output/or-mode/measurements/summary.csv \
 	docs/encoder/output/or-mode/measurements/summary.json \
-	tools/ormode/download.py \
-	tools/ormode/edge_cases.py \
-	tools/ormode/indexed-bench.c \
-	tools/ormode/measure.py \
-	tools/ormode/qiita_cases.py \
-	tools/ormode/render.py \
+	tools/ormode/download.py tools/ormode/edge_cases.py \
+	tools/ormode/indexed-bench.c tools/ormode/measure.py \
+	tools/ormode/qiita_cases.py tools/ormode/render.py \
 	tools/ormode/requirements.txt \
 	docs/sixel-format/figures/encoder-comparison-mobile.svg \
 	docs/sixel-format/figures/encoder-comparison-wide.svg \
@@ -836,20 +803,15 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/tutorial/sixel-codec/code/step3.c \
 	docs/tutorial/sixel-codec/code/step4.c \
 	docs/tutorial/sixel-codec/code/step5.c \
-	docs/tutorial/sixel-codec/code/tutorial.h \
-	docs/ci/design.md \
-	docs/cli/design-policy.md \
-	docs/cli/options.md \
+	docs/tutorial/sixel-codec/code/tutorial.h docs/ci/design.md \
+	docs/cli/design-policy.md docs/cli/options.md \
 	docs/misc/platforms/README.md \
 	docs/misc/platforms/cosmopolitan.md \
 	docs/misc/platforms/cygwin-msys.md \
 	docs/misc/platforms/emscripten.md \
-	docs/misc/platforms/gnu-hurd.md \
-	docs/misc/platforms/haiku.md \
-	docs/misc/platforms/macos.md \
-	docs/misc/platforms/mingw.md \
-	docs/misc/platforms/msvc.md \
-	docs/misc/platforms/openvms.md \
+	docs/misc/platforms/gnu-hurd.md docs/misc/platforms/haiku.md \
+	docs/misc/platforms/macos.md docs/misc/platforms/mingw.md \
+	docs/misc/platforms/msvc.md docs/misc/platforms/openvms.md \
 	docs/misc/platforms/posix-runtimes.md \
 	docs/misc/platforms/solaris.md \
 	docs/misc/platforms/windows-paths.md \
@@ -866,8 +828,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/concepts/din99d/figures/conversion-route-wide.svg \
 	docs/concepts/din99d/figures/conversion-route-mobile.svg \
 	docs/concepts/din99d/figures/figures.json \
-	tools/plot_din99d_figures.py \
-	tools/evaluate.py \
+	tools/plot_din99d_figures.py tools/evaluate.py \
 	docs/concepts/colorspace/figures/conversion-routes-mobile.svg \
 	docs/concepts/colorspace/figures/conversion-routes-wide.svg \
 	docs/concepts/colorspace/figures/figures.json \
@@ -901,15 +862,12 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-resize.png \
 	docs/concepts/pixelformat-precision/measurements/pixelformat-precision-run.json \
 	docs/concepts/pixelformat.md \
-	docs/concepts/quality-optimization.md \
-	docs/loader/README.md \
-	docs/loader/network-access.md \
-	docs/loader/libpng.md \
+	docs/concepts/quality-optimization.md docs/loader/README.md \
+	docs/loader/network-access.md docs/loader/libpng.md \
 	docs/loader/color-management/README.md \
 	docs/loader/png-color-metadata.md \
 	docs/loader/color-management/measurements/cms-default-measurements.json \
-	tools/measure_cms_default.py \
-	docs/loader/builtin-cms.md \
+	tools/measure_cms_default.py docs/loader/builtin-cms.md \
 	docs/loader/color-management/examples/gamut-wide.png \
 	docs/loader/color-management/examples/gamut-mobile.png \
 	docs/loader/color-management/examples/gamma-wide.png \
@@ -922,23 +880,16 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/loader/color-management/measurements/equivalent-para3-sixel.png \
 	docs/loader/color-management/measurements/reference-sixel.png \
 	docs/loader/alpha-policy/README.md \
-	docs/loader/background-policy.md \
-	docs/loader/builtin.md \
-	docs/loader/builtin/README.md \
-	docs/loader/builtin/bmp.md \
-	docs/loader/builtin/gif.md \
-	docs/loader/builtin/hdr.md \
-	docs/loader/builtin/jpeg.md \
-	docs/loader/builtin/netpbm.md \
-	docs/loader/builtin/pic.md \
-	docs/loader/builtin/png/README.md \
+	docs/loader/background-policy.md docs/loader/builtin.md \
+	docs/loader/builtin/README.md docs/loader/builtin/bmp.md \
+	docs/loader/builtin/gif.md docs/loader/builtin/hdr.md \
+	docs/loader/builtin/jpeg.md docs/loader/builtin/netpbm.md \
+	docs/loader/builtin/pic.md docs/loader/builtin/png/README.md \
 	docs/loader/builtin/png-source-precision.md \
 	docs/loader/builtin/png/measurements/png-loaders.json \
 	docs/loader/builtin/png/measurements/png-loaders.svg \
-	docs/loader/builtin/psd.md \
-	docs/loader/builtin/sixel.md \
-	docs/loader/builtin/tga.md \
-	docs/loader/builtin/figures/bmp.svg \
+	docs/loader/builtin/psd.md docs/loader/builtin/sixel.md \
+	docs/loader/builtin/tga.md docs/loader/builtin/figures/bmp.svg \
 	docs/loader/builtin/figures/builtin-loader-pipelines.json \
 	docs/loader/builtin/figures/gif.svg \
 	docs/loader/builtin/figures/hdr.svg \
@@ -1077,7 +1028,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/concepts/gamut-mapping/measurements/ramp-coordinates.csv \
 	docs/concepts/gamut-mapping/measurements/rose-strip.csv \
 	docs/concepts/gamut-mapping/measurements/rose.json \
-    docs/encoder/output/output-colorspace.md \
+	docs/encoder/output/output-colorspace.md \
 	docs/encoder/palette-construction/merge-policy/README.md \
 	docs/encoder/palette-construction/merge-policy/measurements/merge-policy-comparison.csv \
 	docs/encoder/palette-construction/merge-policy/measurements/merge-policy-mechanics.png \
@@ -1247,8 +1198,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/decoder/dequantization/figures/none-wide.svg \
 	docs/decoder/dequantization/figures/selective-mobile.svg \
 	docs/decoder/dequantization/figures/selective-wide.svg \
-	docs/decoder/multi-pass.md \
-	docs/decoder/pipeline/README.md \
+	docs/decoder/multi-pass.md docs/decoder/pipeline/README.md \
 	docs/encoder/output/delta-encoding.md \
 	docs/decoder/pipeline/figures/decoder-output-policy.svg \
 	docs/decoder/pipeline/figures/decoder-parallel.svg \
@@ -1261,8 +1211,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/documentation/document-kinds.md \
 	docs/documentation/manifesto.md \
 	docs/documentation/site-build.md \
-	docs/documentation/workflow.md \
-	docs/encoder/pipeline/README.md \
+	docs/documentation/workflow.md docs/encoder/pipeline/README.md \
 	docs/encoder/pipeline/figures/encoding-pipeline-figures.json \
 	docs/encoder/pipeline/figures/encoding-pipeline-mobile.svg \
 	docs/encoder/pipeline/figures/encoding-pipeline-wide.svg \
@@ -1379,8 +1328,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-shared-speed.png \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-speed.csv \
 	docs/encoder/palette-application/lookup-policy/measurements/lookup-policy-speed.png \
-	docs/overview.md \
-	docs/encoder/precision/README.md \
+	docs/overview.md docs/encoder/precision/README.md \
 	docs/encoder/precision/measurements/precision-clustering-colorspace.png \
 	docs/encoder/precision/measurements/precision-comparison.csv \
 	docs/encoder/precision/measurements/precision-dither.png \
@@ -1397,8 +1345,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/encoder/palette-construction/quantization/measurements/quantize-model-speed.png \
 	docs/encoder/palette-construction/quantization/README.md \
 	docs/encoder/palette-construction/gpu-kmeans.md \
-	docs/quality/measurement-policy.md \
-	docs/quality/metrics.md \
+	docs/quality/measurement-policy.md docs/quality/metrics.md \
 	docs/quality/video-evaluation.md \
 	docs/quality/video-workflow.md \
 	docs/concepts/clustering/README.md \
@@ -1462,22 +1409,17 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/programs/quicklook-extension.md \
 	docs/programs/wic-codec.md \
 	docs/testing/companion-programs-coverage.md \
-	docs/testing/guide.md \
-	docs/testing/staticcheck.md \
+	docs/testing/guide.md docs/testing/staticcheck.md \
 	docs/testing/png-chrm-boundaries.md \
-	docs/testing/png-chrm-arithmetic.md \
-	docs/writers/png/README.md \
+	docs/testing/png-chrm-arithmetic.md docs/writers/png/README.md \
 	docs/writers/png/figures/measurements.json \
 	docs/writers/png/figures/writer-time.svg \
 	docs/writers/png/figures/writer-time.png \
 	docs/writers/png/figures/writer-size.svg \
 	docs/writers/png/figures/writer-size.png \
-	tools/plot_png_writer_measurements.py \
-	docs/threading/README.md \
-	docs/threading/animation.md \
-	docs/threading/decoder.md \
-	docs/threading/encoder.md \
-	docs/threading/measurement.md \
+	tools/plot_png_writer_measurements.py docs/threading/README.md \
+	docs/threading/animation.md docs/threading/decoder.md \
+	docs/threading/encoder.md docs/threading/measurement.md \
 	docs/threading/measurements/animation-thread4-timeline.png \
 	docs/threading/measurements/animation-thread4.jsonl \
 	docs/threading/measurements/decoder-api-scaling.json \
@@ -1500,13 +1442,9 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/threading/measurements/thread-budget.csv \
 	docs/threading/measurements/thread-budget.png \
 	docs/threading/measurements/threading-run.json \
-	docs/threading/overview.md \
-	docs/threading/policy-modes.md \
-	openvms/gnv-ar.sh \
-	openvms/gnv-cc.sh \
-	openvms/gnv-rm.sh \
-	openvms/gnv-link-program.sh \
-	tools/fuzz-afl-runner.sh \
+	docs/threading/overview.md docs/threading/policy-modes.md \
+	openvms/gnv-ar.sh openvms/gnv-cc.sh openvms/gnv-rm.sh \
+	openvms/gnv-link-program.sh tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/check_clustering_binning_threshold_measurements.py \
 	tools/check_clustering_colorspace_measurements.py \
@@ -1521,7 +1459,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	tools/generate_builtin_loader_coverage.py \
 	tools/generate_png_cms_matrix.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
-	tools/gen_perl_constants.pl \
+	tools/gen_perl_constants.pl tools/gen_ruby_constants.rb \
 	tools/gen_perl_attach.pl \
 	tools/check_lookup_policy_measurements.py \
 	tools/check_merge_policy_measurements.py \
@@ -1546,8 +1484,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	tools/plot_codec_timeline_figures.py \
 	tools/plot_terminal_graphics_timeline.py \
 	tools/plot_builtin_loader_format_figures.py \
-	tools/measure_png_loaders.py \
-	tools/bench/png-loader.c \
+	tools/measure_png_loaders.py tools/bench/png-loader.c \
 	tools/plot_loader_architecture_figures.py \
 	tools/plot_loader_cms_examples.py \
 	tools/plot_colorsync_gamma.py \
@@ -1559,8 +1496,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	docs/quality/palette-gradient-analysis.md \
 	docs/cli/abort-trace/README.md \
 	docs/cli/abort-trace/figures/abort-trace-macos.png \
-	docs/cli/correction-suggestions.md \
-	docs/cli/prefix-matching.md \
+	docs/cli/correction-suggestions.md docs/cli/prefix-matching.md \
 	docs/cli/suboptions.md \
 	docs/encoder/output/encode-policy/README.md \
 	docs/encoder/output/encode-policy/figures/encode-policy-band-mobile.svg \
@@ -1640,9 +1576,16 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	tools/reproduce_quantize_model_measurements.sh \
 	tools/reproduce_snap_policy_measurements.sh \
 	tools/reproduce_threading_measurements.sh \
-	tools/snap_policy_suite.json \
-	tools/timeline.py
-
+	tools/snap_policy_suite.json tools/timeline.py perl/Build.PL \
+	perl/Changes perl/MANIFEST perl/MANIFEST.SKIP perl/META.json \
+	perl/META.yml perl/Makefile.PL perl/README.md \
+	perl/builder/MyBuilder.pm perl/cpanfile perl/images/egret.jpg \
+	perl/images/egret.six perl/lib/Image/LibSIXEL.pm \
+	perl/lib/Image/LibSIXEL/Constants.pm \
+	perl/lib/Image/LibSIXEL/Decoder.pm \
+	perl/lib/Image/LibSIXEL/Encoder.pm \
+	perl/lib/Image/LibSIXEL/GeneratedAttach.pm perl/minil.toml \
+	perl/t/libsixel.t
 
 # Let make propagate the caller's job limit and jobserver to recursive builds.
 # Do not infer a default from MAKEFLAGS: some make versions omit explicit -j1,

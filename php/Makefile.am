@@ -33,7 +33,9 @@ clean-local:
 	rm -rf dist
 	rm -f $(abs_top_builddir)/php/dist/.php-package-stamp
 	if test -d "$(builddir)/src/_libs"; then \
-		find "$(builddir)/src/_libs" -type f -exec rm -f {} +; \
+		for bundled in "$(builddir)/src/_libs/"*; do \
+			test ! -f "$$bundled" || rm -f "$$bundled"; \
+		done; \
 		rmdir "$(builddir)/src/_libs" 2>/dev/null || true; \
 	fi
 

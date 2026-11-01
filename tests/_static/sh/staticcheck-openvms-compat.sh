@@ -8,6 +8,7 @@
 # RMS record, native exit-status, or GNV I/O workaround, not suite coverage.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 record_fixture_ledger="$src_root/tests/_static/data/openvms-record-fixtures.tsv"
@@ -40,14 +41,7 @@ echo "1..1"
 stream_scanner="$src_root/tests/_static/awk/native-stream-paths.awk"
 awk -v selftest=1 -f "$stream_scanner" </dev/null ||
     fail "native stream path scanner self-test failed"
-find "$src_root/src" "$src_root/include" "$src_root/converters" \
-    "$src_root/assessment" "$src_root/tools" "$src_root/tests" \
-    "$src_root/build-aux" "$src_root/examples" "$src_root/openvms" \
-    -type f \( -name '*.c' -o -name '*.h' -o -name '*.cc' \
-    -o -name '*.cpp' -o -name '*.m' -o -name '*.t' -o -name '*.sh' \
-    -o -name '*.bash' -o -name '*.am' -o -name '*.mk' -o -name '*.in' \
-    -o -name 'meson.build' -o -name 'Makefile' \) \
-    -exec awk -f "$stream_scanner" {} + ||
+sh "$source_files_helper" "$src_root/src" "$src_root/include" "$src_root/converters" "$src_root/assessment" "$src_root/tools" "$src_root/tests" "$src_root/build-aux" "$src_root/examples" "$src_root/openvms" --name '*.c' --name '*.h' --name '*.cc' --name '*.cpp' --name '*.m' --name '*.t' --name '*.sh' --name '*.bash' --name '*.am' --name '*.mk' --name '*.in' --name 'meson.build' --name 'Makefile' --exec awk -f "$stream_scanner"||
     fail "native file paths must not depend on Unix stream aliases"
 awk -f "$stream_scanner" "$src_root/Makefile.am" \
     "$src_root/meson.build" "$src_root/configure.ac" ||
@@ -204,21 +198,21 @@ main_unmapped_return_count=$(awk '
 test "$main_unmapped_return_count" -eq 0 ||
     fail "test_runner main retains an unmapped OpenVMS process return"
 require_fixed "tr -d '\\n' <\"\${out_file}\" | \"\${CKSUM:-cksum}\"" \
-    tests/planner/pipeline/0013_pipeline_gpu_force_reject_closes_dcs.t
+    tests/encoder/planning/0013_pipeline_gpu_force_reject_closes_dcs.t
 require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' \
-    tests/security/issue/0012_issue220_dcs_signed_integer_overflow.t
+    tests/decoder/parser/0122_issue220_dcs_signed_integer_overflow.t
 for retry_test in \
-    tests/cli/options/matching/0231_option_matching_palette_exact_float_retry_rejected.t \
-    tests/cli/options/matching/0234_option_matching_palette_kcenter_exact_retry_rejected.t
+    tests/cli/palette-stage-options/0042_option_matching_palette_exact_float_retry_rejected.t \
+    tests/cli/palette-stage-options/0044_option_matching_palette_kcenter_exact_retry_rejected.t
 do
     require_fixed 'SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3' "$retry_test"
 done
 for palette_test in \
-    tests/quant/palette/0009_palette_worker_init_fallback.t \
-    tests/quant/palette/0010_palette_worker_sample_fallback.t \
-    tests/quant/palette/0011_palette_worker_thread_fallback.t \
-    tests/quant/palette/0012_palette_worker_conversion_fallback.t \
-    tests/quant/palette/0013_palette_worker_build_fallback.t
+    tests/palette/dispatch/0002_palette_worker_init_fallback.t \
+    tests/palette/dispatch/0003_palette_worker_sample_fallback.t \
+    tests/palette/dispatch/0004_palette_worker_thread_fallback.t \
+    tests/palette/dispatch/0005_palette_worker_conversion_fallback.t \
+    tests/palette/dispatch/0006_palette_worker_build_fallback.t
 do
     require_fixed 'tests/data/inputs/snake_64.png' "$palette_test"
     if grep -F 'images/snake.png' "$src_root/$palette_test" >/dev/null 2>&1; then
@@ -230,10 +224,10 @@ require_fixed 'tests/data/inputs/mapfile/* -text' .gitattributes
 # Captures used by image assertions must retain every byte even when a
 # SIXEL packet exceeds the GNV shell-created RMS record-size limit.
 for capture_test in \
-    tests/cli/options/regression/0072_lookup_5bit_shared_instance_image_regression.t \
-    tests/cli/options/regression/0073_lookup_6bit_shared_instance_image_regression.t \
-    tests/cli/options/regression/0179_threading_load_image_regression.t \
-    tests/cli/options/regression/0183_threading_prepare_workers_image_regression.t
+    tests/cli/lookup-options/0026_lookup_5bit_shared_instance_image_regression.t \
+    tests/cli/lookup-options/0027_lookup_6bit_shared_instance_image_regression.t \
+    tests/cli/option-syntax/0085_threading_load_image_regression.t \
+    tests/cli/option-syntax/0088_threading_prepare_workers_image_regression.t
 do
     # Match shell source, not values from this checker environment.
     # shellcheck disable=SC2016
@@ -242,18 +236,18 @@ do
     require_fixed '-o "${env_output}"' "$capture_test"
 done
 for capture_test in \
-    tests/loader/builtin/0001_lsqa_format_grayscale.t \
-    tests/loader/builtin/0003_lsqa_format_rgb.t \
-    tests/loader/builtin/0115_loader_builtin_jpeg_ycbcr_12bit_seq420_r0_expected_lsqa.t \
-    tests/loader/builtin/0119_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t \
-    tests/loader/builtin/0120_loader_builtin_jpeg_ycbcr_8bit_seq444_r0_expected_lsqa.t \
-    tests/loader/builtin/0121_loader_builtin_jpeg_ycbcr_8bit_prog420_r0_expected_lsqa.t \
-    tests/loader/builtin/0122_loader_builtin_jpeg_cmyk_8bit_seq444_r0_expected_lsqa.t \
-    tests/loader/builtin/0123_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t \
-    tests/loader/builtin/0124_loader_builtin_jpeg_embedded_esrgb_cms0_expected_lsqa.t \
-    tests/loader/builtin/0125_loader_builtin_jpeg_embedded_esrgb_nolcms_cms1_expected_lsqa.t \
-    tests/loader/builtin/0128_loader_builtin_jpeg_cmyk_12bit_seq444_r0_expected_lsqa.t \
-    tests/loader/builtin/0130_loader_builtin_jpeg_ycck_12bit_seq444_r0_expected_lsqa.t
+    tests/loader-jpeg/gray/0001_lsqa_format_grayscale.t \
+    tests/loader-png/decode/0001_lsqa_format_rgb.t \
+    tests/loader-jpeg/decode/0002_loader_builtin_jpeg_ycbcr_12bit_seq420_r0_expected_lsqa.t \
+    tests/loader-jpeg/decode/0005_loader_builtin_jpeg_rgb_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader-jpeg/decode/0006_loader_builtin_jpeg_ycbcr_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader-jpeg/decode/0007_loader_builtin_jpeg_ycbcr_8bit_prog420_r0_expected_lsqa.t \
+    tests/loader-jpeg/cmyk/0001_loader_builtin_jpeg_cmyk_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader-jpeg/cmyk/0002_loader_builtin_jpeg_ycck_8bit_seq444_r0_expected_lsqa.t \
+    tests/loader-jpeg/decode/0008_loader_builtin_jpeg_embedded_esrgb_cms0_expected_lsqa.t \
+    tests/loader-jpeg/decode/0009_loader_builtin_jpeg_embedded_esrgb_nolcms_cms1_expected_lsqa.t \
+    tests/loader-jpeg/cmyk/0003_loader_builtin_jpeg_cmyk_12bit_seq444_r0_expected_lsqa.t \
+    tests/loader-jpeg/cmyk/0005_loader_builtin_jpeg_ycck_12bit_seq444_r0_expected_lsqa.t
 do
     # shellcheck disable=SC2016
     require_fixed '-o "${output_sixel}"' "$capture_test"
@@ -278,63 +272,63 @@ EOF
         test "$fixture_actual_size" = "$fixture_size" ||
         fail "OpenVMS record fixture changed: $fixture_path"
     fixture_name=${fixture_path##*/}
-    grep -R -F -- "$fixture_name" "$src_root/tests/quant/mapfile" \
+    grep -R -F -- "$fixture_name" "$src_root/tests/palette/mapfile-io" \
         >/dev/null 2>&1 ||
         fail "OpenVMS record fixture is not owned by a mapfile test: $fixture_path"
 done < "$record_fixture_ledger"
 
 for mapfile_test in \
-    tests/quant/mapfile/0016_mapfile_import_act_accepts_zero_color_count.t \
-    tests/quant/mapfile/0080_mapfile_export_act_exact_layout.t \
-    tests/quant/mapfile/0081_mapfile_import_act_768_exact.t \
-    tests/quant/mapfile/0083_mapfile_import_jasc_lf.t \
-    tests/quant/mapfile/0084_mapfile_import_jasc_cr.t \
-    tests/quant/mapfile/0085_mapfile_import_jasc_crlf.t \
-    tests/quant/mapfile/0086_mapfile_export_riff_exact_layout.t \
-    tests/quant/mapfile/0087_mapfile_import_riff_exact_entries.t \
-    tests/quant/mapfile/0089_mapfile_import_gpl_lf.t \
-    tests/quant/mapfile/0090_mapfile_import_gpl_cr.t \
-    tests/quant/mapfile/0091_mapfile_import_gpl_crlf.t \
-    tests/quant/mapfile/0093_mapfile_import_pal_rejects_utf32_le_bom.t \
-    tests/quant/mapfile/0094_mapfile_import_gpl_rejects_utf32_be_bom.t \
-    tests/quant/mapfile/0097_mapfile_import_pal_trims_spaces_and_tabs.t \
-    tests/quant/mapfile/0099_mapfile_import_gpl_trims_spaces_and_tabs.t \
-    tests/quant/mapfile/0100_mapfile_import_pal_rejects_fourth_numeric_token.t \
-    tests/quant/mapfile/0101_mapfile_import_riff_skips_padded_unknown_chunk.t \
-    tests/quant/mapfile/0102_mapfile_import_pal_extension_detects_riff.t \
-    tests/quant/mapfile/0103_mapfile_import_pal_prefix_detects_riff.t \
-    tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t
+    tests/palette/mapfile-io/0016_mapfile_import_act_accepts_zero_color_count.t \
+    tests/palette/mapfile-io/0080_mapfile_export_act_exact_layout.t \
+    tests/palette/mapfile-io/0081_mapfile_import_act_768_exact.t \
+    tests/palette/mapfile-io/0083_mapfile_import_jasc_lf.t \
+    tests/palette/mapfile-io/0084_mapfile_import_jasc_cr.t \
+    tests/palette/mapfile-io/0085_mapfile_import_jasc_crlf.t \
+    tests/palette/mapfile-io/0086_mapfile_export_riff_exact_layout.t \
+    tests/palette/mapfile-io/0087_mapfile_import_riff_exact_entries.t \
+    tests/palette/mapfile-io/0089_mapfile_import_gpl_lf.t \
+    tests/palette/mapfile-io/0090_mapfile_import_gpl_cr.t \
+    tests/palette/mapfile-io/0091_mapfile_import_gpl_crlf.t \
+    tests/palette/mapfile-io/0093_mapfile_import_pal_rejects_utf32_le_bom.t \
+    tests/palette/mapfile-io/0094_mapfile_import_gpl_rejects_utf32_be_bom.t \
+    tests/palette/mapfile-io/0097_mapfile_import_pal_trims_spaces_and_tabs.t \
+    tests/palette/mapfile-io/0099_mapfile_import_gpl_trims_spaces_and_tabs.t \
+    tests/palette/mapfile-io/0100_mapfile_import_pal_rejects_fourth_numeric_token.t \
+    tests/palette/mapfile-io/0101_mapfile_import_riff_skips_padded_unknown_chunk.t \
+    tests/palette/mapfile-io/0102_mapfile_import_pal_extension_detects_riff.t \
+    tests/palette/mapfile-io/0103_mapfile_import_pal_prefix_detects_riff.t \
+    tests/palette/mapfile-io/0119_mapfile_export_act_stdout_exact.t
 do
     require_fixed 'tests/data/inputs/mapfile/' "$mapfile_test"
 done
 # This is a literal shell fragment asserted in the target test.
 # shellcheck disable=SC2016
 require_fixed '| cmp - "${expected_palette}"' \
-    tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t
+    tests/palette/mapfile-io/0119_mapfile_export_act_stdout_exact.t
 # shellcheck disable=SC2016
 if grep -F '>"${actual_palette}"' \
-        "$src_root/tests/quant/mapfile/0119_mapfile_export_act_stdout_exact.t" \
+        "$src_root/tests/palette/mapfile-io/0119_mapfile_export_act_stdout_exact.t" \
         >/dev/null 2>&1; then
     fail "ACT stdout test materializes an RMS-sensitive comparison file"
 fi
 # These are literal shell fragments asserted in the target tests.
 # shellcheck disable=SC2016
 require_fixed 'stat -c %s "${actual_palette}"' \
-    tests/quant/mapfile/0107_mapfile_export_riff_256_color_fields.t
+    tests/palette/mapfile-io/0107_mapfile_export_riff_256_color_fields.t
 # shellcheck disable=SC2016
 require_fixed 'od -An -tx1 -j20 -N4 "${actual_palette}"' \
-    tests/quant/mapfile/0107_mapfile_export_riff_256_color_fields.t
+    tests/palette/mapfile-io/0107_mapfile_export_riff_256_color_fields.t
 # shellcheck disable=SC2016
 require_fixed 'stat -c %s "${actual_palette}"' \
-    tests/quant/mapfile/0109_mapfile_export_act_256_color_count.t
+    tests/palette/mapfile-io/0109_mapfile_export_act_256_color_count.t
 # shellcheck disable=SC2016
 require_fixed 'od -An -tx1 -j768 -N4 "${actual_palette}"' \
-    tests/quant/mapfile/0109_mapfile_export_act_256_color_count.t
+    tests/palette/mapfile-io/0109_mapfile_export_act_256_color_count.t
 # shellcheck disable=SC2016
 require_fixed '-o/dev/null "${snake_gray_png}"' \
-    tests/quant/palette/usage/0015_grayscale_png_with_palette.t
+    tests/palette/mapfile-application/0100_grayscale_png_with_palette.t
 if grep -F 'target_sixel=' \
-        "$src_root/tests/quant/palette/usage/0015_grayscale_png_with_palette.t" \
+        "$src_root/tests/palette/mapfile-application/0100_grayscale_png_with_palette.t" \
         >/dev/null 2>&1; then
     fail "grayscale palette smoke test retains an unobserved SIXEL artifact"
 fi

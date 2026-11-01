@@ -38,9 +38,8 @@ collect_units_from_dirs() {
         if [ ! -d "${src_root}/${dir}" ]; then
             continue
         fi
-        find "${src_root}/${dir}" \
-            \( -type d -name _artifacts -prune \) -o \
-            \( -type f "$@" -print \) | \
+        sh "${default_root}/build-aux/list-tree-files.sh" \
+            "${src_root}/${dir}" "$@" | \
             LC_ALL=C sort | sed "s#^${src_root}/##"
     done
 }
@@ -181,7 +180,7 @@ trap 'rm -f "${header_temp}" "${header_units_temp}" \
 # very long newline-separated values on OpenVMS.
 {
     printf "%s\n" "include/sixel.h"
-    collect_units_from_dirs "${default_header_dirs}" \( -name '*.h' \)
+    collect_units_from_dirs "${default_header_dirs}" '*.h'
     printf "%s\n" "converters/completion_embed.h"
 } | awk 'NF && !seen[$0]++' >"${header_units_temp}"
 
@@ -225,7 +224,7 @@ if [ "$#" -gt 0 ]; then
     done
 else
     collect_units_from_dirs "${default_source_dirs}" \
-        \( -name '*.c' -o -name '*.m' \) >"${user_units_temp}"
+        '*.c' '*.m' >"${user_units_temp}"
 fi
 
 # Generate guards in one process instead of running command substitutions
@@ -527,7 +526,7 @@ emit_all_headers() {
                 emit_unit "${unit}" \
                     "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
                 ;;
-            tests/loader/builtin/loader_builtin_png_metadata_test_common.h)
+            tests/_support/loader/builtin/loader_builtin_png_metadata_test_common.h)
                 # This header defines code that calls test-only helpers.
                 # Unoptimized native links must not materialize it in the
                 # production library without its owning tests.

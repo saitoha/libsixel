@@ -1,0 +1,970 @@
+/*
+ * Shared helpers for loader pixelformat checks.
+ */
+
+#ifndef PIXELFORMAT_TEST_COMMON_H
+#define PIXELFORMAT_TEST_COMMON_H
+
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <sixel.h>
+#include <6cells.h>
+
+#include "src/allocator.h"
+#include "src/compat_stub.h"
+#include "src/factory.h"
+#include "src/frame-private.h"
+#include "src/status.h"
+#include "src/loader.h"
+#include "tests/_support/loader/chunk_test_common.h"
+
+#if defined(__clang__)
+# if __has_attribute(unused)
+#  define SIXEL_TEST_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_TEST_UNUSED
+# endif
+#elif defined(__GNUC__)
+# define SIXEL_TEST_UNUSED __attribute__((unused))
+#else
+# define SIXEL_TEST_UNUSED
+#endif
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
+#define RGBA_IMAGE_PATH \
+    "/tests/data/inputs/formats/rgba.png"
+#define JPEG_IMAGE_PATH \
+    "/tests/data/inputs/formats/grayscale.jpg"
+#define WEBP_IMAGE_PATH \
+    "/tests/data/inputs/snake_64.webp"
+#define WEBP_ANIMATED_IMAGE_PATH \
+    "/tests/data/inputs/formats/animated-lossless-2frame.webp"
+
+typedef struct loader_probe_context {
+    int callback_count;
+    int pixelformat;
+    int colorspace;
+    int width;
+    int height;
+    int transparent;
+    int multiframe;
+    int alpha_zero_is_transparent;
+    int has_transparent_mask;
+    size_t transparent_mask_size;
+    int transparent_mask_first;
+} loader_probe_context_t;
+
+/*
+ * Loader backends expect `context` to follow loader callback state layout.
+ *
+ * tests/loader invokes backend entry points directly, so this test-local
+ * adapter mirrors the minimal state needed by cancellation checks while still
+ * forwarding the frame callback to loader_probe_context_t.
+ */
+typedef struct loader_probe_callback_state {
+    void *loader;
+    sixel_load_image_function fn;
+    void *context;
+} loader_probe_callback_state_t;
+
+typedef SIXELSTATUS (*loader_component_new_fn)(
+    sixel_allocator_t *,
+    void **);
+
+typedef struct loader_component_case_expect {
+    int pixelformat;
+    int width;
+    int height;
+    int callback_count;
+    int transparent;
+    int multiframe;
+    int mask_present;
+    int mask_first;
+    int alpha_zero_is_transparent;
+    int colorspace;
+    int check_colorspace;
+} loader_component_case_expect_t;
+
+typedef struct loader_component_case_options {
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    unsigned char const *bgcolor;
+} loader_component_case_options_t;
+
+typedef struct loader_component_case_spec {
+    char const *label;
+    char const *relative_path;
+    loader_component_case_expect_t expect;
+    loader_component_case_options_t options;
+    loader_component_new_fn new_component;
+} loader_component_case_spec_t;
+
+#define GEOMETRY_ANY (-1)
+#define CALLBACK_COUNT_ANY (-1)
+#define FRAME_METADATA_ANY INT_MIN
+#define FRAME_TRANSPARENT_NONNEG (INT_MIN + 1)
+#define FRAME_MASK_ANY INT_MIN
+#define FRAME_MASK_VALUE_ANY INT_MIN
+#define FRAME_ALPHA_ZERO_ANY INT_MIN
+#define SIXEL_TEST_SKIP 77
+
+static SIXEL_TEST_UNUSED SIXELSTATUS
+loader_test_frame_get_pixels_view(sixel_frame_t *frame,
+                                  sixel_frame_pixels_view_t *view)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    memset(view, 0, sizeof(*view));
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->get_pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->get_pixels(frame_if, view);
+}
+
+static SIXEL_TEST_UNUSED SIXELSTATUS
+capture_frame(sixel_frame_t *frame, void *data)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    loader_probe_context_t *context;
+    sixel_frame_transparency_t transparency;
+
+    status = SIXEL_FALSE;
+    frame_if = NULL;
+    context = (loader_probe_context_t *)data;
+    memset(&transparency, 0, sizeof(transparency));
+    if (frame == NULL || context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = (sixel_frame_interface_t *)frame;
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->get_transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->callback_count += 1;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->colorspace = sixel_frame_get_colorspace(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
+    context->transparent = sixel_frame_get_transparent(frame);
+    context->multiframe = sixel_frame_get_multiframe(frame);
+    status = frame_if->vtbl->get_transparency(frame_if, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    context->alpha_zero_is_transparent =
+        transparency.alpha_zero_is_transparent;
+    context->has_transparent_mask =
+        transparency.transparent_mask != NULL ? 1 : 0;
+    context->transparent_mask_size = transparency.transparent_mask_size;
+    context->transparent_mask_first = FRAME_MASK_VALUE_ANY;
+    if (transparency.transparent_mask != NULL &&
+        transparency.transparent_mask_size != 0u) {
+        context->transparent_mask_first = transparency.transparent_mask[0];
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXEL_TEST_UNUSED SIXELSTATUS
+capture_frame_trampoline(sixel_frame_t *frame, void *data)
+{
+    loader_probe_callback_state_t *state;
+
+    state = (loader_probe_callback_state_t *)data;
+    if (state == NULL || state->fn == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return state->fn(frame, state->context);
+}
+
+static SIXEL_TEST_UNUSED int
+build_image_path(char const *source_root,
+                 char const *relative,
+                 char *buffer,
+                 size_t capacity)
+{
+    int written;
+
+    written = snprintf(buffer, capacity, "%s%s", source_root, relative);
+    if (written < 0 || (size_t)written >= capacity) {
+        return 1;
+    }
+
+    return 0;
+}
+
+typedef SIXELSTATUS (*loader_entry_fn)(
+    sixel_chunk_t const *,
+    int,
+    int,
+    int,
+    unsigned char *,
+    int,
+    int,
+    int,
+    sixel_load_image_function,
+    void *);
+
+static SIXEL_TEST_UNUSED int
+run_loader_case_with_options(char const *label,
+                             char const *relative_path,
+                             int expected_pixelformat,
+                             int expected_width,
+                             int expected_height,
+                             int fstatic,
+                             int fuse_palette,
+                             int reqcolors,
+                             loader_entry_fn loader)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    loader_probe_context_t context;
+    char const *source_root;
+#if defined(_MSC_VER)
+    char *source_root_dupe;
+    size_t source_root_len;
+#endif
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int result;
+    loader_probe_callback_state_t callback_state;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    cancel_flag = 0;
+    result = 1;
+#if defined(_MSC_VER)
+    source_root = NULL;
+    source_root_dupe = NULL;
+    source_root_len = 0;
+    _dupenv_s(&source_root_dupe, &source_root_len, "MESON_SOURCE_ROOT");
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "abs_top_srcdir");
+    }
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "TOP_SRCDIR");
+    }
+    if (source_root_dupe != NULL) {
+        source_root = source_root_dupe;
+    }
+#else
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
+    }
+#endif
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_create_from_source(&chunk,
+                             image_path,
+                             0,
+                             &cancel_flag,
+                             allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    context.callback_count = 0;
+    context.pixelformat = 0;
+    context.colorspace = 0;
+    context.width = 0;
+    context.height = 0;
+    context.transparent = FRAME_METADATA_ANY;
+    context.multiframe = FRAME_METADATA_ANY;
+    context.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    context.has_transparent_mask = FRAME_MASK_ANY;
+    context.transparent_mask_size = 0u;
+    context.transparent_mask_first = FRAME_MASK_VALUE_ANY;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_frame;
+    callback_state.context = &context;
+
+    status = loader(chunk,
+                    fstatic,
+                    fuse_palette,
+                    reqcolors,
+                    NULL,
+                    SIXEL_LOOP_AUTO,
+                    0,
+                    INT_MIN,
+                    capture_frame_trampoline,
+                    &callback_state);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    if (context.callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch\n", label);
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    if (context.pixelformat != expected_pixelformat) {
+        fprintf(stderr,
+                "%s: reported pixelformat %d\n",
+                label,
+                context.pixelformat);
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    if (context.width <= 0 || context.height <= 0) {
+        fprintf(stderr,
+                "%s: invalid geometry %dx%d\n",
+                label,
+                context.width,
+                context.height);
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    if (expected_width != GEOMETRY_ANY && expected_height != GEOMETRY_ANY) {
+        if (context.width != expected_width ||
+            context.height != expected_height) {
+            fprintf(stderr,
+                    "%s: unexpected geometry %dx%d\n",
+                    label,
+                    context.width,
+                    context.height);
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+    }
+    if (context.has_transparent_mask) {
+        size_t pixel_count;
+
+        pixel_count = (size_t)context.width;
+        if (pixel_count > (size_t)-1 / (size_t)context.height) {
+            fprintf(stderr,
+                    "%s: transparent mask pixel count overflow\n",
+                    label);
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        pixel_count *= (size_t)context.height;
+        if (context.transparent_mask_size < pixel_count) {
+            fprintf(stderr,
+                    "%s: transparent mask too short (%zu < %zu)\n",
+                    label,
+                    context.transparent_mask_size,
+                    pixel_count);
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+    }
+    result = 0;
+
+cleanup:
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    sixel_allocator_unref(allocator);
+#if defined(_MSC_VER)
+    free(source_root_dupe);
+#endif
+
+    return result;
+}
+static SIXEL_TEST_UNUSED SIXELSTATUS
+create_loader_component_by_name(char const *name,
+                                sixel_allocator_t *allocator,
+                                void **ppcomponent)
+{
+    SIXELSTATUS status;
+    sixel_factory_t *factory;
+    size_t name_len;
+    char classid[128];
+
+    status = SIXEL_FALSE;
+    factory = NULL;
+    name_len = 0u;
+    classid[0] = '\0';
+
+    if (name == NULL || *name == '\0') {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    name_len = strlen(name);
+    if (name_len + 8u > sizeof(classid)) {
+        sixel_helper_set_additional_message(
+            "create_loader_component_by_name: class id is too long.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memcpy(classid, "loader/", 7u);
+    memcpy(classid + 7u, name, name_len + 1u);
+
+    status = sixel_factory_get_default((void **)&factory);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = factory->vtbl->create(factory,
+                                   classid,
+                                   allocator,
+                                   ppcomponent);
+    factory->vtbl->unref(factory);
+
+    return status;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_with_options_full(
+    char const *label,
+    char const *relative_path,
+    loader_component_case_expect_t const *expect,
+    loader_component_case_options_t const *options,
+    loader_component_new_fn new_component)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
+    loader_probe_context_t context;
+    char const *source_root;
+#if defined(_MSC_VER)
+    char *source_root_dupe;
+    size_t source_root_len;
+#endif
+    char image_path[PATH_MAX];
+    int cancel_flag;
+    int result;
+    int expected_pixelformat;
+    int expected_colorspace;
+    int check_colorspace;
+    int expected_width;
+    int expected_height;
+    int expected_callback_count;
+    int expected_transparent;
+    int expected_multiframe;
+    int expected_mask_present;
+    int expected_mask_first;
+    int expected_alpha_zero_is_transparent;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    unsigned char const *bgcolor;
+    loader_probe_callback_state_t callback_state;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    chunk = NULL;
+    component = NULL;
+    cancel_flag = 0;
+    result = 1;
+    expected_pixelformat = 0;
+    expected_colorspace = FRAME_METADATA_ANY;
+    check_colorspace = 0;
+    expected_width = GEOMETRY_ANY;
+    expected_height = GEOMETRY_ANY;
+    expected_callback_count = CALLBACK_COUNT_ANY;
+    expected_transparent = FRAME_METADATA_ANY;
+    expected_multiframe = FRAME_METADATA_ANY;
+    expected_mask_present = FRAME_MASK_ANY;
+    expected_mask_first = FRAME_MASK_VALUE_ANY;
+    expected_alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    require_static = 1;
+    use_palette = 0;
+    reqcolors = 256;
+    bgcolor = NULL;
+    if (expect != NULL) {
+        expected_pixelformat = expect->pixelformat;
+        expected_colorspace = expect->colorspace;
+        check_colorspace = expect->check_colorspace;
+        expected_width = expect->width;
+        expected_height = expect->height;
+        expected_callback_count = expect->callback_count;
+        expected_transparent = expect->transparent;
+        expected_multiframe = expect->multiframe;
+        expected_mask_present = expect->mask_present;
+        expected_mask_first = expect->mask_first;
+        expected_alpha_zero_is_transparent
+            = expect->alpha_zero_is_transparent;
+    }
+    if (options != NULL) {
+        require_static = options->require_static;
+        use_palette = options->use_palette;
+        reqcolors = options->reqcolors;
+        bgcolor = options->bgcolor;
+    }
+#if defined(_MSC_VER)
+    source_root = NULL;
+    source_root_dupe = NULL;
+    source_root_len = 0;
+    _dupenv_s(&source_root_dupe, &source_root_len, "MESON_SOURCE_ROOT");
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "abs_top_srcdir");
+    }
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "TOP_SRCDIR");
+    }
+    if (source_root_dupe != NULL) {
+        source_root = source_root_dupe;
+    }
+#else
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
+    }
+#endif
+    if (source_root == NULL) {
+        source_root = ".";
+    }
+
+    if (build_image_path(source_root,
+                         relative_path,
+                         image_path,
+                         sizeof(image_path)) != 0) {
+        fprintf(stderr, "%s: failed to build image path\n", label);
+        return 1;
+    }
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
+        return 1;
+    }
+
+    status = sixel_chunk_create_from_source(&chunk,
+                             image_path,
+                             0,
+                             &cancel_flag,
+                             allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: failed to read sample\n", label);
+        goto cleanup;
+    }
+
+    status = new_component(allocator, (void **)&component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
+        goto cleanup;
+    }
+
+    context.callback_count = 0;
+    context.pixelformat = 0;
+    context.colorspace = 0;
+    context.width = 0;
+    context.height = 0;
+    context.transparent = FRAME_METADATA_ANY;
+    context.multiframe = FRAME_METADATA_ANY;
+    context.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    context.has_transparent_mask = FRAME_MASK_ANY;
+    context.transparent_mask_size = 0u;
+    context.transparent_mask_first = FRAME_MASK_VALUE_ANY;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_frame;
+    callback_state.context = &context;
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_BGCOLOR,
+                                           bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_load(component,
+                                         chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    if (expected_callback_count != CALLBACK_COUNT_ANY &&
+        context.callback_count != expected_callback_count) {
+        fprintf(stderr,
+                "%s: callback count mismatch (%d expected=%d)\n",
+                label,
+                context.callback_count,
+                expected_callback_count);
+        goto cleanup;
+    }
+    if (context.callback_count <= 0) {
+        fprintf(stderr, "%s: callback count mismatch\n", label);
+        goto cleanup;
+    }
+
+    if (context.pixelformat != expected_pixelformat) {
+        fprintf(stderr,
+                "%s: reported pixelformat %d\n",
+                label,
+                context.pixelformat);
+        goto cleanup;
+    }
+    if (check_colorspace != 0 && context.colorspace != expected_colorspace) {
+        fprintf(stderr,
+                "%s: colorspace mismatch (%d expected=%d)\n",
+                label,
+                context.colorspace,
+                expected_colorspace);
+        goto cleanup;
+    }
+
+    if (context.width <= 0 || context.height <= 0) {
+        fprintf(stderr,
+                "%s: invalid geometry %dx%d\n",
+                label,
+                context.width,
+                context.height);
+        goto cleanup;
+    }
+
+    if (expected_width != GEOMETRY_ANY && expected_height != GEOMETRY_ANY) {
+        if (context.width != expected_width ||
+            context.height != expected_height) {
+            fprintf(stderr,
+                    "%s: unexpected geometry %dx%d\n",
+                    label,
+                    context.width,
+                    context.height);
+            goto cleanup;
+        }
+    }
+    if (context.has_transparent_mask) {
+        size_t pixel_count;
+
+        pixel_count = (size_t)context.width;
+        if (pixel_count > (size_t)-1 / (size_t)context.height) {
+            fprintf(stderr,
+                    "%s: transparent mask pixel count overflow\n",
+                    label);
+            goto cleanup;
+        }
+        pixel_count *= (size_t)context.height;
+        if (context.transparent_mask_size < pixel_count) {
+            fprintf(stderr,
+                    "%s: transparent mask too short (%zu < %zu)\n",
+                    label,
+                    context.transparent_mask_size,
+                    pixel_count);
+            goto cleanup;
+        }
+    }
+    if (expected_transparent != FRAME_METADATA_ANY) {
+        if (expected_transparent == FRAME_TRANSPARENT_NONNEG) {
+            if (context.transparent < 0) {
+                fprintf(stderr,
+                        "%s: expected non-negative transparent index\n",
+                        label);
+                goto cleanup;
+            }
+        } else if (context.transparent != expected_transparent) {
+            fprintf(stderr,
+                    "%s: transparent index mismatch (%d expected=%d)\n",
+                    label,
+                    context.transparent,
+                    expected_transparent);
+            goto cleanup;
+        }
+    }
+    if (expected_multiframe != FRAME_METADATA_ANY &&
+        context.multiframe != expected_multiframe) {
+        fprintf(stderr,
+                "%s: multiframe mismatch (%d expected=%d)\n",
+                label,
+                context.multiframe,
+                expected_multiframe);
+        goto cleanup;
+    }
+    if (expected_mask_present != FRAME_MASK_ANY &&
+        context.has_transparent_mask != expected_mask_present) {
+        fprintf(stderr,
+                "%s: transparent mask presence mismatch "
+                "(%d expected=%d)\n",
+                label,
+                context.has_transparent_mask,
+                expected_mask_present);
+        goto cleanup;
+    }
+    if (expected_mask_first != FRAME_MASK_VALUE_ANY &&
+        context.transparent_mask_first != expected_mask_first) {
+        fprintf(stderr,
+                "%s: first transparent mask value mismatch "
+                "(%d expected=%d)\n",
+                label,
+                context.transparent_mask_first,
+                expected_mask_first);
+        goto cleanup;
+    }
+    if (expected_alpha_zero_is_transparent != FRAME_ALPHA_ZERO_ANY &&
+        context.alpha_zero_is_transparent
+            != expected_alpha_zero_is_transparent) {
+        fprintf(stderr,
+                "%s: alpha_zero_is_transparent mismatch "
+                "(%d expected=%d)\n",
+                label,
+                context.alpha_zero_is_transparent,
+                expected_alpha_zero_is_transparent);
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    sixel_allocator_unref(allocator);
+#if defined(_MSC_VER)
+    free(source_root_dupe);
+#endif
+
+    return result;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_with_options_ex(
+    char const *label,
+    char const *relative_path,
+    int expected_pixelformat,
+    int expected_width,
+    int expected_height,
+    int expected_callback_count,
+    int expected_transparent,
+    int expected_multiframe,
+    int require_static,
+    int use_palette,
+    int reqcolors,
+    unsigned char const *bgcolor,
+    loader_component_new_fn new_component)
+{
+    loader_component_case_expect_t expect;
+    loader_component_case_options_t options;
+    int result;
+
+    expect.pixelformat = expected_pixelformat;
+    expect.width = expected_width;
+    expect.height = expected_height;
+    expect.callback_count = expected_callback_count;
+    expect.transparent = expected_transparent;
+    expect.multiframe = expected_multiframe;
+    expect.mask_present = FRAME_MASK_ANY;
+    expect.mask_first = FRAME_MASK_VALUE_ANY;
+    expect.alpha_zero_is_transparent = FRAME_ALPHA_ZERO_ANY;
+    expect.colorspace = FRAME_METADATA_ANY;
+    expect.check_colorspace = 0;
+    options.require_static = require_static;
+    options.use_palette = use_palette;
+    options.reqcolors = reqcolors;
+    options.bgcolor = bgcolor;
+    result = run_loader_component_case_with_options_full(label,
+                                                         relative_path,
+                                                         &expect,
+                                                         &options,
+                                                         new_component);
+    return result;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_with_options_mask_ex(
+    char const *label,
+    char const *relative_path,
+    int expected_pixelformat,
+    int expected_width,
+    int expected_height,
+    int expected_callback_count,
+    int expected_transparent,
+    int expected_multiframe,
+    int expected_mask_present,
+    int expected_mask_first,
+    int expected_alpha_zero_is_transparent,
+    int require_static,
+    int use_palette,
+    int reqcolors,
+    unsigned char const *bgcolor,
+    loader_component_new_fn new_component)
+{
+    loader_component_case_expect_t expect;
+    loader_component_case_options_t options;
+    int result;
+
+    expect.pixelformat = expected_pixelformat;
+    expect.width = expected_width;
+    expect.height = expected_height;
+    expect.callback_count = expected_callback_count;
+    expect.transparent = expected_transparent;
+    expect.multiframe = expected_multiframe;
+    expect.mask_present = expected_mask_present;
+    expect.mask_first = expected_mask_first;
+    expect.alpha_zero_is_transparent = expected_alpha_zero_is_transparent;
+    expect.colorspace = FRAME_METADATA_ANY;
+    expect.check_colorspace = 0;
+    options.require_static = require_static;
+    options.use_palette = use_palette;
+    options.reqcolors = reqcolors;
+    options.bgcolor = bgcolor;
+    result = run_loader_component_case_with_options_full(label,
+                                                         relative_path,
+                                                         &expect,
+                                                         &options,
+                                                         new_component);
+    return result;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_from_spec(
+    loader_component_case_spec_t const *spec)
+{
+    int result;
+
+    if (spec == NULL || spec->label == NULL || spec->relative_path == NULL ||
+        spec->new_component == NULL) {
+        return 1;
+    }
+
+    result = run_loader_component_case_with_options_full(spec->label,
+                                                         spec->relative_path,
+                                                         &spec->expect,
+                                                         &spec->options,
+                                                         spec->new_component);
+    return result;
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case_with_options(
+    char const *label,
+    char const *relative_path,
+    int expected_pixelformat,
+    int expected_width,
+    int expected_height,
+    int require_static,
+    int use_palette,
+    int reqcolors,
+    loader_component_new_fn new_component)
+{
+    return run_loader_component_case_with_options_ex(label,
+                                                     relative_path,
+                                                     expected_pixelformat,
+                                                     expected_width,
+                                                     expected_height,
+                                                     1,
+                                                     FRAME_METADATA_ANY,
+                                                     FRAME_METADATA_ANY,
+                                                     require_static,
+                                                     use_palette,
+                                                     reqcolors,
+                                                     NULL,
+                                                     new_component);
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_component_case(char const *label,
+                          char const *relative_path,
+                          int expected_pixelformat,
+                          int expected_width,
+                          int expected_height,
+                          loader_component_new_fn new_component)
+{
+    return run_loader_component_case_with_options(label,
+                                                  relative_path,
+                                                  expected_pixelformat,
+                                                  expected_width,
+                                                  expected_height,
+                                                  1,
+                                                  0,
+                                                  256,
+                                                  new_component);
+}
+
+static SIXEL_TEST_UNUSED int
+run_loader_case(char const *label,
+                char const *relative_path,
+                int expected_pixelformat,
+                int expected_width,
+                int expected_height,
+                loader_entry_fn loader)
+{
+    return run_loader_case_with_options(label,
+                                        relative_path,
+                                        expected_pixelformat,
+                                        expected_width,
+                                        expected_height,
+                                        1,
+                                        0,
+                                        256,
+                                        loader);
+}
+
+#endif /* PIXELFORMAT_TEST_COMMON_H */
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

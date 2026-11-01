@@ -147,11 +147,11 @@ Cross-backend alpha and background behavior is defined by [Alpha Policy](alpha-p
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| LM-01 | Explicit loader entries retain first-occurrence order, duplicates are removed, explicitly selected non-default loaders remain eligible, and remaining default-enabled loaders append in registry order. | [tests/loader/unit/0012_loader_manager_open_plan.t](../../tests/loader/unit/0012_loader_manager_open_plan.t) |
-| LM-02 | A final `!` closes the plan after the deduplicated explicit entries and prevents automatic default-loader append. | [tests/loader/unit/0013_loader_manager_closed_plan.t](../../tests/loader/unit/0013_loader_manager_closed_plan.t) |
-| LM-03 | Only the documented mismatch and decoder-family statuses continue to another candidate; successful non-OK, allocation, argument, cancellation, and overflow statuses remain terminal. | [tests/loader/unit/0014_loader_manager_fallback_status.t](../../tests/loader/unit/0014_loader_manager_fallback_status.t) |
+| LM-01 | Explicit loader entries retain first-occurrence order, duplicates are removed, explicitly selected non-default loaders remain eligible, and remaining default-enabled loaders append in registry order. | [tests/loader/dispatch/0010_loader_manager_open_plan.t](../../tests/loader/dispatch/0010_loader_manager_open_plan.t) |
+| LM-02 | A final `!` closes the plan after the deduplicated explicit entries and prevents automatic default-loader append. | [tests/loader/dispatch/0011_loader_manager_closed_plan.t](../../tests/loader/dispatch/0011_loader_manager_closed_plan.t) |
+| LM-03 | Only the documented mismatch and decoder-family statuses continue to another candidate; successful non-OK, allocation, argument, cancellation, and overflow statuses remain terminal. | [tests/loader/dispatch/0012_loader_manager_fallback_status.t](../../tests/loader/dispatch/0012_loader_manager_fallback_status.t) |
 
-| LM-04 | After the first callback, callback errors and later decoder errors remain terminal and do not invoke a fallback backend. | [tests/loader/libpng/0235_libpng_fallback.t](../../tests/loader/libpng/0235_libpng_fallback.t), [tests/loader/libpng/0244_libpng_late_error.t](../../tests/loader/libpng/0244_libpng_late_error.t) |
+| LM-04 | After the first callback, callback errors and later decoder errors remain terminal and do not invoke a fallback backend. | [tests/loader-png/decode/0062_libpng_fallback.t](../../tests/loader-png/decode/0062_libpng_fallback.t), [tests/loader-png/decode/0067_libpng_late_error.t](../../tests/loader-png/decode/0067_libpng_late_error.t) |
 
 ### Coverage boundary
 

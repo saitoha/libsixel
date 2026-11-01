@@ -186,7 +186,7 @@ Parallel work must preserve:
 - identical malformed-input and allocation-failure handling; and
 - the public decoder's output ownership contract.
 
-The ordinary timeline records paired starts and finishes for both parse and gather. `tests/cli/sixel2png/0011_parallel_timeline_spans_paired.t` keeps that diagnostic contract from silently degrading back to zero-length markers. `0012_parallel_gather_barrier.t` verifies that every gather worker reaches the barrier before publication begins. Decoder tests 0025 and 0026 cover partial gather creation and disjoint publication from converging byte spans, including the clean-fallback guarantee.
+The ordinary timeline records paired starts and finishes for both parse and gather. `tests/cli/sixel2png/0012_parallel_timeline_spans_paired.t` keeps that diagnostic contract from silently degrading back to zero-length markers. `0013_parallel_gather_barrier.t` verifies that every gather worker reaches the barrier before publication begins. Decoder tests 0025 and 0026 cover partial gather creation and disjoint publication from converging byte spans, including the clean-fallback guarantee.
 
 ## Measurement limits
 
@@ -198,11 +198,11 @@ The checked-in timeline and two-size comparison are single diagnostic observatio
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DTH-01 | Successful parallel requests preserve initial and inherited registers and literal row placement in 8-bit indexed, 16-bit indexed and RGBA buffers. | [tests/processing/decoder/0091_parallel_inherited_register.t](../../tests/processing/decoder/0091_parallel_inherited_register.t) |
-| DTH-02 | Prefix-derived absolute rows clip to a trusted raster and report out-of-raster paint. | [tests/processing/decoder/0092_parallel_prefix_clipping.t](../../tests/processing/decoder/0092_parallel_prefix_clipping.t) |
-| DTH-03 | A large encoded paint extent remains safe when clipped to a small trusted canvas, including validation diagnostics. | [tests/processing/decoder/0093_parallel_large_clipped_scan.t](../../tests/processing/decoder/0093_parallel_large_clipped_scan.t) |
-| DTH-04 | Worker-local column allocation failure discards private paint and leaves shared pixels and coverage untouched. | [tests/processing/decoder/0101_parallel_columns_allocation_failure.t](../../tests/processing/decoder/0101_parallel_columns_allocation_failure.t) |
-| DTH-05 | Partial parse-worker creation joins started workers and returns a clean serial fallback. | [tests/processing/decoder/0102_parallel_parse_create_failure.t](../../tests/processing/decoder/0102_parallel_parse_create_failure.t) |
-| DTH-06 | Embedded ST followed by trailing data preserves legacy absolute offsets and overlap fallback at each tested worker budget. | [tests/processing/decoder/0103_parallel_early_st_compatibility.t](../../tests/processing/decoder/0103_parallel_early_st_compatibility.t) |
+| DTH-01 | Successful parallel requests preserve initial and inherited registers and literal row placement in 8-bit indexed, 16-bit indexed and RGBA buffers. | [tests/decoder/parser/0101_parallel_inherited_register.t](../../tests/decoder/parser/0101_parallel_inherited_register.t) |
+| DTH-02 | Prefix-derived absolute rows clip to a trusted raster and report out-of-raster paint. | [tests/decoder/parser/0102_parallel_prefix_clipping.t](../../tests/decoder/parser/0102_parallel_prefix_clipping.t) |
+| DTH-03 | A large encoded paint extent remains safe when clipped to a small trusted canvas, including validation diagnostics. | [tests/decoder/parser/0103_parallel_large_clipped_scan.t](../../tests/decoder/parser/0103_parallel_large_clipped_scan.t) |
+| DTH-04 | Worker-local column allocation failure discards private paint and leaves shared pixels and coverage untouched. | [tests/decoder/parser/0111_parallel_columns_allocation_failure.t](../../tests/decoder/parser/0111_parallel_columns_allocation_failure.t) |
+| DTH-05 | Partial parse-worker creation joins started workers and returns a clean serial fallback. | [tests/decoder/parser/0112_parallel_parse_create_failure.t](../../tests/decoder/parser/0112_parallel_parse_create_failure.t) |
+| DTH-06 | Embedded ST followed by trailing data preserves legacy absolute offsets and overlap fallback at each tested worker budget. | [tests/decoder/parser/0113_parallel_early_st_compatibility.t](../../tests/decoder/parser/0113_parallel_early_st_compatibility.t) |
 
-The [decoder suite](../../tests/processing/decoder) also covers sparse bands, converging spans, palette redefinitions and partial worker creation; the [CLI suite](../../tests/cli/sixel2png) checks paired timeline spans and the all-ready gather barrier. Timing observations depend on the host and are not correctness assertions.
+The [decoder suite](../../tests/decoder/parser) also covers sparse bands, converging spans, palette redefinitions and partial worker creation; the [CLI suite](../../tests/cli/sixel2png) checks paired timeline spans and the all-ready gather barrier. Timing observations depend on the host and are not correctness assertions.

@@ -55,21 +55,15 @@ esac
 {
     (
         cd "$tests_dir" || exit 1
-        find . \
-            \( \
-                -path './.perl-test-venv' -o \
-                -path './.php-test-venv' -o \
-                -path './.python-test-venv' -o \
-                -path './.ruby-test-venv' -o \
-                -path './_artifacts' \
-            \) -prune -o \
-            -type f \( \
-            -name '*.t' -o \
-            -path './bindings/php/[0-9][0-9][0-9][0-9]_*.php' -o \
-            -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' -o \
-            -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' -o \
-            -path './bindings/perl/[0-9][0-9][0-9][0-9]_*.pl' \
-            \) -print
+        # Category depth is enforced by staticcheck. One bulk glob avoids
+        # a process or metadata probe per case and needs no findutils.
+        LC_ALL=C
+        export LC_ALL
+        printf '%s\n' ./*/*/[0-9][0-9][0-9][0-9]_*.t \
+            ./bindings/php/[0-9][0-9][0-9][0-9]_*.php \
+            ./bindings/python/[0-9][0-9][0-9][0-9]_*.py \
+            ./bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb \
+            ./bindings/perl/[0-9][0-9][0-9][0-9]_*.pl
     ) || printf '%s\n' __SIXEL_TEST_DISCOVERY_FAILED__
 } |
 {
@@ -103,32 +97,9 @@ esac
         {
             path = $0
             sub("^\\./", "", path)
-            if (path == "docs/consistency/0004_envvars_vs_help.t") {
-                # This check is static and runs under the dedicated
-                # staticcheck target instead of runtime test suites.
-                next
-            }
-            if (path == "docs/consistency/0001_help_vs_man.t") {
-                # This check is now covered by staticcheck.
-                next
-            }
-            if (path == "docs/consistency/0002_man_vs_bash_completion.t") {
-                # This check is now covered by staticcheck.
-                next
-            }
-            if (path == "loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t") {
-                # This check validates static code contracts in src/frompsd.c.
-                # Keep it under staticcheck to avoid dynamic check overhead.
-                next
-            }
-            if (path == "loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t") {
-                # This check validates static code contracts in src/frompsd.c.
-                # Keep it under staticcheck to avoid dynamic check overhead.
-                next
-            }
-            if (path == "quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t") {
-                # This check validates static code contracts in a C test source.
-                # Keep it under staticcheck to avoid dynamic check overhead.
+            # An unmatched POSIX glob remains literal. Case paths cannot
+            # contain wildcard characters under the naming contract.
+            if (index(path, "*") != 0) {
                 next
             }
             if (ruby_tests_mode == "skip" &&

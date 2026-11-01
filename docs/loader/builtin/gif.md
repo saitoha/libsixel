@@ -112,7 +112,7 @@ The LZW dictionary, sub-block lengths, image rectangles, frame count, and dispos
 - GIF parser, LZW decode, canvas, frame selection, and replay: [`fromgif.c`](../../../src/fromgif.c)
 - Builtin dispatch and common frame finalization: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha and background semantics: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
-- Broader non-owning format and malformed-stream suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning format and malformed-stream suite: [`tests/loader/gif`](../../../tests/loader/gif)
 
 ## Test coverage
 
@@ -124,34 +124,34 @@ The rows below are pipeline landmarks rather than the complete suite. The [GIF c
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| GIF-01 | A positive start-frame selection emits the requested composited frame rather than renumbering the source stream. | [tests/loader/builtin/0044_builtin_gif_start_frame_positive.t](../../../tests/loader/builtin/0044_builtin_gif_start_frame_positive.t) |
-| GIF-02 | A structurally valid unknown extension is consumed without corrupting the following block boundary. | [tests/loader/builtin/0261_loader_builtin_gif_unknown_extension_ignored.t](../../../tests/loader/builtin/0261_loader_builtin_gif_unknown_extension_ignored.t) |
-| GIF-03 | A later frame's local color table replaces global-table colors for that frame. | [tests/loader/builtin/1972_loader_builtin_gif_local_palette_numeric.t](../../../tests/loader/builtin/1972_loader_builtin_gif_local_palette_numeric.t) |
-| GIF-04 | Disposal method 3 restores the saved pre-frame canvas before the next composition. | [tests/loader/builtin/1971_loader_builtin_gif_disposal3_numeric.t](../../../tests/loader/builtin/1971_loader_builtin_gif_disposal3_numeric.t) |
-| GIF-05 | Automatic looping honors a finite Netscape loop count for a multi-frame stream. | [tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t](../../../tests/loader/builtin/0265_loader_builtin_gif_loop_auto_loop2.t) |
-| GIF-06 | The GIF87a signature reaches the same exact-pixel decode path as the later GIF89a dialect. | [tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t](../../../tests/loader/builtin/1939_loader_builtin_gif87a_numeric.t) |
-| GIF-07 | Four-pass interlacing maps encoded rows to their exact logical-screen positions. | [tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t](../../../tests/loader/builtin/1940_loader_builtin_gif_interlace_four_pass_numeric.t) |
-| GIF-08 | A nonzero image-descriptor offset composites into the full logical-screen canvas. | [tests/loader/builtin/1941_loader_builtin_gif_rectangle_offset_numeric.t](../../../tests/loader/builtin/1941_loader_builtin_gif_rectangle_offset_numeric.t) |
-| GIF-09 | Comment, Plain Text, and unknown Application extension sub-blocks preserve the following image boundary. | [tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t](../../../tests/loader/builtin/1943_loader_builtin_gif_extension_subblocks_numeric.t) |
-| GIF-10 | Disposal method 2 clears the previous dirty rectangle before the next frame is composed. | [tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t](../../../tests/loader/builtin/1946_loader_builtin_gif_disposal2_numeric.t) |
-| GIF-11 | Literal LZW input remains exact while the dictionary crosses each code-width boundary through 12 bits. | [tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t](../../../tests/loader/builtin/1947_loader_builtin_gif_lzw_12bit_width_numeric.t) |
-| GIF-12 | Emitted frames preserve exact GCE delays and report the expected frame, loop, and multiframe metadata. | [tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t](../../../tests/loader/builtin/1993_loader_builtin_gif_animation_metadata_numeric.t) |
+| GIF-01 | A positive start-frame selection emits the requested composited frame rather than renumbering the source stream. | [tests/loader/gif/0001_builtin_gif_start_frame_positive.t](../../../tests/loader/gif/0001_builtin_gif_start_frame_positive.t) |
+| GIF-02 | A structurally valid unknown extension is consumed without corrupting the following block boundary. | [tests/loader/gif/0014_loader_builtin_gif_unknown_extension_ignored.t](../../../tests/loader/gif/0014_loader_builtin_gif_unknown_extension_ignored.t) |
+| GIF-03 | A later frame's local color table replaces global-table colors for that frame. | [tests/loader/gif/0036_loader_builtin_gif_local_palette_numeric.t](../../../tests/loader/gif/0036_loader_builtin_gif_local_palette_numeric.t) |
+| GIF-04 | Disposal method 3 restores the saved pre-frame canvas before the next composition. | [tests/loader/gif/0035_loader_builtin_gif_disposal3_numeric.t](../../../tests/loader/gif/0035_loader_builtin_gif_disposal3_numeric.t) |
+| GIF-05 | Automatic looping honors a finite Netscape loop count for a multi-frame stream. | [tests/loader/gif/0018_loader_builtin_gif_loop_auto_loop2.t](../../../tests/loader/gif/0018_loader_builtin_gif_loop_auto_loop2.t) |
+| GIF-06 | The GIF87a signature reaches the same exact-pixel decode path as the later GIF89a dialect. | [tests/loader/gif/0026_loader_builtin_gif87a_numeric.t](../../../tests/loader/gif/0026_loader_builtin_gif87a_numeric.t) |
+| GIF-07 | Four-pass interlacing maps encoded rows to their exact logical-screen positions. | [tests/loader/gif/0027_loader_builtin_gif_interlace_four_pass_numeric.t](../../../tests/loader/gif/0027_loader_builtin_gif_interlace_four_pass_numeric.t) |
+| GIF-08 | A nonzero image-descriptor offset composites into the full logical-screen canvas. | [tests/loader/gif/0028_loader_builtin_gif_rectangle_offset_numeric.t](../../../tests/loader/gif/0028_loader_builtin_gif_rectangle_offset_numeric.t) |
+| GIF-09 | Comment, Plain Text, and unknown Application extension sub-blocks preserve the following image boundary. | [tests/loader/gif/0030_loader_builtin_gif_extension_subblocks_numeric.t](../../../tests/loader/gif/0030_loader_builtin_gif_extension_subblocks_numeric.t) |
+| GIF-10 | Disposal method 2 clears the previous dirty rectangle before the next frame is composed. | [tests/loader/gif/0033_loader_builtin_gif_disposal2_numeric.t](../../../tests/loader/gif/0033_loader_builtin_gif_disposal2_numeric.t) |
+| GIF-11 | Literal LZW input remains exact while the dictionary crosses each code-width boundary through 12 bits. | [tests/loader/gif/0034_loader_builtin_gif_lzw_12bit_width_numeric.t](../../../tests/loader/gif/0034_loader_builtin_gif_lzw_12bit_width_numeric.t) |
+| GIF-12 | Emitted frames preserve exact GCE delays and report the expected frame, loop, and multiframe metadata. | [tests/loader/gif/0037_loader_builtin_gif_animation_metadata_numeric.t](../../../tests/loader/gif/0037_loader_builtin_gif_animation_metadata_numeric.t) |
 
 ### Decoded frame value tests
 
 | ID | Frame value contract | Owning test |
 | --- | --- | --- |
-| GIFQ-01 | The later-frame local/global palette switch preserves every expected decoded RGB component exactly after encoding. | [tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_samples.t](../../../tests/loader/builtin/0259_loader_builtin_gif_lct_gct_switch_frame2_samples.t) |
-| GIFQ-02 | Transparency plus disposal 3 produces the expected frame, with at most two byte levels of endpoint-palette error plus float roundoff in every component. | [tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_samples.t](../../../tests/loader/builtin/0234_loader_builtin_gif_transparency_dispose3_frame2_samples.t) |
+| GIFQ-01 | The later-frame local/global palette switch preserves every expected decoded RGB component exactly after encoding. | [tests/loader/gif/0012_loader_builtin_gif_lct_gct_switch_frame2_samples.t](../../../tests/loader/gif/0012_loader_builtin_gif_lct_gct_switch_frame2_samples.t) |
+| GIFQ-02 | Transparency plus disposal 3 produces the expected frame, with at most two byte levels of endpoint-palette error plus float roundoff in every component. | [tests/loader/gif/0007_loader_builtin_gif_transparency_dispose3_frame2_samples.t](../../../tests/loader/gif/0007_loader_builtin_gif_transparency_dispose3_frame2_samples.t) |
 
 ### Defensive and malformed-input tests
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| GIF-90 | Repeated disposal/history transitions complete within the watchdog rather than hanging or growing without bound. | [tests/loader/builtin/0260_loader_builtin_gif_disposal_stress_watchdog.t](../../../tests/loader/builtin/0260_loader_builtin_gif_disposal_stress_watchdog.t) |
-| GIF-91 | An image rectangle extending beyond the logical screen is rejected before raster writes. | [tests/loader/builtin/1942_loader_builtin_gif_rectangle_oob_reject.t](../../../tests/loader/builtin/1942_loader_builtin_gif_rectangle_oob_reject.t) |
-| GIF-92 | A raster sub-block shorter than its declared length is rejected without emitting a frame. | [tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t](../../../tests/loader/builtin/1944_loader_builtin_gif_truncated_raster_reject.t) |
-| GIF-93 | An LZW dictionary reference beyond the next available code is rejected without emitting a frame. | [tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t](../../../tests/loader/builtin/1945_loader_builtin_gif_illegal_lzw_code_reject.t) |
+| GIF-90 | Repeated disposal/history transitions complete within the watchdog rather than hanging or growing without bound. | [tests/loader/gif/0013_loader_builtin_gif_disposal_stress_watchdog.t](../../../tests/loader/gif/0013_loader_builtin_gif_disposal_stress_watchdog.t) |
+| GIF-91 | An image rectangle extending beyond the logical screen is rejected before raster writes. | [tests/loader/gif/0029_loader_builtin_gif_rectangle_oob_reject.t](../../../tests/loader/gif/0029_loader_builtin_gif_rectangle_oob_reject.t) |
+| GIF-92 | A raster sub-block shorter than its declared length is rejected without emitting a frame. | [tests/loader/gif/0031_loader_builtin_gif_truncated_raster_reject.t](../../../tests/loader/gif/0031_loader_builtin_gif_truncated_raster_reject.t) |
+| GIF-93 | An LZW dictionary reference beyond the next available code is rejected without emitting a frame. | [tests/loader/gif/0032_loader_builtin_gif_illegal_lzw_code_reject.t](../../../tests/loader/gif/0032_loader_builtin_gif_illegal_lzw_code_reject.t) |
 
 Coverage audit note: exact owners isolate both format signatures, local/global palettes, four-pass interlacing, descriptor offsets and bounds, known extension families, LZW width growth and illegal references, and disposal methods 2 and 3. The LSQA cases remain complementary end-to-end quality floors. The owners do not form a complete disposal × background-policy × palette-fusion × start-frame/loop matrix.
 
@@ -161,42 +161,42 @@ The fixtures are two-by-two GIFs assembled in memory. Input ICCs are serialized 
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| GICC-01 | Global P3 palette retains extended linear RGB. | [tests/loader/builtin/gif_icc/0001_gif_icc_global_numeric.t](../../../tests/loader/builtin/gif_icc/0001_gif_icc_global_numeric.t) |
-| GICC-02 | Local P3 palette overrides the global table without byte narrowing. | [tests/loader/builtin/gif_icc/0002_gif_icc_local_numeric.t](../../../tests/loader/builtin/gif_icc/0002_gif_icc_local_numeric.t) |
-| GICC-03 | An sRGB profile yields the independently decoded transfer values. | [tests/loader/builtin/gif_icc/0003_gif_icc_srgb_numeric.t](../../../tests/loader/builtin/gif_icc/0003_gif_icc_srgb_numeric.t) |
-| GICC-04 | An RGB gamma-2 profile yields squared source samples. | [tests/loader/builtin/gif_icc/0004_gif_icc_gamma2_numeric.t](../../../tests/loader/builtin/gif_icc/0004_gif_icc_gamma2_numeric.t) |
-| GICC-05 | One-byte ICC sub-blocks reassemble to byte-identical profile data. | [tests/loader/builtin/gif_icc/0005_gif_icc_split_bytes_numeric.t](../../../tests/loader/builtin/gif_icc/0005_gif_icc_split_bytes_numeric.t) |
-| GICC-06 | A profile after the image is adopted before the first callback. | [tests/loader/builtin/gif_icc/0006_gif_icc_late_profile_numeric.t](../../../tests/loader/builtin/gif_icc/0006_gif_icc_late_profile_numeric.t) |
-| GICC-07 | Untagged input keeps the byte palette without CMS application. | [tests/loader/builtin/gif_icc/0007_gif_icc_untagged_byte_numeric.t](../../../tests/loader/builtin/gif_icc/0007_gif_icc_untagged_byte_numeric.t) |
-| GICC-08 | CMS-disabled ICC input keeps the byte palette without CMS application. | [tests/loader/builtin/gif_icc/0008_gif_icc_cms_none_byte_numeric.t](../../../tests/loader/builtin/gif_icc/0008_gif_icc_cms_none_byte_numeric.t) |
-| GICC-09 | Binary transparency keeps exact zero coverage outside the color transform. | [tests/loader/builtin/gif_icc/0009_gif_icc_alpha_numeric.t](../../../tests/loader/builtin/gif_icc/0009_gif_icc_alpha_numeric.t) |
-| GICC-10 | The logical-screen background uses the source profile. | [tests/loader/builtin/gif_icc/0010_gif_icc_file_background_numeric.t](../../../tests/loader/builtin/gif_icc/0010_gif_icc_file_background_numeric.t) |
-| GICC-11 | Explicit-first background is normalized independently of the source ICC. | [tests/loader/builtin/gif_icc/0011_gif_icc_explicit_background_numeric.t](../../../tests/loader/builtin/gif_icc/0011_gif_icc_explicit_background_numeric.t) |
-| GICC-12 | File-first policy retains the profiled file background over an explicit value. | [tests/loader/builtin/gif_icc/0012_gif_icc_file_first_background_numeric.t](../../../tests/loader/builtin/gif_icc/0012_gif_icc_file_first_background_numeric.t) |
-| GICC-13 | Disposal 2 restores the profiled background after a local-table frame. | [tests/loader/builtin/gif_icc/0013_gif_icc_disposal2_numeric.t](../../../tests/loader/builtin/gif_icc/0013_gif_icc_disposal2_numeric.t) |
-| GICC-14 | Disposal 3 restores the previous float canvas rather than the background. | [tests/loader/builtin/gif_icc/0014_gif_icc_disposal3_numeric.t](../../../tests/loader/builtin/gif_icc/0014_gif_icc_disposal3_numeric.t) |
-| GICC-15 | Interlaced source rows retain the same interpreted palette values. | [tests/loader/builtin/gif_icc/0015_gif_icc_interlace_numeric.t](../../../tests/loader/builtin/gif_icc/0015_gif_icc_interlace_numeric.t) |
-| GICC-16 | Positive start-frame selection preserves prior composition and frame numbering. | [tests/loader/builtin/gif_icc/0016_gif_icc_start_positive_numeric.t](../../../tests/loader/builtin/gif_icc/0016_gif_icc_start_positive_numeric.t) |
-| GICC-17 | Negative start-frame selection resolves against the source frame count. | [tests/loader/builtin/gif_icc/0017_gif_icc_start_negative_numeric.t](../../../tests/loader/builtin/gif_icc/0017_gif_icc_start_negative_numeric.t) |
-| GICC-18 | Cached replay retains extended colors, source delays and loop numbers. | [tests/loader/builtin/gif_icc/0018_gif_icc_replay_numeric.t](../../../tests/loader/builtin/gif_icc/0018_gif_icc_replay_numeric.t) |
-| GICC-19 | An unknown application identifier does not trigger CMS or float promotion. | [tests/loader/builtin/gif_icc/0019_gif_icc_unknown_app_byte_numeric.t](../../../tests/loader/builtin/gif_icc/0019_gif_icc_unknown_app_byte_numeric.t) |
-| GICC-20 | An invalid recognized ICC profile fails before a frame is emitted. | [tests/loader/builtin/gif_icc/0020_gif_icc_invalid_profile.t](../../../tests/loader/builtin/gif_icc/0020_gif_icc_invalid_profile.t) |
-| GICC-21 | A non-RGB profile fails instead of interpreting RGB codes in another domain. | [tests/loader/builtin/gif_icc/0021_gif_icc_wrong_domain_reject.t](../../../tests/loader/builtin/gif_icc/0021_gif_icc_wrong_domain_reject.t) |
-| GICC-22 | Duplicate ICC declarations fail without choosing either profile. | [tests/loader/builtin/gif_icc/0022_gif_icc_duplicate_reject.t](../../../tests/loader/builtin/gif_icc/0022_gif_icc_duplicate_reject.t) |
-| GICC-23 | An empty recognized ICC declaration fails before output. | [tests/loader/builtin/gif_icc/0023_gif_icc_empty_reject.t](../../../tests/loader/builtin/gif_icc/0023_gif_icc_empty_reject.t) |
-| GICC-24 | A truncated recognized ICC chain fails before output. | [tests/loader/builtin/gif_icc/0024_gif_icc_truncated_blocks.t](../../../tests/loader/builtin/gif_icc/0024_gif_icc_truncated_blocks.t) |
-| GICC-25 | A recognized ICC stream without a closing trailer fails before output. | [tests/loader/builtin/gif_icc/0025_gif_icc_missing_trailer_reject.t](../../../tests/loader/builtin/gif_icc/0025_gif_icc_missing_trailer_reject.t) |
-| GICC-26 | CMS-disabled input skips duplicate ICC extensions as ordinary application data. | [tests/loader/builtin/gif_icc/0026_gif_icc_cms_none_duplicate_numeric.t](../../../tests/loader/builtin/gif_icc/0026_gif_icc_cms_none_duplicate_numeric.t) |
-| GICC-27 | Actual lcms2 palette conversion preserves the numerical color contract. | [tests/loader/builtin/gif_icc/0027_gif_icc_lcms2_numeric.t](../../../tests/loader/builtin/gif_icc/0027_gif_icc_lcms2_numeric.t) |
-| GICC-28 | Actual ColorSync palette conversion preserves the numerical color contract. | [tests/loader/builtin/gif_icc/0028_gif_icc_colorsync_numeric.t](../../../tests/loader/builtin/gif_icc/0028_gif_icc_colorsync_numeric.t) |
-| GICC-29 | The gamma float target uses signed extended sRGB encoding after composition. | [tests/loader/builtin/gif_icc/0029_gif_icc_gamma_target_numeric.t](../../../tests/loader/builtin/gif_icc/0029_gif_icc_gamma_target_numeric.t) |
-| GICC-30 | A failed initial palette hook publishes no frame. | [tests/loader/builtin/gif_icc/0030_gif_icc_fail_global.t](../../../tests/loader/builtin/gif_icc/0030_gif_icc_fail_global.t) |
-| GICC-31 | A failed later palette hook preserves the earlier callback count and publishes no incomplete frame. | [tests/loader/builtin/gif_icc/0031_gif_icc_fail_local.t](../../../tests/loader/builtin/gif_icc/0031_gif_icc_fail_local.t) |
-| GICC-32 | A failed float canvas allocation does not fall back to byte output. | [tests/loader/builtin/gif_icc/0032_gif_icc_fail_canvas.t](../../../tests/loader/builtin/gif_icc/0032_gif_icc_fail_canvas.t) |
-| GICC-33 | ICC extraction rejects a payload above 16 MiB without allocating profile output. | [tests/loader/builtin/gif_icc/0033_gif_icc_over_limit_reject.t](../../../tests/loader/builtin/gif_icc/0033_gif_icc_over_limit_reject.t) |
-| GICC-34 | ICC extraction accepts and preserves all bytes at the 16 MiB limit. | [tests/loader/builtin/gif_icc/0034_gif_icc_limit_exact_numeric.t](../../../tests/loader/builtin/gif_icc/0034_gif_icc_limit_exact_numeric.t) |
-| GICC-35 | A local-only table works without any global color table. | [tests/loader/builtin/gif_icc/0035_gif_icc_local_only_numeric.t](../../../tests/loader/builtin/gif_icc/0035_gif_icc_local_only_numeric.t) |
-| GICC-36 | Explicit background retains its own interpretation without a global table. | [tests/loader/builtin/gif_icc/0036_gif_icc_explicit_no_global_numeric.t](../../../tests/loader/builtin/gif_icc/0036_gif_icc_explicit_no_global_numeric.t) |
-| GICC-37 | Gamma-target replay does not apply a source ICC or transfer twice. | [tests/loader/builtin/gif_icc/0037_gif_icc_gamma_replay_numeric.t](../../../tests/loader/builtin/gif_icc/0037_gif_icc_gamma_replay_numeric.t) |
+| GICC-01 | Global P3 palette retains extended linear RGB. | [tests/loader/gif/0038_gif_icc_global_numeric.t](../../../tests/loader/gif/0038_gif_icc_global_numeric.t) |
+| GICC-02 | Local P3 palette overrides the global table without byte narrowing. | [tests/loader/gif/0039_gif_icc_local_numeric.t](../../../tests/loader/gif/0039_gif_icc_local_numeric.t) |
+| GICC-03 | An sRGB profile yields the independently decoded transfer values. | [tests/loader/gif/0040_gif_icc_srgb_numeric.t](../../../tests/loader/gif/0040_gif_icc_srgb_numeric.t) |
+| GICC-04 | An RGB gamma-2 profile yields squared source samples. | [tests/loader/gif/0041_gif_icc_gamma2_numeric.t](../../../tests/loader/gif/0041_gif_icc_gamma2_numeric.t) |
+| GICC-05 | One-byte ICC sub-blocks reassemble to byte-identical profile data. | [tests/loader/gif/0042_gif_icc_split_bytes_numeric.t](../../../tests/loader/gif/0042_gif_icc_split_bytes_numeric.t) |
+| GICC-06 | A profile after the image is adopted before the first callback. | [tests/loader/gif/0043_gif_icc_late_profile_numeric.t](../../../tests/loader/gif/0043_gif_icc_late_profile_numeric.t) |
+| GICC-07 | Untagged input keeps the byte palette without CMS application. | [tests/loader/gif/0044_gif_icc_untagged_byte_numeric.t](../../../tests/loader/gif/0044_gif_icc_untagged_byte_numeric.t) |
+| GICC-08 | CMS-disabled ICC input keeps the byte palette without CMS application. | [tests/loader/gif/0045_gif_icc_cms_none_byte_numeric.t](../../../tests/loader/gif/0045_gif_icc_cms_none_byte_numeric.t) |
+| GICC-09 | Binary transparency keeps exact zero coverage outside the color transform. | [tests/loader/gif/0046_gif_icc_alpha_numeric.t](../../../tests/loader/gif/0046_gif_icc_alpha_numeric.t) |
+| GICC-10 | The logical-screen background uses the source profile. | [tests/loader/gif/0047_gif_icc_file_background_numeric.t](../../../tests/loader/gif/0047_gif_icc_file_background_numeric.t) |
+| GICC-11 | Explicit-first background is normalized independently of the source ICC. | [tests/loader/gif/0048_gif_icc_explicit_background_numeric.t](../../../tests/loader/gif/0048_gif_icc_explicit_background_numeric.t) |
+| GICC-12 | File-first policy retains the profiled file background over an explicit value. | [tests/loader/gif/0049_gif_icc_file_first_background_numeric.t](../../../tests/loader/gif/0049_gif_icc_file_first_background_numeric.t) |
+| GICC-13 | Disposal 2 restores the profiled background after a local-table frame. | [tests/loader/gif/0050_gif_icc_disposal2_numeric.t](../../../tests/loader/gif/0050_gif_icc_disposal2_numeric.t) |
+| GICC-14 | Disposal 3 restores the previous float canvas rather than the background. | [tests/loader/gif/0051_gif_icc_disposal3_numeric.t](../../../tests/loader/gif/0051_gif_icc_disposal3_numeric.t) |
+| GICC-15 | Interlaced source rows retain the same interpreted palette values. | [tests/loader/gif/0052_gif_icc_interlace_numeric.t](../../../tests/loader/gif/0052_gif_icc_interlace_numeric.t) |
+| GICC-16 | Positive start-frame selection preserves prior composition and frame numbering. | [tests/loader/gif/0053_gif_icc_start_positive_numeric.t](../../../tests/loader/gif/0053_gif_icc_start_positive_numeric.t) |
+| GICC-17 | Negative start-frame selection resolves against the source frame count. | [tests/loader/gif/0054_gif_icc_start_negative_numeric.t](../../../tests/loader/gif/0054_gif_icc_start_negative_numeric.t) |
+| GICC-18 | Cached replay retains extended colors, source delays and loop numbers. | [tests/loader/gif/0055_gif_icc_replay_numeric.t](../../../tests/loader/gif/0055_gif_icc_replay_numeric.t) |
+| GICC-19 | An unknown application identifier does not trigger CMS or float promotion. | [tests/loader/gif/0056_gif_icc_unknown_app_byte_numeric.t](../../../tests/loader/gif/0056_gif_icc_unknown_app_byte_numeric.t) |
+| GICC-20 | An invalid recognized ICC profile fails before a frame is emitted. | [tests/loader/gif/0057_gif_icc_invalid_profile.t](../../../tests/loader/gif/0057_gif_icc_invalid_profile.t) |
+| GICC-21 | A non-RGB profile fails instead of interpreting RGB codes in another domain. | [tests/loader/gif/0058_gif_icc_wrong_domain_reject.t](../../../tests/loader/gif/0058_gif_icc_wrong_domain_reject.t) |
+| GICC-22 | Duplicate ICC declarations fail without choosing either profile. | [tests/loader/gif/0059_gif_icc_duplicate_reject.t](../../../tests/loader/gif/0059_gif_icc_duplicate_reject.t) |
+| GICC-23 | An empty recognized ICC declaration fails before output. | [tests/loader/gif/0060_gif_icc_empty_reject.t](../../../tests/loader/gif/0060_gif_icc_empty_reject.t) |
+| GICC-24 | A truncated recognized ICC chain fails before output. | [tests/loader/gif/0061_gif_icc_truncated_blocks.t](../../../tests/loader/gif/0061_gif_icc_truncated_blocks.t) |
+| GICC-25 | A recognized ICC stream without a closing trailer fails before output. | [tests/loader/gif/0062_gif_icc_missing_trailer_reject.t](../../../tests/loader/gif/0062_gif_icc_missing_trailer_reject.t) |
+| GICC-26 | CMS-disabled input skips duplicate ICC extensions as ordinary application data. | [tests/loader/gif/0063_gif_icc_cms_none_duplicate_numeric.t](../../../tests/loader/gif/0063_gif_icc_cms_none_duplicate_numeric.t) |
+| GICC-27 | Actual lcms2 palette conversion preserves the numerical color contract. | [tests/loader/gif/0064_gif_icc_lcms2_numeric.t](../../../tests/loader/gif/0064_gif_icc_lcms2_numeric.t) |
+| GICC-28 | Actual ColorSync palette conversion preserves the numerical color contract. | [tests/loader/gif/0065_gif_icc_colorsync_numeric.t](../../../tests/loader/gif/0065_gif_icc_colorsync_numeric.t) |
+| GICC-29 | The gamma float target uses signed extended sRGB encoding after composition. | [tests/loader/gif/0066_gif_icc_gamma_target_numeric.t](../../../tests/loader/gif/0066_gif_icc_gamma_target_numeric.t) |
+| GICC-30 | A failed initial palette hook publishes no frame. | [tests/loader/gif/0067_gif_icc_fail_global.t](../../../tests/loader/gif/0067_gif_icc_fail_global.t) |
+| GICC-31 | A failed later palette hook preserves the earlier callback count and publishes no incomplete frame. | [tests/loader/gif/0068_gif_icc_fail_local.t](../../../tests/loader/gif/0068_gif_icc_fail_local.t) |
+| GICC-32 | A failed float canvas allocation does not fall back to byte output. | [tests/loader/gif/0069_gif_icc_fail_canvas.t](../../../tests/loader/gif/0069_gif_icc_fail_canvas.t) |
+| GICC-33 | ICC extraction rejects a payload above 16 MiB without allocating profile output. | [tests/loader/gif/0070_gif_icc_over_limit_reject.t](../../../tests/loader/gif/0070_gif_icc_over_limit_reject.t) |
+| GICC-34 | ICC extraction accepts and preserves all bytes at the 16 MiB limit. | [tests/loader/gif/0071_gif_icc_limit_exact_numeric.t](../../../tests/loader/gif/0071_gif_icc_limit_exact_numeric.t) |
+| GICC-35 | A local-only table works without any global color table. | [tests/loader/gif/0072_gif_icc_local_only_numeric.t](../../../tests/loader/gif/0072_gif_icc_local_only_numeric.t) |
+| GICC-36 | Explicit background retains its own interpretation without a global table. | [tests/loader/gif/0073_gif_icc_explicit_no_global_numeric.t](../../../tests/loader/gif/0073_gif_icc_explicit_no_global_numeric.t) |
+| GICC-37 | Gamma-target replay does not apply a source ICC or transfer twice. | [tests/loader/gif/0074_gif_icc_gamma_replay_numeric.t](../../../tests/loader/gif/0074_gif_icc_gamma_replay_numeric.t) |
 
 These ICC tests are independent value/behavior contracts. The existing GIF MS-SSIM regressions above continue to protect untagged decoding; they are not ICC reference images. ICC sub-block/profile failures are covered separately from LZW malformed-input tests in the exhaustive [builtin test inventory](../../testing/builtin-loader-coverage.md#gif).

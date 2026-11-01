@@ -1,0 +1,8 @@
+/* SPDX-License-Identifier: MIT */
+#include "tests/_support/loader/tiff_separate16_test_common.h"
+
+int
+test_loader_0412_sep16(int argc, char **argv)
+{
+    return tiff_separate16_test(argc, argv, 29);
+}

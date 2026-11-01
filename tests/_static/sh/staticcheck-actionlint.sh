@@ -2,6 +2,7 @@
 # Emit TAP for actionlint static check.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 actionlint_bin=$2
@@ -24,8 +25,7 @@ trap cleanup EXIT HUP INT TERM
 
 cd "$src_root"
 
-find .github/workflows -type f \( -name '*.yml' -o -name '*.yaml' \) \
-    | LC_ALL=C sort > "$tmpfile" || true
+sh "$source_files_helper" .github/workflows --name '*.yml' --name '*.yaml'| LC_ALL=C sort > "$tmpfile" || true
 
 total=`wc -l < "$tmpfile" | awk '{print $1}'`
 

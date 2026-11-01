@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "tests/loader/pixelformat_test_common.h"
+#include "tests/_support/loader/pixelformat_test_common.h"
 #include "src/loader-common.h"
 
 #if HAVE_COREGRAPHICS

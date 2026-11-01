@@ -6,12 +6,13 @@
 
 set -eu
 
-script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH='' cd -- "${0%/*}" && pwd)
 common_helpers="$script_dir/resolve-binding-test-common.sh"
 if [ ! -r "$common_helpers" ]; then
     echo "error: missing helper script: $common_helpers" >&2
     exit 1
 fi
+# shellcheck source=build-aux/resolve-binding-test-common.sh
 . "$common_helpers"
 
 if [ "$#" -ne 4 ] && [ "$#" -ne 6 ]; then
@@ -57,7 +58,7 @@ compute_source_signature() {
             fi
         done
         if [ -d "$src_dir/lib" ]; then
-            find "$src_dir/lib" -type f -name '*.rb' \
+            sh "$script_dir/list-tree-files.sh" "$src_dir/lib" '*.rb' \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
                     "${CKSUM:-cksum}" "$path"
@@ -92,8 +93,9 @@ if [ -z "$ruby_bin" ]; then
     exit 0
 fi
 
-gem_path=$(find "$gem_dir" -maxdepth 1 -type f -name 'libsixel-ruby-*.gem' \
-    2>/dev/null | head -n 1)
+gem_path=$(for gem in "$gem_dir/"libsixel-ruby-*.gem; do
+    test ! -f "$gem" || printf '%s\n' "$gem"
+done | head -n 1)
 if [ -z "$gem_path" ]; then
     exit 0
 fi
@@ -120,8 +122,9 @@ fi
 
 resolve_ruby_lib_path() {
     gem_root=
-    gem_root=$(find "$shared_ruby_gem_home/gems" -maxdepth 1 -type d \
-        -name 'libsixel-ruby-*' 2>/dev/null | LC_ALL=C sort | head -n 1)
+    gem_root=$(for gem in "$shared_ruby_gem_home/gems/"libsixel-ruby-*; do
+        test ! -d "$gem" || printf '%s\n' "$gem"
+    done | LC_ALL=C sort | head -n 1)
     if [ -n "$gem_root" ] && [ -d "$gem_root/lib" ]; then
         printf "%s\n" "$gem_root/lib"
         return 0

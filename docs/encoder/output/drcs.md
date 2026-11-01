@@ -174,7 +174,7 @@ Use mappings 2 or 3 with a matching receiver and a bounded image as the baseline
 | Suppression of ordinary DCS/`q` while retaining raster attributes | [`sixel-writer.c`](../../../src/sixel-writer.c). |
 | Public option entry point | `SIXEL_OPTFLAG_DRCS` and `sixel_encoder_setopt()` in [`sixel.h.in`](../../../include/sixel.h.in). The DRCS emit helpers are internal interfaces. |
 
-The [native DRCS tests](../../../tests/codec/drcs) check working values, emitted definitions and bitmap indices through the actual encoder. Their unit fixtures supply cached cell dimensions and never open the invoking terminal. The CLI color-session companion creates a private controlling PTY, supplies character and pixel geometry, rejects unexpected color exchanges and verifies independently expected P3 pixel values. These tests cover the migrated body and its envelope, not every legacy mapping or a hardware receiver.
+The [native DRCS tests](../../../tests/encoder/drcs) check working values, emitted definitions and bitmap indices through the actual encoder. Their unit fixtures supply cached cell dimensions and never open the invoking terminal. The CLI color-session companion creates a private controlling PTY, supplies character and pixel geometry, rejects unexpected color exchanges and verifies independently expected P3 pixel values. These tests cover the migrated body and its envelope, not every legacy mapping or a hardware receiver.
 
 A protocol-level check can run the CLI with a controlled pseudo-terminal, set both character and pixel geometry, and capture output without displaying it. Inspect definitions separately from character data: mapping-2/3 prefixes, starting charset, UTF-8 values, row breaks, rounding at partial cells, crossing a charset boundary, `-7`/`-8`, split output paths, and rejected macro combinations are distinct observations. A zero-pixel geometry control should reject the conversion. These checks establish emitted bytes and routing, not that a real receiver renders or retains the glyphs correctly.
 
@@ -190,31 +190,31 @@ Native centroid and sub-byte comparisons use absolute working-coordinate toleran
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DRCS-01 | Extended linear source samples retain their independent mean and emit the expected sRGB definition inside a v2 glyph envelope. | [tests/codec/drcs/0001_srgb_float_center.t](../../../tests/codec/drcs/0001_srgb_float_center.t) |
-| DRCS-02 | The extended mean emits independently expected P3 codes without an extra transform. | [tests/codec/drcs/0002_p3_float_center.t](../../../tests/codec/drcs/0002_p3_float_center.t) |
-| DRCS-03 | C1 mode retains the P3 body under C1 mapping, DCS and ST controls. | [tests/codec/drcs/0003_p3_c1_body.t](../../../tests/codec/drcs/0003_p3_c1_body.t) |
-| DRCS-04 | V3 retains distinct sub-byte lookup indices across bands and emits the exact 3-by-3 UTF-8 grid for partial edge cells. | [tests/codec/drcs/0004_p3_v3_grid.t](../../../tests/codec/drcs/0004_p3_v3_grid.t) |
-| DRCS-05 | A builtin table retains native linear entries and expected P3 bitmap indices. | [tests/codec/drcs/0005_p3_builtin.t](../../../tests/codec/drcs/0005_p3_builtin.t) |
-| DRCS-06 | Byte-eligible builtin input remains RGB888 with the expected bitmap indices. | [tests/codec/drcs/0006_byte_control.t](../../../tests/codec/drcs/0006_byte_control.t) |
-| DRCS-07 | A preserved mask is rejected before output and the same encoder then accepts an opaque frame. | [tests/codec/drcs/0007_mask_recovery.t](../../../tests/codec/drcs/0007_mask_recovery.t) |
-| DRCS-08 | P3 DRCS rejects the palette-free monochrome convention before output. | [tests/codec/drcs/0008_mono_reject.t](../../../tests/codec/drcs/0008_mono_reject.t) |
-| DRCS-09 | P3 DRCS rejects OR composition before output. | [tests/codec/drcs/0009_or_reject.t](../../../tests/codec/drcs/0009_or_reject.t) |
-| DRCS-10 | P3 DRCS rejects nonzero transparent offsets before output. | [tests/codec/drcs/0010_offset_reject.t](../../../tests/codec/drcs/0010_offset_reject.t) |
-| DRCS-11 | P3 DRCS rejects macro wrapping before output. | [tests/codec/drcs/0011_macro_reject.t](../../../tests/codec/drcs/0011_macro_reject.t) |
-| DRCS-12 | Repeated P3/gamma/P3 output on one encoder retains source and working values while updating wire codes. | [tests/codec/drcs/0012_output_reuse.t](../../../tests/codec/drcs/0012_output_reuse.t) |
-| DRCS-13 | The native P3 body preserves every expected index with multiple encoder workers. | [tests/codec/drcs/0013_p3_pipeline.t](../../../tests/codec/drcs/0013_p3_pipeline.t) |
-| DRCS-14 | The CLI uses isolated PTY geometry and emits independently expected P3 pixels without color discovery or policy changes. | [tests/cli/color/session/0072_drcs_p3_values.t](../../../tests/cli/color/session/0072_drcs_p3_values.t) |
-| DRCS-15 | Actual register redefinition and a one-row final band preserve independently expected P3 RGB101 paint. | [tests/codec/drcs/0014_highcolor_p3_final_band.t](../../../tests/codec/drcs/0014_highcolor_p3_final_band.t) |
-| DRCS-16 | C1 DRCS framing contains one body without an inner DCS/header/footer. | [tests/codec/drcs/0015_highcolor_p3_c1.t](../../../tests/codec/drcs/0015_highcolor_p3_c1.t) |
-| DRCS-17 | Mapping 3 emits independently expected partial-cell glyph characters and P3 pixels. | [tests/codec/drcs/0016_highcolor_p3_v3_grid.t](../../../tests/codec/drcs/0016_highcolor_p3_v3_grid.t) |
-| DRCS-18 | High-color P3 HLS emits literal HLS syntax and the expected paint. | [tests/codec/drcs/0017_highcolor_p3_hls.t](../../../tests/codec/drcs/0017_highcolor_p3_hls.t) |
-| DRCS-19 | A genuine high-color byte job stays RGB888 and keeps expected RGB101 paint. | [tests/codec/drcs/0018_highcolor_byte_control.t](../../../tests/codec/drcs/0018_highcolor_byte_control.t) |
-| DRCS-20 | P3 DRCS, ordinary gamma and P3 DRCS reuse restores framing and output interpretation. | [tests/codec/drcs/0019_highcolor_output_reuse.t](../../../tests/codec/drcs/0019_highcolor_output_reuse.t) |
-| DRCS-21 | A separate source mask rejects before output and opaque DRCS reuse succeeds. | [tests/codec/drcs/0020_highcolor_mask_recovery.t](../../../tests/codec/drcs/0020_highcolor_mask_recovery.t) |
-| DRCS-22 | Interpreted packed alpha rejects before output and opaque DRCS reuse succeeds. | [tests/codec/drcs/0021_highcolor_packed_recovery.t](../../../tests/codec/drcs/0021_highcolor_packed_recovery.t) |
-| DRCS-23 | Macro wrapping rejects before output and DRCS reuse succeeds. | [tests/codec/drcs/0022_highcolor_macro_recovery.t](../../../tests/codec/drcs/0022_highcolor_macro_recovery.t) |
-| DRCS-24 | PNG snapshot wrapping rejects before output and DRCS reuse succeeds. | [tests/codec/drcs/0023_highcolor_png_recovery.t](../../../tests/codec/drcs/0023_highcolor_png_recovery.t) |
-| DRCS-25 | A writer failure restores the caller's original, independently set header/envelope suppression flags. | [tests/codec/drcs/0024_highcolor_writer_restore.t](../../../tests/codec/drcs/0024_highcolor_writer_restore.t) |
+| DRCS-01 | Extended linear source samples retain their independent mean and emit the expected sRGB definition inside a v2 glyph envelope. | [tests/encoder/drcs/0001_srgb_float_center.t](../../../tests/encoder/drcs/0001_srgb_float_center.t) |
+| DRCS-02 | The extended mean emits independently expected P3 codes without an extra transform. | [tests/encoder/drcs/0002_p3_float_center.t](../../../tests/encoder/drcs/0002_p3_float_center.t) |
+| DRCS-03 | C1 mode retains the P3 body under C1 mapping, DCS and ST controls. | [tests/encoder/drcs/0003_p3_c1_body.t](../../../tests/encoder/drcs/0003_p3_c1_body.t) |
+| DRCS-04 | V3 retains distinct sub-byte lookup indices across bands and emits the exact 3-by-3 UTF-8 grid for partial edge cells. | [tests/encoder/drcs/0004_p3_v3_grid.t](../../../tests/encoder/drcs/0004_p3_v3_grid.t) |
+| DRCS-05 | A builtin table retains native linear entries and expected P3 bitmap indices. | [tests/encoder/drcs/0005_p3_builtin.t](../../../tests/encoder/drcs/0005_p3_builtin.t) |
+| DRCS-06 | Byte-eligible builtin input remains RGB888 with the expected bitmap indices. | [tests/encoder/drcs/0006_byte_control.t](../../../tests/encoder/drcs/0006_byte_control.t) |
+| DRCS-07 | A preserved mask is rejected before output and the same encoder then accepts an opaque frame. | [tests/encoder/drcs/0007_mask_recovery.t](../../../tests/encoder/drcs/0007_mask_recovery.t) |
+| DRCS-08 | P3 DRCS rejects the palette-free monochrome convention before output. | [tests/encoder/drcs/0008_mono_reject.t](../../../tests/encoder/drcs/0008_mono_reject.t) |
+| DRCS-09 | P3 DRCS rejects OR composition before output. | [tests/encoder/drcs/0009_or_reject.t](../../../tests/encoder/drcs/0009_or_reject.t) |
+| DRCS-10 | P3 DRCS rejects nonzero transparent offsets before output. | [tests/encoder/drcs/0010_offset_reject.t](../../../tests/encoder/drcs/0010_offset_reject.t) |
+| DRCS-11 | P3 DRCS rejects macro wrapping before output. | [tests/encoder/drcs/0011_macro_reject.t](../../../tests/encoder/drcs/0011_macro_reject.t) |
+| DRCS-12 | Repeated P3/gamma/P3 output on one encoder retains source and working values while updating wire codes. | [tests/encoder/drcs/0012_output_reuse.t](../../../tests/encoder/drcs/0012_output_reuse.t) |
+| DRCS-13 | The native P3 body preserves every expected index with multiple encoder workers. | [tests/encoder/drcs/0013_p3_pipeline.t](../../../tests/encoder/drcs/0013_p3_pipeline.t) |
+| DRCS-14 | The CLI uses isolated PTY geometry and emits independently expected P3 pixels without color discovery or policy changes. | [tests/cli/terminal-color/0111_drcs_p3_values.t](../../../tests/cli/terminal-color/0111_drcs_p3_values.t) |
+| DRCS-15 | Actual register redefinition and a one-row final band preserve independently expected P3 RGB101 paint. | [tests/encoder/drcs/0014_highcolor_p3_final_band.t](../../../tests/encoder/drcs/0014_highcolor_p3_final_band.t) |
+| DRCS-16 | C1 DRCS framing contains one body without an inner DCS/header/footer. | [tests/encoder/drcs/0015_highcolor_p3_c1.t](../../../tests/encoder/drcs/0015_highcolor_p3_c1.t) |
+| DRCS-17 | Mapping 3 emits independently expected partial-cell glyph characters and P3 pixels. | [tests/encoder/drcs/0016_highcolor_p3_v3_grid.t](../../../tests/encoder/drcs/0016_highcolor_p3_v3_grid.t) |
+| DRCS-18 | High-color P3 HLS emits literal HLS syntax and the expected paint. | [tests/encoder/drcs/0017_highcolor_p3_hls.t](../../../tests/encoder/drcs/0017_highcolor_p3_hls.t) |
+| DRCS-19 | A genuine high-color byte job stays RGB888 and keeps expected RGB101 paint. | [tests/encoder/drcs/0018_highcolor_byte_control.t](../../../tests/encoder/drcs/0018_highcolor_byte_control.t) |
+| DRCS-20 | P3 DRCS, ordinary gamma and P3 DRCS reuse restores framing and output interpretation. | [tests/encoder/drcs/0019_highcolor_output_reuse.t](../../../tests/encoder/drcs/0019_highcolor_output_reuse.t) |
+| DRCS-21 | A separate source mask rejects before output and opaque DRCS reuse succeeds. | [tests/encoder/drcs/0020_highcolor_mask_recovery.t](../../../tests/encoder/drcs/0020_highcolor_mask_recovery.t) |
+| DRCS-22 | Interpreted packed alpha rejects before output and opaque DRCS reuse succeeds. | [tests/encoder/drcs/0021_highcolor_packed_recovery.t](../../../tests/encoder/drcs/0021_highcolor_packed_recovery.t) |
+| DRCS-23 | Macro wrapping rejects before output and DRCS reuse succeeds. | [tests/encoder/drcs/0022_highcolor_macro_recovery.t](../../../tests/encoder/drcs/0022_highcolor_macro_recovery.t) |
+| DRCS-24 | PNG snapshot wrapping rejects before output and DRCS reuse succeeds. | [tests/encoder/drcs/0023_highcolor_png_recovery.t](../../../tests/encoder/drcs/0023_highcolor_png_recovery.t) |
+| DRCS-25 | A writer failure restores the caller's original, independently set header/envelope suppression flags. | [tests/encoder/drcs/0024_highcolor_writer_restore.t](../../../tests/encoder/drcs/0024_highcolor_writer_restore.t) |
 
 High-color tests use independent linear P3-to-sRGB source construction and analytic transfer references. The RGB101 grid has a minimum rounding-boundary margin of .0098 field units against a .001 field-unit conversion budget. Primary/neutral fixtures also check HLS syntax and a subbyte neutral. Direct decoding checks paint-time register replacement; it does not emulate a glyph receiver.
 

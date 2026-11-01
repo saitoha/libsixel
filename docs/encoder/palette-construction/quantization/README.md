@@ -719,7 +719,7 @@ models are implemented by [`palette-heckbert.c`](../../../../src/palette-heckber
 [`palette-kmeans.c`](../../../../src/palette-kmeans.c),
 [`palette-kmedoids.c`](../../../../src/palette-kmedoids.c), and
 [`palette-kcenter.c`](../../../../src/palette-kcenter.c). Focused solver tests and CLI
-quality cases are under [`tests/quant/palette/`](../../../../tests/quant/palette/).
+quality cases are under [`tests/palette`](../../../../tests/palette).
 
 For the surrounding data flow, start with
 [Encoding Pipeline](../../pipeline/README.md).
@@ -732,65 +732,65 @@ For the surrounding data flow, start with
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| HQ-01 | Native Heckbert center. | [tests/quant/palette/heckbert_float/0001_heckbert_center.t](../../../../tests/quant/palette/heckbert_float/0001_heckbert_center.t) |
-| HQ-02 | Native Heckbert average. | [tests/quant/palette/heckbert_float/0002_heckbert_average.t](../../../../tests/quant/palette/heckbert_float/0002_heckbert_average.t) |
-| HQ-03 | Native Heckbert histogram. | [tests/quant/palette/heckbert_float/0003_heckbert_histogram.t](../../../../tests/quant/palette/heckbert_float/0003_heckbert_histogram.t) |
-| HQ-04 | Native Heckbert gamma extended. | [tests/quant/palette/heckbert_float/0004_heckbert_gamma_extended.t](../../../../tests/quant/palette/heckbert_float/0004_heckbert_gamma_extended.t) |
-| HQ-05 | Native Heckbert linear extended. | [tests/quant/palette/heckbert_float/0005_heckbert_linear_extended.t](../../../../tests/quant/palette/heckbert_float/0005_heckbert_linear_extended.t) |
-| HQ-06 | Native Heckbert oklab extended. | [tests/quant/palette/heckbert_float/0006_heckbert_oklab_extended.t](../../../../tests/quant/palette/heckbert_float/0006_heckbert_oklab_extended.t) |
-| HQ-07 | Native Heckbert cielab extended. | [tests/quant/palette/heckbert_float/0007_heckbert_cielab_extended.t](../../../../tests/quant/palette/heckbert_float/0007_heckbert_cielab_extended.t) |
-| HQ-08 | Native Heckbert din99d extended. | [tests/quant/palette/heckbert_float/0008_heckbert_din99d_extended.t](../../../../tests/quant/palette/heckbert_float/0008_heckbert_din99d_extended.t) |
-| HQ-09 | Native Heckbert subbyte. | [tests/quant/palette/heckbert_float/0009_heckbert_subbyte.t](../../../../tests/quant/palette/heckbert_float/0009_heckbert_subbyte.t) |
-| HQ-10 | Native Heckbert tiny signed. | [tests/quant/palette/heckbert_float/0010_heckbert_tiny_signed.t](../../../../tests/quant/palette/heckbert_float/0010_heckbert_tiny_signed.t) |
-| HQ-11 | Native Heckbert finite extrema. | [tests/quant/palette/heckbert_float/0011_heckbert_finite_extrema.t](../../../../tests/quant/palette/heckbert_float/0011_heckbert_finite_extrema.t) |
-| HQ-12 | Native Heckbert range axis. | [tests/quant/palette/heckbert_float/0012_heckbert_range_axis.t](../../../../tests/quant/palette/heckbert_float/0012_heckbert_range_axis.t) |
-| HQ-13 | Native Heckbert luminance axis. | [tests/quant/palette/heckbert_float/0013_heckbert_luminance_axis.t](../../../../tests/quant/palette/heckbert_float/0013_heckbert_luminance_axis.t) |
-| HQ-14 | Native Heckbert pca split. | [tests/quant/palette/heckbert_float/0014_heckbert_pca_split.t](../../../../tests/quant/palette/heckbert_float/0014_heckbert_pca_split.t) |
-| HQ-15 | Native Heckbert ward. | [tests/quant/palette/heckbert_float/0015_heckbert_ward.t](../../../../tests/quant/palette/heckbert_float/0015_heckbert_ward.t) |
-| HQ-16 | Ward refinement preserves signed stable centroids; this fixture does not exercise empty-cluster repair. | [tests/quant/palette/heckbert_float/0016_heckbert_ward_refine.t](../../../../tests/quant/palette/heckbert_float/0016_heckbert_ward_refine.t) |
-| HQ-17 | Native Heckbert nan. | [tests/quant/palette/heckbert_float/0017_heckbert_nan.t](../../../../tests/quant/palette/heckbert_float/0017_heckbert_nan.t) |
-| HQ-18 | Native Heckbert infinity. | [tests/quant/palette/heckbert_float/0018_heckbert_infinity.t](../../../../tests/quant/palette/heckbert_float/0018_heckbert_infinity.t) |
-| HQ-19 | Native Heckbert ward linear. | [tests/quant/palette/heckbert_float/0019_heckbert_ward_linear.t](../../../../tests/quant/palette/heckbert_float/0019_heckbert_ward_linear.t) |
-| HQ-20 | Native Heckbert ward oklab. | [tests/quant/palette/heckbert_float/0020_heckbert_ward_oklab.t](../../../../tests/quant/palette/heckbert_float/0020_heckbert_ward_oklab.t) |
-| HQ-21 | Native Heckbert ward cielab. | [tests/quant/palette/heckbert_float/0021_heckbert_ward_cielab.t](../../../../tests/quant/palette/heckbert_float/0021_heckbert_ward_cielab.t) |
-| HQ-22 | Native Heckbert ward din99d. | [tests/quant/palette/heckbert_float/0022_heckbert_ward_din99d.t](../../../../tests/quant/palette/heckbert_float/0022_heckbert_ward_din99d.t) |
-| HQ-23 | Native Heckbert gamma wire. | [tests/quant/palette/heckbert_float/0023_heckbert_gamma_wire.t](../../../../tests/quant/palette/heckbert_float/0023_heckbert_gamma_wire.t) |
-| HQ-24 | Native Heckbert linear wire. | [tests/quant/palette/heckbert_float/0024_heckbert_linear_wire.t](../../../../tests/quant/palette/heckbert_float/0024_heckbert_linear_wire.t) |
-| HQ-25 | Native Heckbert oklab wire. | [tests/quant/palette/heckbert_float/0025_heckbert_oklab_wire.t](../../../../tests/quant/palette/heckbert_float/0025_heckbert_oklab_wire.t) |
-| HQ-26 | Native Heckbert cielab wire. | [tests/quant/palette/heckbert_float/0026_heckbert_cielab_wire.t](../../../../tests/quant/palette/heckbert_float/0026_heckbert_cielab_wire.t) |
-| HQ-27 | Native Heckbert din99d wire. | [tests/quant/palette/heckbert_float/0027_heckbert_din99d_wire.t](../../../../tests/quant/palette/heckbert_float/0027_heckbert_din99d_wire.t) |
-| HQ-28 | Native Heckbert p3 wire. | [tests/quant/palette/heckbert_float/0028_heckbert_p3_wire.t](../../../../tests/quant/palette/heckbert_float/0028_heckbert_p3_wire.t) |
-| HQ-29 | Native Heckbert byte. | [tests/quant/palette/heckbert_float/0029_heckbert_byte.t](../../../../tests/quant/palette/heckbert_float/0029_heckbert_byte.t) |
-| HQ-30 | Native histogram allocation failure is reported without a lossy retry. | [tests/quant/palette/heckbert_float/0030_heckbert_histogram_allocation.t](../../../../tests/quant/palette/heckbert_float/0030_heckbert_histogram_allocation.t) |
-| HQ-31 | Native representative allocation failure is reported without a lossy retry. | [tests/quant/palette/heckbert_float/0031_heckbert_representative_allocation.t](../../../../tests/quant/palette/heckbert_float/0031_heckbert_representative_allocation.t) |
-| HQ-32 | Three sub-byte source colors reduced to two entries keep requested FS diffusion active. | [tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t](../../../../tests/quant/palette/heckbert_float/0032_heckbert_subbyte_diffusion.t) |
-| HQ-33 | Repeated colors retain their population-weighted mean and leave source bytes unchanged within a compact allocation budget. | [tests/quant/palette/heckbert_float/0033_heckbert_repeated_population.t](../../../../tests/quant/palette/heckbert_float/0033_heckbert_repeated_population.t) |
-| HQ-34 | Repeated sub-byte colors remain distinct, signed zeros share one histogram color, and borrowed source bytes stay unchanged. | [tests/quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.t](../../../../tests/quant/palette/heckbert_float/0034_heckbert_repeated_subbyte.t) |
-| HQ-35 | Uniform byte gray 0 emits 0 percent with lookup auto. | [tests/quant/palette/heckbert_float/0035_heckbert_byte_gray_000_auto.t](../../../../tests/quant/palette/heckbert_float/0035_heckbert_byte_gray_000_auto.t) |
-| HQ-36 | Uniform byte gray 51 emits 20 percent with lookup auto. | [tests/quant/palette/heckbert_float/0036_heckbert_byte_gray_051_auto.t](../../../../tests/quant/palette/heckbert_float/0036_heckbert_byte_gray_051_auto.t) |
-| HQ-37 | Uniform byte gray 90 emits 35 percent with lookup auto. | [tests/quant/palette/heckbert_float/0037_heckbert_byte_gray_090_auto.t](../../../../tests/quant/palette/heckbert_float/0037_heckbert_byte_gray_090_auto.t) |
-| HQ-38 | Uniform byte gray 128 emits 50 percent with lookup auto. | [tests/quant/palette/heckbert_float/0038_heckbert_byte_gray_128_auto.t](../../../../tests/quant/palette/heckbert_float/0038_heckbert_byte_gray_128_auto.t) |
-| HQ-39 | Uniform byte gray 204 emits 80 percent with lookup auto. | [tests/quant/palette/heckbert_float/0039_heckbert_byte_gray_204_auto.t](../../../../tests/quant/palette/heckbert_float/0039_heckbert_byte_gray_204_auto.t) |
-| HQ-40 | Uniform byte gray 255 emits 100 percent with lookup auto. | [tests/quant/palette/heckbert_float/0040_heckbert_byte_gray_255_auto.t](../../../../tests/quant/palette/heckbert_float/0040_heckbert_byte_gray_255_auto.t) |
-| HQ-41 | Uniform byte gray 0 emits 0 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0041_heckbert_byte_gray_000_5bit.t](../../../../tests/quant/palette/heckbert_float/0041_heckbert_byte_gray_000_5bit.t) |
-| HQ-42 | Uniform byte gray 51 emits 20 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0042_heckbert_byte_gray_051_5bit.t](../../../../tests/quant/palette/heckbert_float/0042_heckbert_byte_gray_051_5bit.t) |
-| HQ-43 | Uniform byte gray 90 emits 35 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0043_heckbert_byte_gray_090_5bit.t](../../../../tests/quant/palette/heckbert_float/0043_heckbert_byte_gray_090_5bit.t) |
-| HQ-44 | Uniform byte gray 128 emits 50 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0044_heckbert_byte_gray_128_5bit.t](../../../../tests/quant/palette/heckbert_float/0044_heckbert_byte_gray_128_5bit.t) |
-| HQ-45 | Uniform byte gray 204 emits 80 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0045_heckbert_byte_gray_204_5bit.t](../../../../tests/quant/palette/heckbert_float/0045_heckbert_byte_gray_204_5bit.t) |
-| HQ-46 | Uniform byte gray 255 emits 100 percent with lookup 5bit. | [tests/quant/palette/heckbert_float/0046_heckbert_byte_gray_255_5bit.t](../../../../tests/quant/palette/heckbert_float/0046_heckbert_byte_gray_255_5bit.t) |
-| HQ-47 | Uniform byte gray 0 emits 0 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0047_heckbert_byte_gray_000_6bit.t](../../../../tests/quant/palette/heckbert_float/0047_heckbert_byte_gray_000_6bit.t) |
-| HQ-48 | Uniform byte gray 51 emits 20 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0048_heckbert_byte_gray_051_6bit.t](../../../../tests/quant/palette/heckbert_float/0048_heckbert_byte_gray_051_6bit.t) |
-| HQ-49 | Uniform byte gray 90 emits 35 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0049_heckbert_byte_gray_090_6bit.t](../../../../tests/quant/palette/heckbert_float/0049_heckbert_byte_gray_090_6bit.t) |
-| HQ-50 | Uniform byte gray 128 emits 50 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0050_heckbert_byte_gray_128_6bit.t](../../../../tests/quant/palette/heckbert_float/0050_heckbert_byte_gray_128_6bit.t) |
-| HQ-51 | Uniform byte gray 204 emits 80 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0051_heckbert_byte_gray_204_6bit.t](../../../../tests/quant/palette/heckbert_float/0051_heckbert_byte_gray_204_6bit.t) |
-| HQ-52 | Uniform byte gray 255 emits 100 percent with lookup 6bit. | [tests/quant/palette/heckbert_float/0052_heckbert_byte_gray_255_6bit.t](../../../../tests/quant/palette/heckbert_float/0052_heckbert_byte_gray_255_6bit.t) |
-| HQ-53 | RGB buckets retain fractional population means. | [tests/quant/palette/heckbert_policy/0068_heckbert_bucket_rgb_mean.t](../../../../tests/quant/palette/heckbert_policy/0068_heckbert_bucket_rgb_mean.t) |
-| HQ-54 | Four-channel 5bit buckets retain fractional channel means. | [tests/quant/palette/heckbert_policy/0069_heckbert_bucket_rgba_mean.t](../../../../tests/quant/palette/heckbert_policy/0069_heckbert_bucket_rgba_mean.t) |
-| HQ-55 | The generic one-channel path retains fractional means. | [tests/quant/palette/heckbert_policy/0070_heckbert_bucket_gray_mean.t](../../../../tests/quant/palette/heckbert_policy/0070_heckbert_bucket_gray_mean.t) |
-| HQ-56 | Lookup none retains exact source colors and populations. | [tests/quant/palette/heckbert_policy/0071_heckbert_bucket_none_exact.t](../../../../tests/quant/palette/heckbert_policy/0071_heckbert_bucket_none_exact.t) |
-| HQ-57 | Reversible bucket means retain the reversible tone grid. | [tests/quant/palette/heckbert_policy/0072_heckbert_bucket_reversible_mean.t](../../../../tests/quant/palette/heckbert_policy/0072_heckbert_bucket_reversible_mean.t) |
-| HQ-58 | Axis splits order fractional means inside integer buckets. | [tests/quant/palette/heckbert_policy/0073_heckbert_bucket_fractional_axis.t](../../../../tests/quant/palette/heckbert_policy/0073_heckbert_bucket_fractional_axis.t) |
-| HQ-59 | Sparse four-channel 5bit statistics stay within a 5 MiB allocation budget. | [tests/quant/palette/heckbert_policy/0074_heckbert_bucket_sparse_rgba.t](../../../../tests/quant/palette/heckbert_policy/0074_heckbert_bucket_sparse_rgba.t) |
+| HQ-01 | Native Heckbert center. | [tests/palette/heckbert/0001_heckbert_center.t](../../../../tests/palette/heckbert/0001_heckbert_center.t) |
+| HQ-02 | Native Heckbert average. | [tests/palette/heckbert/0002_quant_palette_heckbert_float_heckbert_average.t](../../../../tests/palette/heckbert/0002_quant_palette_heckbert_float_heckbert_average.t) |
+| HQ-03 | Native Heckbert histogram. | [tests/palette/heckbert/0003_quant_palette_heckbert_float_heckbert_histogram.t](../../../../tests/palette/heckbert/0003_quant_palette_heckbert_float_heckbert_histogram.t) |
+| HQ-04 | Native Heckbert gamma extended. | [tests/palette/heckbert/0004_heckbert_gamma_extended.t](../../../../tests/palette/heckbert/0004_heckbert_gamma_extended.t) |
+| HQ-05 | Native Heckbert linear extended. | [tests/palette/heckbert/0005_heckbert_linear_extended.t](../../../../tests/palette/heckbert/0005_heckbert_linear_extended.t) |
+| HQ-06 | Native Heckbert oklab extended. | [tests/palette/heckbert/0006_heckbert_oklab_extended.t](../../../../tests/palette/heckbert/0006_heckbert_oklab_extended.t) |
+| HQ-07 | Native Heckbert cielab extended. | [tests/palette/heckbert/0007_heckbert_cielab_extended.t](../../../../tests/palette/heckbert/0007_heckbert_cielab_extended.t) |
+| HQ-08 | Native Heckbert din99d extended. | [tests/palette/heckbert/0008_heckbert_din99d_extended.t](../../../../tests/palette/heckbert/0008_heckbert_din99d_extended.t) |
+| HQ-09 | Native Heckbert subbyte. | [tests/palette/heckbert/0009_heckbert_subbyte.t](../../../../tests/palette/heckbert/0009_heckbert_subbyte.t) |
+| HQ-10 | Native Heckbert tiny signed. | [tests/palette/heckbert/0010_heckbert_tiny_signed.t](../../../../tests/palette/heckbert/0010_heckbert_tiny_signed.t) |
+| HQ-11 | Native Heckbert finite extrema. | [tests/palette/heckbert/0011_heckbert_finite_extrema.t](../../../../tests/palette/heckbert/0011_heckbert_finite_extrema.t) |
+| HQ-12 | Native Heckbert range axis. | [tests/palette/heckbert/0012_heckbert_range_axis.t](../../../../tests/palette/heckbert/0012_heckbert_range_axis.t) |
+| HQ-13 | Native Heckbert luminance axis. | [tests/palette/heckbert/0013_heckbert_luminance_axis.t](../../../../tests/palette/heckbert/0013_heckbert_luminance_axis.t) |
+| HQ-14 | Native Heckbert pca split. | [tests/palette/heckbert/0014_heckbert_pca_split.t](../../../../tests/palette/heckbert/0014_heckbert_pca_split.t) |
+| HQ-15 | Native Heckbert ward. | [tests/palette/heckbert/0015_quant_palette_heckbert_float_heckbert_ward.t](../../../../tests/palette/heckbert/0015_quant_palette_heckbert_float_heckbert_ward.t) |
+| HQ-16 | Ward refinement preserves signed stable centroids; this fixture does not exercise empty-cluster repair. | [tests/palette/heckbert/0016_heckbert_ward_refine.t](../../../../tests/palette/heckbert/0016_heckbert_ward_refine.t) |
+| HQ-17 | Native Heckbert nan. | [tests/palette/heckbert/0017_heckbert_nan.t](../../../../tests/palette/heckbert/0017_heckbert_nan.t) |
+| HQ-18 | Native Heckbert infinity. | [tests/palette/heckbert/0018_heckbert_infinity.t](../../../../tests/palette/heckbert/0018_heckbert_infinity.t) |
+| HQ-19 | Native Heckbert ward linear. | [tests/palette/heckbert/0019_heckbert_ward_linear.t](../../../../tests/palette/heckbert/0019_heckbert_ward_linear.t) |
+| HQ-20 | Native Heckbert ward oklab. | [tests/palette/heckbert/0020_heckbert_ward_oklab.t](../../../../tests/palette/heckbert/0020_heckbert_ward_oklab.t) |
+| HQ-21 | Native Heckbert ward cielab. | [tests/palette/heckbert/0021_heckbert_ward_cielab.t](../../../../tests/palette/heckbert/0021_heckbert_ward_cielab.t) |
+| HQ-22 | Native Heckbert ward din99d. | [tests/palette/heckbert/0022_heckbert_ward_din99d.t](../../../../tests/palette/heckbert/0022_heckbert_ward_din99d.t) |
+| HQ-23 | Native Heckbert gamma wire. | [tests/palette/heckbert/0023_heckbert_gamma_wire.t](../../../../tests/palette/heckbert/0023_heckbert_gamma_wire.t) |
+| HQ-24 | Native Heckbert linear wire. | [tests/palette/heckbert/0024_heckbert_linear_wire.t](../../../../tests/palette/heckbert/0024_heckbert_linear_wire.t) |
+| HQ-25 | Native Heckbert oklab wire. | [tests/palette/heckbert/0025_heckbert_oklab_wire.t](../../../../tests/palette/heckbert/0025_heckbert_oklab_wire.t) |
+| HQ-26 | Native Heckbert cielab wire. | [tests/palette/heckbert/0026_heckbert_cielab_wire.t](../../../../tests/palette/heckbert/0026_heckbert_cielab_wire.t) |
+| HQ-27 | Native Heckbert din99d wire. | [tests/palette/heckbert/0027_heckbert_din99d_wire.t](../../../../tests/palette/heckbert/0027_heckbert_din99d_wire.t) |
+| HQ-28 | Native Heckbert p3 wire. | [tests/palette/heckbert/0028_heckbert_p3_wire.t](../../../../tests/palette/heckbert/0028_heckbert_p3_wire.t) |
+| HQ-29 | Native Heckbert byte. | [tests/palette/heckbert/0029_quant_palette_heckbert_float_heckbert_byte.t](../../../../tests/palette/heckbert/0029_quant_palette_heckbert_float_heckbert_byte.t) |
+| HQ-30 | Native histogram allocation failure is reported without a lossy retry. | [tests/palette/heckbert/0030_heckbert_histogram_allocation.t](../../../../tests/palette/heckbert/0030_heckbert_histogram_allocation.t) |
+| HQ-31 | Native representative allocation failure is reported without a lossy retry. | [tests/palette/heckbert/0031_heckbert_representative_allocation.t](../../../../tests/palette/heckbert/0031_heckbert_representative_allocation.t) |
+| HQ-32 | Three sub-byte source colors reduced to two entries keep requested FS diffusion active. | [tests/palette/heckbert/0032_heckbert_subbyte_diffusion.t](../../../../tests/palette/heckbert/0032_heckbert_subbyte_diffusion.t) |
+| HQ-33 | Repeated colors retain their population-weighted mean and leave source bytes unchanged within a compact allocation budget. | [tests/palette/heckbert/0033_heckbert_repeated_population.t](../../../../tests/palette/heckbert/0033_heckbert_repeated_population.t) |
+| HQ-34 | Repeated sub-byte colors remain distinct, signed zeros share one histogram color, and borrowed source bytes stay unchanged. | [tests/palette/heckbert/0034_heckbert_repeated_subbyte.t](../../../../tests/palette/heckbert/0034_heckbert_repeated_subbyte.t) |
+| HQ-35 | Uniform byte gray 0 emits 0 percent with lookup auto. | [tests/palette/heckbert/0035_heckbert_byte_gray_000_auto.t](../../../../tests/palette/heckbert/0035_heckbert_byte_gray_000_auto.t) |
+| HQ-36 | Uniform byte gray 51 emits 20 percent with lookup auto. | [tests/palette/heckbert/0036_heckbert_byte_gray_051_auto.t](../../../../tests/palette/heckbert/0036_heckbert_byte_gray_051_auto.t) |
+| HQ-37 | Uniform byte gray 90 emits 35 percent with lookup auto. | [tests/palette/heckbert/0037_heckbert_byte_gray_090_auto.t](../../../../tests/palette/heckbert/0037_heckbert_byte_gray_090_auto.t) |
+| HQ-38 | Uniform byte gray 128 emits 50 percent with lookup auto. | [tests/palette/heckbert/0038_heckbert_byte_gray_128_auto.t](../../../../tests/palette/heckbert/0038_heckbert_byte_gray_128_auto.t) |
+| HQ-39 | Uniform byte gray 204 emits 80 percent with lookup auto. | [tests/palette/heckbert/0039_heckbert_byte_gray_204_auto.t](../../../../tests/palette/heckbert/0039_heckbert_byte_gray_204_auto.t) |
+| HQ-40 | Uniform byte gray 255 emits 100 percent with lookup auto. | [tests/palette/heckbert/0040_heckbert_byte_gray_255_auto.t](../../../../tests/palette/heckbert/0040_heckbert_byte_gray_255_auto.t) |
+| HQ-41 | Uniform byte gray 0 emits 0 percent with lookup 5bit. | [tests/palette/heckbert/0041_heckbert_byte_gray_000_5bit.t](../../../../tests/palette/heckbert/0041_heckbert_byte_gray_000_5bit.t) |
+| HQ-42 | Uniform byte gray 51 emits 20 percent with lookup 5bit. | [tests/palette/heckbert/0042_heckbert_byte_gray_051_5bit.t](../../../../tests/palette/heckbert/0042_heckbert_byte_gray_051_5bit.t) |
+| HQ-43 | Uniform byte gray 90 emits 35 percent with lookup 5bit. | [tests/palette/heckbert/0043_heckbert_byte_gray_090_5bit.t](../../../../tests/palette/heckbert/0043_heckbert_byte_gray_090_5bit.t) |
+| HQ-44 | Uniform byte gray 128 emits 50 percent with lookup 5bit. | [tests/palette/heckbert/0044_heckbert_byte_gray_128_5bit.t](../../../../tests/palette/heckbert/0044_heckbert_byte_gray_128_5bit.t) |
+| HQ-45 | Uniform byte gray 204 emits 80 percent with lookup 5bit. | [tests/palette/heckbert/0045_heckbert_byte_gray_204_5bit.t](../../../../tests/palette/heckbert/0045_heckbert_byte_gray_204_5bit.t) |
+| HQ-46 | Uniform byte gray 255 emits 100 percent with lookup 5bit. | [tests/palette/heckbert/0046_heckbert_byte_gray_255_5bit.t](../../../../tests/palette/heckbert/0046_heckbert_byte_gray_255_5bit.t) |
+| HQ-47 | Uniform byte gray 0 emits 0 percent with lookup 6bit. | [tests/palette/heckbert/0047_heckbert_byte_gray_000_6bit.t](../../../../tests/palette/heckbert/0047_heckbert_byte_gray_000_6bit.t) |
+| HQ-48 | Uniform byte gray 51 emits 20 percent with lookup 6bit. | [tests/palette/heckbert/0048_heckbert_byte_gray_051_6bit.t](../../../../tests/palette/heckbert/0048_heckbert_byte_gray_051_6bit.t) |
+| HQ-49 | Uniform byte gray 90 emits 35 percent with lookup 6bit. | [tests/palette/heckbert/0049_heckbert_byte_gray_090_6bit.t](../../../../tests/palette/heckbert/0049_heckbert_byte_gray_090_6bit.t) |
+| HQ-50 | Uniform byte gray 128 emits 50 percent with lookup 6bit. | [tests/palette/heckbert/0050_heckbert_byte_gray_128_6bit.t](../../../../tests/palette/heckbert/0050_heckbert_byte_gray_128_6bit.t) |
+| HQ-51 | Uniform byte gray 204 emits 80 percent with lookup 6bit. | [tests/palette/heckbert/0051_heckbert_byte_gray_204_6bit.t](../../../../tests/palette/heckbert/0051_heckbert_byte_gray_204_6bit.t) |
+| HQ-52 | Uniform byte gray 255 emits 100 percent with lookup 6bit. | [tests/palette/heckbert/0052_heckbert_byte_gray_255_6bit.t](../../../../tests/palette/heckbert/0052_heckbert_byte_gray_255_6bit.t) |
+| HQ-53 | RGB buckets retain fractional population means. | [tests/palette/heckbert/0120_heckbert_bucket_rgb_mean.t](../../../../tests/palette/heckbert/0120_heckbert_bucket_rgb_mean.t) |
+| HQ-54 | Four-channel 5bit buckets retain fractional channel means. | [tests/palette/heckbert/0121_heckbert_bucket_rgba_mean.t](../../../../tests/palette/heckbert/0121_heckbert_bucket_rgba_mean.t) |
+| HQ-55 | The generic one-channel path retains fractional means. | [tests/palette/heckbert/0122_heckbert_bucket_gray_mean.t](../../../../tests/palette/heckbert/0122_heckbert_bucket_gray_mean.t) |
+| HQ-56 | Lookup none retains exact source colors and populations. | [tests/palette/heckbert/0123_heckbert_bucket_none_exact.t](../../../../tests/palette/heckbert/0123_heckbert_bucket_none_exact.t) |
+| HQ-57 | Reversible bucket means retain the reversible tone grid. | [tests/palette/heckbert/0124_heckbert_bucket_reversible_mean.t](../../../../tests/palette/heckbert/0124_heckbert_bucket_reversible_mean.t) |
+| HQ-58 | Axis splits order fractional means inside integer buckets. | [tests/palette/heckbert/0125_heckbert_bucket_fractional_axis.t](../../../../tests/palette/heckbert/0125_heckbert_bucket_fractional_axis.t) |
+| HQ-59 | Sparse four-channel 5bit statistics stay within a 5 MiB allocation budget. | [tests/palette/heckbert/0126_heckbert_bucket_sparse_rgba.t](../../../../tests/palette/heckbert/0126_heckbert_bucket_sparse_rgba.t) |
 
 ### Automatic native-path selection
 
@@ -798,29 +798,29 @@ These observations check two-color native coordinates with a small binary32 erro
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| AQ-01 | Omitted quantizer/binning preserves native gamma coordinates and resolves to Heckbert. | [tests/quant/palette/auto_float/0001_auto_default_gamma.t](../../../../tests/quant/palette/auto_float/0001_auto_default_gamma.t) |
-| AQ-02 | Explicit auto preserves native gamma coordinates. | [tests/quant/palette/auto_float/0002_auto_explicit_gamma.t](../../../../tests/quant/palette/auto_float/0002_auto_explicit_gamma.t) |
-| AQ-03 | Omitted auto reaches the Display P3 wire path. | [tests/quant/palette/auto_float/0003_auto_default_p3.t](../../../../tests/quant/palette/auto_float/0003_auto_default_p3.t) |
-| AQ-04 | Default auto retains native linear coordinates. | [tests/quant/palette/auto_float/0004_auto_default_linear.t](../../../../tests/quant/palette/auto_float/0004_auto_default_linear.t) |
-| AQ-05 | Default auto retains native Oklab coordinates. | [tests/quant/palette/auto_float/0005_auto_default_oklab.t](../../../../tests/quant/palette/auto_float/0005_auto_default_oklab.t) |
-| AQ-06 | Default auto retains native CIELAB coordinates. | [tests/quant/palette/auto_float/0006_auto_default_cielab.t](../../../../tests/quant/palette/auto_float/0006_auto_default_cielab.t) |
-| AQ-07 | Default auto retains native DIN99d coordinates. | [tests/quant/palette/auto_float/0007_auto_default_din99d.t](../../../../tests/quant/palette/auto_float/0007_auto_default_din99d.t) |
-| AQ-08 | Under `--precision-policy=auto`, automatic selection builds from the float source, then rounds the work samples and palette to the gamma byte cube before application. | [tests/quant/palette/auto_float/0008_auto_retain_float.t](../../../../tests/quant/palette/auto_float/0008_auto_retain_float.t) |
-| AQ-09 | Eligible gamma bytes retain the byte consumer and literal wire levels. | [tests/quant/palette/auto_float/0009_auto_byte_fastpath.t](../../../../tests/quant/palette/auto_float/0009_auto_byte_fastpath.t) |
-| AQ-10 | Explicit float preference promotes otherwise eligible bytes. | [tests/quant/palette/auto_float/0010_auto_byte_promote.t](../../../../tests/quant/palette/auto_float/0010_auto_byte_promote.t) |
-| AQ-11 | Auto with exact binning resolves to native K-means. | [tests/quant/palette/auto_float/0011_auto_exact_kmeans.t](../../../../tests/quant/palette/auto_float/0011_auto_exact_kmeans.t) |
-| AQ-12 | Auto with soft binning resolves to native K-means. | [tests/quant/palette/auto_float/0012_auto_soft_kmeans.t](../../../../tests/quant/palette/auto_float/0012_auto_soft_kmeans.t) |
-| AQ-13 | Zero-rate snap remains inactive for auto. | [tests/quant/palette/auto_float/0013_auto_zero_snap.t](../../../../tests/quant/palette/auto_float/0013_auto_zero_snap.t) |
-| AQ-14 | Reusing one auto encoder resolves none/hard/none binning per frame. | [tests/quant/palette/auto_float/0014_auto_binning_reuse.t](../../../../tests/quant/palette/auto_float/0014_auto_binning_reuse.t) |
-| AQ-15 | P3 AUTO accepts an active corners budget with the default soft mode and preserves extended palette coordinates. | [tests/quant/palette/auto_float/0015_auto_implicit_cover.t](../../../../tests/quant/palette/auto_float/0015_auto_implicit_cover.t) |
-| AQ-16 | P3 automatic quantizer selection preserves partial destination snap in native coordinates. | [tests/quant/palette/auto_float/0016_auto_p3_snap.t](../../../../tests/quant/palette/auto_float/0016_auto_p3_snap.t) |
-| AQ-17 | Distinct sub-byte colors keep requested FS active under auto. | [tests/quant/palette/auto_float/0017_auto_subbyte_diffusion.t](../../../../tests/quant/palette/auto_float/0017_auto_subbyte_diffusion.t) |
-| AQ-18 | Explicit auto binning retains native Heckbert selection. | [tests/quant/palette/auto_float/0018_auto_explicit_auto_binning.t](../../../../tests/quant/palette/auto_float/0018_auto_explicit_auto_binning.t) |
-| AQ-19 | Auto with hard binning preserves eligible byte application. | [tests/quant/palette/auto_float/0019_auto_byte_hard_kmeans.t](../../../../tests/quant/palette/auto_float/0019_auto_byte_hard_kmeans.t) |
-| AQ-20 | P3 auto with hard binning resolves to native K-means. | [tests/quant/palette/auto_float/0020_auto_hard_kmeans_p3.t](../../../../tests/quant/palette/auto_float/0020_auto_hard_kmeans_p3.t) |
-| AQ-21 | Explicit auto reaches the Display P3 wire path. | [tests/quant/palette/auto_float/0021_auto_explicit_p3.t](../../../../tests/quant/palette/auto_float/0021_auto_explicit_p3.t) |
-| AQ-22 | P3 admission rejects pending feedback on the resolved K-means consumer. | [tests/quant/palette/auto_float/0022_auto_reject_kmeans_feedback.t](../../../../tests/quant/palette/auto_float/0022_auto_reject_kmeans_feedback.t) |
-| AQ-23 | Pending K-means feedback does not reject auto resolved to Heckbert. | [tests/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.t](../../../../tests/quant/palette/auto_float/0023_auto_irrelevant_heckbert_feedback.t) |
+| AQ-01 | Omitted quantizer/binning preserves native gamma coordinates and resolves to Heckbert. | [tests/palette/dispatch/0015_auto_default_gamma.t](../../../../tests/palette/dispatch/0015_auto_default_gamma.t) |
+| AQ-02 | Explicit auto preserves native gamma coordinates. | [tests/palette/dispatch/0016_auto_explicit_gamma.t](../../../../tests/palette/dispatch/0016_auto_explicit_gamma.t) |
+| AQ-03 | Omitted auto reaches the Display P3 wire path. | [tests/palette/dispatch/0017_auto_default_p3.t](../../../../tests/palette/dispatch/0017_auto_default_p3.t) |
+| AQ-04 | Default auto retains native linear coordinates. | [tests/palette/dispatch/0018_auto_default_linear.t](../../../../tests/palette/dispatch/0018_auto_default_linear.t) |
+| AQ-05 | Default auto retains native Oklab coordinates. | [tests/palette/dispatch/0019_auto_default_oklab.t](../../../../tests/palette/dispatch/0019_auto_default_oklab.t) |
+| AQ-06 | Default auto retains native CIELAB coordinates. | [tests/palette/dispatch/0020_auto_default_cielab.t](../../../../tests/palette/dispatch/0020_auto_default_cielab.t) |
+| AQ-07 | Default auto retains native DIN99d coordinates. | [tests/palette/dispatch/0021_auto_default_din99d.t](../../../../tests/palette/dispatch/0021_auto_default_din99d.t) |
+| AQ-08 | Under `--precision-policy=auto`, automatic selection builds from the float source, then rounds the work samples and palette to the gamma byte cube before application. | [tests/palette/dispatch/0022_auto_retain_float.t](../../../../tests/palette/dispatch/0022_auto_retain_float.t) |
+| AQ-09 | Eligible gamma bytes retain the byte consumer and literal wire levels. | [tests/palette/dispatch/0023_auto_byte_fastpath.t](../../../../tests/palette/dispatch/0023_auto_byte_fastpath.t) |
+| AQ-10 | Explicit float preference promotes otherwise eligible bytes. | [tests/palette/dispatch/0024_auto_byte_promote.t](../../../../tests/palette/dispatch/0024_auto_byte_promote.t) |
+| AQ-11 | Auto with exact binning resolves to native K-means. | [tests/palette/dispatch/0025_auto_exact_kmeans.t](../../../../tests/palette/dispatch/0025_auto_exact_kmeans.t) |
+| AQ-12 | Auto with soft binning resolves to native K-means. | [tests/palette/dispatch/0026_auto_soft_kmeans.t](../../../../tests/palette/dispatch/0026_auto_soft_kmeans.t) |
+| AQ-13 | Zero-rate snap remains inactive for auto. | [tests/palette/dispatch/0027_auto_zero_snap.t](../../../../tests/palette/dispatch/0027_auto_zero_snap.t) |
+| AQ-14 | Reusing one auto encoder resolves none/hard/none binning per frame. | [tests/palette/dispatch/0028_auto_binning_reuse.t](../../../../tests/palette/dispatch/0028_auto_binning_reuse.t) |
+| AQ-15 | P3 AUTO accepts an active corners budget with the default soft mode and preserves extended palette coordinates. | [tests/palette/dispatch/0029_auto_implicit_cover.t](../../../../tests/palette/dispatch/0029_auto_implicit_cover.t) |
+| AQ-16 | P3 automatic quantizer selection preserves partial destination snap in native coordinates. | [tests/palette/dispatch/0030_auto_p3_snap.t](../../../../tests/palette/dispatch/0030_auto_p3_snap.t) |
+| AQ-17 | Distinct sub-byte colors keep requested FS active under auto. | [tests/palette/dispatch/0031_auto_subbyte_diffusion.t](../../../../tests/palette/dispatch/0031_auto_subbyte_diffusion.t) |
+| AQ-18 | Explicit auto binning retains native Heckbert selection. | [tests/palette/dispatch/0032_auto_explicit_auto_binning.t](../../../../tests/palette/dispatch/0032_auto_explicit_auto_binning.t) |
+| AQ-19 | Auto with hard binning preserves eligible byte application. | [tests/palette/dispatch/0033_auto_byte_hard_kmeans.t](../../../../tests/palette/dispatch/0033_auto_byte_hard_kmeans.t) |
+| AQ-20 | P3 auto with hard binning resolves to native K-means. | [tests/palette/dispatch/0034_auto_hard_kmeans_p3.t](../../../../tests/palette/dispatch/0034_auto_hard_kmeans_p3.t) |
+| AQ-21 | Explicit auto reaches the Display P3 wire path. | [tests/palette/dispatch/0035_auto_explicit_p3.t](../../../../tests/palette/dispatch/0035_auto_explicit_p3.t) |
+| AQ-22 | P3 admission rejects pending feedback on the resolved K-means consumer. | [tests/palette/dispatch/0036_auto_reject_kmeans_feedback.t](../../../../tests/palette/dispatch/0036_auto_reject_kmeans_feedback.t) |
+| AQ-23 | Pending K-means feedback does not reject auto resolved to Heckbert. | [tests/palette/dispatch/0037_auto_irrelevant_heckbert_feedback.t](../../../../tests/palette/dispatch/0037_auto_irrelevant_heckbert_feedback.t) |
 
 ### Ordinary typed float generators
 
@@ -828,129 +828,129 @@ These value observations call ordinary `generate()` directly, so native output a
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| OF-01 | Ordinary center retains extended source representatives in five spaces. | [tests/quant/palette/ordinary_float/0001_center_sources.t](../../../../tests/quant/palette/ordinary_float/0001_center_sources.t) |
-| OF-02 | Ordinary medoids retains extended source representatives in five spaces. | [tests/quant/palette/ordinary_float/0002_medoids_sources.t](../../../../tests/quant/palette/ordinary_float/0002_medoids_sources.t) |
-| OF-03 | K-center hard bins expand addresses without clipping source coordinates. | [tests/quant/palette/ordinary_float/0003_center_hard.t](../../../../tests/quant/palette/ordinary_float/0003_center_hard.t) |
-| OF-04 | K-center exact bins distinguish extended coordinates. | [tests/quant/palette/ordinary_float/0004_center_exact.t](../../../../tests/quant/palette/ordinary_float/0004_center_exact.t) |
-| OF-05 | Ward merge retains signed independent means. | [tests/quant/palette/ordinary_float/0005_center_ward.t](../../../../tests/quant/palette/ordinary_float/0005_center_ward.t) |
-| OF-06 | Ward merge retains signed independent means. | [tests/quant/palette/ordinary_float/0006_medoids_ward.t](../../../../tests/quant/palette/ordinary_float/0006_medoids_ward.t) |
-| OF-07 | Preservation retains the explicitly requested final partial snap. | [tests/quant/palette/ordinary_float/0007_center_snap.t](../../../../tests/quant/palette/ordinary_float/0007_center_snap.t) |
-| OF-08 | Preservation retains the explicitly requested final partial snap. | [tests/quant/palette/ordinary_float/0008_medoids_snap.t](../../../../tests/quant/palette/ordinary_float/0008_medoids_snap.t) |
-| OF-09 | Float allocation failure cannot retry byte or another solver. | [tests/quant/palette/ordinary_float/0009_center_fault.t](../../../../tests/quant/palette/ordinary_float/0009_center_fault.t) |
-| OF-10 | Float allocation failure cannot retry byte or another solver. | [tests/quant/palette/ordinary_float/0010_medoids_fault.t](../../../../tests/quant/palette/ordinary_float/0010_medoids_fault.t) |
-| OF-11 | Invalid float coordinates fail without a lossy retry. | [tests/quant/palette/ordinary_float/0011_center_nonfinite.t](../../../../tests/quant/palette/ordinary_float/0011_center_nonfinite.t) |
-| OF-12 | Invalid float coordinates fail without a lossy retry. | [tests/quant/palette/ordinary_float/0012_medoids_nonfinite.t](../../../../tests/quant/palette/ordinary_float/0012_medoids_nonfinite.t) |
-| OF-13 | Typed float input determines arithmetic despite a byte preference. | [tests/quant/palette/ordinary_float/0013_center_hint.t](../../../../tests/quant/palette/ordinary_float/0013_center_hint.t) |
-| OF-14 | Typed float input determines arithmetic despite a byte preference. | [tests/quant/palette/ordinary_float/0014_medoids_hint.t](../../../../tests/quant/palette/ordinary_float/0014_medoids_hint.t) |
-| OF-15 | True byte inputs retain byte storage and exact representatives. | [tests/quant/palette/ordinary_float/0015_center_byte.t](../../../../tests/quant/palette/ordinary_float/0015_center_byte.t) |
-| OF-16 | True byte inputs retain byte storage and exact representatives. | [tests/quant/palette/ordinary_float/0016_medoids_byte.t](../../../../tests/quant/palette/ordinary_float/0016_medoids_byte.t) |
-| OF-17 | A failed ordinary float build permits a clean subsequent attempt. | [tests/quant/palette/ordinary_float/0017_center_reuse.t](../../../../tests/quant/palette/ordinary_float/0017_center_reuse.t) |
-| OF-18 | A failed ordinary float build permits a clean subsequent attempt. | [tests/quant/palette/ordinary_float/0018_medoids_reuse.t](../../../../tests/quant/palette/ordinary_float/0018_medoids_reuse.t) |
-| OF-19 | Reduced ordinary palettes select extended source candidates. | [tests/quant/palette/ordinary_float/0019_center_reduce.t](../../../../tests/quant/palette/ordinary_float/0019_center_reduce.t) |
-| OF-20 | Reduced ordinary palettes select extended source candidates. | [tests/quant/palette/ordinary_float/0020_medoids_reduce.t](../../../../tests/quant/palette/ordinary_float/0020_medoids_reduce.t) |
-| OF-21 | A post-build ordinary float K-center fault reaches the CLI as failure, with zero retries and no committed quantizer/binning state. | [tests/cli/options/matching/0233_option_matching_palette_kcenter_float_failure.t](../../../../tests/cli/options/matching/0233_option_matching_palette_kcenter_float_failure.t) |
-| OF-22 | Ordinary K-means preserves extended coordinates in all float spaces. | [tests/quant/palette/ordinary_float/0021_kmeans_sources.t](../../../../tests/quant/palette/ordinary_float/0021_kmeans_sources.t) |
-| OF-23 | Ordinary K-means hard bins distinguish extended samples. | [tests/quant/palette/ordinary_float/0022_kmeans_hard.t](../../../../tests/quant/palette/ordinary_float/0022_kmeans_hard.t) |
-| OF-24 | Ordinary K-means exact bins retain source coordinates. | [tests/quant/palette/ordinary_float/0023_kmeans_exact.t](../../../../tests/quant/palette/ordinary_float/0023_kmeans_exact.t) |
-| OF-25 | Ordinary K-means Ward preserves signed means. | [tests/quant/palette/ordinary_float/0024_kmeans_ward.t](../../../../tests/quant/palette/ordinary_float/0024_kmeans_ward.t) |
-| OF-26 | Ordinary K-means honors partial iteration and final snap. | [tests/quant/palette/ordinary_float/0025_kmeans_snap.t](../../../../tests/quant/palette/ordinary_float/0025_kmeans_snap.t) |
-| OF-27 | Failed float K-means allocation is not retried as byte. | [tests/quant/palette/ordinary_float/0026_kmeans_fault.t](../../../../tests/quant/palette/ordinary_float/0026_kmeans_fault.t) |
-| OF-28 | Float K-means rejects nonfinite samples without retry. | [tests/quant/palette/ordinary_float/0027_kmeans_nonfinite.t](../../../../tests/quant/palette/ordinary_float/0027_kmeans_nonfinite.t) |
-| OF-29 | Typed K-means input overrides a byte preference hint. | [tests/quant/palette/ordinary_float/0028_kmeans_hint.t](../../../../tests/quant/palette/ordinary_float/0028_kmeans_hint.t) |
-| OF-30 | Byte K-means keeps byte-only palette storage. | [tests/quant/palette/ordinary_float/0029_kmeans_byte.t](../../../../tests/quant/palette/ordinary_float/0029_kmeans_byte.t) |
-| OF-31 | K-means can rebuild after float allocation failure. | [tests/quant/palette/ordinary_float/0030_kmeans_reuse.t](../../../../tests/quant/palette/ordinary_float/0030_kmeans_reuse.t) |
-| OF-32 | Ordinary K-means Ward retains fractional soft-bin populations. | [tests/quant/palette/ordinary_float/0031_kmeans_fractional.t](../../../../tests/quant/palette/ordinary_float/0031_kmeans_fractional.t) |
-| OF-33 | Ordinary K-means Ward polishing retains the signed mean. | [tests/quant/palette/ordinary_float/0032_kmeans_polish.t](../../../../tests/quant/palette/ordinary_float/0032_kmeans_polish.t) |
-| OF-34 | K-means empty-cluster repair retains signed donor moments. | [tests/quant/palette/ordinary_float/0033_kmeans_empty.t](../../../../tests/quant/palette/ordinary_float/0033_kmeans_empty.t) |
-| OF-35 | K-means residual feedback distinguishes extended samples. | [tests/quant/palette/ordinary_float/0034_kmeans_feedback.t](../../../../tests/quant/palette/ordinary_float/0034_kmeans_feedback.t) |
-| OF-36 | K-means feedback retains requested partial snap stages. | [tests/quant/palette/ordinary_float/0035_kmeans_feedback_snap.t](../../../../tests/quant/palette/ordinary_float/0035_kmeans_feedback_snap.t) |
-| OF-37 | K-means feedback respects its iteration interval. | [tests/quant/palette/ordinary_float/0036_kmeans_feedback_interval.t](../../../../tests/quant/palette/ordinary_float/0036_kmeans_feedback_interval.t) |
-| OF-38 | K-means Ward counts subbyte float colors independently. | [tests/quant/palette/ordinary_float/0037_kmeans_unique.t](../../../../tests/quant/palette/ordinary_float/0037_kmeans_unique.t) |
-| OF-39 | A post-build ordinary float K-means fault reaches the CLI as failure, with zero retries and no committed quantizer/binning state. | [tests/cli/options/matching/0229_option_matching_palette_kmeans_float_failure.t](../../../../tests/cli/options/matching/0229_option_matching_palette_kmeans_float_failure.t) |
-| OF-40 | Preserve extended Heckbert sources in five spaces. | [tests/quant/palette/ordinary_float/0038_heckbert_sources.t](../../../../tests/quant/palette/ordinary_float/0038_heckbert_sources.t) |
-| OF-41 | Heckbert Ward retains signed pair means. | [tests/quant/palette/ordinary_float/0039_heckbert_ward.t](../../../../tests/quant/palette/ordinary_float/0039_heckbert_ward.t) |
-| OF-42 | Heckbert retains partial iteration and final snap. | [tests/quant/palette/ordinary_float/0040_heckbert_snap.t](../../../../tests/quant/palette/ordinary_float/0040_heckbert_snap.t) |
-| OF-43 | Heckbert allocation failure cannot retry byte storage. | [tests/quant/palette/ordinary_float/0041_heckbert_fault.t](../../../../tests/quant/palette/ordinary_float/0041_heckbert_fault.t) |
-| OF-44 | Heckbert nonfinite input fails without retry. | [tests/quant/palette/ordinary_float/0042_heckbert_nonfinite.t](../../../../tests/quant/palette/ordinary_float/0042_heckbert_nonfinite.t) |
-| OF-45 | Typed Heckbert input overrides the byte preference. | [tests/quant/palette/ordinary_float/0043_heckbert_hint.t](../../../../tests/quant/palette/ordinary_float/0043_heckbert_hint.t) |
-| OF-46 | Byte Heckbert preserves its bounded histogram. | [tests/quant/palette/ordinary_float/0044_heckbert_byte.t](../../../../tests/quant/palette/ordinary_float/0044_heckbert_byte.t) |
-| OF-47 | Heckbert rebuilds after a float allocation failure. | [tests/quant/palette/ordinary_float/0045_heckbert_reuse.t](../../../../tests/quant/palette/ordinary_float/0045_heckbert_reuse.t) |
-| OF-48 | Heckbert box center retains float extrema. | [tests/quant/palette/ordinary_float/0046_heckbert_center.t](../../../../tests/quant/palette/ordinary_float/0046_heckbert_center.t) |
-| OF-49 | Heckbert distinct-color mean retains float values. | [tests/quant/palette/ordinary_float/0047_heckbert_average.t](../../../../tests/quant/palette/ordinary_float/0047_heckbert_average.t) |
-| OF-50 | Heckbert occurrence mean retains float values. | [tests/quant/palette/ordinary_float/0048_heckbert_histogram.t](../../../../tests/quant/palette/ordinary_float/0048_heckbert_histogram.t) |
-| OF-51 | Heckbert AUTO retains signed distinct-color means after Ward refinement. | [tests/quant/palette/ordinary_float/0049_heckbert_polish_auto_average.t](../../../../tests/quant/palette/ordinary_float/0049_heckbert_polish_auto_average.t) |
-| OF-52 | Heckbert once snap runs only on the final palette. | [tests/quant/palette/ordinary_float/0050_heckbert_once.t](../../../../tests/quant/palette/ordinary_float/0050_heckbert_once.t) |
-| OF-53 | Heckbert distinguishes subbyte float colors. | [tests/quant/palette/ordinary_float/0051_heckbert_unique.t](../../../../tests/quant/palette/ordinary_float/0051_heckbert_unique.t) |
-| OF-54 | A failed ordinary float Heckbert build reaches the CLI without retry or published success state. | [tests/cli/options/matching/0250_option_matching_palette_heckbert_float_failure.t](../../../../tests/cli/options/matching/0250_option_matching_palette_heckbert_float_failure.t) |
+| OF-01 | Ordinary center retains extended source representatives in five spaces. | [tests/palette/kcenter/0004_center_sources.t](../../../../tests/palette/kcenter/0004_center_sources.t) |
+| OF-02 | Ordinary medoids retains extended source representatives in five spaces. | [tests/palette/kmedoids/0001_medoids_sources.t](../../../../tests/palette/kmedoids/0001_medoids_sources.t) |
+| OF-03 | K-center hard bins expand addresses without clipping source coordinates. | [tests/palette/kcenter/0005_center_hard.t](../../../../tests/palette/kcenter/0005_center_hard.t) |
+| OF-04 | K-center exact bins distinguish extended coordinates. | [tests/palette/kcenter/0006_center_exact.t](../../../../tests/palette/kcenter/0006_center_exact.t) |
+| OF-05 | Ward merge retains signed independent means. | [tests/palette/kcenter/0007_center_ward.t](../../../../tests/palette/kcenter/0007_center_ward.t) |
+| OF-06 | Ward merge retains signed independent means. | [tests/palette/kmedoids/0002_medoids_ward.t](../../../../tests/palette/kmedoids/0002_medoids_ward.t) |
+| OF-07 | Preservation retains the explicitly requested final partial snap. | [tests/palette/kcenter/0008_center_snap.t](../../../../tests/palette/kcenter/0008_center_snap.t) |
+| OF-08 | Preservation retains the explicitly requested final partial snap. | [tests/palette/kmedoids/0003_medoids_snap.t](../../../../tests/palette/kmedoids/0003_medoids_snap.t) |
+| OF-09 | Float allocation failure cannot retry byte or another solver. | [tests/palette/kcenter/0009_center_fault.t](../../../../tests/palette/kcenter/0009_center_fault.t) |
+| OF-10 | Float allocation failure cannot retry byte or another solver. | [tests/palette/kmedoids/0004_medoids_fault.t](../../../../tests/palette/kmedoids/0004_medoids_fault.t) |
+| OF-11 | Invalid float coordinates fail without a lossy retry. | [tests/palette/kcenter/0010_center_nonfinite.t](../../../../tests/palette/kcenter/0010_center_nonfinite.t) |
+| OF-12 | Invalid float coordinates fail without a lossy retry. | [tests/palette/kmedoids/0005_medoids_nonfinite.t](../../../../tests/palette/kmedoids/0005_medoids_nonfinite.t) |
+| OF-13 | Typed float input determines arithmetic despite a byte preference. | [tests/palette/kcenter/0011_center_hint.t](../../../../tests/palette/kcenter/0011_center_hint.t) |
+| OF-14 | Typed float input determines arithmetic despite a byte preference. | [tests/palette/kmedoids/0006_medoids_hint.t](../../../../tests/palette/kmedoids/0006_medoids_hint.t) |
+| OF-15 | True byte inputs retain byte storage and exact representatives. | [tests/palette/kcenter/0012_center_byte.t](../../../../tests/palette/kcenter/0012_center_byte.t) |
+| OF-16 | True byte inputs retain byte storage and exact representatives. | [tests/palette/kmedoids/0007_medoids_byte.t](../../../../tests/palette/kmedoids/0007_medoids_byte.t) |
+| OF-17 | A failed ordinary float build permits a clean subsequent attempt. | [tests/palette/kcenter/0013_center_reuse.t](../../../../tests/palette/kcenter/0013_center_reuse.t) |
+| OF-18 | A failed ordinary float build permits a clean subsequent attempt. | [tests/palette/kmedoids/0008_medoids_reuse.t](../../../../tests/palette/kmedoids/0008_medoids_reuse.t) |
+| OF-19 | Reduced ordinary palettes select extended source candidates. | [tests/palette/kcenter/0014_center_reduce.t](../../../../tests/palette/kcenter/0014_center_reduce.t) |
+| OF-20 | Reduced ordinary palettes select extended source candidates. | [tests/palette/kmedoids/0009_medoids_reduce.t](../../../../tests/palette/kmedoids/0009_medoids_reduce.t) |
+| OF-21 | A post-build ordinary float K-center fault reaches the CLI as failure, with zero retries and no committed quantizer/binning state. | [tests/cli/palette-stage-options/0043_option_matching_palette_kcenter_float_failure.t](../../../../tests/cli/palette-stage-options/0043_option_matching_palette_kcenter_float_failure.t) |
+| OF-22 | Ordinary K-means preserves extended coordinates in all float spaces. | [tests/palette/kmeans/0024_kmeans_sources.t](../../../../tests/palette/kmeans/0024_kmeans_sources.t) |
+| OF-23 | Ordinary K-means hard bins distinguish extended samples. | [tests/palette/kmeans/0025_kmeans_hard.t](../../../../tests/palette/kmeans/0025_kmeans_hard.t) |
+| OF-24 | Ordinary K-means exact bins retain source coordinates. | [tests/palette/kmeans/0026_kmeans_exact.t](../../../../tests/palette/kmeans/0026_kmeans_exact.t) |
+| OF-25 | Ordinary K-means Ward preserves signed means. | [tests/palette/kmeans/0027_kmeans_ward.t](../../../../tests/palette/kmeans/0027_kmeans_ward.t) |
+| OF-26 | Ordinary K-means honors partial iteration and final snap. | [tests/palette/kmeans/0028_kmeans_snap.t](../../../../tests/palette/kmeans/0028_kmeans_snap.t) |
+| OF-27 | Failed float K-means allocation is not retried as byte. | [tests/palette/kmeans/0029_kmeans_fault.t](../../../../tests/palette/kmeans/0029_kmeans_fault.t) |
+| OF-28 | Float K-means rejects nonfinite samples without retry. | [tests/palette/kmeans/0030_kmeans_nonfinite.t](../../../../tests/palette/kmeans/0030_kmeans_nonfinite.t) |
+| OF-29 | Typed K-means input overrides a byte preference hint. | [tests/palette/kmeans/0031_kmeans_hint.t](../../../../tests/palette/kmeans/0031_kmeans_hint.t) |
+| OF-30 | Byte K-means keeps byte-only palette storage. | [tests/palette/kmeans/0032_kmeans_byte.t](../../../../tests/palette/kmeans/0032_kmeans_byte.t) |
+| OF-31 | K-means can rebuild after float allocation failure. | [tests/palette/kmeans/0033_kmeans_reuse.t](../../../../tests/palette/kmeans/0033_kmeans_reuse.t) |
+| OF-32 | Ordinary K-means Ward retains fractional soft-bin populations. | [tests/palette/kmeans/0034_kmeans_fractional.t](../../../../tests/palette/kmeans/0034_kmeans_fractional.t) |
+| OF-33 | Ordinary K-means Ward polishing retains the signed mean. | [tests/palette/kmeans/0035_kmeans_polish.t](../../../../tests/palette/kmeans/0035_kmeans_polish.t) |
+| OF-34 | K-means empty-cluster repair retains signed donor moments. | [tests/palette/kmeans/0036_kmeans_empty.t](../../../../tests/palette/kmeans/0036_kmeans_empty.t) |
+| OF-35 | K-means residual feedback distinguishes extended samples. | [tests/palette/kmeans/0037_kmeans_feedback.t](../../../../tests/palette/kmeans/0037_kmeans_feedback.t) |
+| OF-36 | K-means feedback retains requested partial snap stages. | [tests/palette/kmeans/0038_kmeans_feedback_snap.t](../../../../tests/palette/kmeans/0038_kmeans_feedback_snap.t) |
+| OF-37 | K-means feedback respects its iteration interval. | [tests/palette/kmeans/0039_kmeans_feedback_interval.t](../../../../tests/palette/kmeans/0039_kmeans_feedback_interval.t) |
+| OF-38 | K-means Ward counts subbyte float colors independently. | [tests/palette/kmeans/0040_kmeans_unique.t](../../../../tests/palette/kmeans/0040_kmeans_unique.t) |
+| OF-39 | A post-build ordinary float K-means fault reaches the CLI as failure, with zero retries and no committed quantizer/binning state. | [tests/cli/palette-stage-options/0040_option_matching_palette_kmeans_float_failure.t](../../../../tests/cli/palette-stage-options/0040_option_matching_palette_kmeans_float_failure.t) |
+| OF-40 | Preserve extended Heckbert sources in five spaces. | [tests/palette/heckbert/0127_heckbert_sources.t](../../../../tests/palette/heckbert/0127_heckbert_sources.t) |
+| OF-41 | Heckbert Ward retains signed pair means. | [tests/palette/heckbert/0128_quant_palette_ordinary_float_heckbert_ward.t](../../../../tests/palette/heckbert/0128_quant_palette_ordinary_float_heckbert_ward.t) |
+| OF-42 | Heckbert retains partial iteration and final snap. | [tests/palette/heckbert/0129_heckbert_snap.t](../../../../tests/palette/heckbert/0129_heckbert_snap.t) |
+| OF-43 | Heckbert allocation failure cannot retry byte storage. | [tests/palette/heckbert/0130_heckbert_fault.t](../../../../tests/palette/heckbert/0130_heckbert_fault.t) |
+| OF-44 | Heckbert nonfinite input fails without retry. | [tests/palette/heckbert/0131_heckbert_nonfinite.t](../../../../tests/palette/heckbert/0131_heckbert_nonfinite.t) |
+| OF-45 | Typed Heckbert input overrides the byte preference. | [tests/palette/heckbert/0132_heckbert_hint.t](../../../../tests/palette/heckbert/0132_heckbert_hint.t) |
+| OF-46 | Byte Heckbert preserves its bounded histogram. | [tests/palette/heckbert/0133_quant_palette_ordinary_float_heckbert_byte.t](../../../../tests/palette/heckbert/0133_quant_palette_ordinary_float_heckbert_byte.t) |
+| OF-47 | Heckbert rebuilds after a float allocation failure. | [tests/palette/heckbert/0134_heckbert_reuse.t](../../../../tests/palette/heckbert/0134_heckbert_reuse.t) |
+| OF-48 | Heckbert box center retains float extrema. | [tests/palette/kcenter/0015_heckbert_center.t](../../../../tests/palette/kcenter/0015_heckbert_center.t) |
+| OF-49 | Heckbert distinct-color mean retains float values. | [tests/palette/heckbert/0135_quant_palette_ordinary_float_heckbert_average.t](../../../../tests/palette/heckbert/0135_quant_palette_ordinary_float_heckbert_average.t) |
+| OF-50 | Heckbert occurrence mean retains float values. | [tests/palette/heckbert/0136_quant_palette_ordinary_float_heckbert_histogram.t](../../../../tests/palette/heckbert/0136_quant_palette_ordinary_float_heckbert_histogram.t) |
+| OF-51 | Heckbert AUTO retains signed distinct-color means after Ward refinement. | [tests/palette/heckbert/0137_heckbert_polish_auto_average.t](../../../../tests/palette/heckbert/0137_heckbert_polish_auto_average.t) |
+| OF-52 | Heckbert once snap runs only on the final palette. | [tests/palette/heckbert/0138_heckbert_once.t](../../../../tests/palette/heckbert/0138_heckbert_once.t) |
+| OF-53 | Heckbert distinguishes subbyte float colors. | [tests/palette/heckbert/0139_heckbert_unique.t](../../../../tests/palette/heckbert/0139_heckbert_unique.t) |
+| OF-54 | A failed ordinary float Heckbert build reaches the CLI without retry or published success state. | [tests/cli/palette-stage-options/0049_option_matching_palette_heckbert_float_failure.t](../../../../tests/cli/palette-stage-options/0049_option_matching_palette_heckbert_float_failure.t) |
 
 ### Heckbert policy numerical contracts
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| HP-01 | center half numerical contract. | [tests/quant/palette/heckbert_policy/0001_heckbert_center_half.t](../../../../tests/quant/palette/heckbert_policy/0001_heckbert_center_half.t) |
-| HP-02 | average half numerical contract. | [tests/quant/palette/heckbert_policy/0002_heckbert_average_half.t](../../../../tests/quant/palette/heckbert_policy/0002_heckbert_average_half.t) |
-| HP-03 | histogram half numerical contract. | [tests/quant/palette/heckbert_policy/0003_heckbert_histogram_half.t](../../../../tests/quant/palette/heckbert_policy/0003_heckbert_histogram_half.t) |
-| HP-04 | ward center numerical contract. | [tests/quant/palette/heckbert_policy/0004_heckbert_ward_center.t](../../../../tests/quant/palette/heckbert_policy/0004_heckbert_ward_center.t) |
-| HP-05 | ward average numerical contract. | [tests/quant/palette/heckbert_policy/0005_heckbert_ward_average.t](../../../../tests/quant/palette/heckbert_policy/0005_heckbert_ward_average.t) |
-| HP-06 | ward histogram numerical contract. | [tests/quant/palette/heckbert_policy/0006_heckbert_ward_histogram.t](../../../../tests/quant/palette/heckbert_policy/0006_heckbert_ward_histogram.t) |
-| HP-07 | lloyd center numerical contract. | [tests/quant/palette/heckbert_policy/0007_heckbert_lloyd_center.t](../../../../tests/quant/palette/heckbert_policy/0007_heckbert_lloyd_center.t) |
-| HP-08 | lloyd average numerical contract. | [tests/quant/palette/heckbert_policy/0008_heckbert_lloyd_average.t](../../../../tests/quant/palette/heckbert_policy/0008_heckbert_lloyd_average.t) |
-| HP-09 | lloyd histogram numerical contract. | [tests/quant/palette/heckbert_policy/0009_heckbert_lloyd_histogram.t](../../../../tests/quant/palette/heckbert_policy/0009_heckbert_lloyd_histogram.t) |
-| HP-10 | rgb norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t](../../../../tests/quant/palette/heckbert_policy/0010_heckbert_axis_rgb.t) |
-| HP-11 | cielab norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t](../../../../tests/quant/palette/heckbert_policy/0011_heckbert_axis_cielab.t) |
-| HP-12 | din99d norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t](../../../../tests/quant/palette/heckbert_policy/0012_heckbert_axis_din99d.t) |
-| HP-13 | oklab norm/lum native ratios and explicit axis-weight precedence. | [tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t](../../../../tests/quant/palette/heckbert_policy/0013_heckbert_axis_oklab.t) |
-| HP-14 | sse norm numerical contract. | [tests/quant/palette/heckbert_policy/0014_heckbert_sse_norm.t](../../../../tests/quant/palette/heckbert_policy/0014_heckbert_sse_norm.t) |
-| HP-15 | sse pca numerical contract. | [tests/quant/palette/heckbert_policy/0015_heckbert_sse_pca.t](../../../../tests/quant/palette/heckbert_policy/0015_heckbert_sse_pca.t) |
-| HP-16 | sse float norm numerical contract. | [tests/quant/palette/heckbert_policy/0016_heckbert_sse_float_norm.t](../../../../tests/quant/palette/heckbert_policy/0016_heckbert_sse_float_norm.t) |
-| HP-17 | sse float pca numerical contract. | [tests/quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.t](../../../../tests/quant/palette/heckbert_policy/0017_heckbert_sse_float_pca.t) |
-| HP-18 | order sse numerical contract. | [tests/quant/palette/heckbert_policy/0018_heckbert_order_sse.t](../../../../tests/quant/palette/heckbert_policy/0018_heckbert_order_sse.t) |
-| HP-19 | kmeans rejects explicit CLI representatives. | [tests/quant/palette/heckbert_policy/0019_heckbert_reject_kmeans.t](../../../../tests/quant/palette/heckbert_policy/0019_heckbert_reject_kmeans.t) |
-| HP-20 | medoids rejects explicit CLI representatives. | [tests/quant/palette/heckbert_policy/0020_heckbert_reject_medoids.t](../../../../tests/quant/palette/heckbert_policy/0020_heckbert_reject_medoids.t) |
-| HP-21 | center rejects explicit CLI representatives. | [tests/quant/palette/heckbert_policy/0021_heckbert_reject_center.t](../../../../tests/quant/palette/heckbert_policy/0021_heckbert_reject_center.t) |
-| HP-22 | Explicit partition defaults preserve output. | [tests/quant/palette/heckbert_policy/0022_heckbert_explicit_defaults.t](../../../../tests/quant/palette/heckbert_policy/0022_heckbert_explicit_defaults.t) |
-| HP-23 | Common ratio scaling cancels and explicit weights override environment. | [tests/quant/palette/heckbert_policy/0023_heckbert_weight_scale.t](../../../../tests/quant/palette/heckbert_policy/0023_heckbert_weight_scale.t) |
-| HP-24 | gamma norm SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0024_heckbert_gamma_norm_threads.t](../../../../tests/quant/palette/heckbert_policy/0024_heckbert_gamma_norm_threads.t) |
-| HP-25 | gamma pca SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0025_heckbert_gamma_pca_threads.t](../../../../tests/quant/palette/heckbert_policy/0025_heckbert_gamma_pca_threads.t) |
-| HP-26 | cielab norm SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0026_heckbert_cielab_norm_threads.t](../../../../tests/quant/palette/heckbert_policy/0026_heckbert_cielab_norm_threads.t) |
-| HP-27 | cielab pca SSE palettes agree at one and eight workers. | [tests/quant/palette/heckbert_policy/0027_heckbert_cielab_pca_threads.t](../../../../tests/quant/palette/heckbert_policy/0027_heckbert_cielab_pca_threads.t) |
-| HP-28 | Reject invalid ratio `0/1/1` with a diagnostic. | [tests/quant/palette/heckbert_policy/0028_heckbert_invalid_weights_1.t](../../../../tests/quant/palette/heckbert_policy/0028_heckbert_invalid_weights_1.t) |
-| HP-29 | Reject invalid ratio `nan/1/1` with a diagnostic. | [tests/quant/palette/heckbert_policy/0029_heckbert_invalid_weights_2.t](../../../../tests/quant/palette/heckbert_policy/0029_heckbert_invalid_weights_2.t) |
-| HP-30 | Reject invalid ratio `1/1` with a diagnostic. | [tests/quant/palette/heckbert_policy/0030_heckbert_invalid_weights_3.t](../../../../tests/quant/palette/heckbert_policy/0030_heckbert_invalid_weights_3.t) |
-| HP-31 | Reject invalid ratio `1/1/inf` with a diagnostic. | [tests/quant/palette/heckbert_policy/0031_heckbert_invalid_weights_4.t](../../../../tests/quant/palette/heckbert_policy/0031_heckbert_invalid_weights_4.t) |
-| HP-32 | Lloyd rebuilds statistics after membership changes. | [tests/quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.t](../../../../tests/quant/palette/heckbert_policy/0032_heckbert_lloyd_reassignment.t) |
-| HP-33 | Public dither API api initial uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0033_heckbert_api_initial.t](../../../../tests/quant/palette/heckbert_policy/0033_heckbert_api_initial.t) |
-| HP-34 | Public dither API api none uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0034_heckbert_api_none.t](../../../../tests/quant/palette/heckbert_policy/0034_heckbert_api_none.t) |
-| HP-35 | Public dither API api auto uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0035_heckbert_api_auto.t](../../../../tests/quant/palette/heckbert_policy/0035_heckbert_api_auto.t) |
-| HP-36 | Public dither API api explicit center uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0036_heckbert_api_explicit_center.t](../../../../tests/quant/palette/heckbert_policy/0036_heckbert_api_explicit_center.t) |
-| HP-37 | Public dither API api ward average uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0037_heckbert_api_ward_average.t](../../../../tests/quant/palette/heckbert_policy/0037_heckbert_api_ward_average.t) |
-| HP-38 | Public dither API api ward histogram uses its resolved representative and preserves fractional colors. | [tests/quant/palette/heckbert_policy/0038_heckbert_api_ward_histogram.t](../../../../tests/quant/palette/heckbert_policy/0038_heckbert_api_ward_histogram.t) |
-| HP-39 | default auto resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0039_heckbert_default_auto.t](../../../../tests/quant/palette/heckbert_policy/0039_heckbert_default_auto.t) |
-| HP-40 | default fs resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0040_heckbert_default_fs.t](../../../../tests/quant/palette/heckbert_policy/0040_heckbert_default_fs.t) |
-| HP-41 | default atkinson resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0041_heckbert_default_atkinson.t](../../../../tests/quant/palette/heckbert_policy/0041_heckbert_default_atkinson.t) |
-| HP-42 | default ordered resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0042_heckbert_default_ordered.t](../../../../tests/quant/palette/heckbert_policy/0042_heckbert_default_ordered.t) |
-| HP-43 | default xor resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0043_heckbert_default_xor.t](../../../../tests/quant/palette/heckbert_policy/0043_heckbert_default_xor.t) |
-| HP-44 | default bluenoise resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0044_heckbert_default_bluenoise.t](../../../../tests/quant/palette/heckbert_policy/0044_heckbert_default_bluenoise.t) |
-| HP-46 | default none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0045_heckbert_default_none.t](../../../../tests/quant/palette/heckbert_policy/0045_heckbert_default_none.t) |
-| HP-47 | default auto16 resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0046_heckbert_default_auto16.t](../../../../tests/quant/palette/heckbert_policy/0046_heckbert_default_auto16.t) |
-| HP-48 | explicit center resolves to representative 1, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0047_heckbert_explicit_center.t](../../../../tests/quant/palette/heckbert_policy/0047_heckbert_explicit_center.t) |
-| HP-49 | explicit histogram resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0048_heckbert_explicit_histogram.t](../../../../tests/quant/palette/heckbert_policy/0048_heckbert_explicit_histogram.t) |
-| HP-50 | explicit average resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0049_heckbert_explicit_average.t](../../../../tests/quant/palette/heckbert_policy/0049_heckbert_explicit_average.t) |
-| HP-51 | explicit cut resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0050_heckbert_explicit_cut.t](../../../../tests/quant/palette/heckbert_policy/0050_heckbert_explicit_cut.t) |
-| HP-52 | explicit order resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0051_heckbert_explicit_order.t](../../../../tests/quant/palette/heckbert_policy/0051_heckbert_explicit_order.t) |
-| HP-53 | explicit weights resolves to representative 2, cut sse, order sse, weights 3/1/1. | [tests/quant/palette/heckbert_policy/0052_heckbert_explicit_weights.t](../../../../tests/quant/palette/heckbert_policy/0052_heckbert_explicit_weights.t) |
-| HP-54 | env cut resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0053_heckbert_env_cut.t](../../../../tests/quant/palette/heckbert_policy/0053_heckbert_env_cut.t) |
-| HP-55 | env order resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0054_heckbert_env_order.t](../../../../tests/quant/palette/heckbert_policy/0054_heckbert_env_order.t) |
-| HP-56 | env weights resolves to representative 2, cut sse, order sse, weights 3/1/1. | [tests/quant/palette/heckbert_policy/0055_heckbert_env_weights.t](../../../../tests/quant/palette/heckbert_policy/0055_heckbert_env_weights.t) |
-| HP-57 | cli cut precedence resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0056_heckbert_cli_cut_precedence.t](../../../../tests/quant/palette/heckbert_policy/0056_heckbert_cli_cut_precedence.t) |
-| HP-58 | cli order precedence resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0057_heckbert_cli_order_precedence.t](../../../../tests/quant/palette/heckbert_policy/0057_heckbert_cli_order_precedence.t) |
-| HP-59 | cli weights precedence resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0058_heckbert_cli_weights_precedence.t](../../../../tests/quant/palette/heckbert_policy/0058_heckbert_cli_weights_precedence.t) |
-| HP-60 | profile compat resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0059_heckbert_profile_compat.t](../../../../tests/quant/palette/heckbert_policy/0059_heckbert_profile_compat.t) |
-| HP-61 | profile compat none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0060_heckbert_profile_compat_none.t](../../../../tests/quant/palette/heckbert_policy/0060_heckbert_profile_compat_none.t) |
-| HP-62 | profile compat explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/quant/palette/heckbert_policy/0061_heckbert_profile_compat_explicit.t](../../../../tests/quant/palette/heckbert_policy/0061_heckbert_profile_compat_explicit.t) |
-| HP-63 | profile speed resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0062_heckbert_profile_speed.t](../../../../tests/quant/palette/heckbert_policy/0062_heckbert_profile_speed.t) |
-| HP-64 | profile speed none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0063_heckbert_profile_speed_none.t](../../../../tests/quant/palette/heckbert_policy/0063_heckbert_profile_speed_none.t) |
-| HP-65 | profile speed explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/quant/palette/heckbert_policy/0064_heckbert_profile_speed_explicit.t](../../../../tests/quant/palette/heckbert_policy/0064_heckbert_profile_speed_explicit.t) |
-| HP-66 | profile quality resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0065_heckbert_profile_quality.t](../../../../tests/quant/palette/heckbert_policy/0065_heckbert_profile_quality.t) |
-| HP-67 | profile quality none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/quant/palette/heckbert_policy/0066_heckbert_profile_quality_none.t](../../../../tests/quant/palette/heckbert_policy/0066_heckbert_profile_quality_none.t) |
-| HP-68 | profile quality explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/quant/palette/heckbert_policy/0067_heckbert_profile_quality_explicit.t](../../../../tests/quant/palette/heckbert_policy/0067_heckbert_profile_quality_explicit.t) |
+| HP-01 | center half numerical contract. | [tests/palette/heckbert/0053_heckbert_center_half.t](../../../../tests/palette/heckbert/0053_heckbert_center_half.t) |
+| HP-02 | average half numerical contract. | [tests/palette/heckbert/0054_heckbert_average_half.t](../../../../tests/palette/heckbert/0054_heckbert_average_half.t) |
+| HP-03 | histogram half numerical contract. | [tests/palette/heckbert/0055_heckbert_histogram_half.t](../../../../tests/palette/heckbert/0055_heckbert_histogram_half.t) |
+| HP-04 | ward center numerical contract. | [tests/palette/heckbert/0056_heckbert_ward_center.t](../../../../tests/palette/heckbert/0056_heckbert_ward_center.t) |
+| HP-05 | ward average numerical contract. | [tests/palette/heckbert/0057_heckbert_ward_average.t](../../../../tests/palette/heckbert/0057_heckbert_ward_average.t) |
+| HP-06 | ward histogram numerical contract. | [tests/palette/heckbert/0058_heckbert_ward_histogram.t](../../../../tests/palette/heckbert/0058_heckbert_ward_histogram.t) |
+| HP-07 | lloyd center numerical contract. | [tests/palette/heckbert/0059_heckbert_lloyd_center.t](../../../../tests/palette/heckbert/0059_heckbert_lloyd_center.t) |
+| HP-08 | lloyd average numerical contract. | [tests/palette/heckbert/0060_heckbert_lloyd_average.t](../../../../tests/palette/heckbert/0060_heckbert_lloyd_average.t) |
+| HP-09 | lloyd histogram numerical contract. | [tests/palette/heckbert/0061_heckbert_lloyd_histogram.t](../../../../tests/palette/heckbert/0061_heckbert_lloyd_histogram.t) |
+| HP-10 | rgb norm/lum native ratios and explicit axis-weight precedence. | [tests/palette/heckbert/0062_heckbert_axis_rgb.t](../../../../tests/palette/heckbert/0062_heckbert_axis_rgb.t) |
+| HP-11 | cielab norm/lum native ratios and explicit axis-weight precedence. | [tests/palette/heckbert/0063_heckbert_axis_cielab.t](../../../../tests/palette/heckbert/0063_heckbert_axis_cielab.t) |
+| HP-12 | din99d norm/lum native ratios and explicit axis-weight precedence. | [tests/palette/heckbert/0064_heckbert_axis_din99d.t](../../../../tests/palette/heckbert/0064_heckbert_axis_din99d.t) |
+| HP-13 | oklab norm/lum native ratios and explicit axis-weight precedence. | [tests/palette/heckbert/0065_heckbert_axis_oklab.t](../../../../tests/palette/heckbert/0065_heckbert_axis_oklab.t) |
+| HP-14 | sse norm numerical contract. | [tests/palette/heckbert/0066_heckbert_sse_norm.t](../../../../tests/palette/heckbert/0066_heckbert_sse_norm.t) |
+| HP-15 | sse pca numerical contract. | [tests/palette/heckbert/0067_heckbert_sse_pca.t](../../../../tests/palette/heckbert/0067_heckbert_sse_pca.t) |
+| HP-16 | sse float norm numerical contract. | [tests/palette/heckbert/0068_heckbert_sse_float_norm.t](../../../../tests/palette/heckbert/0068_heckbert_sse_float_norm.t) |
+| HP-17 | sse float pca numerical contract. | [tests/palette/heckbert/0069_heckbert_sse_float_pca.t](../../../../tests/palette/heckbert/0069_heckbert_sse_float_pca.t) |
+| HP-18 | order sse numerical contract. | [tests/palette/heckbert/0070_heckbert_order_sse.t](../../../../tests/palette/heckbert/0070_heckbert_order_sse.t) |
+| HP-19 | kmeans rejects explicit CLI representatives. | [tests/palette/heckbert/0071_heckbert_reject_kmeans.t](../../../../tests/palette/heckbert/0071_heckbert_reject_kmeans.t) |
+| HP-20 | medoids rejects explicit CLI representatives. | [tests/palette/heckbert/0072_heckbert_reject_medoids.t](../../../../tests/palette/heckbert/0072_heckbert_reject_medoids.t) |
+| HP-21 | center rejects explicit CLI representatives. | [tests/palette/heckbert/0073_heckbert_reject_center.t](../../../../tests/palette/heckbert/0073_heckbert_reject_center.t) |
+| HP-22 | Explicit partition defaults preserve output. | [tests/palette/heckbert/0074_heckbert_explicit_defaults.t](../../../../tests/palette/heckbert/0074_heckbert_explicit_defaults.t) |
+| HP-23 | Common ratio scaling cancels and explicit weights override environment. | [tests/palette/heckbert/0075_heckbert_weight_scale.t](../../../../tests/palette/heckbert/0075_heckbert_weight_scale.t) |
+| HP-24 | gamma norm SSE palettes agree at one and eight workers. | [tests/palette/heckbert/0076_heckbert_gamma_norm_threads.t](../../../../tests/palette/heckbert/0076_heckbert_gamma_norm_threads.t) |
+| HP-25 | gamma pca SSE palettes agree at one and eight workers. | [tests/palette/heckbert/0077_heckbert_gamma_pca_threads.t](../../../../tests/palette/heckbert/0077_heckbert_gamma_pca_threads.t) |
+| HP-26 | cielab norm SSE palettes agree at one and eight workers. | [tests/palette/heckbert/0078_heckbert_cielab_norm_threads.t](../../../../tests/palette/heckbert/0078_heckbert_cielab_norm_threads.t) |
+| HP-27 | cielab pca SSE palettes agree at one and eight workers. | [tests/palette/heckbert/0079_heckbert_cielab_pca_threads.t](../../../../tests/palette/heckbert/0079_heckbert_cielab_pca_threads.t) |
+| HP-28 | Reject invalid ratio `0/1/1` with a diagnostic. | [tests/palette/heckbert/0080_heckbert_invalid_weights_1.t](../../../../tests/palette/heckbert/0080_heckbert_invalid_weights_1.t) |
+| HP-29 | Reject invalid ratio `nan/1/1` with a diagnostic. | [tests/palette/heckbert/0081_heckbert_invalid_weights_2.t](../../../../tests/palette/heckbert/0081_heckbert_invalid_weights_2.t) |
+| HP-30 | Reject invalid ratio `1/1` with a diagnostic. | [tests/palette/heckbert/0082_heckbert_invalid_weights_3.t](../../../../tests/palette/heckbert/0082_heckbert_invalid_weights_3.t) |
+| HP-31 | Reject invalid ratio `1/1/inf` with a diagnostic. | [tests/palette/heckbert/0083_heckbert_invalid_weights_4.t](../../../../tests/palette/heckbert/0083_heckbert_invalid_weights_4.t) |
+| HP-32 | Lloyd rebuilds statistics after membership changes. | [tests/palette/heckbert/0084_heckbert_lloyd_reassignment.t](../../../../tests/palette/heckbert/0084_heckbert_lloyd_reassignment.t) |
+| HP-33 | Public dither API api initial uses its resolved representative and preserves fractional colors. | [tests/palette/heckbert/0085_heckbert_api_initial.t](../../../../tests/palette/heckbert/0085_heckbert_api_initial.t) |
+| HP-34 | Public dither API api none uses its resolved representative and preserves fractional colors. | [tests/palette/heckbert/0086_heckbert_api_none.t](../../../../tests/palette/heckbert/0086_heckbert_api_none.t) |
+| HP-35 | Public dither API api auto uses its resolved representative and preserves fractional colors. | [tests/palette/heckbert/0087_heckbert_api_auto.t](../../../../tests/palette/heckbert/0087_heckbert_api_auto.t) |
+| HP-36 | Public dither API api explicit center uses its resolved representative and preserves fractional colors. | [tests/palette/heckbert/0088_heckbert_api_explicit_center.t](../../../../tests/palette/heckbert/0088_heckbert_api_explicit_center.t) |
+| HP-37 | Public dither API api ward average uses its resolved representative and preserves fractional colors. | [tests/palette/heckbert/0089_heckbert_api_ward_average.t](../../../../tests/palette/heckbert/0089_heckbert_api_ward_average.t) |
+| HP-38 | Public dither API api ward histogram uses its resolved representative and preserves fractional colors. | [tests/palette/heckbert/0090_heckbert_api_ward_histogram.t](../../../../tests/palette/heckbert/0090_heckbert_api_ward_histogram.t) |
+| HP-39 | default auto resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0091_heckbert_default_auto.t](../../../../tests/palette/heckbert/0091_heckbert_default_auto.t) |
+| HP-40 | default fs resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0092_heckbert_default_fs.t](../../../../tests/palette/heckbert/0092_heckbert_default_fs.t) |
+| HP-41 | default atkinson resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0093_heckbert_default_atkinson.t](../../../../tests/palette/heckbert/0093_heckbert_default_atkinson.t) |
+| HP-42 | default ordered resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0094_heckbert_default_ordered.t](../../../../tests/palette/heckbert/0094_heckbert_default_ordered.t) |
+| HP-43 | default xor resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0095_heckbert_default_xor.t](../../../../tests/palette/heckbert/0095_heckbert_default_xor.t) |
+| HP-44 | default bluenoise resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0096_heckbert_default_bluenoise.t](../../../../tests/palette/heckbert/0096_heckbert_default_bluenoise.t) |
+| HP-46 | default none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0097_heckbert_default_none.t](../../../../tests/palette/heckbert/0097_heckbert_default_none.t) |
+| HP-47 | default auto16 resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0098_heckbert_default_auto16.t](../../../../tests/palette/heckbert/0098_heckbert_default_auto16.t) |
+| HP-48 | explicit center resolves to representative 1, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0099_heckbert_explicit_center.t](../../../../tests/palette/heckbert/0099_heckbert_explicit_center.t) |
+| HP-49 | explicit histogram resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0100_heckbert_explicit_histogram.t](../../../../tests/palette/heckbert/0100_heckbert_explicit_histogram.t) |
+| HP-50 | explicit average resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0101_heckbert_explicit_average.t](../../../../tests/palette/heckbert/0101_heckbert_explicit_average.t) |
+| HP-51 | explicit cut resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/palette/heckbert/0102_heckbert_explicit_cut.t](../../../../tests/palette/heckbert/0102_heckbert_explicit_cut.t) |
+| HP-52 | explicit order resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/palette/heckbert/0103_heckbert_explicit_order.t](../../../../tests/palette/heckbert/0103_heckbert_explicit_order.t) |
+| HP-53 | explicit weights resolves to representative 2, cut sse, order sse, weights 3/1/1. | [tests/palette/heckbert/0104_heckbert_explicit_weights.t](../../../../tests/palette/heckbert/0104_heckbert_explicit_weights.t) |
+| HP-54 | env cut resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/palette/heckbert/0105_heckbert_env_cut.t](../../../../tests/palette/heckbert/0105_heckbert_env_cut.t) |
+| HP-55 | env order resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/palette/heckbert/0106_heckbert_env_order.t](../../../../tests/palette/heckbert/0106_heckbert_env_order.t) |
+| HP-56 | env weights resolves to representative 2, cut sse, order sse, weights 3/1/1. | [tests/palette/heckbert/0107_heckbert_env_weights.t](../../../../tests/palette/heckbert/0107_heckbert_env_weights.t) |
+| HP-57 | cli cut precedence resolves to representative 2, cut median, order sse, weights 0/0/0. | [tests/palette/heckbert/0108_heckbert_cli_cut_precedence.t](../../../../tests/palette/heckbert/0108_heckbert_cli_cut_precedence.t) |
+| HP-58 | cli order precedence resolves to representative 2, cut sse, order population, weights 0/0/0. | [tests/palette/heckbert/0109_heckbert_cli_order_precedence.t](../../../../tests/palette/heckbert/0109_heckbert_cli_order_precedence.t) |
+| HP-59 | cli weights precedence resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0110_heckbert_cli_weights_precedence.t](../../../../tests/palette/heckbert/0110_heckbert_cli_weights_precedence.t) |
+| HP-60 | profile compat resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0111_heckbert_profile_compat.t](../../../../tests/palette/heckbert/0111_heckbert_profile_compat.t) |
+| HP-61 | profile compat none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0112_heckbert_profile_compat_none.t](../../../../tests/palette/heckbert/0112_heckbert_profile_compat_none.t) |
+| HP-62 | profile compat explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/palette/heckbert/0113_heckbert_profile_compat_explicit.t](../../../../tests/palette/heckbert/0113_heckbert_profile_compat_explicit.t) |
+| HP-63 | profile speed resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0114_heckbert_profile_speed.t](../../../../tests/palette/heckbert/0114_heckbert_profile_speed.t) |
+| HP-64 | profile speed none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0115_heckbert_profile_speed_none.t](../../../../tests/palette/heckbert/0115_heckbert_profile_speed_none.t) |
+| HP-65 | profile speed explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/palette/heckbert/0116_heckbert_profile_speed_explicit.t](../../../../tests/palette/heckbert/0116_heckbert_profile_speed_explicit.t) |
+| HP-66 | profile quality resolves to representative 2, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0117_heckbert_profile_quality.t](../../../../tests/palette/heckbert/0117_heckbert_profile_quality.t) |
+| HP-67 | profile quality none resolves to representative 3, cut sse, order sse, weights 0/0/0. | [tests/palette/heckbert/0118_heckbert_profile_quality_none.t](../../../../tests/palette/heckbert/0118_heckbert_profile_quality_none.t) |
+| HP-68 | profile quality explicit resolves to representative 1, cut median, order population, weights 1/2/3. | [tests/palette/heckbert/0119_heckbert_profile_quality_explicit.t](../../../../tests/palette/heckbert/0119_heckbert_profile_quality_explicit.t) |

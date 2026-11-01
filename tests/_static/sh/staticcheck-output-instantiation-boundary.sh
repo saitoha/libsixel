@@ -2,6 +2,7 @@
 # Emit TAP for legacy output and encoder-core boundary checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -71,11 +72,11 @@ encoder_notimpl=$tmpdir/encoder-core-not-implemented.txt
 public_encode=$tmpdir/public-sixel-encode.txt
 failed=0
 
-find "$src_root/src" -type f -name '*.c' ! -name 'output.c' -exec awk '
+sh "$source_files_helper" "$src_root/src" --name '*.c' --exclude-name 'output.c' --exec awk '
 /sixel_output_new[[:space:]]*\(/ {
     print FILENAME ":" FNR ":" $0
 }
-' {} + > "$violations"
+'> "$violations"
 
 if test -s "$violations"; then
     echo "not ok 1 - src output construction uses encoder-core factory"
@@ -219,12 +220,7 @@ else
     echo "ok 5 - legacy emitter projection names stay removed"
 fi
 
-find "$src_root/src" -type f \( -name '*.c' -o -name '*.h' \) \
-    ! -name 'encoder-core.c' \
-    ! -name 'encoder-core-encode.c' \
-    ! -name 'encoder-core-highcolor.c' \
-    ! -name 'encoder-core-private.h' \
-    -exec awk '
+sh "$source_files_helper" "$src_root/src" --name '*.c' --name '*.h' --exclude-name 'encoder-core.c' --exclude-name 'encoder-core-encode.c' --exclude-name 'encoder-core-highcolor.c' --exclude-name 'encoder-core-private.h' --exec awk '
 BEGIN {
     output_fields = "(ref|allocator|writer|writer_controls|has_8bit_control|has_sixel_scrolling|has_gri_arg_limit|has_sdm_glitch|skip_dcs_envelope|skip_header|palette_type|colorspace|source_colorspace|pixelformat|save_pixel|save_count|active_palette|node_top|node_free|penetrate_multiplexer|encode_policy|ormode|transparent_policy|last_frame_time_usec|pos|buffer)"
 }
@@ -240,7 +236,7 @@ BEGIN {
         print FILENAME ":" FNR ":" $0
     }
 }
-' {} + > "$direct_storage"
+'> "$direct_storage"
 
 if test -s "$direct_storage"; then
     echo "not ok 6 - output concrete storage stays encoder-core private"

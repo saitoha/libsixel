@@ -100,7 +100,7 @@ Selecting `-Lbuiltin!` limits decoding to this component and avoids passing the 
 | Radiance HDR | [`fromhdr.c`](../../src/fromhdr.c) |
 | PSD/PSB | [`frompsd.c`](../../src/frompsd.c) and the `frompsd-*` modules |
 | BMP | [`frombmp.c`](../../src/frombmp.c) and the `frombmp-*` modules |
-| Functional and regression coverage | [`tests/loader/builtin`](../../tests/loader/builtin) |
+| Functional and regression coverage | [`docs/testing/builtin-loader-coverage.md`](../testing/builtin-loader-coverage.md) |
 | General and structural fuzz coverage | [`fuzz/Makefile.am`](../../fuzz/Makefile.am) and the `fuzz-loader-builtin*` targets |
 
 ## Test coverage
@@ -111,7 +111,7 @@ The format pages own byte-level decode contracts. These tests instead protect be
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| BLT-01 | Deterministic allocation injection across one static specimen per builtin format either fails before callback without leaking or produces the exact baseline frame. | [tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t](../../tests/loader/builtin/2021_loader_builtin_allocator_failure_matrix.t) |
-| BLT-02 | PNG, JPEG, GIF, HDR, PSD, BMP, TGA, PIC, PNM, and SIXEL routes return an interrupted frame callback unchanged. | [tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t](../../tests/loader/builtin/2022_loader_builtin_callback_status_matrix.t) |
+| BLT-01 | Deterministic allocation injection across one static specimen per builtin format either fails before callback without leaking or produces the exact baseline frame. | [tests/loader/dispatch/0007_loader_builtin_allocator_failure_matrix.t](../../tests/loader/dispatch/0007_loader_builtin_allocator_failure_matrix.t) |
+| BLT-02 | PNG, JPEG, GIF, HDR, PSD, BMP, TGA, PIC, PNM, and SIXEL routes return an interrupted frame callback unchanged. | [tests/loader/dispatch/0008_loader_builtin_callback_status_matrix.t](../../tests/loader/dispatch/0008_loader_builtin_callback_status_matrix.t) |
 
 The shared static allocation test intentionally accepts retained stb paths that report an injected allocation failure through their historical format-error status, but it does not accept a partial frame, a leak, or changed output. Animation, reconstruction, and optional metadata paths have additional targeted tests in their format pages: an animation failure may follow a valid emitted prefix, while an optional ICC allocation may fall back to unmanaged decoding. Those scoped contracts must not be weakened into a claim that every internal decoder distinguishes out-of-memory from malformed compressed data.

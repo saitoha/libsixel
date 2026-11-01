@@ -56,12 +56,12 @@ The representative tests below protect extended color coordinates, original samp
 
 | ID | Precision contract | Representative test |
 | --- | --- | --- |
-| LP-01 | Required profile conversion retains finite canonical components outside `[0,1]`, including hidden RGB, despite a byte preference. | [tests/loader/coregraphics/expanded/0001_p3_binary.t](../../tests/loader/coregraphics/expanded/0001_p3_binary.t) |
-| LP-02 | Source index width does not reduce the precision of the palette's RGB components during backend expansion. | [tests/loader/coregraphics/expanded/0009_p3_adam7_1.t](../../tests/loader/coregraphics/expanded/0009_p3_adam7_1.t) |
-| LP-03 | When bytes are sufficient, retain exact RGB and zero coverage without a CMM call or full-image float allocation. | [tests/loader/coregraphics/expanded/0005_srgb_binary_byte.t](../../tests/loader/coregraphics/expanded/0005_srgb_binary_byte.t) |
-| LP-04 | An explicit float preference promotes an otherwise sufficient byte source into matching canonical linear coordinates. | [tests/loader/coregraphics/expanded/0008_srgb_float.t](../../tests/loader/coregraphics/expanded/0008_srgb_float.t) |
-| LP-05 | Composition uses original alpha ratios and the background's declared transfer function without clipping canonical RGB or discarding preserved zero coverage. | [tests/loader/coregraphics/expanded/0012_p3_gamma_keep.t](../../tests/loader/coregraphics/expanded/0012_p3_gamma_keep.t) |
-| LP-06 | Precision-requiring partial-alpha composition overrides a byte preference even for an sRGB source. | [tests/loader/coregraphics/expanded/0016_srgb_partial_composite.t](../../tests/loader/coregraphics/expanded/0016_srgb_partial_composite.t) |
-| LP-07 | Failure to allocate the required float frame does not publish a narrowed byte replacement. | [tests/loader/coregraphics/expanded/0020_float_allocation_retry.t](../../tests/loader/coregraphics/expanded/0020_float_allocation_retry.t) |
+| LP-01 | Required profile conversion retains finite canonical components outside `[0,1]`, including hidden RGB, despite a byte preference. | [tests/loader/coregraphics/0151_p3_binary.t](../../tests/loader/coregraphics/0151_p3_binary.t) |
+| LP-02 | Source index width does not reduce the precision of the palette's RGB components during backend expansion. | [tests/loader/coregraphics/0159_p3_adam7_1.t](../../tests/loader/coregraphics/0159_p3_adam7_1.t) |
+| LP-03 | When bytes are sufficient, retain exact RGB and zero coverage without a CMM call or full-image float allocation. | [tests/loader/coregraphics/0155_srgb_binary_byte.t](../../tests/loader/coregraphics/0155_srgb_binary_byte.t) |
+| LP-04 | An explicit float preference promotes an otherwise sufficient byte source into matching canonical linear coordinates. | [tests/loader/coregraphics/0158_srgb_float.t](../../tests/loader/coregraphics/0158_srgb_float.t) |
+| LP-05 | Composition uses original alpha ratios and the background's declared transfer function without clipping canonical RGB or discarding preserved zero coverage. | [tests/loader/coregraphics/0162_p3_gamma_keep.t](../../tests/loader/coregraphics/0162_p3_gamma_keep.t) |
+| LP-06 | Precision-requiring partial-alpha composition overrides a byte preference even for an sRGB source. | [tests/loader/coregraphics/0166_srgb_partial_composite.t](../../tests/loader/coregraphics/0166_srgb_partial_composite.t) |
+| LP-07 | Failure to allocate the required float frame does not publish a narrowed byte replacement. | [tests/loader/coregraphics/0170_float_allocation_retry.t](../../tests/loader/coregraphics/0170_float_allocation_retry.t) |
 
 The [CoreGraphics](coregraphics.md#test-coverage), [libpng](libpng.md#test-coverage), [libtiff](libtiff.md#test-coverage), and [encoder precision](../encoder/precision/README.md#test-coverage) inventories describe additional implemented routes and their coverage boundaries.

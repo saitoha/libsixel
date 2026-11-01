@@ -2,6 +2,7 @@
 # Emit TAP for Meson palette source list consistency checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -67,10 +68,10 @@ in_list && /^[[:space:]]*\)/ { in_list = 0; next }
 }
 ' "$amalg_meson" | LC_ALL=C sort -u > "$header_entries"
 
-find "$src_dir" -maxdepth 1 -type f -name 'palette-*.c' \
-    -exec basename {} \; | LC_ALL=C sort -u > "$palette_c"
-find "$src_dir" -maxdepth 1 -type f -name 'palette-*.h' \
-    -exec basename {} \; | LC_ALL=C sort -u > "$palette_h"
+sh "$source_files_helper" "$src_dir" --max-depth 1  --name 'palette-*.c' \
+    | sed 's|.*/||' | LC_ALL=C sort -u > "$palette_c"
+sh "$source_files_helper" "$src_dir" --max-depth 1  --name 'palette-*.h' \
+    | sed 's|.*/||' | LC_ALL=C sort -u > "$palette_h"
 
 status=0
 

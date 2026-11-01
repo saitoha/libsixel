@@ -2,6 +2,7 @@
 # Emit TAP for v1.8.7 public source and binary compatibility checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 build_root=${2:-${TOP_BUILDDIR:-$src_root}}
@@ -332,7 +333,7 @@ if test ! -d "$src_root/src"; then
     echo "# missing source directory: $src_root/src"
     failed=1
 else
-    find "$src_root/src" -type f -name '*.c' -exec awk '
+    sh "$source_files_helper" "$src_root/src" --name '*.c' --exec awk '
     FNR == 1 {
         pending = 0
         candidate = ""
@@ -379,7 +380,7 @@ else
     pending > 0 {
         pending--
     }
-    ' {} + | LC_ALL=C sort -u > "$source_symbols"
+    '| LC_ALL=C sort -u > "$source_symbols"
 
     comm -23 "$expected_symbols" "$source_symbols" > "$missing_exports"
     if test -s "$missing_exports"; then

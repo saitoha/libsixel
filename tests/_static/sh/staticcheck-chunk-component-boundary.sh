@@ -2,6 +2,7 @@
 # Emit TAP for chunk component boundary checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -51,16 +52,11 @@ else
     fi
 fi
 
-find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" \
-    -type f \( -name '*.c' -o -name '*.h' -o -name '*.idl' \
-        -o -name '*.awk' -o -name '*.gperf' \) \
-    ! -path "$src_root/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
-    -exec awk '
+sh "$source_files_helper" "$src_root/src" "$src_root/include" "$src_root/tests" "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" --name '*.c' --name '*.h' --name '*.idl' --name '*.awk' --name '*.gperf' --exclude-path "$src_root/tests/_static/sh/staticcheck-chunk-component-boundary.sh" --exec awk '
     /sixel_chunk_(new|destroy)[[:space:]]*\(/ {
         print FILENAME ":" FNR ":" $0
     }
-    ' {} + > "$retired_uses"
+    '> "$retired_uses"
 
 if test -s "$retired_uses"; then
     echo "not ok 2 - retired chunk constructor and destructor are absent"
@@ -70,11 +66,7 @@ else
     echo "ok 2 - retired chunk constructor and destructor are absent"
 fi
 
-find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" \
-    -type f \( -name '*.c' -o -name '*.h' -o -name '*.inc.c' \) \
-    ! -path "$src_root/src/chunk.c" \
-    -exec awk '
+sh "$source_files_helper" "$src_root/src" "$src_root/include" "$src_root/tests" "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" --name '*.c' --name '*.h' --name '*.inc.c' --exclude-path "$src_root/src/chunk.c" --exec awk '
     /(^|[^A-Za-z0-9_])([A-Za-z0-9_]*chunk|pchunk)->(buffer|size|max_size|source_path|allocator)([^A-Za-z0-9_]|$)/ {
         print FILENAME ":" FNR ":" $0
     }
@@ -82,7 +74,7 @@ find "$src_root/src" "$src_root/include" "$src_root/tests" \
     $0 !~ /chunk_interface/ {
         print FILENAME ":" FNR ":" $0
     }
-    ' {} + > "$field_uses"
+    '> "$field_uses"
 
 if test -s "$field_uses"; then
     echo "not ok 3 - chunk storage fields are private to src/chunk.c"

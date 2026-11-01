@@ -6,6 +6,7 @@
 # Policy: docs/testing/staticcheck.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -35,10 +36,10 @@ errors="$tmpdir/errors"
 : > "$marked_docs"
 : > "$errors"
 
-find "$docs_root" -type f -name '*.md' -exec \
-    awk -v src_root="$src_root/" \
-    -v marked_docs="$marked_docs" -v doc_links="$doc_links" \
-    -v errors="$errors" '
+sh "$source_files_helper" "$docs_root" --name '*.md' --exec \
+ awk -v src_root="$src_root/" \
+ -v marked_docs="$marked_docs" -v doc_links="$doc_links" \
+ -v errors="$errors" '
     FNR == 1 {
         enforced = 0
         coverage_heading = 0
@@ -92,7 +93,7 @@ find "$docs_root" -type f -name '*.md' -exec \
                 >> errors
         }
     }
-' {} +
+'
 
 awk -F '|' '{ print $1 }' "$doc_links" | sort -u > "$linked_docs"
 sort -u "$marked_docs" > "$marked_docs.sorted"

@@ -83,11 +83,21 @@ if [ ! -d "$mime_dir" ]; then
     exit 0
 fi
 
-if [ -d "$packages_dir" ]; then
-    if find "$packages_dir" -type f -print -quit 2>/dev/null | grep -q .;
-    then
-        exit 0
-    fi
+# Package definitions may be nested. Inspect regular files without following
+# symlink directories, and retain the cache if any other package remains.
+has_package_file() {
+    for entry in "$1"/* "$1"/.[!.]* "$1"/..?*; do
+        test ! -L "$entry" || continue
+        test ! -f "$entry" || return 0
+        if test -d "$entry"; then
+            has_package_file "$entry" && return 0
+        fi
+    done
+    return 1
+}
+
+if [ -d "$packages_dir" ] && has_package_file "$packages_dir"; then
+    exit 0
 fi
 
 rm -f "${mime_dir}/aliases" \
@@ -113,6 +123,10 @@ fi
 
 # remove all generated MIME data (e.g., image/x-sixel.xml) once no packages
 # remain; this keeps staged DESTDIR trees clean for distuninstallcheck
-find "$mime_dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+# These three POSIX globs include hidden entries but never . or ...
+for entry in "$mime_dir"/* "$mime_dir"/.[!.]* "$mime_dir"/..?*; do
+    test -e "$entry" || test -L "$entry" || continue
+    rm -rf "$entry"
+done
 
 rmdir "$mime_dir" 2>/dev/null || true

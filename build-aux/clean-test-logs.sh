@@ -1,26 +1,32 @@
 #!/bin/sh
-# Remove previous runtime results before launching any new tests. Staticcheck
-# owns its separate reports, even when both suites share a build directory.
+# Remove reports before running tests, retaining staticcheck's separate owner.
 set -eu
+report_root=$1
+host_os=${2-}
+scope=${3:-runtime}
+test -d "$report_root" || exit 1
 
-case ${2-} in
-  *vms*)
-    # config.sub canonicalizes OpenVMS to vms, not openvms.
-    # RMS may expose another version after each removal. Retain the GNV
-    # per-path retry loop; batching on POSIX must not weaken this contract.
-    find "$1" -type f \( -name '*.log' -o -name '*.trs' \) \
-        ! -name 'staticcheck-*.log' ! -name 'staticcheck-*.trs' -print |
-        while IFS= read -r file; do
-            test -f "$file" || continue
-            while test -e "$file"; do rm -f "$file" || exit $?; done
-        done
-    ;;
-  *)
-    # Let find bound argv for the host rather than launching rm per report
-    # or expanding the complete inventory into one shell command. With '+',
-    # a failed rm makes find fail too, preventing stale results being reused.
-    exec find "$1" -type f \( -name '*.log' -o -name '*.trs' \) \
-        ! -name 'staticcheck-*.log' ! -name 'staticcheck-*.trs' \
-        -exec rm -f {} +
-    ;;
-esac
+# Recursive support discovery also removes reports left by renamed categories.
+# Keep scan errors outside a pipeline, so partial discovery cannot succeed.
+reports=$(sh "${0%/*}/list-tree-files.sh" "$report_root" '*.log' '*.trs')
+printf '%s\n' "$reports" | {
+    set --
+    while IFS= read -r file; do
+        test -n "$file" || continue
+        case ${file##*/}:$scope in staticcheck-*:runtime) continue ;; esac
+        case $host_os in
+            *vms*)
+                # RMS may reveal an earlier version after each deletion.
+                while test -e "$file"; do rm -f "$file" || exit $?; done
+                ;;
+            *)
+                set -- "$@" "$file"
+                if test "$#" -eq 64; then
+                    rm -f "$@" || exit $?
+                    set --
+                fi
+                ;;
+        esac
+    done
+    test "$#" -eq 0 || rm -f "$@"
+}

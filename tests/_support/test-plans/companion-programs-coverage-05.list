@@ -1,0 +1,10 @@
+tests/extension/quicklook-install/0001_dry_run_has_no_tool_execution.t
+tests/extension/quicklook-install/0002_empty_package_path_rejected.t
+tests/extension/quicklook-install/0003_legacy_user_copy_arguments_rejected.t
+tests/extension/quicklook-install/0004_staging_installcheck_skips_system.t
+tests/extension/quicklook-install/0005_relative_destdir_rejected.t
+tests/extension/quicklook-install/0006_staged_package_matches_distribution.t
+tests/extension/quicklook-install/0007_staged_manifest_matches_distribution.t
+tests/extension/quicklook-install/0008_staged_management_tool_matches.t
+tests/extension/quicklook-install/0009_wrapper_preserves_failure_status.t
+tests/extension/quicklook-install/0010_nonroot_install_refused.t

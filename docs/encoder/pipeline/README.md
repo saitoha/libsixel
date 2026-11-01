@@ -169,6 +169,6 @@ The main implementation boundaries are represented by
 [`dither.c`](../../../src/dither.c),
 [`lookup-policy.c`](../../../src/lookup-policy.c), and
 [`encoder-core-encode.c`](../../../src/encoder-core-encode.c). Palette and lookup
-coverage lives primarily under [`tests/quant/palette/`](../../../tests/quant/palette/),
+coverage lives primarily under [`tests/palette`](../../../tests/palette),
 with CLI option regressions under
-[`tests/cli/options/`](../../../tests/cli/options/).
+[`tests/cli`](../../../tests/cli).

@@ -68,13 +68,13 @@ The [`staticcheck-doc-test-links`](../tests/_static/sh/staticcheck-doc-test-link
 An exhaustive test-plan inventory serves a different purpose from a behavioral coverage table. Use it when every test in a suite should remain discoverable from documentation, including malformed-input variants, resource boundaries, fault-localization probes, and supplementary smoke tests that do not each define a public guarantee.
 
 - Put the exhaustive inventory in a dedicated testing document instead of expanding a user-facing policy document into a test ledger.
-- Delimit the inventory with `<!-- test-plan: tests/path/*.t -->` and `<!-- test-plan-end -->`. The glob names the complete, nonrecursive set owned by that inventory. The supported basename forms are `*.EXT` and `????_*.EXT`; the latter selects numbered cases while excluding harness/helper files in the same directory, as in `tests/extension/wic-installer/????_*.ps1`. Unsupported marker syntax is an error.
+- Delimit the inventory with `<!-- test-plan: tests/path/*.t -->` and `<!-- test-plan-end -->`. A glob names the complete, nonrecursive set owned by that inventory; supported basename forms are `*.EXT` and `????_*.EXT`. When behavioral categories contain cases owned by different inventories, use `<!-- test-plan: @tests/_support/test-plans/NAME.list -->` instead. The distributed manifest lists one repository-relative test path per line, with no duplicates, wildcards or blank lines. It defines the inventory scope independently of document links and reciprocal source comments; all three sets must agree. Keep manifests current when adding, removing or renaming cases. Unsupported marker syntax is an error.
 - Link every matched test exactly once inside the delimited inventory, using its repository-relative `tests/...` path as the Markdown label.
 - Add one reciprocal `Test-plan: docs/...` source comment within the first 20 lines of every matched test. A test that directly owns a public behavioral contract carries both `Policy:` and `Test-plan:`; the latter does not replace the former.
 - Keep the observation in the test filename and opening comment aligned with the inventory description. The inventory should explain why the cases are grouped, while the test remains the authoritative detail for its fixture and assertion.
 - Do not interpret `Test-plan:` as a public compatibility or stability promise. Promote a rejection, diagnostic, resource limit, or recovery rule to the behavioral coverage table and add `Policy:` only when the policy document deliberately guarantees it.
 
-The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-links.sh) check expands every marked glob and enforces exact, duplicate-free document links and reciprocal `Test-plan:` comments. It also runs the builtin-loader inventory generator in `--check` mode, so generated assertion-mechanism counts and rows cannot drift from test sources. A suite addition, deletion, rename, moved link, one-sided comment change, or stale generated summary therefore fails the static suite until the inventory is regenerated.
+The [`staticcheck-test-plan-links`](../tests/_static/sh/staticcheck-test-plan-links.sh) check resolves every marked glob or manifest and enforces exact, duplicate-free document links and reciprocal `Test-plan:` comments. It also runs the builtin-loader inventory generator in `--check` mode, so generated assertion-mechanism counts and rows cannot drift from test sources. A suite addition, deletion, rename, moved link, one-sided comment change, or stale generated summary therefore fails the static suite until the inventory is regenerated.
 
 ## Length limits
 
@@ -127,5 +127,7 @@ Keep each directory's internal layout consistent with its subject. A document wi
 | DG-06 | Documents, `##` sections, paragraphs, and index entries stay within the default length limits or their exact, shrink-only exceptions. | [tests/_static/sh/staticcheck-docs-length-limits.sh](../tests/_static/sh/staticcheck-docs-length-limits.sh) |
 
 ### Coverage boundary
+
+The [inventory controls](../tests/build/test-plan/) exercise explicit membership independently of document links and source backlinks, including duplicate, missing and invalid members.
 
 The static checks validate paths, the completeness of reciprocal behavioral-contract and test-plan inventories, document-type inventory coverage, distribution of every documentation file, and the numeric length limits. They do not infer missing contracts from prose, treat a defensive inventory as contract coverage, decide whether a policy contract is decomposed at the correct granularity, or decide whether its owning test proves the stated behavior; those are reviewed through the coverage audit required by this document.

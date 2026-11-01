@@ -10,6 +10,7 @@
 #               ShellCheck itself always runs against all tests/*.t files.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 repo_root=${1:-}
 test -n "${repo_root}" || {
@@ -41,7 +42,7 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
 
-find "${repo_root}/tests" -type f -name '*.t' | LC_ALL=C sort > "$tmpfile"
+sh "$source_files_helper" "${repo_root}/tests" --name '*.t'| LC_ALL=C sort > "$tmpfile"
 total=$(wc -l < "$tmpfile" | awk '{print $1}')
 
 echo "Running ShellCheck for tests/*.t"
@@ -148,8 +149,7 @@ fi
 
 echo "Checking shell test policy rules"
 if_hits=$(
-    find "${repo_root}/tests" -name '*.t' -type f \
-        -exec grep -l '^if ' {} + || true
+    sh "$source_files_helper" "${repo_root}/tests" --name '*.t' --exec grep -l '^if '|| true
 )
 test -z "${if_hits}" || {
     printf '%s\n' "${if_hits}"
@@ -158,8 +158,7 @@ test -z "${if_hits}" || {
 }
 
 func_hits=$(
-    find "${repo_root}/tests" -name '*.t' -type f \
-        -exec grep '^[a-z_]\+()' {} + || true
+    sh "$source_files_helper" "${repo_root}/tests" --name '*.t' --exec grep '^[a-z_]\+()'|| true
 )
 test -z "${func_hits}" || {
     printf '%s\n' "${func_hits}"

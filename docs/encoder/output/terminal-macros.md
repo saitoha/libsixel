@@ -204,46 +204,46 @@ The first eight tests compare the complete emitted control stream, including the
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| TM-01 | A static PNG with `-n7` emits exactly one definition and no invocation, including when its loader reports loop one. | [tests/codec/macro/0001_static_png_define.t](../../../tests/codec/macro/0001_static_png_define.t) |
-| TM-02 | A static PNG with `-u` defines ID zero before invoking it. | [tests/codec/macro/0002_static_png_invoke.t](../../../tests/codec/macro/0002_static_png_invoke.t) |
-| TM-03 | The first animation pass defines each distinct frame at its own ID and invokes it in frame order. | [tests/codec/macro/0003_animation_first_pass.t](../../../tests/codec/macro/0003_animation_first_pass.t) |
-| TM-04 | A second animation pass invokes the existing IDs without emitting more definitions. | [tests/codec/macro/0004_animation_replay.t](../../../tests/codec/macro/0004_animation_replay.t) |
-| TM-05 | Animated fixed-ID mode redefines that ID with each first-pass frame, emits no invocation, and emits no definitions on the second pass. | [tests/codec/macro/0005_animation_fixed_id.t](../../../tests/codec/macro/0005_animation_fixed_id.t) |
-| TM-06 | `-S -n7` preloads only the first animation frame without playback controls or invocation. | [tests/codec/macro/0006_animation_static_preload.t](../../../tests/codec/macro/0006_animation_static_preload.t) |
-| TM-07 | `-u -n7` retains definition-only behavior for a static PNG. | [tests/codec/macro/0007_number_after_use.t](../../../tests/codec/macro/0007_number_after_use.t) |
-| TM-08 | `-n7 -u` also retains definition-only behavior for a static PNG. | [tests/codec/macro/0008_number_before_use.t](../../../tests/codec/macro/0008_number_before_use.t) |
+| TM-01 | A static PNG with `-n7` emits exactly one definition and no invocation, including when its loader reports loop one. | [tests/encoder/macro/0001_static_png_define.t](../../../tests/encoder/macro/0001_static_png_define.t) |
+| TM-02 | A static PNG with `-u` defines ID zero before invoking it. | [tests/encoder/macro/0002_static_png_invoke.t](../../../tests/encoder/macro/0002_static_png_invoke.t) |
+| TM-03 | The first animation pass defines each distinct frame at its own ID and invokes it in frame order. | [tests/encoder/macro/0003_animation_first_pass.t](../../../tests/encoder/macro/0003_animation_first_pass.t) |
+| TM-04 | A second animation pass invokes the existing IDs without emitting more definitions. | [tests/encoder/macro/0004_animation_replay.t](../../../tests/encoder/macro/0004_animation_replay.t) |
+| TM-05 | Animated fixed-ID mode redefines that ID with each first-pass frame, emits no invocation, and emits no definitions on the second pass. | [tests/encoder/macro/0005_animation_fixed_id.t](../../../tests/encoder/macro/0005_animation_fixed_id.t) |
+| TM-06 | `-S -n7` preloads only the first animation frame without playback controls or invocation. | [tests/encoder/macro/0006_animation_static_preload.t](../../../tests/encoder/macro/0006_animation_static_preload.t) |
+| TM-07 | `-u -n7` retains definition-only behavior for a static PNG. | [tests/encoder/macro/0007_number_after_use.t](../../../tests/encoder/macro/0007_number_after_use.t) |
+| TM-08 | `-n7 -u` also retains definition-only behavior for a static PNG. | [tests/encoder/macro/0008_number_before_use.t](../../../tests/encoder/macro/0008_number_before_use.t) |
 
 
 The native macro tests use borrowed typed frames through the encoder's fd-backed hexadecimal callback. They check source preservation and float palette values with a storage-rounding tolerance, then compare the complete macro stream against literal expected bytes. The signed/above-one source pair has linear mean `(0.875, 0.1, 0.1)`, independently mapping to sRGB `(94,35,35)` or P3 `(87,39,37)` in RGB101; clipping that pair before averaging fails the test. These are value and wire contracts, not image-quality scores.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| TM-09 | Native linear samples retain their unrounded arithmetic center and emit independently derived sRGB RGB101 values in a fixed-ID macro. | [tests/codec/macro/0009_srgb_float_define.t](../../../tests/codec/macro/0009_srgb_float_define.t) |
-| TM-10 | The same extended source center emits independently derived P3 RGB101 values without intermediate source clipping. | [tests/codec/macro/0010_p3_float_define.t](../../../tests/codec/macro/0010_p3_float_define.t) |
-| TM-11 | A native P3 static macro is defined before its automatic invocation. | [tests/codec/macro/0011_p3_float_invoke.t](../../../tests/codec/macro/0011_p3_float_invoke.t) |
-| TM-12 | C1 changes only the inner native P3 SIXEL envelope; the outer macro remains 7-bit. | [tests/codec/macro/0012_p3_float_c1.t](../../../tests/codec/macro/0012_p3_float_c1.t) |
-| TM-13 | A generated native P3 palette excludes the masked extended sample and the body leaves that pixel unpainted. | [tests/codec/macro/0013_p3_float_mask.t](../../../tests/codec/macro/0013_p3_float_mask.t) |
-| TM-14 | Two distinct native float frames are defined on the first loop and invoked without redefinition on the second. | [tests/codec/macro/0014_float_animation_replay.t](../../../tests/codec/macro/0014_float_animation_replay.t) |
-| TM-15 | Byte-eligible macro input retains byte palette application and the independently expected wire stream. | [tests/codec/macro/0015_byte_define.t](../../../tests/codec/macro/0015_byte_define.t) |
-| TM-16 | One encoder reused for P3, gamma and P3 macro definitions refreshes wire values while retaining the same unrounded center. | [tests/codec/macro/0016_float_output_reuse.t](../../../tests/codec/macro/0016_float_output_reuse.t) |
+| TM-09 | Native linear samples retain their unrounded arithmetic center and emit independently derived sRGB RGB101 values in a fixed-ID macro. | [tests/encoder/macro/0009_srgb_float_define.t](../../../tests/encoder/macro/0009_srgb_float_define.t) |
+| TM-10 | The same extended source center emits independently derived P3 RGB101 values without intermediate source clipping. | [tests/encoder/macro/0010_p3_float_define.t](../../../tests/encoder/macro/0010_p3_float_define.t) |
+| TM-11 | A native P3 static macro is defined before its automatic invocation. | [tests/encoder/macro/0011_p3_float_invoke.t](../../../tests/encoder/macro/0011_p3_float_invoke.t) |
+| TM-12 | C1 changes only the inner native P3 SIXEL envelope; the outer macro remains 7-bit. | [tests/encoder/macro/0012_p3_float_c1.t](../../../tests/encoder/macro/0012_p3_float_c1.t) |
+| TM-13 | A generated native P3 palette excludes the masked extended sample and the body leaves that pixel unpainted. | [tests/encoder/macro/0013_p3_float_mask.t](../../../tests/encoder/macro/0013_p3_float_mask.t) |
+| TM-14 | Two distinct native float frames are defined on the first loop and invoked without redefinition on the second. | [tests/encoder/macro/0014_float_animation_replay.t](../../../tests/encoder/macro/0014_float_animation_replay.t) |
+| TM-15 | Byte-eligible macro input retains byte palette application and the independently expected wire stream. | [tests/encoder/macro/0015_byte_define.t](../../../tests/encoder/macro/0015_byte_define.t) |
+| TM-16 | One encoder reused for P3, gamma and P3 macro definitions refreshes wire values while retaining the same unrounded center. | [tests/encoder/macro/0016_float_output_reuse.t](../../../tests/encoder/macro/0016_float_output_reuse.t) |
 
 High-color macro tests read the actual fd-backed hexadecimal output, check the wrapper and invocation, and direct-decode the stored SIXEL against independent RGB101 values and opacity. The 320-pixel case requires register redefinition; the remaining witnesses isolate transport, color and state contracts. These tests establish emitted bytes and paint values, not receiver macro capacity or color-policy ownership.
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| TM-17 | A P3 high-color fixed-ID definition retains all 320 independent paint values through actual register redefinition. | [tests/codec/macro/0017_highcolor_p3_define.t](../../../tests/codec/macro/0017_highcolor_p3_define.t) |
-| TM-18 | P3 high-color primaries and a subbyte neutral are defined before automatic invocation. | [tests/codec/macro/0018_highcolor_p3_invoke.t](../../../tests/codec/macro/0018_highcolor_p3_invoke.t) |
-| TM-19 | P3 high-color C1 inner controls remain hex encoded under a 7-bit outer macro. | [tests/codec/macro/0019_highcolor_p3_c1.t](../../../tests/codec/macro/0019_highcolor_p3_c1.t) |
-| TM-20 | High-color HLS syntax and independent P3 primary/neutral values survive macro transport. | [tests/codec/macro/0020_highcolor_p3_hls.t](../../../tests/codec/macro/0020_highcolor_p3_hls.t) |
-| TM-21 | High-color P3 macro paint preserves separated source-mask omissions. | [tests/codec/macro/0021_highcolor_p3_mask.t](../../../tests/codec/macro/0021_highcolor_p3_mask.t) |
-| TM-22 | Gamma packed alpha normalizes before P3 high-color macro conversion and retains its omitted pixel. | [tests/codec/macro/0022_highcolor_p3_packed.t](../../../tests/codec/macro/0022_highcolor_p3_packed.t) |
-| TM-23 | Byte-eligible sRGB high-color macro input remains byte-based and emits independent RGB101 values. | [tests/codec/macro/0023_highcolor_byte_define.t](../../../tests/codec/macro/0023_highcolor_byte_define.t) |
-| TM-24 | One high-color macro encoder refreshes the destination when switching P3 to gamma and back. | [tests/codec/macro/0024_highcolor_output_reuse.t](../../../tests/codec/macro/0024_highcolor_output_reuse.t) |
-| TM-25 | Two distinct P3 high-color animation frames are defined/invoked on loop zero and only invoked on loop one. | [tests/codec/macro/0025_highcolor_p3_replay.t](../../../tests/codec/macro/0025_highcolor_p3_replay.t) |
+| TM-17 | A P3 high-color fixed-ID definition retains all 320 independent paint values through actual register redefinition. | [tests/encoder/macro/0017_highcolor_p3_define.t](../../../tests/encoder/macro/0017_highcolor_p3_define.t) |
+| TM-18 | P3 high-color primaries and a subbyte neutral are defined before automatic invocation. | [tests/encoder/macro/0018_highcolor_p3_invoke.t](../../../tests/encoder/macro/0018_highcolor_p3_invoke.t) |
+| TM-19 | P3 high-color C1 inner controls remain hex encoded under a 7-bit outer macro. | [tests/encoder/macro/0019_highcolor_p3_c1.t](../../../tests/encoder/macro/0019_highcolor_p3_c1.t) |
+| TM-20 | High-color HLS syntax and independent P3 primary/neutral values survive macro transport. | [tests/encoder/macro/0020_highcolor_p3_hls.t](../../../tests/encoder/macro/0020_highcolor_p3_hls.t) |
+| TM-21 | High-color P3 macro paint preserves separated source-mask omissions. | [tests/encoder/macro/0021_highcolor_p3_mask.t](../../../tests/encoder/macro/0021_highcolor_p3_mask.t) |
+| TM-22 | Gamma packed alpha normalizes before P3 high-color macro conversion and retains its omitted pixel. | [tests/encoder/macro/0022_highcolor_p3_packed.t](../../../tests/encoder/macro/0022_highcolor_p3_packed.t) |
+| TM-23 | Byte-eligible sRGB high-color macro input remains byte-based and emits independent RGB101 values. | [tests/encoder/macro/0023_highcolor_byte_define.t](../../../tests/encoder/macro/0023_highcolor_byte_define.t) |
+| TM-24 | One high-color macro encoder refreshes the destination when switching P3 to gamma and back. | [tests/encoder/macro/0024_highcolor_output_reuse.t](../../../tests/encoder/macro/0024_highcolor_output_reuse.t) |
+| TM-25 | Two distinct P3 high-color animation frames are defined/invoked on loop zero and only invoked on loop one. | [tests/encoder/macro/0025_highcolor_p3_replay.t](../../../tests/encoder/macro/0025_highcolor_p3_replay.t) |
 
 ### Supplementary coverage and boundaries
 
-The [builtin animation macro smoke test](../../../tests/loader/builtin/0107_builtin_disable_update_mode.t) and the [optional libwebp macro smoke test](../../../tests/loader/libwebp/0007_webp_use_macro.t) provide additional command-success coverage and discard output. They do not replace the exact stream assertions above.
+The [builtin animation macro smoke test](../../../tests/loader/animation/0001_builtin_disable_update_mode.t) and the [optional libwebp macro smoke test](../../../tests/loader/webp/0007_webp_use_macro.t) provide additional command-success coverage and discard output. They do not replace the exact stream assertions above.
 
 The exact tests cover the static/animation definition boundary and the listed playback contracts. They do not establish a timing tolerance, other loaders' frame metadata, all numeric validation cases, repeated `-n` precedence, DRCS rejection, or file/multiplexer handling. Receiver capacity, macro lifetime, visual placement, and rendering require terminal integration checks; a successful local test does not prove those receiver-dependent properties. No perceptual quality threshold or malformed-input inventory is substituted for these exact stream tests.
 

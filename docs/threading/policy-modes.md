@@ -80,19 +80,19 @@ Each encoder and decoder owns its mode. A work entry resolves a policy snapshot 
 
 | ID | Observation | Owning test |
 | --- | --- | --- |
-| PM-01 | Mode-only defaults, topology caps, lazy fan-out/parsing, greedy threshold overrides and lazy allocator reservations are checked directly. | [tests/processing/threadpool/0003_thread_policy.t](../../tests/processing/threadpool/0003_thread_policy.t) |
-| PM-02 | Lazy still-image output matches one-thread output while encoding retains multiple slots. | [tests/planner/pipeline/0023_pipeline_lazy_still_bits.t](../../tests/planner/pipeline/0023_pipeline_lazy_still_bits.t) |
-| PM-03 | Lazy animated output matches one-thread output. | [tests/planner/pipeline/0024_pipeline_lazy_animation_bits.t](../../tests/planner/pipeline/0024_pipeline_lazy_animation_bits.t) |
-| PM-04 | Lazy delta output preserves one-thread temporal results. | [tests/planner/pipeline/0025_pipeline_lazy_delta_bits.t](../../tests/planner/pipeline/0025_pipeline_lazy_delta_bits.t) |
-| PM-05 | Prepare-ahead and serial preparation produce identical full and delta output. | [tests/planner/pipeline/0019_pipeline_prepare_ahead_bits.t](../../tests/planner/pipeline/0019_pipeline_prepare_ahead_bits.t) |
-| PM-06 | Preparation worker limits preserve output through CLI and environment routes. | [tests/cli/options/regression/0183_threading_prepare_workers_image_regression.t](../../tests/cli/options/regression/0183_threading_prepare_workers_image_regression.t) |
-| PM-07 | Load concurrency routes preserve output. | [tests/cli/options/regression/0179_threading_load_image_regression.t](../../tests/cli/options/regression/0179_threading_load_image_regression.t) |
-| PM-08 | Playback admits its configured capacity independently of loader read-ahead depth. | [tests/planner/pipeline/0021_playback_admission.t](../../tests/planner/pipeline/0021_playback_admission.t) |
-| PM-09 | Object settings and encoder/decoder defaults stay independent. | [tests/processing/threadpool/0005_object_policy_isolation.t](../../tests/processing/threadpool/0005_object_policy_isolation.t) |
-| PM-10 | Concurrent encode and playback calls preserve their own budgets and dither plans. | [tests/processing/threadpool/0006_concurrent_object_policies.t](../../tests/processing/threadpool/0006_concurrent_object_policies.t) |
+| PM-01 | Mode-only defaults, topology caps, lazy fan-out/parsing, greedy threshold overrides and lazy allocator reservations are checked directly. | [tests/platform/threadpool/0003_thread_policy.t](../../tests/platform/threadpool/0003_thread_policy.t) |
+| PM-02 | Lazy still-image output matches one-thread output while encoding retains multiple slots. | [tests/encoder/planning/0023_pipeline_lazy_still_bits.t](../../tests/encoder/planning/0023_pipeline_lazy_still_bits.t) |
+| PM-03 | Lazy animated output matches one-thread output. | [tests/encoder/planning/0024_pipeline_lazy_animation_bits.t](../../tests/encoder/planning/0024_pipeline_lazy_animation_bits.t) |
+| PM-04 | Lazy delta output preserves one-thread temporal results. | [tests/encoder/planning/0025_pipeline_lazy_delta_bits.t](../../tests/encoder/planning/0025_pipeline_lazy_delta_bits.t) |
+| PM-05 | Prepare-ahead and serial preparation produce identical full and delta output. | [tests/encoder/planning/0019_pipeline_prepare_ahead_bits.t](../../tests/encoder/planning/0019_pipeline_prepare_ahead_bits.t) |
+| PM-06 | Preparation worker limits preserve output through CLI and environment routes. | [tests/cli/option-syntax/0088_threading_prepare_workers_image_regression.t](../../tests/cli/option-syntax/0088_threading_prepare_workers_image_regression.t) |
+| PM-07 | Load concurrency routes preserve output. | [tests/cli/option-syntax/0085_threading_load_image_regression.t](../../tests/cli/option-syntax/0085_threading_load_image_regression.t) |
+| PM-08 | Playback admits its configured capacity independently of loader read-ahead depth. | [tests/encoder/planning/0021_playback_admission.t](../../tests/encoder/planning/0021_playback_admission.t) |
+| PM-09 | Object settings and encoder/decoder defaults stay independent. | [tests/platform/threadpool/0005_object_policy_isolation.t](../../tests/platform/threadpool/0005_object_policy_isolation.t) |
+| PM-10 | Concurrent encode and playback calls preserve their own budgets and dither plans. | [tests/platform/threadpool/0006_concurrent_object_policies.t](../../tests/platform/threadpool/0006_concurrent_object_policies.t) |
 
-| PM-11 | Auto executes both scheduling behaviors at frame boundaries and resets to frame on playback reattachment. | [tests/planner/pipeline/0086_palette_auto_playback.t](../../tests/planner/pipeline/0086_palette_auto_playback.t) |
+| PM-11 | Auto executes both scheduling behaviors at frame boundaries and resets to frame on playback reattachment. | [tests/encoder/planning/0086_palette_auto_playback.t](../../tests/encoder/planning/0086_palette_auto_playback.t) |
 
 ### Coverage boundary
 
-The [encoder coverage](encoder.md#test-coverage) owns detailed allocation, palette/preprocessing transactions and sampling evidence. PM-01 tests the shared fan-out resolver consumed by both FHEDT backends; it does not instrument every FHEDT worker dispatch. The [lookup suite](../../tests/processing/lookup/) checks FHEDT and affinity consumers. Host topology and thread availability limit observed concurrency; the tests do not promise worker participation on every run, affinity on unsupported systems or a universal speedup. Output equivalence is tested on specific still, full-frame and delta fixtures, not all possible images.
+The [encoder coverage](encoder.md#test-coverage) owns detailed allocation, palette/preprocessing transactions and sampling evidence. PM-01 tests the shared fan-out resolver consumed by both FHEDT backends; it does not instrument every FHEDT worker dispatch. The [lookup suite](../../tests/lookup) checks FHEDT and affinity consumers. Host topology and thread availability limit observed concurrency; the tests do not promise worker participation on every run, affinity on unsupported systems or a universal speedup. Output equivalence is tested on specific still, full-frame and delta fixtures, not all possible images.

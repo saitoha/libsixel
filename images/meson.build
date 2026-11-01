@@ -1,12 +1,10 @@
 fs = import('fs')
 
 # Collect all sample images so `meson dist` ships the full corpus.
-srcdir_posix = meson.current_source_dir().replace('\\', '/')
-pngsuite_find = 'cd @0@ && find pngsuite -type f -name "*.png" | sort'
-# Use POSIX separators so Git Bash on Windows does not lose backslashes.
-pngsuite_cmd = pngsuite_find.format(srcdir_posix)
-# Meson 0.59 does not provide fs.glob(), so rely on find(1) for recursion.
-pngsuite_result = run_command('sh', '-c', pngsuite_cmd, check: true)
+# The corpus has one fixed category level; globbing needs no external enumerator.
+pngsuite_result = run_command('sh', '-c',
+  'cd "$1" && printf "%s\\n" pngsuite/*/*.png',
+  'pngsuite-list', meson.current_source_dir(), check: true)
 pngsuite_output = pngsuite_result.stdout().strip()
 pngsuite_list = pngsuite_output.split('\n')
 pngsuite_images = []

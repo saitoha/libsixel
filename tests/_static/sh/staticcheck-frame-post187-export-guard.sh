@@ -2,6 +2,7 @@
 # Emit TAP for guarding retired post-v1.8.7 frame API exports.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -63,7 +64,7 @@ if test ! -d "$source_dir"; then
     echo "# missing source directory: $source_dir"
     failed=1
 else
-    find "$source_dir" -type f -name '*.c' -exec awk '
+    sh "$source_files_helper" "$source_dir" --name '*.c' --exec awk '
     FNR == 1 {
         pending = 0
         candidate = ""
@@ -114,7 +115,7 @@ else
     pending > 0 {
         pending--
     }
-    ' {} + | LC_ALL=C sort -u > "$source_symbols"
+    '| LC_ALL=C sort -u > "$source_symbols"
 
     comm -12 "$source_symbols" "$retired_symbols" > "$forbidden_source"
     if test -s "$forbidden_source"; then

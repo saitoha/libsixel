@@ -2,6 +2,7 @@
 # Verify independent cache identities and conservative invalidation boundaries.
 # Policy: docs/testing/staticcheck.md
 set -eux
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo '1..1'
 set -v
@@ -84,8 +85,10 @@ for scenario in cold warm edit failed failed_again repaired added removed rename
             mv "$control_root/tests/file-032.t" "$control_root/tests/renamed.t"
             expected=1 ;;
         malformed)
-            find "$control_root/.staticcheck-cache" -name renamed.t.trs \
-                -exec sh -c 'printf ":test-result: FAIL\n" > "$1"' sh {} \;
+            sh "$source_files_helper" "$control_root/.staticcheck-cache" \
+                --name renamed.t.trs | while IFS= read -r cached; do
+                    printf ':test-result: FAIL\n' > "$cached"
+                done
             expected=1 ;;
         tool_changed)
             printf '\n# Changed executable bytes.\n' >> "$SHELLCHECK_CMD"

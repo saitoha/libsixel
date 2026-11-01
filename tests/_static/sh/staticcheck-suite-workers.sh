@@ -8,10 +8,12 @@ set -v
 src_root=$1
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-suite-workers-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
-mkdir -p "$tmpdir/root/tests/_static/sh" "$tmpdir/root/tests/_static/awk"
+mkdir -p "$tmpdir/root/tests/_static/sh" "$tmpdir/root/tests/_static/awk" "$tmpdir/root/tests/_static/python"
 cp "$src_root/tests/_static/sh/run-check-batches.sh" "$tmpdir/root/tests/_static/sh/"
 cp "$src_root/tests/_static/sh/collect-source-references.sh" "$tmpdir/root/tests/_static/sh/"
 cp "$src_root/tests/_static/awk/source-references.awk" "$tmpdir/root/tests/_static/awk/"
+cp "$src_root/tests/_static/sh/list-source-files.sh" "$tmpdir/root/tests/_static/sh/"
+cp "$src_root/tests/_static/python/source_files.py" "$tmpdir/root/tests/_static/python/"
 cp "$src_root/tests/_static/sh/tap-case.sh" "$tmpdir/root/tests/_static/sh/"
 cp "$src_root/tests/_static/awk/tap-status.awk" "$tmpdir/root/tests/_static/awk/"
 

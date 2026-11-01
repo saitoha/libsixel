@@ -62,50 +62,50 @@ Table construction is paid on a palette change even when delta keeps most pixels
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| OR-01 | Byte point, hinted and bulk queries match an independent exhaustive scan at seed-cell boundaries, random and palette-hit queries, duplicate colors, radius-boundary ties, reverse strides, tails and equal-size palette changes. | [tests/processing/lookup/0039_ordered_byte_exact.t](../../../../tests/processing/lookup/0039_ordered_byte_exact.t), [tests/processing/lookup/0039_ordered_exact.c](../../../../tests/processing/lookup/0039_ordered_exact.c) |
-| OR-02 | Float point and bulk results match an independent double scan, including nonfinite queries, and finite VP-tree metric results. | [tests/processing/lookup/0040_ordered_float_exact.t](../../../../tests/processing/lookup/0040_ordered_float_exact.t) |
-| OR-03 | Metal indexes and keep masks match CPU exhaustive lookup with none, bluenoise and positional dithering, repeated and changed palettes, duplicate colors and short rows; kernel selection and table reuse are observed. | [tests/processing/gpu-palette/0023_ordered_exact.t](../../../../tests/processing/gpu-palette/0023_ordered_exact.t), [tests/processing/gpu-palette/0023_ordered_exact.c](../../../../tests/processing/gpu-palette/0023_ordered_exact.c) |
-| OR-04 | Policy alternation, palette resizing and rejected requests preserve exact results. | [tests/processing/gpu-palette/0024_ordered_cache_transitions.t](../../../../tests/processing/gpu-palette/0024_ordered_cache_transitions.t), [tests/processing/gpu-palette/0024_ordered_cache_transitions.c](../../../../tests/processing/gpu-palette/0024_ordered_cache_transitions.c) |
-| OR-05 | Concurrent callers with independent palettes preserve exact results. | [tests/processing/gpu-palette/0025_ordered_parallel_cache.t](../../../../tests/processing/gpu-palette/0025_ordered_parallel_cache.t), [tests/processing/gpu-palette/0025_ordered_parallel_cache.c](../../../../tests/processing/gpu-palette/0025_ordered_parallel_cache.c) |
-| OR-06 | Sequential delta frames preserve indexes, keep masks and retained RGB across threshold and palette changes. | [tests/processing/gpu-palette/0026_ordered_delta_history.t](../../../../tests/processing/gpu-palette/0026_ordered_delta_history.t), [tests/processing/gpu-palette/0026_ordered_delta_history.c](../../../../tests/processing/gpu-palette/0026_ordered_delta_history.c) |
-| OR-07 | Valid, negative and out-of-range hints preserve point results. | [tests/processing/lookup/0014_lookup_hint_contract.c](../../../../tests/processing/lookup/0014_lookup_hint_contract.c) |
-| OR-08 | Empty, cold and warm bulk calls preserve independent point results. | [tests/processing/lookup/0015_lookup_batch_contract.c](../../../../tests/processing/lookup/0015_lookup_batch_contract.c) |
-| ORF-01 | Native float gamma range. | [tests/processing/lookup/ordered/0001_ord_gamma_range.t](../../../../tests/processing/lookup/ordered/0001_ord_gamma_range.t) |
-| ORF-02 | Native float linear range. | [tests/processing/lookup/ordered/0002_ord_linear_range.t](../../../../tests/processing/lookup/ordered/0002_ord_linear_range.t) |
-| ORF-03 | Native float oklab range. | [tests/processing/lookup/ordered/0003_ord_oklab_range.t](../../../../tests/processing/lookup/ordered/0003_ord_oklab_range.t) |
-| ORF-04 | Native float cielab range. | [tests/processing/lookup/ordered/0004_ord_cielab_range.t](../../../../tests/processing/lookup/ordered/0004_ord_cielab_range.t) |
-| ORF-05 | Native float din99d range. | [tests/processing/lookup/ordered/0005_ord_din99d_range.t](../../../../tests/processing/lookup/ordered/0005_ord_din99d_range.t) |
-| ORF-06 | Native float gamma fraction. | [tests/processing/lookup/ordered/0006_ord_gamma_fraction.t](../../../../tests/processing/lookup/ordered/0006_ord_gamma_fraction.t) |
-| ORF-07 | Native float linear fraction. | [tests/processing/lookup/ordered/0007_ord_linear_fraction.t](../../../../tests/processing/lookup/ordered/0007_ord_linear_fraction.t) |
-| ORF-08 | Native float oklab fraction. | [tests/processing/lookup/ordered/0008_ord_oklab_fraction.t](../../../../tests/processing/lookup/ordered/0008_ord_oklab_fraction.t) |
-| ORF-09 | Native float cielab fraction. | [tests/processing/lookup/ordered/0009_ord_cielab_fraction.t](../../../../tests/processing/lookup/ordered/0009_ord_cielab_fraction.t) |
-| ORF-10 | Native float din99d fraction. | [tests/processing/lookup/ordered/0010_ord_din99d_fraction.t](../../../../tests/processing/lookup/ordered/0010_ord_din99d_fraction.t) |
-| ORF-11 | Native float gamma oracle. | [tests/processing/lookup/ordered/0011_ord_gamma_oracle.t](../../../../tests/processing/lookup/ordered/0011_ord_gamma_oracle.t) |
-| ORF-12 | Native float linear oracle. | [tests/processing/lookup/ordered/0012_ord_linear_oracle.t](../../../../tests/processing/lookup/ordered/0012_ord_linear_oracle.t) |
-| ORF-13 | Native float oklab oracle. | [tests/processing/lookup/ordered/0013_ord_oklab_oracle.t](../../../../tests/processing/lookup/ordered/0013_ord_oklab_oracle.t) |
-| ORF-14 | Native float cielab oracle. | [tests/processing/lookup/ordered/0014_ord_cielab_oracle.t](../../../../tests/processing/lookup/ordered/0014_ord_cielab_oracle.t) |
-| ORF-15 | Native float din99d oracle. | [tests/processing/lookup/ordered/0015_ord_din99d_oracle.t](../../../../tests/processing/lookup/ordered/0015_ord_din99d_oracle.t) |
-| ORF-16 | Native float gamma oracle large. | [tests/processing/lookup/ordered/0016_ord_gamma_oracle_large.t](../../../../tests/processing/lookup/ordered/0016_ord_gamma_oracle_large.t) |
-| ORF-17 | Native float linear oracle large. | [tests/processing/lookup/ordered/0017_ord_linear_oracle_large.t](../../../../tests/processing/lookup/ordered/0017_ord_linear_oracle_large.t) |
-| ORF-18 | Native float oklab oracle large. | [tests/processing/lookup/ordered/0018_ord_oklab_oracle_large.t](../../../../tests/processing/lookup/ordered/0018_ord_oklab_oracle_large.t) |
-| ORF-19 | Native float cielab oracle large. | [tests/processing/lookup/ordered/0019_ord_cielab_oracle_large.t](../../../../tests/processing/lookup/ordered/0019_ord_cielab_oracle_large.t) |
-| ORF-20 | Native float din99d oracle large. | [tests/processing/lookup/ordered/0020_ord_din99d_oracle_large.t](../../../../tests/processing/lookup/ordered/0020_ord_din99d_oracle_large.t) |
-| ORF-21 | Native float gamma oracle small. | [tests/processing/lookup/ordered/0021_ord_gamma_oracle_small.t](../../../../tests/processing/lookup/ordered/0021_ord_gamma_oracle_small.t) |
-| ORF-22 | Native float linear oracle small. | [tests/processing/lookup/ordered/0022_ord_linear_oracle_small.t](../../../../tests/processing/lookup/ordered/0022_ord_linear_oracle_small.t) |
-| ORF-23 | Native float oklab oracle small. | [tests/processing/lookup/ordered/0023_ord_oklab_oracle_small.t](../../../../tests/processing/lookup/ordered/0023_ord_oklab_oracle_small.t) |
-| ORF-24 | Native float cielab oracle small. | [tests/processing/lookup/ordered/0024_ord_cielab_oracle_small.t](../../../../tests/processing/lookup/ordered/0024_ord_cielab_oracle_small.t) |
-| ORF-25 | Native float din99d oracle small. | [tests/processing/lookup/ordered/0025_ord_din99d_oracle_small.t](../../../../tests/processing/lookup/ordered/0025_ord_din99d_oracle_small.t) |
-| ORF-26 | Native float gamma oracle mixed. | [tests/processing/lookup/ordered/0026_ord_gamma_oracle_mixed.t](../../../../tests/processing/lookup/ordered/0026_ord_gamma_oracle_mixed.t) |
-| ORF-27 | Native float linear oracle mixed. | [tests/processing/lookup/ordered/0027_ord_linear_oracle_mixed.t](../../../../tests/processing/lookup/ordered/0027_ord_linear_oracle_mixed.t) |
-| ORF-28 | Native float oklab oracle mixed. | [tests/processing/lookup/ordered/0028_ord_oklab_oracle_mixed.t](../../../../tests/processing/lookup/ordered/0028_ord_oklab_oracle_mixed.t) |
-| ORF-29 | Native float cielab oracle mixed. | [tests/processing/lookup/ordered/0029_ord_cielab_oracle_mixed.t](../../../../tests/processing/lookup/ordered/0029_ord_cielab_oracle_mixed.t) |
-| ORF-30 | Native float din99d oracle mixed. | [tests/processing/lookup/ordered/0030_ord_din99d_oracle_mixed.t](../../../../tests/processing/lookup/ordered/0030_ord_din99d_oracle_mixed.t) |
-| ORF-31 | Native float cielab metric. | [tests/processing/lookup/ordered/0031_ord_cielab_metric.t](../../../../tests/processing/lookup/ordered/0031_ord_cielab_metric.t) |
-| ORF-32 | Native float din99d metric. | [tests/processing/lookup/ordered/0032_ord_din99d_metric.t](../../../../tests/processing/lookup/ordered/0032_ord_din99d_metric.t) |
-| ORF-33 | Native float instance isolation. | [tests/processing/lookup/ordered/0033_ord_instance_isolation.t](../../../../tests/processing/lookup/ordered/0033_ord_instance_isolation.t) |
-| ORF-34 | ordered allocation failure falls back and rebuilds. | [tests/processing/gpu-palette/0030_ordered_allocation_failure.t](../../../../tests/processing/gpu-palette/0030_ordered_allocation_failure.t) |
-| ORF-35 | ordered encoder failure falls back and rebuilds. | [tests/processing/gpu-palette/0031_ordered_encoder_failure.t](../../../../tests/processing/gpu-palette/0031_ordered_encoder_failure.t) |
-| ORF-36 | ordered completion failure falls back and rebuilds. | [tests/processing/gpu-palette/0032_ordered_completion_failure.t](../../../../tests/processing/gpu-palette/0032_ordered_completion_failure.t) |
+| OR-01 | Byte point, hinted and bulk queries match an independent exhaustive scan at seed-cell boundaries, random and palette-hit queries, duplicate colors, radius-boundary ties, reverse strides, tails and equal-size palette changes. | [tests/lookup/ordered/0008_ordered_byte_exact.t](../../../../tests/lookup/ordered/0008_ordered_byte_exact.t), [tests/_support/processing/lookup/0039_ordered_exact.c](../../../../tests/_support/processing/lookup/0039_ordered_exact.c) |
+| OR-02 | Float point and bulk results match an independent double scan, including nonfinite queries, and finite VP-tree metric results. | [tests/lookup/ordered/0009_ordered_float_exact.t](../../../../tests/lookup/ordered/0009_ordered_float_exact.t) |
+| OR-03 | Metal indexes and keep masks match CPU exhaustive lookup with none, bluenoise and positional dithering, repeated and changed palettes, duplicate colors and short rows; kernel selection and table reuse are observed. | [tests/lookup/ordered/0001_ordered_exact.t](../../../../tests/lookup/ordered/0001_ordered_exact.t), [tests/lookup/ordered/0001_ordered_exact.c](../../../../tests/lookup/ordered/0001_ordered_exact.c) |
+| OR-04 | Policy alternation, palette resizing and rejected requests preserve exact results. | [tests/lookup/ordered/0002_ordered_cache_transitions.t](../../../../tests/lookup/ordered/0002_ordered_cache_transitions.t), [tests/lookup/ordered/0002_ordered_cache_transitions.c](../../../../tests/lookup/ordered/0002_ordered_cache_transitions.c) |
+| OR-05 | Concurrent callers with independent palettes preserve exact results. | [tests/lookup/ordered/0003_ordered_parallel_cache.t](../../../../tests/lookup/ordered/0003_ordered_parallel_cache.t), [tests/lookup/ordered/0003_ordered_parallel_cache.c](../../../../tests/lookup/ordered/0003_ordered_parallel_cache.c) |
+| OR-06 | Sequential delta frames preserve indexes, keep masks and retained RGB across threshold and palette changes. | [tests/lookup/ordered/0004_ordered_delta_history.t](../../../../tests/lookup/ordered/0004_ordered_delta_history.t), [tests/lookup/ordered/0004_ordered_delta_history.c](../../../../tests/lookup/ordered/0004_ordered_delta_history.c) |
+| OR-07 | Valid, negative and out-of-range hints preserve point results. | [tests/lookup/dispatch/0011_lookup_hint_contract.c](../../../../tests/lookup/dispatch/0011_lookup_hint_contract.c) |
+| OR-08 | Empty, cold and warm bulk calls preserve independent point results. | [tests/lookup/dispatch/0012_lookup_batch_contract.c](../../../../tests/lookup/dispatch/0012_lookup_batch_contract.c) |
+| ORF-01 | Native float gamma range. | [tests/lookup/ordered/0010_ord_gamma_range.t](../../../../tests/lookup/ordered/0010_ord_gamma_range.t) |
+| ORF-02 | Native float linear range. | [tests/lookup/ordered/0011_ord_linear_range.t](../../../../tests/lookup/ordered/0011_ord_linear_range.t) |
+| ORF-03 | Native float oklab range. | [tests/lookup/ordered/0012_ord_oklab_range.t](../../../../tests/lookup/ordered/0012_ord_oklab_range.t) |
+| ORF-04 | Native float cielab range. | [tests/lookup/ordered/0013_ord_cielab_range.t](../../../../tests/lookup/ordered/0013_ord_cielab_range.t) |
+| ORF-05 | Native float din99d range. | [tests/lookup/ordered/0014_ord_din99d_range.t](../../../../tests/lookup/ordered/0014_ord_din99d_range.t) |
+| ORF-06 | Native float gamma fraction. | [tests/lookup/ordered/0015_ord_gamma_fraction.t](../../../../tests/lookup/ordered/0015_ord_gamma_fraction.t) |
+| ORF-07 | Native float linear fraction. | [tests/lookup/ordered/0016_ord_linear_fraction.t](../../../../tests/lookup/ordered/0016_ord_linear_fraction.t) |
+| ORF-08 | Native float oklab fraction. | [tests/lookup/ordered/0017_ord_oklab_fraction.t](../../../../tests/lookup/ordered/0017_ord_oklab_fraction.t) |
+| ORF-09 | Native float cielab fraction. | [tests/lookup/ordered/0018_ord_cielab_fraction.t](../../../../tests/lookup/ordered/0018_ord_cielab_fraction.t) |
+| ORF-10 | Native float din99d fraction. | [tests/lookup/ordered/0019_ord_din99d_fraction.t](../../../../tests/lookup/ordered/0019_ord_din99d_fraction.t) |
+| ORF-11 | Native float gamma oracle. | [tests/lookup/ordered/0020_ord_gamma_oracle.t](../../../../tests/lookup/ordered/0020_ord_gamma_oracle.t) |
+| ORF-12 | Native float linear oracle. | [tests/lookup/ordered/0021_ord_linear_oracle.t](../../../../tests/lookup/ordered/0021_ord_linear_oracle.t) |
+| ORF-13 | Native float oklab oracle. | [tests/lookup/ordered/0022_ord_oklab_oracle.t](../../../../tests/lookup/ordered/0022_ord_oklab_oracle.t) |
+| ORF-14 | Native float cielab oracle. | [tests/lookup/ordered/0023_ord_cielab_oracle.t](../../../../tests/lookup/ordered/0023_ord_cielab_oracle.t) |
+| ORF-15 | Native float din99d oracle. | [tests/lookup/ordered/0024_ord_din99d_oracle.t](../../../../tests/lookup/ordered/0024_ord_din99d_oracle.t) |
+| ORF-16 | Native float gamma oracle large. | [tests/lookup/ordered/0025_ord_gamma_oracle_large.t](../../../../tests/lookup/ordered/0025_ord_gamma_oracle_large.t) |
+| ORF-17 | Native float linear oracle large. | [tests/lookup/ordered/0026_ord_linear_oracle_large.t](../../../../tests/lookup/ordered/0026_ord_linear_oracle_large.t) |
+| ORF-18 | Native float oklab oracle large. | [tests/lookup/ordered/0027_ord_oklab_oracle_large.t](../../../../tests/lookup/ordered/0027_ord_oklab_oracle_large.t) |
+| ORF-19 | Native float cielab oracle large. | [tests/lookup/ordered/0028_ord_cielab_oracle_large.t](../../../../tests/lookup/ordered/0028_ord_cielab_oracle_large.t) |
+| ORF-20 | Native float din99d oracle large. | [tests/lookup/ordered/0029_ord_din99d_oracle_large.t](../../../../tests/lookup/ordered/0029_ord_din99d_oracle_large.t) |
+| ORF-21 | Native float gamma oracle small. | [tests/lookup/ordered/0030_ord_gamma_oracle_small.t](../../../../tests/lookup/ordered/0030_ord_gamma_oracle_small.t) |
+| ORF-22 | Native float linear oracle small. | [tests/lookup/ordered/0031_ord_linear_oracle_small.t](../../../../tests/lookup/ordered/0031_ord_linear_oracle_small.t) |
+| ORF-23 | Native float oklab oracle small. | [tests/lookup/ordered/0032_ord_oklab_oracle_small.t](../../../../tests/lookup/ordered/0032_ord_oklab_oracle_small.t) |
+| ORF-24 | Native float cielab oracle small. | [tests/lookup/ordered/0033_ord_cielab_oracle_small.t](../../../../tests/lookup/ordered/0033_ord_cielab_oracle_small.t) |
+| ORF-25 | Native float din99d oracle small. | [tests/lookup/ordered/0034_ord_din99d_oracle_small.t](../../../../tests/lookup/ordered/0034_ord_din99d_oracle_small.t) |
+| ORF-26 | Native float gamma oracle mixed. | [tests/lookup/ordered/0035_ord_gamma_oracle_mixed.t](../../../../tests/lookup/ordered/0035_ord_gamma_oracle_mixed.t) |
+| ORF-27 | Native float linear oracle mixed. | [tests/lookup/ordered/0036_ord_linear_oracle_mixed.t](../../../../tests/lookup/ordered/0036_ord_linear_oracle_mixed.t) |
+| ORF-28 | Native float oklab oracle mixed. | [tests/lookup/ordered/0037_ord_oklab_oracle_mixed.t](../../../../tests/lookup/ordered/0037_ord_oklab_oracle_mixed.t) |
+| ORF-29 | Native float cielab oracle mixed. | [tests/lookup/ordered/0038_ord_cielab_oracle_mixed.t](../../../../tests/lookup/ordered/0038_ord_cielab_oracle_mixed.t) |
+| ORF-30 | Native float din99d oracle mixed. | [tests/lookup/ordered/0039_ord_din99d_oracle_mixed.t](../../../../tests/lookup/ordered/0039_ord_din99d_oracle_mixed.t) |
+| ORF-31 | Native float cielab metric. | [tests/lookup/ordered/0040_ord_cielab_metric.t](../../../../tests/lookup/ordered/0040_ord_cielab_metric.t) |
+| ORF-32 | Native float din99d metric. | [tests/lookup/ordered/0041_ord_din99d_metric.t](../../../../tests/lookup/ordered/0041_ord_din99d_metric.t) |
+| ORF-33 | Native float instance isolation. | [tests/lookup/ordered/0042_ord_instance_isolation.t](../../../../tests/lookup/ordered/0042_ord_instance_isolation.t) |
+| ORF-34 | ordered allocation failure falls back and rebuilds. | [tests/lookup/ordered/0005_ordered_allocation_failure.t](../../../../tests/lookup/ordered/0005_ordered_allocation_failure.t) |
+| ORF-35 | ordered encoder failure falls back and rebuilds. | [tests/lookup/ordered/0006_ordered_encoder_failure.t](../../../../tests/lookup/ordered/0006_ordered_encoder_failure.t) |
+| ORF-36 | ordered completion failure falls back and rebuilds. | [tests/lookup/ordered/0007_ordered_completion_failure.t](../../../../tests/lookup/ordered/0007_ordered_completion_failure.t) |
 
 OR-03 through OR-06 skip without a Metal palette backend. OR-04 exercises request rejection before Metal dispatch; it does not inject Metal allocation or command-buffer failures. The shared [CLI prefix contract](../../../cli/prefix-matching.md) checks unique initials across registered policies. These tests establish numeric results and path selection, not a performance guarantee.
 

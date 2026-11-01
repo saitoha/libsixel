@@ -99,3 +99,25 @@ clean-local:
 	rm -f $(RUBY_GEM_STAMP)
 
 EXTRA_DIST = gem_builder.rb
+
+# Source archives must support enabling bindings after extraction.
+EXTRA_DIST += Gemfile \
+    LICENSE.txt \
+    README.md \
+    Rakefile \
+    images/egret.jpg \
+    images/egret.six \
+    lib/libsixel.rb \
+    lib/libsixel/api.rb \
+    lib/libsixel/constants.rb \
+    lib/libsixel/decoder.rb \
+    lib/libsixel/dither.rb \
+    lib/libsixel/encoder.rb \
+    lib/libsixel/frame.rb \
+    lib/libsixel/helper.rb \
+    lib/libsixel/output.rb \
+    lib/libsixel/version.rb \
+    lib/libsixel/version_runtime.rb.in \
+    libsixel-ruby.gemspec \
+    test/minitest_helper.rb \
+    test/test_libsixel.rb

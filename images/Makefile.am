@@ -1,5 +1,5 @@
 # List all bundled images so distribution archives stay consistent.
-PNGSUITE_IMAGES = $(shell cd $(srcdir) && find pngsuite -type f -name '*.png' -print)
+PNGSUITE_IMAGES = $(patsubst $(srcdir)/%,%,$(wildcard $(srcdir)/pngsuite/*/*.png))
 
 EXTRA_DIST = .gitattributes README.md \
     egret.jpg \

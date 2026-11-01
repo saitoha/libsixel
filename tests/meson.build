@@ -192,26 +192,18 @@ endforeach
 # do not require manual Meson updates.
 # The installed-WIC probe is a standalone Windows executable owned by wic/.
 test_runner_tests_sources_text = run_command(
-  sh,
-  '-c',
-  'set -eu; cd "$1"; ' +
-  'find . ' +
-  '\\( -path "./.perl-test-venv" -o -path "./.python-test-venv" ' +
-  '-o -path "./.ruby-test-venv" -o -path "./.php-test-venv" ' +
-  '-o -path "./_artifacts" \\) ' +
-  '-prune -o -type f \\( -name "*.c" -o -name "*.h" \\) ' +
-  '! -name "*.inc.c" ' +
-  '! -name "filtered_5bit_common.c" ' +
-  '! -name "filtered_6bit_common.c" ' +
-  '! -name "0018_lookup_float_batch_exact.c" ' +
-  '! -name "0019_lookup_float_simd_distance.c" ' +
-  '! -name "0030_delaunay_float_exact.c" ' +
-  '! -name "0031_delaunay_float_distance.c" ' +
-  '! -name "0032_delaunay_float_bulk.c" ' +
-  '! -path "./extension/wic-installed/*.c" -print | ' +
-  'LC_ALL=C sort | sed "s|^\\./||"',
-  'meson-test-runner-sources',
-  meson.current_source_dir(),
+  import('python').find_installation(),
+  meson.current_source_dir() / '_static/python/source_files.py',
+  meson.current_source_dir(), '--name', '*.c', '--name', '*.h',
+  '--exclude-name', '*.inc.c',
+  '--exclude-name', 'filtered_5bit_common.c',
+  '--exclude-name', 'filtered_6bit_common.c',
+  '--exclude-path', '*/extension/wic-installed/*.c',
+  '--exclude-name', '0014_lookup_float_batch_exact.c',
+  '--exclude-name', '0015_lookup_float_simd_distance.c',
+  '--exclude-name', '0010_delaunay_float_exact.c',
+  '--exclude-name', '0011_delaunay_float_distance.c',
+  '--exclude-name', '0012_delaunay_float_bulk.c',
   check: true,
 ).stdout().strip()
 test_runner_tests_sources = []
@@ -240,13 +232,13 @@ test_runner_inc = [
 test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
 
 float_lookup_tests = static_library('sixel_float_lookup_tests',
-  ['processing/lookup/filtered/filtered_5bit_common.c',
-   'processing/lookup/filtered/filtered_6bit_common.c',
-   'processing/lookup/0018_lookup_float_batch_exact.c',
-   'processing/lookup/0019_lookup_float_simd_distance.c',
-   'processing/lookup/0030_delaunay_float_exact.c',
-   'processing/lookup/0031_delaunay_float_distance.c',
-   'processing/lookup/0032_delaunay_float_bulk.c', sixcells_h],
+  ['_support/processing/lookup/filtered/filtered_5bit_common.c',
+   '_support/processing/lookup/filtered/filtered_6bit_common.c',
+   'lookup/dispatch/0014_lookup_float_batch_exact.c',
+   'lookup/dispatch/0015_lookup_float_simd_distance.c',
+   'lookup/delaunay/0010_delaunay_float_exact.c',
+   'lookup/delaunay/0011_delaunay_float_distance.c',
+   'lookup/delaunay/0012_delaunay_float_bulk.c', sixcells_h],
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,
   c_args: libsixel_posix_defs + float_lookup_c_args,
@@ -310,9 +302,9 @@ if tests_text != ''
 endif
 
 xfail_tests = [
-  'loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t',
-  'loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t',
-  'loader/builtin/1318_loader_builtin_psd_psdtools_effects_stroke_composite_hardcase_lsqa.t',
+  'loader-psd/blending/0010_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t',
+  'loader-psd/effects/0010_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t',
+  'loader-psd/stroke/0001_loader_builtin_psd_psdtools_effects_stroke_composite_hardcase_lsqa.t',
 ]
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
@@ -523,7 +515,7 @@ mkdir -p "$coverage_root"
 status=0
 test_seq=0
 
-for test_path in $(find "$source_root/tests/bindings/ruby" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.rb' | LC_ALL=C sort); do
+for test_path in "$source_root/tests/bindings/ruby/"[0-9][0-9][0-9][0-9]_*.rb; do
   test_name="${test_path##*/}"
   test_name="${test_name%.rb}"
   test_seq=$((test_seq + 1))
@@ -635,7 +627,7 @@ mkdir -p "$coverage_root"
 status=0
 test_seq=0
 
-for test_path in $(find "$source_root/tests/bindings/perl" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.pl' | LC_ALL=C sort); do
+for test_path in "$source_root/tests/bindings/perl/"[0-9][0-9][0-9][0-9]_*.pl; do
   test_name=$(basename "$test_path" .pl)
   test_seq=$((test_seq + 1))
   test_id="${test_name%%_*}"
@@ -715,7 +707,7 @@ rm -rf "$coverage_root"
 mkdir -p "$coverage_root"
 test_seq=0
 
-for test_path in $(find "$source_root/tests/bindings/php" -maxdepth 1 -type f -name '[0-9][0-9][0-9][0-9]_*.php' | LC_ALL=C sort); do
+for test_path in "$source_root/tests/bindings/php/"[0-9][0-9][0-9][0-9]_*.php; do
   test_name=$(basename "$test_path" .php)
   test_seq=$((test_seq + 1))
   test_id="${test_name%%_*}"

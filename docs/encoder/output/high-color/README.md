@@ -142,7 +142,7 @@ Retain this mode as an explicitly limited alternate path until it has a correctn
 
 ## Implementation and existing coverage
 
-The repeated-pass implementation is in [`encoder-core-highcolor.c`](../../../../src/encoder-core-highcolor.c), CLI mode selection and diffusion bypass are in [`encoder.c`](../../../../src/encoder.c), and paint-time palette resolution is in [`fromsixel.c`](../../../../src/fromsixel.c). Focused existing tests exercise the 255 paint-register boundary in [`0166_high_color_sixel_direct_palette_slots.t`](../../../../tests/quant/palette/usage/0166_high_color_sixel_direct_palette_slots.t), preservation across direct decoding in [`0023_decoder_high_color_dequantize_bypass.c`](../../../../tests/processing/decoder/0023_decoder_high_color_dequantize_bypass.c), and transparent-offset geometry in [`0175_transparent_offset_high_color_geometry.t`](../../../../tests/quant/palette/usage/0175_transparent_offset_high_color_geometry.t). The final-band tests below additionally cover pending passes at complete and partial image boundaries; they do not establish every possible palette-selection or alpha-policy combination.
+The repeated-pass implementation is in [`encoder-core-highcolor.c`](../../../../src/encoder-core-highcolor.c), CLI mode selection and diffusion bypass are in [`encoder.c`](../../../../src/encoder.c), and paint-time palette resolution is in [`fromsixel.c`](../../../../src/fromsixel.c). Focused existing tests exercise the 255 paint-register boundary in [`0084_high_color_sixel_direct_palette_slots.t`](../../../../tests/encoder/highcolor/0084_high_color_sixel_direct_palette_slots.t), preservation across direct decoding in [`0025_decoder_high_color_dequantize_bypass.c`](../../../../tests/decoder/parser/0025_decoder_high_color_dequantize_bypass.c), and transparent-offset geometry in [`0085_transparent_offset_high_color_geometry.t`](../../../../tests/encoder/highcolor/0085_transparent_offset_high_color_geometry.t). The final-band tests below additionally cover pending passes at complete and partial image boundaries; they do not establish every possible palette-selection or alpha-policy combination.
 
 The [study tool](../../../../tools/highcolor/study.py) verifies retained hashes, dimensions, painted color counts, histograms, register bounds, and timing-sample coverage. Its diagnostic measurements explicitly record existing failures; they are not a passing quality regression threshold. Regenerate the conceptual figures with `tools/reproduce_encoding_mode_figures.sh` and verify them with `--check`.
 
@@ -152,91 +152,91 @@ The [study tool](../../../../tools/highcolor/study.py) verifies retained hashes,
 
 ### Behavioral contract tests
 
-The small value witnesses inspect direct-decoded pixels and opacity, including register redefinition. Their analytic transfer/matrix references, independent P3 primary coordinates and integer rounding margins are documented in `tests/codec/highcolor_output_common.c`. Nonfinite rejection and reuse are separate from finite approximation checks. These tests establish the destination handoff, not perceptual quality or exhaustive pass scheduling. Packed-input witnesses use independent rational blends and an analytic primary/transfer reference in `tests/codec/highcolor_packed_common.c`; HC-83 checks the planner flag for shared-frame copying, not actual packed-alpha loader playback. Pending final-band tests check every decoded pixel, exact dimensions, opacity, 255/256 slot boundaries, key revisits and transparent margins. The float and P3 lifetime witnesses include a pending final band. Requested one- and four-thread budgets exercise the serial scheduler and shared body serializer, not independent high-color band scheduling.
+The small value witnesses inspect direct-decoded pixels and opacity, including register redefinition. Their analytic transfer/matrix references, independent P3 primary coordinates and integer rounding margins are documented in `tests/_support/codec/highcolor_output_common.c`. Nonfinite rejection and reuse are separate from finite approximation checks. These tests establish the destination handoff, not perceptual quality or exhaustive pass scheduling. Packed-input witnesses use independent rational blends and an analytic primary/transfer reference in `tests/_support/codec/highcolor_packed_common.c`; HC-83 checks the planner flag for shared-frame copying, not actual packed-alpha loader playback. Pending final-band tests check every decoded pixel, exact dimensions, opacity, 255/256 slot boundaries, key revisits and transparent margins. The float and P3 lifetime witnesses include a pending final band. Requested one- and four-thread budgets exercise the serial scheduler and shared body serializer, not independent high-color band scheduling.
 
 | ID | Contract | Test |
 | --- | --- | --- |
-| HC-01 | Byte gamma identity retains the byte palette and original channel percentages. | [tests/codec/highcolor/0001_byte_identity.t](../../../../tests/codec/highcolor/0001_byte_identity.t) |
-| HC-02 | Byte gamma input converts to linear destination values before key selection. | [tests/codec/highcolor/0002_byte_linear.t](../../../../tests/codec/highcolor/0002_byte_linear.t) |
-| HC-03 | Float gamma representatives reach RGB101 without an intervening RGB888 store. | [tests/codec/highcolor/0003_float_subbyte.t](../../../../tests/codec/highcolor/0003_float_subbyte.t) |
-| HC-04 | Linear float input reaches gamma output with the transfer function applied. | [tests/codec/highcolor/0004_linear_gamma.t](../../../../tests/codec/highcolor/0004_linear_gamma.t) |
-| HC-05 | Negative working components contribute to the SMPTE-C primary matrix before final clipping. | [tests/codec/highcolor/0005_extended_smptec.t](../../../../tests/codec/highcolor/0005_extended_smptec.t) |
-| HC-06 | HLS output uses the float representative without intermediate byte rounding. | [tests/codec/highcolor/0006_float_hls.t](../../../../tests/codec/highcolor/0006_float_hls.t) |
-| HC-07 | NaN input rejects before output and the same float context remains reusable. | [tests/codec/highcolor/0007_nan_recovery.t](../../../../tests/codec/highcolor/0007_nan_recovery.t) |
-| HC-08 | Infinity input rejects before output and preserves the input format for reuse. | [tests/codec/highcolor/0008_infinity_recovery.t](../../../../tests/codec/highcolor/0008_infinity_recovery.t) |
-| HC-09 | Packed RGBA input converts to linear output without mutating the dither format. | [tests/codec/highcolor/0009_rgba_linear.t](../../../../tests/codec/highcolor/0009_rgba_linear.t) |
-| HC-10 | The high-level frame entry preserves subbyte samples through high-color output. | [tests/codec/highcolor/0010_frame_float.t](../../../../tests/codec/highcolor/0010_frame_float.t) |
-| HC-11 | The high-level frame entry preserves extended linear samples for SMPTE-C output. | [tests/codec/highcolor/0011_frame_extended.t](../../../../tests/codec/highcolor/0011_frame_extended.t) |
-| HC-12 | Float representatives remain attached to their keys across register redefinition passes. | [tests/codec/highcolor/0012_multipass_float.t](../../../../tests/codec/highcolor/0012_multipass_float.t) |
-| HC-13 | Low-level legacy byte diffusion converts output coordinates before its byte boundary. | [tests/codec/highcolor/0013_lowlevel_diffusion.t](../../../../tests/codec/highcolor/0013_lowlevel_diffusion.t) |
-| HC-14 | One high-color context supports repeated float and byte output conversions without stale format state. | [tests/codec/highcolor/0014_context_reuse.t](../../../../tests/codec/highcolor/0014_context_reuse.t) |
-| HC-15 | Extended gamma coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0015_p3_gamma.t](../../../../tests/codec/highcolor/0015_p3_gamma.t) |
-| HC-16 | Extended linear coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0016_p3_linear.t](../../../../tests/codec/highcolor/0016_p3_linear.t) |
-| HC-17 | Oklab coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0017_p3_oklab.t](../../../../tests/codec/highcolor/0017_p3_oklab.t) |
-| HC-18 | CIELAB coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0018_p3_cielab.t](../../../../tests/codec/highcolor/0018_p3_cielab.t) |
-| HC-19 | DIN99d coordinates retain P3 red, green and a mixed color. | [tests/codec/highcolor/0019_p3_din99d.t](../../../../tests/codec/highcolor/0019_p3_din99d.t) |
-| HC-20 | Byte sRGB input is converted to the P3 destination. | [tests/codec/highcolor/0020_p3_byte.t](../../../../tests/codec/highcolor/0020_p3_byte.t) |
-| HC-21 | P3 output keeps a neutral subbyte representative through RGB101. | [tests/codec/highcolor/0021_p3_subbyte.t](../../../../tests/codec/highcolor/0021_p3_subbyte.t) |
-| HC-22 | P3 HLS uses a float representative without RGB888 projection. | [tests/codec/highcolor/0022_p3_hls.t](../../../../tests/codec/highcolor/0022_p3_hls.t) |
-| HC-23 | P3 representatives survive register redefinition across completed passes. | [tests/codec/highcolor/0023_p3_multipass.t](../../../../tests/codec/highcolor/0023_p3_multipass.t) |
-| HC-24 | P3 representatives survive completed passes with a four-thread body budget. | [tests/codec/highcolor/0024_p3_workers.t](../../../../tests/codec/highcolor/0024_p3_workers.t) |
-| HC-25 | Output definition and byte or float input switch safely between encoder contexts. | [tests/codec/highcolor/0025_p3_reuse.t](../../../../tests/codec/highcolor/0025_p3_reuse.t) |
-| HC-26 | An undersized source mask rejects before output and allows opaque reuse. | [tests/codec/highcolor/0026_p3_short_mask_recovery.t](../../../../tests/codec/highcolor/0026_p3_short_mask_recovery.t) |
-| HC-27 | High-color P3 delta rejects before output and allows full-frame reuse. | [tests/codec/highcolor/0027_p3_delta_recovery.t](../../../../tests/codec/highcolor/0027_p3_delta_recovery.t) |
-| HC-28 | High-color P3 OR mode rejects before output and allows ordinary reuse. | [tests/codec/highcolor/0028_p3_or_recovery.t](../../../../tests/codec/highcolor/0028_p3_or_recovery.t) |
-| HC-29 | High-color P3 DRCS offsets reject before output and allow ordinary reuse. | [tests/codec/highcolor/0029_p3_drcs_offset_recovery.t](../../../../tests/codec/highcolor/0029_p3_drcs_offset_recovery.t) |
-| HC-30 | High-color P3 PNG combined with either macro selector rejects before output and allows ordinary reuse. | [tests/codec/highcolor/0030_p3_macro_png_recovery.t](../../../../tests/codec/highcolor/0030_p3_macro_png_recovery.t) |
-| HC-31 | High-color P3 frame encoding accepts PNG intent and subsequent SIXEL reuse. | [tests/codec/highcolor/0031_p3_png_sixel_reuse.t](../../../../tests/codec/highcolor/0031_p3_png_sixel_reuse.t) |
-| HC-32 | High-color P3 active snap rejects before output and allows unsnapped reuse. | [tests/codec/highcolor/0032_p3_snap_recovery.t](../../../../tests/codec/highcolor/0032_p3_snap_recovery.t) |
-| HC-33 | High-color P3 nonfinite input rejects before output and allows finite reuse. | [tests/codec/highcolor/0033_p3_nan_recovery.t](../../../../tests/codec/highcolor/0033_p3_nan_recovery.t) |
-| HC-34 | High-color P3 packed input tagged with non-gamma coordinates rejects before output and allows RGB reuse. | [tests/codec/highcolor/0034_p3_alpha_space_recovery.t](../../../../tests/codec/highcolor/0034_p3_alpha_space_recovery.t) |
-| HC-35 | Full final band completes every pending color. | [tests/codec/highcolor/0035_final_full.t](../../../../tests/codec/highcolor/0035_final_full.t) |
-| HC-36 | One-row final band completes pending colors. | [tests/codec/highcolor/0036_final_one.t](../../../../tests/codec/highcolor/0036_final_one.t) |
-| HC-37 | Two-row final band completes pending colors. | [tests/codec/highcolor/0037_final_two.t](../../../../tests/codec/highcolor/0037_final_two.t) |
-| HC-38 | Three-row final band completes pending colors. | [tests/codec/highcolor/0038_final_three.t](../../../../tests/codec/highcolor/0038_final_three.t) |
-| HC-39 | Four-row final band completes pending colors. | [tests/codec/highcolor/0039_final_four.t](../../../../tests/codec/highcolor/0039_final_four.t) |
-| HC-40 | Five-row final band completes pending colors. | [tests/codec/highcolor/0040_final_five.t](../../../../tests/codec/highcolor/0040_final_five.t) |
-| HC-41 | A single row supports more than two palette passes. | [tests/codec/highcolor/0041_single_row.t](../../../../tests/codec/highcolor/0041_single_row.t) |
-| HC-42 | Repeated keys retain paint-time colors across pending passes. | [tests/codec/highcolor/0042_key_revisit.t](../../../../tests/codec/highcolor/0042_key_revisit.t) |
-| HC-43 | Float representatives complete the final band. | [tests/codec/highcolor/0043_final_float.t](../../../../tests/codec/highcolor/0043_final_float.t) |
-| HC-44 | An unaligned transparent margin preserves final-band placement. | [tests/codec/highcolor/0044_final_offset.t](../../../../tests/codec/highcolor/0044_final_offset.t) |
-| HC-45 | A multi-band top margin is emitted only once across short passes. | [tests/codec/highcolor/0045_short_offset.t](../../../../tests/codec/highcolor/0045_short_offset.t) |
-| HC-46 | A four-thread body budget preserves pending final-band pixels. | [tests/codec/highcolor/0046_final_workers.t](../../../../tests/codec/highcolor/0046_final_workers.t) |
-| HC-47 | Exactly 255 keys finish without a pending pass. | [tests/codec/highcolor/0047_slots_255.t](../../../../tests/codec/highcolor/0047_slots_255.t) |
-| HC-48 | The 256th key is painted by a pending final pass. | [tests/codec/highcolor/0048_slots_256.t](../../../../tests/codec/highcolor/0048_slots_256.t) |
-| HC-49 | A short offset image retains its row bit over repeated passes. | [tests/codec/highcolor/0049_single_offset.t](../../../../tests/codec/highcolor/0049_single_offset.t) |
-| HC-50 | Byte RGB retains the separated alpha-zero mask. | [tests/codec/highcolor/0050_mask_byte.t](../../../../tests/codec/highcolor/0050_mask_byte.t) |
-| HC-51 | Float RGB retains the separated alpha-zero mask. | [tests/codec/highcolor/0051_mask_float.t](../../../../tests/codec/highcolor/0051_mask_float.t) |
-| HC-52 | P3 RGB preserves visible colors and separated omissions. | [tests/codec/highcolor/0052_mask_p3.t](../../../../tests/codec/highcolor/0052_mask_p3.t) |
-| HC-53 | A high-color source mask requests P2=1 for keep. | [tests/codec/highcolor/0053_mask_keep.t](../../../../tests/codec/highcolor/0053_mask_keep.t) |
-| HC-54 | A high-color source mask explicitly requests P2=0 for clear. | [tests/codec/highcolor/0054_mask_clear.t](../../../../tests/codec/highcolor/0054_mask_clear.t) |
-| HC-55 | A retained composite-fallback mask requests P2=1. | [tests/codec/highcolor/0055_mask_composite.t](../../../../tests/codec/highcolor/0055_mask_composite.t) |
-| HC-56 | A source mask follows repeated palette passes. | [tests/codec/highcolor/0056_mask_multipass.t](../../../../tests/codec/highcolor/0056_mask_multipass.t) |
-| HC-57 | P3 masks and representatives survive pending final passes. | [tests/codec/highcolor/0057_mask_p3_multipass.t](../../../../tests/codec/highcolor/0057_mask_p3_multipass.t) |
-| HC-58 | A source mask follows partial final-band rewinds. | [tests/codec/highcolor/0058_mask_partial.t](../../../../tests/codec/highcolor/0058_mask_partial.t) |
-| HC-59 | Source masks retain coordinates across transparent margins. | [tests/codec/highcolor/0059_mask_offset.t](../../../../tests/codec/highcolor/0059_mask_offset.t) |
-| HC-60 | Parallel body serialization preserves source-mask holes. | [tests/codec/highcolor/0060_mask_workers.t](../../../../tests/codec/highcolor/0060_mask_workers.t) |
-| HC-61 | Hidden samples cannot become visible key representatives. | [tests/codec/highcolor/0061_mask_hidden_key.t](../../../../tests/codec/highcolor/0061_mask_hidden_key.t) |
-| HC-62 | An all-masked frame declares its extent without painting. | [tests/codec/highcolor/0062_mask_all.t](../../../../tests/codec/highcolor/0062_mask_all.t) |
-| HC-63 | An all-zero mask does not omit visible pixels. | [tests/codec/highcolor/0063_mask_zero.t](../../../../tests/codec/highcolor/0063_mask_zero.t) |
-| HC-64 | P3 encoder reuse clears and replaces borrowed masks. | [tests/codec/highcolor/0064_mask_reuse.t](../../../../tests/codec/highcolor/0064_mask_reuse.t) |
-| HC-65 | Short masks and nonfinite samples fail before output; low-level reuse restores the caller mask on success and failure. | [tests/codec/highcolor/0065_mask_core_recovery.t](../../../../tests/codec/highcolor/0065_mask_core_recovery.t) |
-| HC-66 | Libpng tRNS opt-in and opt-out both request P2=1 with high-color keep. | [tests/loader/libpng/0168_loader_libpng_trns_mask_highcolor.t](../../../../tests/loader/libpng/0168_loader_libpng_trns_mask_highcolor.t) |
-| HC-67 | RGBA fractional composition survives a byte request. | [tests/codec/highcolor/0066_packed_rgba.t](../../../../tests/codec/highcolor/0066_packed_rgba.t) |
-| HC-68 | ARGB gamma samples convert to P3 after alpha composition. | [tests/codec/highcolor/0067_packed_argb_p3.t](../../../../tests/codec/highcolor/0067_packed_argb_p3.t) |
-| HC-69 | BGRA P3 output retains values through linear work. | [tests/codec/highcolor/0068_packed_bgra_linear.t](../../../../tests/codec/highcolor/0068_packed_bgra_linear.t) |
-| HC-70 | ABGR P3 output retains values through Oklab work. | [tests/codec/highcolor/0069_packed_abgr_oklab.t](../../../../tests/codec/highcolor/0069_packed_abgr_oklab.t) |
-| HC-71 | Gray-alpha honors the background through CIELAB and P3. | [tests/codec/highcolor/0070_packed_ga_cielab.t](../../../../tests/codec/highcolor/0070_packed_ga_cielab.t) |
-| HC-72 | Alpha-gray honors the background through DIN99d and P3. | [tests/codec/highcolor/0071_packed_ag_din99d.t](../../../../tests/codec/highcolor/0071_packed_ag_din99d.t) |
-| HC-73 | Binary alpha keeps RGB888 despite bypassed clustering. | [tests/codec/highcolor/0072_packed_binary_byte.t](../../../../tests/codec/highcolor/0072_packed_binary_byte.t) |
-| HC-74 | Explicit float promotes binary packed alpha. | [tests/codec/highcolor/0073_packed_binary_float.t](../../../../tests/codec/highcolor/0073_packed_binary_float.t) |
-| HC-75 | Ignored packed alpha retains an independent side mask. | [tests/codec/highcolor/0074_packed_alpha_disabled.t](../../../../tests/codec/highcolor/0074_packed_alpha_disabled.t) |
-| HC-76 | Interpreted zero alpha and side holes are both omitted. | [tests/codec/highcolor/0075_packed_mask_union.t](../../../../tests/codec/highcolor/0075_packed_mask_union.t) |
-| HC-77 | Fractional RGB blends retain the colored background. | [tests/codec/highcolor/0076_packed_background.t](../../../../tests/codec/highcolor/0076_packed_background.t) |
-| HC-78 | Crop retains the normalized fractional colors and mask. | [tests/codec/highcolor/0077_packed_crop.t](../../../../tests/codec/highcolor/0077_packed_crop.t) |
-| HC-79 | Nearest resize preserves normalized colors and omissions. | [tests/codec/highcolor/0078_packed_resize.t](../../../../tests/codec/highcolor/0078_packed_resize.t) |
-| HC-80 | One encoder switches P3 intent and alpha interpretation. | [tests/codec/highcolor/0079_packed_reuse.t](../../../../tests/codec/highcolor/0079_packed_reuse.t) |
-| HC-81 | Pixel allocation failure preserves packed input for retry. | [tests/codec/highcolor/0080_packed_pixel_retry.t](../../../../tests/codec/highcolor/0080_packed_pixel_retry.t) |
-| HC-82 | Mask allocation failure preserves packed input for retry. | [tests/codec/highcolor/0081_packed_mask_retry.t](../../../../tests/codec/highcolor/0081_packed_mask_retry.t) |
-| HC-83 | Packed normalization requests a shared-frame copy. | [tests/codec/highcolor/0082_packed_handoff_plan.t](../../../../tests/codec/highcolor/0082_packed_handoff_plan.t) |
-| HC-84 | Packed gamma alpha normalizes into P3 values and omissions with PNG output intent. | [tests/codec/highcolor/0083_packed_png_p3.t](../../../../tests/codec/highcolor/0083_packed_png_p3.t) |
+| HC-01 | Byte gamma identity retains the byte palette and original channel percentages. | [tests/encoder/highcolor/0001_byte_identity.t](../../../../tests/encoder/highcolor/0001_byte_identity.t) |
+| HC-02 | Byte gamma input converts to linear destination values before key selection. | [tests/encoder/highcolor/0002_byte_linear.t](../../../../tests/encoder/highcolor/0002_byte_linear.t) |
+| HC-03 | Float gamma representatives reach RGB101 without an intervening RGB888 store. | [tests/encoder/highcolor/0003_float_subbyte.t](../../../../tests/encoder/highcolor/0003_float_subbyte.t) |
+| HC-04 | Linear float input reaches gamma output with the transfer function applied. | [tests/encoder/highcolor/0004_linear_gamma.t](../../../../tests/encoder/highcolor/0004_linear_gamma.t) |
+| HC-05 | Negative working components contribute to the SMPTE-C primary matrix before final clipping. | [tests/encoder/highcolor/0005_extended_smptec.t](../../../../tests/encoder/highcolor/0005_extended_smptec.t) |
+| HC-06 | HLS output uses the float representative without intermediate byte rounding. | [tests/encoder/highcolor/0006_float_hls.t](../../../../tests/encoder/highcolor/0006_float_hls.t) |
+| HC-07 | NaN input rejects before output and the same float context remains reusable. | [tests/encoder/highcolor/0007_nan_recovery.t](../../../../tests/encoder/highcolor/0007_nan_recovery.t) |
+| HC-08 | Infinity input rejects before output and preserves the input format for reuse. | [tests/encoder/highcolor/0008_infinity_recovery.t](../../../../tests/encoder/highcolor/0008_infinity_recovery.t) |
+| HC-09 | Packed RGBA input converts to linear output without mutating the dither format. | [tests/encoder/highcolor/0009_rgba_linear.t](../../../../tests/encoder/highcolor/0009_rgba_linear.t) |
+| HC-10 | The high-level frame entry preserves subbyte samples through high-color output. | [tests/encoder/highcolor/0010_frame_float.t](../../../../tests/encoder/highcolor/0010_frame_float.t) |
+| HC-11 | The high-level frame entry preserves extended linear samples for SMPTE-C output. | [tests/encoder/highcolor/0011_frame_extended.t](../../../../tests/encoder/highcolor/0011_frame_extended.t) |
+| HC-12 | Float representatives remain attached to their keys across register redefinition passes. | [tests/encoder/highcolor/0012_multipass_float.t](../../../../tests/encoder/highcolor/0012_multipass_float.t) |
+| HC-13 | Low-level legacy byte diffusion converts output coordinates before its byte boundary. | [tests/encoder/highcolor/0013_lowlevel_diffusion.t](../../../../tests/encoder/highcolor/0013_lowlevel_diffusion.t) |
+| HC-14 | One high-color context supports repeated float and byte output conversions without stale format state. | [tests/encoder/highcolor/0014_context_reuse.t](../../../../tests/encoder/highcolor/0014_context_reuse.t) |
+| HC-15 | Extended gamma coordinates retain P3 red, green and a mixed color. | [tests/encoder/highcolor/0015_p3_gamma.t](../../../../tests/encoder/highcolor/0015_p3_gamma.t) |
+| HC-16 | Extended linear coordinates retain P3 red, green and a mixed color. | [tests/encoder/highcolor/0016_p3_linear.t](../../../../tests/encoder/highcolor/0016_p3_linear.t) |
+| HC-17 | Oklab coordinates retain P3 red, green and a mixed color. | [tests/encoder/highcolor/0017_p3_oklab.t](../../../../tests/encoder/highcolor/0017_p3_oklab.t) |
+| HC-18 | CIELAB coordinates retain P3 red, green and a mixed color. | [tests/encoder/highcolor/0018_p3_cielab.t](../../../../tests/encoder/highcolor/0018_p3_cielab.t) |
+| HC-19 | DIN99d coordinates retain P3 red, green and a mixed color. | [tests/encoder/highcolor/0019_p3_din99d.t](../../../../tests/encoder/highcolor/0019_p3_din99d.t) |
+| HC-20 | Byte sRGB input is converted to the P3 destination. | [tests/encoder/highcolor/0020_p3_byte.t](../../../../tests/encoder/highcolor/0020_p3_byte.t) |
+| HC-21 | P3 output keeps a neutral subbyte representative through RGB101. | [tests/encoder/highcolor/0021_p3_subbyte.t](../../../../tests/encoder/highcolor/0021_p3_subbyte.t) |
+| HC-22 | P3 HLS uses a float representative without RGB888 projection. | [tests/encoder/highcolor/0022_p3_hls.t](../../../../tests/encoder/highcolor/0022_p3_hls.t) |
+| HC-23 | P3 representatives survive register redefinition across completed passes. | [tests/encoder/highcolor/0023_p3_multipass.t](../../../../tests/encoder/highcolor/0023_p3_multipass.t) |
+| HC-24 | P3 representatives survive completed passes with a four-thread body budget. | [tests/encoder/highcolor/0024_p3_workers.t](../../../../tests/encoder/highcolor/0024_p3_workers.t) |
+| HC-25 | Output definition and byte or float input switch safely between encoder contexts. | [tests/encoder/highcolor/0025_p3_reuse.t](../../../../tests/encoder/highcolor/0025_p3_reuse.t) |
+| HC-26 | An undersized source mask rejects before output and allows opaque reuse. | [tests/encoder/highcolor/0026_p3_short_mask_recovery.t](../../../../tests/encoder/highcolor/0026_p3_short_mask_recovery.t) |
+| HC-27 | High-color P3 delta rejects before output and allows full-frame reuse. | [tests/encoder/highcolor/0027_p3_delta_recovery.t](../../../../tests/encoder/highcolor/0027_p3_delta_recovery.t) |
+| HC-28 | High-color P3 OR mode rejects before output and allows ordinary reuse. | [tests/encoder/highcolor/0028_p3_or_recovery.t](../../../../tests/encoder/highcolor/0028_p3_or_recovery.t) |
+| HC-29 | High-color P3 DRCS offsets reject before output and allow ordinary reuse. | [tests/encoder/highcolor/0029_p3_drcs_offset_recovery.t](../../../../tests/encoder/highcolor/0029_p3_drcs_offset_recovery.t) |
+| HC-30 | High-color P3 PNG combined with either macro selector rejects before output and allows ordinary reuse. | [tests/encoder/highcolor/0030_p3_macro_png_recovery.t](../../../../tests/encoder/highcolor/0030_p3_macro_png_recovery.t) |
+| HC-31 | High-color P3 frame encoding accepts PNG intent and subsequent SIXEL reuse. | [tests/encoder/highcolor/0031_p3_png_sixel_reuse.t](../../../../tests/encoder/highcolor/0031_p3_png_sixel_reuse.t) |
+| HC-32 | High-color P3 active snap rejects before output and allows unsnapped reuse. | [tests/encoder/highcolor/0032_p3_snap_recovery.t](../../../../tests/encoder/highcolor/0032_p3_snap_recovery.t) |
+| HC-33 | High-color P3 nonfinite input rejects before output and allows finite reuse. | [tests/encoder/highcolor/0033_p3_nan_recovery.t](../../../../tests/encoder/highcolor/0033_p3_nan_recovery.t) |
+| HC-34 | High-color P3 packed input tagged with non-gamma coordinates rejects before output and allows RGB reuse. | [tests/encoder/highcolor/0034_p3_alpha_space_recovery.t](../../../../tests/encoder/highcolor/0034_p3_alpha_space_recovery.t) |
+| HC-35 | Full final band completes every pending color. | [tests/encoder/highcolor/0035_final_full.t](../../../../tests/encoder/highcolor/0035_final_full.t) |
+| HC-36 | One-row final band completes pending colors. | [tests/encoder/highcolor/0036_final_one.t](../../../../tests/encoder/highcolor/0036_final_one.t) |
+| HC-37 | Two-row final band completes pending colors. | [tests/encoder/highcolor/0037_final_two.t](../../../../tests/encoder/highcolor/0037_final_two.t) |
+| HC-38 | Three-row final band completes pending colors. | [tests/encoder/highcolor/0038_final_three.t](../../../../tests/encoder/highcolor/0038_final_three.t) |
+| HC-39 | Four-row final band completes pending colors. | [tests/encoder/highcolor/0039_final_four.t](../../../../tests/encoder/highcolor/0039_final_four.t) |
+| HC-40 | Five-row final band completes pending colors. | [tests/encoder/highcolor/0040_final_five.t](../../../../tests/encoder/highcolor/0040_final_five.t) |
+| HC-41 | A single row supports more than two palette passes. | [tests/encoder/highcolor/0041_single_row.t](../../../../tests/encoder/highcolor/0041_single_row.t) |
+| HC-42 | Repeated keys retain paint-time colors across pending passes. | [tests/encoder/highcolor/0042_key_revisit.t](../../../../tests/encoder/highcolor/0042_key_revisit.t) |
+| HC-43 | Float representatives complete the final band. | [tests/encoder/highcolor/0043_final_float.t](../../../../tests/encoder/highcolor/0043_final_float.t) |
+| HC-44 | An unaligned transparent margin preserves final-band placement. | [tests/encoder/highcolor/0044_final_offset.t](../../../../tests/encoder/highcolor/0044_final_offset.t) |
+| HC-45 | A multi-band top margin is emitted only once across short passes. | [tests/encoder/highcolor/0045_short_offset.t](../../../../tests/encoder/highcolor/0045_short_offset.t) |
+| HC-46 | A four-thread body budget preserves pending final-band pixels. | [tests/encoder/highcolor/0046_final_workers.t](../../../../tests/encoder/highcolor/0046_final_workers.t) |
+| HC-47 | Exactly 255 keys finish without a pending pass. | [tests/encoder/highcolor/0047_slots_255.t](../../../../tests/encoder/highcolor/0047_slots_255.t) |
+| HC-48 | The 256th key is painted by a pending final pass. | [tests/encoder/highcolor/0048_slots_256.t](../../../../tests/encoder/highcolor/0048_slots_256.t) |
+| HC-49 | A short offset image retains its row bit over repeated passes. | [tests/encoder/highcolor/0049_single_offset.t](../../../../tests/encoder/highcolor/0049_single_offset.t) |
+| HC-50 | Byte RGB retains the separated alpha-zero mask. | [tests/encoder/highcolor/0050_mask_byte.t](../../../../tests/encoder/highcolor/0050_mask_byte.t) |
+| HC-51 | Float RGB retains the separated alpha-zero mask. | [tests/encoder/highcolor/0051_mask_float.t](../../../../tests/encoder/highcolor/0051_mask_float.t) |
+| HC-52 | P3 RGB preserves visible colors and separated omissions. | [tests/encoder/highcolor/0052_mask_p3.t](../../../../tests/encoder/highcolor/0052_mask_p3.t) |
+| HC-53 | A high-color source mask requests P2=1 for keep. | [tests/encoder/highcolor/0053_mask_keep.t](../../../../tests/encoder/highcolor/0053_mask_keep.t) |
+| HC-54 | A high-color source mask explicitly requests P2=0 for clear. | [tests/encoder/highcolor/0054_mask_clear.t](../../../../tests/encoder/highcolor/0054_mask_clear.t) |
+| HC-55 | A retained composite-fallback mask requests P2=1. | [tests/encoder/highcolor/0055_mask_composite.t](../../../../tests/encoder/highcolor/0055_mask_composite.t) |
+| HC-56 | A source mask follows repeated palette passes. | [tests/encoder/highcolor/0056_mask_multipass.t](../../../../tests/encoder/highcolor/0056_mask_multipass.t) |
+| HC-57 | P3 masks and representatives survive pending final passes. | [tests/encoder/highcolor/0057_mask_p3_multipass.t](../../../../tests/encoder/highcolor/0057_mask_p3_multipass.t) |
+| HC-58 | A source mask follows partial final-band rewinds. | [tests/encoder/highcolor/0058_mask_partial.t](../../../../tests/encoder/highcolor/0058_mask_partial.t) |
+| HC-59 | Source masks retain coordinates across transparent margins. | [tests/encoder/highcolor/0059_mask_offset.t](../../../../tests/encoder/highcolor/0059_mask_offset.t) |
+| HC-60 | Parallel body serialization preserves source-mask holes. | [tests/encoder/highcolor/0060_mask_workers.t](../../../../tests/encoder/highcolor/0060_mask_workers.t) |
+| HC-61 | Hidden samples cannot become visible key representatives. | [tests/encoder/highcolor/0061_mask_hidden_key.t](../../../../tests/encoder/highcolor/0061_mask_hidden_key.t) |
+| HC-62 | An all-masked frame declares its extent without painting. | [tests/encoder/highcolor/0062_mask_all.t](../../../../tests/encoder/highcolor/0062_mask_all.t) |
+| HC-63 | An all-zero mask does not omit visible pixels. | [tests/encoder/highcolor/0063_mask_zero.t](../../../../tests/encoder/highcolor/0063_mask_zero.t) |
+| HC-64 | P3 encoder reuse clears and replaces borrowed masks. | [tests/encoder/highcolor/0064_mask_reuse.t](../../../../tests/encoder/highcolor/0064_mask_reuse.t) |
+| HC-65 | Short masks and nonfinite samples fail before output; low-level reuse restores the caller mask on success and failure. | [tests/encoder/highcolor/0065_mask_core_recovery.t](../../../../tests/encoder/highcolor/0065_mask_core_recovery.t) |
+| HC-66 | Libpng tRNS opt-in and opt-out both request P2=1 with high-color keep. | [tests/loader-png/alpha-indexed/0104_loader_libpng_trns_mask_highcolor.t](../../../../tests/loader-png/alpha-indexed/0104_loader_libpng_trns_mask_highcolor.t) |
+| HC-67 | RGBA fractional composition survives a byte request. | [tests/encoder/highcolor/0066_packed_rgba.t](../../../../tests/encoder/highcolor/0066_packed_rgba.t) |
+| HC-68 | ARGB gamma samples convert to P3 after alpha composition. | [tests/encoder/highcolor/0067_packed_argb_p3.t](../../../../tests/encoder/highcolor/0067_packed_argb_p3.t) |
+| HC-69 | BGRA P3 output retains values through linear work. | [tests/encoder/highcolor/0068_packed_bgra_linear.t](../../../../tests/encoder/highcolor/0068_packed_bgra_linear.t) |
+| HC-70 | ABGR P3 output retains values through Oklab work. | [tests/encoder/highcolor/0069_packed_abgr_oklab.t](../../../../tests/encoder/highcolor/0069_packed_abgr_oklab.t) |
+| HC-71 | Gray-alpha honors the background through CIELAB and P3. | [tests/encoder/highcolor/0070_packed_ga_cielab.t](../../../../tests/encoder/highcolor/0070_packed_ga_cielab.t) |
+| HC-72 | Alpha-gray honors the background through DIN99d and P3. | [tests/encoder/highcolor/0071_packed_ag_din99d.t](../../../../tests/encoder/highcolor/0071_packed_ag_din99d.t) |
+| HC-73 | Binary alpha keeps RGB888 despite bypassed clustering. | [tests/encoder/highcolor/0072_packed_binary_byte.t](../../../../tests/encoder/highcolor/0072_packed_binary_byte.t) |
+| HC-74 | Explicit float promotes binary packed alpha. | [tests/encoder/highcolor/0073_packed_binary_float.t](../../../../tests/encoder/highcolor/0073_packed_binary_float.t) |
+| HC-75 | Ignored packed alpha retains an independent side mask. | [tests/encoder/highcolor/0074_packed_alpha_disabled.t](../../../../tests/encoder/highcolor/0074_packed_alpha_disabled.t) |
+| HC-76 | Interpreted zero alpha and side holes are both omitted. | [tests/encoder/highcolor/0075_packed_mask_union.t](../../../../tests/encoder/highcolor/0075_packed_mask_union.t) |
+| HC-77 | Fractional RGB blends retain the colored background. | [tests/encoder/highcolor/0076_packed_background.t](../../../../tests/encoder/highcolor/0076_packed_background.t) |
+| HC-78 | Crop retains the normalized fractional colors and mask. | [tests/encoder/highcolor/0077_packed_crop.t](../../../../tests/encoder/highcolor/0077_packed_crop.t) |
+| HC-79 | Nearest resize preserves normalized colors and omissions. | [tests/encoder/highcolor/0078_packed_resize.t](../../../../tests/encoder/highcolor/0078_packed_resize.t) |
+| HC-80 | One encoder switches P3 intent and alpha interpretation. | [tests/encoder/highcolor/0079_packed_reuse.t](../../../../tests/encoder/highcolor/0079_packed_reuse.t) |
+| HC-81 | Pixel allocation failure preserves packed input for retry. | [tests/encoder/highcolor/0080_packed_pixel_retry.t](../../../../tests/encoder/highcolor/0080_packed_pixel_retry.t) |
+| HC-82 | Mask allocation failure preserves packed input for retry. | [tests/encoder/highcolor/0081_packed_mask_retry.t](../../../../tests/encoder/highcolor/0081_packed_mask_retry.t) |
+| HC-83 | Packed normalization requests a shared-frame copy. | [tests/encoder/highcolor/0082_packed_handoff_plan.t](../../../../tests/encoder/highcolor/0082_packed_handoff_plan.t) |
+| HC-84 | Packed gamma alpha normalizes into P3 values and omissions with PNG output intent. | [tests/encoder/highcolor/0083_packed_png_p3.t](../../../../tests/encoder/highcolor/0083_packed_png_p3.t) |

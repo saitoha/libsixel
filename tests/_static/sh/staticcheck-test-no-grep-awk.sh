@@ -3,6 +3,7 @@
 # Policy: docs/testing/guide.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 tests_root=$src_root/tests
@@ -19,7 +20,7 @@ if command -v rg >/dev/null 2>&1; then
     matches=$(cd "$src_root" && rg -n --glob 'tests/**/*.t' \
         '(^|[^[:alnum:]_])(grep|awk|sed)($|[^[:alnum:]_])' tests || :)
 else
-    matches=$(find "$tests_root" -type f -name '*.t' -print0 | \
+    matches=$(sh "$source_files_helper" "$tests_root" --name '*.t' --null| \
         xargs -0 grep -nE \
         '(^|[^[:alnum:]_])(grep|awk|sed)($|[^[:alnum:]_])' || :)
 fi

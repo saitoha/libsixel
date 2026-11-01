@@ -2,6 +2,7 @@
 # Emit TAP for tests include-based .inc.c and EXTRA_DIST synchronization.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 tests_root=$src_root/tests
@@ -50,7 +51,7 @@ all_dist_file=$tmpdir/all-dist.txt
 missing_paths_file=$tmpdir/missing-paths.txt
 
 # Batch independent include scans; the final sort owns ordering and deduplication.
-find "$tests_root" -type f -name '*.c' -exec awk '
+sh "$source_files_helper" "$tests_root" --name '*.c' --exec awk '
     {
         line = $0
         while (match(line, /#include[[:space:]]+"tests\/[A-Za-z0-9_.\/-]+\.inc\.c"/)) {
@@ -62,7 +63,7 @@ find "$tests_root" -type f -name '*.c' -exec awk '
             line = substr(line, RSTART + RLENGTH)
         }
     }
-    ' {} + | LC_ALL=C sort -u > "$includes_file"
+    '| LC_ALL=C sort -u > "$includes_file"
 
 awk '
 BEGIN {

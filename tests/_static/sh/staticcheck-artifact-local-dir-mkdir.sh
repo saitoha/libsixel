@@ -80,7 +80,7 @@ END {
     }
     exit failed ? 1 : 0
 }
-' "$tests_root"/cli/options/regression/*_image_regression.t || failed=1
+' "$tests_root"/cli/*/*_image_regression.t || failed=1
 
 test "$failed" -eq 0 || {
     echo "not ok 1 - tests own lazy ARTIFACT_LOCAL_DIR creation"

@@ -30,83 +30,83 @@ The unavailable-backend test includes the actual PNG decoder and actual loader m
 
 Core tests run independently of the optional libpng dependency. Loader/CLI observations skip early when their required component is disabled. The internal source-only, invalid-input, and transactional-build probes are supplementary defensive controls rather than additional public loader options.
 
-<!-- test-plan: tests/loader/libpng/arithmetic/*.t -->
+<!-- test-plan: @tests/_support/test-plans/png-chrm-arithmetic-01.list -->
 
 | Test | Observation |
 | --- | --- |
-| [tests/loader/libpng/arithmetic/0001_area_positive_below.t](../../tests/loader/libpng/arithmetic/0001_area_positive_below.t) | Area positive below. |
-| [tests/loader/libpng/arithmetic/0002_area_positive_equal.t](../../tests/loader/libpng/arithmetic/0002_area_positive_equal.t) | Area positive equal. |
-| [tests/loader/libpng/arithmetic/0003_area_positive_above.t](../../tests/loader/libpng/arithmetic/0003_area_positive_above.t) | Area positive above. |
-| [tests/loader/libpng/arithmetic/0004_area_negative_below.t](../../tests/loader/libpng/arithmetic/0004_area_negative_below.t) | Area negative below. |
-| [tests/loader/libpng/arithmetic/0005_area_negative_equal.t](../../tests/loader/libpng/arithmetic/0005_area_negative_equal.t) | Area negative equal. |
-| [tests/loader/libpng/arithmetic/0006_area_negative_above.t](../../tests/loader/libpng/arithmetic/0006_area_negative_above.t) | Area negative above. |
-| [tests/loader/libpng/arithmetic/0007_cone_negative_below.t](../../tests/loader/libpng/arithmetic/0007_cone_negative_below.t) | Cone negative below. |
-| [tests/loader/libpng/arithmetic/0008_cone_negative_equal.t](../../tests/loader/libpng/arithmetic/0008_cone_negative_equal.t) | Cone negative equal. |
-| [tests/loader/libpng/arithmetic/0009_cone_positive_equal.t](../../tests/loader/libpng/arithmetic/0009_cone_positive_equal.t) | Cone positive equal. |
-| [tests/loader/libpng/arithmetic/0010_combined_small.t](../../tests/loader/libpng/arithmetic/0010_combined_small.t) | Combined small. |
-| [tests/loader/libpng/arithmetic/0011_force_double_small.t](../../tests/loader/libpng/arithmetic/0011_force_double_small.t) | Force double small. |
-| [tests/loader/libpng/arithmetic/0012_force_512_ordinary.t](../../tests/loader/libpng/arithmetic/0012_force_512_ordinary.t) | Force 512 ordinary. |
-| [tests/loader/libpng/arithmetic/0013_exact_p3.t](../../tests/loader/libpng/arithmetic/0013_exact_p3.t) | Exact p3. |
-| [tests/loader/libpng/arithmetic/0014_exact_p3_d50.t](../../tests/loader/libpng/arithmetic/0014_exact_p3_d50.t) | Exact p3 d50. |
-| [tests/loader/libpng/arithmetic/0015_exact_permutation.t](../../tests/loader/libpng/arithmetic/0015_exact_permutation.t) | Exact permutation. |
-| [tests/loader/libpng/arithmetic/0016_exact_near_primary.t](../../tests/loader/libpng/arithmetic/0016_exact_near_primary.t) | Exact near primary. |
-| [tests/loader/libpng/arithmetic/0017_exact_combined.t](../../tests/loader/libpng/arithmetic/0017_exact_combined.t) | Exact combined. |
-| [tests/loader/libpng/arithmetic/0018_auto_exact_combined.t](../../tests/loader/libpng/arithmetic/0018_auto_exact_combined.t) | Auto exact combined. |
-| [tests/loader/libpng/arithmetic/0019_source_only_exact.t](../../tests/loader/libpng/arithmetic/0019_source_only_exact.t) | Source only exact. |
-| [tests/loader/libpng/arithmetic/0020_double_budget_p3.t](../../tests/loader/libpng/arithmetic/0020_double_budget_p3.t) | Double budget p3. |
-| [tests/loader/libpng/arithmetic/0021_double_budget_p3_d50.t](../../tests/loader/libpng/arithmetic/0021_double_budget_p3_d50.t) | Double budget p3 d50. |
-| [tests/loader/libpng/arithmetic/0022_double_budget_permutation.t](../../tests/loader/libpng/arithmetic/0022_double_budget_permutation.t) | Double budget permutation. |
-| [tests/loader/libpng/arithmetic/0023_neutral_auto.t](../../tests/loader/libpng/arithmetic/0023_neutral_auto.t) | Neutral auto. |
-| [tests/loader/libpng/arithmetic/0024_neutral_double.t](../../tests/loader/libpng/arithmetic/0024_neutral_double.t) | Neutral double. |
-| [tests/loader/libpng/arithmetic/0025_neutral_512bit.t](../../tests/loader/libpng/arithmetic/0025_neutral_512bit.t) | Neutral 512bit. |
-| [tests/loader/libpng/arithmetic/0026_standard_target_identity.t](../../tests/loader/libpng/arithmetic/0026_standard_target_identity.t) | Standard target identity. |
-| [tests/loader/libpng/arithmetic/0027_singular_state.t](../../tests/loader/libpng/arithmetic/0027_singular_state.t) | Singular state. |
-| [tests/loader/libpng/arithmetic/0028_invalid_pixels_separate.t](../../tests/loader/libpng/arithmetic/0028_invalid_pixels_separate.t) | Invalid pixels separate. |
-| [tests/loader/libpng/arithmetic/0029_invalid_pixels_alias.t](../../tests/loader/libpng/arithmetic/0029_invalid_pixels_alias.t) | Invalid pixels alias. |
-| [tests/loader/libpng/arithmetic/0030_loader_double.t](../../tests/loader/libpng/arithmetic/0030_loader_double.t) | Loader double. |
-| [tests/loader/libpng/arithmetic/0031_loader_512bit.t](../../tests/loader/libpng/arithmetic/0031_loader_512bit.t) | Loader 512bit. |
-| [tests/loader/libpng/arithmetic/0032_loader_auto.t](../../tests/loader/libpng/arithmetic/0032_loader_auto.t) | Loader auto. |
-| [tests/loader/libpng/arithmetic/0033_unavailable_terminal.t](../../tests/loader/libpng/arithmetic/0033_unavailable_terminal.t) | Selected 512bit unavailable remains terminal. |
-| [tests/loader/libpng/arithmetic/0034_apng_exact.t](../../tests/loader/libpng/arithmetic/0034_apng_exact.t) | Apng exact. |
-| [tests/loader/libpng/arithmetic/0035_background_exact.t](../../tests/loader/libpng/arithmetic/0035_background_exact.t) | Background exact. |
-| [tests/loader/libpng/arithmetic/0036_env_override.t](../../tests/loader/libpng/arithmetic/0036_env_override.t) | CLI arithmetic overrides the environment. |
-| [tests/loader/libpng/arithmetic/0037_env_invalid.t](../../tests/loader/libpng/arithmetic/0037_env_invalid.t) | Invalid environment arithmetic retains auto. |
-| [tests/loader/libpng/arithmetic/0038_env_empty.t](../../tests/loader/libpng/arithmetic/0038_env_empty.t) | Empty environment arithmetic retains auto. |
-| [tests/loader/libpng/arithmetic/0039_default_auto.t](../../tests/loader/libpng/arithmetic/0039_default_auto.t) | Omitted arithmetic selects auto. |
-| [tests/loader/libpng/arithmetic/0040_icc_not_applicable.t](../../tests/loader/libpng/arithmetic/0040_icc_not_applicable.t) | Selected ICC bypasses cHRM arithmetic. |
-| [tests/loader/libpng/arithmetic/0041_srgb_not_applicable.t](../../tests/loader/libpng/arithmetic/0041_srgb_not_applicable.t) | Selected sRGB bypasses cHRM arithmetic. |
-| [tests/loader/libpng/arithmetic/0042_untagged_not_applicable.t](../../tests/loader/libpng/arithmetic/0042_untagged_not_applicable.t) | Untagged PNG bypasses cHRM arithmetic. |
-| [tests/loader/libpng/arithmetic/0043_cms_disabled.t](../../tests/loader/libpng/arithmetic/0043_cms_disabled.t) | Disabled CMS bypasses cHRM arithmetic. |
-| [tests/loader/libpng/arithmetic/0044_singular_not_applicable.t](../../tests/loader/libpng/arithmetic/0044_singular_not_applicable.t) | Exactly collinear cHRM remains metadata fallback. |
-| [tests/loader/libpng/arithmetic/0045_invalid_cli.t](../../tests/loader/libpng/arithmetic/0045_invalid_cli.t) | Invalid cli. |
-| [tests/loader/libpng/arithmetic/0046_wrong_owner.t](../../tests/loader/libpng/arithmetic/0046_wrong_owner.t) | Wrong owner. |
-| [tests/loader/libpng/arithmetic/0047_lsqa_arithmetic.t](../../tests/loader/libpng/arithmetic/0047_lsqa_arithmetic.t) | Lsqa forwards its loader arithmetic setting. |
-| [tests/loader/libpng/arithmetic/0048_lcms2_arithmetic.t](../../tests/loader/libpng/arithmetic/0048_lcms2_arithmetic.t) | lcms2 selection retains exact libpng cHRM arithmetic. |
-| [tests/loader/libpng/arithmetic/0049_colorsync_arithmetic.t](../../tests/loader/libpng/arithmetic/0049_colorsync_arithmetic.t) | colorsync selection retains exact libpng cHRM arithmetic. |
-| [tests/loader/libpng/arithmetic/0050_cone_positive_below.t](../../tests/loader/libpng/arithmetic/0050_cone_positive_below.t) | Cone positive below branch and exact value. |
-| [tests/loader/libpng/arithmetic/0051_cone_positive_above.t](../../tests/loader/libpng/arithmetic/0051_cone_positive_above.t) | Cone positive above branch and exact value. |
-| [tests/loader/libpng/arithmetic/0052_cone_negative_above.t](../../tests/loader/libpng/arithmetic/0052_cone_negative_above.t) | Cone negative above branch and exact value. |
-| [tests/loader/libpng/arithmetic/0053_ordinary_auto_p3.t](../../tests/loader/libpng/arithmetic/0053_ordinary_auto_p3.t) | Ordinary auto p3 independent numeric budget. |
-| [tests/loader/libpng/arithmetic/0054_ordinary_auto_p3_d50.t](../../tests/loader/libpng/arithmetic/0054_ordinary_auto_p3_d50.t) | Ordinary auto p3_d50 independent numeric budget. |
-| [tests/loader/libpng/arithmetic/0055_ordinary_auto_permutation.t](../../tests/loader/libpng/arithmetic/0055_ordinary_auto_permutation.t) | Ordinary auto permutation independent numeric budget. |
-| [tests/loader/libpng/arithmetic/0056_tiny_p3_auto.t](../../tests/loader/libpng/arithmetic/0056_tiny_p3_auto.t) | P3 auto nonneutral tiny exact bits. |
-| [tests/loader/libpng/arithmetic/0057_tiny_p3_double.t](../../tests/loader/libpng/arithmetic/0057_tiny_p3_double.t) | P3 double nonneutral tiny exact bits. |
-| [tests/loader/libpng/arithmetic/0058_tiny_p3_512bit.t](../../tests/loader/libpng/arithmetic/0058_tiny_p3_512bit.t) | P3 512bit nonneutral tiny exact bits. |
-| [tests/loader/libpng/arithmetic/0059_tiny_p3_d50_auto.t](../../tests/loader/libpng/arithmetic/0059_tiny_p3_d50_auto.t) | P3_d50 auto nonneutral tiny exact bits. |
-| [tests/loader/libpng/arithmetic/0060_tiny_p3_d50_double.t](../../tests/loader/libpng/arithmetic/0060_tiny_p3_d50_double.t) | P3_d50 double nonneutral tiny exact bits. |
-| [tests/loader/libpng/arithmetic/0061_tiny_p3_d50_512bit.t](../../tests/loader/libpng/arithmetic/0061_tiny_p3_d50_512bit.t) | P3_d50 512bit nonneutral tiny exact bits. |
-| [tests/loader/libpng/arithmetic/0062_loader_tiny_p3_auto.t](../../tests/loader/libpng/arithmetic/0062_loader_tiny_p3_auto.t) | Real loader p3 auto tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0063_loader_tiny_p3_double.t](../../tests/loader/libpng/arithmetic/0063_loader_tiny_p3_double.t) | Real loader p3 double tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0064_loader_tiny_p3_512bit.t](../../tests/loader/libpng/arithmetic/0064_loader_tiny_p3_512bit.t) | Real loader p3 512bit tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0065_loader_tiny_p3_d50_auto.t](../../tests/loader/libpng/arithmetic/0065_loader_tiny_p3_d50_auto.t) | Real loader p3_d50 auto tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0066_loader_tiny_p3_d50_double.t](../../tests/loader/libpng/arithmetic/0066_loader_tiny_p3_d50_double.t) | Real loader p3_d50 double tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0067_loader_tiny_p3_d50_512bit.t](../../tests/loader/libpng/arithmetic/0067_loader_tiny_p3_d50_512bit.t) | Real loader p3_d50 512bit tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0068_loader_tiny_env_double.t](../../tests/loader/libpng/arithmetic/0068_loader_tiny_env_double.t) | Loader shared resolver env_double tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0069_loader_tiny_env_512bit.t](../../tests/loader/libpng/arithmetic/0069_loader_tiny_env_512bit.t) | Loader shared resolver env_512bit tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0070_loader_tiny_env_auto.t](../../tests/loader/libpng/arithmetic/0070_loader_tiny_env_auto.t) | Loader shared resolver env_auto tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0071_loader_tiny_option_over_env.t](../../tests/loader/libpng/arithmetic/0071_loader_tiny_option_over_env.t) | Loader shared resolver option_over_env tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0072_loader_tiny_short_over_env.t](../../tests/loader/libpng/arithmetic/0072_loader_tiny_short_over_env.t) | Loader shared resolver short_over_env tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0073_loader_tiny_invalid_env.t](../../tests/loader/libpng/arithmetic/0073_loader_tiny_invalid_env.t) | Loader shared resolver invalid_env tiny frame bits. |
-| [tests/loader/libpng/arithmetic/0074_loader_tiny_empty_env.t](../../tests/loader/libpng/arithmetic/0074_loader_tiny_empty_env.t) | Loader shared resolver empty_env tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0001_area_positive_below.t](../../tests/loader-png/chrm-arithmetic/0001_area_positive_below.t) | Area positive below. |
+| [tests/loader-png/chrm-arithmetic/0002_area_positive_equal.t](../../tests/loader-png/chrm-arithmetic/0002_area_positive_equal.t) | Area positive equal. |
+| [tests/loader-png/chrm-arithmetic/0003_area_positive_above.t](../../tests/loader-png/chrm-arithmetic/0003_area_positive_above.t) | Area positive above. |
+| [tests/loader-png/chrm-arithmetic/0004_area_negative_below.t](../../tests/loader-png/chrm-arithmetic/0004_area_negative_below.t) | Area negative below. |
+| [tests/loader-png/chrm-arithmetic/0005_area_negative_equal.t](../../tests/loader-png/chrm-arithmetic/0005_area_negative_equal.t) | Area negative equal. |
+| [tests/loader-png/chrm-arithmetic/0006_area_negative_above.t](../../tests/loader-png/chrm-arithmetic/0006_area_negative_above.t) | Area negative above. |
+| [tests/loader-png/chrm-arithmetic/0007_cone_negative_below.t](../../tests/loader-png/chrm-arithmetic/0007_cone_negative_below.t) | Cone negative below. |
+| [tests/loader-png/chrm-arithmetic/0008_cone_negative_equal.t](../../tests/loader-png/chrm-arithmetic/0008_cone_negative_equal.t) | Cone negative equal. |
+| [tests/loader-png/chrm-arithmetic/0009_cone_positive_equal.t](../../tests/loader-png/chrm-arithmetic/0009_cone_positive_equal.t) | Cone positive equal. |
+| [tests/loader-png/chrm-arithmetic/0010_combined_small.t](../../tests/loader-png/chrm-arithmetic/0010_combined_small.t) | Combined small. |
+| [tests/loader-png/chrm-arithmetic/0011_force_double_small.t](../../tests/loader-png/chrm-arithmetic/0011_force_double_small.t) | Force double small. |
+| [tests/loader-png/chrm-arithmetic/0012_force_512_ordinary.t](../../tests/loader-png/chrm-arithmetic/0012_force_512_ordinary.t) | Force 512 ordinary. |
+| [tests/loader-png/chrm-arithmetic/0013_exact_p3.t](../../tests/loader-png/chrm-arithmetic/0013_exact_p3.t) | Exact p3. |
+| [tests/loader-png/chrm-arithmetic/0014_exact_p3_d50.t](../../tests/loader-png/chrm-arithmetic/0014_exact_p3_d50.t) | Exact p3 d50. |
+| [tests/loader-png/chrm-arithmetic/0015_exact_permutation.t](../../tests/loader-png/chrm-arithmetic/0015_exact_permutation.t) | Exact permutation. |
+| [tests/loader-png/chrm-arithmetic/0016_exact_near_primary.t](../../tests/loader-png/chrm-arithmetic/0016_exact_near_primary.t) | Exact near primary. |
+| [tests/loader-png/chrm-arithmetic/0017_exact_combined.t](../../tests/loader-png/chrm-arithmetic/0017_exact_combined.t) | Exact combined. |
+| [tests/loader-png/chrm-arithmetic/0018_auto_exact_combined.t](../../tests/loader-png/chrm-arithmetic/0018_auto_exact_combined.t) | Auto exact combined. |
+| [tests/loader-png/chrm-arithmetic/0019_source_only_exact.t](../../tests/loader-png/chrm-arithmetic/0019_source_only_exact.t) | Source only exact. |
+| [tests/loader-png/chrm-arithmetic/0020_double_budget_p3.t](../../tests/loader-png/chrm-arithmetic/0020_double_budget_p3.t) | Double budget p3. |
+| [tests/loader-png/chrm-arithmetic/0021_double_budget_p3_d50.t](../../tests/loader-png/chrm-arithmetic/0021_double_budget_p3_d50.t) | Double budget p3 d50. |
+| [tests/loader-png/chrm-arithmetic/0022_double_budget_permutation.t](../../tests/loader-png/chrm-arithmetic/0022_double_budget_permutation.t) | Double budget permutation. |
+| [tests/loader-png/chrm-arithmetic/0023_neutral_auto.t](../../tests/loader-png/chrm-arithmetic/0023_neutral_auto.t) | Neutral auto. |
+| [tests/loader-png/chrm-arithmetic/0024_neutral_double.t](../../tests/loader-png/chrm-arithmetic/0024_neutral_double.t) | Neutral double. |
+| [tests/loader-png/chrm-arithmetic/0025_neutral_512bit.t](../../tests/loader-png/chrm-arithmetic/0025_neutral_512bit.t) | Neutral 512bit. |
+| [tests/loader-png/chrm-arithmetic/0026_standard_target_identity.t](../../tests/loader-png/chrm-arithmetic/0026_standard_target_identity.t) | Standard target identity. |
+| [tests/loader-png/chrm-arithmetic/0027_singular_state.t](../../tests/loader-png/chrm-arithmetic/0027_singular_state.t) | Singular state. |
+| [tests/loader-png/chrm-arithmetic/0028_invalid_pixels_separate.t](../../tests/loader-png/chrm-arithmetic/0028_invalid_pixels_separate.t) | Invalid pixels separate. |
+| [tests/loader-png/chrm-arithmetic/0029_invalid_pixels_alias.t](../../tests/loader-png/chrm-arithmetic/0029_invalid_pixels_alias.t) | Invalid pixels alias. |
+| [tests/loader-png/chrm-arithmetic/0030_loader_double.t](../../tests/loader-png/chrm-arithmetic/0030_loader_double.t) | Loader double. |
+| [tests/loader-png/chrm-arithmetic/0031_loader_512bit.t](../../tests/loader-png/chrm-arithmetic/0031_loader_512bit.t) | Loader 512bit. |
+| [tests/loader-png/chrm-arithmetic/0032_loader_auto.t](../../tests/loader-png/chrm-arithmetic/0032_loader_auto.t) | Loader auto. |
+| [tests/loader-png/chrm-arithmetic/0033_unavailable_terminal.t](../../tests/loader-png/chrm-arithmetic/0033_unavailable_terminal.t) | Selected 512bit unavailable remains terminal. |
+| [tests/loader-png/chrm-arithmetic/0034_apng_exact.t](../../tests/loader-png/chrm-arithmetic/0034_apng_exact.t) | Apng exact. |
+| [tests/loader-png/chrm-arithmetic/0035_background_exact.t](../../tests/loader-png/chrm-arithmetic/0035_background_exact.t) | Background exact. |
+| [tests/loader-png/chrm-arithmetic/0036_env_override.t](../../tests/loader-png/chrm-arithmetic/0036_env_override.t) | CLI arithmetic overrides the environment. |
+| [tests/loader-png/chrm-arithmetic/0037_env_invalid.t](../../tests/loader-png/chrm-arithmetic/0037_env_invalid.t) | Invalid environment arithmetic retains auto. |
+| [tests/loader-png/chrm-arithmetic/0038_env_empty.t](../../tests/loader-png/chrm-arithmetic/0038_env_empty.t) | Empty environment arithmetic retains auto. |
+| [tests/loader-png/chrm-arithmetic/0039_default_auto.t](../../tests/loader-png/chrm-arithmetic/0039_default_auto.t) | Omitted arithmetic selects auto. |
+| [tests/loader-png/chrm-arithmetic/0040_icc_not_applicable.t](../../tests/loader-png/chrm-arithmetic/0040_icc_not_applicable.t) | Selected ICC bypasses cHRM arithmetic. |
+| [tests/loader-png/chrm-arithmetic/0041_srgb_not_applicable.t](../../tests/loader-png/chrm-arithmetic/0041_srgb_not_applicable.t) | Selected sRGB bypasses cHRM arithmetic. |
+| [tests/loader-png/chrm-arithmetic/0042_untagged_not_applicable.t](../../tests/loader-png/chrm-arithmetic/0042_untagged_not_applicable.t) | Untagged PNG bypasses cHRM arithmetic. |
+| [tests/loader-png/chrm-arithmetic/0043_cms_disabled.t](../../tests/loader-png/chrm-arithmetic/0043_cms_disabled.t) | Disabled CMS bypasses cHRM arithmetic. |
+| [tests/loader-png/chrm-arithmetic/0044_singular_not_applicable.t](../../tests/loader-png/chrm-arithmetic/0044_singular_not_applicable.t) | Exactly collinear cHRM remains metadata fallback. |
+| [tests/loader-png/chrm-arithmetic/0045_invalid_cli.t](../../tests/loader-png/chrm-arithmetic/0045_invalid_cli.t) | Invalid cli. |
+| [tests/loader-png/chrm-arithmetic/0046_wrong_owner.t](../../tests/loader-png/chrm-arithmetic/0046_wrong_owner.t) | Wrong owner. |
+| [tests/loader-png/chrm-arithmetic/0047_lsqa_arithmetic.t](../../tests/loader-png/chrm-arithmetic/0047_lsqa_arithmetic.t) | Lsqa forwards its loader arithmetic setting. |
+| [tests/loader-png/chrm-arithmetic/0048_lcms2_arithmetic.t](../../tests/loader-png/chrm-arithmetic/0048_lcms2_arithmetic.t) | lcms2 selection retains exact libpng cHRM arithmetic. |
+| [tests/loader-png/chrm-arithmetic/0049_colorsync_arithmetic.t](../../tests/loader-png/chrm-arithmetic/0049_colorsync_arithmetic.t) | colorsync selection retains exact libpng cHRM arithmetic. |
+| [tests/loader-png/chrm-arithmetic/0050_cone_positive_below.t](../../tests/loader-png/chrm-arithmetic/0050_cone_positive_below.t) | Cone positive below branch and exact value. |
+| [tests/loader-png/chrm-arithmetic/0051_cone_positive_above.t](../../tests/loader-png/chrm-arithmetic/0051_cone_positive_above.t) | Cone positive above branch and exact value. |
+| [tests/loader-png/chrm-arithmetic/0052_cone_negative_above.t](../../tests/loader-png/chrm-arithmetic/0052_cone_negative_above.t) | Cone negative above branch and exact value. |
+| [tests/loader-png/chrm-arithmetic/0053_ordinary_auto_p3.t](../../tests/loader-png/chrm-arithmetic/0053_ordinary_auto_p3.t) | Ordinary auto p3 independent numeric budget. |
+| [tests/loader-png/chrm-arithmetic/0054_ordinary_auto_p3_d50.t](../../tests/loader-png/chrm-arithmetic/0054_ordinary_auto_p3_d50.t) | Ordinary auto p3_d50 independent numeric budget. |
+| [tests/loader-png/chrm-arithmetic/0055_ordinary_auto_permutation.t](../../tests/loader-png/chrm-arithmetic/0055_ordinary_auto_permutation.t) | Ordinary auto permutation independent numeric budget. |
+| [tests/loader-png/chrm-arithmetic/0056_tiny_p3_auto.t](../../tests/loader-png/chrm-arithmetic/0056_tiny_p3_auto.t) | P3 auto nonneutral tiny exact bits. |
+| [tests/loader-png/chrm-arithmetic/0057_tiny_p3_double.t](../../tests/loader-png/chrm-arithmetic/0057_tiny_p3_double.t) | P3 double nonneutral tiny exact bits. |
+| [tests/loader-png/chrm-arithmetic/0058_tiny_p3_512bit.t](../../tests/loader-png/chrm-arithmetic/0058_tiny_p3_512bit.t) | P3 512bit nonneutral tiny exact bits. |
+| [tests/loader-png/chrm-arithmetic/0059_tiny_p3_d50_auto.t](../../tests/loader-png/chrm-arithmetic/0059_tiny_p3_d50_auto.t) | P3_d50 auto nonneutral tiny exact bits. |
+| [tests/loader-png/chrm-arithmetic/0060_tiny_p3_d50_double.t](../../tests/loader-png/chrm-arithmetic/0060_tiny_p3_d50_double.t) | P3_d50 double nonneutral tiny exact bits. |
+| [tests/loader-png/chrm-arithmetic/0061_tiny_p3_d50_512bit.t](../../tests/loader-png/chrm-arithmetic/0061_tiny_p3_d50_512bit.t) | P3_d50 512bit nonneutral tiny exact bits. |
+| [tests/loader-png/chrm-arithmetic/0062_loader_tiny_p3_auto.t](../../tests/loader-png/chrm-arithmetic/0062_loader_tiny_p3_auto.t) | Real loader p3 auto tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0063_loader_tiny_p3_double.t](../../tests/loader-png/chrm-arithmetic/0063_loader_tiny_p3_double.t) | Real loader p3 double tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0064_loader_tiny_p3_512bit.t](../../tests/loader-png/chrm-arithmetic/0064_loader_tiny_p3_512bit.t) | Real loader p3 512bit tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0065_loader_tiny_p3_d50_auto.t](../../tests/loader-png/chrm-arithmetic/0065_loader_tiny_p3_d50_auto.t) | Real loader p3_d50 auto tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0066_loader_tiny_p3_d50_double.t](../../tests/loader-png/chrm-arithmetic/0066_loader_tiny_p3_d50_double.t) | Real loader p3_d50 double tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0067_loader_tiny_p3_d50_512bit.t](../../tests/loader-png/chrm-arithmetic/0067_loader_tiny_p3_d50_512bit.t) | Real loader p3_d50 512bit tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0068_loader_tiny_env_double.t](../../tests/loader-png/chrm-arithmetic/0068_loader_tiny_env_double.t) | Loader shared resolver env_double tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0069_loader_tiny_env_512bit.t](../../tests/loader-png/chrm-arithmetic/0069_loader_tiny_env_512bit.t) | Loader shared resolver env_512bit tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0070_loader_tiny_env_auto.t](../../tests/loader-png/chrm-arithmetic/0070_loader_tiny_env_auto.t) | Loader shared resolver env_auto tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0071_loader_tiny_option_over_env.t](../../tests/loader-png/chrm-arithmetic/0071_loader_tiny_option_over_env.t) | Loader shared resolver option_over_env tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0072_loader_tiny_short_over_env.t](../../tests/loader-png/chrm-arithmetic/0072_loader_tiny_short_over_env.t) | Loader shared resolver short_over_env tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0073_loader_tiny_invalid_env.t](../../tests/loader-png/chrm-arithmetic/0073_loader_tiny_invalid_env.t) | Loader shared resolver invalid_env tiny frame bits. |
+| [tests/loader-png/chrm-arithmetic/0074_loader_tiny_empty_env.t](../../tests/loader-png/chrm-arithmetic/0074_loader_tiny_empty_env.t) | Loader shared resolver empty_env tiny frame bits. |
 
 <!-- test-plan-end -->

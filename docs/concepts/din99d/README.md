@@ -58,7 +58,7 @@ A policy such as [palette snap](../../encoder/palette-construction/snap-policy/R
 
 Revisions before `c26da16e7` omitted the XYZ correction and divided the color axes by 50. Their coordinates and distance geometry were not the current DIN99d representation. Recreate persisted DIN99d buffers or palette values from their original RGB/XYZ data; old values cannot be made current merely by attaching the same format tag. Generated palettes, nearest-color choices, diffusion, and snap decisions can change even with the same command line. This correction does not change the SIXEL wire format.
 
-The [conversion implementation](../../../src/colorspace.c) and [focused conversion tests](../../../tests/processing/colorspace/) cover independent forward values, inverse values, and byte packing. An independent reference in the figure generator also checks both samples in the paper's appendix; a round trip alone would not detect matching errors in both conversion directions.
+The [conversion implementation](../../../src/colorspace.c) and [focused conversion tests](../../../tests/color/space/) cover independent forward values, inverse values, and byte packing. An independent reference in the figure generator also checks both samples in the paper's appendix; a round trip alone would not detect matching errors in both conversion directions.
 
 ## What the image measurements show
 

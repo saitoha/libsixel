@@ -13,8 +13,12 @@ if test "${1:-}" = "--simulate"; then
 else
     repo_root=$(git rev-parse --show-toplevel)
     cd "$repo_root"
-    staged_files=$(git diff --cached --name-only --diff-filter=ACMRD)
-    unstaged_files=$(git diff --name-only --diff-filter=ACMRD)
+    # Only these pairs participate in the guard. Filtering inside Git keeps
+    # a large test-tree rename from overflowing the environment passed to awk.
+    staged_files=$(git diff --cached --name-only --diff-filter=ACMRD -- \
+        Makefile.am Makefile.in '*/Makefile.am' '*/Makefile.in')
+    unstaged_files=$(git diff --name-only --diff-filter=ACMRD -- \
+        Makefile.am Makefile.in '*/Makefile.am' '*/Makefile.in')
 fi
 
 STAGED_FILES=$staged_files UNSTAGED_FILES=$unstaged_files awk '

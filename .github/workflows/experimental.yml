@@ -128,15 +128,15 @@ jobs:
               # aggregate test binary. These emulated guests run existing
               # black-box contracts through target-native converter binaries.
               set -- \
-                cli/core/0002_version.t \
-                cli/core/0007_basic_stdin_snake.t \
-                cli/core/0019_basic_parallel_cli_override.t \
-                cli/sixel2png/0005_stdin_default_output.t \
-                codec/format/0009_gray8_output.t \
-                codec/output/0003_direct_sixel_encode.t \
-                quant/mapfile/0109_mapfile_export_act_256_color_count.t \
-                writer/png/0004_builtin_ihdr_crc.t \
-                security/issue/0012_issue220_dcs_signed_integer_overflow.t
+                cli/img2sixel/0002_version.t \
+                cli/img2sixel/0007_basic_stdin_snake.t \
+                cli/img2sixel/0019_basic_parallel_cli_override.t \
+                cli/sixel2png/0006_stdin_default_output.t \
+                cli/output-format/0006_gray8_output.t \
+                encoder/sixel-output/0003_direct_sixel_encode.t \
+                palette/mapfile-io/0109_mapfile_export_act_256_color_count.t \
+                writer/png/0007_builtin_ihdr_crc.t \
+                decoder/parser/0122_issue220_dcs_signed_integer_overflow.t
 
               rm -rf /tmp/libsixel-build
               mkdir /tmp/libsixel-build
@@ -214,15 +214,15 @@ jobs:
             # Keep the same target-executed black-box contracts as the Linux
             # emulation matrix while generic runners own the aggregate tests.
             set -- \
-              cli/core/0002_version.t \
-              cli/core/0007_basic_stdin_snake.t \
-              cli/core/0019_basic_parallel_cli_override.t \
-              cli/sixel2png/0005_stdin_default_output.t \
-              codec/format/0009_gray8_output.t \
-              codec/output/0003_direct_sixel_encode.t \
-              quant/mapfile/0109_mapfile_export_act_256_color_count.t \
-              writer/png/0004_builtin_ihdr_crc.t \
-              security/issue/0012_issue220_dcs_signed_integer_overflow.t
+              cli/img2sixel/0002_version.t \
+              cli/img2sixel/0007_basic_stdin_snake.t \
+              cli/img2sixel/0019_basic_parallel_cli_override.t \
+              cli/sixel2png/0006_stdin_default_output.t \
+              cli/output-format/0006_gray8_output.t \
+              encoder/sixel-output/0003_direct_sixel_encode.t \
+              palette/mapfile-io/0109_mapfile_export_act_256_color_count.t \
+              writer/png/0007_builtin_ihdr_crc.t \
+              decoder/parser/0122_issue220_dcs_signed_integer_overflow.t
             rm -rf /tmp/libsixel-build
             mkdir /tmp/libsixel-build
             if test '${{ matrix.buildtool }}' = autotools; then

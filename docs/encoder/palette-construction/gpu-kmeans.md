@@ -46,35 +46,35 @@ The exact numeric fixtures use representable integer or binary-fraction coordina
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| GK-01 | Weighted signed coordinates and fractional centroids across reduction tiles. | [tests/quant/palette/gpu_kmeans/0001_weighted_lloyd.t](../../../tests/quant/palette/gpu_kmeans/0001_weighted_lloyd.t) |
-| GK-02 | Half-up byte-center rounding. | [tests/quant/palette/gpu_kmeans/0002_byte_rounding.t](../../../tests/quant/palette/gpu_kmeans/0002_byte_rounding.t) |
-| GK-03 | Farthest-residual repair of an empty cluster. | [tests/quant/palette/gpu_kmeans/0003_empty_cluster.t](../../../tests/quant/palette/gpu_kmeans/0003_empty_cluster.t) |
-| GK-04 | Minimum iteration count despite zero movement. | [tests/quant/palette/gpu_kmeans/0004_iteration_floor.t](../../../tests/quant/palette/gpu_kmeans/0004_iteration_floor.t) |
-| GK-05 | Unsupported numeric input leaves centers and iteration output unchanged. | [tests/quant/palette/gpu_kmeans/0005_range_fallback_atomicity.t](../../../tests/quant/palette/gpu_kmeans/0005_range_fallback_atomicity.t) |
-| GK-06 | Invalid backend syntax leaves the previously accepted option intact. | [tests/quant/palette/gpu_kmeans/0006_option_atomicity.t](../../../tests/quant/palette/gpu_kmeans/0006_option_atomicity.t) |
-| GK-07 | An ordinary k-means request executes CPU by default. | [tests/quant/palette/gpu_kmeans/0007_default_cpu.t](../../../tests/quant/palette/gpu_kmeans/0007_default_cpu.t) |
-| GK-08 | Explicit CPU selection overrides a GPU environment setting. | [tests/quant/palette/gpu_kmeans/0008_cli_precedence.t](../../../tests/quant/palette/gpu_kmeans/0008_cli_precedence.t) |
-| GK-09 | AUTO executes an opted-in Metal iteration even below the palette-apply threshold. | [tests/quant/palette/gpu_kmeans/0009_gpu_dispatch.t](../../../tests/quant/palette/gpu_kmeans/0009_gpu_dispatch.t) |
-| GK-10 | Residual feedback retains CPU execution. | [tests/quant/palette/gpu_kmeans/0010_feedback_fallback.t](../../../tests/quant/palette/gpu_kmeans/0010_feedback_fallback.t) |
-| GK-11 | Active iteration snap retains CPU execution. | [tests/quant/palette/gpu_kmeans/0011_snap_fallback.t](../../../tests/quant/palette/gpu_kmeans/0011_snap_fallback.t) |
-| GK-12 | An unavailable Metal device retains CPU execution. | [tests/quant/palette/gpu_kmeans/0012_platform_fallback.t](../../../tests/quant/palette/gpu_kmeans/0012_platform_fallback.t) |
-| GK-14 | Convergence state is isolated between requests. | [tests/quant/palette/gpu_kmeans/0014_request_isolation.t](../../../tests/quant/palette/gpu_kmeans/0014_request_isolation.t) |
-| GK-15 | Native float Oklab palette generation executes Metal. | [tests/quant/palette/gpu_kmeans/0015_native_float_dispatch.t](../../../tests/quant/palette/gpu_kmeans/0015_native_float_dispatch.t) |
-| GK-16 | Compact and environment backend settings reach the same stored option and image output. | [tests/cli/options/regression/0168_quantize_kmeans_backend_image_regression.t](../../../tests/cli/options/regression/0168_quantize_kmeans_backend_image_regression.t) |
-| GK-17 | CLI OFF vetoes the GPU backend and a FORCE environment default. | [tests/quant/palette/gpu_kmeans/0016_policy_off.t](../../../tests/quant/palette/gpu_kmeans/0016_policy_off.t) |
-| GK-18 | FORCE rejects feedback without a byte median-cut fallback. | [tests/quant/palette/gpu_kmeans/0017_force_feedback.t](../../../tests/quant/palette/gpu_kmeans/0017_force_feedback.t) |
-| GK-19 | FORCE rejects an unavailable GPU without a byte median-cut fallback. | [tests/quant/palette/gpu_kmeans/0018_force_platform.t](../../../tests/quant/palette/gpu_kmeans/0018_force_platform.t) |
-| GK-20 | FORCE executes a supported GPU construction and application. | [tests/quant/palette/gpu_kmeans/0019_force_dispatch.t](../../../tests/quant/palette/gpu_kmeans/0019_force_dispatch.t) |
-| GK-21 | The default OFF policy vetoes an explicit GPU backend. | [tests/quant/palette/gpu_kmeans/0020_policy_default_off.t](../../../tests/quant/palette/gpu_kmeans/0020_policy_default_off.t) |
-| GK-22 | An AUTO environment default enables the GPU backend. | [tests/quant/palette/gpu_kmeans/0021_policy_env_auto.t](../../../tests/quant/palette/gpu_kmeans/0021_policy_env_auto.t) |
-| GK-23 | FORCE leaves an explicitly selected CPU k-means backend on CPU. | [tests/quant/palette/gpu_kmeans/0022_force_cpu_backend.t](../../../tests/quant/palette/gpu_kmeans/0022_force_cpu_backend.t) |
-| GK-24 | FORCE rejects active quantizer-iteration snap. | [tests/quant/palette/gpu_kmeans/0023_force_iteration_snap.t](../../../tests/quant/palette/gpu_kmeans/0023_force_iteration_snap.t) |
+| GK-01 | Weighted signed coordinates and fractional centroids across reduction tiles. | [tests/palette/kmeans/0001_weighted_lloyd.t](../../../tests/palette/kmeans/0001_weighted_lloyd.t) |
+| GK-02 | Half-up byte-center rounding. | [tests/palette/kmeans/0002_byte_rounding.t](../../../tests/palette/kmeans/0002_byte_rounding.t) |
+| GK-03 | Farthest-residual repair of an empty cluster. | [tests/palette/kmeans/0003_empty_cluster.t](../../../tests/palette/kmeans/0003_empty_cluster.t) |
+| GK-04 | Minimum iteration count despite zero movement. | [tests/palette/kmeans/0004_iteration_floor.t](../../../tests/palette/kmeans/0004_iteration_floor.t) |
+| GK-05 | Unsupported numeric input leaves centers and iteration output unchanged. | [tests/palette/kmeans/0005_range_fallback_atomicity.t](../../../tests/palette/kmeans/0005_range_fallback_atomicity.t) |
+| GK-06 | Invalid backend syntax leaves the previously accepted option intact. | [tests/palette/kmeans/0006_option_atomicity.t](../../../tests/palette/kmeans/0006_option_atomicity.t) |
+| GK-07 | An ordinary k-means request executes CPU by default. | [tests/palette/kmeans/0007_default_cpu.t](../../../tests/palette/kmeans/0007_default_cpu.t) |
+| GK-08 | Explicit CPU selection overrides a GPU environment setting. | [tests/palette/kmeans/0008_cli_precedence.t](../../../tests/palette/kmeans/0008_cli_precedence.t) |
+| GK-09 | AUTO executes an opted-in Metal iteration even below the palette-apply threshold. | [tests/palette/kmeans/0009_gpu_dispatch.t](../../../tests/palette/kmeans/0009_gpu_dispatch.t) |
+| GK-10 | Residual feedback retains CPU execution. | [tests/palette/kmeans/0010_feedback_fallback.t](../../../tests/palette/kmeans/0010_feedback_fallback.t) |
+| GK-11 | Active iteration snap retains CPU execution. | [tests/palette/kmeans/0011_snap_fallback.t](../../../tests/palette/kmeans/0011_snap_fallback.t) |
+| GK-12 | An unavailable Metal device retains CPU execution. | [tests/palette/kmeans/0012_platform_fallback.t](../../../tests/palette/kmeans/0012_platform_fallback.t) |
+| GK-14 | Convergence state is isolated between requests. | [tests/palette/kmeans/0014_request_isolation.t](../../../tests/palette/kmeans/0014_request_isolation.t) |
+| GK-15 | Native float Oklab palette generation executes Metal. | [tests/palette/kmeans/0015_native_float_dispatch.t](../../../tests/palette/kmeans/0015_native_float_dispatch.t) |
+| GK-16 | Compact and environment backend settings reach the same stored option and image output. | [tests/cli/quantizer-options/0152_quantize_kmeans_backend_image_regression.t](../../../tests/cli/quantizer-options/0152_quantize_kmeans_backend_image_regression.t) |
+| GK-17 | CLI OFF vetoes the GPU backend and a FORCE environment default. | [tests/palette/kmeans/0016_policy_off.t](../../../tests/palette/kmeans/0016_policy_off.t) |
+| GK-18 | FORCE rejects feedback without a byte median-cut fallback. | [tests/palette/kmeans/0017_force_feedback.t](../../../tests/palette/kmeans/0017_force_feedback.t) |
+| GK-19 | FORCE rejects an unavailable GPU without a byte median-cut fallback. | [tests/palette/kmeans/0018_force_platform.t](../../../tests/palette/kmeans/0018_force_platform.t) |
+| GK-20 | FORCE executes a supported GPU construction and application. | [tests/palette/kmeans/0019_force_dispatch.t](../../../tests/palette/kmeans/0019_force_dispatch.t) |
+| GK-21 | The default OFF policy vetoes an explicit GPU backend. | [tests/palette/kmeans/0020_policy_default_off.t](../../../tests/palette/kmeans/0020_policy_default_off.t) |
+| GK-22 | An AUTO environment default enables the GPU backend. | [tests/palette/kmeans/0021_policy_env_auto.t](../../../tests/palette/kmeans/0021_policy_env_auto.t) |
+| GK-23 | FORCE leaves an explicitly selected CPU k-means backend on CPU. | [tests/palette/kmeans/0022_force_cpu_backend.t](../../../tests/palette/kmeans/0022_force_cpu_backend.t) |
+| GK-24 | FORCE rejects active quantizer-iteration snap. | [tests/palette/kmeans/0023_force_iteration_snap.t](../../../tests/palette/kmeans/0023_force_iteration_snap.t) |
 
 ### Quality regression tests
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| GK-13 | An observed Metal execution meets MS-SSIM 0.98 at 256 colors. | [tests/quant/palette/gpu_kmeans/0013_gpu_quality.t](../../../tests/quant/palette/gpu_kmeans/0013_gpu_quality.t) |
+| GK-13 | An observed Metal execution meets MS-SSIM 0.98 at 256 colors. | [tests/palette/kmeans/0013_gpu_quality.t](../../../tests/palette/kmeans/0013_gpu_quality.t) |
 
 ### Coverage boundary
 

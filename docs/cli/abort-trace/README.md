@@ -144,12 +144,12 @@ These comparisons locate the intended niche: aborttrace supplies a small default
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| ABT-01 | An enabled build emits the abort-detected and trace-complete delimiters around an intentional `SIGABRT` path. | [tests/cli/aborttrace/0001_img2sixel_aborttrace.t](../../../tests/cli/aborttrace/0001_img2sixel_aborttrace.t) |
-| ABT-02 | `SIXEL_ABORT_TRACE=0` disables trace installation and output. | [tests/cli/aborttrace/0002_aborttrace_zero_disables.t](../../../tests/cli/aborttrace/0002_aborttrace_zero_disables.t) |
-| ABT-03 | An empty `SIXEL_ABORT_TRACE` value retains the enabled default. | [tests/cli/aborttrace/0003_aborttrace_empty_enables.t](../../../tests/cli/aborttrace/0003_aborttrace_empty_enables.t) |
-| ABT-04 | An invalid `SIXEL_ABORT_TRACE` value retains the enabled default. | [tests/cli/aborttrace/0004_aborttrace_invalid_enables.t](../../../tests/cli/aborttrace/0004_aborttrace_invalid_enables.t) |
-| ABT-05 | `img2sixel` applies the diagnostics suboption after parsing, the CLI disable overrides an enabled environment, and the disabled policy paths preserve equivalent SIXEL output and the quality floor. | [tests/cli/options/regression/0146_diagnostics_abort_trace_image_regression.t](../../../tests/cli/options/regression/0146_diagnostics_abort_trace_image_regression.t) |
-| ABT-06 | `sixel2png` applies the diagnostics suboption after parsing and passes the resolved disable value to the aborttrace consumer. | [tests/cli/sixel2png/0010_abort_trace_option.t](../../../tests/cli/sixel2png/0010_abort_trace_option.t) |
+| ABT-01 | An enabled build emits the abort-detected and trace-complete delimiters around an intentional `SIGABRT` path. | [tests/cli/signals/0001_img2sixel_aborttrace.t](../../../tests/cli/signals/0001_img2sixel_aborttrace.t) |
+| ABT-02 | `SIXEL_ABORT_TRACE=0` disables trace installation and output. | [tests/cli/signals/0002_aborttrace_zero_disables.t](../../../tests/cli/signals/0002_aborttrace_zero_disables.t) |
+| ABT-03 | An empty `SIXEL_ABORT_TRACE` value retains the enabled default. | [tests/cli/signals/0003_aborttrace_empty_enables.t](../../../tests/cli/signals/0003_aborttrace_empty_enables.t) |
+| ABT-04 | An invalid `SIXEL_ABORT_TRACE` value retains the enabled default. | [tests/cli/signals/0004_aborttrace_invalid_enables.t](../../../tests/cli/signals/0004_aborttrace_invalid_enables.t) |
+| ABT-05 | `img2sixel` applies the diagnostics suboption after parsing, the CLI disable overrides an enabled environment, and the disabled policy paths preserve equivalent SIXEL output and the quality floor. | [tests/cli/option-syntax/0076_diagnostics_abort_trace_image_regression.t](../../../tests/cli/option-syntax/0076_diagnostics_abort_trace_image_regression.t) |
+| ABT-06 | `sixel2png` applies the diagnostics suboption after parsing and passes the resolved disable value to the aborttrace consumer. | [tests/cli/sixel2png/0011_abort_trace_option.t](../../../tests/cli/sixel2png/0011_abort_trace_option.t) |
 | ABT-07 | The typed diagnostics registry keeps the public `abort_trace` key, compact `A` form, environment binding, help, manuals, completion, and consumer trace contract synchronized. | [tests/_static/sh/staticcheck-suboption-registry.sh](../../../tests/_static/sh/staticcheck-suboption-registry.sh) |
 
 ### Coverage boundary

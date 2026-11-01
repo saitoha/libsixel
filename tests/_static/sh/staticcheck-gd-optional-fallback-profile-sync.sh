@@ -2,6 +2,7 @@
 # Emit TAP for gd optional fallback profile script and TAP tests staying synchronized.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -23,7 +24,7 @@ missing=$tmpdir/missing.txt
 extra=$tmpdir/extra.txt
 status=0
 
-find "$gd_tests_dir" -type f -name '*.t' -print | awk -F '/' '
+sh "$source_files_helper" "$gd_tests_dir" --name '*.t'| awk -F '/' '
 /loader_gd_.*unsupported(_stdin)?_fallback_.*\.t$/ {
     print $NF
 }

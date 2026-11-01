@@ -20,7 +20,7 @@ The [ordered lifecycle targets](../ci/design.md#wic-installer-validation) instal
 
 All rows use the package entry and prerequisites above. Only 0013 has the architecture SKIP condition; every other completed row expects PASS and reports FAIL when its assertion is violated. Structural assertions do not execute repair, upgrade, downgrade, rollback or uninstall transactions.
 
-<!-- test-plan: tests/extension/wic-installer/????_*.ps1 -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-01.list -->
 
 | Test | Observation | Evidence limit |
 | --- | --- | --- |
@@ -45,7 +45,7 @@ All rows use the package entry and prerequisites above. Only 0013 has the archit
 
 All rows use the installed entry and prerequisites above. Once setup succeeds, each row expects PASS and has no per-case capability SKIP; unmet assertions FAIL. The whole-suite staging SKIP is described above. Held and released states are separate test files. Allocations are numbered within the selected acquisition call, after supporting parents have been created; each failure case checks that injection was actually consumed.
 
-<!-- test-plan: tests/extension/wic-installed/????_*.ps1 -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-02.list -->
 
 | Test | Observation | Evidence limit |
 | --- | --- | --- |
@@ -109,7 +109,7 @@ Both reciprocal static checks collect PowerShell `# Policy:` and `# Test-plan:` 
 
 These cases observe completed build artifacts without installing or registering them. A clean build and subsequent dependency-triggered rebuild are separate build validation phases. QL-01 reads `QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR`, an absolute path to a separate completed build configured from an empty directory without the extension option. The caller owns this freshness and configuration precondition; the test checks that `config.h` and the built `img2sixel` exist before asserting host-app absence. Missing input is SKIP, explicitly supplied but incomplete input is FAIL, and an unexpected host app is FAIL. The normal build directory is not used as a substitute: disabling an enabled build can retain its apps. Tests never remove these artifacts. The owning contracts are in the [Quick Look extension reference](../programs/quicklook-extension.md#test-coverage).
 
-<!-- test-plan: tests/extension/quicklook-build/????_*.t -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-03.list -->
 
 | Test | Observation |
 | --- | --- |
@@ -160,7 +160,7 @@ Validate enabled-to-disabled reconfiguration separately: start another empty dir
 
 The [package construction reference](../programs/quicklook-extension.md#installer-package-construction) owns the numeric distribution version, fixed locations, signing order, self-contained runtime dependencies and preflight boundaries. Normal enabled builds produce and expand the archive once. These observations consume that completed output and never install it. The default-off case uses `QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR` under the same shared preparation contract as the assembly case above; missing fixture input is SKIP, not absence evidence. Tests of signatures call the native Security API inside the observation, and the payload equality test hashes the actual expanded files. The payload observation includes manifest parsing and validation, full directory enumeration, ancestor and node `lstat` checks, file reads/hashes and inventory comparison; measure process startup and termination too. Record its first normal harness run and all repeats separately from instrumented diagnostics, together with concurrent work and host load, under the [timing policy](guide.md#test-timing). Archive expansion is a separately reported build operation, not a hidden test warmup. The publication correspondence case includes current archive and manifest reads/hashes plus a complete expanded-tree inventory and hashes inside its measured invocation. The evidence stores provenance, never a cached successful assertion. Run it together with the payload, metadata and signature cases; a cached expansion alone is not sufficient package evidence. Each bundle identity/content-type/version/executable test selects exactly one bundle. Each code architecture/dependency test selects exactly one executable; the helper rejects a missing or unknown subject. Read failures in an unrelated bundle must not fail that subject. Corrupt each subject independently and run both its owning test and the sibling-subject tests to prove failure isolation. The package-wide maximum deployment floor, Distribution/manifest architecture declaration and complete component policy sets remain relational observations. Mach-O observations parse all actual slices of their selected executable in process and independently compare the package architecture/minimum OS and system dependency closure, including the dynamic-loader path. Entitlement observations validate signatures and compare the actual entitlement dictionaries against the fixed sandbox contract. The non-system-volume test stops before any real receipt query.
 
-<!-- test-plan: tests/extension/quicklook-package/????_*.t -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-04.list -->
 
 | Test | Observation |
 | --- | --- |
@@ -239,7 +239,7 @@ The `quicklook-install` category checks the package management boundary without 
 
 Prepare staging once through each native build's normal install entry with an absolute private DESTDIR and a datadir containing spaces. Record that shared operation, host load, elapsed time and a before/after system app/receipt/user-state snapshot separately. Supply `QUICKLOOK_STAGE_DIR` (the resulting installers directory) and `QUICKLOOK_STAGE_SOURCE` (that build's package directory) to the native harness. The three byte comparisons remain inside their individual observations. Missing fixture variables skip; preparation failures must not be presented as successful staging. No stage operation is hidden inside each numbered observation.
 
-<!-- test-plan: tests/extension/quicklook-install/????_*.t -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-05.list -->
 
 | Test | Observation |
 | --- | --- |
@@ -261,7 +261,7 @@ For operation-level controls, use private roots and a separately compiled test e
 
 The build-tree observer consumes independent distribution expectations. These are real installed checks when explicitly selected through installcheck; normal check skips them. An absent enabled installation fails. A missing explicit user context skips only user observations and does not establish activation. Private roots and substituted OS queries are validation controls, not real Installer or GUI proof.
 
-<!-- test-plan: tests/extension/quicklook-installed/????_*.t -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-06.list -->
 
 The installed stage is independent of CLI selection, runs once, and uses already-built observers. No-context user cases are zero-plan SKIP in both drivers; supplied invalid contexts fail.
 
@@ -306,7 +306,7 @@ The installed stage is independent of CLI selection, runs once, and uses already
 
 Shared preparation and mutations are explicit and timed. These tests read independent live residual state or preserved process-boundary evidence, and do not execute real Installer or user operations. Missing prepared fixtures are SKIP, not proof of state transitions.
 
-<!-- test-plan: tests/extension/quicklook-lifecycle/????_*.t -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-07.list -->
 
 | Test | Observation |
 | --- | --- |
@@ -402,7 +402,7 @@ Shared preparation and mutations are explicit and timed. These tests read indepe
 
 These offline observations validate independent literal 16x12 red/blue PNG content and narrow rejection controls. They exercise the same output readers used after explicit OS generation, without invoking Quick Look, changing a cache or proving provider selection. Live preview and thumbnail remain separate manual observations with the attribution limits documented in the [extension policy](../programs/quicklook-extension.md#explicit-rendering-diagnostics).
 
-<!-- test-plan: tests/extension/quicklook-render/*.t -->
+<!-- test-plan: @tests/_support/test-plans/companion-programs-coverage-08.list -->
 
 | Test | Observation |
 | --- | --- |

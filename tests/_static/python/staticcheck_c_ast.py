@@ -82,7 +82,7 @@ def call_arguments(unit: SourceUnit, node) -> str:
 
 class TimelineLogPathRule(Rule):
     name = "timeline-log-path-copy"
-    path_prefixes = ("tests/processing/timeline/",)
+    path_prefixes = ("tests/frame/timeline/",)
 
     def check(self, unit: SourceUnit) -> Iterable[Finding]:
         findings: List[Finding] = []

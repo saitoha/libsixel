@@ -3,6 +3,7 @@
 # Policy: docs/cli/design-policy.md
 
 set -eux
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 src_dir=$src_root/src
@@ -26,8 +27,7 @@ if test ! -d "$src_dir"; then
 fi
 
 # shellcheck disable=SC2016
-matches=$(find "$src_dir" -maxdepth 1 -type f -name '*.[ch]' \
-    ! -name 'compat_stub.*' -print0 | \
+matches=$(sh "$source_files_helper" "$src_dir" --max-depth 1 --name '*.[ch]' --exclude-name 'compat_stub.*' --null| \
     xargs -0 awk '
 # Skip complete comment/code spans without rescanning each character.
 function strip_comments(line, code, block_start, line_start, block_end) {
@@ -119,13 +119,11 @@ test -z "$registered_matches" || {
 }
 
 # Private test environment names belong only to the typed broker in options.c.
-internal_name_matches=$(find "$src_dir" "$converters_dir" -maxdepth 1 \
-    -type f \( -name '*.c' -o -name '*.h' \) \
-    ! -path "$src_dir/options.c" -exec awk '
+internal_name_matches=$(sh "$source_files_helper" "$src_dir" "$converters_dir" --max-depth 1 --name '*.c' --name '*.h' --exclude-path "$src_dir/options.c" --exec awk '
 /_SIXEL_TEST_[A-Z0-9_]+/ {
     print FILENAME ":" FNR ":" $0
 }
-' {} +)
+')
 
 test -z "$internal_name_matches" || {
     echo "not ok 1 - src files avoid direct getenv() calls"

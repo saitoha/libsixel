@@ -3,6 +3,7 @@
 # Policy: docs/testing/guide.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 tests_root=$src_root/tests
@@ -15,10 +16,7 @@ test -d "$tests_root" || {
     exit 1
 }
 
-find "$tests_root" \
-    \( -path "$tests_root/_artifacts" -o -path "$tests_root/data" \) \
-        -prune -o \
-    -type f -name '*.t' -exec awk '
+sh "$source_files_helper" "$tests_root" --exclude-path "$tests_root/_artifacts" --exclude-path "$tests_root/data" --name '*.t' --exec awk '
 FNR == 1 {
     heredoc_delimiter = ""
 }
@@ -46,7 +44,7 @@ heredoc_delimiter != "" {
 END {
     exit failed != 0 ? 1 : 0
 }
-' {} + || {
+'|| {
     echo "not ok 1 - shell TAP tests avoid for and until loops"
     exit 1
 }

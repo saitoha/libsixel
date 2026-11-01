@@ -7,7 +7,7 @@ src_root=${1:-$(cd "$(dirname "$0")/../../.." && pwd)}
 build_root=${2:-$src_root}
 run_staticcheck=${3:-${RUN_STATICCHECK:-0}}
 
-set -- "$src_root"/tests/loader/libwebp/*.t
+set -- "$src_root"/tests/loader/webp/*.t
 test -f "$1" || {
     printf '%s\n' 'no loader/libwebp TAP tests were found' >&2
     exit 1
@@ -136,7 +136,7 @@ done
 
 case "$run_staticcheck" in
     1|yes|true)
-        libwebp_tests=$(printf '%s ' "$src_root"/tests/loader/libwebp/*.t)
+        libwebp_tests=$(printf '%s ' "$src_root"/tests/loader/webp/*.t)
         case "${libwebp_tests}" in
             '')
                 ;;
@@ -148,7 +148,7 @@ case "$run_staticcheck" in
                     printf 'FAIL staticcheck-test-plan-single (loader/libwebp)\n' >&2
                 fi
                 if command -v shellcheck >/dev/null 2>&1; then
-                    if ! shellcheck "$src_root"/tests/loader/libwebp/*.t; then
+                    if ! shellcheck "$src_root"/tests/loader/webp/*.t; then
                         failed=$((failed + 1))
                         status=1
                         printf 'FAIL shellcheck (loader/libwebp/*.t)\n' >&2

@@ -2,6 +2,7 @@
 # Emit TAP for test_runner calls that require dllexport in visible headers.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -24,7 +25,7 @@ headers_file=$tmpdir/headers.txt
 
 printf '%s\n' "$header_file" > "$headers_file"
 
-find "$tests_root" -type f -name '*.c' -exec awk '
+sh "$source_files_helper" "$tests_root" --name '*.c' --exec awk '
 {
     if (match($0, /^[[:space:]]*#include[[:space:]]+"src\/[A-Za-z0-9_.\/-]+\.h"/)) {
         token = substr($0, RSTART, RLENGTH)
@@ -33,7 +34,7 @@ find "$tests_root" -type f -name '*.c' -exec awk '
         print token
     }
 }
-' {} + | LC_ALL=C sort -u | awk -v root="$src_root" '
+'| LC_ALL=C sort -u | awk -v root="$src_root" '
 {
     printf "%s/%s\n", root, $0
 }
@@ -47,7 +48,7 @@ tr '\n' '\0' < "$headers_file" | xargs -0 awk \
     > "$decls_file"
 LC_ALL=C sort -u "$decls_file" -o "$decls_file"
 
-find "$tests_root" -type f -name '*.c' -exec awk '
+sh "$source_files_helper" "$tests_root" --name '*.c' --exec awk '
 {
     line = $0
     while (match(line, /[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(/)) {
@@ -65,7 +66,7 @@ find "$tests_root" -type f -name '*.c' -exec awk '
         line = substr(line, RSTART + RLENGTH)
     }
 }
-' {} + | LC_ALL=C sort -u > "$calls_file"
+'| LC_ALL=C sort -u > "$calls_file"
 
 if test ! -s "$calls_file"; then
     echo "ok 1 # SKIP no callable symbol references found in tests"

@@ -2,6 +2,7 @@
 # Emit TAP for palette component boundary checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -57,20 +58,12 @@ else
     fi
 fi
 
-find "$src_root/include" "$src_root/src" "$src_root/tests" "$src_root/perl" \
-    "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" \
-    -type f \( -name '*.c' -o -name '*.h' -o -name '*.idl' \
-        -o -name '*.pm' \) \
-    ! -path "$src_root/src/palette.c" \
-    ! -path "$src_root/src/palette-*.c" \
-    ! -path "$src_root/src/palette-private.h" \
-    ! -path "$src_root/tests/_static/sh/staticcheck-palette-component-boundary.sh" \
-    -exec awk '
+sh "$source_files_helper" "$src_root/include" "$src_root/src" "$src_root/tests" "$src_root/perl" "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" --name '*.c' --name '*.h' --name '*.idl' --name '*.pm' --exclude-path "$src_root/src/palette.c" --exclude-path "$src_root/src/palette-*.c" --exclude-path "$src_root/src/palette-private.h" --exclude-path "$src_root/tests/_static/sh/staticcheck-palette-component-boundary.sh" --exec awk '
     /sixel_palette_(new|ref|unref|resize|set_entries|set_entries_float32|copy_entries_8bit|copy_entries_float32)[[:space:]]*\(/ ||
     /sixel_dither_get_quantized_palette[[:space:]]*\(/ {
         print FILENAME ":" FNR ":" $0
     }
-    ' {} + > "$retired_uses"
+    '> "$retired_uses"
 
 if test -s "$retired_uses"; then
     echo "not ok 2 - retired public palette APIs are absent"
@@ -80,17 +73,11 @@ else
     echo "ok 2 - retired public palette APIs are absent"
 fi
 
-find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" \
-    -type f \( -name '*.c' -o -name '*.h' -o -name '*.inc.c' \) \
-    ! -path "$src_root/src/palette.c" \
-    ! -path "$src_root/src/palette-*.c" \
-    ! -path "$src_root/src/palette-private.h" \
-    -exec awk '
+sh "$source_files_helper" "$src_root/src" "$src_root/include" "$src_root/tests" "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" --name '*.c' --name '*.h' --name '*.inc.c' --exclude-path "$src_root/src/palette.c" --exclude-path "$src_root/src/palette-*.c" --exclude-path "$src_root/src/palette-private.h" --exec awk '
     /(^|[^A-Za-z0-9_])([A-Za-z0-9_]*palette|ppalette)->(entries|entries_float32|entries_size|entries_float32_size|entry_count|requested_colors|original_colors|depth|float_depth|allocator|lookup_policy|dither_policy|input_pixels|method_for_largest|method_for_rep|quality_mode|force_palette|use_reversible|quantize_model|final_merge|final_merge_mode|lut_policy)([^A-Za-z0-9_]|$)/ {
         print FILENAME ":" FNR ":" $0
     }
-    ' {} + > "$field_uses"
+    '> "$field_uses"
 
 if test -s "$field_uses"; then
     echo "not ok 3 - palette fields are private to palette implementation family"
@@ -128,11 +115,10 @@ else
     fi
 fi
 
-if test ! -d "$src_root/tests/quant/palette"; then
-    echo "ok 5 # SKIP missing tests/quant/palette"
+if test ! -d "$src_root/tests"; then
+    echo "ok 5 # SKIP missing tests"
 else
-    find "$src_root/tests/quant/palette" -type f -name '*.c' \
-        -exec awk '
+    sh "$source_files_helper" "$src_root/tests" --name '*.c' --exec awk '
         /palette_view\.entry_count[[:space:]]*>[[:space:]]*\(size_t\)[[:space:]]*UINT_MAX/ {
             print FILENAME ":" FNR ": always-false entry_count upper bound: " $0
         }
@@ -140,7 +126,7 @@ else
         $0 !~ /\(size_t\)[[:space:]]*palette_view\.entry_count[[:space:]]*\*/ {
             print FILENAME ":" FNR ": entry_count size math must widen first: " $0
         }
-        ' {} + > "$view_size_violations"
+        '> "$view_size_violations"
     if test -s "$view_size_violations"; then
         echo "not ok 5 - palette view size contracts avoid type-limit traps"
         sed 's/^/# palette view size contract: /' "$view_size_violations"

@@ -2,6 +2,7 @@
 # Emit TAP for dither backend-dispatch remnants in policy/hot-loop paths.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -53,8 +54,7 @@ do
     ' "$path"
 done >> "$bad"
 
-find "$src_root/src" -maxdepth 1 -type f -name 'dither-policy-*.c' \
-    -print | LC_ALL=C sort | while IFS= read -r path
+sh "$source_files_helper" "$src_root/src" --max-depth 1 --name 'dither-policy-*.c'| LC_ALL=C sort | while IFS= read -r path
 do
     awk '
     /#include "dither-fixed-8bit.h"/ {

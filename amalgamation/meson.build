@@ -9,21 +9,21 @@ amalgamation_header_depends = [completion_embed]
 # cannot reuse stale code from a source omitted by the explicit lists below.
 # Meson 0.59 has no fs.glob().
 amalgamation_discovered_depends_text = run_command(
-  sh,
-  '-c',
-  'set -eu; cd "$1"; ' +
-  'find src tests converters assessment gdk-pixbuf-loader include ' +
-  '-type d -name _artifacts -prune -o -type f ' +
-  '\\( -name "*.c" -o -name "*.h" -o -name "*.m" \\) -print | ' +
-  'LC_ALL=C sort',
-  'meson-amalgamation-discovered-depends',
-  meson.project_source_root(),
+  import('python').find_installation(),
+  meson.project_source_root() / 'tests/_static/python/source_files.py',
+  meson.project_source_root() / 'src',
+  meson.project_source_root() / 'tests',
+  meson.project_source_root() / 'converters',
+  meson.project_source_root() / 'assessment',
+  meson.project_source_root() / 'gdk-pixbuf-loader',
+  meson.project_source_root() / 'include',
+  '--name', '*.c', '--name', '*.h', '--name', '*.m',
   check: true,
 ).stdout().strip()
 amalgamation_discovered_depends = []
 if amalgamation_discovered_depends_text != ''
   foreach discovered_depend : amalgamation_discovered_depends_text.split('\n')
-    amalgamation_discovered_depends += files('../' + discovered_depend)
+    amalgamation_discovered_depends += files(discovered_depend)
   endforeach
 endif
 

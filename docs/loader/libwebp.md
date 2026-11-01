@@ -29,6 +29,6 @@ ICC extraction, Exif orientation, transparent output, and background composition
 
 ## Implementation and validation
 
-[`loader-libwebp.c`](../../src/loader-libwebp.c) owns static-path selection, metadata extraction, animation iteration/cache, output-frame bounds, and normalization. The [libwebp test category](../../tests/loader/libwebp/) covers still/animated VP8 and VP8L, delays and finite loops, start frames, frame limits, metadata bounds, orientation, CMS, alpha, and failure cleanup. Some tests assert exact streams or metadata; LSQA cases establish only their quality thresholds. Disabled codec/demux support produces skips rather than evidence of working animation.
+[`loader-libwebp.c`](../../src/loader-libwebp.c) owns static-path selection, metadata extraction, animation iteration/cache, output-frame bounds, and normalization. The [libwebp test category](../../tests/loader/webp/) covers still/animated VP8 and VP8L, delays and finite loops, start frames, frame limits, metadata bounds, orientation, CMS, alpha, and failure cleanup. Some tests assert exact streams or metadata; LSQA cases establish only their quality thresholds. Disabled codec/demux support produces skips rather than evidence of working animation.
 
 The [loader manager](README.md) controls cross-backend fallback. Once this adapter has delivered a frame, a later decode or callback error terminates the load; it cannot safely replace the partial animation with another loader's output.

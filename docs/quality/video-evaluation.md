@@ -120,44 +120,44 @@ The APNG fixture uses `tests/data/inputs/snake_16.png`, its horizontal reflectio
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| VQ-01 | Per-frame reports contain ordered frames, byte totals and distribution coverage. | [tests/cli/lsqa_video/0001_frame_report.t](../../tests/cli/lsqa_video/0001_frame_report.t) |
-| VQ-02 | No-output frames preserve the canvas and cost zero bytes. | [tests/cli/lsqa_video/0002_held_frame.t](../../tests/cli/lsqa_video/0002_held_frame.t) |
-| VQ-03 | Explicit logical frames can group multiple complete packets. | [tests/cli/lsqa_video/0003_grouped_packets.t](../../tests/cli/lsqa_video/0003_grouped_packets.t) |
-| VQ-04 | Temporal means use duration weights, including stale display intervals. | [tests/cli/lsqa_video/0004_duration_weighted_summary.t](../../tests/cli/lsqa_video/0004_duration_weighted_summary.t) |
-| VQ-05 | Map sample counts and frame offsets match the image geometry. | [tests/cli/lsqa_video/0005_map_stream.t](../../tests/cli/lsqa_video/0005_map_stream.t) |
-| VQ-11 | Exported map values reproduce the distribution within the float32 rounding budget. | [tests/cli/lsqa_video/0014_map_distribution.t](../../tests/cli/lsqa_video/0014_map_distribution.t) |
-| VQ-06 | Rational reference FPS overrides loader durations. | [tests/cli/lsqa_video/0009_reference_fps.t](../../tests/cli/lsqa_video/0009_reference_fps.t) |
-| VQ-07 | Explicit zero threshold overrides the environment. | [tests/cli/lsqa_video/0010_threshold_cli_over_environment.t](../../tests/cli/lsqa_video/0010_threshold_cli_over_environment.t) |
-| VQ-08 | Caller-owned assessment maps expose the analytic uniform-field error. | [tests/processing/assessment/0034_scielab_map_output.t](../../tests/processing/assessment/0034_scielab_map_output.t) |
-| VQ-09 | Home-framed animation preserves previous paint across register redefinition. | [tests/processing/decoder/0087_animation_palette_carry.t](../../tests/processing/decoder/0087_animation_palette_carry.t) |
-| VQ-12 | Animation uses the ordinary decoder initial palette and register. | [tests/processing/decoder/0090_animation_default_palette.t](../../tests/processing/decoder/0090_animation_default_palette.t) |
-| VQ-10 | Clear packets reset the display but retain color definitions. | [tests/processing/decoder/0088_animation_clear_canvas.t](../../tests/processing/decoder/0088_animation_clear_canvas.t) |
-| VQ-13 | Clock samples every reference/display intersection and integrates quality by duration. | [tests/cli/lsqa_video/0015_clock_intersections.t](../../tests/cli/lsqa_video/0015_clock_intersections.t) |
-| VQ-14 | A delayed baseline includes the initial background in quality and duration accounting. | [tests/cli/lsqa_video/0016_clock_initial_background.t](../../tests/cli/lsqa_video/0016_clock_initial_background.t) |
-| VQ-15 | Updates at the reference end cost bytes without extending or improving the score. | [tests/cli/lsqa_video/0017_clock_late_bytes.t](../../tests/cli/lsqa_video/0017_clock_late_bytes.t) |
-| VQ-16 | Equal-time updates are applied in order before the next positive-duration segment. | [tests/cli/lsqa_video/0018_clock_simultaneous_updates.t](../../tests/cli/lsqa_video/0018_clock_simultaneous_updates.t) |
-| VQ-17 | Clock map offsets and lengths index one plane per segment. | [tests/cli/lsqa_video/0019_clock_map_stream.t](../../tests/cli/lsqa_video/0019_clock_map_stream.t) |
-| VQ-18 | Report persistence agrees with an independent integral from exported maps. | [tests/cli/lsqa_video/0024_persistence_report.t](../../tests/cli/lsqa_video/0024_persistence_report.t) |
-| VQ-19 | Explicit zero ramp overrides the environment and applies full excess-error weight. | [tests/cli/lsqa_video/0025_persistence_cli_zero.t](../../tests/cli/lsqa_video/0025_persistence_cli_zero.t) |
-| VQ-20 | A short residual receives a smaller mean weight than an equally large persistent residual. | [tests/processing/assessment/0036_persistence_duration_weighting.t](../../tests/processing/assessment/0036_persistence_duration_weighting.t) |
-| VQ-21 | Equality resets only the corresponding pixel age, retaining other pixel histories. | [tests/processing/assessment/0037_persistence_pixel_reset.t](../../tests/processing/assessment/0037_persistence_pixel_reset.t) |
-| VQ-22 | Splitting a constant residual interval leaves the time-integrated score unchanged. | [tests/processing/assessment/0038_persistence_partition_invariance.t](../../tests/processing/assessment/0038_persistence_partition_invariance.t) |
+| VQ-01 | Per-frame reports contain ordered frames, byte totals and distribution coverage. | [tests/cli/lsqa-video/0001_frame_report.t](../../tests/cli/lsqa-video/0001_frame_report.t) |
+| VQ-02 | No-output frames preserve the canvas and cost zero bytes. | [tests/cli/lsqa-video/0002_held_frame.t](../../tests/cli/lsqa-video/0002_held_frame.t) |
+| VQ-03 | Explicit logical frames can group multiple complete packets. | [tests/cli/lsqa-video/0003_grouped_packets.t](../../tests/cli/lsqa-video/0003_grouped_packets.t) |
+| VQ-04 | Temporal means use duration weights, including stale display intervals. | [tests/cli/lsqa-video/0004_duration_weighted_summary.t](../../tests/cli/lsqa-video/0004_duration_weighted_summary.t) |
+| VQ-05 | Map sample counts and frame offsets match the image geometry. | [tests/cli/lsqa-video/0005_map_stream.t](../../tests/cli/lsqa-video/0005_map_stream.t) |
+| VQ-11 | Exported map values reproduce the distribution within the float32 rounding budget. | [tests/cli/lsqa-video/0014_map_distribution.t](../../tests/cli/lsqa-video/0014_map_distribution.t) |
+| VQ-06 | Rational reference FPS overrides loader durations. | [tests/cli/lsqa-video/0009_reference_fps.t](../../tests/cli/lsqa-video/0009_reference_fps.t) |
+| VQ-07 | Explicit zero threshold overrides the environment. | [tests/cli/lsqa-video/0010_threshold_cli_over_environment.t](../../tests/cli/lsqa-video/0010_threshold_cli_over_environment.t) |
+| VQ-08 | Caller-owned assessment maps expose the analytic uniform-field error. | [tests/assessment/scielab/0009_scielab_map_output.t](../../tests/assessment/scielab/0009_scielab_map_output.t) |
+| VQ-09 | Home-framed animation preserves previous paint across register redefinition. | [tests/decoder/parser/0097_animation_palette_carry.t](../../tests/decoder/parser/0097_animation_palette_carry.t) |
+| VQ-12 | Animation uses the ordinary decoder initial palette and register. | [tests/decoder/parser/0100_animation_default_palette.t](../../tests/decoder/parser/0100_animation_default_palette.t) |
+| VQ-10 | Clear packets reset the display but retain color definitions. | [tests/decoder/parser/0098_animation_clear_canvas.t](../../tests/decoder/parser/0098_animation_clear_canvas.t) |
+| VQ-13 | Clock samples every reference/display intersection and integrates quality by duration. | [tests/cli/lsqa-video/0015_clock_intersections.t](../../tests/cli/lsqa-video/0015_clock_intersections.t) |
+| VQ-14 | A delayed baseline includes the initial background in quality and duration accounting. | [tests/cli/lsqa-video/0016_clock_initial_background.t](../../tests/cli/lsqa-video/0016_clock_initial_background.t) |
+| VQ-15 | Updates at the reference end cost bytes without extending or improving the score. | [tests/cli/lsqa-video/0017_clock_late_bytes.t](../../tests/cli/lsqa-video/0017_clock_late_bytes.t) |
+| VQ-16 | Equal-time updates are applied in order before the next positive-duration segment. | [tests/cli/lsqa-video/0018_clock_simultaneous_updates.t](../../tests/cli/lsqa-video/0018_clock_simultaneous_updates.t) |
+| VQ-17 | Clock map offsets and lengths index one plane per segment. | [tests/cli/lsqa-video/0019_clock_map_stream.t](../../tests/cli/lsqa-video/0019_clock_map_stream.t) |
+| VQ-18 | Report persistence agrees with an independent integral from exported maps. | [tests/cli/lsqa-video/0024_persistence_report.t](../../tests/cli/lsqa-video/0024_persistence_report.t) |
+| VQ-19 | Explicit zero ramp overrides the environment and applies full excess-error weight. | [tests/cli/lsqa-video/0025_persistence_cli_zero.t](../../tests/cli/lsqa-video/0025_persistence_cli_zero.t) |
+| VQ-20 | A short residual receives a smaller mean weight than an equally large persistent residual. | [tests/assessment/persistence/0001_persistence_duration_weighting.t](../../tests/assessment/persistence/0001_persistence_duration_weighting.t) |
+| VQ-21 | Equality resets only the corresponding pixel age, retaining other pixel histories. | [tests/assessment/persistence/0002_persistence_pixel_reset.t](../../tests/assessment/persistence/0002_persistence_pixel_reset.t) |
+| VQ-22 | Splitting a constant residual interval leaves the time-integrated score unchanged. | [tests/assessment/persistence/0003_persistence_partition_invariance.t](../../tests/assessment/persistence/0003_persistence_partition_invariance.t) |
 
 ### Defensive and malformed-input tests
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| VQD-01 | A malformed late packet preserves an existing report. | [tests/cli/lsqa_video/0006_late_error_preserves_report.t](../../tests/cli/lsqa_video/0006_late_error_preserves_report.t) |
-| VQD-02 | A shorter target cannot silently truncate reference evaluation. | [tests/cli/lsqa_video/0007_frame_count_mismatch.t](../../tests/cli/lsqa_video/0007_frame_count_mismatch.t) |
-| VQD-03 | Duplicate timeline members are invalid. | [tests/cli/lsqa_video/0008_duplicate_timeline_key.t](../../tests/cli/lsqa_video/0008_duplicate_timeline_key.t) |
-| VQD-04 | Nonfinite coverage thresholds are rejected. | [tests/cli/lsqa_video/0011_nonfinite_threshold.t](../../tests/cli/lsqa_video/0011_nonfinite_threshold.t) |
-| VQD-05 | Map export requires its report index. | [tests/cli/lsqa_video/0012_map_requires_report.t](../../tests/cli/lsqa_video/0012_map_requires_report.t) |
-| VQD-06 | Timeline and FPS overrides cannot conflict. | [tests/cli/lsqa_video/0013_timeline_fps_conflict.t](../../tests/cli/lsqa_video/0013_timeline_fps_conflict.t) |
-| VQD-07 | An undersized map cannot be written or reported as valid. | [tests/processing/assessment/0035_scielab_map_capacity.t](../../tests/processing/assessment/0035_scielab_map_capacity.t) |
-| VQD-08 | A malformed next packet invalidates the sequence. | [tests/processing/decoder/0089_animation_malformed_tail.t](../../tests/processing/decoder/0089_animation_malformed_tail.t) |
-| VQD-09 | An unmapped capture tail cannot silently escape clock validation. | [tests/cli/lsqa_video/0020_clock_unmapped_tail.t](../../tests/cli/lsqa_video/0020_clock_unmapped_tail.t) |
-| VQD-10 | Availability times cannot run backwards. | [tests/cli/lsqa_video/0021_clock_time_regression.t](../../tests/cli/lsqa_video/0021_clock_time_regression.t) |
-| VQD-11 | Availability byte boundaries cannot split a DCS packet. | [tests/cli/lsqa_video/0022_clock_split_packet.t](../../tests/cli/lsqa_video/0022_clock_split_packet.t) |
-| VQD-12 | Clock alignment requires an explicit display timeline. | [tests/cli/lsqa_video/0023_clock_requires_timeline.t](../../tests/cli/lsqa_video/0023_clock_requires_timeline.t) |
+| VQD-01 | A malformed late packet preserves an existing report. | [tests/cli/lsqa-video/0006_late_error_preserves_report.t](../../tests/cli/lsqa-video/0006_late_error_preserves_report.t) |
+| VQD-02 | A shorter target cannot silently truncate reference evaluation. | [tests/cli/lsqa-video/0007_frame_count_mismatch.t](../../tests/cli/lsqa-video/0007_frame_count_mismatch.t) |
+| VQD-03 | Duplicate timeline members are invalid. | [tests/cli/lsqa-video/0008_duplicate_timeline_key.t](../../tests/cli/lsqa-video/0008_duplicate_timeline_key.t) |
+| VQD-04 | Nonfinite coverage thresholds are rejected. | [tests/cli/lsqa-video/0011_nonfinite_threshold.t](../../tests/cli/lsqa-video/0011_nonfinite_threshold.t) |
+| VQD-05 | Map export requires its report index. | [tests/cli/lsqa-video/0012_map_requires_report.t](../../tests/cli/lsqa-video/0012_map_requires_report.t) |
+| VQD-06 | Timeline and FPS overrides cannot conflict. | [tests/cli/lsqa-video/0013_timeline_fps_conflict.t](../../tests/cli/lsqa-video/0013_timeline_fps_conflict.t) |
+| VQD-07 | An undersized map cannot be written or reported as valid. | [tests/assessment/scielab/0010_scielab_map_capacity.t](../../tests/assessment/scielab/0010_scielab_map_capacity.t) |
+| VQD-08 | A malformed next packet invalidates the sequence. | [tests/decoder/parser/0099_animation_malformed_tail.t](../../tests/decoder/parser/0099_animation_malformed_tail.t) |
+| VQD-09 | An unmapped capture tail cannot silently escape clock validation. | [tests/cli/lsqa-video/0020_clock_unmapped_tail.t](../../tests/cli/lsqa-video/0020_clock_unmapped_tail.t) |
+| VQD-10 | Availability times cannot run backwards. | [tests/cli/lsqa-video/0021_clock_time_regression.t](../../tests/cli/lsqa-video/0021_clock_time_regression.t) |
+| VQD-11 | Availability byte boundaries cannot split a DCS packet. | [tests/cli/lsqa-video/0022_clock_split_packet.t](../../tests/cli/lsqa-video/0022_clock_split_packet.t) |
+| VQD-12 | Clock alignment requires an explicit display timeline. | [tests/cli/lsqa-video/0023_clock_requires_timeline.t](../../tests/cli/lsqa-video/0023_clock_requires_timeline.t) |
 
 The quality floor in the normal fixture guards gross reconstruction damage. These tests do not establish a subjective persistence threshold, a perceptual benefit from feedback, or real-time playback performance.

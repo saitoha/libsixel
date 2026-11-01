@@ -72,6 +72,8 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
     build-aux/dependency-bootstrap.am \
     build-aux/test-runner-link.am \
     build-aux/clean-test-logs.sh \
+    build-aux/list-tree-files.sh \
+    build-aux/list-test-reports.sh \
     tools/generate_cms_quality_references.py \
     tools/generate_color_fixtures.py \
     tools/generate_palette_space_fixtures.py \
@@ -1006,6 +1008,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	tools/generate_png_cms_matrix.py \
 	tools/generate_palette_pipeline_suite_fixtures.py \
 	tools/gen_perl_constants.pl \
+	tools/gen_ruby_constants.rb \
 	tools/gen_perl_attach.pl \
 	tools/check_lookup_policy_measurements.py \
 	tools/check_merge_policy_measurements.py \
@@ -1761,3 +1764,24 @@ migration-restore-quicklook:
 migration-verify-quicklook:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension migration-verify-quicklook
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@echo "Quick Look extension is disabled" >&2; exit 2
+
+# Perl bindings have no recursive Automake subdirectory.
+EXTRA_DIST += perl/Build.PL \
+    perl/Changes \
+    perl/MANIFEST \
+    perl/MANIFEST.SKIP \
+    perl/META.json \
+    perl/META.yml \
+    perl/Makefile.PL \
+    perl/README.md \
+    perl/builder/MyBuilder.pm \
+    perl/cpanfile \
+    perl/images/egret.jpg \
+    perl/images/egret.six \
+    perl/lib/Image/LibSIXEL.pm \
+    perl/lib/Image/LibSIXEL/Constants.pm \
+    perl/lib/Image/LibSIXEL/Decoder.pm \
+    perl/lib/Image/LibSIXEL/Encoder.pm \
+    perl/lib/Image/LibSIXEL/GeneratedAttach.pm \
+    perl/minil.toml \
+    perl/t/libsixel.t

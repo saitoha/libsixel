@@ -2,6 +2,7 @@
 # Run static checks in deterministic order and present concise plain logs.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 build_root=${2:-}
@@ -285,7 +286,7 @@ EOF
         -I"$src_root" -I"$src_root/tests" \
         -I"$src_root/src" -I"$src_root/include" \
         -std=c99 -Wall -Wextra -Wpedantic -Werror \
-        -c "$src_root/tests/processing/threadpool/0001_threadpool_service.c" \
+        -c "$src_root/tests/platform/threadpool/0001_threadpool_service.c" \
         -o "$object_path"
 }
 
@@ -293,9 +294,7 @@ EOF
 run_staticcheck_threadpool_vtbl_boundary() {
     violations=$tmpdir/threadpool-vtbl-boundary.txt
 
-    find "$src_root/src" "$src_root/tests/processing/threadpool" \
-        -type f \( -name '*.c' -o -name '*.h' \) \
-        -exec awk '
+    sh "$source_files_helper" "$src_root/src" "$src_root/tests/platform/threadpool" --name '*.c' --name '*.h' --exec awk '
         function allowed_registry_hook_file(file) {
             return file ~ /\/src\/threadpool\.c$/ ||
                    file ~ /\/src\/threadpool\.h$/ ||
@@ -324,7 +323,7 @@ run_staticcheck_threadpool_vtbl_boundary() {
                 !allowed_registry_hook_file(FILENAME) {
             print FILENAME ":" FNR ": threadpool.h is registry-only"
         }
-        ' {} + > "$violations"
+        '> "$violations"
     test ! -s "$violations" || {
         cat "$violations"
         return 1
@@ -586,6 +585,98 @@ run_case_tap "staticcheck-test-log-cleanup" \
     "$src_root/tests/_static/sh/staticcheck-test-log-cleanup.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_plain "staticcheck-windows-source-exclusion" \
+    "$python_bin" "$src_root/tests/build/discovery/0009_windows_source_exclusion.py" \
+    "$src_root"
+
+run_case_tap "staticcheck-no-find" \
+    "$src_root/tests/_static/sh/staticcheck-no-find.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-no-find-direct" \
+    "$python_bin" "$src_root/tests/build/no-find/0001_direct.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-no-find-substitution" \
+    "$python_bin" "$src_root/tests/build/no-find/0002_substitution.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-no-find-make-shell" \
+    "$python_bin" "$src_root/tests/build/no-find/0003_make_shell.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-no-find-wrapped" \
+    "$python_bin" "$src_root/tests/build/no-find/0004_wrapped.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-no-find-shell-code" \
+    "$python_bin" "$src_root/tests/build/no-find/0005_shell_code.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-no-find-inert-word" \
+    "$python_bin" "$src_root/tests/build/no-find/0006_inert_word.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-layout" \
+    "$src_root/tests/_static/sh/staticcheck-test-layout.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-two-levels" \
+    "$python_bin" "$src_root/tests/build/layout/0001_two_levels.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-third-level" \
+    "$python_bin" "$src_root/tests/build/layout/0002_third_level.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-leaf-200" \
+    "$python_bin" "$src_root/tests/build/layout/0003_leaf_200.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-leaf-201" \
+    "$python_bin" "$src_root/tests/build/layout/0004_leaf_201.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-children-24" \
+    "$python_bin" "$src_root/tests/build/layout/0005_children_24.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-children-25" \
+    "$python_bin" "$src_root/tests/build/layout/0006_children_25.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-roots-24" \
+    "$python_bin" "$src_root/tests/build/layout/0007_roots_24.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-roots-25" \
+    "$python_bin" "$src_root/tests/build/layout/0008_roots_25.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-number-gap" \
+    "$python_bin" "$src_root/tests/build/layout/0009_number_gap.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-duplicate-number" \
+    "$python_bin" "$src_root/tests/build/layout/0010_duplicate_number.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-support-excluded" \
+    "$python_bin" "$src_root/tests/build/layout/0011_support_excluded.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-execution-modes" \
+    "$python_bin" "$src_root/tests/build/layout/0012_execution_modes.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-symlink" \
+    "$python_bin" "$src_root/tests/build/layout/0013_symlink.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-layout-unnumbered" \
+    "$python_bin" "$src_root/tests/build/layout/0014_unnumbered.py" \
+    "$src_root" || fail_and_exit $?
+
 run_case_plain "staticcheck-test-discovery-added" \
     "$python_bin" "$src_root/tests/build/discovery/0001_added.py" \
     "$src_root" || fail_and_exit $?
@@ -807,6 +898,34 @@ run_case_tap "staticcheck-docs-length-limits" \
 run_case_tap "staticcheck-doc-test-links" \
     "$src_root/tests/_static/sh/staticcheck-doc-test-links.sh" \
     "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-plan-manifest-agreement" \
+    "$python_bin" "$src_root/tests/build/test-plan/0001_manifest_agreement.py" \
+    "$src_root"
+
+run_case_plain "staticcheck-test-plan-duplicate-member" \
+    "$python_bin" "$src_root/tests/build/test-plan/0002_duplicate_member.py" \
+    "$src_root"
+
+run_case_plain "staticcheck-test-plan-missing-member" \
+    "$python_bin" "$src_root/tests/build/test-plan/0003_missing_member.py" \
+    "$src_root"
+
+run_case_plain "staticcheck-test-plan-missing-backlink" \
+    "$python_bin" "$src_root/tests/build/test-plan/0004_missing_backlink.py" \
+    "$src_root"
+
+run_case_plain "staticcheck-test-plan-duplicate-link" \
+    "$python_bin" "$src_root/tests/build/test-plan/0005_duplicate_link.py" \
+    "$src_root"
+
+run_case_plain "staticcheck-test-plan-invalid-member" \
+    "$python_bin" "$src_root/tests/build/test-plan/0006_invalid_member.py" \
+    "$src_root"
+
+run_case_plain "staticcheck-test-plan-scope-not-inferred" \
+    "$python_bin" "$src_root/tests/build/test-plan/0007_scope_not_inferred.py" \
+    "$src_root"
 
 run_case_tap "staticcheck-test-plan-links" \
     "$src_root/tests/_static/sh/staticcheck-test-plan-links.sh" \

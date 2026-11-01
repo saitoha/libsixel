@@ -6,12 +6,13 @@
 
 set -eu
 
-script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH='' cd -- "${0%/*}" && pwd)
 common_helpers="$script_dir/resolve-binding-test-common.sh"
 if [ ! -r "$common_helpers" ]; then
     echo "error: missing helper script: $common_helpers" >&2
     exit 1
 fi
+# shellcheck source=build-aux/resolve-binding-test-common.sh
 . "$common_helpers"
 
 if [ "$#" -ne 4 ] && [ "$#" -ne 6 ]; then
@@ -97,14 +98,18 @@ compute_source_signature() {
             fi
         done
         if [ -d "$src_dir/libsixel" ]; then
-            find "$src_dir/libsixel" -maxdepth 1 -type f -name '*.py' \
+            for source in "$src_dir/libsixel/"*.py; do
+                test ! -f "$source" || printf '%s\n' "$source"
+            done \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
                     "${CKSUM:-cksum}" "$path"
                 done >> "$sig_file"
         fi
         if [ -d "$src_dir/libsixel/_libs" ]; then
-            find "$src_dir/libsixel/_libs" -maxdepth 1 -type f -name '*.py' \
+            for source in "$src_dir/libsixel/_libs/"*.py; do
+                test ! -f "$source" || printf '%s\n' "$source"
+            done \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
                     "${CKSUM:-cksum}" "$path"
@@ -137,8 +142,9 @@ if [ -z "$python_bin" ]; then
     exit 0
 fi
 
-wheel_candidates=$(find "$wheel_dir" -maxdepth 1 -type f -name 'libsixel_wheel-*.whl' \
-    2>/dev/null | LC_ALL=C sort)
+wheel_candidates=$(for wheel in "$wheel_dir/"libsixel_wheel-*.whl; do
+    test ! -f "$wheel" || printf '%s\n' "$wheel"
+done | LC_ALL=C sort)
 if [ -z "$wheel_candidates" ]; then
     exit 0
 fi

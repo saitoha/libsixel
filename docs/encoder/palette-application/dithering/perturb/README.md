@@ -189,6 +189,6 @@ Relevant files:
 - [Full measurement summary](measurements.csv)
 - [Per-bin radial curves and cell counts](rapsd-curves.csv)
 - [Build, commands, inputs, output hashes, and validation manifest](manifest.json)
-- [Existing FS perturbation regression category](../../../../../tests/processing/dither/perturb/)
+- [Existing FS perturbation regression category](../../../../../tests/dither/perturb/)
 
 The numeric summaries and the visual observations are supporting evidence for an optional control. Existing exact behavioral and quality regression tests remain separate from this manual comparison.

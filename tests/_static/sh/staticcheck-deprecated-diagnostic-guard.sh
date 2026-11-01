@@ -2,6 +2,7 @@
 # Emit TAP ensuring deprecated diagnostic pragmas use configured guards.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 configure_ac=$src_root/configure.ac
@@ -25,7 +26,7 @@ meson_probe_bad=$tmpdir/meson-probe-bad.txt
 for scan_dir in "$src_root/src" "$src_root/include" "$src_root/tests"
 do
     test -d "$scan_dir" || continue
-    find "$scan_dir" -type f \( -name '*.c' -o -name '*.h' \) -print
+    sh "$source_files_helper" "$scan_dir" --name '*.c' --name '*.h'
 done | LC_ALL=C sort > "$tmpdir/sources"
 
 # Populate argv inside awk to avoid both per-file processes and ARG_MAX.

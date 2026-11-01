@@ -6,8 +6,8 @@ import sys
 from fixture import Fixture
 
 with Fixture(sys.argv[1]) as fixture:
-    old = fixture.add("0001_removed.t")
-    assert fixture.run() == ["0001_removed.t"]
+    old = fixture.add("sample/existing/0001_removed.t")
+    assert fixture.run() == ["sample/existing/0001_removed.t"]
     (fixture.work / old.name).touch()
     old.unlink()
     assert fixture.run() == []

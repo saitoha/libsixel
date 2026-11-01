@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 PLAN_DOCUMENT = Path("docs/testing/builtin-loader-coverage.md")
-TEST_DIRECTORY = Path("tests/loader/builtin")
+TEST_MANIFEST = Path("tests/_support/test-plans/builtin-loader.list")
 TEST_PLAN = "docs/testing/builtin-loader-coverage.md"
 TEST_PLAN_COMMENT = f"# Test-plan: {TEST_PLAN}"
 
@@ -138,8 +138,8 @@ CLASSIFICATION_ORDER = (
 # their primary decoder ownership explicit instead of inferring it from prose.
 CLASSIFICATION_OVERRIDES = {
     "0001_lsqa_format_grayscale.t": "jpeg",
-    "0002_png_palette_samples.t": "png",
-    "0003_lsqa_format_rgb.t": "png",
+    "0001_png_palette_samples.t": "png",
+    "0001_lsqa_format_rgb.t": "png",
 }
 
 
@@ -167,7 +167,7 @@ def classify(path: Path) -> str:
 
     if path.name in CLASSIFICATION_OVERRIDES:
         return CLASSIFICATION_OVERRIDES[path.name]
-    stem = "_".join((*path.parts[3:-1], path.stem)).lower()
+    stem = "_".join((*(part.replace("-", "_") for part in path.parts[1:-1]), path.stem)).lower()
     families = family_map()
     for key in CLASSIFICATION_ORDER:
         if has_token(stem, families[key].tokens):
@@ -320,7 +320,8 @@ def read_tests(root: Path) -> list[dict[str, object]]:
     """Read and classify every builtin-loader shell test."""
 
     tests = []
-    for path in sorted((root / TEST_DIRECTORY).rglob("*.t")):
+    for entry in (root / TEST_MANIFEST).read_text().splitlines():
+        path = root / entry
         relative = path.relative_to(root)
         lines = path.read_text(encoding="utf-8").splitlines()
         policies = policy_references(lines)
@@ -334,7 +335,7 @@ def read_tests(root: Path) -> list[dict[str, object]]:
             }
         )
     if not tests:
-        raise RuntimeError(f"no tests matched {TEST_DIRECTORY}/**/*.t")
+        raise RuntimeError(f"no tests listed in {TEST_MANIFEST}")
     return tests
 
 
@@ -381,8 +382,8 @@ def render_summary(tests: list[dict[str, object]]) -> list[str]:
 def render_directory(tests: list[dict[str, object]], directory: Path) -> list[str]:
     """Render every test exactly once inside the enforced marker pair."""
 
-    lines = [f"<!-- test-plan: {directory.as_posix()}/*.t -->", ""]
-    suffix = "" if directory == TEST_DIRECTORY else f" ({directory.name}/)"
+    lines = []
+    suffix = ""
     for family in FAMILIES:
         members = [test for test in tests if test["family"] == family.key]
         if not members:
@@ -407,18 +408,16 @@ def render_directory(tests: list[dict[str, object]], directory: Path) -> list[st
                 f"| {test['assurance']} | {context} |"
             )
         lines.append("")
-    lines.append("<!-- test-plan-end -->")
     return lines
 
 
 def render_inventory(tests: list[dict[str, object]]) -> list[str]:
-    """Use one supported, nonrecursive contract glob per test directory."""
+    """Use the explicit ownership manifest across behavioral categories."""
 
-    lines = []
-    for directory in sorted({test["path"].parent for test in tests}):
-        members = [test for test in tests if test["path"].parent == directory]
-        lines.extend(render_directory(members, directory))
-        lines.append("")
+    lines = [f"<!-- test-plan: @{TEST_MANIFEST.as_posix()} -->", ""]
+    lines.extend(render_directory(tests, Path("tests")))
+    lines.append("")
+    lines.append("<!-- test-plan-end -->")
     return lines
 
 
@@ -430,7 +429,7 @@ def render_document(tests: list[dict[str, object]]) -> str:
         "",
         "## Purpose",
         "",
-        "This inventory keeps every shell test in `tests/loader/builtin/` discoverable without turning every generated matrix cell, malformed-input probe, or quality smoke test into a public compatibility promise. The format contracts and implementation maps remain owned by the [builtin format component documentation](../loader/builtin/README.md). A `Policy:` backlink records traceability, while the separately generated assertion mechanism records what the test actually observes; a policy link does not turn an LSQA threshold into an exact decoded-value assertion.",
+        "This inventory keeps every case in the explicit builtin-loader manifest discoverable without turning every generated matrix cell, malformed-input probe, or quality smoke test into a public compatibility promise. The format contracts and implementation maps remain owned by the [builtin format component documentation](../loader/builtin/README.md). A `Policy:` backlink records traceability, while the separately generated assertion mechanism records what the test actually observes; a policy link does not turn an LSQA threshold into an exact decoded-value assertion.",
         "",
         "The observation column is generated from the opening explanatory comment, then from a matrix `CASE_LABEL` when present, and finally from the test filename. Assertion mechanisms are classified conservatively from explicit test vocabulary: LSQA/MS-SSIM use is a perceptual quality threshold, `_numeric` and `_digest` cases directly compare decoded values, `_trace` and `_code` cases observe protocol or status evidence, and remaining names fall into acceptance/rejection, robustness/liveness, or other integration/smoke buckets. The test itself remains authoritative. Directory and filename tokens assign each test to one primary format section; cross-format reference images such as PNM baselines do not create duplicate inventory rows.",
         "",
@@ -446,7 +445,7 @@ def render_document(tests: list[dict[str, object]]) -> str:
         "",
         "## Related SIXEL suites",
         "",
-        "The builtin SIXEL adapter delegates to the reusable decoder, so its broader parser, paint, parallelism, and output-format coverage lives in [`tests/processing/decoder`](../../tests/processing/decoder), while command-line decode coverage lives in [`tests/cli/sixel2png`](../../tests/cli/sixel2png). Those directories are not absorbed into this inventory because they also own decoder APIs and command behavior outside `tests/loader/builtin/`; representative adapter and decoder contracts remain linked from the [SIXEL builtin component](../loader/builtin/sixel.md).",
+        "The builtin SIXEL adapter delegates to the reusable decoder, so its broader parser, paint, parallelism, and output-format coverage lives in [`tests/decoder/parser`](../../tests/decoder/parser), while command-line decode coverage lives in [`tests/cli/sixel2png`](../../tests/cli/sixel2png). Those directories are not absorbed into this inventory because they also own decoder APIs and command behavior outside the builtin adapter; representative adapter and decoder contracts remain linked from the [SIXEL builtin component](../loader/builtin/sixel.md).",
         "",
         "## Coverage boundary",
         "",
@@ -454,7 +453,7 @@ def render_document(tests: list[dict[str, object]]) -> str:
         "",
         "## Maintenance",
         "",
-        "The marker glob, every link in the delimited inventory, and every reciprocal `Test-plan:` source comment are compared by [`staticcheck-test-plan-links`](../../tests/_static/sh/staticcheck-test-plan-links.sh). Additions, deletions, and renames must update the test and this inventory in the same change. Regenerate the summary, grouping, observations, and links with [`generate_builtin_loader_coverage.py`](../../tools/generate_builtin_loader_coverage.py); `--check` verifies that the committed document matches current test metadata, while `--add-test-plan-links --write` adds missing backlinks and writes the inventory.",
+        "The marker manifest, every link in the delimited inventory, and every reciprocal `Test-plan:` source comment are compared by [`staticcheck-test-plan-links`](../../tests/_static/sh/staticcheck-test-plan-links.sh). Additions, deletions, and renames must update the test and this inventory in the same change. Regenerate the summary, grouping, observations, and links with [`generate_builtin_loader_coverage.py`](../../tools/generate_builtin_loader_coverage.py); `--check` verifies that the committed document matches current test metadata, while `--add-test-plan-links --write` adds missing backlinks and writes the inventory.",
         "",
     ]
     return "\n".join(lines)

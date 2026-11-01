@@ -3,6 +3,7 @@
 # Policy: docs/AGENTS.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -17,9 +18,7 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-find "$src_root/docs" -type f -name '*.md' -exec \
-    "${AWK:-awk}" -v allowlist_path="$allowlist" \
-    -f "$checker" {} + > "$errors"
+sh "$source_files_helper" "$src_root/docs" --name '*.md' --exec "${AWK:-awk}" -v allowlist_path="$allowlist" -f "$checker"> "$errors"
 
 test ! -s "$errors" || {
     echo "not ok 1 - documentation math uses verified GitHub commands"

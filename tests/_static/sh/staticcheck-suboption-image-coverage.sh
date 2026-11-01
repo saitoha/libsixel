@@ -12,7 +12,6 @@ echo '1..1'
 src_root=$1
 registry_file="$src_root/src/options-registry.c"
 completion_file="$src_root/converters/completion_utils.c"
-regression_dir="$src_root/tests/cli/options/regression"
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-image-coverage-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
@@ -28,7 +27,7 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         perceptual-env-output perceptual-append \
         literal-reference presentation-base presentation-outcome \
         presentation-environment presentation-seconds value-nonempty; do
-    fixture="$regression_dir/0075_loader_libpng_cms_engine_image_regression.t"
+    fixture="$src_root/tests/cli/loader-options/0084_loader_libpng_cms_engine_image_regression.t"
     expected=fail
     needle=
     replacement=
@@ -43,7 +42,7 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
         comparison) needle='cmp -s'; replacement=': -s' ;;
         image-reference) needle='${TEST_RUNNER_PATH}'; replacement='${OTHER_PATH}' ;;
         legacy-*)
-            fixture="$regression_dir/0114_diffusion_x_dither_strength_image_regression.t"
+            fixture="$src_root/tests/cli/dither-options/0039_diffusion_x_dither_strength_image_regression.t"
             case "$sample" in
                 legacy-assignment) needle='stored=1\|binding='; replacement='stored=0\|binding=' ;;
                 legacy-binding) needle='binding=x_dither_strength,'; replacement='binding=other_field,' ;;
@@ -51,7 +50,7 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
             esac
             ;;
         perceptual-*)
-            fixture="$regression_dir/0072_lookup_5bit_shared_instance_image_regression.t"
+            fixture="$src_root/tests/cli/lookup-options/0026_lookup_5bit_shared_instance_image_regression.t"
             case "$sample" in
                 perceptual-pair) needle='"${short_output}" "${env_output}"'; replacement='"${short_output}" "${short_output}"' ;;
                 perceptual-capture) needle='equivalence_status=$?'; replacement=': $?' ;;
@@ -63,18 +62,18 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
             esac
             ;;
         value-nonempty)
-            fixture="$regression_dir/0003_diffusion_fs_scan_image_regression.t"
+            fixture="$src_root/tests/cli/dither-options/0027_diffusion_fs_scan_image_regression.t"
             needle='test -s "${short_output}"'; replacement=': "${short_output}"'
             ;;
         literal-reference)
-            fixture="$regression_dir/0096_loader_builtin_pnm_truncated_ascii_image_regression.t"
+            fixture="$src_root/tests/cli/loader-options/0105_loader_builtin_pnm_truncated_ascii_image_regression.t"
             needle='cmp -s "${reference_output}"'; replacement=': -s "${reference_output}"'
             ;;
         presentation-*)
-            fixture="$regression_dir/0166_update_progressive_max_passes_image_regression.t"
+            fixture="$src_root/tests/cli/output-options/0017_update_progressive_max_passes_image_regression.t"
             case "$sample" in
                 presentation-seconds)
-                    fixture="$regression_dir/0167_update_progressive_max_seconds_image_regression.t"
+                    fixture="$src_root/tests/cli/output-options/0018_update_progressive_max_seconds_image_regression.t"
                     needle='*"max_seconds=1e-300"*'; replacement='*"max_seconds=0"*' ;;
                 presentation-base) needle='-Z delta:P1'; replacement='-Z progressive' ;;
                 presentation-outcome) needle='progressive: stop=max_passes'; replacement='progressive: stop=converged' ;;
@@ -108,7 +107,9 @@ for sample in baseline assignment binding base consumer-event consumer-engine \
     case "$sample" in
         baseline)
             focused_test=
-            set -- "$@" "$regression_dir"/*.t
+            while IFS= read -r regression; do
+                set -- "$@" "$src_root/$regression"
+            done < "$src_root/tests/_static/data/suboption-image-cases.list"
             ;;
         *) set -- "$@" "$fixture" ;;
     esac
@@ -154,7 +155,7 @@ for scope in empty missing extra extra-empty unmatched; do
         missing) focused_test="$tmpdir/missing.t" ;;
         extra)
             set -- "$@" \
-                "$regression_dir/0075_loader_libpng_cms_engine_image_regression.t"
+                "$src_root/tests/cli/loader-options/0084_loader_libpng_cms_engine_image_regression.t"
             ;;
         extra-empty) set -- "$@" "$tmpdir/changed.t" ;;
         unmatched)

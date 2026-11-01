@@ -134,7 +134,7 @@ Weak recognition, dimensions, palette sizes, index values, and RLE commands are 
 - TGA predicate, indexed parser, and general decode: [`stb_image.h`](../../../src/stb_image.h)
 - Palette fusion, palette-alpha folding, direct-alpha selection, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha/background contract: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
-- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/tga`](../../../tests/loader/tga)
 - Forced raw/RLE and indexed/truecolor/grayscale fuzz entry points: [`fuzz-loader-builtin-libfuzzer.c`](../../../fuzz/fuzz-loader-builtin-libfuzzer.c)
 
 ## Test coverage
@@ -147,31 +147,31 @@ The rows below are pipeline landmarks rather than the complete suite. The [TGA c
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| TGA-01 | A type-2 24-bit direct-color stream expands exact BGR pixels into RGB component lanes. | [tests/loader/builtin/1968_loader_builtin_tga_truecolor24_numeric.t](../../../tests/loader/builtin/1968_loader_builtin_tga_truecolor24_numeric.t) |
-| TGA-02 | An eligible indexed TGA selects the palette-preserving builtin path. | [tests/loader/builtin/0050_loader_builtin_palette_tga_path.t](../../../tests/loader/builtin/0050_loader_builtin_palette_tga_path.t) |
-| TGA-03 | A type-10 packet-RLE truecolor stream expands raw and repeated packets to exact RGB bytes. | [tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t) |
-| TGA-04 | A type-3 grayscale stream expands each sample to exact equal RGB components. | [tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t](../../../tests/loader/builtin/1969_loader_builtin_tga_grayscale8_numeric.t) |
-| TGA-05 | Direct BGRA alpha composites against an explicit background with the expected numeric result. | [tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t](../../../tests/loader/builtin/0710_loader_builtin_tga_rgba_background_numeric.t) |
-| TGA-06 | Packed 5:5:5 direct color expands to exact RGB bytes. | [tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t](../../../tests/loader/builtin/1948_loader_builtin_tga_truecolor16_numeric.t) |
-| TGA-07 | Eight-bit grayscale and 5:5:5 palette entries expand through their distinct component paths. | [tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t](../../../tests/loader/builtin/1949_loader_builtin_tga_palette8_numeric.t), [tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t](../../../tests/loader/builtin/1950_loader_builtin_tga_palette16_numeric.t) |
-| TGA-08 | Sixteen-bit palette indices select the exact declared entry. | [tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t](../../../tests/loader/builtin/1951_loader_builtin_tga_index16_numeric.t) |
-| TGA-09 | Bottom-origin storage is vertically normalized to top-to-bottom frame order. | [tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t](../../../tests/loader/builtin/1952_loader_builtin_tga_bottom_origin_numeric.t) |
-| TGA-10 | Raw and repeated type-10 RLE packets preserve exact pixel order. | [tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/builtin/1953_loader_builtin_tga_rle_packet_modes_numeric.t) |
-| TGA-11 | The general RGB fallback maps an out-of-range palette index to the first stored entry instead of reading beyond the palette. | [tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t](../../../tests/loader/builtin/1955_loader_builtin_tga_oob_index_fallback_numeric.t) |
-| TGA-12 | Expand raw eight-bit indices relative to a nonzero colormap origin. | [tests/loader/builtin/2244_tga_origin_rgb_raw_numeric.t](../../../tests/loader/builtin/2244_tga_origin_rgb_raw_numeric.t) |
-| TGA-13 | Rebase raw eight-bit file indices to exact zero-based PAL8 slots. | [tests/loader/builtin/2245_tga_origin_pal_raw_numeric.t](../../../tests/loader/builtin/2245_tga_origin_pal_raw_numeric.t) |
-| TGA-14 | Expand raw and run RLE packets relative to the colormap origin. | [tests/loader/builtin/2246_tga_origin_rgb_rle_numeric.t](../../../tests/loader/builtin/2246_tga_origin_rgb_rle_numeric.t) |
-| TGA-15 | Rebase a repeated PAL8 index once when reading its RLE packet. | [tests/loader/builtin/2247_tga_origin_pal_rle_numeric.t](../../../tests/loader/builtin/2247_tga_origin_pal_rle_numeric.t) |
-| TGA-16 | Use the full sixteen-bit colormap origin for raw source indices. | [tests/loader/builtin/2248_tga_origin_index16_raw_numeric.t](../../../tests/loader/builtin/2248_tga_origin_index16_raw_numeric.t) |
-| TGA-17 | Use the full sixteen-bit colormap origin in RLE packets. | [tests/loader/builtin/2249_tga_origin_index16_rle_numeric.t](../../../tests/loader/builtin/2249_tga_origin_index16_rle_numeric.t) |
-| TGA-18 | Rebase source index 255 without overflowing eight-bit PAL8 slots. | [tests/loader/builtin/2250_tga_origin_byte_max_numeric.t](../../../tests/loader/builtin/2250_tga_origin_byte_max_numeric.t) |
-| TGA-19 | Resolve source index 65535 without wrapping the colormap range. | [tests/loader/builtin/2251_tga_origin_word_max_numeric.t](../../../tests/loader/builtin/2251_tga_origin_word_max_numeric.t) |
-| TGA-20 | Preserve the zero-based transparent palette key after index rebasing. | [tests/loader/builtin/2252_tga_origin_alpha_numeric.t](../../../tests/loader/builtin/2252_tga_origin_alpha_numeric.t) |
-| TGA-21 | Map an index below the declared origin to the first stored color. | [tests/loader/builtin/2253_tga_origin_below_numeric.t](../../../tests/loader/builtin/2253_tga_origin_below_numeric.t) |
-| TGA-22 | Map an index above the declared palette range to its first color. | [tests/loader/builtin/2254_tga_origin_above_numeric.t](../../../tests/loader/builtin/2254_tga_origin_above_numeric.t) |
-| TGA-23 | Preserve the RGB index fallback after an invalid PAL8 index. | [tests/loader/builtin/2255_tga_origin_pal_fallback_numeric.t](../../../tests/loader/builtin/2255_tga_origin_pal_fallback_numeric.t) |
-| TGA-24 | Read grayscale palette entries directly after the image ID. | [tests/loader/builtin/2256_tga_origin_gray_numeric.t](../../../tests/loader/builtin/2256_tga_origin_gray_numeric.t) |
-| TGA-25 | Read packed RGB16 palette entries directly after the image ID. | [tests/loader/builtin/2257_tga_origin_rgb16_numeric.t](../../../tests/loader/builtin/2257_tga_origin_rgb16_numeric.t) |
+| TGA-01 | A type-2 24-bit direct-color stream expands exact BGR pixels into RGB component lanes. | [tests/loader/tga/0021_loader_builtin_tga_truecolor24_numeric.t](../../../tests/loader/tga/0021_loader_builtin_tga_truecolor24_numeric.t) |
+| TGA-02 | An eligible indexed TGA selects the palette-preserving builtin path. | [tests/loader/tga/0009_loader_builtin_palette_tga_path.t](../../../tests/loader/tga/0009_loader_builtin_palette_tga_path.t) |
+| TGA-03 | A type-10 packet-RLE truecolor stream expands raw and repeated packets to exact RGB bytes. | [tests/loader/tga/0018_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/tga/0018_loader_builtin_tga_rle_packet_modes_numeric.t) |
+| TGA-04 | A type-3 grayscale stream expands each sample to exact equal RGB components. | [tests/loader/tga/0022_loader_builtin_tga_grayscale8_numeric.t](../../../tests/loader/tga/0022_loader_builtin_tga_grayscale8_numeric.t) |
+| TGA-05 | Direct BGRA alpha composites against an explicit background with the expected numeric result. | [tests/loader/tga/0011_loader_builtin_tga_rgba_background_numeric.t](../../../tests/loader/tga/0011_loader_builtin_tga_rgba_background_numeric.t) |
+| TGA-06 | Packed 5:5:5 direct color expands to exact RGB bytes. | [tests/loader/tga/0013_loader_builtin_tga_truecolor16_numeric.t](../../../tests/loader/tga/0013_loader_builtin_tga_truecolor16_numeric.t) |
+| TGA-07 | Eight-bit grayscale and 5:5:5 palette entries expand through their distinct component paths. | [tests/loader/tga/0014_loader_builtin_tga_palette8_numeric.t](../../../tests/loader/tga/0014_loader_builtin_tga_palette8_numeric.t), [tests/loader/tga/0015_loader_builtin_tga_palette16_numeric.t](../../../tests/loader/tga/0015_loader_builtin_tga_palette16_numeric.t) |
+| TGA-08 | Sixteen-bit palette indices select the exact declared entry. | [tests/loader/tga/0016_loader_builtin_tga_index16_numeric.t](../../../tests/loader/tga/0016_loader_builtin_tga_index16_numeric.t) |
+| TGA-09 | Bottom-origin storage is vertically normalized to top-to-bottom frame order. | [tests/loader/tga/0017_loader_builtin_tga_bottom_origin_numeric.t](../../../tests/loader/tga/0017_loader_builtin_tga_bottom_origin_numeric.t) |
+| TGA-10 | Raw and repeated type-10 RLE packets preserve exact pixel order. | [tests/loader/tga/0018_loader_builtin_tga_rle_packet_modes_numeric.t](../../../tests/loader/tga/0018_loader_builtin_tga_rle_packet_modes_numeric.t) |
+| TGA-11 | The general RGB fallback maps an out-of-range palette index to the first stored entry instead of reading beyond the palette. | [tests/loader/tga/0020_loader_builtin_tga_oob_index_fallback_numeric.t](../../../tests/loader/tga/0020_loader_builtin_tga_oob_index_fallback_numeric.t) |
+| TGA-12 | Expand raw eight-bit indices relative to a nonzero colormap origin. | [tests/loader/tga/0028_tga_origin_rgb_raw_numeric.t](../../../tests/loader/tga/0028_tga_origin_rgb_raw_numeric.t) |
+| TGA-13 | Rebase raw eight-bit file indices to exact zero-based PAL8 slots. | [tests/loader/tga/0029_tga_origin_pal_raw_numeric.t](../../../tests/loader/tga/0029_tga_origin_pal_raw_numeric.t) |
+| TGA-14 | Expand raw and run RLE packets relative to the colormap origin. | [tests/loader/tga/0030_tga_origin_rgb_rle_numeric.t](../../../tests/loader/tga/0030_tga_origin_rgb_rle_numeric.t) |
+| TGA-15 | Rebase a repeated PAL8 index once when reading its RLE packet. | [tests/loader/tga/0031_tga_origin_pal_rle_numeric.t](../../../tests/loader/tga/0031_tga_origin_pal_rle_numeric.t) |
+| TGA-16 | Use the full sixteen-bit colormap origin for raw source indices. | [tests/loader/tga/0032_tga_origin_index16_raw_numeric.t](../../../tests/loader/tga/0032_tga_origin_index16_raw_numeric.t) |
+| TGA-17 | Use the full sixteen-bit colormap origin in RLE packets. | [tests/loader/tga/0033_tga_origin_index16_rle_numeric.t](../../../tests/loader/tga/0033_tga_origin_index16_rle_numeric.t) |
+| TGA-18 | Rebase source index 255 without overflowing eight-bit PAL8 slots. | [tests/loader/tga/0034_tga_origin_byte_max_numeric.t](../../../tests/loader/tga/0034_tga_origin_byte_max_numeric.t) |
+| TGA-19 | Resolve source index 65535 without wrapping the colormap range. | [tests/loader/tga/0035_tga_origin_word_max_numeric.t](../../../tests/loader/tga/0035_tga_origin_word_max_numeric.t) |
+| TGA-20 | Preserve the zero-based transparent palette key after index rebasing. | [tests/loader/tga/0036_tga_origin_alpha_numeric.t](../../../tests/loader/tga/0036_tga_origin_alpha_numeric.t) |
+| TGA-21 | Map an index below the declared origin to the first stored color. | [tests/loader/tga/0037_tga_origin_below_numeric.t](../../../tests/loader/tga/0037_tga_origin_below_numeric.t) |
+| TGA-22 | Map an index above the declared palette range to its first color. | [tests/loader/tga/0038_tga_origin_above_numeric.t](../../../tests/loader/tga/0038_tga_origin_above_numeric.t) |
+| TGA-23 | Preserve the RGB index fallback after an invalid PAL8 index. | [tests/loader/tga/0039_tga_origin_pal_fallback_numeric.t](../../../tests/loader/tga/0039_tga_origin_pal_fallback_numeric.t) |
+| TGA-24 | Read grayscale palette entries directly after the image ID. | [tests/loader/tga/0040_tga_origin_gray_numeric.t](../../../tests/loader/tga/0040_tga_origin_gray_numeric.t) |
+| TGA-25 | Read packed RGB16 palette entries directly after the image ID. | [tests/loader/tga/0041_tga_origin_rgb16_numeric.t](../../../tests/loader/tga/0041_tga_origin_rgb16_numeric.t) |
 
 ### Decoded sample regressions
 
@@ -179,18 +179,18 @@ These 64 × 64 opaque fixtures compare every decoded byte sample exactly with Im
 
 | ID | Sample contract | Owning test |
 | --- | --- | --- |
-| TGAQ-01 | A type-2 direct-color image reconstructs every RGB sample. | [tests/loader/builtin/0010_decode_samples_tga_type2_rgb.t](../../../tests/loader/builtin/0010_decode_samples_tga_type2_rgb.t) |
-| TGAQ-02 | A type-10 RLE truecolor image reconstructs every RGB sample. | [tests/loader/builtin/0014_decode_samples_tga_type10_rgb.t](../../../tests/loader/builtin/0014_decode_samples_tga_type10_rgb.t) |
-| TGAQ-03 | A type-3 grayscale image reconstructs every gray sample. | [tests/loader/builtin/0011_decode_samples_tga_type3_gray.t](../../../tests/loader/builtin/0011_decode_samples_tga_type3_gray.t) |
+| TGAQ-01 | A type-2 direct-color image reconstructs every RGB sample. | [tests/loader/tga/0003_decode_samples_tga_type2_rgb.t](../../../tests/loader/tga/0003_decode_samples_tga_type2_rgb.t) |
+| TGAQ-02 | A type-10 RLE truecolor image reconstructs every RGB sample. | [tests/loader/tga/0007_decode_samples_tga_type10_rgb.t](../../../tests/loader/tga/0007_decode_samples_tga_type10_rgb.t) |
+| TGAQ-03 | A type-3 grayscale image reconstructs every gray sample. | [tests/loader/tga/0004_decode_samples_tga_type3_gray.t](../../../tests/loader/tga/0004_decode_samples_tga_type3_gray.t) |
 
 ### Defensive and malformed-input tests
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| TGA-90 | A truncated declared palette is rejected without emitting a frame. | [tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t](../../../tests/loader/builtin/1954_loader_builtin_tga_truncated_palette_reject.t) |
-| TGA-91 | A short direct-color raster is rejected instead of accepting zero-filled tail pixels. | [tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t](../../../tests/loader/builtin/1990_loader_builtin_tga_truncated_direct_reject.t) |
-| TGA-92 | A packet-RLE count that exceeds the remaining raster is rejected before pixel expansion. | [tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t](../../../tests/loader/builtin/1991_loader_builtin_tga_rle_overrun_reject.t) |
-| TGA-93 | A plausible direct-color header carrying the conflicting color-map flag is rejected rather than colliding with the TGA recognizer. | [tests/loader/builtin/2039_loader_builtin_tga_header_collision_reject.t](../../../tests/loader/builtin/2039_loader_builtin_tga_header_collision_reject.t) |
+| TGA-90 | A truncated declared palette is rejected without emitting a frame. | [tests/loader/tga/0019_loader_builtin_tga_truncated_palette_reject.t](../../../tests/loader/tga/0019_loader_builtin_tga_truncated_palette_reject.t) |
+| TGA-91 | A short direct-color raster is rejected instead of accepting zero-filled tail pixels. | [tests/loader/tga/0023_loader_builtin_tga_truncated_direct_reject.t](../../../tests/loader/tga/0023_loader_builtin_tga_truncated_direct_reject.t) |
+| TGA-92 | A packet-RLE count that exceeds the remaining raster is rejected before pixel expansion. | [tests/loader/tga/0024_loader_builtin_tga_rle_overrun_reject.t](../../../tests/loader/tga/0024_loader_builtin_tga_rle_overrun_reject.t) |
+| TGA-93 | A plausible direct-color header carrying the conflicting color-map flag is rejected rather than colliding with the TGA recognizer. | [tests/loader/tga/0025_loader_builtin_tga_header_collision_reject.t](../../../tests/loader/tga/0025_loader_builtin_tga_header_collision_reject.t) |
 
 Malformed TGA header collision, RLE overrun, and truncated direct-pixel input now have focused rejection owners rather than relying on an LSQA floor or unrelated format test. Horizontal right-to-left origin remains explicitly unsupported and is therefore not locked in as a successful compatibility behavior. The builtin fuzz matrix forces all six accepted image types with structurally valid minimal headers, so mutations reach raw/RLE and indexed/truecolor/grayscale dispatch instead of depending on accidental TGA recognition.
 
@@ -200,36 +200,36 @@ The two-by-two fixtures are constructed in memory. RGB expectations use original
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| TGAC-01 | Decode gamma 2 as the square of normalized source codes. | [tests/loader/builtin/tga_color/0001_gamma2_numeric.t](../../../tests/loader/builtin/tga_color/0001_gamma2_numeric.t) |
-| TGAC-02 | Treat gamma 1 as linear source values. | [tests/loader/builtin/tga_color/0002_gamma1_numeric.t](../../../tests/loader/builtin/tga_color/0002_gamma1_numeric.t) |
-| TGAC-03 | Retain a fractional gamma ratio (22/10). | [tests/loader/builtin/tga_color/0003_gamma_fraction_numeric.t](../../../tests/loader/builtin/tga_color/0003_gamma_fraction_numeric.t) |
-| TGAC-04 | Apply gamma after both run and raw RLE packets. | [tests/loader/builtin/tga_color/0004_gamma_rle_numeric.t](../../../tests/loader/builtin/tga_color/0004_gamma_rle_numeric.t) |
-| TGAC-05 | Normalize grayscale through the same gamma definition. | [tests/loader/builtin/tga_color/0005_gamma_gray_numeric.t](../../../tests/loader/builtin/tga_color/0005_gamma_gray_numeric.t) |
-| TGAC-06 | Interpret expanded packed 5:5:5 codes before gamma. | [tests/loader/builtin/tga_color/0006_gamma_rgb16_numeric.t](../../../tests/loader/builtin/tga_color/0006_gamma_rgb16_numeric.t) |
-| TGAC-07 | Expand an origin-relative eight-bit palette before conversion. | [tests/loader/builtin/tga_color/0007_gamma_index8_numeric.t](../../../tests/loader/builtin/tga_color/0007_gamma_index8_numeric.t) |
-| TGAC-08 | Retain sixteen-bit palette indices before conversion. | [tests/loader/builtin/tga_color/0008_gamma_index16_numeric.t](../../../tests/loader/builtin/tga_color/0008_gamma_index16_numeric.t) |
-| TGAC-09 | Keep hidden RGB and an exact zero-alpha mask. | [tests/loader/builtin/tga_color/0009_gamma_hidden_alpha_numeric.t](../../../tests/loader/builtin/tga_color/0009_gamma_hidden_alpha_numeric.t) |
-| TGAC-10 | Composite gamma-tagged RGB against a linearized background. | [tests/loader/builtin/tga_color/0010_gamma_background_numeric.t](../../../tests/loader/builtin/tga_color/0010_gamma_background_numeric.t) |
-| TGAC-11 | Apply independent ARGB table columns without byte rounding. | [tests/loader/builtin/tga_color/0011_table_rgb_numeric.t](../../../tests/loader/builtin/tga_color/0011_table_rgb_numeric.t) |
-| TGAC-12 | Prefer the table over a simultaneous scalar gamma. | [tests/loader/builtin/tga_color/0012_table_precedence_numeric.t](../../../tests/loader/builtin/tga_color/0012_table_precedence_numeric.t) |
-| TGAC-13 | Read a table preceding the extension area. | [tests/loader/builtin/tga_color/0013_table_before_extension_numeric.t](../../../tests/loader/builtin/tga_color/0013_table_before_extension_numeric.t) |
-| TGAC-14 | Apply table values after both run and raw RLE packets. | [tests/loader/builtin/tga_color/0014_table_rle_numeric.t](../../../tests/loader/builtin/tga_color/0014_table_rle_numeric.t) |
-| TGAC-15 | Keep indexed alpha until table mapping and float finalization. | [tests/loader/builtin/tga_color/0015_table_index_alpha_numeric.t](../../../tests/loader/builtin/tga_color/0015_table_index_alpha_numeric.t) |
-| TGAC-16 | Map grayscale through each independent RGB table column. | [tests/loader/builtin/tga_color/0016_table_gray_numeric.t](../../../tests/loader/builtin/tga_color/0016_table_gray_numeric.t) |
-| TGAC-17 | Use 16-bit corrected alpha in linear background composition. | [tests/loader/builtin/tga_color/0017_table_alpha_background_numeric.t](../../../tests/loader/builtin/tga_color/0017_table_alpha_background_numeric.t) |
-| TGAC-18 | Keep CMS-disabled input on the unchanged byte route. | [tests/loader/builtin/tga_color/0018_cms_none_numeric.t](../../../tests/loader/builtin/tga_color/0018_cms_none_numeric.t) |
-| TGAC-19 | Keep original-format input on the byte route. | [tests/loader/builtin/tga_color/0019_legacy_byte_numeric.t](../../../tests/loader/builtin/tga_color/0019_legacy_byte_numeric.t) |
-| TGAC-20 | Treat a zero gamma denominator as no color definition. | [tests/loader/builtin/tga_color/0020_gamma_unused_numeric.t](../../../tests/loader/builtin/tga_color/0020_gamma_unused_numeric.t) |
-| TGAC-21 | Keep a footer without an extension on the byte route. | [tests/loader/builtin/tga_color/0021_footer_only_numeric.t](../../../tests/loader/builtin/tga_color/0021_footer_only_numeric.t) |
-| TGAC-31 | Reject managed premultiplied-alpha input without publishing a frame. | [tests/loader/builtin/tga_color/0031_premultiplied_reject.t](../../../tests/loader/builtin/tga_color/0031_premultiplied_reject.t) |
-| TGAC-32 | Apply gamma through the explicitly selected lcms2 engine. | [tests/loader/builtin/tga_color/0032_gamma_lcms2_numeric.t](../../../tests/loader/builtin/tga_color/0032_gamma_lcms2_numeric.t) |
-| TGAC-33 | Apply gamma through the explicitly selected ColorSync engine. | [tests/loader/builtin/tga_color/0033_gamma_colorsync_numeric.t](../../../tests/loader/builtin/tga_color/0033_gamma_colorsync_numeric.t) |
-| TGAC-34 | Apply table values through the explicitly selected lcms2 engine. | [tests/loader/builtin/tga_color/0034_table_lcms2_numeric.t](../../../tests/loader/builtin/tga_color/0034_table_lcms2_numeric.t) |
-| TGAC-35 | Apply table values through the explicitly selected ColorSync engine. | [tests/loader/builtin/tga_color/0035_table_colorsync_numeric.t](../../../tests/loader/builtin/tga_color/0035_table_colorsync_numeric.t) |
-| TGAC-36 | Honor the canonical gamma-float target after normalization. | [tests/loader/builtin/tga_color/0036_gamma_target_numeric.t](../../../tests/loader/builtin/tga_color/0036_gamma_target_numeric.t) |
-| TGAC-37 | Preserve grayscale-alpha coverage on the managed route. | [tests/loader/builtin/tga_color/0037_gamma_gray_alpha_numeric.t](../../../tests/loader/builtin/tga_color/0037_gamma_gray_alpha_numeric.t) |
-| TGAC-38 | Do not map synthesized opaque alpha through the table. | [tests/loader/builtin/tga_color/0038_table_opaque_alpha_numeric.t](../../../tests/loader/builtin/tga_color/0038_table_opaque_alpha_numeric.t) |
+| TGAC-01 | Decode gamma 2 as the square of normalized source codes. | [tests/loader/tga/0042_gamma2_numeric.t](../../../tests/loader/tga/0042_gamma2_numeric.t) |
+| TGAC-02 | Treat gamma 1 as linear source values. | [tests/loader/tga/0043_gamma1_numeric.t](../../../tests/loader/tga/0043_gamma1_numeric.t) |
+| TGAC-03 | Retain a fractional gamma ratio (22/10). | [tests/loader/tga/0044_gamma_fraction_numeric.t](../../../tests/loader/tga/0044_gamma_fraction_numeric.t) |
+| TGAC-04 | Apply gamma after both run and raw RLE packets. | [tests/loader/tga/0045_gamma_rle_numeric.t](../../../tests/loader/tga/0045_gamma_rle_numeric.t) |
+| TGAC-05 | Normalize grayscale through the same gamma definition. | [tests/loader/tga/0046_gamma_gray_numeric.t](../../../tests/loader/tga/0046_gamma_gray_numeric.t) |
+| TGAC-06 | Interpret expanded packed 5:5:5 codes before gamma. | [tests/loader/tga/0047_gamma_rgb16_numeric.t](../../../tests/loader/tga/0047_gamma_rgb16_numeric.t) |
+| TGAC-07 | Expand an origin-relative eight-bit palette before conversion. | [tests/loader/tga/0048_gamma_index8_numeric.t](../../../tests/loader/tga/0048_gamma_index8_numeric.t) |
+| TGAC-08 | Retain sixteen-bit palette indices before conversion. | [tests/loader/tga/0049_gamma_index16_numeric.t](../../../tests/loader/tga/0049_gamma_index16_numeric.t) |
+| TGAC-09 | Keep hidden RGB and an exact zero-alpha mask. | [tests/loader/tga/0050_gamma_hidden_alpha_numeric.t](../../../tests/loader/tga/0050_gamma_hidden_alpha_numeric.t) |
+| TGAC-10 | Composite gamma-tagged RGB against a linearized background. | [tests/loader/tga/0051_gamma_background_numeric.t](../../../tests/loader/tga/0051_gamma_background_numeric.t) |
+| TGAC-11 | Apply independent ARGB table columns without byte rounding. | [tests/loader/tga/0052_table_rgb_numeric.t](../../../tests/loader/tga/0052_table_rgb_numeric.t) |
+| TGAC-12 | Prefer the table over a simultaneous scalar gamma. | [tests/loader/tga/0053_table_precedence_numeric.t](../../../tests/loader/tga/0053_table_precedence_numeric.t) |
+| TGAC-13 | Read a table preceding the extension area. | [tests/loader/tga/0054_table_before_extension_numeric.t](../../../tests/loader/tga/0054_table_before_extension_numeric.t) |
+| TGAC-14 | Apply table values after both run and raw RLE packets. | [tests/loader/tga/0055_table_rle_numeric.t](../../../tests/loader/tga/0055_table_rle_numeric.t) |
+| TGAC-15 | Keep indexed alpha until table mapping and float finalization. | [tests/loader/tga/0056_table_index_alpha_numeric.t](../../../tests/loader/tga/0056_table_index_alpha_numeric.t) |
+| TGAC-16 | Map grayscale through each independent RGB table column. | [tests/loader/tga/0057_table_gray_numeric.t](../../../tests/loader/tga/0057_table_gray_numeric.t) |
+| TGAC-17 | Use 16-bit corrected alpha in linear background composition. | [tests/loader/tga/0058_table_alpha_background_numeric.t](../../../tests/loader/tga/0058_table_alpha_background_numeric.t) |
+| TGAC-18 | Keep CMS-disabled input on the unchanged byte route. | [tests/loader/tga/0059_cms_none_numeric.t](../../../tests/loader/tga/0059_cms_none_numeric.t) |
+| TGAC-19 | Keep original-format input on the byte route. | [tests/loader/tga/0060_legacy_byte_numeric.t](../../../tests/loader/tga/0060_legacy_byte_numeric.t) |
+| TGAC-20 | Treat a zero gamma denominator as no color definition. | [tests/loader/tga/0061_gamma_unused_numeric.t](../../../tests/loader/tga/0061_gamma_unused_numeric.t) |
+| TGAC-21 | Keep a footer without an extension on the byte route. | [tests/loader/tga/0062_footer_only_numeric.t](../../../tests/loader/tga/0062_footer_only_numeric.t) |
+| TGAC-31 | Reject managed premultiplied-alpha input without publishing a frame. | [tests/loader/tga/0072_premultiplied_reject.t](../../../tests/loader/tga/0072_premultiplied_reject.t) |
+| TGAC-32 | Apply gamma through the explicitly selected lcms2 engine. | [tests/loader/tga/0073_gamma_lcms2_numeric.t](../../../tests/loader/tga/0073_gamma_lcms2_numeric.t) |
+| TGAC-33 | Apply gamma through the explicitly selected ColorSync engine. | [tests/loader/tga/0074_gamma_colorsync_numeric.t](../../../tests/loader/tga/0074_gamma_colorsync_numeric.t) |
+| TGAC-34 | Apply table values through the explicitly selected lcms2 engine. | [tests/loader/tga/0075_table_lcms2_numeric.t](../../../tests/loader/tga/0075_table_lcms2_numeric.t) |
+| TGAC-35 | Apply table values through the explicitly selected ColorSync engine. | [tests/loader/tga/0076_table_colorsync_numeric.t](../../../tests/loader/tga/0076_table_colorsync_numeric.t) |
+| TGAC-36 | Honor the canonical gamma-float target after normalization. | [tests/loader/tga/0077_gamma_target_numeric.t](../../../tests/loader/tga/0077_gamma_target_numeric.t) |
+| TGAC-37 | Preserve grayscale-alpha coverage on the managed route. | [tests/loader/tga/0078_gamma_gray_alpha_numeric.t](../../../tests/loader/tga/0078_gamma_gray_alpha_numeric.t) |
+| TGAC-38 | Do not map synthesized opaque alpha through the table. | [tests/loader/tga/0079_table_opaque_alpha_numeric.t](../../../tests/loader/tga/0079_table_opaque_alpha_numeric.t) |
 
 ### Extension color defensive coverage
 
-The [extension tests](../../../tests/loader/builtin/tga_color) additionally reject zero/out-of-range declared gamma, invalid extension/table offsets and sizes, table overlap, and truncated raw/RLE data adjacent to valid metadata. They assert failure and zero callbacks. Their full inventory belongs to the [builtin loader test plan](../../testing/builtin-loader-coverage.md#tga).
+The [extension tests](../../../tests/loader/tga) additionally reject zero/out-of-range declared gamma, invalid extension/table offsets and sizes, table overlap, and truncated raw/RLE data adjacent to valid metadata. They assert failure and zero callbacks. Their full inventory belongs to the [builtin loader test plan](../../testing/builtin-loader-coverage.md#tga).

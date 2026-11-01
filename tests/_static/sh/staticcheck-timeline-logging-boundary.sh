@@ -4,6 +4,7 @@
 # Policy: docs/cli/diagnostics.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -30,8 +31,8 @@ test ! -e "$src_root/src/logger.h" || {
     echo "src/logger.h must not be restored"
 }
 
-find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    -type f \( -name '*.[ch]' -o -name '*.inc.c' \) -exec awk -v src_root="$src_root" '
+sh "$source_files_helper" "$src_root/src" "$src_root/include" "$src_root/tests" \
+ --name '*.[ch]' --name '*.inc.c' --exec awk -v src_root="$src_root" '
 function rel(path) {
     sub("^" src_root "/", "", path)
     return path
@@ -96,11 +97,9 @@ FILENAME ~ /\/tests\/processing\/timeline\/.*\.c$/ &&
     print path ":" FNR \
         ": timeline helper names must be unique for amalgamation"
 }
-' {} +
+'
 
-find "$src_root/amalgamation" "$src_root/wic" "$src_root/src" \
-    -type f \( -name 'Makefile.am' -o -name 'Makefile.in' \
-        -o -name 'meson.build' \) -exec awk -v src_root="$src_root" '
+sh "$source_files_helper" "$src_root/amalgamation" "$src_root/wic" "$src_root/src" --name 'Makefile.am' --name 'Makefile.in' --name 'meson.build' --exec awk -v src_root="$src_root" '
 function rel(path) {
     sub("^" src_root "/", "", path)
     return path
@@ -112,7 +111,7 @@ FILENAME != last_file {
 /(^|[^A-Za-z0-9_-])logger\.(c|h)([^A-Za-z0-9_-]|$)/ {
     print path ":" FNR ": old logger build input is forbidden"
 }
-' {} +
+'
 
 awk -v src_root="$src_root" '
 /sixel_timeline_writer_init_storage[ \t]*\(/ {
@@ -185,7 +184,7 @@ in_func && /sixel_mutex_init[ \t]*\(/ {
     }
     in_func = 0
 }
-' "$src_root"/tests/processing/timeline/*.c
+' "$src_root"/tests/frame/timeline/*.c
 
 awk '
 FNR == 1 { in_func = 0 }
@@ -211,7 +210,7 @@ in_func && /sixel_allocator_new[ \t]*\(/ {
     }
     in_func = 0
 }
-' "$src_root"/tests/processing/timeline/*.c
+' "$src_root"/tests/frame/timeline/*.c
 
 # Environment setup and the single native producer boundary apply to the
 # whole timeline suite. Behavioral JSONL assertions execute in the TAP tests.
@@ -222,7 +221,7 @@ awk '
 /timeline\/[^"[:space:]]*_verify/ {
     print FILENAME ":" FNR ": timeline TAP must not launch a native verifier"
 }
-' "$src_root"/tests/processing/timeline/*.t
+' "$src_root"/tests/frame/timeline/*.t
 
 awk '
  /timeline\/[^"[:space:]]*_verify/ {
@@ -256,7 +255,7 @@ awk '
                 ": producer must leave JSONL verification to TAP shell"
         }
     }
-' "$src_root"/tests/processing/timeline/*.c
+' "$src_root"/tests/frame/timeline/*.c
 
 awk '
     FNR == 1 { in_func = 0 }
@@ -283,7 +282,7 @@ awk '
                 ": producer must leave clock JSONL verification to TAP shell"
         }
     }
-' "$src_root"/tests/processing/timeline/*.c
+' "$src_root"/tests/frame/timeline/*.c
 # Tests borrowing SIXEL_LOG_PATH are native producers for shell verification.
 # Inspect the complete file because helpers can precede the getenv call.
 awk '
@@ -298,7 +297,7 @@ END {
         }
     }
 }
-' "$src_root"/tests/processing/timeline/*.c
+' "$src_root"/tests/frame/timeline/*.c
 } >>"$report"
 
 if test -s "$report"; then

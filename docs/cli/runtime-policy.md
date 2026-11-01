@@ -58,10 +58,10 @@ The typed controls and consumer scopes live in [`options-registry.c`](../../src/
 
 | ID | Observation | Owning test |
 | --- | --- | --- |
-| RT-01 | The runtime SIMD environment reaches its consumer. | [tests/processing/runtime/0001_simd_level_environment_consumer.t](../../tests/processing/runtime/0001_simd_level_environment_consumer.t) |
-| RT-02 | The colorspace minimum-work environment reaches its consumer under `balanced`; the test skips when fewer than two performance logical CPUs make that parallel path unavailable. | [tests/processing/runtime/0002_colorspace_parallel_min_environment_consumer.t](../../tests/processing/runtime/0002_colorspace_parallel_min_environment_consumer.t) |
-| RT-03 | The resize-precision environment reaches its consumer. | [tests/processing/runtime/0005_resize_precision_environment_consumer.t](../../tests/processing/runtime/0005_resize_precision_environment_consumer.t) |
+| RT-01 | The runtime SIMD environment reaches its consumer. | [tests/platform/simd/0001_simd_level_environment_consumer.t](../../tests/platform/simd/0001_simd_level_environment_consumer.t) |
+| RT-02 | The colorspace minimum-work environment reaches its consumer under `balanced`; the test skips when fewer than two performance logical CPUs make that parallel path unavailable. | [tests/color/space/0052_colorspace_parallel_min_environment_consumer.t](../../tests/color/space/0052_colorspace_parallel_min_environment_consumer.t) |
+| RT-03 | The resize-precision environment reaches its consumer. | [tests/frame/resize/0163_resize_precision_environment_consumer.t](../../tests/frame/resize/0163_resize_precision_environment_consumer.t) |
 
 ### Coverage boundary
 
-The [runtime consumer suite](../../tests/processing/runtime/) and [CLI regression suite](../../tests/cli/options/regression/) test selected resolutions and output effects. They do not establish that every SIMD implementation is available on the test host or that all settings improve performance. Resize numerical and quality coverage remains in the [resampling inventory](../testing/resampling-coverage.md).
+The runtime consumer cases for [SIMD](../../tests/platform/simd/), [color conversion](../../tests/color/space/) and [resize](../../tests/frame/resize/) and [CLI regression suite](../../tests/cli) test selected resolutions and output effects. They do not establish that every SIMD implementation is available on the test host or that all settings improve performance. Resize numerical and quality coverage remains in the [resampling inventory](../testing/resampling-coverage.md).

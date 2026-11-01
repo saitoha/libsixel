@@ -1,0 +1,10 @@
+tests/extension/quicklook-build/0001_fresh_default_off_host_absent.t
+tests/extension/quicklook-build/0002_host_executable.t
+tests/extension/quicklook-build/0003_host_plist.t
+tests/extension/quicklook-build/0004_preview_executable.t
+tests/extension/quicklook-build/0005_preview_plist.t
+tests/extension/quicklook-build/0006_thumbnail_executable.t
+tests/extension/quicklook-build/0007_thumbnail_plist.t
+tests/extension/quicklook-build/0008_bridge_executable.t
+tests/extension/quicklook-build/0009_bridge_plist.t
+tests/extension/quicklook-build/0010_register_tool_built.t

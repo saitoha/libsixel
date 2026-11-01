@@ -19,7 +19,7 @@ function collect(kind, links, errors,    line, expression, reference) {
 FNR == 1 {
     test_path = substr(FILENAME, length(src_root) + 1)
 }
-scope == "all" && FILENAME ~ /\.t$/ && /^# Staticcheck: / {
+scope == "all" && FILENAME ~ /(\.t|\/[0-9][0-9][0-9][0-9]_[A-Za-z0-9_-]+\.sh)$/ && /^# Staticcheck: / {
     if (FNR > 20 || NF != 3 || $3 !~ /^staticcheck-[a-z0-9-]+$/) {
         print FILENAME ": invalid Staticcheck registration" > "/dev/stderr"
         exit 1

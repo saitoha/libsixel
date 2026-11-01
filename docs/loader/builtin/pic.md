@@ -108,7 +108,7 @@ Dimensions, packet masks, chain length, run counts, and source availability are 
 - Predicate, fixed header, packet chain, and RLE: [`stb_image.h`](../../../src/stb_image.h)
 - PIC selection, RGBA request, alpha/background finalization, and frame delivery: [`loader-builtin.c`](../../../src/loader-builtin.c)
 - Alpha/background contract: [Alpha Policy](../alpha-policy/README.md) and [Background Policy](../background-policy.md)
-- Broader non-owning regression suite: [`tests/loader/builtin`](../../../tests/loader/builtin)
+- Broader non-owning regression suite: [`tests/loader/pic`](../../../tests/loader/pic)
 
 ## Test coverage
 
@@ -120,22 +120,22 @@ The rows below are pipeline landmarks rather than the complete suite. The [Softi
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| PIC-02 | Chained descriptors combine distinct component packets in descriptor order. | [tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t](../../../tests/loader/builtin/1970_loader_builtin_pic_chained_packets_numeric.t) |
-| PIC-03 | Raw RGB packet data decodes into exact component lanes. | [tests/loader/builtin/1966_loader_builtin_pic_raw_rgb_numeric.t](../../../tests/loader/builtin/1966_loader_builtin_pic_raw_rgb_numeric.t) |
-| PIC-04 | Mixed RLE accepts the 16-bit extended repeat-count form and reconstructs every pixel in the row. | [tests/loader/builtin/1967_loader_builtin_pic_mixed_rle_extended_numeric.t](../../../tests/loader/builtin/1967_loader_builtin_pic_mixed_rle_extended_numeric.t) |
-| PIC-05 | A PIC alpha channel reaches explicit-background composition with the expected numeric result. | [tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t](../../../tests/loader/builtin/0708_loader_builtin_pic_rgba_composite_numeric.t) |
-| PIC-06 | Channels omitted from the packet table retain their initialized white/opaque values. | [tests/loader/builtin/1956_loader_builtin_pic_omitted_channels_numeric.t](../../../tests/loader/builtin/1956_loader_builtin_pic_omitted_channels_numeric.t) |
-| PIC-07 | A later packet selecting an already-written channel wins in descriptor order. | [tests/loader/builtin/1957_loader_builtin_pic_repeated_channel_overwrite_numeric.t](../../../tests/loader/builtin/1957_loader_builtin_pic_repeated_channel_overwrite_numeric.t) |
-| PIC-08 | Pure RLE clips an oversized count to the remaining scanline for compatibility. | [tests/loader/builtin/1958_loader_builtin_pic_pure_rle_oversized_clip_numeric.t](../../../tests/loader/builtin/1958_loader_builtin_pic_pure_rle_oversized_clip_numeric.t) |
-| PIC-09 | Mixed RLE accepts both maximum short-form raw and repeated counts at 128 pixels. | [tests/loader/builtin/1959_loader_builtin_pic_mixed_rle_raw128_numeric.t](../../../tests/loader/builtin/1959_loader_builtin_pic_mixed_rle_raw128_numeric.t), [tests/loader/builtin/1960_loader_builtin_pic_mixed_rle_repeat128_numeric.t](../../../tests/loader/builtin/1960_loader_builtin_pic_mixed_rle_repeat128_numeric.t) |
-| PIC-10 | A packet table containing exactly ten descriptors is accepted and applies all packets in order. | [tests/loader/builtin/1961_loader_builtin_pic_ten_packet_limit_numeric.t](../../../tests/loader/builtin/1961_loader_builtin_pic_ten_packet_limit_numeric.t) |
+| PIC-02 | Chained descriptors combine distinct component packets in descriptor order. | [tests/loader/pic/0031_loader_builtin_pic_chained_packets_numeric.t](../../../tests/loader/pic/0031_loader_builtin_pic_chained_packets_numeric.t) |
+| PIC-03 | Raw RGB packet data decodes into exact component lanes. | [tests/loader/pic/0029_loader_builtin_pic_raw_rgb_numeric.t](../../../tests/loader/pic/0029_loader_builtin_pic_raw_rgb_numeric.t) |
+| PIC-04 | Mixed RLE accepts the 16-bit extended repeat-count form and reconstructs every pixel in the row. | [tests/loader/pic/0030_loader_builtin_pic_mixed_rle_extended_numeric.t](../../../tests/loader/pic/0030_loader_builtin_pic_mixed_rle_extended_numeric.t) |
+| PIC-05 | A PIC alpha channel reaches explicit-background composition with the expected numeric result. | [tests/loader/pic/0021_loader_builtin_pic_rgba_composite_numeric.t](../../../tests/loader/pic/0021_loader_builtin_pic_rgba_composite_numeric.t) |
+| PIC-06 | Channels omitted from the packet table retain their initialized white/opaque values. | [tests/loader/pic/0023_loader_builtin_pic_omitted_channels_numeric.t](../../../tests/loader/pic/0023_loader_builtin_pic_omitted_channels_numeric.t) |
+| PIC-07 | A later packet selecting an already-written channel wins in descriptor order. | [tests/loader/pic/0024_loader_builtin_pic_repeated_channel_overwrite_numeric.t](../../../tests/loader/pic/0024_loader_builtin_pic_repeated_channel_overwrite_numeric.t) |
+| PIC-08 | Pure RLE clips an oversized count to the remaining scanline for compatibility. | [tests/loader/pic/0025_loader_builtin_pic_pure_rle_oversized_clip_numeric.t](../../../tests/loader/pic/0025_loader_builtin_pic_pure_rle_oversized_clip_numeric.t) |
+| PIC-09 | Mixed RLE accepts both maximum short-form raw and repeated counts at 128 pixels. | [tests/loader/pic/0026_loader_builtin_pic_mixed_rle_raw128_numeric.t](../../../tests/loader/pic/0026_loader_builtin_pic_mixed_rle_raw128_numeric.t), [tests/loader/pic/0027_loader_builtin_pic_mixed_rle_repeat128_numeric.t](../../../tests/loader/pic/0027_loader_builtin_pic_mixed_rle_repeat128_numeric.t) |
+| PIC-10 | A packet table containing exactly ten descriptors is accepted and applies all packets in order. | [tests/loader/pic/0028_loader_builtin_pic_ten_packet_limit_numeric.t](../../../tests/loader/pic/0028_loader_builtin_pic_ten_packet_limit_numeric.t) |
 
 ### Defensive and malformed-input tests
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| PIC-01 | Missing `PICT` at the fixed offset prevents recognition even when other header bytes are present. | [tests/loader/builtin/0696_loader_builtin_pic_missing_pict_signature_reject.t](../../../tests/loader/builtin/0696_loader_builtin_pic_missing_pict_signature_reject.t) |
-| PIC-91 | Zero width or height and a chained eleventh packet are rejected at the header/descriptor boundary. | [tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t](../../../tests/loader/builtin/1988_loader_builtin_pic_zero_dimension_reject.t), [tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t](../../../tests/loader/builtin/1989_loader_builtin_pic_eleventh_packet_reject.t) |
-| PIC-90 | A mixed-RLE run that exceeds the scanline is rejected instead of writing past the row. | [tests/loader/builtin/0702_loader_builtin_pic_rle_mixed_scanline_overrun_reject.t](../../../tests/loader/builtin/0702_loader_builtin_pic_rle_mixed_scanline_overrun_reject.t) |
+| PIC-01 | Missing `PICT` at the fixed offset prevents recognition even when other header bytes are present. | [tests/loader/pic/0009_loader_builtin_pic_missing_pict_signature_reject.t](../../../tests/loader/pic/0009_loader_builtin_pic_missing_pict_signature_reject.t) |
+| PIC-91 | Zero width or height and a chained eleventh packet are rejected at the header/descriptor boundary. | [tests/loader/pic/0032_loader_builtin_pic_zero_dimension_reject.t](../../../tests/loader/pic/0032_loader_builtin_pic_zero_dimension_reject.t), [tests/loader/pic/0033_loader_builtin_pic_eleventh_packet_reject.t](../../../tests/loader/pic/0033_loader_builtin_pic_eleventh_packet_reject.t) |
+| PIC-90 | A mixed-RLE run that exceeds the scanline is rejected instead of writing past the row. | [tests/loader/pic/0015_loader_builtin_pic_rle_mixed_scanline_overrun_reject.t](../../../tests/loader/pic/0015_loader_builtin_pic_rle_mixed_scanline_overrun_reject.t) |
 
 Coverage audit note: the owners now distinguish recognition, zero-dimension rejection, packet chaining and overwrites, omitted-channel initialization, raw decode, pure-RLE clipping, all three mixed-RLE count encodings, alpha composition, both sides of the ten-packet bound, and mixed-run overrun. Every multi-channel packet-mask combination is not exhaustively enumerated; representative disjoint, omitted, repeated, RGB, and RGBA masks instead own the component-lane rules.

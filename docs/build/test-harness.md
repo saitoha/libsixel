@@ -2,7 +2,7 @@
 
 ## Shared discovery and C test dispatch
 
-Runtime test discovery is centralized in [read-check-test-list.sh](../../build-aux/read-check-test-list.sh). The helper scans the test source tree, normalizes relative paths, sorts them deterministically, and selects `.t` scripts and numbered Python, Ruby, Perl, and PHP binding tests. It prunes private test environments and artifacts and excludes selected static-only scripts that run under `staticcheck`.
+Runtime test discovery is centralized in [read-check-test-list.sh](../../build-aux/read-check-test-list.sh). The helper scans the test source tree, normalizes relative paths, sorts them deterministically, and selects `.t` scripts and numbered Python, Ruby, Perl, and PHP binding tests. The fixed-depth POSIX shell glob never enters support, artifact or private environment trees. Numbered static-only shell cases use `.sh` and run through their explicit staticcheck registrations.
 
 Autotools discovers runtime scripts when make reads `tests/Makefile`. Adding, removing or renaming scripts is visible to the next `make check` without rerunning configure. Discovery reads the source directory, so stale copies in an out-of-tree build do not keep removed tests registered. A command-line `TESTS=...` selection takes precedence, including an explicitly empty selection.
 
@@ -13,7 +13,7 @@ The ordinary Autotools path resolves the inventory once per make invocation and 
 | Registration layer | Autotools | Meson |
 | --- | --- | --- |
 | Runtime script | Discovered by the shared helper at make time; OpenVMS refreshes its list before execution. | Discovered by the shared helper at setup time. |
-| Ordinary C test source | Explicit `test_runner_SOURCES` in `tests/Makefile.am`. | Setup-time scan of C/header files, excluding `*.inc.c`. |
+| Ordinary C test source | Explicit `test_runner_SOURCES` in `tests/Makefile.am`. | Setup-time source scan using Meson's Python interpreter, excluding `*.inc.c`. |
 | Dispatchable C observation | Registered in `test_runner.c` with its implementation and wrapper. | The same dispatch implementation and wrapper. |
 | Amalgamated runner | `amalgamation/sixel.c` and `TEST_RUNNER_AMALGAMATION_DEFINES` when amalgamated tools are selected. | The ordinary test source list linked to `libsixel_dep`; the runner is not replaced with that Autotools amalgamated translation unit. |
 
@@ -22,6 +22,8 @@ The [testing guide](../testing/guide.md) owns one-observation rules, numbering, 
 The classification inventory is broader than the ordinary runtime inventory. Its counted unit is an independently invoked test-entry file, not every numbered source file and not only the cases enabled by one configuration. Runtime TAP scripts and numbered binding scripts, numbered static regression cases, and numbered installed-product cases each count once. For example, the discovery checks under `tests/build/discovery/` are Python cases run by staticcheck, and the PowerShell cases under `tests/extension/wic-installed/` belong to installed Windows product validation. Their placement under `tests/` does not register them with ordinary `make check`.
 
 C implementations behind TAP wrappers, common language helpers, fixture payloads, umbrella staticcheck implementations and generated `.log` or `.trs` files are support rather than additional case entries. A classification move must preserve the owning suite's registration and capability requirements; blindly collecting every Python or PowerShell file changes execution semantics. The [organization rules](../testing/guide.md#organization-and-naming) own category counts and limits, while the shared runtime helper and each additional suite remain responsible for execution selection.
+
+The runtime case list does not require `find` or Python. [list-tree-files.sh](../../build-aux/list-tree-files.sh) handles recursive support-source discovery for amalgamation, binding signatures and cleanup; it skips symlink directories and private artifact trees. [list-test-reports.sh](../../build-aux/list-test-reports.sh) enumerates reports at the fixed case depth. Static checks use [source_files.py](../../tests/_static/python/source_files.py), which reports traversal errors and bounds command batches; its interpreter dependency is confined to static checks and Meson, which already runs in Python.
 
 ## Autotools execution path
 

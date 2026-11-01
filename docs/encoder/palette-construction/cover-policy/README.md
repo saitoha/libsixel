@@ -410,139 +410,139 @@ Each automated contract has a stable ID and an owning test. The reciprocal `Poli
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| CP-01 | Hard anchor rungs, byte `auto` thresholds, explicit-policy preservation, environment/override precedence, fixed-size and growing placement, soft content support, and post-quantizer repair across every solver remain stable. | [tests/quant/palette/0005_cover_anchor.c](../../../../tests/quant/palette/0005_cover_anchor.c) |
-| CP-02 | The top-level `corners` CLI and `SIXEL_PALETTE_COVER` environment forms produce equivalent output. | [tests/cli/options/migration/0018_cover_policy_environment_cli_equivalence.t](../../../../tests/cli/options/migration/0018_cover_policy_environment_cli_equivalence.t) |
-| CP-03 | `cover_grow=1` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/options/regression/0015_cover_policy_grow_image_regression.t](../../../../tests/cli/options/regression/0015_cover_policy_grow_image_regression.t) |
-| CP-04 | `cover_mode=hard` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/options/regression/0016_cover_policy_mode_image_regression.t](../../../../tests/cli/options/regression/0016_cover_policy_mode_image_regression.t) |
-| CP-05 | A mapfile followed by an explicit cover policy is rejected during option application. | [tests/cli/options/invalid/0038_invalid_option_combinations_mapfile_then_cover_policy.t](../../../../tests/cli/options/invalid/0038_invalid_option_combinations_mapfile_then_cover_policy.t) |
-| CP-06 | An explicit cover policy followed by a mapfile is rejected during option application. | [tests/cli/options/invalid/0039_invalid_option_combinations_cover_policy_then_mapfile.t](../../../../tests/cli/options/invalid/0039_invalid_option_combinations_cover_policy_then_mapfile.t) |
-| CP-07 | A built-in palette followed by an explicit cover policy is rejected during option application. | [tests/cli/options/invalid/0040_invalid_option_combinations_builtin_palette_then_cover_policy.t](../../../../tests/cli/options/invalid/0040_invalid_option_combinations_builtin_palette_then_cover_policy.t) |
-| CP-08 | An explicit cover policy followed by a built-in palette is rejected during option application. | [tests/cli/options/invalid/0041_invalid_option_combinations_cover_policy_then_builtin_palette.t](../../../../tests/cli/options/invalid/0041_invalid_option_combinations_cover_policy_then_builtin_palette.t) |
-| CP-09 | Monochrome followed by an explicit cover policy is rejected during option application. | [tests/cli/options/invalid/0042_invalid_option_combinations_monochrome_then_cover_policy.t](../../../../tests/cli/options/invalid/0042_invalid_option_combinations_monochrome_then_cover_policy.t) |
-| CP-10 | An explicit cover policy followed by monochrome is rejected during option application. | [tests/cli/options/invalid/0043_invalid_option_combinations_cover_policy_then_monochrome.t](../../../../tests/cli/options/invalid/0043_invalid_option_combinations_cover_policy_then_monochrome.t) |
-| CP-11 | Native soft cover: gamma extended anchors. | [tests/quant/palette/cover_float/0001_gamma_extended_anchors.t](../../../../tests/quant/palette/cover_float/0001_gamma_extended_anchors.t) |
-| CP-12 | Native soft cover: linear extended anchors. | [tests/quant/palette/cover_float/0002_linear_extended_anchors.t](../../../../tests/quant/palette/cover_float/0002_linear_extended_anchors.t) |
-| CP-13 | Native soft cover: oklab extended anchors. | [tests/quant/palette/cover_float/0003_oklab_extended_anchors.t](../../../../tests/quant/palette/cover_float/0003_oklab_extended_anchors.t) |
-| CP-14 | Native soft cover: cielab extended anchors. | [tests/quant/palette/cover_float/0004_cielab_extended_anchors.t](../../../../tests/quant/palette/cover_float/0004_cielab_extended_anchors.t) |
-| CP-15 | Native soft cover: din99d extended anchors. | [tests/quant/palette/cover_float/0005_din99d_extended_anchors.t](../../../../tests/quant/palette/cover_float/0005_din99d_extended_anchors.t) |
-| CP-16 | Native soft cover: gamma unchanged values. | [tests/quant/palette/cover_float/0006_gamma_unchanged_values.t](../../../../tests/quant/palette/cover_float/0006_gamma_unchanged_values.t) |
-| CP-17 | Native soft cover: linear unchanged values. | [tests/quant/palette/cover_float/0007_linear_unchanged_values.t](../../../../tests/quant/palette/cover_float/0007_linear_unchanged_values.t) |
-| CP-18 | Native soft cover: oklab unchanged values. | [tests/quant/palette/cover_float/0008_oklab_unchanged_values.t](../../../../tests/quant/palette/cover_float/0008_oklab_unchanged_values.t) |
-| CP-19 | Native soft cover: cielab unchanged values. | [tests/quant/palette/cover_float/0009_cielab_unchanged_values.t](../../../../tests/quant/palette/cover_float/0009_cielab_unchanged_values.t) |
-| CP-20 | Native soft cover: din99d unchanged values. | [tests/quant/palette/cover_float/0010_din99d_unchanged_values.t](../../../../tests/quant/palette/cover_float/0010_din99d_unchanged_values.t) |
-| CP-21 | Native soft cover: merge midpoint. | [tests/quant/palette/cover_float/0011_merge_midpoint.t](../../../../tests/quant/palette/cover_float/0011_merge_midpoint.t) |
-| CP-22 | Native soft cover: singleton ignored. | [tests/quant/palette/cover_float/0012_singleton_ignored.t](../../../../tests/quant/palette/cover_float/0012_singleton_ignored.t) |
-| CP-23 | Native soft cover: cell mean. | [tests/quant/palette/cover_float/0013_cell_mean.t](../../../../tests/quant/palette/cover_float/0013_cell_mean.t) |
-| CP-24 | Native soft cover: fixed rgb metric. | [tests/quant/palette/cover_float/0014_fixed_rgb_metric.t](../../../../tests/quant/palette/cover_float/0014_fixed_rgb_metric.t) |
-| CP-25 | Native soft cover: growth ceiling. | [tests/quant/palette/cover_float/0015_growth_ceiling.t](../../../../tests/quant/palette/cover_float/0015_growth_ceiling.t) |
-| CP-26 | Native soft cover: allocation atomic recovery. | [tests/quant/palette/cover_float/0016_allocation_atomic_recovery.t](../../../../tests/quant/palette/cover_float/0016_allocation_atomic_recovery.t) |
-| CP-27 | Native soft cover: nonfinite atomic recovery. | [tests/quant/palette/cover_float/0017_nonfinite_atomic_recovery.t](../../../../tests/quant/palette/cover_float/0017_nonfinite_atomic_recovery.t) |
-| CP-28 | Native soft cover: off unchanged. | [tests/quant/palette/cover_float/0018_off_unchanged.t](../../../../tests/quant/palette/cover_float/0018_off_unchanged.t) |
-| CP-29 | Native soft cover: merge budget. | [tests/quant/palette/cover_float/0019_merge_budget.t](../../../../tests/quant/palette/cover_float/0019_merge_budget.t) |
-| CP-30 | Native soft cover: reach threshold. | [tests/quant/palette/cover_float/0020_reach_threshold.t](../../../../tests/quant/palette/cover_float/0020_reach_threshold.t) |
-| CP-31 | Native soft cover: kmeans srgb wire. | [tests/quant/palette/cover_float/0021_kmeans_srgb_wire.t](../../../../tests/quant/palette/cover_float/0021_kmeans_srgb_wire.t) |
-| CP-32 | Native soft cover: kmeans p3 wire. | [tests/quant/palette/cover_float/0022_kmeans_p3_wire.t](../../../../tests/quant/palette/cover_float/0022_kmeans_p3_wire.t) |
-| CP-33 | Native soft cover: kcenter srgb wire. | [tests/quant/palette/cover_float/0023_kcenter_srgb_wire.t](../../../../tests/quant/palette/cover_float/0023_kcenter_srgb_wire.t) |
-| CP-34 | Native soft cover: kcenter p3 wire. | [tests/quant/palette/cover_float/0024_kcenter_p3_wire.t](../../../../tests/quant/palette/cover_float/0024_kcenter_p3_wire.t) |
-| CP-35 | Native soft cover: kmedoids srgb wire. | [tests/quant/palette/cover_float/0025_kmedoids_srgb_wire.t](../../../../tests/quant/palette/cover_float/0025_kmedoids_srgb_wire.t) |
-| CP-36 | Native soft cover: kmedoids p3 wire. | [tests/quant/palette/cover_float/0026_kmedoids_p3_wire.t](../../../../tests/quant/palette/cover_float/0026_kmedoids_p3_wire.t) |
-| CP-37 | Native soft cover: heckbert srgb wire. | [tests/quant/palette/cover_float/0027_heckbert_srgb_wire.t](../../../../tests/quant/palette/cover_float/0027_heckbert_srgb_wire.t) |
-| CP-38 | Native soft cover: heckbert p3 wire. | [tests/quant/palette/cover_float/0028_heckbert_p3_wire.t](../../../../tests/quant/palette/cover_float/0028_heckbert_p3_wire.t) |
-| CP-39 | Native soft cover: auto srgb wire. | [tests/quant/palette/cover_float/0029_auto_srgb_wire.t](../../../../tests/quant/palette/cover_float/0029_auto_srgb_wire.t) |
-| CP-40 | Native soft cover: auto p3 wire. | [tests/quant/palette/cover_float/0030_auto_p3_wire.t](../../../../tests/quant/palette/cover_float/0030_auto_p3_wire.t) |
-| CP-41 | Native soft cover: kmeans linear wire. | [tests/quant/palette/cover_float/0031_kmeans_linear_wire.t](../../../../tests/quant/palette/cover_float/0031_kmeans_linear_wire.t) |
-| CP-42 | Native soft cover: kmeans oklab wire. | [tests/quant/palette/cover_float/0032_kmeans_oklab_wire.t](../../../../tests/quant/palette/cover_float/0032_kmeans_oklab_wire.t) |
-| CP-43 | Native soft cover: kmeans cielab wire. | [tests/quant/palette/cover_float/0033_kmeans_cielab_wire.t](../../../../tests/quant/palette/cover_float/0033_kmeans_cielab_wire.t) |
-| CP-44 | Native soft cover: kmeans din99d wire. | [tests/quant/palette/cover_float/0034_kmeans_din99d_wire.t](../../../../tests/quant/palette/cover_float/0034_kmeans_din99d_wire.t) |
-| CP-45 | Native soft cover: kmeans byte eligible. | [tests/quant/palette/cover_float/0035_kmeans_byte_eligible.t](../../../../tests/quant/palette/cover_float/0035_kmeans_byte_eligible.t) |
-| CP-46 | Native soft cover: kcenter byte eligible. | [tests/quant/palette/cover_float/0036_kcenter_byte_eligible.t](../../../../tests/quant/palette/cover_float/0036_kcenter_byte_eligible.t) |
-| CP-47 | Native soft cover: kmedoids byte eligible. | [tests/quant/palette/cover_float/0037_kmedoids_byte_eligible.t](../../../../tests/quant/palette/cover_float/0037_kmedoids_byte_eligible.t) |
-| CP-48 | Native soft cover: heckbert byte eligible. | [tests/quant/palette/cover_float/0038_heckbert_byte_eligible.t](../../../../tests/quant/palette/cover_float/0038_heckbert_byte_eligible.t) |
-| CP-49 | Native soft cover: auto byte eligible. | [tests/quant/palette/cover_float/0039_auto_byte_eligible.t](../../../../tests/quant/palette/cover_float/0039_auto_byte_eligible.t) |
-| CP-50 | Native hard cover: P3 fixed-anchor output. | [tests/quant/palette/cover_float/0040_hard_p3_grow.t](../../../../tests/quant/palette/cover_float/0040_hard_p3_grow.t) |
-| CP-51 | Native soft cover: encoder allocation recovery. | [tests/quant/palette/cover_float/0041_encoder_allocation_recovery.t](../../../../tests/quant/palette/cover_float/0041_encoder_allocation_recovery.t) |
-| CP-52 | Native soft cover: auto small noop. | [tests/quant/palette/cover_float/0042_auto_small_noop.t](../../../../tests/quant/palette/cover_float/0042_auto_small_noop.t) |
-| CP-53 | Native soft AUTO remains off with growth enabled at 32 colors. | [tests/quant/palette/cover_float/0043_auto_grow_noop.t](../../../../tests/quant/palette/cover_float/0043_auto_grow_noop.t) |
-| CP-54 | Native soft cover: environment hard p3 grow. | [tests/quant/palette/cover_float/0044_environment_hard_grow.t](../../../../tests/quant/palette/cover_float/0044_environment_hard_grow.t) |
-| CP-55 | Native soft cover: explicit soft overrides env. | [tests/quant/palette/cover_float/0045_explicit_soft_overrides_env.t](../../../../tests/quant/palette/cover_float/0045_explicit_soft_overrides_env.t) |
-| CP-56 | Native soft cover: environment soft grow. | [tests/quant/palette/cover_float/0046_environment_soft_grow.t](../../../../tests/quant/palette/cover_float/0046_environment_soft_grow.t) |
-| CP-57 | Native soft cover: kmeans worker grow. | [tests/quant/palette/cover_float/0047_kmeans_worker_grow.t](../../../../tests/quant/palette/cover_float/0047_kmeans_worker_grow.t) |
-| CP-58 | Native soft cover: gamma RGB midpoint. | [tests/quant/palette/cover_float/0048_gamma_rgb_midpoint.t](../../../../tests/quant/palette/cover_float/0048_gamma_rgb_midpoint.t) |
-| CP-59 | Native soft cover: linear RGB midpoint. | [tests/quant/palette/cover_float/0049_linear_rgb_midpoint.t](../../../../tests/quant/palette/cover_float/0049_linear_rgb_midpoint.t) |
-| CP-60 | Native soft cover: oklab RGB midpoint. | [tests/quant/palette/cover_float/0050_oklab_rgb_midpoint.t](../../../../tests/quant/palette/cover_float/0050_oklab_rgb_midpoint.t) |
-| CP-61 | Native soft cover: cielab RGB midpoint. | [tests/quant/palette/cover_float/0051_cielab_rgb_midpoint.t](../../../../tests/quant/palette/cover_float/0051_cielab_rgb_midpoint.t) |
-| CP-62 | Native soft cover: din99d RGB midpoint. | [tests/quant/palette/cover_float/0052_din99d_rgb_midpoint.t](../../../../tests/quant/palette/cover_float/0052_din99d_rgb_midpoint.t) |
-| CP-63 | Native cover: hard gamma anchors. | [tests/quant/palette/cover_float/0053_hard_gamma_anchors.t](../../../../tests/quant/palette/cover_float/0053_hard_gamma_anchors.t) |
-| CP-64 | Native cover: hard linear anchors. | [tests/quant/palette/cover_float/0054_hard_linear_anchors.t](../../../../tests/quant/palette/cover_float/0054_hard_linear_anchors.t) |
-| CP-65 | Native cover: hard oklab anchors. | [tests/quant/palette/cover_float/0055_hard_oklab_anchors.t](../../../../tests/quant/palette/cover_float/0055_hard_oklab_anchors.t) |
-| CP-66 | Native cover: hard cielab anchors. | [tests/quant/palette/cover_float/0056_hard_cielab_anchors.t](../../../../tests/quant/palette/cover_float/0056_hard_cielab_anchors.t) |
-| CP-67 | Native cover: hard din99d anchors. | [tests/quant/palette/cover_float/0057_hard_din99d_anchors.t](../../../../tests/quant/palette/cover_float/0057_hard_din99d_anchors.t) |
-| CP-68 | Native cover: hard faces. | [tests/quant/palette/cover_float/0058_hard_faces.t](../../../../tests/quant/palette/cover_float/0058_hard_faces.t) |
-| CP-69 | Native cover: hard edges. | [tests/quant/palette/cover_float/0059_hard_edges.t](../../../../tests/quant/palette/cover_float/0059_hard_edges.t) |
-| CP-70 | Native cover: hard already covered. | [tests/quant/palette/cover_float/0060_hard_already_covered.t](../../../../tests/quant/palette/cover_float/0060_hard_already_covered.t) |
-| CP-71 | Native cover: hard growth limit. | [tests/quant/palette/cover_float/0061_hard_growth_limit.t](../../../../tests/quant/palette/cover_float/0061_hard_growth_limit.t) |
-| CP-72 | Native cover: hard no source histogram. | [tests/quant/palette/cover_float/0062_hard_no_source_histogram.t](../../../../tests/quant/palette/cover_float/0062_hard_no_source_histogram.t) |
-| CP-73 | Native cover: hard nonfinite recovery. | [tests/quant/palette/cover_float/0063_hard_nonfinite_recovery.t](../../../../tests/quant/palette/cover_float/0063_hard_nonfinite_recovery.t) |
-| CP-74 | Native cover: hard funding refused. | [tests/quant/palette/cover_float/0064_hard_funding_refused.t](../../../../tests/quant/palette/cover_float/0064_hard_funding_refused.t) |
-| CP-75 | Native cover: hard near anchor skipped. | [tests/quant/palette/cover_float/0065_hard_near_anchor_skipped.t](../../../../tests/quant/palette/cover_float/0065_hard_near_anchor_skipped.t) |
-| CP-76 | Native cover: hard gamma midpoint. | [tests/quant/palette/cover_float/0066_hard_gamma_midpoint.t](../../../../tests/quant/palette/cover_float/0066_hard_gamma_midpoint.t) |
-| CP-77 | Native cover: hard linear midpoint. | [tests/quant/palette/cover_float/0067_hard_linear_midpoint.t](../../../../tests/quant/palette/cover_float/0067_hard_linear_midpoint.t) |
-| CP-78 | Native cover: hard oklab midpoint. | [tests/quant/palette/cover_float/0068_hard_oklab_midpoint.t](../../../../tests/quant/palette/cover_float/0068_hard_oklab_midpoint.t) |
-| CP-79 | Native cover: hard cielab midpoint. | [tests/quant/palette/cover_float/0069_hard_cielab_midpoint.t](../../../../tests/quant/palette/cover_float/0069_hard_cielab_midpoint.t) |
-| CP-80 | Native cover: hard din99d midpoint. | [tests/quant/palette/cover_float/0070_hard_din99d_midpoint.t](../../../../tests/quant/palette/cover_float/0070_hard_din99d_midpoint.t) |
-| CP-81 | Native cover: hard kmeans srgb. | [tests/quant/palette/cover_float/0071_hard_kmeans_srgb.t](../../../../tests/quant/palette/cover_float/0071_hard_kmeans_srgb.t) |
-| CP-82 | Native cover: hard kmeans byte. | [tests/quant/palette/cover_float/0072_hard_kmeans_byte.t](../../../../tests/quant/palette/cover_float/0072_hard_kmeans_byte.t) |
-| CP-83 | Native cover: hard center srgb. | [tests/quant/palette/cover_float/0073_hard_center_srgb.t](../../../../tests/quant/palette/cover_float/0073_hard_center_srgb.t) |
-| CP-84 | Native cover: hard center byte. | [tests/quant/palette/cover_float/0074_hard_center_byte.t](../../../../tests/quant/palette/cover_float/0074_hard_center_byte.t) |
-| CP-85 | Native cover: hard center p3. | [tests/quant/palette/cover_float/0075_hard_center_p3.t](../../../../tests/quant/palette/cover_float/0075_hard_center_p3.t) |
-| CP-86 | Native cover: hard medoids srgb. | [tests/quant/palette/cover_float/0076_hard_medoids_srgb.t](../../../../tests/quant/palette/cover_float/0076_hard_medoids_srgb.t) |
-| CP-87 | Native cover: hard medoids byte. | [tests/quant/palette/cover_float/0077_hard_medoids_byte.t](../../../../tests/quant/palette/cover_float/0077_hard_medoids_byte.t) |
-| CP-88 | Native cover: hard medoids p3. | [tests/quant/palette/cover_float/0078_hard_medoids_p3.t](../../../../tests/quant/palette/cover_float/0078_hard_medoids_p3.t) |
-| CP-89 | Native cover: hard heckbert srgb. | [tests/quant/palette/cover_float/0079_hard_heckbert_srgb.t](../../../../tests/quant/palette/cover_float/0079_hard_heckbert_srgb.t) |
-| CP-90 | Native cover: hard heckbert byte. | [tests/quant/palette/cover_float/0080_hard_heckbert_byte.t](../../../../tests/quant/palette/cover_float/0080_hard_heckbert_byte.t) |
-| CP-91 | Native cover: hard heckbert p3. | [tests/quant/palette/cover_float/0081_hard_heckbert_p3.t](../../../../tests/quant/palette/cover_float/0081_hard_heckbert_p3.t) |
-| CP-92 | Native cover: hard auto srgb. | [tests/quant/palette/cover_float/0082_hard_auto_srgb.t](../../../../tests/quant/palette/cover_float/0082_hard_auto_srgb.t) |
-| CP-93 | Native cover: hard auto byte. | [tests/quant/palette/cover_float/0083_hard_auto_byte.t](../../../../tests/quant/palette/cover_float/0083_hard_auto_byte.t) |
-| CP-94 | Native cover: hard auto p3. | [tests/quant/palette/cover_float/0084_hard_auto_p3.t](../../../../tests/quant/palette/cover_float/0084_hard_auto_p3.t) |
-| CP-95 | Native cover: hard linear wire. | [tests/quant/palette/cover_float/0085_hard_linear_wire.t](../../../../tests/quant/palette/cover_float/0085_hard_linear_wire.t) |
-| CP-96 | Native cover: hard oklab wire. | [tests/quant/palette/cover_float/0086_hard_oklab_wire.t](../../../../tests/quant/palette/cover_float/0086_hard_oklab_wire.t) |
-| CP-97 | Native cover: hard cielab wire. | [tests/quant/palette/cover_float/0087_hard_cielab_wire.t](../../../../tests/quant/palette/cover_float/0087_hard_cielab_wire.t) |
-| CP-98 | Native cover: hard din99d wire. | [tests/quant/palette/cover_float/0088_hard_din99d_wire.t](../../../../tests/quant/palette/cover_float/0088_hard_din99d_wire.t) |
-| CP-99 | Native hard cover uses the asynchronous palette worker. | [tests/quant/palette/cover_float/0089_hard_worker_grow.t](../../../../tests/quant/palette/cover_float/0089_hard_worker_grow.t) |
-| CP-100 | Explicit hard mode overrides a soft environment mode. | [tests/quant/palette/cover_float/0090_hard_overrides_soft_environment.t](../../../../tests/quant/palette/cover_float/0090_hard_overrides_soft_environment.t) |
-| CP-101 | 32 colors retain exact float entries without histogram allocation. | [tests/quant/palette/auto_cover_float/0001_byte_corners_boundary.t](../../../../tests/quant/palette/auto_cover_float/0001_byte_corners_boundary.t) |
-| CP-102 | 64 colors do not inherit the byte faces budget. | [tests/quant/palette/auto_cover_float/0002_byte_faces_boundary.t](../../../../tests/quant/palette/auto_cover_float/0002_byte_faces_boundary.t) |
-| CP-103 | 256 colors do not inherit the byte edges budget. | [tests/quant/palette/auto_cover_float/0003_byte_edges_boundary.t](../../../../tests/quant/palette/auto_cover_float/0003_byte_edges_boundary.t) |
-| CP-104 | AUTO growth preserves the reserved slot and 255 entries. | [tests/quant/palette/auto_cover_float/0004_reserved_capacity.t](../../../../tests/quant/palette/auto_cover_float/0004_reserved_capacity.t) |
-| CP-105 | Hard mode and growth do not enable AUTO repair. | [tests/quant/palette/auto_cover_float/0005_hard_grow_noop.t](../../../../tests/quant/palette/auto_cover_float/0005_hard_grow_noop.t) |
-| CP-106 | AUTO preserves typed linear coordinates without a round trip. | [tests/quant/palette/auto_cover_float/0006_linear_noop.t](../../../../tests/quant/palette/auto_cover_float/0006_linear_noop.t) |
-| CP-107 | Explicit corners still grow between two AUTO calls. | [tests/quant/palette/auto_cover_float/0007_explicit_transition.t](../../../../tests/quant/palette/auto_cover_float/0007_explicit_transition.t) |
-| CP-108 | Encoder soft AUTO preserves 32 native colors and RGB101 output. | [tests/quant/palette/auto_cover_float/0008_encoder_soft_wire.t](../../../../tests/quant/palette/auto_cover_float/0008_encoder_soft_wire.t) |
-| CP-109 | Encoder hard AUTO preserves 32 native colors and RGB101 output. | [tests/quant/palette/auto_cover_float/0009_encoder_hard_wire.t](../../../../tests/quant/palette/auto_cover_float/0009_encoder_hard_wire.t) |
-| CP-110 | Omitted cover preserves native extended palette values. | [tests/quant/palette/auto_cover_float/0010_default_native.t](../../../../tests/quant/palette/auto_cover_float/0010_default_native.t) |
-| CP-111 | Plain AUTO preserves native extended palette values. | [tests/quant/palette/auto_cover_float/0011_explicit_auto_native.t](../../../../tests/quant/palette/auto_cover_float/0011_explicit_auto_native.t) |
-| CP-112 | AUTO leaves an otherwise byte-eligible job on its byte path. | [tests/quant/palette/auto_cover_float/0012_byte_auto_eligible.t](../../../../tests/quant/palette/auto_cover_float/0012_byte_auto_eligible.t) |
-| CP-113 | Explicit float precision admits a byte source with AUTO. | [tests/quant/palette/auto_cover_float/0013_byte_forced_float.t](../../../../tests/quant/palette/auto_cover_float/0013_byte_forced_float.t) |
-| CP-114 | `--precision-policy=8bit` applies an already-float source through the byte path. | [tests/quant/palette/auto_cover_float/0014_float_byte_preference.t](../../../../tests/quant/palette/auto_cover_float/0014_float_byte_preference.t) |
-| CP-115 | Working-space conversion admits required float with AUTO. | [tests/quant/palette/auto_cover_float/0015_linear_required_float.t](../../../../tests/quant/palette/auto_cover_float/0015_linear_required_float.t) |
-| CP-116 | Environment AUTO admits the native palette path. | [tests/quant/palette/auto_cover_float/0016_environment_auto.t](../../../../tests/quant/palette/auto_cover_float/0016_environment_auto.t) |
-| CP-117 | Environment hard mode and growth leave native AUTO off. | [tests/quant/palette/auto_cover_float/0017_environment_hard_grow.t](../../../../tests/quant/palette/auto_cover_float/0017_environment_hard_grow.t) |
-| CP-118 | Explicit AUTO overrides an active environment cover budget. | [tests/quant/palette/auto_cover_float/0018_explicit_auto_precedence.t](../../../../tests/quant/palette/auto_cover_float/0018_explicit_auto_precedence.t) |
-| CP-119 | P3 defaults admit byte input into float work. | [tests/quant/palette/auto_cover_float/0019_p3_default_byte.t](../../../../tests/quant/palette/auto_cover_float/0019_p3_default_byte.t) |
-| CP-120 | P3 can enable and disable snap on a reused encoder while retaining automatic cover semantics. | [tests/quant/palette/auto_cover_float/0020_p3_snap_transition.t](../../../../tests/quant/palette/auto_cover_float/0020_p3_snap_transition.t) |
-| CP-121 | Interleaved encoders retain independent byte and float admission. | [tests/quant/palette/auto_cover_float/0021_encoder_isolation.t](../../../../tests/quant/palette/auto_cover_float/0021_encoder_isolation.t) |
-| CP-122 | Omitted cover excludes hidden RGB and reserves its mask slot. | [tests/quant/palette/auto_cover_float/0022_masked_default.t](../../../../tests/quant/palette/auto_cover_float/0022_masked_default.t) |
-| CP-123 | Animation re-evaluates byte and float admission on each frame. | [tests/quant/palette/auto_cover_float/0023_animation_precision.t](../../../../tests/quant/palette/auto_cover_float/0023_animation_precision.t) |
-| CP-124 | P3 resolves omitted capacity before mask admission. | [tests/quant/palette/auto_cover_float/0024_masked_p3_default.t](../../../../tests/quant/palette/auto_cover_float/0024_masked_p3_default.t) |
-| CP-125 | Byte encoding resolves omitted capacity before reserving its mask slot. | [tests/quant/palette/auto_cover_float/0025_masked_byte_default.t](../../../../tests/quant/palette/auto_cover_float/0025_masked_byte_default.t) |
-| CP-126 | An omitted mode runs soft source-driven growth on native float. | [tests/quant/palette/cover_float/0091_default_soft_growth.t](../../../../tests/quant/palette/cover_float/0091_default_soft_growth.t) |
-| CP-127 | An omitted soft mode admits P3 output. | [tests/quant/palette/cover_float/0092_default_soft_p3.t](../../../../tests/quant/palette/cover_float/0092_default_soft_p3.t) |
-| CP-128 | An omitted soft mode preserves genuine byte eligibility. | [tests/quant/palette/cover_float/0093_default_soft_byte.t](../../../../tests/quant/palette/cover_float/0093_default_soft_byte.t) |
-| CP-129 | An explicit faces budget admits native repair without a mode suboption. | [tests/quant/palette/cover_float/0094_default_soft_faces.t](../../../../tests/quant/palette/cover_float/0094_default_soft_faces.t) |
-| CP-130 | An explicit edges budget admits native repair without a mode suboption. | [tests/quant/palette/cover_float/0095_default_soft_edges.t](../../../../tests/quant/palette/cover_float/0095_default_soft_edges.t) |
-| CP-131 | An omitted soft mode retains typed Oklab palette coordinates. | [tests/quant/palette/cover_float/0096_default_soft_oklab.t](../../../../tests/quant/palette/cover_float/0096_default_soft_oklab.t) |
-| CP-132 | An omitted soft mode excludes hidden RGB and reserves the omission slot. | [tests/quant/palette/cover_mask/0023_default_soft_mask.t](../../../../tests/quant/palette/cover_mask/0023_default_soft_mask.t) |
-| CP-133 | An omitted soft mode retains masks during P3 output. | [tests/quant/palette/cover_mask/0024_default_soft_mask_p3.t](../../../../tests/quant/palette/cover_mask/0024_default_soft_mask_p3.t) |
+| CP-01 | Hard anchor rungs, byte `auto` thresholds, explicit-policy preservation, environment/override precedence, fixed-size and growing placement, soft content support, and post-quantizer repair across every solver remain stable. | [tests/_support/quant/palette/0005_cover_anchor.c](../../../../tests/_support/quant/palette/0005_cover_anchor.c) |
+| CP-02 | The top-level `corners` CLI and `SIXEL_PALETTE_COVER` environment forms produce equivalent output. | [tests/cli/palette-stage-options/0052_cover_policy_environment_cli_equivalence.t](../../../../tests/cli/palette-stage-options/0052_cover_policy_environment_cli_equivalence.t) |
+| CP-03 | `cover_grow=1` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/palette-stage-options/0057_cover_policy_grow_image_regression.t](../../../../tests/cli/palette-stage-options/0057_cover_policy_grow_image_regression.t) |
+| CP-04 | `cover_mode=hard` has equivalent short-suboption and environment behavior, reaches the cover consumer, and preserves the image-quality floor. | [tests/cli/palette-stage-options/0058_cover_policy_mode_image_regression.t](../../../../tests/cli/palette-stage-options/0058_cover_policy_mode_image_regression.t) |
+| CP-05 | A mapfile followed by an explicit cover policy is rejected during option application. | [tests/cli/palette-stage-options/0015_invalid_option_combinations_mapfile_then_cover_policy.t](../../../../tests/cli/palette-stage-options/0015_invalid_option_combinations_mapfile_then_cover_policy.t) |
+| CP-06 | An explicit cover policy followed by a mapfile is rejected during option application. | [tests/cli/palette-stage-options/0016_invalid_option_combinations_cover_policy_then_mapfile.t](../../../../tests/cli/palette-stage-options/0016_invalid_option_combinations_cover_policy_then_mapfile.t) |
+| CP-07 | A built-in palette followed by an explicit cover policy is rejected during option application. | [tests/cli/palette-stage-options/0017_invalid_option_combinations_builtin_palette_then_cover_policy.t](../../../../tests/cli/palette-stage-options/0017_invalid_option_combinations_builtin_palette_then_cover_policy.t) |
+| CP-08 | An explicit cover policy followed by a built-in palette is rejected during option application. | [tests/cli/palette-stage-options/0018_invalid_option_combinations_cover_policy_then_builtin_palette.t](../../../../tests/cli/palette-stage-options/0018_invalid_option_combinations_cover_policy_then_builtin_palette.t) |
+| CP-09 | Monochrome followed by an explicit cover policy is rejected during option application. | [tests/cli/palette-stage-options/0019_invalid_option_combinations_monochrome_then_cover_policy.t](../../../../tests/cli/palette-stage-options/0019_invalid_option_combinations_monochrome_then_cover_policy.t) |
+| CP-10 | An explicit cover policy followed by monochrome is rejected during option application. | [tests/cli/palette-stage-options/0020_invalid_option_combinations_cover_policy_then_monochrome.t](../../../../tests/cli/palette-stage-options/0020_invalid_option_combinations_cover_policy_then_monochrome.t) |
+| CP-11 | Native soft cover: gamma extended anchors. | [tests/palette/cover/0026_gamma_extended_anchors.t](../../../../tests/palette/cover/0026_gamma_extended_anchors.t) |
+| CP-12 | Native soft cover: linear extended anchors. | [tests/palette/cover/0027_linear_extended_anchors.t](../../../../tests/palette/cover/0027_linear_extended_anchors.t) |
+| CP-13 | Native soft cover: oklab extended anchors. | [tests/palette/cover/0028_oklab_extended_anchors.t](../../../../tests/palette/cover/0028_oklab_extended_anchors.t) |
+| CP-14 | Native soft cover: cielab extended anchors. | [tests/palette/cover/0029_cielab_extended_anchors.t](../../../../tests/palette/cover/0029_cielab_extended_anchors.t) |
+| CP-15 | Native soft cover: din99d extended anchors. | [tests/palette/cover/0030_din99d_extended_anchors.t](../../../../tests/palette/cover/0030_din99d_extended_anchors.t) |
+| CP-16 | Native soft cover: gamma unchanged values. | [tests/palette/cover/0031_gamma_unchanged_values.t](../../../../tests/palette/cover/0031_gamma_unchanged_values.t) |
+| CP-17 | Native soft cover: linear unchanged values. | [tests/palette/cover/0032_linear_unchanged_values.t](../../../../tests/palette/cover/0032_linear_unchanged_values.t) |
+| CP-18 | Native soft cover: oklab unchanged values. | [tests/palette/cover/0033_oklab_unchanged_values.t](../../../../tests/palette/cover/0033_oklab_unchanged_values.t) |
+| CP-19 | Native soft cover: cielab unchanged values. | [tests/palette/cover/0034_cielab_unchanged_values.t](../../../../tests/palette/cover/0034_cielab_unchanged_values.t) |
+| CP-20 | Native soft cover: din99d unchanged values. | [tests/palette/cover/0035_din99d_unchanged_values.t](../../../../tests/palette/cover/0035_din99d_unchanged_values.t) |
+| CP-21 | Native soft cover: merge midpoint. | [tests/palette/cover/0036_merge_midpoint.t](../../../../tests/palette/cover/0036_merge_midpoint.t) |
+| CP-22 | Native soft cover: singleton ignored. | [tests/palette/cover/0037_singleton_ignored.t](../../../../tests/palette/cover/0037_singleton_ignored.t) |
+| CP-23 | Native soft cover: cell mean. | [tests/palette/cover/0038_cell_mean.t](../../../../tests/palette/cover/0038_cell_mean.t) |
+| CP-24 | Native soft cover: fixed rgb metric. | [tests/palette/cover/0039_fixed_rgb_metric.t](../../../../tests/palette/cover/0039_fixed_rgb_metric.t) |
+| CP-25 | Native soft cover: growth ceiling. | [tests/palette/cover/0040_growth_ceiling.t](../../../../tests/palette/cover/0040_growth_ceiling.t) |
+| CP-26 | Native soft cover: allocation atomic recovery. | [tests/palette/cover/0041_allocation_atomic_recovery.t](../../../../tests/palette/cover/0041_allocation_atomic_recovery.t) |
+| CP-27 | Native soft cover: nonfinite atomic recovery. | [tests/palette/cover/0042_nonfinite_atomic_recovery.t](../../../../tests/palette/cover/0042_nonfinite_atomic_recovery.t) |
+| CP-28 | Native soft cover: off unchanged. | [tests/palette/cover/0043_off_unchanged.t](../../../../tests/palette/cover/0043_off_unchanged.t) |
+| CP-29 | Native soft cover: merge budget. | [tests/palette/cover/0044_merge_budget.t](../../../../tests/palette/cover/0044_merge_budget.t) |
+| CP-30 | Native soft cover: reach threshold. | [tests/palette/cover/0045_reach_threshold.t](../../../../tests/palette/cover/0045_reach_threshold.t) |
+| CP-31 | Native soft cover: kmeans srgb wire. | [tests/palette/cover/0046_kmeans_srgb_wire.t](../../../../tests/palette/cover/0046_kmeans_srgb_wire.t) |
+| CP-32 | Native soft cover: kmeans p3 wire. | [tests/palette/cover/0047_kmeans_p3_wire.t](../../../../tests/palette/cover/0047_kmeans_p3_wire.t) |
+| CP-33 | Native soft cover: kcenter srgb wire. | [tests/palette/cover/0048_kcenter_srgb_wire.t](../../../../tests/palette/cover/0048_kcenter_srgb_wire.t) |
+| CP-34 | Native soft cover: kcenter p3 wire. | [tests/palette/cover/0049_kcenter_p3_wire.t](../../../../tests/palette/cover/0049_kcenter_p3_wire.t) |
+| CP-35 | Native soft cover: kmedoids srgb wire. | [tests/palette/cover/0050_kmedoids_srgb_wire.t](../../../../tests/palette/cover/0050_kmedoids_srgb_wire.t) |
+| CP-36 | Native soft cover: kmedoids p3 wire. | [tests/palette/cover/0051_kmedoids_p3_wire.t](../../../../tests/palette/cover/0051_kmedoids_p3_wire.t) |
+| CP-37 | Native soft cover: heckbert srgb wire. | [tests/palette/cover/0052_heckbert_srgb_wire.t](../../../../tests/palette/cover/0052_heckbert_srgb_wire.t) |
+| CP-38 | Native soft cover: heckbert p3 wire. | [tests/palette/cover/0053_heckbert_p3_wire.t](../../../../tests/palette/cover/0053_heckbert_p3_wire.t) |
+| CP-39 | Native soft cover: auto srgb wire. | [tests/palette/cover/0054_auto_srgb_wire.t](../../../../tests/palette/cover/0054_auto_srgb_wire.t) |
+| CP-40 | Native soft cover: auto p3 wire. | [tests/palette/cover/0055_auto_p3_wire.t](../../../../tests/palette/cover/0055_auto_p3_wire.t) |
+| CP-41 | Native soft cover: kmeans linear wire. | [tests/palette/cover/0056_kmeans_linear_wire.t](../../../../tests/palette/cover/0056_kmeans_linear_wire.t) |
+| CP-42 | Native soft cover: kmeans oklab wire. | [tests/palette/cover/0057_kmeans_oklab_wire.t](../../../../tests/palette/cover/0057_kmeans_oklab_wire.t) |
+| CP-43 | Native soft cover: kmeans cielab wire. | [tests/palette/cover/0058_kmeans_cielab_wire.t](../../../../tests/palette/cover/0058_kmeans_cielab_wire.t) |
+| CP-44 | Native soft cover: kmeans din99d wire. | [tests/palette/cover/0059_kmeans_din99d_wire.t](../../../../tests/palette/cover/0059_kmeans_din99d_wire.t) |
+| CP-45 | Native soft cover: kmeans byte eligible. | [tests/palette/cover/0060_kmeans_byte_eligible.t](../../../../tests/palette/cover/0060_kmeans_byte_eligible.t) |
+| CP-46 | Native soft cover: kcenter byte eligible. | [tests/palette/cover/0061_kcenter_byte_eligible.t](../../../../tests/palette/cover/0061_kcenter_byte_eligible.t) |
+| CP-47 | Native soft cover: kmedoids byte eligible. | [tests/palette/cover/0062_kmedoids_byte_eligible.t](../../../../tests/palette/cover/0062_kmedoids_byte_eligible.t) |
+| CP-48 | Native soft cover: heckbert byte eligible. | [tests/palette/cover/0063_heckbert_byte_eligible.t](../../../../tests/palette/cover/0063_heckbert_byte_eligible.t) |
+| CP-49 | Native soft cover: auto byte eligible. | [tests/palette/cover/0064_auto_byte_eligible.t](../../../../tests/palette/cover/0064_auto_byte_eligible.t) |
+| CP-50 | Native hard cover: P3 fixed-anchor output. | [tests/palette/cover/0065_hard_p3_grow.t](../../../../tests/palette/cover/0065_hard_p3_grow.t) |
+| CP-51 | Native soft cover: encoder allocation recovery. | [tests/palette/cover/0066_encoder_allocation_recovery.t](../../../../tests/palette/cover/0066_encoder_allocation_recovery.t) |
+| CP-52 | Native soft cover: auto small noop. | [tests/palette/cover/0067_auto_small_noop.t](../../../../tests/palette/cover/0067_auto_small_noop.t) |
+| CP-53 | Native soft AUTO remains off with growth enabled at 32 colors. | [tests/palette/cover/0068_auto_grow_noop.t](../../../../tests/palette/cover/0068_auto_grow_noop.t) |
+| CP-54 | Native soft cover: environment hard p3 grow. | [tests/palette/cover/0069_quant_palette_cover_float_environment_hard_grow.t](../../../../tests/palette/cover/0069_quant_palette_cover_float_environment_hard_grow.t) |
+| CP-55 | Native soft cover: explicit soft overrides env. | [tests/palette/cover/0070_explicit_soft_overrides_env.t](../../../../tests/palette/cover/0070_explicit_soft_overrides_env.t) |
+| CP-56 | Native soft cover: environment soft grow. | [tests/palette/cover/0071_environment_soft_grow.t](../../../../tests/palette/cover/0071_environment_soft_grow.t) |
+| CP-57 | Native soft cover: kmeans worker grow. | [tests/palette/cover/0072_kmeans_worker_grow.t](../../../../tests/palette/cover/0072_kmeans_worker_grow.t) |
+| CP-58 | Native soft cover: gamma RGB midpoint. | [tests/palette/cover/0073_gamma_rgb_midpoint.t](../../../../tests/palette/cover/0073_gamma_rgb_midpoint.t) |
+| CP-59 | Native soft cover: linear RGB midpoint. | [tests/palette/cover/0074_linear_rgb_midpoint.t](../../../../tests/palette/cover/0074_linear_rgb_midpoint.t) |
+| CP-60 | Native soft cover: oklab RGB midpoint. | [tests/palette/cover/0075_oklab_rgb_midpoint.t](../../../../tests/palette/cover/0075_oklab_rgb_midpoint.t) |
+| CP-61 | Native soft cover: cielab RGB midpoint. | [tests/palette/cover/0076_cielab_rgb_midpoint.t](../../../../tests/palette/cover/0076_cielab_rgb_midpoint.t) |
+| CP-62 | Native soft cover: din99d RGB midpoint. | [tests/palette/cover/0077_din99d_rgb_midpoint.t](../../../../tests/palette/cover/0077_din99d_rgb_midpoint.t) |
+| CP-63 | Native cover: hard gamma anchors. | [tests/palette/cover/0078_hard_gamma_anchors.t](../../../../tests/palette/cover/0078_hard_gamma_anchors.t) |
+| CP-64 | Native cover: hard linear anchors. | [tests/palette/cover/0079_hard_linear_anchors.t](../../../../tests/palette/cover/0079_hard_linear_anchors.t) |
+| CP-65 | Native cover: hard oklab anchors. | [tests/palette/cover/0080_hard_oklab_anchors.t](../../../../tests/palette/cover/0080_hard_oklab_anchors.t) |
+| CP-66 | Native cover: hard cielab anchors. | [tests/palette/cover/0081_hard_cielab_anchors.t](../../../../tests/palette/cover/0081_hard_cielab_anchors.t) |
+| CP-67 | Native cover: hard din99d anchors. | [tests/palette/cover/0082_hard_din99d_anchors.t](../../../../tests/palette/cover/0082_hard_din99d_anchors.t) |
+| CP-68 | Native cover: hard faces. | [tests/palette/cover/0083_hard_faces.t](../../../../tests/palette/cover/0083_hard_faces.t) |
+| CP-69 | Native cover: hard edges. | [tests/palette/cover/0084_hard_edges.t](../../../../tests/palette/cover/0084_hard_edges.t) |
+| CP-70 | Native cover: hard already covered. | [tests/palette/cover/0085_hard_already_covered.t](../../../../tests/palette/cover/0085_hard_already_covered.t) |
+| CP-71 | Native cover: hard growth limit. | [tests/palette/cover/0086_hard_growth_limit.t](../../../../tests/palette/cover/0086_hard_growth_limit.t) |
+| CP-72 | Native cover: hard no source histogram. | [tests/palette/cover/0087_hard_no_source_histogram.t](../../../../tests/palette/cover/0087_hard_no_source_histogram.t) |
+| CP-73 | Native cover: hard nonfinite recovery. | [tests/palette/cover/0088_hard_nonfinite_recovery.t](../../../../tests/palette/cover/0088_hard_nonfinite_recovery.t) |
+| CP-74 | Native cover: hard funding refused. | [tests/palette/cover/0089_hard_funding_refused.t](../../../../tests/palette/cover/0089_hard_funding_refused.t) |
+| CP-75 | Native cover: hard near anchor skipped. | [tests/palette/cover/0090_hard_near_anchor_skipped.t](../../../../tests/palette/cover/0090_hard_near_anchor_skipped.t) |
+| CP-76 | Native cover: hard gamma midpoint. | [tests/palette/cover/0091_hard_gamma_midpoint.t](../../../../tests/palette/cover/0091_hard_gamma_midpoint.t) |
+| CP-77 | Native cover: hard linear midpoint. | [tests/palette/cover/0092_hard_linear_midpoint.t](../../../../tests/palette/cover/0092_hard_linear_midpoint.t) |
+| CP-78 | Native cover: hard oklab midpoint. | [tests/palette/cover/0093_hard_oklab_midpoint.t](../../../../tests/palette/cover/0093_hard_oklab_midpoint.t) |
+| CP-79 | Native cover: hard cielab midpoint. | [tests/palette/cover/0094_hard_cielab_midpoint.t](../../../../tests/palette/cover/0094_hard_cielab_midpoint.t) |
+| CP-80 | Native cover: hard din99d midpoint. | [tests/palette/cover/0095_hard_din99d_midpoint.t](../../../../tests/palette/cover/0095_hard_din99d_midpoint.t) |
+| CP-81 | Native cover: hard kmeans srgb. | [tests/palette/cover/0096_hard_kmeans_srgb.t](../../../../tests/palette/cover/0096_hard_kmeans_srgb.t) |
+| CP-82 | Native cover: hard kmeans byte. | [tests/palette/cover/0097_hard_kmeans_byte.t](../../../../tests/palette/cover/0097_hard_kmeans_byte.t) |
+| CP-83 | Native cover: hard center srgb. | [tests/palette/cover/0098_hard_center_srgb.t](../../../../tests/palette/cover/0098_hard_center_srgb.t) |
+| CP-84 | Native cover: hard center byte. | [tests/palette/cover/0099_hard_center_byte.t](../../../../tests/palette/cover/0099_hard_center_byte.t) |
+| CP-85 | Native cover: hard center p3. | [tests/palette/cover/0100_hard_center_p3.t](../../../../tests/palette/cover/0100_hard_center_p3.t) |
+| CP-86 | Native cover: hard medoids srgb. | [tests/palette/cover/0101_hard_medoids_srgb.t](../../../../tests/palette/cover/0101_hard_medoids_srgb.t) |
+| CP-87 | Native cover: hard medoids byte. | [tests/palette/cover/0102_hard_medoids_byte.t](../../../../tests/palette/cover/0102_hard_medoids_byte.t) |
+| CP-88 | Native cover: hard medoids p3. | [tests/palette/cover/0103_hard_medoids_p3.t](../../../../tests/palette/cover/0103_hard_medoids_p3.t) |
+| CP-89 | Native cover: hard heckbert srgb. | [tests/palette/cover/0104_hard_heckbert_srgb.t](../../../../tests/palette/cover/0104_hard_heckbert_srgb.t) |
+| CP-90 | Native cover: hard heckbert byte. | [tests/palette/cover/0105_hard_heckbert_byte.t](../../../../tests/palette/cover/0105_hard_heckbert_byte.t) |
+| CP-91 | Native cover: hard heckbert p3. | [tests/palette/cover/0106_hard_heckbert_p3.t](../../../../tests/palette/cover/0106_hard_heckbert_p3.t) |
+| CP-92 | Native cover: hard auto srgb. | [tests/palette/cover/0107_hard_auto_srgb.t](../../../../tests/palette/cover/0107_hard_auto_srgb.t) |
+| CP-93 | Native cover: hard auto byte. | [tests/palette/cover/0108_hard_auto_byte.t](../../../../tests/palette/cover/0108_hard_auto_byte.t) |
+| CP-94 | Native cover: hard auto p3. | [tests/palette/cover/0109_hard_auto_p3.t](../../../../tests/palette/cover/0109_hard_auto_p3.t) |
+| CP-95 | Native cover: hard linear wire. | [tests/palette/cover/0110_hard_linear_wire.t](../../../../tests/palette/cover/0110_hard_linear_wire.t) |
+| CP-96 | Native cover: hard oklab wire. | [tests/palette/cover/0111_hard_oklab_wire.t](../../../../tests/palette/cover/0111_hard_oklab_wire.t) |
+| CP-97 | Native cover: hard cielab wire. | [tests/palette/cover/0112_hard_cielab_wire.t](../../../../tests/palette/cover/0112_hard_cielab_wire.t) |
+| CP-98 | Native cover: hard din99d wire. | [tests/palette/cover/0113_hard_din99d_wire.t](../../../../tests/palette/cover/0113_hard_din99d_wire.t) |
+| CP-99 | Native hard cover uses the asynchronous palette worker. | [tests/palette/cover/0114_hard_worker_grow.t](../../../../tests/palette/cover/0114_hard_worker_grow.t) |
+| CP-100 | Explicit hard mode overrides a soft environment mode. | [tests/palette/cover/0115_hard_overrides_soft_environment.t](../../../../tests/palette/cover/0115_hard_overrides_soft_environment.t) |
+| CP-101 | 32 colors retain exact float entries without histogram allocation. | [tests/palette/cover/0001_byte_corners_boundary.t](../../../../tests/palette/cover/0001_byte_corners_boundary.t) |
+| CP-102 | 64 colors do not inherit the byte faces budget. | [tests/palette/cover/0002_byte_faces_boundary.t](../../../../tests/palette/cover/0002_byte_faces_boundary.t) |
+| CP-103 | 256 colors do not inherit the byte edges budget. | [tests/palette/cover/0003_byte_edges_boundary.t](../../../../tests/palette/cover/0003_byte_edges_boundary.t) |
+| CP-104 | AUTO growth preserves the reserved slot and 255 entries. | [tests/palette/cover/0004_reserved_capacity.t](../../../../tests/palette/cover/0004_reserved_capacity.t) |
+| CP-105 | Hard mode and growth do not enable AUTO repair. | [tests/palette/cover/0005_hard_grow_noop.t](../../../../tests/palette/cover/0005_hard_grow_noop.t) |
+| CP-106 | AUTO preserves typed linear coordinates without a round trip. | [tests/palette/cover/0006_linear_noop.t](../../../../tests/palette/cover/0006_linear_noop.t) |
+| CP-107 | Explicit corners still grow between two AUTO calls. | [tests/palette/cover/0007_explicit_transition.t](../../../../tests/palette/cover/0007_explicit_transition.t) |
+| CP-108 | Encoder soft AUTO preserves 32 native colors and RGB101 output. | [tests/palette/cover/0008_encoder_soft_wire.t](../../../../tests/palette/cover/0008_encoder_soft_wire.t) |
+| CP-109 | Encoder hard AUTO preserves 32 native colors and RGB101 output. | [tests/palette/cover/0009_encoder_hard_wire.t](../../../../tests/palette/cover/0009_encoder_hard_wire.t) |
+| CP-110 | Omitted cover preserves native extended palette values. | [tests/palette/cover/0010_default_native.t](../../../../tests/palette/cover/0010_default_native.t) |
+| CP-111 | Plain AUTO preserves native extended palette values. | [tests/palette/cover/0011_explicit_auto_native.t](../../../../tests/palette/cover/0011_explicit_auto_native.t) |
+| CP-112 | AUTO leaves an otherwise byte-eligible job on its byte path. | [tests/palette/cover/0012_byte_auto_eligible.t](../../../../tests/palette/cover/0012_byte_auto_eligible.t) |
+| CP-113 | Explicit float precision admits a byte source with AUTO. | [tests/palette/cover/0013_byte_forced_float.t](../../../../tests/palette/cover/0013_byte_forced_float.t) |
+| CP-114 | `--precision-policy=8bit` applies an already-float source through the byte path. | [tests/palette/cover/0014_float_byte_preference.t](../../../../tests/palette/cover/0014_float_byte_preference.t) |
+| CP-115 | Working-space conversion admits required float with AUTO. | [tests/palette/cover/0015_linear_required_float.t](../../../../tests/palette/cover/0015_linear_required_float.t) |
+| CP-116 | Environment AUTO admits the native palette path. | [tests/palette/cover/0016_environment_auto.t](../../../../tests/palette/cover/0016_environment_auto.t) |
+| CP-117 | Environment hard mode and growth leave native AUTO off. | [tests/palette/cover/0017_quant_palette_auto_cover_float_environment_hard_grow.t](../../../../tests/palette/cover/0017_quant_palette_auto_cover_float_environment_hard_grow.t) |
+| CP-118 | Explicit AUTO overrides an active environment cover budget. | [tests/palette/cover/0018_explicit_auto_precedence.t](../../../../tests/palette/cover/0018_explicit_auto_precedence.t) |
+| CP-119 | P3 defaults admit byte input into float work. | [tests/palette/cover/0019_p3_default_byte.t](../../../../tests/palette/cover/0019_p3_default_byte.t) |
+| CP-120 | P3 can enable and disable snap on a reused encoder while retaining automatic cover semantics. | [tests/palette/cover/0020_p3_snap_transition.t](../../../../tests/palette/cover/0020_p3_snap_transition.t) |
+| CP-121 | Interleaved encoders retain independent byte and float admission. | [tests/palette/cover/0021_encoder_isolation.t](../../../../tests/palette/cover/0021_encoder_isolation.t) |
+| CP-122 | Omitted cover excludes hidden RGB and reserves its mask slot. | [tests/palette/cover/0022_masked_default.t](../../../../tests/palette/cover/0022_masked_default.t) |
+| CP-123 | Animation re-evaluates byte and float admission on each frame. | [tests/palette/cover/0023_animation_precision.t](../../../../tests/palette/cover/0023_animation_precision.t) |
+| CP-124 | P3 resolves omitted capacity before mask admission. | [tests/palette/cover/0024_masked_p3_default.t](../../../../tests/palette/cover/0024_masked_p3_default.t) |
+| CP-125 | Byte encoding resolves omitted capacity before reserving its mask slot. | [tests/palette/cover/0025_masked_byte_default.t](../../../../tests/palette/cover/0025_masked_byte_default.t) |
+| CP-126 | An omitted mode runs soft source-driven growth on native float. | [tests/palette/cover/0116_default_soft_growth.t](../../../../tests/palette/cover/0116_default_soft_growth.t) |
+| CP-127 | An omitted soft mode admits P3 output. | [tests/palette/cover/0117_default_soft_p3.t](../../../../tests/palette/cover/0117_default_soft_p3.t) |
+| CP-128 | An omitted soft mode preserves genuine byte eligibility. | [tests/palette/cover/0118_default_soft_byte.t](../../../../tests/palette/cover/0118_default_soft_byte.t) |
+| CP-129 | An explicit faces budget admits native repair without a mode suboption. | [tests/palette/cover/0119_default_soft_faces.t](../../../../tests/palette/cover/0119_default_soft_faces.t) |
+| CP-130 | An explicit edges budget admits native repair without a mode suboption. | [tests/palette/cover/0120_default_soft_edges.t](../../../../tests/palette/cover/0120_default_soft_edges.t) |
+| CP-131 | An omitted soft mode retains typed Oklab palette coordinates. | [tests/palette/cover/0121_default_soft_oklab.t](../../../../tests/palette/cover/0121_default_soft_oklab.t) |
+| CP-132 | An omitted soft mode excludes hidden RGB and reserves the omission slot. | [tests/palette/cover/0144_default_soft_mask.t](../../../../tests/palette/cover/0144_default_soft_mask.t) |
+| CP-133 | An omitted soft mode retains masks during P3 output. | [tests/palette/cover/0145_default_soft_mask_p3.t](../../../../tests/palette/cover/0145_default_soft_mask_p3.t) |
 
 ### Coverage audit boundary
 
@@ -552,24 +552,24 @@ The focused suite covers the byte policy ladder, native float AUTO no-op at its 
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| CM-01 | Soft growth stops at 255 real colors and still places the extended anchor. | [tests/quant/palette/cover_mask/0001_soft_reserved_ceiling.t](../../../../tests/quant/palette/cover_mask/0001_soft_reserved_ceiling.t) |
-| CM-02 | Without a reservation, soft growth can use all 256 colors. | [tests/quant/palette/cover_mask/0002_soft_opaque_ceiling.t](../../../../tests/quant/palette/cover_mask/0002_soft_opaque_ceiling.t) |
-| CM-03 | Hard growth stops at 255 real colors and funds remaining corner anchors by merging. | [tests/quant/palette/cover_mask/0003_hard_reserved_ceiling.t](../../../../tests/quant/palette/cover_mask/0003_hard_reserved_ceiling.t) |
-| CM-04 | Without a reservation, hard growth can use all 256 colors. | [tests/quant/palette/cover_mask/0004_hard_opaque_ceiling.t](../../../../tests/quant/palette/cover_mask/0004_hard_opaque_ceiling.t) |
-| CM-05 | Soft repair without growth keeps its entry count and places the extended anchor. | [tests/quant/palette/cover_mask/0005_soft_fixed_size.t](../../../../tests/quant/palette/cover_mask/0005_soft_fixed_size.t) |
-| CM-06 | Hard repair without growth keeps its entry count and places all corners. | [tests/quant/palette/cover_mask/0006_hard_fixed_size.t](../../../../tests/quant/palette/cover_mask/0006_hard_fixed_size.t) |
-| CM-10 | Soft cover with a separate mask grows real colors and omits hidden pixels. | [tests/quant/palette/cover_mask/0010_soft_mask_grow.t](../../../../tests/quant/palette/cover_mask/0010_soft_mask_grow.t) |
-| CM-11 | Hard cover with a separate mask grows real colors and omits hidden pixels. | [tests/quant/palette/cover_mask/0011_hard_mask_grow.t](../../../../tests/quant/palette/cover_mask/0011_hard_mask_grow.t) |
-| CM-12 | Non-growing soft cover retains the real count plus one omission slot. | [tests/quant/palette/cover_mask/0012_soft_mask_fixed.t](../../../../tests/quant/palette/cover_mask/0012_soft_mask_fixed.t) |
-| CM-13 | Non-growing hard cover retains the real count plus one omission slot. | [tests/quant/palette/cover_mask/0013_hard_mask_fixed.t](../../../../tests/quant/palette/cover_mask/0013_hard_mask_fixed.t) |
-| CM-14 | P3 soft cover preserves separate-mask omissions. | [tests/quant/palette/cover_mask/0014_soft_mask_p3.t](../../../../tests/quant/palette/cover_mask/0014_soft_mask_p3.t) |
-| CM-15 | P3 hard cover emits the independently derived red anchor and preserves omissions. | [tests/quant/palette/cover_mask/0015_hard_mask_p3.t](../../../../tests/quant/palette/cover_mask/0015_hard_mask_p3.t) |
-| CM-16 | A generated masked palette reaches 255 real entries plus one reserved key. | [tests/quant/palette/cover_mask/0016_masked_boundary.t](../../../../tests/quant/palette/cover_mask/0016_masked_boundary.t) |
-| CM-17 | An opaque generated palette still reaches 256 real entries. | [tests/quant/palette/cover_mask/0017_opaque_boundary.t](../../../../tests/quant/palette/cover_mask/0017_opaque_boundary.t) |
-| CM-18 | Masked, opaque and masked reuse restore each build's capacity and output. | [tests/quant/palette/cover_mask/0018_masked_opaque_reuse.t](../../../../tests/quant/palette/cover_mask/0018_masked_opaque_reuse.t) |
-| CM-19 | All-hidden input can run hard cover while painting no pixels. | [tests/quant/palette/cover_mask/0019_all_hidden.t](../../../../tests/quant/palette/cover_mask/0019_all_hidden.t) |
-| CM-20 | Changing only hidden RGB leaves soft-cover output byte-identical. | [tests/quant/palette/cover_mask/0020_hidden_rgb_invariant.t](../../../../tests/quant/palette/cover_mask/0020_hidden_rgb_invariant.t) |
-| CM-21 | Legacy byte cover respects the same reserved-slot ceiling. | [tests/quant/palette/cover_mask/0021_byte_mask_boundary.t](../../../../tests/quant/palette/cover_mask/0021_byte_mask_boundary.t) |
-| CM-22 | A mask stays aligned across multiple bands with four requested workers. | [tests/quant/palette/cover_mask/0022_parallel_mask.t](../../../../tests/quant/palette/cover_mask/0022_parallel_mask.t) |
+| CM-01 | Soft growth stops at 255 real colors and still places the extended anchor. | [tests/palette/cover/0122_soft_reserved_ceiling.t](../../../../tests/palette/cover/0122_soft_reserved_ceiling.t) |
+| CM-02 | Without a reservation, soft growth can use all 256 colors. | [tests/palette/cover/0123_soft_opaque_ceiling.t](../../../../tests/palette/cover/0123_soft_opaque_ceiling.t) |
+| CM-03 | Hard growth stops at 255 real colors and funds remaining corner anchors by merging. | [tests/palette/cover/0124_hard_reserved_ceiling.t](../../../../tests/palette/cover/0124_hard_reserved_ceiling.t) |
+| CM-04 | Without a reservation, hard growth can use all 256 colors. | [tests/palette/cover/0125_hard_opaque_ceiling.t](../../../../tests/palette/cover/0125_hard_opaque_ceiling.t) |
+| CM-05 | Soft repair without growth keeps its entry count and places the extended anchor. | [tests/palette/cover/0126_soft_fixed_size.t](../../../../tests/palette/cover/0126_soft_fixed_size.t) |
+| CM-06 | Hard repair without growth keeps its entry count and places all corners. | [tests/palette/cover/0127_hard_fixed_size.t](../../../../tests/palette/cover/0127_hard_fixed_size.t) |
+| CM-10 | Soft cover with a separate mask grows real colors and omits hidden pixels. | [tests/palette/cover/0131_soft_mask_grow.t](../../../../tests/palette/cover/0131_soft_mask_grow.t) |
+| CM-11 | Hard cover with a separate mask grows real colors and omits hidden pixels. | [tests/palette/cover/0132_hard_mask_grow.t](../../../../tests/palette/cover/0132_hard_mask_grow.t) |
+| CM-12 | Non-growing soft cover retains the real count plus one omission slot. | [tests/palette/cover/0133_soft_mask_fixed.t](../../../../tests/palette/cover/0133_soft_mask_fixed.t) |
+| CM-13 | Non-growing hard cover retains the real count plus one omission slot. | [tests/palette/cover/0134_hard_mask_fixed.t](../../../../tests/palette/cover/0134_hard_mask_fixed.t) |
+| CM-14 | P3 soft cover preserves separate-mask omissions. | [tests/palette/cover/0135_soft_mask_p3.t](../../../../tests/palette/cover/0135_soft_mask_p3.t) |
+| CM-15 | P3 hard cover emits the independently derived red anchor and preserves omissions. | [tests/palette/cover/0136_hard_mask_p3.t](../../../../tests/palette/cover/0136_hard_mask_p3.t) |
+| CM-16 | A generated masked palette reaches 255 real entries plus one reserved key. | [tests/palette/cover/0137_masked_boundary.t](../../../../tests/palette/cover/0137_masked_boundary.t) |
+| CM-17 | An opaque generated palette still reaches 256 real entries. | [tests/palette/cover/0138_opaque_boundary.t](../../../../tests/palette/cover/0138_opaque_boundary.t) |
+| CM-18 | Masked, opaque and masked reuse restore each build's capacity and output. | [tests/palette/cover/0139_masked_opaque_reuse.t](../../../../tests/palette/cover/0139_masked_opaque_reuse.t) |
+| CM-19 | All-hidden input can run hard cover while painting no pixels. | [tests/palette/cover/0140_all_hidden.t](../../../../tests/palette/cover/0140_all_hidden.t) |
+| CM-20 | Changing only hidden RGB leaves soft-cover output byte-identical. | [tests/palette/cover/0141_hidden_rgb_invariant.t](../../../../tests/palette/cover/0141_hidden_rgb_invariant.t) |
+| CM-21 | Legacy byte cover respects the same reserved-slot ceiling. | [tests/palette/cover/0142_byte_mask_boundary.t](../../../../tests/palette/cover/0142_byte_mask_boundary.t) |
+| CM-22 | A mask stays aligned across multiple bands with four requested workers. | [tests/palette/cover/0143_parallel_mask.t](../../../../tests/palette/cover/0143_parallel_mask.t) |
 
-Private-helper defensive cases in [the cover-mask suite](../../../../tests/quant/palette/cover_mask/) reject zero, excessive and already-overfull capacities without changing entries or count.
+Private-helper defensive cases in [the cover-mask suite](../../../../tests/palette/cover/) reject zero, excessive and already-overfull capacities without changing entries or count.

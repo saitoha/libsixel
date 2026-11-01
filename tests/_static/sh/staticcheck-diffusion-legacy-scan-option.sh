@@ -5,12 +5,13 @@
 # its identity is an exception boundary, not a behavioral coverage inventory.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
 src_root=$1
 tests_dir=$src_root/tests
-allow_test="$tests_dir/cli/options/matching/0135_option_matching_diffusion_legacy_scan_option_rejected.t"
+allow_test="$tests_dir/cli/dither-options/0011_option_matching_diffusion_legacy_scan_option_rejected.t"
 
 if test ! -d "$tests_dir"; then
     echo "ok 1 # SKIP missing tests directory"
@@ -34,14 +35,13 @@ fi
 if test -f "$allow_test"; then
     if ! grep -E -n '(^|[[:space:]])-y([[:space:]]|$)' "$allow_test" \
             >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0147 must exercise legacy -y rejection" \
+        echo "# allowlisted test must exercise legacy -y rejection" \
             >> "$missing"
         status=1
     fi
 fi
 
-find "$tests_dir" -type f -name '*.t' -exec \
-    grep -E -n -H '(^|[[:space:]])-y([[:space:]]|$)' {} + > "$hits_all" || true
+sh "$source_files_helper" "$tests_dir" --name '*.t' --exec grep -E -n -H '(^|[[:space:]])-y([[:space:]]|$)'> "$hits_all" || true
 
 if test -s "$hits_all"; then
     awk -v allow="$allow_test" -F: '
@@ -55,7 +55,7 @@ if test -s "$hits_all"; then
 fi
 
 if test -s "$hits_blocked"; then
-    echo "# tests: legacy -y scan option is forbidden outside 0147" >> "$missing"
+    echo "# tests: legacy -y scan option is forbidden outside the allowlisted rejection test" >> "$missing"
     cat "$hits_blocked" >> "$missing"
     status=1
 fi

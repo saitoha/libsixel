@@ -74,9 +74,9 @@ class Fixture:
     def fail_scan(self):
         bindir = self.work / "bin"
         bindir.mkdir()
-        script = bindir / "find"
+        script = bindir / "sort"
         # Emit a plausible partial result before failing: checking only an
         # empty inventory would let a truncated scan silently pass.
-        script.write_text("#!/bin/sh\nprintf './0001_existing.t\\n'\nexit 1\n")
+        script.write_text("#!/bin/sh\nprintf './sample/existing/0001_existing.t\\n'\nexit 1\n")
         script.chmod(0o755)
         self.env["PATH"] = str(bindir) + os.pathsep + self.env["PATH"]

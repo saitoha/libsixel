@@ -2,6 +2,7 @@
 # Emit TAP for lookup policy include hygiene checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 src_dir=$src_root/src
@@ -16,8 +17,7 @@ if test ! -d "$src_dir"; then
 fi
 
 # shellcheck disable=SC2016
-matches=$(find "$src_dir" -maxdepth 1 -type f -name 'lookup-policy-*.c' \
-    -print0 | xargs -0 awk '
+matches=$(sh "$source_files_helper" "$src_dir" --max-depth 1 --name 'lookup-policy-*.c' --null| xargs -0 awk '
 $0 ~ /^[[:space:]]*#[[:space:]]*include[[:space:]]+"lookup-8bit\.h"/ {
     print FILENAME ":" FNR ":" $0
     found = 1

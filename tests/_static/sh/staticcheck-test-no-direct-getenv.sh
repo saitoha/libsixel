@@ -2,6 +2,7 @@
 # Emit TAP for banning direct CRT-sensitive calls in C test sources.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -30,9 +31,7 @@ if test ! -d "$tests_root"; then
     exit 1
 fi
 
-find "$tests_root" -type f \( -name '*.c' -o -name '*.h' \
-    -o -name '*.inc.c' \) -exec awk -v getenv_matches="$getenv_matches" \
-    -v fopen_matches="$fopen_matches" '
+sh "$source_files_helper" "$tests_root" --name '*.c' --name '*.h' --name '*.inc.c' --exec awk -v getenv_matches="$getenv_matches" -v fopen_matches="$fopen_matches" '
 # Skip complete comment/code spans without rescanning each character.
 function strip_comments(line, code, block_start, line_start, block_end) {
     code = ""
@@ -69,7 +68,7 @@ BEGIN {
         print FILENAME ":" FNR ":" line >> fopen_matches
     }
 }
-' {} +
+'
 
 status=0
 

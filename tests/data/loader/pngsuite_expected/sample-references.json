@@ -1,97 +1,97 @@
 [
   {
-    "test": "tests/loader/libpng/0070_pngsuite_background_default_bgan6a08_samples.t",
+    "test": "tests/loader-png/alpha-indexed/0058_pngsuite_background_default_bgan6a08_samples.t",
     "source": "images/pngsuite/background/bgan6a08.png",
     "output": "tests/data/loader/pngsuite_expected/bgan6a08-srgb-black.ppm",
     "crop": false
   },
   {
-    "test": "tests/loader/libpng/0039_pngsuite_basic_default_basn6a08_samples.t",
+    "test": "tests/loader-png/decode/0025_pngsuite_basic_default_basn6a08_samples.t",
     "source": "images/pngsuite/basic/basn6a08.png",
     "output": "tests/data/loader/pngsuite_expected/basn6a08-srgb-black.ppm",
     "crop": false
   },
   {
-    "test": "tests/loader/libpng/0058_pngsuite_basic_cropped_basn0g08_samples.t",
+    "test": "tests/loader-png/decode/0043_pngsuite_basic_cropped_basn0g08_samples.t",
     "source": "images/pngsuite/basic/basn0g08.png",
     "output": "tests/data/loader/pngsuite_expected/basn0g08-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0059_pngsuite_basic_cropped_basn0g16_samples.t",
+    "test": "tests/loader-png/decode/0044_pngsuite_basic_cropped_basn0g16_samples.t",
     "source": "images/pngsuite/basic/basn0g16.png",
     "output": "tests/data/loader/pngsuite_expected/basn0g16-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0063_pngsuite_basic_cropped_basn3p08_samples.t",
+    "test": "tests/loader-png/decode/0048_pngsuite_basic_cropped_basn3p08_samples.t",
     "source": "images/pngsuite/basic/basn3p08.png",
     "output": "tests/data/loader/pngsuite_expected/basn3p08-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0057_pngsuite_basic_cropped_basn0g04_samples.t",
+    "test": "tests/loader-png/decode/0042_pngsuite_basic_cropped_basn0g04_samples.t",
     "source": "images/pngsuite/basic/basn0g04.png",
     "output": "tests/data/loader/pngsuite_expected/basn0g04-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0067_pngsuite_basic_cropped_basn6a16_samples.t",
+    "test": "tests/loader-png/decode/0052_pngsuite_basic_cropped_basn6a16_samples.t",
     "source": "images/pngsuite/basic/basn6a16.png",
     "output": "tests/data/loader/pngsuite_expected/basn6a16-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0065_pngsuite_basic_cropped_basn4a16_samples.t",
+    "test": "tests/loader-png/decode/0050_pngsuite_basic_cropped_basn4a16_samples.t",
     "source": "images/pngsuite/basic/basn4a16.png",
     "output": "tests/data/loader/pngsuite_expected/basn4a16-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0056_pngsuite_basic_cropped_basn0g02_samples.t",
+    "test": "tests/loader-png/decode/0041_pngsuite_basic_cropped_basn0g02_samples.t",
     "source": "images/pngsuite/basic/basn0g02.png",
     "output": "tests/data/loader/pngsuite_expected/basn0g02-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0064_pngsuite_basic_cropped_basn4a08_samples.t",
+    "test": "tests/loader-png/decode/0049_pngsuite_basic_cropped_basn4a08_samples.t",
     "source": "images/pngsuite/basic/basn4a08.png",
     "output": "tests/data/loader/pngsuite_expected/basn4a08-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0060_pngsuite_basic_cropped_basn3p01_samples.t",
+    "test": "tests/loader-png/decode/0045_pngsuite_basic_cropped_basn3p01_samples.t",
     "source": "images/pngsuite/basic/basn3p01.png",
     "output": "tests/data/loader/pngsuite_expected/basn3p01-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0061_pngsuite_basic_cropped_basn3p02_samples.t",
+    "test": "tests/loader-png/decode/0046_pngsuite_basic_cropped_basn3p02_samples.t",
     "source": "images/pngsuite/basic/basn3p02.png",
     "output": "tests/data/loader/pngsuite_expected/basn3p02-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0062_pngsuite_basic_cropped_basn3p04_samples.t",
+    "test": "tests/loader-png/decode/0047_pngsuite_basic_cropped_basn3p04_samples.t",
     "source": "images/pngsuite/basic/basn3p04.png",
     "output": "tests/data/loader/pngsuite_expected/basn3p04-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0066_pngsuite_basic_cropped_basn6a08_samples.t",
+    "test": "tests/loader-png/decode/0051_pngsuite_basic_cropped_basn6a08_samples.t",
     "source": "images/pngsuite/basic/basn6a08.png",
     "output": "tests/data/loader/pngsuite_expected/basn6a08-srgb-black-crop.ppm",
     "crop": true
   },
   {
-    "test": "tests/loader/libpng/0074_pngsuite_background_default_bgwn6a08_samples.t",
+    "test": "tests/loader-png/alpha-indexed/0062_pngsuite_background_default_bgwn6a08_samples.t",
     "source": "images/pngsuite/background/bgwn6a08.png",
     "output": "tests/data/loader/pngsuite_expected/bgwn6a08-srgb-white.ppm",
     "crop": false,
     "background": "#fff"
   },
   {
-    "test": "tests/loader/libpng/0054_pngsuite_basic_cropped_basn0g01_samples.t",
+    "test": "tests/loader-png/decode/0040_pngsuite_basic_cropped_basn0g01_samples.t",
     "source": "images/pngsuite/basic/basn0g01.png",
     "output": "tests/data/loader/pngsuite_expected/basn0g01-srgb-black-crop.ppm",
     "crop": true

@@ -49,7 +49,7 @@ The policy applies to FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes, the S
 
 Byte FS, Atkinson, Jarvis--Judice--Ninke, Stucki, Burkes and Sierra use integer carry rows. The limiter runs once on the combined correction before candidate rounding and byte lookup projection. The propagated residual uses the rounded candidate before projection. `none` can accumulate error indefinitely for colors outside the palette hull; exceeding int32 carry capacity returns an error. Byte LSO2 and high-color retain their separate arithmetic. Float diffusion retains its existing limiter and defaults.
 
-A float source, a non-gamma working space, an authoritative float palette, or an explicit float precision request selects float work. The clamp policy never selects arithmetic precision. Byte and float arithmetic are not promised to produce identical indexes. The [byte-application test](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) traps float promotion allocations, and the [planner check](../../../tests/_static/sh/staticcheck-dither-clamp-precision.sh) prevents the palette-application planner from using the clamp setting to select precision.
+A float source, a non-gamma working space, an authoritative float palette, or an explicit float precision request selects float work. The clamp policy never selects arithmetic precision. Byte and float arithmetic are not promised to produce identical indexes. The [byte-application test](../../../tests/encoder/precision/0016_clamp_keeps_byte_application.t) traps float promotion allocations, and the [planner check](../../../tests/_static/sh/staticcheck-dither-clamp-precision.sh) prevents the palette-application planner from using the clamp setting to select precision.
 
 On the selected Display P3 and ordinary sRGB float paths, sources can hold extended coordinates outside the sRGB cube and the residual is computed against the unrounded working palette; the limiter bounds only the feedback and keeps those original coordinates, while `-0none` propagates the unrestricted residual. See [Output color space](../output/output-colorspace.md#display-p3-selected-cpu-float-path).
 
@@ -79,69 +79,69 @@ The default threshold 1.01 retains a small correction margin. It is a compromise
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DC-01 | soft vector | [tests/processing/dither/clamp/0001_soft_vector.t](../../../tests/processing/dither/clamp/0001_soft_vector.t) |
-| DC-02 | auto soft | [tests/processing/dither/clamp/0002_auto_soft.t](../../../tests/processing/dither/clamp/0002_auto_soft.t) |
-| DC-03 | hard channels | [tests/processing/dither/clamp/0003_hard_channels.t](../../../tests/processing/dither/clamp/0003_hard_channels.t) |
-| DC-04 | none extended | [tests/processing/dither/clamp/0004_none_extended.t](../../../tests/processing/dither/clamp/0004_none_extended.t) |
-| DC-05 | source fixed point | [tests/processing/dither/clamp/0005_source_fixed_point.t](../../../tests/processing/dither/clamp/0005_source_fixed_point.t) |
-| DC-06 | negative headroom | [tests/processing/dither/clamp/0006_negative_headroom.t](../../../tests/processing/dither/clamp/0006_negative_headroom.t) |
-| DC-07 | zero headroom | [tests/processing/dither/clamp/0007_zero_headroom.t](../../../tests/processing/dither/clamp/0007_zero_headroom.t) |
-| DC-08 | kernel fs | [tests/processing/dither/clamp/0008_kernel_fs.t](../../../tests/processing/dither/clamp/0008_kernel_fs.t) |
-| DC-09 | kernel atkinson | [tests/processing/dither/clamp/0009_kernel_atkinson.t](../../../tests/processing/dither/clamp/0009_kernel_atkinson.t) |
-| DC-10 | kernel jajuni | [tests/processing/dither/clamp/0010_kernel_jajuni.t](../../../tests/processing/dither/clamp/0010_kernel_jajuni.t) |
-| DC-11 | kernel stucki | [tests/processing/dither/clamp/0011_kernel_stucki.t](../../../tests/processing/dither/clamp/0011_kernel_stucki.t) |
-| DC-12 | kernel burkes | [tests/processing/dither/clamp/0012_kernel_burkes.t](../../../tests/processing/dither/clamp/0012_kernel_burkes.t) |
-| DC-13 | kernel sierra1 | [tests/processing/dither/clamp/0013_kernel_sierra1.t](../../../tests/processing/dither/clamp/0013_kernel_sierra1.t) |
-| DC-14 | kernel sierra2 | [tests/processing/dither/clamp/0014_kernel_sierra2.t](../../../tests/processing/dither/clamp/0014_kernel_sierra2.t) |
-| DC-15 | kernel sierra3 | [tests/processing/dither/clamp/0015_kernel_sierra3.t](../../../tests/processing/dither/clamp/0015_kernel_sierra3.t) |
-| DC-16 | kernel lso2 | [tests/processing/dither/clamp/0016_kernel_lso2.t](../../../tests/processing/dither/clamp/0016_kernel_lso2.t) |
-| DC-17 | keep fs | [tests/processing/dither/clamp/0017_keep_fs.t](../../../tests/processing/dither/clamp/0017_keep_fs.t) |
-| DC-18 | keep atkinson | [tests/processing/dither/clamp/0018_keep_atkinson.t](../../../tests/processing/dither/clamp/0018_keep_atkinson.t) |
-| DC-19 | keep jajuni | [tests/processing/dither/clamp/0019_keep_jajuni.t](../../../tests/processing/dither/clamp/0019_keep_jajuni.t) |
-| DC-20 | keep stucki | [tests/processing/dither/clamp/0020_keep_stucki.t](../../../tests/processing/dither/clamp/0020_keep_stucki.t) |
-| DC-21 | keep burkes | [tests/processing/dither/clamp/0021_keep_burkes.t](../../../tests/processing/dither/clamp/0021_keep_burkes.t) |
-| DC-22 | keep sierra1 | [tests/processing/dither/clamp/0022_keep_sierra1.t](../../../tests/processing/dither/clamp/0022_keep_sierra1.t) |
-| DC-23 | keep sierra2 | [tests/processing/dither/clamp/0023_keep_sierra2.t](../../../tests/processing/dither/clamp/0023_keep_sierra2.t) |
-| DC-24 | keep sierra3 | [tests/processing/dither/clamp/0024_keep_sierra3.t](../../../tests/processing/dither/clamp/0024_keep_sierra3.t) |
-| DC-25 | keep lso2 | [tests/processing/dither/clamp/0025_keep_lso2.t](../../../tests/processing/dither/clamp/0025_keep_lso2.t) |
-| DC-26 | option default | [tests/processing/dither/clamp/0026_option_default.t](../../../tests/processing/dither/clamp/0026_option_default.t) |
-| DC-27 | option short | [tests/processing/dither/clamp/0027_option_short.t](../../../tests/processing/dither/clamp/0027_option_short.t) |
-| DC-28 | option repeat | [tests/processing/dither/clamp/0028_option_repeat.t](../../../tests/processing/dither/clamp/0028_option_repeat.t) |
-| DC-29 | option nan | [tests/processing/dither/clamp/0029_option_nan.t](../../../tests/processing/dither/clamp/0029_option_nan.t) |
-| DC-30 | option minimum | [tests/processing/dither/clamp/0030_option_minimum.t](../../../tests/processing/dither/clamp/0030_option_minimum.t) |
-| DC-31 | option maximum | [tests/processing/dither/clamp/0031_option_maximum.t](../../../tests/processing/dither/clamp/0031_option_maximum.t) |
-| DC-33 | LSO2 oklab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0032_lso2_oklab_lightness.t](../../../tests/processing/dither/clamp/0032_lso2_oklab_lightness.t) |
-| DC-34 | LSO2 cielab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0033_lso2_cielab_lightness.t](../../../tests/processing/dither/clamp/0033_lso2_cielab_lightness.t) |
-| DC-35 | LSO2 din99d limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/processing/dither/clamp/0034_lso2_din99d_lightness.t](../../../tests/processing/dither/clamp/0034_lso2_din99d_lightness.t) |
-| DC-36 | Invalid low-level updates preserve both settings. | [tests/processing/dither/clamp/0035_api_invalid.t](../../../tests/processing/dither/clamp/0035_api_invalid.t) |
-| DC-37 | Low-level dither settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0036_dither_instances.t](../../../tests/processing/dither/clamp/0036_dither_instances.t) |
-| DC-38 | Encoder clamp settings survive another instance changing and being destroyed. | [tests/processing/dither/clamp/0037_encoder_instances.t](../../../tests/processing/dither/clamp/0037_encoder_instances.t) |
-| DC-41 | FS vertical taps propagate the limited residual in raster order. | [tests/processing/dither/clamp/0038_fs_vertical_residual.t](../../../tests/processing/dither/clamp/0038_fs_vertical_residual.t) |
-| DC-42 | FS reverses horizontal taps while propagating limited residuals in serpentine order. | [tests/processing/dither/clamp/0039_fs_serpentine_residual.t](../../../tests/processing/dither/clamp/0039_fs_serpentine_residual.t) |
-| DC-43 | Native float soft-clamp FS bands match independent raster indexes after overlap warm-up, with a short final band and two/three workers. | [tests/processing/dither/clamp/0040_parallel_overlap.t](../../../tests/processing/dither/clamp/0040_parallel_overlap.t) |
-| DC-44 | FS with odd overlap preserves absolute-row serpentine parity while each worker rebuilds private limiter history. | [tests/processing/dither/clamp/0041_parallel_serpentine_overlap.t](../../../tests/processing/dither/clamp/0041_parallel_serpentine_overlap.t) |
-| DC-45 | FS with a requested two-row work band uses the effective six-row geometry for soft-clamp feedback. | [tests/processing/dither/clamp/0042_parallel_minimum_band.t](../../../tests/processing/dither/clamp/0042_parallel_minimum_band.t) |
-| DC-46 | FS with a requested seven-row work band rounds to twelve rows and excessive overlap is capped at six before soft-clamp application. | [tests/processing/dither/clamp/0043_parallel_overlap_cap.t](../../../tests/processing/dither/clamp/0043_parallel_overlap_cap.t) |
-| DC-47 | Soft allocates one independent exact-size snapshot and frees it once. | [tests/processing/dither/clamp/0044_soft_snapshot.t](../../../tests/processing/dither/clamp/0044_soft_snapshot.t) |
-| DC-48 | Source-containing hard has the same snapshot size and ownership contract. | [tests/processing/dither/clamp/0045_hard_snapshot.t](../../../tests/processing/dither/clamp/0045_hard_snapshot.t) |
-| DC-49 | None allocates no source snapshot. | [tests/processing/dither/clamp/0046_none_no_snapshot.t](../../../tests/processing/dither/clamp/0046_none_no_snapshot.t) |
-| DC-50 | Snapshot allocation failure permits safe finish and a successful retry. | [tests/processing/dither/clamp/0047_snapshot_failure.t](../../../tests/processing/dither/clamp/0047_snapshot_failure.t) |
-| DC-51 | No clamp policy promotes byte diffusion to float arithmetic, for any error-diffusion kernel. | [tests/processing/precision/0016_clamp_keeps_byte_application.t](../../../tests/processing/precision/0016_clamp_keeps_byte_application.t) |
+| DC-01 | soft vector | [tests/dither/clamp/0001_soft_vector.t](../../../tests/dither/clamp/0001_soft_vector.t) |
+| DC-02 | auto soft | [tests/dither/clamp/0002_auto_soft.t](../../../tests/dither/clamp/0002_auto_soft.t) |
+| DC-03 | hard channels | [tests/dither/clamp/0003_hard_channels.t](../../../tests/dither/clamp/0003_hard_channels.t) |
+| DC-04 | none extended | [tests/dither/clamp/0004_none_extended.t](../../../tests/dither/clamp/0004_none_extended.t) |
+| DC-05 | source fixed point | [tests/dither/clamp/0005_source_fixed_point.t](../../../tests/dither/clamp/0005_source_fixed_point.t) |
+| DC-06 | negative headroom | [tests/dither/clamp/0006_negative_headroom.t](../../../tests/dither/clamp/0006_negative_headroom.t) |
+| DC-07 | zero headroom | [tests/dither/clamp/0007_zero_headroom.t](../../../tests/dither/clamp/0007_zero_headroom.t) |
+| DC-08 | kernel fs | [tests/dither/clamp/0008_kernel_fs.t](../../../tests/dither/clamp/0008_kernel_fs.t) |
+| DC-09 | kernel atkinson | [tests/dither/clamp/0009_kernel_atkinson.t](../../../tests/dither/clamp/0009_kernel_atkinson.t) |
+| DC-10 | kernel jajuni | [tests/dither/clamp/0010_kernel_jajuni.t](../../../tests/dither/clamp/0010_kernel_jajuni.t) |
+| DC-11 | kernel stucki | [tests/dither/clamp/0011_kernel_stucki.t](../../../tests/dither/clamp/0011_kernel_stucki.t) |
+| DC-12 | kernel burkes | [tests/dither/clamp/0012_kernel_burkes.t](../../../tests/dither/clamp/0012_kernel_burkes.t) |
+| DC-13 | kernel sierra1 | [tests/dither/clamp/0013_kernel_sierra1.t](../../../tests/dither/clamp/0013_kernel_sierra1.t) |
+| DC-14 | kernel sierra2 | [tests/dither/clamp/0014_kernel_sierra2.t](../../../tests/dither/clamp/0014_kernel_sierra2.t) |
+| DC-15 | kernel sierra3 | [tests/dither/clamp/0015_kernel_sierra3.t](../../../tests/dither/clamp/0015_kernel_sierra3.t) |
+| DC-16 | kernel lso2 | [tests/dither/clamp/0016_kernel_lso2.t](../../../tests/dither/clamp/0016_kernel_lso2.t) |
+| DC-17 | keep fs | [tests/dither/clamp/0017_keep_fs.t](../../../tests/dither/clamp/0017_keep_fs.t) |
+| DC-18 | keep atkinson | [tests/dither/clamp/0018_keep_atkinson.t](../../../tests/dither/clamp/0018_keep_atkinson.t) |
+| DC-19 | keep jajuni | [tests/dither/clamp/0019_keep_jajuni.t](../../../tests/dither/clamp/0019_keep_jajuni.t) |
+| DC-20 | keep stucki | [tests/dither/clamp/0020_keep_stucki.t](../../../tests/dither/clamp/0020_keep_stucki.t) |
+| DC-21 | keep burkes | [tests/dither/clamp/0021_keep_burkes.t](../../../tests/dither/clamp/0021_keep_burkes.t) |
+| DC-22 | keep sierra1 | [tests/dither/clamp/0022_keep_sierra1.t](../../../tests/dither/clamp/0022_keep_sierra1.t) |
+| DC-23 | keep sierra2 | [tests/dither/clamp/0023_keep_sierra2.t](../../../tests/dither/clamp/0023_keep_sierra2.t) |
+| DC-24 | keep sierra3 | [tests/dither/clamp/0024_keep_sierra3.t](../../../tests/dither/clamp/0024_keep_sierra3.t) |
+| DC-25 | keep lso2 | [tests/dither/clamp/0025_keep_lso2.t](../../../tests/dither/clamp/0025_keep_lso2.t) |
+| DC-26 | option default | [tests/dither/clamp/0026_option_default.t](../../../tests/dither/clamp/0026_option_default.t) |
+| DC-27 | option short | [tests/dither/clamp/0027_option_short.t](../../../tests/dither/clamp/0027_option_short.t) |
+| DC-28 | option repeat | [tests/dither/clamp/0028_option_repeat.t](../../../tests/dither/clamp/0028_option_repeat.t) |
+| DC-29 | option nan | [tests/dither/clamp/0029_option_nan.t](../../../tests/dither/clamp/0029_option_nan.t) |
+| DC-30 | option minimum | [tests/dither/clamp/0030_option_minimum.t](../../../tests/dither/clamp/0030_option_minimum.t) |
+| DC-31 | option maximum | [tests/dither/clamp/0031_option_maximum.t](../../../tests/dither/clamp/0031_option_maximum.t) |
+| DC-33 | LSO2 oklab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/dither/clamp/0032_lso2_oklab_lightness.t](../../../tests/dither/clamp/0032_lso2_oklab_lightness.t) |
+| DC-34 | LSO2 cielab limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/dither/clamp/0033_lso2_cielab_lightness.t](../../../tests/dither/clamp/0033_lso2_cielab_lightness.t) |
+| DC-35 | LSO2 din99d limits L correction without changing extended source chroma or letting it suppress lightness compensation. | [tests/dither/clamp/0034_lso2_din99d_lightness.t](../../../tests/dither/clamp/0034_lso2_din99d_lightness.t) |
+| DC-36 | Invalid low-level updates preserve both settings. | [tests/dither/clamp/0035_api_invalid.t](../../../tests/dither/clamp/0035_api_invalid.t) |
+| DC-37 | Low-level dither settings survive another instance changing and being destroyed. | [tests/dither/clamp/0036_dither_instances.t](../../../tests/dither/clamp/0036_dither_instances.t) |
+| DC-38 | Encoder clamp settings survive another instance changing and being destroyed. | [tests/dither/clamp/0037_encoder_instances.t](../../../tests/dither/clamp/0037_encoder_instances.t) |
+| DC-41 | FS vertical taps propagate the limited residual in raster order. | [tests/dither/clamp/0038_fs_vertical_residual.t](../../../tests/dither/clamp/0038_fs_vertical_residual.t) |
+| DC-42 | FS reverses horizontal taps while propagating limited residuals in serpentine order. | [tests/dither/clamp/0039_fs_serpentine_residual.t](../../../tests/dither/clamp/0039_fs_serpentine_residual.t) |
+| DC-43 | Native float soft-clamp FS bands match independent raster indexes after overlap warm-up, with a short final band and two/three workers. | [tests/dither/clamp/0040_parallel_overlap.t](../../../tests/dither/clamp/0040_parallel_overlap.t) |
+| DC-44 | FS with odd overlap preserves absolute-row serpentine parity while each worker rebuilds private limiter history. | [tests/dither/clamp/0041_parallel_serpentine_overlap.t](../../../tests/dither/clamp/0041_parallel_serpentine_overlap.t) |
+| DC-45 | FS with a requested two-row work band uses the effective six-row geometry for soft-clamp feedback. | [tests/dither/clamp/0042_parallel_minimum_band.t](../../../tests/dither/clamp/0042_parallel_minimum_band.t) |
+| DC-46 | FS with a requested seven-row work band rounds to twelve rows and excessive overlap is capped at six before soft-clamp application. | [tests/dither/clamp/0043_parallel_overlap_cap.t](../../../tests/dither/clamp/0043_parallel_overlap_cap.t) |
+| DC-47 | Soft allocates one independent exact-size snapshot and frees it once. | [tests/dither/clamp/0044_soft_snapshot.t](../../../tests/dither/clamp/0044_soft_snapshot.t) |
+| DC-48 | Source-containing hard has the same snapshot size and ownership contract. | [tests/dither/clamp/0045_hard_snapshot.t](../../../tests/dither/clamp/0045_hard_snapshot.t) |
+| DC-49 | None allocates no source snapshot. | [tests/dither/clamp/0046_none_no_snapshot.t](../../../tests/dither/clamp/0046_none_no_snapshot.t) |
+| DC-50 | Snapshot allocation failure permits safe finish and a successful retry. | [tests/dither/clamp/0047_snapshot_failure.t](../../../tests/dither/clamp/0047_snapshot_failure.t) |
+| DC-51 | No clamp policy promotes byte diffusion to float arithmetic, for any error-diffusion kernel. | [tests/encoder/precision/0016_clamp_keeps_byte_application.t](../../../tests/encoder/precision/0016_clamp_keeps_byte_application.t) |
 | DC-52 | The palette-application planner does not use the clamp policy to select arithmetic precision. | [tests/_static/sh/staticcheck-dither-clamp-precision.sh](../../../tests/_static/sh/staticcheck-dither-clamp-precision.sh) |
 
-| DC-53 | Byte rational rounding covers all supported denominators and half ties. | [tests/processing/dither/carry/0023_carry_rational_rounding.t](../../../tests/processing/dither/carry/0023_carry_rational_rounding.t) |
-| DC-54 | Byte integer headroom and deadzone boundaries follow the numeric contract. | [tests/processing/dither/carry/0024_carry_rational_bounds.t](../../../tests/processing/dither/carry/0024_carry_rational_bounds.t) |
-| DC-55 | Specialized and generic byte scans preserve candidate, mask and keep semantics. | [tests/processing/dither/carry/0025_carry_rational_stencil.t](../../../tests/processing/dither/carry/0025_carry_rational_stencil.t) |
-| DC-56 | Hard candidates match the frozen double reference. | [tests/processing/dither/carry/0026_carry_hard_double.t](../../../tests/processing/dither/carry/0026_carry_hard_double.t) |
-| DC-57 | Rational soft scaling preserves correction direction within rounding. | [tests/processing/dither/carry/0027_carry_soft_direction.t](../../../tests/processing/dither/carry/0027_carry_soft_direction.t) |
-| DC-58 | The limiting component reaches its rounded integer boundary. | [tests/processing/dither/carry/0028_carry_soft_boundary.t](../../../tests/processing/dither/carry/0028_carry_soft_boundary.t) |
-| DC-59 | Equal positive and negative ratios preserve nearest-even half ties. | [tests/processing/dither/carry/0029_carry_soft_tied_ratios.t](../../../tests/processing/dither/carry/0029_carry_soft_tied_ratios.t) |
+| DC-53 | Byte rational rounding covers all supported denominators and half ties. | [tests/dither/carry/0023_carry_rational_rounding.t](../../../tests/dither/carry/0023_carry_rational_rounding.t) |
+| DC-54 | Byte integer headroom and deadzone boundaries follow the numeric contract. | [tests/dither/carry/0024_carry_rational_bounds.t](../../../tests/dither/carry/0024_carry_rational_bounds.t) |
+| DC-55 | Specialized and generic byte scans preserve candidate, mask and keep semantics. | [tests/dither/carry/0025_carry_rational_stencil.t](../../../tests/dither/carry/0025_carry_rational_stencil.t) |
+| DC-56 | Hard candidates match the frozen double reference. | [tests/dither/carry/0026_carry_hard_double.t](../../../tests/dither/carry/0026_carry_hard_double.t) |
+| DC-57 | Rational soft scaling preserves correction direction within rounding. | [tests/dither/carry/0027_processing_dither_carry_carry_soft_direction.t](../../../tests/dither/carry/0027_processing_dither_carry_carry_soft_direction.t) |
+| DC-58 | The limiting component reaches its rounded integer boundary. | [tests/dither/carry/0028_carry_soft_boundary.t](../../../tests/dither/carry/0028_carry_soft_boundary.t) |
+| DC-59 | Equal positive and negative ratios preserve nearest-even half ties. | [tests/dither/carry/0029_carry_soft_tied_ratios.t](../../../tests/dither/carry/0029_carry_soft_tied_ratios.t) |
 
 ### Quality regression tests
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DCQ-01 | Short and environment thresholds reach the consumer, produce identical SIXEL, and retain the fixture quality floor. | [tests/cli/options/regression/0158_clamp_threshold_image_regression.t](../../../tests/cli/options/regression/0158_clamp_threshold_image_regression.t) |
+| DCQ-01 | Short and environment thresholds reach the consumer, produce identical SIXEL, and retain the fixture quality floor. | [tests/cli/option-syntax/0082_clamp_threshold_image_regression.t](../../../tests/cli/option-syntax/0082_clamp_threshold_image_regression.t) |
 
 ### Coverage boundary
 

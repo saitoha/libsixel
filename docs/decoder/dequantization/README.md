@@ -273,28 +273,28 @@ For the surrounding stages, see the [decoding pipeline](../pipeline/README.md), 
 
 | ID | Observation | Owning test |
 | --- | --- | --- |
-| DQ-01 | Full undither default RGB samples are fixed at similarity 100 and edge 0. | [tests/processing/decoder/0010_decoder_kundither_default.t](../../../tests/processing/decoder/0010_decoder_kundither_default.t) |
-| DQ-02 | Changing similarity bias has the expected sample-level effect. | [tests/processing/decoder/0011_decoder_kundither_similarity.t](../../../tests/processing/decoder/0011_decoder_kundither_similarity.t) |
-| DQ-03 | Full-method edge protection has the expected sample-level effect. | [tests/processing/decoder/0012_decoder_kundither_edge.t](../../../tests/processing/decoder/0012_decoder_kundither_edge.t) |
-| DQ-04 | Packed output preserves alpha and excludes transparent neighbors across supported reconstruction methods. | [tests/processing/decoder/0008_decoder_pixels_output_formats.t](../../../tests/processing/decoder/0008_decoder_pixels_output_formats.t) |
-| DQ-05 | Selective blur thresholds 0 and 24 produce the documented exact RGB values. | [tests/processing/decoder/0021_decoder_selective_blur_threshold.t](../../../tests/processing/decoder/0021_decoder_selective_blur_threshold.t) |
-| DQ-06 | Palette redefinition reports its flag and preserves paint-time colors despite reconstruction requests. | [tests/processing/decoder/0023_decoder_high_color_dequantize_bypass.t](../../../tests/processing/decoder/0023_decoder_high_color_dequantize_bypass.t) |
-| DQ-07 | Parallel full undither matches scalar output. | [tests/processing/decoder/0013_decoder_kundither_parallel_matches_scalar.t](../../../tests/processing/decoder/0013_decoder_kundither_parallel_matches_scalar.t) |
-| DQ-08 | Parallel Vlight matches scalar output. | [tests/processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.t](../../../tests/processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.t) |
-| DQ-09 | Fused Vlight matches scalar output. | [tests/processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.t](../../../tests/processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.t) |
-| DQ-10 | The selective-blur environment threshold matches its explicit CLI equivalent. | [tests/cli/core/0030_basic_dequantize_selective_blur_threshold_env.t](../../../tests/cli/core/0030_basic_dequantize_selective_blur_threshold_env.t) |
-| DQ-11 | The LSO variant environment setting matches its explicit CLI equivalent. | [tests/cli/core/0029_basic_dequantize_lso_variant_env.t](../../../tests/cli/core/0029_basic_dequantize_lso_variant_env.t) |
-| DQ-12 | Selective blur rejects forced GPU execution. | [tests/cli/core/0028_basic_dequantize_selective_blur_gpu_force_reject.t](../../../tests/cli/core/0028_basic_dequantize_selective_blur_gpu_force_reject.t) |
-| DQ-13 | Representative dequantized PNG output has RGB8 IHDR. | [tests/writer/png/0002_rgb8_ihdr.t](../../../tests/writer/png/0002_rgb8_ihdr.t) |
-| DQ-14 | The lsqa parser accepts compact selective-blur configuration. | [tests/cli/core/0027_basic_lsqa_dequantize_selective_blur_compact.t](../../../tests/cli/core/0027_basic_lsqa_dequantize_selective_blur_compact.t) |
+| DQ-01 | Full undither default RGB samples are fixed at similarity 100 and edge 0. | [tests/decoder/parser/0012_decoder_kundither_default.t](../../../tests/decoder/parser/0012_decoder_kundither_default.t) |
+| DQ-02 | Changing similarity bias has the expected sample-level effect. | [tests/decoder/parser/0013_decoder_kundither_similarity.t](../../../tests/decoder/parser/0013_decoder_kundither_similarity.t) |
+| DQ-03 | Full-method edge protection has the expected sample-level effect. | [tests/decoder/parser/0014_decoder_kundither_edge.t](../../../tests/decoder/parser/0014_decoder_kundither_edge.t) |
+| DQ-04 | Packed output preserves alpha and excludes transparent neighbors across supported reconstruction methods. | [tests/decoder/parser/0010_decoder_pixels_output_formats.t](../../../tests/decoder/parser/0010_decoder_pixels_output_formats.t) |
+| DQ-05 | Selective blur thresholds 0 and 24 produce the documented exact RGB values. | [tests/decoder/parser/0023_decoder_selective_blur_threshold.t](../../../tests/decoder/parser/0023_decoder_selective_blur_threshold.t) |
+| DQ-06 | Palette redefinition reports its flag and preserves paint-time colors despite reconstruction requests. | [tests/decoder/parser/0025_decoder_high_color_dequantize_bypass.t](../../../tests/decoder/parser/0025_decoder_high_color_dequantize_bypass.t) |
+| DQ-07 | Parallel full undither matches scalar output. | [tests/decoder/parser/0015_decoder_kundither_parallel_matches_scalar.t](../../../tests/decoder/parser/0015_decoder_kundither_parallel_matches_scalar.t) |
+| DQ-08 | Parallel Vlight matches scalar output. | [tests/decoder/parser/0016_decoder_kundither_fast4_parallel_matches_scalar.t](../../../tests/decoder/parser/0016_decoder_kundither_fast4_parallel_matches_scalar.t) |
+| DQ-09 | Fused Vlight matches scalar output. | [tests/decoder/parser/0017_decoder_kundither_fast4_fused_matches_scalar.t](../../../tests/decoder/parser/0017_decoder_kundither_fast4_fused_matches_scalar.t) |
+| DQ-10 | The selective-blur environment threshold matches its explicit CLI equivalent. | [tests/cli/img2sixel/0030_basic_dequantize_selective_blur_threshold_env.t](../../../tests/cli/img2sixel/0030_basic_dequantize_selective_blur_threshold_env.t) |
+| DQ-11 | The LSO variant environment setting matches its explicit CLI equivalent. | [tests/cli/img2sixel/0029_basic_dequantize_lso_variant_env.t](../../../tests/cli/img2sixel/0029_basic_dequantize_lso_variant_env.t) |
+| DQ-12 | Selective blur rejects forced GPU execution. | [tests/cli/img2sixel/0028_basic_dequantize_selective_blur_gpu_force_reject.t](../../../tests/cli/img2sixel/0028_basic_dequantize_selective_blur_gpu_force_reject.t) |
+| DQ-13 | Representative dequantized PNG output has RGB8 IHDR. | [tests/writer/png/0005_rgb8_ihdr.t](../../../tests/writer/png/0005_rgb8_ihdr.t) |
+| DQ-14 | The lsqa parser accepts compact selective-blur configuration. | [tests/cli/img2sixel/0027_basic_lsqa_dequantize_selective_blur_compact.t](../../../tests/cli/img2sixel/0027_basic_lsqa_dequantize_selective_blur_compact.t) |
 
 ### Quality regression tests
 
-The [quality-gate suite](../../../tests/quality_gate/) includes reconstruction-aware target evaluation. These thresholds protect their stated fixtures and metrics; they do not prove recovery of the original image or universal improvement. Exact scalar/parallel equivalence above is a separate observation from perceptual quality.
+The [quality-gate suite](../../../tests/assessment) includes reconstruction-aware target evaluation. These thresholds protect their stated fixtures and metrics; they do not prove recovery of the original image or universal improvement. Exact scalar/parallel equivalence above is a separate observation from perceptual quality.
 
 ### Defensive and malformed-input tests
 
-The [decoder tests](../../../tests/processing/decoder/) and [GPU dequantization tests](../../../tests/processing/gpu-dequant/) complement parser/security coverage with internal boundaries and dispatch configuration checks. Their presence does not establish exhaustive malformed-input, allocation-failure, or backend coverage.
+The [decoder tests](../../../tests/decoder/parser/) and [GPU dequantization tests](../../../tests/decoder/raster/) complement parser/security coverage with internal boundaries and dispatch configuration checks. Their presence does not establish exhaustive malformed-input, allocation-failure, or backend coverage.
 
 ### Coverage boundary
 

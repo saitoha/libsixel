@@ -1051,7 +1051,7 @@ Policy selection and application are coordinated in
 [`dither-policy.c`](../../../../src/dither-policy.c), with implementations in the
 `src/dither-policy-*.c` files and shared behavior in
 [`dither-common-pipeline.c`](../../../../src/dither-common-pipeline.c). Focused tests
-are under [`tests/quant/palette/usage/`](../../../../tests/quant/palette/usage/).
+are under [`tests/dither`](../../../../tests/dither).
 
 For the full context, read [Encoding Pipeline](../../pipeline/README.md) and
 [Lookup Policy](../lookup-policy/README.md).
@@ -1066,92 +1066,92 @@ The positional migration is covered by the following focused value and dispatch 
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| POS-01 | a zero gamma | [tests/processing/dither/positional/precision/0001_a_zero_gamma.t](../../../../tests/processing/dither/positional/precision/0001_a_zero_gamma.t) |
-| POS-02 | a zero linear | [tests/processing/dither/positional/precision/0002_a_zero_linear.t](../../../../tests/processing/dither/positional/precision/0002_a_zero_linear.t) |
-| POS-03 | a zero oklab | [tests/processing/dither/positional/precision/0003_a_zero_oklab.t](../../../../tests/processing/dither/positional/precision/0003_a_zero_oklab.t) |
-| POS-04 | a zero cielab | [tests/processing/dither/positional/precision/0004_a_zero_cielab.t](../../../../tests/processing/dither/positional/precision/0004_a_zero_cielab.t) |
-| POS-05 | a zero din99d | [tests/processing/dither/positional/precision/0005_a_zero_din99d.t](../../../../tests/processing/dither/positional/precision/0005_a_zero_din99d.t) |
-| POS-06 | a bias gamma | [tests/processing/dither/positional/precision/0006_a_bias_gamma.t](../../../../tests/processing/dither/positional/precision/0006_a_bias_gamma.t) |
-| POS-07 | a bias lab | [tests/processing/dither/positional/precision/0007_a_bias_lab.t](../../../../tests/processing/dither/positional/precision/0007_a_bias_lab.t) |
-| POS-08 | a byte saturation | [tests/processing/dither/positional/precision/0008_a_byte_saturation.t](../../../../tests/processing/dither/positional/precision/0008_a_byte_saturation.t) |
-| POS-09 | a absolute band | [tests/processing/dither/positional/precision/0009_a_absolute_band.t](../../../../tests/processing/dither/positional/precision/0009_a_absolute_band.t) |
-| POS-10 | a large coordinates | [tests/processing/dither/positional/precision/0010_a_large_coordinates.t](../../../../tests/processing/dither/positional/precision/0010_a_large_coordinates.t) |
-| POS-11 | a reprepare | [tests/processing/dither/positional/precision/0011_a_reprepare.t](../../../../tests/processing/dither/positional/precision/0011_a_reprepare.t) |
-| POS-12 | x zero gamma | [tests/processing/dither/positional/precision/0012_x_zero_gamma.t](../../../../tests/processing/dither/positional/precision/0012_x_zero_gamma.t) |
-| POS-13 | x zero linear | [tests/processing/dither/positional/precision/0013_x_zero_linear.t](../../../../tests/processing/dither/positional/precision/0013_x_zero_linear.t) |
-| POS-14 | x zero oklab | [tests/processing/dither/positional/precision/0014_x_zero_oklab.t](../../../../tests/processing/dither/positional/precision/0014_x_zero_oklab.t) |
-| POS-15 | x zero cielab | [tests/processing/dither/positional/precision/0015_x_zero_cielab.t](../../../../tests/processing/dither/positional/precision/0015_x_zero_cielab.t) |
-| POS-16 | x zero din99d | [tests/processing/dither/positional/precision/0016_x_zero_din99d.t](../../../../tests/processing/dither/positional/precision/0016_x_zero_din99d.t) |
-| POS-17 | x bias gamma | [tests/processing/dither/positional/precision/0017_x_bias_gamma.t](../../../../tests/processing/dither/positional/precision/0017_x_bias_gamma.t) |
-| POS-18 | x bias lab | [tests/processing/dither/positional/precision/0018_x_bias_lab.t](../../../../tests/processing/dither/positional/precision/0018_x_bias_lab.t) |
-| POS-19 | x byte saturation | [tests/processing/dither/positional/precision/0019_x_byte_saturation.t](../../../../tests/processing/dither/positional/precision/0019_x_byte_saturation.t) |
-| POS-20 | x absolute band | [tests/processing/dither/positional/precision/0020_x_absolute_band.t](../../../../tests/processing/dither/positional/precision/0020_x_absolute_band.t) |
-| POS-21 | x large coordinates | [tests/processing/dither/positional/precision/0021_x_large_coordinates.t](../../../../tests/processing/dither/positional/precision/0021_x_large_coordinates.t) |
-| POS-22 | x reprepare | [tests/processing/dither/positional/precision/0022_x_reprepare.t](../../../../tests/processing/dither/positional/precision/0022_x_reprepare.t) |
-| POS-23 | blue zero gamma | [tests/processing/dither/positional/precision/0023_blue_zero_gamma.t](../../../../tests/processing/dither/positional/precision/0023_blue_zero_gamma.t) |
-| POS-24 | blue zero linear | [tests/processing/dither/positional/precision/0024_blue_zero_linear.t](../../../../tests/processing/dither/positional/precision/0024_blue_zero_linear.t) |
-| POS-25 | blue zero oklab | [tests/processing/dither/positional/precision/0025_blue_zero_oklab.t](../../../../tests/processing/dither/positional/precision/0025_blue_zero_oklab.t) |
-| POS-26 | blue zero cielab | [tests/processing/dither/positional/precision/0026_blue_zero_cielab.t](../../../../tests/processing/dither/positional/precision/0026_blue_zero_cielab.t) |
-| POS-27 | blue zero din99d | [tests/processing/dither/positional/precision/0027_blue_zero_din99d.t](../../../../tests/processing/dither/positional/precision/0027_blue_zero_din99d.t) |
-| POS-28 | blue bias gamma | [tests/processing/dither/positional/precision/0028_blue_bias_gamma.t](../../../../tests/processing/dither/positional/precision/0028_blue_bias_gamma.t) |
-| POS-29 | blue bias lab | [tests/processing/dither/positional/precision/0029_blue_bias_lab.t](../../../../tests/processing/dither/positional/precision/0029_blue_bias_lab.t) |
-| POS-30 | blue byte saturation | [tests/processing/dither/positional/precision/0030_blue_byte_saturation.t](../../../../tests/processing/dither/positional/precision/0030_blue_byte_saturation.t) |
-| POS-31 | blue absolute band | [tests/processing/dither/positional/precision/0031_blue_absolute_band.t](../../../../tests/processing/dither/positional/precision/0031_blue_absolute_band.t) |
-| POS-32 | blue large coordinates | [tests/processing/dither/positional/precision/0032_blue_large_coordinates.t](../../../../tests/processing/dither/positional/precision/0032_blue_large_coordinates.t) |
-| POS-33 | blue reprepare | [tests/processing/dither/positional/precision/0033_blue_reprepare.t](../../../../tests/processing/dither/positional/precision/0033_blue_reprepare.t) |
-| POS-34 | blue gradient endpoints | [tests/processing/dither/positional/precision/0034_blue_gradient_endpoints.t](../../../../tests/processing/dither/positional/precision/0034_blue_gradient_endpoints.t) |
-| POS-35 | a encoder gamma | [tests/processing/dither/positional/precision/0035_a_encoder_gamma.t](../../../../tests/processing/dither/positional/precision/0035_a_encoder_gamma.t) |
-| POS-36 | a encoder linear | [tests/processing/dither/positional/precision/0036_a_encoder_linear.t](../../../../tests/processing/dither/positional/precision/0036_a_encoder_linear.t) |
-| POS-37 | a encoder oklab | [tests/processing/dither/positional/precision/0037_a_encoder_oklab.t](../../../../tests/processing/dither/positional/precision/0037_a_encoder_oklab.t) |
-| POS-38 | a encoder cielab | [tests/processing/dither/positional/precision/0038_a_encoder_cielab.t](../../../../tests/processing/dither/positional/precision/0038_a_encoder_cielab.t) |
-| POS-39 | a encoder din99d | [tests/processing/dither/positional/precision/0039_a_encoder_din99d.t](../../../../tests/processing/dither/positional/precision/0039_a_encoder_din99d.t) |
-| POS-40 | a encoder p3 | [tests/processing/dither/positional/precision/0040_a_encoder_p3.t](../../../../tests/processing/dither/positional/precision/0040_a_encoder_p3.t) |
-| POS-41 | a encoder byte | [tests/processing/dither/positional/precision/0041_a_encoder_byte.t](../../../../tests/processing/dither/positional/precision/0041_a_encoder_byte.t) |
-| POS-42 | a encoder workers | [tests/processing/dither/positional/precision/0042_a_encoder_workers.t](../../../../tests/processing/dither/positional/precision/0042_a_encoder_workers.t) |
-| POS-43 | x encoder gamma | [tests/processing/dither/positional/precision/0043_x_encoder_gamma.t](../../../../tests/processing/dither/positional/precision/0043_x_encoder_gamma.t) |
-| POS-44 | x encoder linear | [tests/processing/dither/positional/precision/0044_x_encoder_linear.t](../../../../tests/processing/dither/positional/precision/0044_x_encoder_linear.t) |
-| POS-45 | x encoder oklab | [tests/processing/dither/positional/precision/0045_x_encoder_oklab.t](../../../../tests/processing/dither/positional/precision/0045_x_encoder_oklab.t) |
-| POS-46 | x encoder cielab | [tests/processing/dither/positional/precision/0046_x_encoder_cielab.t](../../../../tests/processing/dither/positional/precision/0046_x_encoder_cielab.t) |
-| POS-47 | x encoder din99d | [tests/processing/dither/positional/precision/0047_x_encoder_din99d.t](../../../../tests/processing/dither/positional/precision/0047_x_encoder_din99d.t) |
-| POS-48 | x encoder p3 | [tests/processing/dither/positional/precision/0048_x_encoder_p3.t](../../../../tests/processing/dither/positional/precision/0048_x_encoder_p3.t) |
-| POS-49 | x encoder byte | [tests/processing/dither/positional/precision/0049_x_encoder_byte.t](../../../../tests/processing/dither/positional/precision/0049_x_encoder_byte.t) |
-| POS-50 | x encoder workers | [tests/processing/dither/positional/precision/0050_x_encoder_workers.t](../../../../tests/processing/dither/positional/precision/0050_x_encoder_workers.t) |
-| POS-51 | blue encoder gamma | [tests/processing/dither/positional/precision/0051_blue_encoder_gamma.t](../../../../tests/processing/dither/positional/precision/0051_blue_encoder_gamma.t) |
-| POS-52 | blue encoder linear | [tests/processing/dither/positional/precision/0052_blue_encoder_linear.t](../../../../tests/processing/dither/positional/precision/0052_blue_encoder_linear.t) |
-| POS-53 | blue encoder oklab | [tests/processing/dither/positional/precision/0053_blue_encoder_oklab.t](../../../../tests/processing/dither/positional/precision/0053_blue_encoder_oklab.t) |
-| POS-54 | blue encoder cielab | [tests/processing/dither/positional/precision/0054_blue_encoder_cielab.t](../../../../tests/processing/dither/positional/precision/0054_blue_encoder_cielab.t) |
-| POS-55 | blue encoder din99d | [tests/processing/dither/positional/precision/0055_blue_encoder_din99d.t](../../../../tests/processing/dither/positional/precision/0055_blue_encoder_din99d.t) |
-| POS-56 | blue encoder p3 | [tests/processing/dither/positional/precision/0056_blue_encoder_p3.t](../../../../tests/processing/dither/positional/precision/0056_blue_encoder_p3.t) |
-| POS-57 | blue encoder byte | [tests/processing/dither/positional/precision/0057_blue_encoder_byte.t](../../../../tests/processing/dither/positional/precision/0057_blue_encoder_byte.t) |
-| POS-58 | blue encoder workers | [tests/processing/dither/positional/precision/0058_blue_encoder_workers.t](../../../../tests/processing/dither/positional/precision/0058_blue_encoder_workers.t) |
-| POS-59 | a byte band | [tests/processing/dither/positional/precision/0059_a_byte_band.t](../../../../tests/processing/dither/positional/precision/0059_a_byte_band.t) |
-| POS-60 | x byte band | [tests/processing/dither/positional/precision/0060_x_byte_band.t](../../../../tests/processing/dither/positional/precision/0060_x_byte_band.t) |
-| POS-61 | blue byte band | [tests/processing/dither/positional/precision/0061_blue_byte_band.t](../../../../tests/processing/dither/positional/precision/0061_blue_byte_band.t) |
-| POS-62 | a auto float, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0065_a_auto_float.t](../../../../tests/processing/dither/positional/precision/0065_a_auto_float.t) |
-| POS-63 | x auto float, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0066_x_auto_float.t](../../../../tests/processing/dither/positional/precision/0066_x_auto_float.t) |
-| POS-64 | blue auto float, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0067_blue_auto_float.t](../../../../tests/processing/dither/positional/precision/0067_blue_auto_float.t) |
-| POS-65 | a auto byte, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0068_a_auto_byte.t](../../../../tests/processing/dither/positional/precision/0068_a_auto_byte.t) |
-| POS-66 | x auto byte, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0069_x_auto_byte.t](../../../../tests/processing/dither/positional/precision/0069_x_auto_byte.t) |
-| POS-67 | blue auto byte, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0070_blue_auto_byte.t](../../../../tests/processing/dither/positional/precision/0070_blue_auto_byte.t) |
-| POS-68 | a strength env, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0071_a_strength_env.t](../../../../tests/processing/dither/positional/precision/0071_a_strength_env.t) |
-| POS-69 | x strength env, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0072_x_strength_env.t](../../../../tests/processing/dither/positional/precision/0072_x_strength_env.t) |
-| POS-70 | blue strength env, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0073_blue_strength_env.t](../../../../tests/processing/dither/positional/precision/0073_blue_strength_env.t) |
-| POS-71 | a strength override, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0074_a_strength_override.t](../../../../tests/processing/dither/positional/precision/0074_a_strength_override.t) |
-| POS-72 | x strength override, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0075_x_strength_override.t](../../../../tests/processing/dither/positional/precision/0075_x_strength_override.t) |
-| POS-73 | blue strength override, palette reuse and reserved-entry count | [tests/processing/dither/positional/precision/0076_blue_strength_override.t](../../../../tests/processing/dither/positional/precision/0076_blue_strength_override.t) |
-| AX-12 | CPU/Metal a candidates matches independent coordinate and palette-distance oracles. | [tests/processing/gpu-palette/0012_a_candidates.t](../../../../tests/processing/gpu-palette/0012_a_candidates.t) |
-| AX-13 | CPU/Metal x candidates matches independent coordinate and palette-distance oracles. | [tests/processing/gpu-palette/0013_x_candidates.t](../../../../tests/processing/gpu-palette/0013_x_candidates.t) |
-| AX-14 | CPU/Metal a auto strength matches independent coordinate and palette-distance oracles. | [tests/processing/gpu-palette/0014_a_auto_strength.t](../../../../tests/processing/gpu-palette/0014_a_auto_strength.t) |
-| AX-15 | CPU/Metal x auto strength matches independent coordinate and palette-distance oracles. | [tests/processing/gpu-palette/0015_x_auto_strength.t](../../../../tests/processing/gpu-palette/0015_x_auto_strength.t) |
-| AX-16 | CPU/Metal a strength precedence matches independent coordinate and palette-distance oracles. | [tests/processing/gpu-palette/0016_a_strength_precedence.t](../../../../tests/processing/gpu-palette/0016_a_strength_precedence.t) |
-| AX-17 | CPU/Metal x strength precedence matches independent coordinate and palette-distance oracles. | [tests/processing/gpu-palette/0017_x_strength_precedence.t](../../../../tests/processing/gpu-palette/0017_x_strength_precedence.t) |
-| POS-74 | GPU auto strength matches independently specified CPU amplitudes across palette reuse and a reserved omission entry | [tests/processing/gpu-palette/0004_auto_strength.t](../../../../tests/processing/gpu-palette/0004_auto_strength.t) |
+| POS-01 | a zero gamma | [tests/dither/a-dither/0011_a_zero_gamma.t](../../../../tests/dither/a-dither/0011_a_zero_gamma.t) |
+| POS-02 | a zero linear | [tests/dither/a-dither/0012_a_zero_linear.t](../../../../tests/dither/a-dither/0012_a_zero_linear.t) |
+| POS-03 | a zero oklab | [tests/dither/a-dither/0013_a_zero_oklab.t](../../../../tests/dither/a-dither/0013_a_zero_oklab.t) |
+| POS-04 | a zero cielab | [tests/dither/a-dither/0014_a_zero_cielab.t](../../../../tests/dither/a-dither/0014_a_zero_cielab.t) |
+| POS-05 | a zero din99d | [tests/dither/a-dither/0015_a_zero_din99d.t](../../../../tests/dither/a-dither/0015_a_zero_din99d.t) |
+| POS-06 | a bias gamma | [tests/dither/a-dither/0016_a_bias_gamma.t](../../../../tests/dither/a-dither/0016_a_bias_gamma.t) |
+| POS-07 | a bias lab | [tests/dither/a-dither/0017_a_bias_lab.t](../../../../tests/dither/a-dither/0017_a_bias_lab.t) |
+| POS-08 | a byte saturation | [tests/dither/a-dither/0018_a_byte_saturation.t](../../../../tests/dither/a-dither/0018_a_byte_saturation.t) |
+| POS-09 | a absolute band | [tests/dither/a-dither/0019_a_absolute_band.t](../../../../tests/dither/a-dither/0019_a_absolute_band.t) |
+| POS-10 | a large coordinates | [tests/dither/a-dither/0020_a_large_coordinates.t](../../../../tests/dither/a-dither/0020_a_large_coordinates.t) |
+| POS-11 | a reprepare | [tests/dither/a-dither/0021_a_reprepare.t](../../../../tests/dither/a-dither/0021_a_reprepare.t) |
+| POS-12 | x zero gamma | [tests/dither/x-dither/0008_x_zero_gamma.t](../../../../tests/dither/x-dither/0008_x_zero_gamma.t) |
+| POS-13 | x zero linear | [tests/dither/x-dither/0009_x_zero_linear.t](../../../../tests/dither/x-dither/0009_x_zero_linear.t) |
+| POS-14 | x zero oklab | [tests/dither/x-dither/0010_x_zero_oklab.t](../../../../tests/dither/x-dither/0010_x_zero_oklab.t) |
+| POS-15 | x zero cielab | [tests/dither/x-dither/0011_x_zero_cielab.t](../../../../tests/dither/x-dither/0011_x_zero_cielab.t) |
+| POS-16 | x zero din99d | [tests/dither/x-dither/0012_x_zero_din99d.t](../../../../tests/dither/x-dither/0012_x_zero_din99d.t) |
+| POS-17 | x bias gamma | [tests/dither/x-dither/0013_x_bias_gamma.t](../../../../tests/dither/x-dither/0013_x_bias_gamma.t) |
+| POS-18 | x bias lab | [tests/dither/x-dither/0014_x_bias_lab.t](../../../../tests/dither/x-dither/0014_x_bias_lab.t) |
+| POS-19 | x byte saturation | [tests/dither/x-dither/0015_x_byte_saturation.t](../../../../tests/dither/x-dither/0015_x_byte_saturation.t) |
+| POS-20 | x absolute band | [tests/dither/x-dither/0016_x_absolute_band.t](../../../../tests/dither/x-dither/0016_x_absolute_band.t) |
+| POS-21 | x large coordinates | [tests/dither/x-dither/0017_x_large_coordinates.t](../../../../tests/dither/x-dither/0017_x_large_coordinates.t) |
+| POS-22 | x reprepare | [tests/dither/x-dither/0018_x_reprepare.t](../../../../tests/dither/x-dither/0018_x_reprepare.t) |
+| POS-23 | blue zero gamma | [tests/dither/bluenoise/0023_blue_zero_gamma.t](../../../../tests/dither/bluenoise/0023_blue_zero_gamma.t) |
+| POS-24 | blue zero linear | [tests/dither/bluenoise/0024_blue_zero_linear.t](../../../../tests/dither/bluenoise/0024_blue_zero_linear.t) |
+| POS-25 | blue zero oklab | [tests/dither/bluenoise/0025_blue_zero_oklab.t](../../../../tests/dither/bluenoise/0025_blue_zero_oklab.t) |
+| POS-26 | blue zero cielab | [tests/dither/bluenoise/0026_blue_zero_cielab.t](../../../../tests/dither/bluenoise/0026_blue_zero_cielab.t) |
+| POS-27 | blue zero din99d | [tests/dither/bluenoise/0027_blue_zero_din99d.t](../../../../tests/dither/bluenoise/0027_blue_zero_din99d.t) |
+| POS-28 | blue bias gamma | [tests/dither/bluenoise/0028_blue_bias_gamma.t](../../../../tests/dither/bluenoise/0028_blue_bias_gamma.t) |
+| POS-29 | blue bias lab | [tests/dither/bluenoise/0029_blue_bias_lab.t](../../../../tests/dither/bluenoise/0029_blue_bias_lab.t) |
+| POS-30 | blue byte saturation | [tests/dither/bluenoise/0030_blue_byte_saturation.t](../../../../tests/dither/bluenoise/0030_blue_byte_saturation.t) |
+| POS-31 | blue absolute band | [tests/dither/bluenoise/0031_blue_absolute_band.t](../../../../tests/dither/bluenoise/0031_blue_absolute_band.t) |
+| POS-32 | blue large coordinates | [tests/dither/bluenoise/0032_blue_large_coordinates.t](../../../../tests/dither/bluenoise/0032_blue_large_coordinates.t) |
+| POS-33 | blue reprepare | [tests/dither/bluenoise/0033_blue_reprepare.t](../../../../tests/dither/bluenoise/0033_blue_reprepare.t) |
+| POS-34 | blue gradient endpoints | [tests/dither/bluenoise/0034_blue_gradient_endpoints.t](../../../../tests/dither/bluenoise/0034_blue_gradient_endpoints.t) |
+| POS-35 | a encoder gamma | [tests/dither/a-dither/0022_a_encoder_gamma.t](../../../../tests/dither/a-dither/0022_a_encoder_gamma.t) |
+| POS-36 | a encoder linear | [tests/dither/a-dither/0023_a_encoder_linear.t](../../../../tests/dither/a-dither/0023_a_encoder_linear.t) |
+| POS-37 | a encoder oklab | [tests/dither/a-dither/0024_a_encoder_oklab.t](../../../../tests/dither/a-dither/0024_a_encoder_oklab.t) |
+| POS-38 | a encoder cielab | [tests/dither/a-dither/0025_a_encoder_cielab.t](../../../../tests/dither/a-dither/0025_a_encoder_cielab.t) |
+| POS-39 | a encoder din99d | [tests/dither/a-dither/0026_a_encoder_din99d.t](../../../../tests/dither/a-dither/0026_a_encoder_din99d.t) |
+| POS-40 | a encoder p3 | [tests/dither/a-dither/0027_a_encoder_p3.t](../../../../tests/dither/a-dither/0027_a_encoder_p3.t) |
+| POS-41 | a encoder byte | [tests/dither/a-dither/0028_a_encoder_byte.t](../../../../tests/dither/a-dither/0028_a_encoder_byte.t) |
+| POS-42 | a encoder workers | [tests/dither/a-dither/0029_a_encoder_workers.t](../../../../tests/dither/a-dither/0029_a_encoder_workers.t) |
+| POS-43 | x encoder gamma | [tests/dither/x-dither/0019_x_encoder_gamma.t](../../../../tests/dither/x-dither/0019_x_encoder_gamma.t) |
+| POS-44 | x encoder linear | [tests/dither/x-dither/0020_x_encoder_linear.t](../../../../tests/dither/x-dither/0020_x_encoder_linear.t) |
+| POS-45 | x encoder oklab | [tests/dither/x-dither/0021_x_encoder_oklab.t](../../../../tests/dither/x-dither/0021_x_encoder_oklab.t) |
+| POS-46 | x encoder cielab | [tests/dither/x-dither/0022_x_encoder_cielab.t](../../../../tests/dither/x-dither/0022_x_encoder_cielab.t) |
+| POS-47 | x encoder din99d | [tests/dither/x-dither/0023_x_encoder_din99d.t](../../../../tests/dither/x-dither/0023_x_encoder_din99d.t) |
+| POS-48 | x encoder p3 | [tests/dither/x-dither/0024_x_encoder_p3.t](../../../../tests/dither/x-dither/0024_x_encoder_p3.t) |
+| POS-49 | x encoder byte | [tests/dither/x-dither/0025_x_encoder_byte.t](../../../../tests/dither/x-dither/0025_x_encoder_byte.t) |
+| POS-50 | x encoder workers | [tests/dither/x-dither/0026_x_encoder_workers.t](../../../../tests/dither/x-dither/0026_x_encoder_workers.t) |
+| POS-51 | blue encoder gamma | [tests/dither/bluenoise/0035_blue_encoder_gamma.t](../../../../tests/dither/bluenoise/0035_blue_encoder_gamma.t) |
+| POS-52 | blue encoder linear | [tests/dither/bluenoise/0036_blue_encoder_linear.t](../../../../tests/dither/bluenoise/0036_blue_encoder_linear.t) |
+| POS-53 | blue encoder oklab | [tests/dither/bluenoise/0037_blue_encoder_oklab.t](../../../../tests/dither/bluenoise/0037_blue_encoder_oklab.t) |
+| POS-54 | blue encoder cielab | [tests/dither/bluenoise/0038_blue_encoder_cielab.t](../../../../tests/dither/bluenoise/0038_blue_encoder_cielab.t) |
+| POS-55 | blue encoder din99d | [tests/dither/bluenoise/0039_blue_encoder_din99d.t](../../../../tests/dither/bluenoise/0039_blue_encoder_din99d.t) |
+| POS-56 | blue encoder p3 | [tests/dither/bluenoise/0040_blue_encoder_p3.t](../../../../tests/dither/bluenoise/0040_blue_encoder_p3.t) |
+| POS-57 | blue encoder byte | [tests/dither/bluenoise/0041_blue_encoder_byte.t](../../../../tests/dither/bluenoise/0041_blue_encoder_byte.t) |
+| POS-58 | blue encoder workers | [tests/dither/bluenoise/0042_blue_encoder_workers.t](../../../../tests/dither/bluenoise/0042_blue_encoder_workers.t) |
+| POS-59 | a byte band | [tests/dither/a-dither/0030_a_byte_band.t](../../../../tests/dither/a-dither/0030_a_byte_band.t) |
+| POS-60 | x byte band | [tests/dither/x-dither/0027_x_byte_band.t](../../../../tests/dither/x-dither/0027_x_byte_band.t) |
+| POS-61 | blue byte band | [tests/dither/bluenoise/0043_blue_byte_band.t](../../../../tests/dither/bluenoise/0043_blue_byte_band.t) |
+| POS-62 | a auto float, palette reuse and reserved-entry count | [tests/dither/a-dither/0032_a_auto_float.t](../../../../tests/dither/a-dither/0032_a_auto_float.t) |
+| POS-63 | x auto float, palette reuse and reserved-entry count | [tests/dither/x-dither/0029_x_auto_float.t](../../../../tests/dither/x-dither/0029_x_auto_float.t) |
+| POS-64 | blue auto float, palette reuse and reserved-entry count | [tests/dither/bluenoise/0045_blue_auto_float.t](../../../../tests/dither/bluenoise/0045_blue_auto_float.t) |
+| POS-65 | a auto byte, palette reuse and reserved-entry count | [tests/dither/a-dither/0033_a_auto_byte.t](../../../../tests/dither/a-dither/0033_a_auto_byte.t) |
+| POS-66 | x auto byte, palette reuse and reserved-entry count | [tests/dither/x-dither/0030_x_auto_byte.t](../../../../tests/dither/x-dither/0030_x_auto_byte.t) |
+| POS-67 | blue auto byte, palette reuse and reserved-entry count | [tests/dither/bluenoise/0046_blue_auto_byte.t](../../../../tests/dither/bluenoise/0046_blue_auto_byte.t) |
+| POS-68 | a strength env, palette reuse and reserved-entry count | [tests/dither/a-dither/0034_a_strength_env.t](../../../../tests/dither/a-dither/0034_a_strength_env.t) |
+| POS-69 | x strength env, palette reuse and reserved-entry count | [tests/dither/x-dither/0031_x_strength_env.t](../../../../tests/dither/x-dither/0031_x_strength_env.t) |
+| POS-70 | blue strength env, palette reuse and reserved-entry count | [tests/dither/bluenoise/0047_blue_strength_env.t](../../../../tests/dither/bluenoise/0047_blue_strength_env.t) |
+| POS-71 | a strength override, palette reuse and reserved-entry count | [tests/dither/a-dither/0035_a_strength_override.t](../../../../tests/dither/a-dither/0035_a_strength_override.t) |
+| POS-72 | x strength override, palette reuse and reserved-entry count | [tests/dither/x-dither/0032_x_strength_override.t](../../../../tests/dither/x-dither/0032_x_strength_override.t) |
+| POS-73 | blue strength override, palette reuse and reserved-entry count | [tests/dither/bluenoise/0048_blue_strength_override.t](../../../../tests/dither/bluenoise/0048_blue_strength_override.t) |
+| AX-12 | CPU/Metal a candidates matches independent coordinate and palette-distance oracles. | [tests/dither/a-dither/0036_a_candidates.t](../../../../tests/dither/a-dither/0036_a_candidates.t) |
+| AX-13 | CPU/Metal x candidates matches independent coordinate and palette-distance oracles. | [tests/dither/x-dither/0042_x_candidates.t](../../../../tests/dither/x-dither/0042_x_candidates.t) |
+| AX-14 | CPU/Metal a auto strength matches independent coordinate and palette-distance oracles. | [tests/dither/a-dither/0037_a_auto_strength.t](../../../../tests/dither/a-dither/0037_a_auto_strength.t) |
+| AX-15 | CPU/Metal x auto strength matches independent coordinate and palette-distance oracles. | [tests/dither/x-dither/0043_x_auto_strength.t](../../../../tests/dither/x-dither/0043_x_auto_strength.t) |
+| AX-16 | CPU/Metal a strength precedence matches independent coordinate and palette-distance oracles. | [tests/dither/a-dither/0038_a_strength_precedence.t](../../../../tests/dither/a-dither/0038_a_strength_precedence.t) |
+| AX-17 | CPU/Metal x strength precedence matches independent coordinate and palette-distance oracles. | [tests/dither/x-dither/0044_x_strength_precedence.t](../../../../tests/dither/x-dither/0044_x_strength_precedence.t) |
+| POS-74 | GPU auto strength matches independently specified CPU amplitudes across palette reuse and a reserved omission entry | [tests/dither/bluenoise/0050_auto_strength.t](../../../../tests/dither/bluenoise/0050_auto_strength.t) |
 
 ### Option routing
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DOPT-01 | Unknown `-d` base values are rejected. | [tests/cli/options/matching/0127_option_matching_diffusion_unknown_base_value_rejected.t](../../../../tests/cli/options/matching/0127_option_matching_diffusion_unknown_base_value_rejected.t) |
+| DOPT-01 | Unknown `-d` base values are rejected. | [tests/cli/dither-options/0003_option_matching_diffusion_unknown_base_value_rejected.t](../../../../tests/cli/dither-options/0003_option_matching_diffusion_unknown_base_value_rejected.t) |
 
 ### Quality regression tests
 
@@ -1159,9 +1159,9 @@ The following 64x64 snake comparisons pin the admitted float path and verify act
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| POSQ-1 | Native a positional quality | [tests/processing/dither/positional/precision/0062_a_native_quality.t](../../../../tests/processing/dither/positional/precision/0062_a_native_quality.t) |
-| POSQ-2 | Native x positional quality | [tests/processing/dither/positional/precision/0063_x_native_quality.t](../../../../tests/processing/dither/positional/precision/0063_x_native_quality.t) |
-| POSQ-3 | Native blue positional quality | [tests/processing/dither/positional/precision/0064_blue_native_quality.t](../../../../tests/processing/dither/positional/precision/0064_blue_native_quality.t) |
+| POSQ-1 | Native a positional quality | [tests/dither/a-dither/0031_a_native_quality.t](../../../../tests/dither/a-dither/0031_a_native_quality.t) |
+| POSQ-2 | Native x positional quality | [tests/dither/x-dither/0028_x_native_quality.t](../../../../tests/dither/x-dither/0028_x_native_quality.t) |
+| POSQ-3 | Native blue positional quality | [tests/dither/bluenoise/0044_blue_native_quality.t](../../../../tests/dither/bluenoise/0044_blue_native_quality.t) |
 
 ### Coverage limits
 
@@ -1171,39 +1171,39 @@ These tests cover opaque three-channel CPU candidates and the selected native fl
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| DNONE-01 | Bulk and generic rows agree in byte and float modes, retain work-buffer and notification behavior, and honor transparent, clipped and 6delta pixels. | [tests/processing/lookup/0017_lookup_none_batch_fences.c](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.c), [tests/processing/lookup/0017_lookup_none_batch_fences.t](../../../../tests/processing/lookup/0017_lookup_none_batch_fences.t) |
+| DNONE-01 | Bulk and generic rows agree in byte and float modes, retain work-buffer and notification behavior, and honor transparent, clipped and 6delta pixels. | [tests/lookup/none/0003_lookup_none_batch_fences.c](../../../../tests/lookup/none/0003_lookup_none_batch_fences.c), [tests/lookup/none/0003_lookup_none_batch_fences.t](../../../../tests/lookup/none/0003_lookup_none_batch_fences.t) |
 
 ### Byte carry numeric contracts
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| BC-01 | Kernel coefficients. | [tests/processing/dither/carry/0001_carry_kernel_coefficients.t](../../../../tests/processing/dither/carry/0001_carry_kernel_coefficients.t) |
-| BC-02 | Deadzone below. | [tests/processing/dither/carry/0002_carry_deadzone_below.t](../../../../tests/processing/dither/carry/0002_carry_deadzone_below.t) |
-| BC-03 | Deadzone boundary. | [tests/processing/dither/carry/0003_carry_deadzone_boundary.t](../../../../tests/processing/dither/carry/0003_carry_deadzone_boundary.t) |
-| BC-04 | Deadzone disabled. | [tests/processing/dither/carry/0004_carry_deadzone_disabled.t](../../../../tests/processing/dither/carry/0004_carry_deadzone_disabled.t) |
-| BC-05 | Soft direction. | [tests/processing/dither/carry/0005_carry_soft_direction.t](../../../../tests/processing/dither/carry/0005_carry_soft_direction.t) |
-| BC-06 | Soft inside. | [tests/processing/dither/carry/0006_carry_soft_inside.t](../../../../tests/processing/dither/carry/0006_carry_soft_inside.t) |
-| BC-07 | Hard channels. | [tests/processing/dither/carry/0007_carry_hard_channels.t](../../../../tests/processing/dither/carry/0007_carry_hard_channels.t) |
-| BC-08 | None extended. | [tests/processing/dither/carry/0008_carry_none_extended.t](../../../../tests/processing/dither/carry/0008_carry_none_extended.t) |
-| BC-09 | Signed conservation. | [tests/processing/dither/carry/0009_carry_signed_conservation.t](../../../../tests/processing/dither/carry/0009_carry_signed_conservation.t) |
-| BC-10 | Symmetric rounding. | [tests/processing/dither/carry/0010_carry_symmetric_rounding.t](../../../../tests/processing/dither/carry/0010_carry_symmetric_rounding.t) |
-| BC-11 | Gray fs. | [tests/processing/dither/carry/0011_carry_gray_fs.t](../../../../tests/processing/dither/carry/0011_carry_gray_fs.t) |
-| BC-12 | Atkinson complementary-tone symmetry; 6/8 attenuation remains. | [tests/processing/dither/carry/0012_carry_gray_atkinson_symmetry.t](../../../../tests/processing/dither/carry/0012_carry_gray_atkinson_symmetry.t) |
-| BC-13 | Gray jajuni. | [tests/processing/dither/carry/0013_carry_gray_jajuni.t](../../../../tests/processing/dither/carry/0013_carry_gray_jajuni.t) |
-| BC-14 | Gray stucki. | [tests/processing/dither/carry/0014_carry_gray_stucki.t](../../../../tests/processing/dither/carry/0014_carry_gray_stucki.t) |
-| BC-15 | Gray burkes. | [tests/processing/dither/carry/0015_carry_gray_burkes.t](../../../../tests/processing/dither/carry/0015_carry_gray_burkes.t) |
-| BC-16 | Gray sierra1. | [tests/processing/dither/carry/0016_carry_gray_sierra1.t](../../../../tests/processing/dither/carry/0016_carry_gray_sierra1.t) |
-| BC-17 | Gray sierra2. | [tests/processing/dither/carry/0017_carry_gray_sierra2.t](../../../../tests/processing/dither/carry/0017_carry_gray_sierra2.t) |
-| BC-18 | Gray sierra3. | [tests/processing/dither/carry/0018_carry_gray_sierra3.t](../../../../tests/processing/dither/carry/0018_carry_gray_sierra3.t) |
-| BC-19 | Deadzone CLI, compact spelling and environment produce identical output; explicit CLI wins. | [tests/cli/options/regression/0178_diffusion_deadzone_image_regression.t](../../../../tests/cli/options/regression/0178_diffusion_deadzone_image_regression.t) |
-| BC-20 | All spatial option scopes accept decimals, reject invalid values and reset defaults. | [tests/processing/dither/carry/0019_carry_option_scope.t](../../../../tests/processing/dither/carry/0019_carry_option_scope.t) |
-| BC-21 | Carry allocation failure returns an error before output or source changes. | [tests/processing/dither/carry/0020_carry_allocation_failure.t](../../../../tests/processing/dither/carry/0020_carry_allocation_failure.t) |
-| BC-22 | Retained feedback with incoming carry (keep_early_incoming). | [tests/processing/dither/carry/0021_carry_keep_early_incoming.t](../../../../tests/processing/dither/carry/0021_carry_keep_early_incoming.t) |
-| BC-23 | Retained feedback with incoming carry (keep_lookup_incoming). | [tests/processing/dither/carry/0022_carry_keep_lookup_incoming.t](../../../../tests/processing/dither/carry/0022_carry_keep_lookup_incoming.t) |
-| BC-24 | Integer candidate rounding matches an independent exact rational reference at every bounded half tie and adjacent numerator for all kernel denominators, plus deterministic full-range samples. | [tests/processing/dither/carry/0023_carry_rational_rounding.t](../../../../tests/processing/dither/carry/0023_carry_rational_rounding.t) |
-| BC-25 | Prepared integer soft bounds and spherical double deadzone decisions match the independent reference, including adjacent representable thresholds and all byte source values. | [tests/processing/dither/carry/0024_carry_rational_bounds.t](../../../../tests/processing/dither/carry/0024_carry_rational_bounds.t) |
-| BC-26 | Specialized stencil candidates and indices match the generic scan with exact rational candidate arithmetic for narrow edges, bottom rows, absolute parity, warm-up rows, masks, perturbed FS and retained-color skip/diffuse. | [tests/processing/dither/carry/0025_carry_rational_stencil.t](../../../../tests/processing/dither/carry/0025_carry_rational_stencil.t) |
-| BC-27 | Hard candidates match the frozen double reference. | [tests/processing/dither/carry/0026_carry_hard_double.t](../../../../tests/processing/dither/carry/0026_carry_hard_double.t) |
-| BC-28 | Rational soft scaling preserves correction direction within rounding. | [tests/processing/dither/carry/0027_carry_soft_direction.t](../../../../tests/processing/dither/carry/0027_carry_soft_direction.t) |
-| BC-29 | The limiting component reaches its rounded integer boundary. | [tests/processing/dither/carry/0028_carry_soft_boundary.t](../../../../tests/processing/dither/carry/0028_carry_soft_boundary.t) |
-| BC-30 | Equal positive and negative ratios preserve nearest-even half ties. | [tests/processing/dither/carry/0029_carry_soft_tied_ratios.t](../../../../tests/processing/dither/carry/0029_carry_soft_tied_ratios.t) |
+| BC-01 | Kernel coefficients. | [tests/dither/carry/0001_carry_kernel_coefficients.t](../../../../tests/dither/carry/0001_carry_kernel_coefficients.t) |
+| BC-02 | Deadzone below. | [tests/dither/carry/0002_carry_deadzone_below.t](../../../../tests/dither/carry/0002_carry_deadzone_below.t) |
+| BC-03 | Deadzone boundary. | [tests/dither/carry/0003_carry_deadzone_boundary.t](../../../../tests/dither/carry/0003_carry_deadzone_boundary.t) |
+| BC-04 | Deadzone disabled. | [tests/dither/carry/0004_carry_deadzone_disabled.t](../../../../tests/dither/carry/0004_carry_deadzone_disabled.t) |
+| BC-05 | Soft direction. | [tests/dither/carry/0005_processing_dither_carry_carry_soft_direction.t](../../../../tests/dither/carry/0005_processing_dither_carry_carry_soft_direction.t) |
+| BC-06 | Soft inside. | [tests/dither/carry/0006_carry_soft_inside.t](../../../../tests/dither/carry/0006_carry_soft_inside.t) |
+| BC-07 | Hard channels. | [tests/dither/carry/0007_carry_hard_channels.t](../../../../tests/dither/carry/0007_carry_hard_channels.t) |
+| BC-08 | None extended. | [tests/dither/carry/0008_carry_none_extended.t](../../../../tests/dither/carry/0008_carry_none_extended.t) |
+| BC-09 | Signed conservation. | [tests/dither/carry/0009_carry_signed_conservation.t](../../../../tests/dither/carry/0009_carry_signed_conservation.t) |
+| BC-10 | Symmetric rounding. | [tests/dither/carry/0010_carry_symmetric_rounding.t](../../../../tests/dither/carry/0010_carry_symmetric_rounding.t) |
+| BC-11 | Gray fs. | [tests/dither/carry/0011_carry_gray_fs.t](../../../../tests/dither/carry/0011_carry_gray_fs.t) |
+| BC-12 | Atkinson complementary-tone symmetry; 6/8 attenuation remains. | [tests/dither/carry/0012_carry_gray_atkinson_symmetry.t](../../../../tests/dither/carry/0012_carry_gray_atkinson_symmetry.t) |
+| BC-13 | Gray jajuni. | [tests/dither/carry/0013_carry_gray_jajuni.t](../../../../tests/dither/carry/0013_carry_gray_jajuni.t) |
+| BC-14 | Gray stucki. | [tests/dither/carry/0014_carry_gray_stucki.t](../../../../tests/dither/carry/0014_carry_gray_stucki.t) |
+| BC-15 | Gray burkes. | [tests/dither/carry/0015_carry_gray_burkes.t](../../../../tests/dither/carry/0015_carry_gray_burkes.t) |
+| BC-16 | Gray sierra1. | [tests/dither/carry/0016_carry_gray_sierra1.t](../../../../tests/dither/carry/0016_carry_gray_sierra1.t) |
+| BC-17 | Gray sierra2. | [tests/dither/carry/0017_carry_gray_sierra2.t](../../../../tests/dither/carry/0017_carry_gray_sierra2.t) |
+| BC-18 | Gray sierra3. | [tests/dither/carry/0018_carry_gray_sierra3.t](../../../../tests/dither/carry/0018_carry_gray_sierra3.t) |
+| BC-19 | Deadzone CLI, compact spelling and environment produce identical output; explicit CLI wins. | [tests/cli/dither-options/0042_diffusion_deadzone_image_regression.t](../../../../tests/cli/dither-options/0042_diffusion_deadzone_image_regression.t) |
+| BC-20 | All spatial option scopes accept decimals, reject invalid values and reset defaults. | [tests/dither/carry/0019_carry_option_scope.t](../../../../tests/dither/carry/0019_carry_option_scope.t) |
+| BC-21 | Carry allocation failure returns an error before output or source changes. | [tests/dither/carry/0020_carry_allocation_failure.t](../../../../tests/dither/carry/0020_carry_allocation_failure.t) |
+| BC-22 | Retained feedback with incoming carry (keep_early_incoming). | [tests/dither/carry/0021_carry_keep_early_incoming.t](../../../../tests/dither/carry/0021_carry_keep_early_incoming.t) |
+| BC-23 | Retained feedback with incoming carry (keep_lookup_incoming). | [tests/dither/carry/0022_carry_keep_lookup_incoming.t](../../../../tests/dither/carry/0022_carry_keep_lookup_incoming.t) |
+| BC-24 | Integer candidate rounding matches an independent exact rational reference at every bounded half tie and adjacent numerator for all kernel denominators, plus deterministic full-range samples. | [tests/dither/carry/0023_carry_rational_rounding.t](../../../../tests/dither/carry/0023_carry_rational_rounding.t) |
+| BC-25 | Prepared integer soft bounds and spherical double deadzone decisions match the independent reference, including adjacent representable thresholds and all byte source values. | [tests/dither/carry/0024_carry_rational_bounds.t](../../../../tests/dither/carry/0024_carry_rational_bounds.t) |
+| BC-26 | Specialized stencil candidates and indices match the generic scan with exact rational candidate arithmetic for narrow edges, bottom rows, absolute parity, warm-up rows, masks, perturbed FS and retained-color skip/diffuse. | [tests/dither/carry/0025_carry_rational_stencil.t](../../../../tests/dither/carry/0025_carry_rational_stencil.t) |
+| BC-27 | Hard candidates match the frozen double reference. | [tests/dither/carry/0026_carry_hard_double.t](../../../../tests/dither/carry/0026_carry_hard_double.t) |
+| BC-28 | Rational soft scaling preserves correction direction within rounding. | [tests/dither/carry/0027_processing_dither_carry_carry_soft_direction.t](../../../../tests/dither/carry/0027_processing_dither_carry_carry_soft_direction.t) |
+| BC-29 | The limiting component reaches its rounded integer boundary. | [tests/dither/carry/0028_carry_soft_boundary.t](../../../../tests/dither/carry/0028_carry_soft_boundary.t) |
+| BC-30 | Equal positive and negative ratios preserve nearest-even half ties. | [tests/dither/carry/0029_carry_soft_tied_ratios.t](../../../../tests/dither/carry/0029_carry_soft_tied_ratios.t) |

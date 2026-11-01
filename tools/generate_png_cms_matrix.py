@@ -70,9 +70,12 @@ def read_cases() -> dict[tuple[str, str, tuple[int, ...]], Case]:
     """Require both decoders to use the complete, shared 3 x 16 matrix."""
     cases = {}
     for backend in BACKENDS:
-        directory = ROOT / "tests/loader" / backend
+        directory = ROOT / "tests/loader-png/metadata-precedence"
         for test in sorted(directory.glob("*_colormgmt_png_img_*.t")):
-            match = re.fullmatch(r"\d+_colormgmt_png_(.*)\.t", test.name)
+            source = test.read_text(encoding="utf-8")
+            if f"'{backend}:cms_engine=auto!'" not in source:
+                continue
+            match = re.fullmatch(r"\d+_(?:loader_(?:builtin|libpng)_)?colormgmt_png_(.*)\.t", test.name)
             name = CASE_NAME.fullmatch(match[1]) if match else None
             if name is None:
                 raise ValueError(f"{test}: unexpected matrix test name")

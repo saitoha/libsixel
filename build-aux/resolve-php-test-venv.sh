@@ -4,14 +4,17 @@
 # Usage:
 #   resolve-php-test-venv.sh <enable_php> <php_bin> <package_dir> <venv_dir> [source_dir] [libsixel_lib_dir]
 
+# Embedded language snippets intentionally retain their dollar signs.
+# shellcheck disable=SC2016
 set -eu
 
-script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH='' cd -- "${0%/*}" && pwd)
 common_helpers="$script_dir/resolve-binding-test-common.sh"
 if [ ! -r "$common_helpers" ]; then
     echo "error: missing helper script: $common_helpers" >&2
     exit 1
 fi
+# shellcheck source=build-aux/resolve-binding-test-common.sh
 . "$common_helpers"
 
 if [ "$#" -ne 4 ] && [ "$#" -ne 6 ]; then
@@ -249,7 +252,7 @@ compute_source_signature() {
             fi
         done
         if [ -d "$src_dir/src" ]; then
-            find "$src_dir/src" -type f -name '*.php' \
+            sh "$script_dir/list-tree-files.sh" "$src_dir/src" '*.php' \
                 | LC_ALL=C sort \
                 | while IFS= read -r path; do
                     "${CKSUM:-cksum}" "$path"
@@ -309,14 +312,15 @@ setup_php_wrapper() {
 }
 
 find_archive() {
-    find "$package_dir" -maxdepth 1 -type f \
-        \( -name 'libsixel-php-*.tar.gz' -o -name 'libsixel-php-*.zip' \) \
-        2>/dev/null | LC_ALL=C sort | head -n 1
+    for archive in "$package_dir/"libsixel-php-*.tar.gz "$package_dir/"libsixel-php-*.zip; do
+        test ! -f "$archive" || printf '%s\n' "$archive"
+    done | LC_ALL=C sort | head -n 1
 }
 
 resolve_binding_root() {
-    resolved_root=$(find "$extract_root" -mindepth 1 -maxdepth 1 -type d \
-        -name 'libsixel-php-*' 2>/dev/null | LC_ALL=C sort | head -n 1)
+    resolved_root=$(for extracted in "$extract_root/"libsixel-php-*; do
+        test ! -d "$extracted" || printf '%s\n' "$extracted"
+    done | LC_ALL=C sort | head -n 1)
     if [ -n "$resolved_root" ] && [ -f "$resolved_root/src/autoload.php" ]; then
         printf "%s\n" "$resolved_root"
         return 0
@@ -359,9 +363,9 @@ extract_archive() {
 }
 
 resolve_libpath() {
-    find "$lib_dir" -maxdepth 1 -type f \
-        \( -name '*.so' -o -name '*.so.*' -o -name '*.dylib' -o -name '*.dll' \) \
-        2>/dev/null | LC_ALL=C sort | head -n 1
+    for library in "$lib_dir/"*.so "$lib_dir/"*.so.* "$lib_dir/"*.dylib "$lib_dir/"*.dll; do
+        test ! -f "$library" || printf '%s\n' "$library"
+    done | LC_ALL=C sort | head -n 1
 }
 
 package_dir=$(to_shell_path "$package_dir")

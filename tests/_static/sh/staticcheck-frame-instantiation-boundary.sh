@@ -2,6 +2,7 @@
 # Emit TAP for frame construction boundary checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -24,11 +25,11 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 violations=$tmpdir/direct-frame-new.txt
 
-find "$src_root/src" -type f -name '*.c' ! -name 'frame.c' -exec awk '
+sh "$source_files_helper" "$src_root/src" --name '*.c' --exclude-name 'frame.c' --exec awk '
 /sixel_frame_new[[:space:]]*\(/ {
     print FILENAME ":" FNR ":" $0
 }
-' {} + > "$violations"
+'> "$violations"
 
 if test -s "$violations"; then
     echo "not ok 1 - src frame construction uses image/frame factory"

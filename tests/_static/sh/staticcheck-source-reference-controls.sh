@@ -88,7 +88,7 @@ cmp "$tmpdir/expected" "$tmpdir/all/source-contracts" || {
     exit 0
 }
 
-# find -exec can split its arguments. Successive awk processes must append,
+# Source enumeration batches its arguments. Successive awk processes must append,
 # not discard records produced by the earlier batch.
 : > "$tmpdir/all/policy-links"
 awk -v src_root="$tmpdir/root/" -v output_root="$tmpdir/all" -v scope=policy \

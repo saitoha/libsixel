@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-#include "tests/loader/pixelformat_test_common.h"
+#include "tests/_support/loader/pixelformat_test_common.h"
 
 #if HAVE_GD
 static SIXELSTATUS

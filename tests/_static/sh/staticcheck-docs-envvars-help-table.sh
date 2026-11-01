@@ -8,7 +8,7 @@ set -eu
 echo "1..1"
 
 src_root=$1
-checker="$src_root/tests/docs/consistency/list_envvars.sh"
+checker="$src_root/tests/_support/docs/consistency/list_envvars.sh"
 
 if test ! -f "$checker"; then
     echo "ok 1 # SKIP missing list_envvars.sh"

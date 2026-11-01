@@ -1,0 +1,6 @@
+tests/frame/resize/0152_discrete_stencil_numeric_baseline.t
+tests/frame/resize/0153_frequency_numeric_baseline.t
+tests/frame/resize/0154_isotropy_numeric_baseline.t
+tests/frame/resize/0155_moire_numeric_baseline.t
+tests/frame/resize/0156_quality_size_numeric_baseline.t
+tests/frame/resize/0157_speed_ratio_numeric_baseline.t

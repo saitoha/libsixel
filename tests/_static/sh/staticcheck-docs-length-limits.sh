@@ -4,6 +4,7 @@
 # Policy: docs/AGENTS.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -24,7 +25,7 @@ test -f "$src_root/$limits" || {
     exit 1
 }
 
-(cd "$src_root" && find docs -type f -name '*.md') | LC_ALL=C sort \
+(cd "$src_root" && sh "$source_files_helper" docs --name '*.md') | LC_ALL=C sort \
     > "$tmpdir/documents"
 
 # Run from the source root so that reported paths are repository-relative.

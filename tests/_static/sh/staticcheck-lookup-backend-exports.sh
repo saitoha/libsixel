@@ -2,6 +2,7 @@
 # Emit TAP for private lookup backend source visibility checks.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -18,7 +19,7 @@ if test ! -d "$src_root/src"; then
     exit 1
 fi
 
-find "$src_root/src" -type f -name '*.[ch]' -exec awk '
+sh "$source_files_helper" "$src_root/src" --name '*.[ch]' --exec awk '
 FNR == 1 {
     previous = ""
 }
@@ -31,7 +32,7 @@ FNR == 1 {
 {
     previous = $0
 }
-' {} + | LC_ALL=C sort -u > "$forbidden"
+'| LC_ALL=C sort -u > "$forbidden"
 
 if test -s "$forbidden"; then
     echo "not ok 1 - lookup backend legacy exports are private"

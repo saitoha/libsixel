@@ -138,89 +138,89 @@ See [color difference and color reproduction](color-difference.md) for global an
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| CE-01 | Published CIEDE2000 pairs, including zero chroma and hue wrap. | [tests/processing/assessment/0001_ciede2000_reference.t](../../tests/processing/assessment/0001_ciede2000_reference.t) |
-| CE-02 | Same physical colors in gamma, linear and opponent coordinates. | [tests/processing/assessment/0002_same_physical_coordinates.t](../../tests/processing/assessment/0002_same_physical_coordinates.t) |
-| CE-03 | Physical means at 8, 16, 32 and 64 pixels. | [tests/processing/assessment/0005_region_physical_average.t](../../tests/processing/assessment/0005_region_physical_average.t) |
-| CE-04 | Local error is retained when global means match. | [tests/processing/assessment/0006_region_spatial_cancellation.t](../../tests/processing/assessment/0006_region_spatial_cancellation.t) |
-| CE-05 | Partial tiles are included with pixel-area weights. | [tests/processing/assessment/0007_region_partial_edge.t](../../tests/processing/assessment/0007_region_partial_edge.t) |
-| CE-06 | Current Lab frames are decoded before measurement. | [tests/processing/assessment/0008_frame_linear_lab.t](../../tests/processing/assessment/0008_frame_linear_lab.t) |
-| CE-07 | Current Oklab frames are decoded before measurement. | [tests/processing/assessment/0009_frame_linear_oklab.t](../../tests/processing/assessment/0009_frame_linear_oklab.t) |
-| CE-08 | Current DIN99d frames are decoded before measurement. | [tests/processing/assessment/0010_frame_linear_din99d.t](../../tests/processing/assessment/0010_frame_linear_din99d.t) |
-| CE-09 | Target interpretation is independent. | [tests/quality_gate/cms/0011_target_definition_independent.t](../../tests/quality_gate/cms/0011_target_definition_independent.t) |
-| CE-10 | Reference interpretation is independent. | [tests/quality_gate/cms/0012_reference_definition_independent.t](../../tests/quality_gate/cms/0012_reference_definition_independent.t) |
-| CE-11 | Identical P3 interpretations have zero difference. | [tests/quality_gate/cms/0013_same_p3_definition.t](../../tests/quality_gate/cms/0013_same_p3_definition.t) |
-| CE-12 | Explicit interpretation applies to stdin. | [tests/quality_gate/cms/0014_target_definition_stdin.t](../../tests/quality_gate/cms/0014_target_definition_stdin.t) |
-| CE-13 | Forward-only ICC profiles are accepted as input. | [tests/quality_gate/cms/0015_forward_only_icc_input.t](../../tests/quality_gate/cms/0015_forward_only_icc_input.t) |
-| CE-14 | Equivalent custom RGB and named P3 definitions agree. | [tests/quality_gate/cms/0016_simple_rgb_matches_p3.t](../../tests/quality_gate/cms/0016_simple_rgb_matches_p3.t) |
-| CE-15 | Unknown definitions are rejected. | [tests/quality_gate/cms/0017_unknown_definition_error.t](../../tests/quality_gate/cms/0017_unknown_definition_error.t) |
-| CE-16 | Unreadable ICC files are rejected. | [tests/quality_gate/cms/0018_unreadable_icc_error.t](../../tests/quality_gate/cms/0018_unreadable_icc_error.t) |
-| CE-17 | PNG overrides cannot reinterpret normalized samples. | [tests/quality_gate/cms/0019_png_override_pending_error.t](../../tests/quality_gate/cms/0019_png_override_pending_error.t) |
-| CE-18 | Explicit auto preserves default behavior. | [tests/quality_gate/cms/0020_auto_definition_compatibility.t](../../tests/quality_gate/cms/0020_auto_definition_compatibility.t) |
-| CE-19 | JSON distinguishes requested CMS and effective evaluator. | [tests/quality_gate/cms/0021_color_context_json.t](../../tests/quality_gate/cms/0021_color_context_json.t) |
-| CE-20 | Background definition is independent of the palette. | [tests/quality_gate/cms/0022_background_definition_independent.t](../../tests/quality_gate/cms/0022_background_definition_independent.t) |
-| CE-21 | An 8-pixel window is accepted. | [tests/quality_gate/cms/0023_region_window_8.t](../../tests/quality_gate/cms/0023_region_window_8.t) |
-| CE-22 | A 16-pixel window is accepted. | [tests/quality_gate/cms/0024_region_window_16.t](../../tests/quality_gate/cms/0024_region_window_16.t) |
-| CE-23 | A 32-pixel window is accepted. | [tests/quality_gate/cms/0025_region_window_32.t](../../tests/quality_gate/cms/0025_region_window_32.t) |
-| CE-24 | A 64-pixel window is accepted. | [tests/quality_gate/cms/0026_region_window_64.t](../../tests/quality_gate/cms/0026_region_window_64.t) |
-| CE-25 | Signal quantization cannot clip color measurements. | [tests/quality_gate/cms/0027_signal_quantization_preserves_color.t](../../tests/quality_gate/cms/0027_signal_quantization_preserves_color.t) |
-| CE-26 | Grayscale signal selection cannot discard physical color. | [tests/quality_gate/cms/0028_grayscale_signal_preserves_color.t](../../tests/quality_gate/cms/0028_grayscale_signal_preserves_color.t) |
-| CE-27 | Invalid ICC bytes are rejected. | [tests/quality_gate/cms/0029_invalid_icc_error.t](../../tests/quality_gate/cms/0029_invalid_icc_error.t) |
-| CE-28 | Two stdin readers are rejected. | [tests/quality_gate/cms/0030_dual_stdin_error.t](../../tests/quality_gate/cms/0030_dual_stdin_error.t) |
-| CE-29 | Unsupported window sizes are rejected. | [tests/quality_gate/cms/0031_invalid_region_window_error.t](../../tests/quality_gate/cms/0031_invalid_region_window_error.t) |
-| CE-30 | Explicit target definition and dequantization are rejected together. | [tests/quality_gate/cms/0032_explicit_dequantize_error.t](../../tests/quality_gate/cms/0032_explicit_dequantize_error.t) |
-| CE-31 | Direct auto target retains paint-time colors. | [tests/quality_gate/direct/0001_auto_target.t](../../tests/quality_gate/direct/0001_auto_target.t) |
-| CE-32 | Direct auto reference retains paint-time colors. | [tests/quality_gate/direct/0002_auto_reference.t](../../tests/quality_gate/direct/0002_auto_reference.t) |
-| CE-33 | Direct explicit sRGB preserves palette redefinition. | [tests/quality_gate/direct/0003_srgb_target.t](../../tests/quality_gate/direct/0003_srgb_target.t) |
-| CE-34 | Direct P3 target preserves palette redefinition. | [tests/quality_gate/direct/0004_p3_target.t](../../tests/quality_gate/direct/0004_p3_target.t) |
-| CE-35 | Direct P3 reference preserves palette redefinition. | [tests/quality_gate/direct/0005_p3_reference.t](../../tests/quality_gate/direct/0005_p3_reference.t) |
-| CE-36 | Direct custom RGB matches named P3. | [tests/quality_gate/direct/0006_simple_rgb.t](../../tests/quality_gate/direct/0006_simple_rgb.t) |
-| CE-37 | Direct ICC interpretation retains paint history. | [tests/quality_gate/direct/0007_icc_redefinition.t](../../tests/quality_gate/direct/0007_icc_redefinition.t) |
-| CE-38 | Direct ICC interpretation changes physical color. | [tests/quality_gate/direct/0008_icc_definition.t](../../tests/quality_gate/direct/0008_icc_definition.t) |
-| CE-39 | Direct target definition remains independent. | [tests/quality_gate/direct/0009_target_definition.t](../../tests/quality_gate/direct/0009_target_definition.t) |
-| CE-40 | Direct reference definition remains independent. | [tests/quality_gate/direct/0010_reference_definition.t](../../tests/quality_gate/direct/0010_reference_definition.t) |
-| CE-41 | Direct auto reference accepts stdin. | [tests/quality_gate/direct/0011_reference_stdin.t](../../tests/quality_gate/direct/0011_reference_stdin.t) |
-| CE-42 | Direct P3 target accepts stdin. | [tests/quality_gate/direct/0012_target_p3_stdin.t](../../tests/quality_gate/direct/0012_target_p3_stdin.t) |
-| CE-43 | Repainting after redefinition changes only overwritten pixels. | [tests/quality_gate/direct/0013_repaint.t](../../tests/quality_gate/direct/0013_repaint.t) |
-| CE-44 | Sparse P3 paint keeps earlier colors and unpainted background. | [tests/quality_gate/direct/0014_sparse_p3.t](../../tests/quality_gate/direct/0014_sparse_p3.t) |
-| CE-45 | Reference holes use sRGB background independently of P3. | [tests/quality_gate/direct/0015_reference_background.t](../../tests/quality_gate/direct/0015_reference_background.t) |
-| CE-46 | Target holes use sRGB background independently of P3. | [tests/quality_gate/direct/0016_target_background.t](../../tests/quality_gate/direct/0016_target_background.t) |
-| CE-47 | Omitting -D retains auto indexed evaluation. | [tests/quality_gate/direct/0017_default_indexed.t](../../tests/quality_gate/direct/0017_default_indexed.t) |
-| CE-48 | Omitting -D retains P3 indexed evaluation. | [tests/quality_gate/direct/0018_default_p3_indexed.t](../../tests/quality_gate/direct/0018_default_p3_indexed.t) |
-| CE-49 | Direct selection leaves png file loader results unchanged. | [tests/quality_gate/direct/0019_png_file.t](../../tests/quality_gate/direct/0019_png_file.t) |
-| CE-50 | Direct selection leaves png target stdin loader results unchanged. | [tests/quality_gate/direct/0020_png_target_stdin.t](../../tests/quality_gate/direct/0020_png_target_stdin.t) |
-| CE-51 | Direct selection leaves png reference stdin loader results unchanged. | [tests/quality_gate/direct/0021_png_reference_stdin.t](../../tests/quality_gate/direct/0021_png_reference_stdin.t) |
-| CE-52 | JSON reports direct drawing selection and both input routes. | [tests/quality_gate/direct/0022_direct_json.t](../../tests/quality_gate/direct/0022_direct_json.t) |
-| CE-53 | JSON reports png drawing selection and both input routes. | [tests/quality_gate/direct/0023_png_json.t](../../tests/quality_gate/direct/0023_png_json.t) |
-| CE-54 | JSON reports indexed drawing selection and both input routes. | [tests/quality_gate/direct/0024_indexed_json.t](../../tests/quality_gate/direct/0024_indexed_json.t) |
-| CE-55 | Help advertises both direct option spellings. | [tests/quality_gate/direct/0025_help.t](../../tests/quality_gate/direct/0025_help.t) |
-| CE-56 | Reject direct value. | [tests/quality_gate/direct/0026_direct_value_error.t](../../tests/quality_gate/direct/0026_direct_value_error.t) |
-| CE-57 | Reject explicit dequantize. | [tests/quality_gate/direct/0027_explicit_dequantize_error.t](../../tests/quality_gate/direct/0027_explicit_dequantize_error.t) |
-| CE-58 | Dequantize none does not disable direct drawing. | [tests/quality_gate/direct/0028_dequantize_none.t](../../tests/quality_gate/direct/0028_dequantize_none.t) |
-| CE-59 | Direct kundither target reconstruction matches the established opaque result through stdin. | [tests/quality_gate/direct/0029_reconstruct_kundither.t](../../tests/quality_gate/direct/0029_reconstruct_kundither.t) |
-| CE-60 | Direct fast4 target reconstruction matches the established opaque result through stdin. | [tests/quality_gate/direct/0030_reconstruct_fast4.t](../../tests/quality_gate/direct/0030_reconstruct_fast4.t) |
-| CE-61 | Direct selective_blur target reconstruction matches the established opaque result through stdin. | [tests/quality_gate/direct/0031_reconstruct_selective_blur.t](../../tests/quality_gate/direct/0031_reconstruct_selective_blur.t) |
-| CE-62 | Direct kundither uses the existing redefinition bypass. | [tests/quality_gate/direct/0032_redefined_kundither.t](../../tests/quality_gate/direct/0032_redefined_kundither.t) |
-| CE-63 | Direct fast4 uses the existing redefinition bypass. | [tests/quality_gate/direct/0033_redefined_fast4.t](../../tests/quality_gate/direct/0033_redefined_fast4.t) |
-| CE-64 | Direct selective_blur uses the existing redefinition bypass. | [tests/quality_gate/direct/0034_redefined_selective_blur.t](../../tests/quality_gate/direct/0034_redefined_selective_blur.t) |
-| CE-65 | Direct kundither retains unpainted background. | [tests/quality_gate/direct/0035_background_kundither.t](../../tests/quality_gate/direct/0035_background_kundither.t) |
-| CE-66 | Direct fast4 retains unpainted background. | [tests/quality_gate/direct/0036_background_fast4.t](../../tests/quality_gate/direct/0036_background_fast4.t) |
-| CE-67 | Direct selective_blur retains unpainted background. | [tests/quality_gate/direct/0037_background_selective_blur.t](../../tests/quality_gate/direct/0037_background_selective_blur.t) |
-| CE-68 | Direct auto target accepts stdin. | [tests/quality_gate/direct/0038_target_auto_stdin.t](../../tests/quality_gate/direct/0038_target_auto_stdin.t) |
-| CE-69 | Direct P3 reference accepts stdin. | [tests/quality_gate/direct/0039_reference_p3_stdin.t](../../tests/quality_gate/direct/0039_reference_p3_stdin.t) |
-| CE-70 | Maximum-only selection reports a sparse black/white error of 100, its position and tail counts. | [tests/processing/assessment/0013_pixel_delta_peak.t](../../tests/processing/assessment/0013_pixel_delta_peak.t) |
-| CE-71 | A single corrupt pixel has mean 100/4096 but maximum 100. | [tests/processing/assessment/0014_pixel_delta_mean.t](../../tests/processing/assessment/0014_pixel_delta_mean.t) |
-| CE-72 | Equal maxima select the first position; repeat analysis clears previous statistics. | [tests/processing/assessment/0015_pixel_delta_reset.t](../../tests/processing/assessment/0015_pixel_delta_reset.t) |
-| CE-73 | CLI maximum-only selection. | [tests/quality_gate/cms/0035_pixel_delta_max.t](../../tests/quality_gate/cms/0035_pixel_delta_max.t) |
-| CE-74 | The DELTA_E00_MAX alias selects the same metric. | [tests/quality_gate/cms/0036_pixel_delta_max_alias.t](../../tests/quality_gate/cms/0036_pixel_delta_max_alias.t) |
-| CE-75 | Full JSON includes maximum, position and tail counts. | [tests/quality_gate/cms/0037_pixel_delta_json.t](../../tests/quality_gate/cms/0037_pixel_delta_json.t) |
-| CE-76 | Neutral sRGB samples independently exercise each tail threshold. | [tests/processing/assessment/0016_pixel_delta_tails.t](../../tests/processing/assessment/0016_pixel_delta_tails.t) |
+| CE-01 | Published CIEDE2000 pairs, including zero chroma and hue wrap. | [tests/assessment/delta-e/0001_ciede2000_reference.t](../../tests/assessment/delta-e/0001_ciede2000_reference.t) |
+| CE-02 | Same physical colors in gamma, linear and opponent coordinates. | [tests/assessment/delta-e/0002_same_physical_coordinates.t](../../tests/assessment/delta-e/0002_same_physical_coordinates.t) |
+| CE-03 | Physical means at 8, 16, 32 and 64 pixels. | [tests/assessment/delta-e/0005_region_physical_average.t](../../tests/assessment/delta-e/0005_region_physical_average.t) |
+| CE-04 | Local error is retained when global means match. | [tests/assessment/delta-e/0006_region_spatial_cancellation.t](../../tests/assessment/delta-e/0006_region_spatial_cancellation.t) |
+| CE-05 | Partial tiles are included with pixel-area weights. | [tests/assessment/delta-e/0007_region_partial_edge.t](../../tests/assessment/delta-e/0007_region_partial_edge.t) |
+| CE-06 | Current Lab frames are decoded before measurement. | [tests/assessment/delta-e/0008_frame_linear_lab.t](../../tests/assessment/delta-e/0008_frame_linear_lab.t) |
+| CE-07 | Current Oklab frames are decoded before measurement. | [tests/assessment/delta-e/0009_frame_linear_oklab.t](../../tests/assessment/delta-e/0009_frame_linear_oklab.t) |
+| CE-08 | Current DIN99d frames are decoded before measurement. | [tests/assessment/delta-e/0010_frame_linear_din99d.t](../../tests/assessment/delta-e/0010_frame_linear_din99d.t) |
+| CE-09 | Target interpretation is independent. | [tests/assessment/cms/0011_target_definition_independent.t](../../tests/assessment/cms/0011_target_definition_independent.t) |
+| CE-10 | Reference interpretation is independent. | [tests/assessment/cms/0012_reference_definition_independent.t](../../tests/assessment/cms/0012_reference_definition_independent.t) |
+| CE-11 | Identical P3 interpretations have zero difference. | [tests/assessment/cms/0013_same_p3_definition.t](../../tests/assessment/cms/0013_same_p3_definition.t) |
+| CE-12 | Explicit interpretation applies to stdin. | [tests/assessment/cms/0014_target_definition_stdin.t](../../tests/assessment/cms/0014_target_definition_stdin.t) |
+| CE-13 | Forward-only ICC profiles are accepted as input. | [tests/assessment/cms/0015_forward_only_icc_input.t](../../tests/assessment/cms/0015_forward_only_icc_input.t) |
+| CE-14 | Equivalent custom RGB and named P3 definitions agree. | [tests/assessment/cms/0016_simple_rgb_matches_p3.t](../../tests/assessment/cms/0016_simple_rgb_matches_p3.t) |
+| CE-15 | Unknown definitions are rejected. | [tests/assessment/cms/0017_unknown_definition_error.t](../../tests/assessment/cms/0017_unknown_definition_error.t) |
+| CE-16 | Unreadable ICC files are rejected. | [tests/assessment/cms/0018_unreadable_icc_error.t](../../tests/assessment/cms/0018_unreadable_icc_error.t) |
+| CE-17 | PNG overrides cannot reinterpret normalized samples. | [tests/assessment/cms/0019_png_override_pending_error.t](../../tests/assessment/cms/0019_png_override_pending_error.t) |
+| CE-18 | Explicit auto preserves default behavior. | [tests/assessment/cms/0020_auto_definition_compatibility.t](../../tests/assessment/cms/0020_auto_definition_compatibility.t) |
+| CE-19 | JSON distinguishes requested CMS and effective evaluator. | [tests/assessment/cms/0021_color_context_json.t](../../tests/assessment/cms/0021_color_context_json.t) |
+| CE-20 | Background definition is independent of the palette. | [tests/assessment/cms/0022_background_definition_independent.t](../../tests/assessment/cms/0022_background_definition_independent.t) |
+| CE-21 | An 8-pixel window is accepted. | [tests/assessment/cms/0023_region_window_8.t](../../tests/assessment/cms/0023_region_window_8.t) |
+| CE-22 | A 16-pixel window is accepted. | [tests/assessment/cms/0024_region_window_16.t](../../tests/assessment/cms/0024_region_window_16.t) |
+| CE-23 | A 32-pixel window is accepted. | [tests/assessment/cms/0025_region_window_32.t](../../tests/assessment/cms/0025_region_window_32.t) |
+| CE-24 | A 64-pixel window is accepted. | [tests/assessment/cms/0026_region_window_64.t](../../tests/assessment/cms/0026_region_window_64.t) |
+| CE-25 | Signal quantization cannot clip color measurements. | [tests/assessment/cms/0027_signal_quantization_preserves_color.t](../../tests/assessment/cms/0027_signal_quantization_preserves_color.t) |
+| CE-26 | Grayscale signal selection cannot discard physical color. | [tests/assessment/cms/0028_grayscale_signal_preserves_color.t](../../tests/assessment/cms/0028_grayscale_signal_preserves_color.t) |
+| CE-27 | Invalid ICC bytes are rejected. | [tests/assessment/cms/0029_invalid_icc_error.t](../../tests/assessment/cms/0029_invalid_icc_error.t) |
+| CE-28 | Two stdin readers are rejected. | [tests/assessment/cms/0030_dual_stdin_error.t](../../tests/assessment/cms/0030_dual_stdin_error.t) |
+| CE-29 | Unsupported window sizes are rejected. | [tests/assessment/cms/0031_invalid_region_window_error.t](../../tests/assessment/cms/0031_invalid_region_window_error.t) |
+| CE-30 | Explicit target definition and dequantization are rejected together. | [tests/assessment/cms/0032_explicit_dequantize_error.t](../../tests/assessment/cms/0032_explicit_dequantize_error.t) |
+| CE-31 | Direct auto target retains paint-time colors. | [tests/assessment/direct/0001_auto_target.t](../../tests/assessment/direct/0001_auto_target.t) |
+| CE-32 | Direct auto reference retains paint-time colors. | [tests/assessment/direct/0002_auto_reference.t](../../tests/assessment/direct/0002_auto_reference.t) |
+| CE-33 | Direct explicit sRGB preserves palette redefinition. | [tests/assessment/direct/0003_srgb_target.t](../../tests/assessment/direct/0003_srgb_target.t) |
+| CE-34 | Direct P3 target preserves palette redefinition. | [tests/assessment/direct/0004_p3_target.t](../../tests/assessment/direct/0004_p3_target.t) |
+| CE-35 | Direct P3 reference preserves palette redefinition. | [tests/assessment/direct/0005_p3_reference.t](../../tests/assessment/direct/0005_p3_reference.t) |
+| CE-36 | Direct custom RGB matches named P3. | [tests/assessment/direct/0006_simple_rgb.t](../../tests/assessment/direct/0006_simple_rgb.t) |
+| CE-37 | Direct ICC interpretation retains paint history. | [tests/assessment/direct/0007_icc_redefinition.t](../../tests/assessment/direct/0007_icc_redefinition.t) |
+| CE-38 | Direct ICC interpretation changes physical color. | [tests/assessment/direct/0008_icc_definition.t](../../tests/assessment/direct/0008_icc_definition.t) |
+| CE-39 | Direct target definition remains independent. | [tests/assessment/direct/0009_target_definition.t](../../tests/assessment/direct/0009_target_definition.t) |
+| CE-40 | Direct reference definition remains independent. | [tests/assessment/direct/0010_reference_definition.t](../../tests/assessment/direct/0010_reference_definition.t) |
+| CE-41 | Direct auto reference accepts stdin. | [tests/assessment/direct/0011_reference_stdin.t](../../tests/assessment/direct/0011_reference_stdin.t) |
+| CE-42 | Direct P3 target accepts stdin. | [tests/assessment/direct/0012_target_p3_stdin.t](../../tests/assessment/direct/0012_target_p3_stdin.t) |
+| CE-43 | Repainting after redefinition changes only overwritten pixels. | [tests/assessment/direct/0013_repaint.t](../../tests/assessment/direct/0013_repaint.t) |
+| CE-44 | Sparse P3 paint keeps earlier colors and unpainted background. | [tests/assessment/direct/0014_sparse_p3.t](../../tests/assessment/direct/0014_sparse_p3.t) |
+| CE-45 | Reference holes use sRGB background independently of P3. | [tests/assessment/direct/0015_reference_background.t](../../tests/assessment/direct/0015_reference_background.t) |
+| CE-46 | Target holes use sRGB background independently of P3. | [tests/assessment/direct/0016_target_background.t](../../tests/assessment/direct/0016_target_background.t) |
+| CE-47 | Omitting -D retains auto indexed evaluation. | [tests/assessment/direct/0017_default_indexed.t](../../tests/assessment/direct/0017_default_indexed.t) |
+| CE-48 | Omitting -D retains P3 indexed evaluation. | [tests/assessment/direct/0018_default_p3_indexed.t](../../tests/assessment/direct/0018_default_p3_indexed.t) |
+| CE-49 | Direct selection leaves png file loader results unchanged. | [tests/assessment/direct/0019_png_file.t](../../tests/assessment/direct/0019_png_file.t) |
+| CE-50 | Direct selection leaves png target stdin loader results unchanged. | [tests/assessment/direct/0020_png_target_stdin.t](../../tests/assessment/direct/0020_png_target_stdin.t) |
+| CE-51 | Direct selection leaves png reference stdin loader results unchanged. | [tests/assessment/direct/0021_png_reference_stdin.t](../../tests/assessment/direct/0021_png_reference_stdin.t) |
+| CE-52 | JSON reports direct drawing selection and both input routes. | [tests/assessment/direct/0022_direct_json.t](../../tests/assessment/direct/0022_direct_json.t) |
+| CE-53 | JSON reports png drawing selection and both input routes. | [tests/assessment/direct/0023_png_json.t](../../tests/assessment/direct/0023_png_json.t) |
+| CE-54 | JSON reports indexed drawing selection and both input routes. | [tests/assessment/direct/0024_indexed_json.t](../../tests/assessment/direct/0024_indexed_json.t) |
+| CE-55 | Help advertises both direct option spellings. | [tests/assessment/direct/0025_help.t](../../tests/assessment/direct/0025_help.t) |
+| CE-56 | Reject direct value. | [tests/assessment/direct/0026_direct_value_error.t](../../tests/assessment/direct/0026_direct_value_error.t) |
+| CE-57 | Reject explicit dequantize. | [tests/assessment/direct/0027_explicit_dequantize_error.t](../../tests/assessment/direct/0027_explicit_dequantize_error.t) |
+| CE-58 | Dequantize none does not disable direct drawing. | [tests/assessment/direct/0028_dequantize_none.t](../../tests/assessment/direct/0028_dequantize_none.t) |
+| CE-59 | Direct kundither target reconstruction matches the established opaque result through stdin. | [tests/assessment/direct/0029_reconstruct_kundither.t](../../tests/assessment/direct/0029_reconstruct_kundither.t) |
+| CE-60 | Direct fast4 target reconstruction matches the established opaque result through stdin. | [tests/assessment/direct/0030_reconstruct_fast4.t](../../tests/assessment/direct/0030_reconstruct_fast4.t) |
+| CE-61 | Direct selective_blur target reconstruction matches the established opaque result through stdin. | [tests/assessment/direct/0031_reconstruct_selective_blur.t](../../tests/assessment/direct/0031_reconstruct_selective_blur.t) |
+| CE-62 | Direct kundither uses the existing redefinition bypass. | [tests/assessment/direct/0032_redefined_kundither.t](../../tests/assessment/direct/0032_redefined_kundither.t) |
+| CE-63 | Direct fast4 uses the existing redefinition bypass. | [tests/assessment/direct/0033_redefined_fast4.t](../../tests/assessment/direct/0033_redefined_fast4.t) |
+| CE-64 | Direct selective_blur uses the existing redefinition bypass. | [tests/assessment/direct/0034_redefined_selective_blur.t](../../tests/assessment/direct/0034_redefined_selective_blur.t) |
+| CE-65 | Direct kundither retains unpainted background. | [tests/assessment/direct/0035_background_kundither.t](../../tests/assessment/direct/0035_background_kundither.t) |
+| CE-66 | Direct fast4 retains unpainted background. | [tests/assessment/direct/0036_background_fast4.t](../../tests/assessment/direct/0036_background_fast4.t) |
+| CE-67 | Direct selective_blur retains unpainted background. | [tests/assessment/direct/0037_background_selective_blur.t](../../tests/assessment/direct/0037_background_selective_blur.t) |
+| CE-68 | Direct auto target accepts stdin. | [tests/assessment/direct/0038_target_auto_stdin.t](../../tests/assessment/direct/0038_target_auto_stdin.t) |
+| CE-69 | Direct P3 reference accepts stdin. | [tests/assessment/direct/0039_reference_p3_stdin.t](../../tests/assessment/direct/0039_reference_p3_stdin.t) |
+| CE-70 | Maximum-only selection reports a sparse black/white error of 100, its position and tail counts. | [tests/assessment/delta-e/0013_pixel_delta_peak.t](../../tests/assessment/delta-e/0013_pixel_delta_peak.t) |
+| CE-71 | A single corrupt pixel has mean 100/4096 but maximum 100. | [tests/assessment/delta-e/0014_pixel_delta_mean.t](../../tests/assessment/delta-e/0014_pixel_delta_mean.t) |
+| CE-72 | Equal maxima select the first position; repeat analysis clears previous statistics. | [tests/assessment/delta-e/0015_pixel_delta_reset.t](../../tests/assessment/delta-e/0015_pixel_delta_reset.t) |
+| CE-73 | CLI maximum-only selection. | [tests/assessment/cms/0035_pixel_delta_max.t](../../tests/assessment/cms/0035_pixel_delta_max.t) |
+| CE-74 | The DELTA_E00_MAX alias selects the same metric. | [tests/assessment/cms/0036_pixel_delta_max_alias.t](../../tests/assessment/cms/0036_pixel_delta_max_alias.t) |
+| CE-75 | Full JSON includes maximum, position and tail counts. | [tests/assessment/cms/0037_pixel_delta_json.t](../../tests/assessment/cms/0037_pixel_delta_json.t) |
+| CE-76 | Neutral sRGB samples independently exercise each tail threshold. | [tests/assessment/delta-e/0016_pixel_delta_tails.t](../../tests/assessment/delta-e/0016_pixel_delta_tails.t) |
 
 ### Quality regression tests
 
-The existing [sRGB quality gates](../../tests/quality_gate/ms_ssim/) and [legacy CMS comparisons](../../tests/quality_gate/cms/) retain their established thresholds. The color-coordinate tests above do not establish a perceptual quality floor for a newly encoded image.
+The existing [sRGB quality gates](../../tests/assessment/ms-ssim/) and [legacy CMS comparisons](../../tests/assessment/cms/) retain their established thresholds. The color-coordinate tests above do not establish a perceptual quality floor for a newly encoded image.
 
 ### Defensive and malformed-input tests
 
-The [measurement unit suite](../../tests/processing/assessment/) also exercises malformed numeric definitions, negative clipping controls, and the strict shared grammar. The source fixtures `red.six` and `hole.six` are hand-authored 16 by 16 standalone DCS streams: the first paints exact RGB endpoints; the second leaves its raster unpainted. They test adapter interpretation and background selection independently of the image encoder. The PNG integration boundary still requires separate loader validation.
+The [measurement unit suite](../../tests/assessment) also exercises malformed numeric definitions, negative clipping controls, and the strict shared grammar. The source fixtures `red.six` and `hole.six` are hand-authored 16 by 16 standalone DCS streams: the first paints exact RGB endpoints; the second leaves its raster unpainted. They test adapter interpretation and background selection independently of the image encoder. The PNG integration boundary still requires separate loader validation.
 
 The direct adapter fixtures use 16 by 18 rasters: `stable.six` and `redefined.six` paint the same red-left/green-right image using stable and reused registers; `repaint-reference.six` and `repaint.six` independently specify green-left/red-right output; `sparse.six` and `sparse-redefined.six` leave the right half unpainted. They are hand-authored endpoint streams, with no encoder or production color transform used to generate expected paint. Without `-D`, the first pair retains its archived six-decimal indexed differences (42.156315 for auto/sRGB and 44.478863 for P3); direct rendering yields 0.000000 in each interpretation.

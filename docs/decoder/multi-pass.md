@@ -142,49 +142,49 @@ The common decoder uses existing size/resource limits and checked arithmetic for
 
 The following focused tests exercise stream composition, capture validation and option behavior. Tool integration and a deliberately incorrect baseline control are covered separately below.
 
-- [tests/processing/decoder/0054_multi_pass_raw_overlay.t](../../tests/processing/decoder/0054_multi_pass_raw_overlay.t): raw overlay.
-- [tests/processing/decoder/0055_multi_pass_anchored_overlay.t](../../tests/processing/decoder/0055_multi_pass_anchored_overlay.t): anchored overlay.
-- [tests/processing/decoder/0056_multi_pass_palette_carry.t](../../tests/processing/decoder/0056_multi_pass_palette_carry.t): palette carry.
-- [tests/processing/decoder/0057_multi_pass_paint_time_colors.t](../../tests/processing/decoder/0057_multi_pass_paint_time_colors.t): paint time colors.
-- [tests/processing/decoder/0058_multi_pass_transparent_and_black.t](../../tests/processing/decoder/0058_multi_pass_transparent_and_black.t): transparent and black.
-- [tests/processing/decoder/0059_multi_pass_mixed_framing.t](../../tests/processing/decoder/0059_multi_pass_mixed_framing.t): mixed framing.
-- [tests/processing/decoder/0060_multi_pass_transparent_baseline.t](../../tests/processing/decoder/0060_multi_pass_transparent_baseline.t): transparent baseline.
-- [tests/processing/decoder/0061_multi_pass_single_default.t](../../tests/processing/decoder/0061_multi_pass_single_default.t): single default.
-- [tests/processing/decoder/0062_multi_pass_missing_raster.t](../../tests/processing/decoder/0062_multi_pass_missing_raster.t): missing raster.
-- [tests/processing/decoder/0063_multi_pass_mismatched_raster.t](../../tests/processing/decoder/0063_multi_pass_mismatched_raster.t): mismatched raster.
-- [tests/processing/decoder/0064_multi_pass_nonunit_aspect.t](../../tests/processing/decoder/0064_multi_pass_nonunit_aspect.t): nonunit aspect.
-- [tests/processing/decoder/0065_multi_pass_paint_width.t](../../tests/processing/decoder/0065_multi_pass_paint_width.t): paint width.
-- [tests/processing/decoder/0066_multi_pass_paint_height.t](../../tests/processing/decoder/0066_multi_pass_paint_height.t): paint height.
-- [tests/processing/decoder/0067_multi_pass_clear_p2.t](../../tests/processing/decoder/0067_multi_pass_clear_p2.t): clear p2.
-- [tests/processing/decoder/0068_multi_pass_undefined_color.t](../../tests/processing/decoder/0068_multi_pass_undefined_color.t): undefined color.
-- [tests/processing/decoder/0069_multi_pass_late_truncation.t](../../tests/processing/decoder/0069_multi_pass_late_truncation.t): late truncation.
-- [tests/processing/decoder/0070_multi_pass_trailing_text.t](../../tests/processing/decoder/0070_multi_pass_trailing_text.t): trailing text.
-- [tests/processing/decoder/0071_multi_pass_repeated_save.t](../../tests/processing/decoder/0071_multi_pass_repeated_save.t): repeated save.
-- [tests/processing/decoder/0072_multi_pass_unmatched_restore.t](../../tests/processing/decoder/0072_multi_pass_unmatched_restore.t): unmatched restore.
-- [tests/processing/decoder/0073_multi_pass_missing_restore.t](../../tests/processing/decoder/0073_multi_pass_missing_restore.t): missing restore.
-- [tests/processing/decoder/0074_multi_pass_prefix_whitespace.t](../../tests/processing/decoder/0074_multi_pass_prefix_whitespace.t): prefix whitespace.
-- [tests/processing/decoder/0075_multi_pass_dangling_prefix.t](../../tests/processing/decoder/0075_multi_pass_dangling_prefix.t): dangling prefix.
-- [tests/processing/decoder/0076_multi_pass_terminal_control.t](../../tests/processing/decoder/0076_multi_pass_terminal_control.t): terminal control.
-- [tests/processing/decoder/0077_multi_pass_cancelled_dcs.t](../../tests/processing/decoder/0077_multi_pass_cancelled_dcs.t): cancelled dcs.
-- [tests/processing/decoder/0078_multi_pass_empty_capture.t](../../tests/processing/decoder/0078_multi_pass_empty_capture.t): empty capture.
-- [tests/processing/decoder/0079_multi_pass_dequant_conflict.t](../../tests/processing/decoder/0079_multi_pass_dequant_conflict.t): dequant conflict.
-- [tests/processing/decoder/0080_multi_pass_force_gpu.t](../../tests/processing/decoder/0080_multi_pass_force_gpu.t): force gpu.
-- [tests/processing/decoder/0081_multi_pass_skip_outside.t](../../tests/processing/decoder/0081_multi_pass_skip_outside.t): skip outside.
-- [tests/processing/decoder/0082_multi_pass_hls_color.t](../../tests/processing/decoder/0082_multi_pass_hls_color.t): hls color.
-- [tests/processing/decoder/0083_multi_pass_call_isolation.t](../../tests/processing/decoder/0083_multi_pass_call_isolation.t): call isolation.
-- [tests/processing/decoder/0084_multi_pass_color_union.t](../../tests/processing/decoder/0084_multi_pass_color_union.t): color union.
-- [tests/processing/decoder/0085_multi_pass_option_atomicity.t](../../tests/processing/decoder/0085_multi_pass_option_atomicity.t): option atomicity.
-- [tests/processing/decoder/0086_multi_pass_allocation_failure.t](../../tests/processing/decoder/0086_multi_pass_allocation_failure.t): allocation failure.
+- [tests/decoder/parser/0056_multi_pass_raw_overlay.t](../../tests/decoder/parser/0056_multi_pass_raw_overlay.t): raw overlay.
+- [tests/decoder/parser/0058_multi_pass_anchored_overlay.t](../../tests/decoder/parser/0058_multi_pass_anchored_overlay.t): anchored overlay.
+- [tests/decoder/parser/0060_multi_pass_palette_carry.t](../../tests/decoder/parser/0060_multi_pass_palette_carry.t): palette carry.
+- [tests/decoder/parser/0062_multi_pass_paint_time_colors.t](../../tests/decoder/parser/0062_multi_pass_paint_time_colors.t): paint time colors.
+- [tests/decoder/parser/0064_multi_pass_transparent_and_black.t](../../tests/decoder/parser/0064_multi_pass_transparent_and_black.t): transparent and black.
+- [tests/decoder/parser/0066_multi_pass_mixed_framing.t](../../tests/decoder/parser/0066_multi_pass_mixed_framing.t): mixed framing.
+- [tests/decoder/parser/0068_multi_pass_transparent_baseline.t](../../tests/decoder/parser/0068_multi_pass_transparent_baseline.t): transparent baseline.
+- [tests/decoder/parser/0070_multi_pass_single_default.t](../../tests/decoder/parser/0070_multi_pass_single_default.t): single default.
+- [tests/decoder/parser/0072_multi_pass_missing_raster.t](../../tests/decoder/parser/0072_multi_pass_missing_raster.t): missing raster.
+- [tests/decoder/parser/0073_multi_pass_mismatched_raster.t](../../tests/decoder/parser/0073_multi_pass_mismatched_raster.t): mismatched raster.
+- [tests/decoder/parser/0074_multi_pass_nonunit_aspect.t](../../tests/decoder/parser/0074_multi_pass_nonunit_aspect.t): nonunit aspect.
+- [tests/decoder/parser/0075_multi_pass_paint_width.t](../../tests/decoder/parser/0075_multi_pass_paint_width.t): paint width.
+- [tests/decoder/parser/0076_multi_pass_paint_height.t](../../tests/decoder/parser/0076_multi_pass_paint_height.t): paint height.
+- [tests/decoder/parser/0077_multi_pass_clear_p2.t](../../tests/decoder/parser/0077_multi_pass_clear_p2.t): clear p2.
+- [tests/decoder/parser/0078_multi_pass_undefined_color.t](../../tests/decoder/parser/0078_multi_pass_undefined_color.t): undefined color.
+- [tests/decoder/parser/0079_multi_pass_late_truncation.t](../../tests/decoder/parser/0079_multi_pass_late_truncation.t): late truncation.
+- [tests/decoder/parser/0080_multi_pass_trailing_text.t](../../tests/decoder/parser/0080_multi_pass_trailing_text.t): trailing text.
+- [tests/decoder/parser/0081_multi_pass_repeated_save.t](../../tests/decoder/parser/0081_multi_pass_repeated_save.t): repeated save.
+- [tests/decoder/parser/0082_multi_pass_unmatched_restore.t](../../tests/decoder/parser/0082_multi_pass_unmatched_restore.t): unmatched restore.
+- [tests/decoder/parser/0083_multi_pass_missing_restore.t](../../tests/decoder/parser/0083_multi_pass_missing_restore.t): missing restore.
+- [tests/decoder/parser/0084_multi_pass_prefix_whitespace.t](../../tests/decoder/parser/0084_multi_pass_prefix_whitespace.t): prefix whitespace.
+- [tests/decoder/parser/0085_multi_pass_dangling_prefix.t](../../tests/decoder/parser/0085_multi_pass_dangling_prefix.t): dangling prefix.
+- [tests/decoder/parser/0086_multi_pass_terminal_control.t](../../tests/decoder/parser/0086_multi_pass_terminal_control.t): terminal control.
+- [tests/decoder/parser/0087_multi_pass_cancelled_dcs.t](../../tests/decoder/parser/0087_multi_pass_cancelled_dcs.t): cancelled dcs.
+- [tests/decoder/parser/0088_multi_pass_empty_capture.t](../../tests/decoder/parser/0088_multi_pass_empty_capture.t): empty capture.
+- [tests/decoder/parser/0089_multi_pass_dequant_conflict.t](../../tests/decoder/parser/0089_multi_pass_dequant_conflict.t): dequant conflict.
+- [tests/decoder/parser/0090_multi_pass_force_gpu.t](../../tests/decoder/parser/0090_multi_pass_force_gpu.t): force gpu.
+- [tests/decoder/parser/0091_multi_pass_skip_outside.t](../../tests/decoder/parser/0091_multi_pass_skip_outside.t): skip outside.
+- [tests/decoder/parser/0092_multi_pass_hls_color.t](../../tests/decoder/parser/0092_multi_pass_hls_color.t): hls color.
+- [tests/decoder/parser/0093_multi_pass_call_isolation.t](../../tests/decoder/parser/0093_multi_pass_call_isolation.t): call isolation.
+- [tests/decoder/parser/0094_multi_pass_color_union.t](../../tests/decoder/parser/0094_multi_pass_color_union.t): color union.
+- [tests/decoder/parser/0095_multi_pass_option_atomicity.t](../../tests/decoder/parser/0095_multi_pass_option_atomicity.t): option atomicity.
+- [tests/decoder/parser/0096_multi_pass_allocation_failure.t](../../tests/decoder/parser/0096_multi_pass_allocation_failure.t): allocation failure.
 
 The `progressive-snake-192.six` quality fixture starts with a deliberately black baseline and ends with an ordinary quantized version of `tests/data/inputs/snake_192.png`, wrapped at one anchor with explicit `P2=1`. Its 192 by 192 canvas supports all five MS-SSIM scales; the companion baseline-only capture is a negative quality control. Regenerate both captures with `python3 tests/data/inputs/generate_progressive_quality_fixture.py` after building `img2sixel`. The independent pre-encoding PNG remains the quality reference. These fixtures test composition and tool routing independently of a progressive encoder. The 16 by 16 capture remains available for dimension and protocol-value tests.
 
-- [tests/cli/sixel2png/0014_multi_pass_png.t](../../tests/cli/sixel2png/0014_multi_pass_png.t): Verify the final PNG includes the correcting pass.
-- [tests/cli/sixel2png/0015_multi_pass_lsqa.t](../../tests/cli/sixel2png/0015_multi_pass_lsqa.t): Verify explicit multi-pass target assessment and numeric output.
-- [tests/cli/sixel2png/0016_multi_pass_baseline_control.t](../../tests/cli/sixel2png/0016_multi_pass_baseline_control.t): Verify the deliberately wrong baseline fails the quality gate.
-- [tests/cli/sixel2png/0017_multi_pass_late_error.t](../../tests/cli/sixel2png/0017_multi_pass_late_error.t): Verify malformed final input produces no prefix PNG.
-- [tests/cli/sixel2png/0018_multi_pass_resize.t](../../tests/cli/sixel2png/0018_multi_pass_resize.t): Verify resize applies to the final composed image.
-- [tests/cli/sixel2png/0019_multi_pass_non_capture.t](../../tests/cli/sixel2png/0019_multi_pass_non_capture.t): Verify explicit target mode rejects PNG without loader fallback.
-- [tests/cli/sixel2png/0020_multi_pass_png_prefix.t](../../tests/cli/sixel2png/0020_multi_pass_png_prefix.t): resolve unique prefixes through the shared decoder schema and verify final-canvas quality.
-- [tests/cli/sixel2png/0021_multi_pass_lsqa_prefix.t](../../tests/cli/sixel2png/0021_multi_pass_lsqa_prefix.t): resolve unique prefixes through the shared decoder schema and verify final-canvas quality.
-- [tests/cli/sixel2png/0022_sixel2png_input_mode_invalid.t](../../tests/cli/sixel2png/0022_sixel2png_input_mode_invalid.t): reject empty, case-mismatched and overlong input modes.
-- [tests/cli/sixel2png/0023_lsqa_input_mode_invalid.t](../../tests/cli/sixel2png/0023_lsqa_input_mode_invalid.t): reject empty, case-mismatched and overlong input modes.
+- [tests/cli/sixel2png/0015_multi_pass_png.t](../../tests/cli/sixel2png/0015_multi_pass_png.t): Verify the final PNG includes the correcting pass.
+- [tests/cli/sixel2png/0016_multi_pass_lsqa.t](../../tests/cli/sixel2png/0016_multi_pass_lsqa.t): Verify explicit multi-pass target assessment and numeric output.
+- [tests/cli/sixel2png/0017_multi_pass_baseline_control.t](../../tests/cli/sixel2png/0017_multi_pass_baseline_control.t): Verify the deliberately wrong baseline fails the quality gate.
+- [tests/cli/sixel2png/0018_multi_pass_late_error.t](../../tests/cli/sixel2png/0018_multi_pass_late_error.t): Verify malformed final input produces no prefix PNG.
+- [tests/cli/sixel2png/0019_multi_pass_resize.t](../../tests/cli/sixel2png/0019_multi_pass_resize.t): Verify resize applies to the final composed image.
+- [tests/cli/sixel2png/0020_multi_pass_non_capture.t](../../tests/cli/sixel2png/0020_multi_pass_non_capture.t): Verify explicit target mode rejects PNG without loader fallback.
+- [tests/cli/sixel2png/0021_multi_pass_png_prefix.t](../../tests/cli/sixel2png/0021_multi_pass_png_prefix.t): resolve unique prefixes through the shared decoder schema and verify final-canvas quality.
+- [tests/cli/sixel2png/0022_multi_pass_lsqa_prefix.t](../../tests/cli/sixel2png/0022_multi_pass_lsqa_prefix.t): resolve unique prefixes through the shared decoder schema and verify final-canvas quality.
+- [tests/cli/sixel2png/0023_sixel2png_input_mode_invalid.t](../../tests/cli/sixel2png/0023_sixel2png_input_mode_invalid.t): reject empty, case-mismatched and overlong input modes.
+- [tests/cli/sixel2png/0024_lsqa_input_mode_invalid.t](../../tests/cli/sixel2png/0024_lsqa_input_mode_invalid.t): reject empty, case-mismatched and overlong input modes.

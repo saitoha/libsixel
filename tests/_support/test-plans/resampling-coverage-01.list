@@ -1,0 +1,5 @@
+tests/frame/resize/0158_resize_precision_preserve_exact.t
+tests/frame/resize/0159_resize_precision_linear_exact.t
+tests/frame/resize/0160_resize_precision_float_exact.t
+tests/frame/resize/0161_simd_auto_matches_scalar_exact.t
+tests/frame/resize/0162_parallel_matches_serial_exact.t

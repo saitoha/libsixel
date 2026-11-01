@@ -1,0 +1,4 @@
+tests/extension/quicklook-render/0001_preview_reference.t
+tests/extension/quicklook-render/0002_thumbnail_reference.t
+tests/extension/quicklook-render/0003_preview_changed_color.t
+tests/extension/quicklook-render/0004_thumbnail_changed_dimensions.t

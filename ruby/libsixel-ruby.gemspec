@@ -14,7 +14,9 @@ Gem::Specification.new do |spec|
   spec.homepage      = "http://saitoha.github.com/libsixel"
   spec.license       = "MIT"
 
-  spec.files         = `git ls-files -z`.split("\x0")
+  # Release archives have no Git index; enumerate the package sources.
+  spec.files         = %w[README.md LICENSE.txt Gemfile Rakefile]
+  spec.files        += Dir.glob("{lib,test}/**/*.rb")
   spec.files        += Dir.glob('lib/libsixel/_libs/*')
   spec.files.uniq!
   spec.platform      = ENV.fetch('LIBSIXEL_RUBY_GEM_PLATFORM', Gem::Platform::RUBY)

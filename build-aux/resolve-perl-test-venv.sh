@@ -5,14 +5,17 @@
 #   resolve-perl-test-venv.sh <enable_perl> <perl_bin> <perl_source_dir> \
 #       <libsixel_lib_dir> <venv_dir>
 
+# Embedded language snippets intentionally retain their dollar signs.
+# shellcheck disable=SC2016
 set -eu
 
-script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH='' cd -- "${0%/*}" && pwd)
 common_helpers="$script_dir/resolve-binding-test-common.sh"
 if [ ! -r "$common_helpers" ]; then
     echo "error: missing helper script: $common_helpers" >&2
     exit 1
 fi
+# shellcheck source=build-aux/resolve-binding-test-common.sh
 . "$common_helpers"
 
 if [ "$#" -ne 5 ]; then
@@ -85,8 +88,7 @@ perl_mm_opt="INSTALL_BASE=$perl_local_lib_root"
 
 source_signature=$(
     cd "$perl_source_dir"
-    find . -type f \
-        -path './lib/*' \
+    sh "$script_dir/list-tree-files.sh" ./lib '*' \
         | LC_ALL=C sort \
         | while IFS= read -r path; do
             "${CKSUM:-cksum}" "$path"

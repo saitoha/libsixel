@@ -76,4 +76,4 @@ Implementation: [`clipboard.c`](../../src/clipboard.c), [`clipboard_macos.m`](..
 
 ### Coverage boundary
 
-The [clipboard suite](../../tests/io/clipboard/) and [CLI migration suite](../../tests/cli/options/migration/) contain further availability, directory, and precedence checks. File-backend success does not validate AppKit, Windows clipboard ownership, Wayland, X11, or the format preferences of another desktop application. Those need platform/session-specific integration checks.
+The [clipboard suite](../../tests/io/clipboard/) and [CLI migration suite](../../tests/cli) contain further availability, directory, and precedence checks. File-backend success does not validate AppKit, Windows clipboard ownership, Wayland, X11, or the format preferences of another desktop application. Those need platform/session-specific integration checks.

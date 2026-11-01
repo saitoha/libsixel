@@ -3,6 +3,7 @@
 # Policy: docs/AGENTS.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -17,7 +18,7 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-(cd "$src_root" && find docs -type f -name '*.md') | LC_ALL=C sort \
+(cd "$src_root" && sh "$source_files_helper" docs --name '*.md') | LC_ALL=C sort \
     > "$tmpdir/documents"
 
 test -f "$inventory" || {

@@ -2,6 +2,7 @@
 # Emit TAP ensuring legacy dither policy .inc.h fragments are gone.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -19,11 +20,9 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 bad=$tmpdir/bad.txt
 : > "$bad"
 
-find "$src_root/src" -maxdepth 1 -type f -name 'dither-policy-*.inc.h' \
-    -print | LC_ALL=C sort >> "$bad"
+sh "$source_files_helper" "$src_root/src" --max-depth 1 --name 'dither-policy-*.inc.h'| LC_ALL=C sort >> "$bad"
 
-find "$src_root/src" -maxdepth 1 -type f -name 'dither-policy-*.c' \
-    -print | LC_ALL=C sort | while IFS= read -r path
+sh "$source_files_helper" "$src_root/src" --max-depth 1 --name 'dither-policy-*.c'| LC_ALL=C sort | while IFS= read -r path
  do
     awk '
     /#include "dither-policy-.*\.inc\.h"/ {

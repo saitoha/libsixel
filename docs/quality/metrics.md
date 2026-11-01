@@ -434,63 +434,63 @@ This inventory covers reference MS-SSIM, VIF-P, S-CIELAB, and their coexistence 
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| MO-01 | Identical textured inputs score one at the minimum admitted size. | [tests/processing/assessment/0017_ms_ssim_identity.t](../../tests/processing/assessment/0017_ms_ssim_identity.t) |
-| MO-02 | A flat mean-level shift contributes luminance only at the coarsest scale. | [tests/processing/assessment/0018_ms_ssim_coarsest_luminance.t](../../tests/processing/assessment/0018_ms_ssim_coarsest_luminance.t) |
-| MO-03 | A fine checker contributes through the first CS exponent and geometric product. | [tests/processing/assessment/0019_ms_ssim_geometric_product.t](../../tests/processing/assessment/0019_ms_ssim_geometric_product.t) |
-| MO-04 | An even-sized textured input matches independently pooled reference factors. | [tests/processing/assessment/0020_ms_ssim_even_reference.t](../../tests/processing/assessment/0020_ms_ssim_even_reference.t) |
-| MO-05 | Odd-sized reduction and valid windows match the independent reference. | [tests/processing/assessment/0021_ms_ssim_odd_reference.t](../../tests/processing/assessment/0021_ms_ssim_odd_reference.t) |
-| MO-06 | Swapping reference and output preserves the reference score. | [tests/processing/assessment/0022_ms_ssim_symmetry.t](../../tests/processing/assessment/0022_ms_ssim_symmetry.t) |
-| MO-07 | Inputs narrower than 176 pixels have no MS-SSIM result. | [tests/processing/assessment/0023_ms_ssim_undersized.t](../../tests/processing/assessment/0023_ms_ssim_undersized.t) |
-| MO-08 | A negative mean factor has no real-valued MS-SSIM result. | [tests/processing/assessment/0024_ms_ssim_negative_factor.t](../../tests/processing/assessment/0024_ms_ssim_negative_factor.t) |
-| MO-09 | An unavailable comparison clears a preceding valid score in either narrow orientation. | [tests/processing/assessment/0025_ms_ssim_reuse.t](../../tests/processing/assessment/0025_ms_ssim_reuse.t) |
-| MO-10 | CLI selection is case-insensitive and accepts the matching MS-SSIM baseline. | [tests/quality_gate/ms_ssim/0091_reference_selection.t](../../tests/quality_gate/ms_ssim/0091_reference_selection.t) |
-| MO-11 | The established -mm prefix selects the reference score. | [tests/quality_gate/ms_ssim/0092_reference_prefix.t](../../tests/quality_gate/ms_ssim/0092_reference_prefix.t) |
-| MO-12 | An unavailable MS-SSIM result prints nan and fails even a zero baseline. | [tests/quality_gate/ms_ssim/0093_unavailable_baseline.t](../../tests/quality_gate/ms_ssim/0093_unavailable_baseline.t) |
-| MO-13 | The full JSON report includes an unavailable MS-SSIM as null. | [tests/quality_gate/ms_ssim/0094_json_unavailable.t](../../tests/quality_gate/ms_ssim/0094_json_unavailable.t) |
-| MO-14 | A finite MS-SSIM score below its baseline exits with quality failure. | [tests/quality_gate/ms_ssim/0095_finite_baseline.t](../../tests/quality_gate/ms_ssim/0095_finite_baseline.t) |
-| MO-15 | Help describes the reference formula and minimum dimensions. | [tests/quality_gate/ms_ssim/0096_reference_help.t](../../tests/quality_gate/ms_ssim/0096_reference_help.t) |
+| MO-01 | Identical textured inputs score one at the minimum admitted size. | [tests/assessment/ms-ssim/0001_ms_ssim_identity.t](../../tests/assessment/ms-ssim/0001_ms_ssim_identity.t) |
+| MO-02 | A flat mean-level shift contributes luminance only at the coarsest scale. | [tests/assessment/ms-ssim/0002_ms_ssim_coarsest_luminance.t](../../tests/assessment/ms-ssim/0002_ms_ssim_coarsest_luminance.t) |
+| MO-03 | A fine checker contributes through the first CS exponent and geometric product. | [tests/assessment/ms-ssim/0003_ms_ssim_geometric_product.t](../../tests/assessment/ms-ssim/0003_ms_ssim_geometric_product.t) |
+| MO-04 | An even-sized textured input matches independently pooled reference factors. | [tests/assessment/ms-ssim/0004_ms_ssim_even_reference.t](../../tests/assessment/ms-ssim/0004_ms_ssim_even_reference.t) |
+| MO-05 | Odd-sized reduction and valid windows match the independent reference. | [tests/assessment/ms-ssim/0005_ms_ssim_odd_reference.t](../../tests/assessment/ms-ssim/0005_ms_ssim_odd_reference.t) |
+| MO-06 | Swapping reference and output preserves the reference score. | [tests/assessment/ms-ssim/0006_ms_ssim_symmetry.t](../../tests/assessment/ms-ssim/0006_ms_ssim_symmetry.t) |
+| MO-07 | Inputs narrower than 176 pixels have no MS-SSIM result. | [tests/assessment/ms-ssim/0007_ms_ssim_undersized.t](../../tests/assessment/ms-ssim/0007_ms_ssim_undersized.t) |
+| MO-08 | A negative mean factor has no real-valued MS-SSIM result. | [tests/assessment/ms-ssim/0008_ms_ssim_negative_factor.t](../../tests/assessment/ms-ssim/0008_ms_ssim_negative_factor.t) |
+| MO-09 | An unavailable comparison clears a preceding valid score in either narrow orientation. | [tests/assessment/ms-ssim/0009_ms_ssim_reuse.t](../../tests/assessment/ms-ssim/0009_ms_ssim_reuse.t) |
+| MO-10 | CLI selection is case-insensitive and accepts the matching MS-SSIM baseline. | [tests/assessment/ms-ssim/0045_reference_selection.t](../../tests/assessment/ms-ssim/0045_reference_selection.t) |
+| MO-11 | The established -mm prefix selects the reference score. | [tests/assessment/ms-ssim/0046_reference_prefix.t](../../tests/assessment/ms-ssim/0046_reference_prefix.t) |
+| MO-12 | An unavailable MS-SSIM result prints nan and fails even a zero baseline. | [tests/assessment/ms-ssim/0047_unavailable_baseline.t](../../tests/assessment/ms-ssim/0047_unavailable_baseline.t) |
+| MO-13 | The full JSON report includes an unavailable MS-SSIM as null. | [tests/assessment/ms-ssim/0048_json_unavailable.t](../../tests/assessment/ms-ssim/0048_json_unavailable.t) |
+| MO-14 | A finite MS-SSIM score below its baseline exits with quality failure. | [tests/assessment/ms-ssim/0049_finite_baseline.t](../../tests/assessment/ms-ssim/0049_finite_baseline.t) |
+| MO-15 | Help describes the reference formula and minimum dimensions. | [tests/assessment/ms-ssim/0050_reference_help.t](../../tests/assessment/ms-ssim/0050_reference_help.t) |
 
-| SC-01 | Identical signed color images have a zero error map. | [tests/processing/assessment/0026_scielab_identity.t](../../tests/processing/assessment/0026_scielab_identity.t) |
-| SC-02 | Flat fields retain the analytic CIE76 difference across PPD settings. | [tests/processing/assessment/0027_scielab_uniform.t](../../tests/processing/assessment/0027_scielab_uniform.t) |
-| SC-03 | Independent dense convolution matches every map pixel and both summaries. | [tests/processing/assessment/0028_scielab_dense_reference.t](../../tests/processing/assessment/0028_scielab_dense_reference.t) |
-| SC-04 | Fine chromatic alternation is discounted relative to broad color regions. | [tests/processing/assessment/0029_scielab_spatial_cancellation.t](../../tests/processing/assessment/0029_scielab_spatial_cancellation.t) |
-| SC-05 | One-pixel axes retain symmetry under transpose and input exchange. | [tests/processing/assessment/0030_scielab_thin_symmetry.t](../../tests/processing/assessment/0030_scielab_thin_symmetry.t) |
-| SC-06 | Invalid settings, dimensions and samples leave result outputs unchanged. | [tests/processing/assessment/0031_scielab_invalid.t](../../tests/processing/assessment/0031_scielab_invalid.t) |
-| SC-07 | Physical color metrics ignore luma-only gray and precision settings. | [tests/processing/assessment/0032_scielab_physical_signal.t](../../tests/processing/assessment/0032_scielab_physical_signal.t) |
-| SC-08 | Selected results and availability are reset across failure and reuse. | [tests/processing/assessment/0033_scielab_selection_reuse.t](../../tests/processing/assessment/0033_scielab_selection_reuse.t) |
-| SC-09 | Case-insensitive selection uses an upper-bound baseline. | [tests/quality_gate/scielab/0001_cli_selection.t](../../tests/quality_gate/scielab/0001_cli_selection.t) |
-| SC-10 | A unique maximum prefix and fractional short PPD are accepted. | [tests/quality_gate/scielab/0002_max_prefix.t](../../tests/quality_gate/scielab/0002_max_prefix.t) |
-| SC-11 | Viewing metadata records the last PPD and exact model. | [tests/quality_gate/scielab/0003_ppd_metadata.t](../../tests/quality_gate/scielab/0003_ppd_metadata.t) |
-| SC-12 | An error above the ceiling exits with quality failure. | [tests/quality_gate/scielab/0004_baseline_failure.t](../../tests/quality_gate/scielab/0004_baseline_failure.t) |
-| SC-13 | PPD rejects trailing numeric garbage. | [tests/quality_gate/scielab/0005_ppd_invalid.t](../../tests/quality_gate/scielab/0005_ppd_invalid.t) |
-| SC-14 | Help declares the viewing geometry and difference units. | [tests/quality_gate/scielab/0006_help.t](../../tests/quality_gate/scielab/0006_help.t) |
-| SC-15 | A target read from standard input has the same score. | [tests/quality_gate/scielab/0007_stdin.t](../../tests/quality_gate/scielab/0007_stdin.t) |
-| SC-16 | Nonfinite PPD is rejected by the CLI. | [tests/quality_gate/scielab/0008_ppd_nonfinite.t](../../tests/quality_gate/scielab/0008_ppd_nonfinite.t) |
-| SC-17 | Default JSON includes both metrics at 60 PPD. | [tests/quality_gate/scielab/0009_json_default.t](../../tests/quality_gate/scielab/0009_json_default.t) |
+| SC-01 | Identical signed color images have a zero error map. | [tests/assessment/scielab/0001_scielab_identity.t](../../tests/assessment/scielab/0001_scielab_identity.t) |
+| SC-02 | Flat fields retain the analytic CIE76 difference across PPD settings. | [tests/assessment/scielab/0002_scielab_uniform.t](../../tests/assessment/scielab/0002_scielab_uniform.t) |
+| SC-03 | Independent dense convolution matches every map pixel and both summaries. | [tests/assessment/scielab/0003_scielab_dense_reference.t](../../tests/assessment/scielab/0003_scielab_dense_reference.t) |
+| SC-04 | Fine chromatic alternation is discounted relative to broad color regions. | [tests/assessment/scielab/0004_scielab_spatial_cancellation.t](../../tests/assessment/scielab/0004_scielab_spatial_cancellation.t) |
+| SC-05 | One-pixel axes retain symmetry under transpose and input exchange. | [tests/assessment/scielab/0005_scielab_thin_symmetry.t](../../tests/assessment/scielab/0005_scielab_thin_symmetry.t) |
+| SC-06 | Invalid settings, dimensions and samples leave result outputs unchanged. | [tests/assessment/scielab/0006_scielab_invalid.t](../../tests/assessment/scielab/0006_scielab_invalid.t) |
+| SC-07 | Physical color metrics ignore luma-only gray and precision settings. | [tests/assessment/scielab/0007_scielab_physical_signal.t](../../tests/assessment/scielab/0007_scielab_physical_signal.t) |
+| SC-08 | Selected results and availability are reset across failure and reuse. | [tests/assessment/scielab/0008_scielab_selection_reuse.t](../../tests/assessment/scielab/0008_scielab_selection_reuse.t) |
+| SC-09 | Case-insensitive selection uses an upper-bound baseline. | [tests/assessment/scielab/0011_cli_selection.t](../../tests/assessment/scielab/0011_cli_selection.t) |
+| SC-10 | A unique maximum prefix and fractional short PPD are accepted. | [tests/assessment/scielab/0012_max_prefix.t](../../tests/assessment/scielab/0012_max_prefix.t) |
+| SC-11 | Viewing metadata records the last PPD and exact model. | [tests/assessment/scielab/0013_ppd_metadata.t](../../tests/assessment/scielab/0013_ppd_metadata.t) |
+| SC-12 | An error above the ceiling exits with quality failure. | [tests/assessment/scielab/0014_baseline_failure.t](../../tests/assessment/scielab/0014_baseline_failure.t) |
+| SC-13 | PPD rejects trailing numeric garbage. | [tests/assessment/scielab/0015_ppd_invalid.t](../../tests/assessment/scielab/0015_ppd_invalid.t) |
+| SC-14 | Help declares the viewing geometry and difference units. | [tests/assessment/scielab/0016_help.t](../../tests/assessment/scielab/0016_help.t) |
+| SC-15 | A target read from standard input has the same score. | [tests/assessment/scielab/0017_stdin.t](../../tests/assessment/scielab/0017_stdin.t) |
+| SC-16 | Nonfinite PPD is rejected by the CLI. | [tests/assessment/scielab/0018_ppd_nonfinite.t](../../tests/assessment/scielab/0018_ppd_nonfinite.t) |
+| SC-17 | Default JSON includes both metrics at 60 PPD. | [tests/assessment/scielab/0019_json_default.t](../../tests/assessment/scielab/0019_json_default.t) |
 
 ### VIF-P contracts
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
-| VP-01 | VIF-P identity selection is case-insensitive. | [tests/quality_gate/vif_p/0001_identity.t](../../tests/quality_gate/vif_p/0001_identity.t) |
-| VP-02 | VIF-P even reference. | [tests/quality_gate/vif_p/0002_even_reference.t](../../tests/quality_gate/vif_p/0002_even_reference.t) |
-| VP-03 | VIF-P odd reference. | [tests/quality_gate/vif_p/0003_odd_reference.t](../../tests/quality_gate/vif_p/0003_odd_reference.t) |
-| VP-04 | VIF-P reference order. | [tests/quality_gate/vif_p/0004_reverse_reference.t](../../tests/quality_gate/vif_p/0004_reverse_reference.t) |
-| VP-05 | VIF-P contrast gain above one. | [tests/quality_gate/vif_p/0005_contrast_gain.t](../../tests/quality_gate/vif_p/0005_contrast_gain.t) |
-| VP-06 | VIF-P accepts the complete 41x41 pyramid. | [tests/quality_gate/vif_p/0006_minimum_size.t](../../tests/quality_gate/vif_p/0006_minimum_size.t) |
-| VP-07 | VIF-P rejects width below 41. | [tests/quality_gate/vif_p/0007_narrow_unavailable.t](../../tests/quality_gate/vif_p/0007_narrow_unavailable.t) |
-| VP-08 | VIF-P rejects height below 41. | [tests/quality_gate/vif_p/0008_short_unavailable.t](../../tests/quality_gate/vif_p/0008_short_unavailable.t) |
-| VP-09 | VIF-P zero reference information is unavailable. | [tests/quality_gate/vif_p/0009_flat_reference.t](../../tests/quality_gate/vif_p/0009_flat_reference.t) |
-| VP-10 | VIF-P flat target transmits zero information. | [tests/quality_gate/vif_p/0010_flat_target.t](../../tests/quality_gate/vif_p/0010_flat_target.t) |
-| VP-11 | VIF-P negative correlation transmits zero information. | [tests/quality_gate/vif_p/0011_negative_correlation.t](../../tests/quality_gate/vif_p/0011_negative_correlation.t) |
-| VP-12 | VIF-P coexists with an unavailable selected metric. | [tests/quality_gate/vif_p/0012_selected_json.t](../../tests/quality_gate/vif_p/0012_selected_json.t) |
-| VP-13 | VIF-P appears in the full JSON report. | [tests/quality_gate/vif_p/0013_full_json.t](../../tests/quality_gate/vif_p/0013_full_json.t) |
-| VP-14 | VIF-P rejects a finite score below its bound. | [tests/quality_gate/vif_p/0014_finite_gate.t](../../tests/quality_gate/vif_p/0014_finite_gate.t) |
-| VP-15 | VIF-P unavailable result fails even a zero bound. | [tests/quality_gate/vif_p/0015_unavailable_gate.t](../../tests/quality_gate/vif_p/0015_unavailable_gate.t) |
-| VP-16 | VIF-P unavailable JSON retains other metric results. | [tests/quality_gate/vif_p/0016_unavailable_json.t](../../tests/quality_gate/vif_p/0016_unavailable_json.t) |
-| VP-17 | VIF-P accepts the existing metric and baseline environment. | [tests/quality_gate/vif_p/0017_environment.t](../../tests/quality_gate/vif_p/0017_environment.t) |
-| VP-18 | VIF-P is included in the verbose metric report. | [tests/quality_gate/vif_p/0018_verbose.t](../../tests/quality_gate/vif_p/0018_verbose.t) |
-| VP-19 | VIF-P participates in video mean selection and bounds. | [tests/quality_gate/vif_p/0019_video_mean.t](../../tests/quality_gate/vif_p/0019_video_mean.t) |
+| VP-01 | VIF-P identity selection is case-insensitive. | [tests/assessment/vif-p/0001_identity.t](../../tests/assessment/vif-p/0001_identity.t) |
+| VP-02 | VIF-P even reference. | [tests/assessment/vif-p/0002_even_reference.t](../../tests/assessment/vif-p/0002_even_reference.t) |
+| VP-03 | VIF-P odd reference. | [tests/assessment/vif-p/0003_odd_reference.t](../../tests/assessment/vif-p/0003_odd_reference.t) |
+| VP-04 | VIF-P reference order. | [tests/assessment/vif-p/0004_reverse_reference.t](../../tests/assessment/vif-p/0004_reverse_reference.t) |
+| VP-05 | VIF-P contrast gain above one. | [tests/assessment/vif-p/0005_contrast_gain.t](../../tests/assessment/vif-p/0005_contrast_gain.t) |
+| VP-06 | VIF-P accepts the complete 41x41 pyramid. | [tests/assessment/vif-p/0006_minimum_size.t](../../tests/assessment/vif-p/0006_minimum_size.t) |
+| VP-07 | VIF-P rejects width below 41. | [tests/assessment/vif-p/0007_narrow_unavailable.t](../../tests/assessment/vif-p/0007_narrow_unavailable.t) |
+| VP-08 | VIF-P rejects height below 41. | [tests/assessment/vif-p/0008_short_unavailable.t](../../tests/assessment/vif-p/0008_short_unavailable.t) |
+| VP-09 | VIF-P zero reference information is unavailable. | [tests/assessment/vif-p/0009_flat_reference.t](../../tests/assessment/vif-p/0009_flat_reference.t) |
+| VP-10 | VIF-P flat target transmits zero information. | [tests/assessment/vif-p/0010_flat_target.t](../../tests/assessment/vif-p/0010_flat_target.t) |
+| VP-11 | VIF-P negative correlation transmits zero information. | [tests/assessment/vif-p/0011_negative_correlation.t](../../tests/assessment/vif-p/0011_negative_correlation.t) |
+| VP-12 | VIF-P coexists with an unavailable selected metric. | [tests/assessment/vif-p/0012_selected_json.t](../../tests/assessment/vif-p/0012_selected_json.t) |
+| VP-13 | VIF-P appears in the full JSON report. | [tests/assessment/vif-p/0013_full_json.t](../../tests/assessment/vif-p/0013_full_json.t) |
+| VP-14 | VIF-P rejects a finite score below its bound. | [tests/assessment/vif-p/0014_finite_gate.t](../../tests/assessment/vif-p/0014_finite_gate.t) |
+| VP-15 | VIF-P unavailable result fails even a zero bound. | [tests/assessment/vif-p/0015_unavailable_gate.t](../../tests/assessment/vif-p/0015_unavailable_gate.t) |
+| VP-16 | VIF-P unavailable JSON retains other metric results. | [tests/assessment/vif-p/0016_unavailable_json.t](../../tests/assessment/vif-p/0016_unavailable_json.t) |
+| VP-17 | VIF-P accepts the existing metric and baseline environment. | [tests/assessment/vif-p/0017_environment.t](../../tests/assessment/vif-p/0017_environment.t) |
+| VP-18 | VIF-P is included in the verbose metric report. | [tests/assessment/vif-p/0018_verbose.t](../../tests/assessment/vif-p/0018_verbose.t) |
+| VP-19 | VIF-P participates in video mean selection and bounds. | [tests/assessment/vif-p/0019_video_mean.t](../../tests/assessment/vif-p/0019_video_mean.t) |
 
 ### Metric selection and gate contracts
 
@@ -498,38 +498,38 @@ These tests assert CLI behavior, including deliberate rejection controls; their 
 
 | ID | Contract | Test |
 | --- | --- | --- |
-| MG-01 | Output selection and gate metrics are independent. | [tests/quality_gate/ms_ssim/0043_lsqa_independent_output_and_gate.t](../../tests/quality_gate/ms_ssim/0043_lsqa_independent_output_and_gate.t) |
-| MG-02 | Repeated metrics produce named JSON. | [tests/quality_gate/ms_ssim/0047_lsqa_repeated_metric_json.t](../../tests/quality_gate/ms_ssim/0047_lsqa_repeated_metric_json.t) |
-| MG-03 | Metric aliases deduplicate to scalar output. | [tests/quality_gate/gates/0001_metric_list_dedup.t](../../tests/quality_gate/gates/0001_metric_list_dedup.t) |
-| MG-04 | Comma lists emit metrics in registry order. | [tests/quality_gate/gates/0002_metric_list_order.t](../../tests/quality_gate/gates/0002_metric_list_order.t) |
-| MG-05 | Structural and color gates pass quietly. | [tests/quality_gate/gates/0003_structure_color_pass.t](../../tests/quality_gate/gates/0003_structure_color_pass.t) |
-| MG-06 | Color error fails despite passing structure. | [tests/quality_gate/gates/0004_color_failure.t](../../tests/quality_gate/gates/0004_color_failure.t) |
-| MG-07 | Structure fails despite passing color. | [tests/quality_gate/gates/0005_structure_failure.t](../../tests/quality_gate/gates/0005_structure_failure.t) |
-| MG-08 | Every failed bound is diagnosed. | [tests/quality_gate/gates/0006_all_failed_diagnostics.t](../../tests/quality_gate/gates/0006_all_failed_diagnostics.t) |
-| MG-09 | Both inclusive bounds may gate one metric. | [tests/quality_gate/gates/0007_inclusive_interval.t](../../tests/quality_gate/gates/0007_inclusive_interval.t) |
-| MG-10 | Contradictory bounds are rejected. | [tests/quality_gate/gates/0008_contradictory_interval.t](../../tests/quality_gate/gates/0008_contradictory_interval.t) |
-| MG-11 | Contradiction detection is order independent. | [tests/quality_gate/gates/0009_reversed_interval.t](../../tests/quality_gate/gates/0009_reversed_interval.t) |
-| MG-12 | Aliases cannot duplicate a bound. | [tests/quality_gate/gates/0010_duplicate_alias_bound.t](../../tests/quality_gate/gates/0010_duplicate_alias_bound.t) |
-| MG-13 | Legacy color bounds retain minimum semantics. | [tests/quality_gate/gates/0011_legacy_color_direction.t](../../tests/quality_gate/gates/0011_legacy_color_direction.t) |
-| MG-14 | Unavailable required metric fails a combined gate. | [tests/quality_gate/gates/0012_unavailable_required.t](../../tests/quality_gate/gates/0012_unavailable_required.t) |
-| MG-15 | Selected JSON uses null for unavailable metrics. | [tests/quality_gate/gates/0013_json_unavailable.t](../../tests/quality_gate/gates/0013_json_unavailable.t) |
-| MG-16 | Environment lists select and gate multiple metrics. | [tests/quality_gate/gates/0014_environment_lists.t](../../tests/quality_gate/gates/0014_environment_lists.t) |
-| MG-17 | Explicit lists replace malformed environment lists. | [tests/quality_gate/gates/0015_cli_replaces_environment.t](../../tests/quality_gate/gates/0015_cli_replaces_environment.t) |
-| MG-18 | CLI output selection retains environment gates. | [tests/quality_gate/gates/0016_environment_gate_independence.t](../../tests/quality_gate/gates/0016_environment_gate_independence.t) |
-| MG-19 | CLI gates retain environment output selection. | [tests/quality_gate/gates/0017_environment_output_independence.t](../../tests/quality_gate/gates/0017_environment_output_independence.t) |
-| MG-20 | Multiple metrics and gates share one stdin input. | [tests/quality_gate/gates/0018_stdin_shared.t](../../tests/quality_gate/gates/0018_stdin_shared.t) |
-| MG-21 | Video reports named means and checks combined gates. | [tests/quality_gate/gates/0019_video_selection.t](../../tests/quality_gate/gates/0019_video_selection.t) |
-| MG-22 | Video diagnoses all failed mean bounds. | [tests/quality_gate/gates/0020_video_failure.t](../../tests/quality_gate/gates/0020_video_failure.t) |
-| MG-23 | Empty metric member is rejected. | [tests/quality_gate/gates/0021_empty_metric_member.t](../../tests/quality_gate/gates/0021_empty_metric_member.t) |
-| MG-24 | Empty gate member is rejected. | [tests/quality_gate/gates/0022_empty_gate_member.t](../../tests/quality_gate/gates/0022_empty_gate_member.t) |
-| MG-25 | Nonfinite bound is rejected. | [tests/quality_gate/gates/0023_nonfinite_bound.t](../../tests/quality_gate/gates/0023_nonfinite_bound.t) |
-| MG-26 | Overflow bound is rejected. | [tests/quality_gate/gates/0024_overflow_bound.t](../../tests/quality_gate/gates/0024_overflow_bound.t) |
-| MG-27 | Unknown direction is rejected. | [tests/quality_gate/gates/0025_unknown_direction.t](../../tests/quality_gate/gates/0025_unknown_direction.t) |
-| MG-28 | An ungated unavailable scalar video metric retains exit 4 and no stdout. | [tests/quality_gate/gates/0026_video_scalar_unavailable.t](../../tests/quality_gate/gates/0026_video_scalar_unavailable.t) |
-| MG-29 | Legacy limits outside float32 range are rejected before conversion. | [tests/quality_gate/gates/0027_legacy_float_overflow.t](../../tests/quality_gate/gates/0027_legacy_float_overflow.t) |
-| MG-30 | VIF-P unequal frame durations give mean 0.25. | [tests/quality_gate/vif_p/0020_video_weighted_mean.t](../../tests/quality_gate/vif_p/0020_video_weighted_mean.t) |
-| MG-31 | VIF-P temporal extrema remain 0 and 1. | [tests/quality_gate/vif_p/0021_video_extrema.t](../../tests/quality_gate/vif_p/0021_video_extrema.t) |
-| MG-32 | VIF-P bounds reject weighted 0.25 despite plain mean 0.5. | [tests/quality_gate/vif_p/0022_video_weighted_gate.t](../../tests/quality_gate/vif_p/0022_video_weighted_gate.t) |
+| MG-01 | Output selection and gate metrics are independent. | [tests/assessment/ms-ssim/0023_lsqa_independent_output_and_gate.t](../../tests/assessment/ms-ssim/0023_lsqa_independent_output_and_gate.t) |
+| MG-02 | Repeated metrics produce named JSON. | [tests/assessment/ms-ssim/0027_lsqa_repeated_metric_json.t](../../tests/assessment/ms-ssim/0027_lsqa_repeated_metric_json.t) |
+| MG-03 | Metric aliases deduplicate to scalar output. | [tests/assessment/gates/0001_metric_list_dedup.t](../../tests/assessment/gates/0001_metric_list_dedup.t) |
+| MG-04 | Comma lists emit metrics in registry order. | [tests/assessment/gates/0002_metric_list_order.t](../../tests/assessment/gates/0002_metric_list_order.t) |
+| MG-05 | Structural and color gates pass quietly. | [tests/assessment/gates/0003_structure_color_pass.t](../../tests/assessment/gates/0003_structure_color_pass.t) |
+| MG-06 | Color error fails despite passing structure. | [tests/assessment/gates/0004_color_failure.t](../../tests/assessment/gates/0004_color_failure.t) |
+| MG-07 | Structure fails despite passing color. | [tests/assessment/gates/0005_structure_failure.t](../../tests/assessment/gates/0005_structure_failure.t) |
+| MG-08 | Every failed bound is diagnosed. | [tests/assessment/gates/0006_all_failed_diagnostics.t](../../tests/assessment/gates/0006_all_failed_diagnostics.t) |
+| MG-09 | Both inclusive bounds may gate one metric. | [tests/assessment/gates/0007_inclusive_interval.t](../../tests/assessment/gates/0007_inclusive_interval.t) |
+| MG-10 | Contradictory bounds are rejected. | [tests/assessment/gates/0008_contradictory_interval.t](../../tests/assessment/gates/0008_contradictory_interval.t) |
+| MG-11 | Contradiction detection is order independent. | [tests/assessment/gates/0009_reversed_interval.t](../../tests/assessment/gates/0009_reversed_interval.t) |
+| MG-12 | Aliases cannot duplicate a bound. | [tests/assessment/gates/0010_duplicate_alias_bound.t](../../tests/assessment/gates/0010_duplicate_alias_bound.t) |
+| MG-13 | Legacy color bounds retain minimum semantics. | [tests/assessment/gates/0011_legacy_color_direction.t](../../tests/assessment/gates/0011_legacy_color_direction.t) |
+| MG-14 | Unavailable required metric fails a combined gate. | [tests/assessment/gates/0012_unavailable_required.t](../../tests/assessment/gates/0012_unavailable_required.t) |
+| MG-15 | Selected JSON uses null for unavailable metrics. | [tests/assessment/gates/0013_json_unavailable.t](../../tests/assessment/gates/0013_json_unavailable.t) |
+| MG-16 | Environment lists select and gate multiple metrics. | [tests/assessment/gates/0014_environment_lists.t](../../tests/assessment/gates/0014_environment_lists.t) |
+| MG-17 | Explicit lists replace malformed environment lists. | [tests/assessment/gates/0015_cli_replaces_environment.t](../../tests/assessment/gates/0015_cli_replaces_environment.t) |
+| MG-18 | CLI output selection retains environment gates. | [tests/assessment/gates/0016_environment_gate_independence.t](../../tests/assessment/gates/0016_environment_gate_independence.t) |
+| MG-19 | CLI gates retain environment output selection. | [tests/assessment/gates/0017_environment_output_independence.t](../../tests/assessment/gates/0017_environment_output_independence.t) |
+| MG-20 | Multiple metrics and gates share one stdin input. | [tests/assessment/gates/0018_stdin_shared.t](../../tests/assessment/gates/0018_stdin_shared.t) |
+| MG-21 | Video reports named means and checks combined gates. | [tests/assessment/gates/0019_video_selection.t](../../tests/assessment/gates/0019_video_selection.t) |
+| MG-22 | Video diagnoses all failed mean bounds. | [tests/assessment/gates/0020_video_failure.t](../../tests/assessment/gates/0020_video_failure.t) |
+| MG-23 | Empty metric member is rejected. | [tests/assessment/gates/0021_empty_metric_member.t](../../tests/assessment/gates/0021_empty_metric_member.t) |
+| MG-24 | Empty gate member is rejected. | [tests/assessment/gates/0022_empty_gate_member.t](../../tests/assessment/gates/0022_empty_gate_member.t) |
+| MG-25 | Nonfinite bound is rejected. | [tests/assessment/gates/0023_nonfinite_bound.t](../../tests/assessment/gates/0023_nonfinite_bound.t) |
+| MG-26 | Overflow bound is rejected. | [tests/assessment/gates/0024_overflow_bound.t](../../tests/assessment/gates/0024_overflow_bound.t) |
+| MG-27 | Unknown direction is rejected. | [tests/assessment/gates/0025_unknown_direction.t](../../tests/assessment/gates/0025_unknown_direction.t) |
+| MG-28 | An ungated unavailable scalar video metric retains exit 4 and no stdout. | [tests/assessment/gates/0026_video_scalar_unavailable.t](../../tests/assessment/gates/0026_video_scalar_unavailable.t) |
+| MG-29 | Legacy limits outside float32 range are rejected before conversion. | [tests/assessment/gates/0027_legacy_float_overflow.t](../../tests/assessment/gates/0027_legacy_float_overflow.t) |
+| MG-30 | VIF-P unequal frame durations give mean 0.25. | [tests/assessment/vif-p/0020_video_weighted_mean.t](../../tests/assessment/vif-p/0020_video_weighted_mean.t) |
+| MG-31 | VIF-P temporal extrema remain 0 and 1. | [tests/assessment/vif-p/0021_video_extrema.t](../../tests/assessment/vif-p/0021_video_extrema.t) |
+| MG-32 | VIF-P bounds reject weighted 0.25 despite plain mean 0.5. | [tests/assessment/vif-p/0022_video_weighted_gate.t](../../tests/assessment/vif-p/0022_video_weighted_gate.t) |
 
 These are value, state and CLI-contract assertions. They do not establish an encoder quality floor or transfer an old threshold to the new metric.
 

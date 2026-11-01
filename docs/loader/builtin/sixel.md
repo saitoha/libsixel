@@ -123,7 +123,7 @@ Numeric parameters, repeats, raster declarations, register numbers, cursor motio
 - Full wire-language reference: [SIXEL Format](../../sixel-format/README.md)
 - Richer decode/output policies: [SIXEL Decoding Pipeline](../../decoder/pipeline/README.md)
 - Parallel execution model: [Decoder Threading](../../threading/decoder.md)
-- Broader non-owning decoder suite: [`tests/processing/decoder`](../../../tests/processing/decoder)
+- Broader non-owning decoder suite: [`tests/decoder/parser`](../../../tests/decoder/parser)
 
 ## Test coverage
 
@@ -135,16 +135,16 @@ The rows below are pipeline landmarks rather than a complete decoder inventory. 
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| SIX-01 | `img2sixel` recognizes SIXEL input through the image-loader path and can pass the decoded frame into later resize and palette-limit work. | [tests/processing/geometry/0009_sixel_resize_palette_limit.t](../../../tests/processing/geometry/0009_sixel_resize_palette_limit.t) |
-| SIX-02 | The raw parser accepts the `P2=5` dialect and resolves overlapping selectors into the expected byte index and palette entry. | [tests/processing/decoder/0002_decoder_ormode_raw_overlay.t](../../../tests/processing/decoder/0002_decoder_ormode_raw_overlay.t) |
-| SIX-03 | Repeat expansion and OR-mode paint use the same register-bit accumulation contract. | [tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t](../../../tests/processing/decoder/0005_decoder_ormode_repeat_overlay.t) |
-| SIX-04 | A valid anchored split produces byte-identical serial and parallel output across a sixel newline boundary. | [tests/processing/decoder/0001_decoder_parallel_split_after_newline.t](../../../tests/processing/decoder/0001_decoder_parallel_split_after_newline.t) |
-| SIX-05 | The adapter preserves the raw unpainted sentinel in `PAL8`, expands it through the backing palette in `RGB888`, and exposes the documented final-palette collapse after register redefinition. | [tests/loader/builtin/1986_loader_builtin_sixel_unpainted_numeric.t](../../../tests/loader/builtin/1986_loader_builtin_sixel_unpainted_numeric.t), [tests/loader/builtin/1987_loader_builtin_sixel_high_color_numeric.t](../../../tests/loader/builtin/1987_loader_builtin_sixel_high_color_numeric.t) |
+| SIX-01 | `img2sixel` recognizes SIXEL input through the image-loader path and can pass the decoded frame into later resize and palette-limit work. | [tests/frame/crop/0025_sixel_resize_palette_limit.t](../../../tests/frame/crop/0025_sixel_resize_palette_limit.t) |
+| SIX-02 | The raw parser accepts the `P2=5` dialect and resolves overlapping selectors into the expected byte index and palette entry. | [tests/decoder/parser/0004_decoder_ormode_raw_overlay.t](../../../tests/decoder/parser/0004_decoder_ormode_raw_overlay.t) |
+| SIX-03 | Repeat expansion and OR-mode paint use the same register-bit accumulation contract. | [tests/decoder/parser/0007_decoder_ormode_repeat_overlay.t](../../../tests/decoder/parser/0007_decoder_ormode_repeat_overlay.t) |
+| SIX-04 | A valid anchored split produces byte-identical serial and parallel output across a sixel newline boundary. | [tests/decoder/parser/0003_decoder_parallel_split_after_newline.t](../../../tests/decoder/parser/0003_decoder_parallel_split_after_newline.t) |
+| SIX-05 | The adapter preserves the raw unpainted sentinel in `PAL8`, expands it through the backing palette in `RGB888`, and exposes the documented final-palette collapse after register redefinition. | [tests/decoder/raster/0001_loader_builtin_sixel_unpainted_numeric.t](../../../tests/decoder/raster/0001_loader_builtin_sixel_unpainted_numeric.t), [tests/decoder/raster/0002_loader_builtin_sixel_high_color_numeric.t](../../../tests/decoder/raster/0002_loader_builtin_sixel_high_color_numeric.t) |
 
 ### Defensive and malformed-input tests
 
 | ID | Contract protected | Owning test |
 | --- | --- | --- |
-| SIX-90 | A failed parallel attempt does not leak partially painted worker state into the serial fallback image. | [tests/processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.t](../../../tests/processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.t) |
+| SIX-90 | A failed parallel attempt does not leak partially painted worker state into the serial fallback image. | [tests/decoder/parser/0018_decoder_parallel_fallback_keeps_image_clean.t](../../../tests/decoder/parser/0018_decoder_parallel_fallback_keeps_image_clean.t) |
 
 Coverage audit note: these owners cover routing, representative raw/OR paint, one safe parallel split, dirty-worker fallback, both adapter representations of an unpainted pixel, and the final-palette limitation after register redefinition. They still do not make the builtin adapter a terminal replay model or add a separate paint mask.

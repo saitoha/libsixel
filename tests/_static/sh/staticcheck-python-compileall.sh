@@ -2,6 +2,7 @@
 # Emit TAP for Python syntax validation with compileall.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -19,6 +20,5 @@ if ! command -v "$python_bin" >/dev/null 2>&1; then
     echo "ok 1 # SKIP python interpreter not found"
     exit 0
 fi
-find python tests/bindings/python tests/_static/python -name '*.py' \
-    -exec "$python_bin" -m compileall -q {} +
+sh "$source_files_helper" python tests/bindings/python tests/_static/python --name '*.py' --exec "$python_bin" -m compileall -q
 echo "ok 1 - python compileall"

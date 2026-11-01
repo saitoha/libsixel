@@ -2,6 +2,7 @@
 # Emit TAP for machine-readable 6cells IDL contract attributes.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -670,11 +671,7 @@ else
     failed=1
 fi
 
-if find "$src_root/include" "$src_root/src" "$src_root/tests" \
-    -type f \( -name '*.c' -o -name '*.h' -o -name '*.idl' \
-        -o -name '*.t' \) \
-    ! -path "$src_root/tests/_static/*" \
-    -exec awk -v idl_file="$idl_file" '
+if sh "$source_files_helper" "$src_root/include" "$src_root/src" "$src_root/tests" --name '*.c' --name '*.h' --name '*.idl' --name '*.t' --exclude-path "$src_root/tests/_static/*" --exec awk -v idl_file="$idl_file" '
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
     gsub(/[ \t]+$/, "", text)
@@ -707,7 +704,7 @@ function trim(text) {
         print FILENAME ":" FNR ": forbidden allocator vtbl call"
     }
 }
-' {} + > "$tmpdir/allocator-accessors.txt"; then
+'> "$tmpdir/allocator-accessors.txt"; then
     if test -s "$tmpdir/allocator-accessors.txt"; then
         echo "not ok 8 - component allocator accessors stay removed"
         sed 's/^/# /' "$tmpdir/allocator-accessors.txt"

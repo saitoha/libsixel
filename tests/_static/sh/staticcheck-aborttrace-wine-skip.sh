@@ -5,7 +5,7 @@
 set -eu
 
 src_root=$1
-tests_root=$src_root/tests/cli/aborttrace
+tests_root=$src_root/tests/cli/signals
 
 echo "1..1"
 

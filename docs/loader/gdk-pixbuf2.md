@@ -24,6 +24,6 @@ In particular, the current adapter cannot preserve an arbitrary finite source re
 
 ## Implementation and validation
 
-[`loader-gdk-pixbuf2.c`](../../src/loader-gdk-pixbuf2.c) owns pixbuf lifetime, pixel copying, alpha normalization, iterator traversal, and frame callbacks. The [GdkPixbuf loader suite](../../tests/loader/gdk-pixbuf2/) tests forced loading, pixelformats, GIF traversal/selection, alpha, and errors when the dependency is enabled.
+[`loader-gdk-pixbuf2.c`](../../src/loader-gdk-pixbuf2.c) owns pixbuf lifetime, pixel copying, alpha normalization, iterator traversal, and frame callbacks. The [GdkPixbuf loader suite](../../tests/loader/gdk-pixbuf/) tests forced loading, pixelformats, GIF traversal/selection, alpha, and errors when the dependency is enabled.
 
 This input adapter is separate from libsixel's [GdkPixbuf loader plugin tests](../../tests/extension/gdk-pixbuf-loader/): that plugin lets GdkPixbuf read SIXEL using libsixel. Plugin success does not test this adapter's GIF loop semantics or installed image modules.

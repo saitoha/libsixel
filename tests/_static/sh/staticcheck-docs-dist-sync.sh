@@ -3,6 +3,7 @@
 # Policy: docs/AGENTS.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -15,7 +16,7 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-(cd "$src_root" && find docs -type f ! -name .DS_Store) | LC_ALL=C sort \
+(cd "$src_root" && sh "$source_files_helper" docs --exclude-name .DS_Store) | LC_ALL=C sort \
     > "$tmpdir/present"
 # Every EXTRA_DIST entry is separated from its continuation backslash by a
 # blank, so splitting on white space isolates the paths.

@@ -6,8 +6,8 @@ set -eu
 echo "1..1"
 
 src_root=$1
-can_try_source=$src_root/tests/loader/0057_loader_gd_can_try_policy.c
-status_source=$src_root/tests/loader/0058_loader_gd_status_policy.c
+can_try_source=$src_root/tests/_support/loader/0057_loader_gd_can_try_policy.c
+status_source=$src_root/tests/_support/loader/0058_loader_gd_status_policy.c
 gd_tests_dir=$src_root/tests/loader/gd
 
 if test ! -f "$can_try_source" || test ! -f "$status_source" ||

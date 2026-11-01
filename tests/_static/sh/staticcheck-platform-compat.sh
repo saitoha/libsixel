@@ -24,6 +24,7 @@
 # probes, and builtin round trips), not a behavioral coverage inventory.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=$1
 classification="$src_root/tests/_static/data/platform-macro-classification.tsv"
@@ -90,10 +91,7 @@ test ! -s "$tmpdir/classification-errors" || {
     failed=1
 }
 
-find "$src_root/src" "$src_root/converters" "$src_root/assessment" \
-    "$src_root/include" "$src_root/examples" "$src_root/fuzz" -type f \
-    \( -name '*.c' -o -name '*.h' -o -name '*.m' \) \
-    ! -name 'stb_image.h' ! -name 'stb_image_write.h' -exec awk '
+sh "$source_files_helper" "$src_root/src" "$src_root/converters" "$src_root/assessment" "$src_root/include" "$src_root/examples" "$src_root/fuzz" --name '*.c' --name '*.h' --name '*.m' --exclude-name 'stb_image.h' --exclude-name 'stb_image_write.h' --exec awk '
 function emit(line, count, fields, field_index) {
     gsub(/[^A-Za-z0-9_]/, " ", line)
     count = split(line, fields, /[[:space:]]+/)
@@ -115,7 +113,7 @@ directive {
         directive = 0
     }
 }
-' {} + | LC_ALL=C sort -u > "$tmpdir/source-macros"
+'| LC_ALL=C sort -u > "$tmpdir/source-macros"
 
 awk -F '\t' '!/^#/ { print $1 }' "$classification" |
     LC_ALL=C sort -u > "$tmpdir/classified-macros"
@@ -191,7 +189,7 @@ done < "$non_c_classification"
 
 # Every platform coverage row must identify the exact assertion-bearing test,
 # not merely a file with a broad reciprocal policy link.
-find "$src_root/docs/misc/platforms" -type f -name '*.md' -exec awk '
+sh "$source_files_helper" "$src_root/docs/misc/platforms" --name '*.md' --exec awk '
     $0 == "<!-- test-coverage: enforced -->" { enforced=1; next }
     enforced != 0 && $0 ~ /^\| [A-Z][A-Z0-9]*-[0-9]+ \|/ {
         split($0, fields, "|")
@@ -207,11 +205,9 @@ find "$src_root/docs/misc/platforms" -type f -name '*.md' -exec awk '
             line=substr(line, RSTART + RLENGTH)
         }
     }
-' {} + | LC_ALL=C sort -u > "$tmpdir/doc-coverage-pairs"
+'| LC_ALL=C sort -u > "$tmpdir/doc-coverage-pairs"
 
-find "$src_root/tests" -type f \
-    \( -name '*.t' -o -name '*.c' -o -name '*.sh' \) -exec awk \
-    -v src_root="$src_root/" '
+sh "$source_files_helper" "$src_root/tests" --name '*.t' --name '*.c' --name '*.sh' --exec awk -v src_root="$src_root/" '
     /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Coverage:/ {
         line=$0
         sub(/^[[:space:]]*(#|\/\/|\*)[[:space:]]*Coverage:[[:space:]]*/, "", line)
@@ -223,7 +219,7 @@ find "$src_root/tests" -type f \
             }
         }
     }
-' {} + | LC_ALL=C sort -u > "$tmpdir/test-coverage-pairs"
+'| LC_ALL=C sort -u > "$tmpdir/test-coverage-pairs"
 comm -23 "$tmpdir/doc-coverage-pairs" "$tmpdir/test-coverage-pairs" \
     > "$tmpdir/missing-coverage-assertions"
 comm -13 "$tmpdir/doc-coverage-pairs" "$tmpdir/test-coverage-pairs" \
@@ -242,10 +238,7 @@ test ! -s "$tmpdir/extra-coverage-assertions" || {
 # Count complete native-Windows preprocessor directives by owning file. This
 # catches a single copy losing the Cygwin/MSYS exclusions or WITH_WINPTHREAD
 # boundary while visually similar copies remain elsewhere.
-find "$src_root/src" "$src_root/converters" "$src_root/assessment" \
-    "$src_root/include" "$src_root/examples" "$src_root/fuzz" -type f \
-    \( -name '*.c' -o -name '*.h' -o -name '*.m' \) -exec awk \
-    -v src_root="$src_root/" '
+sh "$source_files_helper" "$src_root/src" "$src_root/converters" "$src_root/assessment" "$src_root/include" "$src_root/examples" "$src_root/fuzz" --name '*.c' --name '*.h' --name '*.m' --exec awk -v src_root="$src_root/" '
 function inspect(text, flat) {
     flat=text
     gsub(/[[:space:]]+/, " ", flat)
@@ -277,7 +270,7 @@ END {
         print relative "\t" counts[path]
     }
 }
-' {} + | LC_ALL=C sort > "$tmpdir/native-windows-actual"
+'| LC_ALL=C sort > "$tmpdir/native-windows-actual"
 awk -F '\t' '!/^#/ { print }' "$native_windows_inventory" |
     LC_ALL=C sort > "$tmpdir/native-windows-expected"
 cmp -s "$tmpdir/native-windows-expected" \
@@ -398,12 +391,11 @@ require_fixed '    __extension__ static pthread_once_t name = PTHREAD_ONCE_INIT'
 # shellcheck disable=SC2016
 require_fixed '$(srcdir)/pthread-once.h' src/Makefile.am
 require_fixed "'pthread-once.h'," src/meson.build
-find "$src_root/src" -type f \( -name '*.c' -o -name '*.h' \) \
-    ! -name pthread-once.h -exec awk '
+sh "$source_files_helper" "$src_root/src" --name '*.c' --name '*.h' --exclude-name pthread-once.h --exec awk '
     /(^|[^A-Za-z0-9_])PTHREAD_ONCE_INIT([^A-Za-z0-9_]|$)/ {
         print FILENAME ":" FNR ":" $0
     }
-' {} + > "$tmpdir/direct-pthread-once-init"
+'> "$tmpdir/direct-pthread-once-init"
 test ! -s "$tmpdir/direct-pthread-once-init" || {
     sed 's/^/# direct PTHREAD_ONCE_INIT use: /' \
         "$tmpdir/direct-pthread-once-init" >&2
@@ -416,8 +408,8 @@ require_fixed 'int backtrace(void **buffer, int size);' converters/aborttrace.c
 require_fixed '#  if HAVE_BACKTRACE_SYMBOLS_FD' converters/aborttrace.c
 require_fixed 'void backtrace_symbols_fd(void *const *buffer, int size, int fd);' converters/aborttrace.c
 require_fixed 'encoding = _resolve_locale_encoding(default="ascii")' python/libsixel/__init__.py
-require_fixed "build_os=\"\${RUNTIME_ENV_BUILD_OS-unknown}\"" tests/loader/libwebp/0164_loader_libwebp_sigint_pipeline_stop_trace.t
-require_fixed 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' tests/loader/builtin/1021_loader_builtin_psd_cmyk8_values_named_cmyk_trace.t
+require_fixed "build_os=\"\${RUNTIME_ENV_BUILD_OS-unknown}\"" tests/loader/webp/0164_loader_libwebp_sigint_pipeline_stop_trace.t
+require_fixed 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' tests/loader-psd/cmyk/0016_loader_builtin_psd_cmyk8_values_named_cmyk_trace.t
 require_fixed 'meson test -C builddir --no-rebuild --num-processes 1' .github/actions/ci-steps/action.yml
 require_fixed "--slice \"\${slice}/\${slice_count}\" --print-errorlogs" .github/actions/ci-steps/action.yml
 require_fixed 'if pkgman install -y' .github/actions/ci-steps/action.yml
@@ -425,16 +417,16 @@ require_fixed 'pkgman refresh || true' .github/actions/ci-steps/action.yml
 require_fixed 'slice_count=16' .github/actions/ci-steps/action.yml
 require_fixed 'for attempt in 1 2 3; do' .github/actions/ci-steps/action.yml
 haiku_psd_skip_count=$(grep -lF 'SIXEL_TEST_SKIP_HAIKU_PSD_TYSH_TRACE' \
-    "$src_root"/tests/loader/builtin/*.t | awk 'END { print NR }')
+    "$src_root"/tests/loader-psd/*/*.t | awk 'END { print NR }')
 test "$haiku_psd_skip_count" -eq 5 ||
     fail "expected 5 narrow Haiku PSD skips, found $haiku_psd_skip_count"
 # The shell variable is part of the test text being asserted.
 # shellcheck disable=SC2016
 require_fixed 'build_os="${RUNTIME_ENV_BUILD_OS-unknown}"' \
-    tests/loader/libwebp/0164_loader_libwebp_sigint_pipeline_stop_trace.t
+    tests/loader/webp/0164_loader_libwebp_sigint_pipeline_stop_trace.t
 # shellcheck disable=SC2016
 require_fixed 'build_os="${RUNTIME_ENV_BUILD_OS-unknown}"' \
-    tests/loader/builtin/1249_loader_builtin_gif_sigint_pipeline_stop_trace.t
+    tests/loader/gif/0024_loader_builtin_gif_sigint_pipeline_stop_trace.t
 
 require_fixed 'volatile int jpeg_failed;' src/loader-libjpeg.c
 require_fixed '#if HAVE_SYS_TTYCOM_H' src/tty.c
@@ -449,25 +441,21 @@ require_fixed 'label: Autotools-solaris-11.4-x86_64' .github/workflows/ci.yml
 require_fixed '--disable-dependency-tracking' .github/workflows/ci.yml
 require_fixed 'make: gmake' .github/workflows/ci.yml
 require_fixed 'od -An -tx1 -j16 -N8' \
-    tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t
+    tests/cli/sixel2png/0014_size_preserves_aspect_ratio.t
 require_fixed '00 00 00 1f 00 00 00 05' \
-    tests/cli/sixel2png/0013_size_preserves_aspect_ratio.t
+    tests/cli/sixel2png/0014_size_preserves_aspect_ratio.t
 require_fixed 'loader/image_values' \
-    tests/loader/builtin/0016_roundtrip_rgba_samples.t
+    tests/loader/dispatch/0002_roundtrip_rgba_samples.t
 # The shell variables are literal source fragments.
 # shellcheck disable=SC2016
 require_fixed '"${output_sixel}" "${output_png}" '"'"'builtin:Enone!'"'"' 0' \
-    tests/loader/builtin/0016_roundtrip_rgba_samples.t
+    tests/loader/dispatch/0002_roundtrip_rgba_samples.t
 require_fixed '#if defined(_MSC_VER)' assessment/lsqa.c
 require_fixed 'errno_t rc;' assessment/lsqa.c
 
 # Solaris awk lacks the GNU third match() argument. Reject its reintroduction
 # across project-owned shell, awk, test, workflow, and build-generator code.
-find "$src_root/tests" "$src_root/tools" "$src_root/build-aux" \
-    "$src_root/.github" -type f \
-    \( -name '*.sh' -o -name '*.sh.in' -o -name '*.t' -o -name '*.awk' \
-       -o -name '*.yml' -o -name '*.yaml' -o -name '*.am' \) \
-    ! -name config.guess ! -name config.sub -exec awk '
+sh "$source_files_helper" "$src_root/tests" "$src_root/tools" "$src_root/build-aux" "$src_root/.github" --name '*.sh' --name '*.sh.in' --name '*.t' --name '*.awk' --name '*.yml' --name '*.yaml' --name '*.am' --exclude-name config.guess --exclude-name config.sub --exec awk '
 function reset_call() {
     in_call=0
     call_depth=0
@@ -564,7 +552,7 @@ END {
         print call_file ":" call_line ": unterminated three-argument match()"
     }
 }
-' {} + > "$tmpdir/gnu-awk-capture-arrays"
+'> "$tmpdir/gnu-awk-capture-arrays"
 test ! -s "$tmpdir/gnu-awk-capture-arrays" || {
     sed 's/^/# GNU awk capture-array syntax: /' \
         "$tmpdir/gnu-awk-capture-arrays" >&2

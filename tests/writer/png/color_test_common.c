@@ -12,7 +12,7 @@
 #include "src/writer.h"
 #include "src/compat_stub.h"
 #include "src/icc-parse.h"
-#include "tests/loader/builtin/loader_builtin_memory_test_common.h"
+#include "tests/_support/loader/builtin/loader_builtin_memory_test_common.h"
 #include "tests/data/color-numeric/vectors.h"
 #include "tests/data/color-numeric/named-output.h"
 #include "color_test_common.h"

@@ -2,6 +2,7 @@
 # Emit TAP for banning direct chunk source_path() calls in format arguments.
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 src_root=${1:-}
 
@@ -16,10 +17,7 @@ fi
 matches=$(mktemp "${TMPDIR:-/tmp}/libsixel-chunk-source-path-format-XXXXXX")
 trap 'rm -f "$matches"' EXIT HUP INT TERM
 
-find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    "$src_root/converters" "$src_root/assessment" \
-    -type f \( -name '*.c' -o -name '*.h' -o -name '*.inc.c' \) \
-    -exec awk '
+sh "$source_files_helper" "$src_root/src" "$src_root/include" "$src_root/tests" "$src_root/converters" "$src_root/assessment" --name '*.c' --name '*.h' --name '*.inc.c' --exec awk '
 # Skip complete comment/code spans without rescanning each character.
 function strip_comments(line, code, block_start, line_start, block_end) {
     code = ""
@@ -66,7 +64,7 @@ BEGIN {
         start_line = 0
     }
 }
-' {} + > "$matches"
+'> "$matches"
 
 if test -s "$matches"; then
     echo "not ok 1 - chunk source_path is bound before format output"

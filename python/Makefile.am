@@ -5,8 +5,10 @@ clean-local:
 	rm -rf libsixel_wheel.egg-info build dist
 	rm -f $(abs_top_builddir)/python/dist/.wheel-stamp
 	if test -d "$(builddir)/libsixel/_libs"; then \
-		find "$(builddir)/libsixel/_libs" -type f \
-			! -name '__init__.py' -exec rm -f {} +; \
+		for bundled in "$(builddir)/libsixel/_libs/"*; do \
+			case $$bundled in */__init__.py) continue ;; esac; \
+			test ! -f "$$bundled" || rm -f "$$bundled"; \
+		done; \
 	fi
 
 if HAVE_PYTHON
@@ -51,3 +53,11 @@ EXTRA_DIST = \
     libsixel/_wheel_ext.c
 
 check: check-am
+
+# Source archives must support enabling bindings after extraction.
+EXTRA_DIST += LICENSE \
+    README.rst \
+    libsixel/__init__.py \
+    libsixel/_libs/__init__.py \
+    libsixel/decoder.py \
+    libsixel/encoder.py

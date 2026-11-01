@@ -21,25 +21,12 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-(
-    cd "$tests_root"
-    find . \
-        \( \
-            -path './.perl-test-venv' -o \
-            -path './.php-test-venv' -o \
-            -path './.python-test-venv' -o \
-            -path './.ruby-test-venv' -o \
-            -path './_artifacts' -o \
-            -path './data' \
-        \) -prune -o \
-        -type f \( \
-            -name '*.t' -o \
-            -path './bindings/php/[0-9][0-9][0-9][0-9]_*.php' -o \
-            -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' -o \
-            -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' -o \
-            -path './bindings/perl/[0-9][0-9][0-9][0-9]_*.pl' \
-        \) -print
-) | LC_ALL=C sort > "$tmpfile"
+sh "$src_root/build-aux/read-check-test-list.sh" tests "$tests_root" \
+    include newline > "$tmpfile"
+# Numbered source-only shell contracts belong to staticcheck, but retain
+# the same one-observation TAP contract as runtime wrappers.
+(CDPATH='' cd "$tests_root" && printf '%s\n' */*/[0-9][0-9][0-9][0-9]_*.sh) |
+    awk 'index($0, "*") == 0' >> "$tmpfile"
 
 if test ! -s "$tmpfile"; then
     echo "ok 1 # SKIP no test sources found"

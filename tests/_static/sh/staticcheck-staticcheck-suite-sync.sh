@@ -3,6 +3,7 @@
 # Policy: docs/testing/staticcheck.md
 
 set -eu
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 
 echo "1..1"
 
@@ -32,8 +33,8 @@ registered="$tmpdir/registered"
 missing="$tmpdir/missing"
 unknown="$tmpdir/unknown"
 
-find "$static_root" -maxdepth 1 -type f -name 'staticcheck-*.sh' \
-    ! -name 'staticcheck-suite.sh' -exec basename {} \; \
+sh "$source_files_helper" "$static_root" --max-depth 1  --name 'staticcheck-*.sh' \
+    --exclude-name 'staticcheck-suite.sh' | sed 's|.*/||' \
     | sed 's/\.sh$//' | LC_ALL=C sort -u > "$expected"
 
 awk '
@@ -101,9 +102,9 @@ $1 == "run_source_contract" {
     print name
 }
 ' "$suite_file" | LC_ALL=C sort > "$tmpdir/source-registered"
-find "$src_root/tests" -type f -name '*.t' -exec awk '
+sh "$source_files_helper" "$src_root/tests" --name '*.t' --name '[0-9][0-9][0-9][0-9]_*.sh' --exec awk '
 /^# Staticcheck:/ { print $3 }
-' {} + | LC_ALL=C sort > "$tmpdir/source-declared"
+'| LC_ALL=C sort > "$tmpdir/source-declared"
 uniq -d "$tmpdir/source-declared" > "$tmpdir/source-duplicates"
 comm -3 "$tmpdir/source-declared" "$tmpdir/source-registered" \
     > "$tmpdir/source-drift"

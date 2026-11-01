@@ -2,6 +2,7 @@
 # Exercise the cleanup's ownership, batching and failure boundary.
 # Policy: docs/build/test-harness.md
 set -eux
+source_files_helper=$(CDPATH='' cd -- "${0%/*}" && pwd -P)/list-source-files.sh
 echo '1..1'
 set -v
 
@@ -41,7 +42,7 @@ PATH="$tmpdir/bin:$PATH" sh "$src_root/build-aux/clean-test-logs.sh" \
     exit 0
 }
 test "$(wc -l < "$cleanup_calls")" -lt 10 &&
-test "$(find "$tmpdir/logs" -type f | wc -l)" -eq 3 &&
+test "$(sh "$source_files_helper" "$tmpdir/logs"| wc -l)" -eq 3 &&
 test -f "$tmpdir/logs/staticcheck-saved.log" &&
 test -f "$tmpdir/logs/staticcheck-saved.trs" &&
 test -f "$tmpdir/logs/source.t" &&

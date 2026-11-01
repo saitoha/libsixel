@@ -1,0 +1,14 @@
+tests/extension/wic-installer/0001_per_machine.ps1
+tests/extension/wic-installer/0002_embedded_cabinet_reference.ps1
+tests/extension/wic-installer/0003_embedded_cabinet_stream.ps1
+tests/extension/wic-installer/0004_payload_file_size.ps1
+tests/extension/wic-installer/0005_upgrade_transaction.ps1
+tests/extension/wic-installer/0006_downgrade_detection.ps1
+tests/extension/wic-installer/0007_same_version_replacement.ps1
+tests/extension/wic-installer/0008_com_registration_path.ps1
+tests/extension/wic-installer/0009_component_architecture.ps1
+tests/extension/wic-installer/0010_no_self_registration.ps1
+tests/extension/wic-installer/0011_no_custom_actions.ps1
+tests/extension/wic-installer/0012_destdir_skips_install.ps1
+tests/extension/wic-installer/0013_registration.ps1
+tests/extension/wic-installer/0014_dependencies.ps1
