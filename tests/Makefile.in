@@ -21996,6 +21996,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	test-time-allowlist.tsv \
 	build/install/0001_pkgconfig_headers.py \
 	tools/child-time/0001_marker_backpressure.py \
+	tools/child-time/0002_binding_run_identity.py \
 	extension/quicklook-lifecycle/private-user.inc.h \
 	extension/quicklook-lifecycle/private-mutations.inc.h \
 	extension/quicklook-lifecycle/private-driver.m \

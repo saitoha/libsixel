@@ -82,6 +82,8 @@ The shared [resolve-binding-test-common.sh](../../build-aux/resolve-binding-test
 
 Autotools prepares the environments before the parallel log targets. [meson-python-tap-wrapper.sh](../../tests/meson-python-tap-wrapper.sh), despite its historical name, coordinates Ruby, Perl, and PHP preparation as well as shell/Python execution. For its shared preparation paths, lock directories and exported-state files coordinate workers so they do not all install or extract the same package. Large packaged fixtures have separate preparation and completion markers. These operations belong to harness setup, which is why the individual TAP tests can remain small and avoid repeated package installation and filesystem work.
 
+Meson binding workers use `MESON_TEST_RUN_ID`, falling back to their parent PID, to name shared preparation locks and exported-state files. The [child-time executor](../testing/guide.md#test-timing) preserves the original invoker identity before its guardian changes the command's parent, so measured siblings use the same lock. A successful resolver result is written to a sibling temporary file and renamed into place before releasing the lock; waiting workers cannot read a partially written result. This coordination applies to Python, Ruby, Perl and PHP.
+
 ## Inside the custom TAP driver
 
 [test-driver](../../build-aux/test-driver) is Automake's shipped basic driver, whose primary observation is process status. The project's configured `lso-tap-driver.sh` instead consumes TAP output. Extension-specific log-driver settings in [tests/Makefile.am](../../tests/Makefile.am) select it for the runtime scripts. The custom suite collector then reads its `.trs` records; these two layers have different responsibilities.
@@ -231,5 +233,6 @@ This is a declaration audit, not a complete shell interpreter or proof of option
 | TH-11 | A partial discovery failure stops the ordinary make path. | [tests/build/discovery/0006_scan_failure.py](../../tests/build/discovery/0006_scan_failure.py) |
 | TH-12 | The OpenVMS list prerequisite refreshes the inventory before execution. | [tests/build/discovery/0007_openvms_refresh.py](../../tests/build/discovery/0007_openvms_refresh.py) |
 | TH-13 | A partial discovery failure stops the OpenVMS list prerequisite. | [tests/build/discovery/0008_openvms_failure.py](../../tests/build/discovery/0008_openvms_failure.py) |
+| TH-14 | Measured sibling workers retain the original invoker identity for shared binding preparation, and an explicit run identity is preserved. | [tests/tools/child-time/0002_binding_run_identity.py](../../tests/tools/child-time/0002_binding_run_identity.py) |
 
 The discovery checks execute production make assignments and the OpenVMS list recipe with tiny source trees in separate build directories. Each file owns one observation. They do not invoke configure, compile the C dispatcher, or reproduce GNV/RMS behavior; native OpenVMS execution remains a platform validation boundary.

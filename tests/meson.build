@@ -431,6 +431,11 @@ if have_child_time_executor and python_for_tests.found()
            child_time_executor.full_path()],
     depends: child_time_executor,
     protocol: 'tap', timeout: 15, suite: ['tap', 'child-time'])
+  test('tools/child-time/0002_binding_run_identity.py', python_for_tests,
+    args: [files('tools/child-time/0002_binding_run_identity.py'),
+           child_time_executor.full_path()],
+    depends: child_time_executor,
+    protocol: 'tap', timeout: 15, suite: ['tap', 'child-time'])
 endif
 
 add_test_setup('ci',

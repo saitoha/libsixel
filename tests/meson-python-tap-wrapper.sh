@@ -141,7 +141,8 @@ if test "${test_script##*.}" = "py"; then
         "${ENABLE_PYTHON:-0}" "${SIXEL_CONFIGURED_PYTHON:-}" \
         "$MESON_BUILD_ROOT/python/dist" \
         "$MESON_BUILD_ROOT/tests/.python-test-venv")"
-      printf '%s\n' "$venv_exports" > "$venv_exports_file"
+      printf '%s\n' "$venv_exports" > "$venv_exports_file.tmp"
+      mv "$venv_exports_file.tmp" "$venv_exports_file"
       rmdir "$venv_lock_dir"
       venv_progress python "venv resolve completed"
     else
@@ -189,7 +190,8 @@ if test "${test_script##*.}" = "rb"; then
         "${ENABLE_RUBY:-0}" "${SIXEL_CONFIGURED_RUBY:-}" \
         "$MESON_BUILD_ROOT/ruby/dist" \
         "$MESON_BUILD_ROOT/tests/.ruby-test-venv")"
-      printf '%s\n' "$ruby_venv_exports" > "$ruby_venv_exports_file"
+      printf '%s\n' "$ruby_venv_exports" > "$ruby_venv_exports_file.tmp"
+      mv "$ruby_venv_exports_file.tmp" "$ruby_venv_exports_file"
       rmdir "$ruby_venv_lock_dir"
       venv_progress ruby "venv resolve completed"
     else
@@ -251,7 +253,8 @@ if test "${test_script##*.}" = "php"; then
         "${ENABLE_PHP:-0}" "${SIXEL_CONFIGURED_PHP:-}" \
         "$MESON_BUILD_ROOT/php/dist" \
         "$MESON_BUILD_ROOT/tests/.php-test-venv")"
-      printf '%s\n' "$php_venv_exports" > "$php_venv_exports_file"
+      printf '%s\n' "$php_venv_exports" > "$php_venv_exports_file.tmp"
+      mv "$php_venv_exports_file.tmp" "$php_venv_exports_file"
       rmdir "$php_venv_lock_dir"
       venv_progress php "venv resolve completed"
     else
@@ -318,7 +321,8 @@ if test ! -f "$perl_venv_exports_file"; then
       "${ENABLE_PERL:-0}" "${SIXEL_CONFIGURED_PERL:-}" \
       "$TOP_SRCDIR/perl" "$MESON_BUILD_ROOT/src" \
       "$MESON_BUILD_ROOT/tests/.perl-test-venv")"
-    printf '%s\n' "$perl_venv_exports" > "$perl_venv_exports_file"
+    printf '%s\n' "$perl_venv_exports" > "$perl_venv_exports_file.tmp"
+    mv "$perl_venv_exports_file.tmp" "$perl_venv_exports_file"
     rmdir "$perl_venv_lock_dir"
     venv_progress perl "venv resolve completed"
   else

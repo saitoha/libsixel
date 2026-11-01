@@ -10773,7 +10773,8 @@ EXTRA_DIST += test-time-allowlist.tsv
 # These native Python cases use the ordinary discovered TAP/log path.
 # Their interpreter does not depend on optional Python bindings.
 EXTRA_DIST += build/install/0001_pkgconfig_headers.py
-EXTRA_DIST += tools/child-time/0001_marker_backpressure.py
+EXTRA_DIST += tools/child-time/0001_marker_backpressure.py \
+    tools/child-time/0002_binding_run_identity.py
 
 if BUILD_LSO_TIMEOUT
 # Preserve direct `make -C tests check` use before tools have been built.

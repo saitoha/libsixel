@@ -532,6 +532,10 @@ lso_child_time(int argc, char **argv)
   double duration;
   char *end;
   const unsigned char *p;
+#if defined(HAVE_LSO_CHILD_TIME)
+  char run_id[32];
+  char const *configured_run_id;
+#endif
 
   /* This grammar is deliberately separate from the legacy timeout CLI. */
   if (argc < 6 || strcmp(argv[4], "--") != 0 || !argv[2][0] ||
@@ -566,6 +570,16 @@ lso_child_time(int argc, char **argv)
     goto invalid;
   }
 #if defined(HAVE_LSO_CHILD_TIME)
+  /* The guardian changes PPID for each test. Preserve the original Meson
+   * invoker identity before forking so binding setup shares one lock. */
+  configured_run_id = getenv("MESON_TEST_RUN_ID");
+  if (getenv("MESON_BUILD_ROOT") != NULL &&
+      (configured_run_id == NULL || configured_run_id[0] == '\0')) {
+    snprintf(run_id, sizeof(run_id), "%ld", (long)getppid());
+    if (setenv("MESON_TEST_RUN_ID", run_id, 1) < 0) {
+      return 125;
+    }
+  }
   if (duration == 0.0 &&
       (isatty(STDIN_FILENO) || isatty(STDOUT_FILENO) ||
        isatty(STDERR_FILENO))) {
