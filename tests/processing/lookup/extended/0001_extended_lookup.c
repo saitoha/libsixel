@@ -17,7 +17,8 @@ static char const *const lookup_classes[] = {
     "lookup/certlut.float32", "lookup/5bit.float32", "lookup/6bit.float32",
     "lookup/vptree.float32", "lookup/rbc.float32",
     "lookup/mahalanobis.float32", "lookup/eytzinger.float32",
-    "lookup/ordered.float32"
+    "lookup/ordered.float32", "lookup/blockcull.float32",
+    "lookup/gridlut.float32"
 };
 
 static int

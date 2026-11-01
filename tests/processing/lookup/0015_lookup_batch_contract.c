@@ -277,6 +277,8 @@ test_lookup_0015_batch_contract(int argc, char **argv)
         "lookup/delaunay.float32",
         "lookup/blockcull.8bit",
         "lookup/blockcull.float32",
+        "lookup/gridlut.8bit",
+        "lookup/gridlut.float32",
         "lookup/ordered.8bit",
         "lookup/ordered.float32",
         "lookup/rbc.8bit",

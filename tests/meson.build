@@ -201,6 +201,8 @@ test_runner_tests_sources_text = run_command(
   '-o -path "./_artifacts" \\) ' +
   '-prune -o -type f \\( -name "*.c" -o -name "*.h" \\) ' +
   '! -name "*.inc.c" ' +
+  '! -name "filtered_5bit_common.c" ' +
+  '! -name "filtered_6bit_common.c" ' +
   '! -name "0018_lookup_float_batch_exact.c" ' +
   '! -name "0019_lookup_float_simd_distance.c" ' +
   '! -name "0030_delaunay_float_exact.c" ' +
@@ -238,7 +240,9 @@ test_runner_inc = [
 test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
 
 float_lookup_tests = static_library('sixel_float_lookup_tests',
-  ['processing/lookup/0018_lookup_float_batch_exact.c',
+  ['processing/lookup/filtered/filtered_5bit_common.c',
+   'processing/lookup/filtered/filtered_6bit_common.c',
+   'processing/lookup/0018_lookup_float_batch_exact.c',
    'processing/lookup/0019_lookup_float_simd_distance.c',
    'processing/lookup/0030_delaunay_float_exact.c',
    'processing/lookup/0031_delaunay_float_distance.c',

@@ -196,6 +196,105 @@ nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0105_PLAYBACK_WAIT_RELEASE \
+    -DBUILD_TEST_0106_PLAYBACK_WAIT_COMPLETION \
+    -DBUILD_TEST_0107_PLAYBACK_WAIT_FAILURE \
+    -DBUILD_TEST_0108_PLAYBACK_DRAIN_TIMEOUT \
+    -DBUILD_TEST_0109_PLAYBACK_SERIAL_RESERVATION \
+    -DBUILD_TEST_0110_RESERVED_DELTA_CPU_PER_FRAME_T0 \
+    -DBUILD_TEST_0111_RESERVED_DELTA_CPU_PER_FRAME_T48 \
+    -DBUILD_TEST_0112_RESERVED_DELTA_CPU_LATEST_T0 \
+    -DBUILD_TEST_0113_RESERVED_DELTA_CPU_LATEST_T48 \
+    -DBUILD_TEST_0114_RESERVED_DELTA_GPU_PER_FRAME_T0 \
+    -DBUILD_TEST_0115_RESERVED_DELTA_GPU_PER_FRAME_T48 \
+    -DBUILD_TEST_0116_RESERVED_DELTA_GPU_LATEST_T0 \
+    -DBUILD_TEST_0117_RESERVED_DELTA_GPU_LATEST_T48 \
+    -DBUILD_PLAYBACK_LIFECYCLE_COMMON \
+    -DBUILD_RESERVED_DELTA_COMMON \
+    -DBUILD_VIF_VIDEO_SUMMARY \
+    -DBUILD_TEST_0027_GRIDLUT_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0028_GRIDLUT_ENCODER_FAILURE \
+    -DBUILD_TEST_0029_GRIDLUT_COMPLETION_FAILURE \
+    -DBUILD_TEST_0030_ORDERED_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0031_ORDERED_ENCODER_FAILURE \
+    -DBUILD_TEST_0032_ORDERED_COMPLETION_FAILURE \
+    -DBUILD_GPU_FAILURE_COMMON \
+    -DBUILD_TEST_0001_BLOCKCULL_GAMMA_RANGE \
+    -DBUILD_TEST_0002_BLOCKCULL_LINEAR_RANGE \
+    -DBUILD_TEST_0003_BLOCKCULL_OKLAB_RANGE \
+    -DBUILD_TEST_0004_BLOCKCULL_CIELAB_RANGE \
+    -DBUILD_TEST_0005_BLOCKCULL_DIN99D_RANGE \
+    -DBUILD_TEST_0006_BLOCKCULL_GAMMA_FRACTION \
+    -DBUILD_TEST_0007_BLOCKCULL_LINEAR_FRACTION \
+    -DBUILD_TEST_0008_BLOCKCULL_OKLAB_FRACTION \
+    -DBUILD_TEST_0009_BLOCKCULL_CIELAB_FRACTION \
+    -DBUILD_TEST_0010_BLOCKCULL_DIN99D_FRACTION \
+    -DBUILD_TEST_0011_BLOCKCULL_GAMMA_ORACLE \
+    -DBUILD_TEST_0012_BLOCKCULL_LINEAR_ORACLE \
+    -DBUILD_TEST_0013_BLOCKCULL_OKLAB_ORACLE \
+    -DBUILD_TEST_0014_BLOCKCULL_CIELAB_ORACLE \
+    -DBUILD_TEST_0015_BLOCKCULL_DIN99D_ORACLE \
+    -DBUILD_TEST_0016_BLOCKCULL_GAMMA_ORACLE_LARGE \
+    -DBUILD_TEST_0017_BLOCKCULL_LINEAR_ORACLE_LARGE \
+    -DBUILD_TEST_0018_BLOCKCULL_OKLAB_ORACLE_LARGE \
+    -DBUILD_TEST_0019_BLOCKCULL_CIELAB_ORACLE_LARGE \
+    -DBUILD_TEST_0020_BLOCKCULL_DIN99D_ORACLE_LARGE \
+    -DBUILD_TEST_0021_BLOCKCULL_GAMMA_ORACLE_SMALL \
+    -DBUILD_TEST_0022_BLOCKCULL_LINEAR_ORACLE_SMALL \
+    -DBUILD_TEST_0023_BLOCKCULL_OKLAB_ORACLE_SMALL \
+    -DBUILD_TEST_0024_BLOCKCULL_CIELAB_ORACLE_SMALL \
+    -DBUILD_TEST_0025_BLOCKCULL_DIN99D_ORACLE_SMALL \
+    -DBUILD_TEST_0026_BLOCKCULL_GAMMA_ORACLE_MIXED \
+    -DBUILD_TEST_0027_BLOCKCULL_LINEAR_ORACLE_MIXED \
+    -DBUILD_TEST_0028_BLOCKCULL_OKLAB_ORACLE_MIXED \
+    -DBUILD_TEST_0029_BLOCKCULL_CIELAB_ORACLE_MIXED \
+    -DBUILD_TEST_0030_BLOCKCULL_DIN99D_ORACLE_MIXED \
+    -DBUILD_TEST_0031_BLOCKCULL_CIELAB_METRIC \
+    -DBUILD_TEST_0032_BLOCKCULL_DIN99D_METRIC \
+    -DBUILD_TEST_0033_BLOCKCULL_INSTANCE_ISOLATION \
+    -DBUILD_TEST_0001_5BIT_NEAR_TIE_TAIL \
+    -DBUILD_TEST_0002_5BIT_TINY_DISTANCES \
+    -DBUILD_TEST_0003_5BIT_MAGNITUDE_BOUNDARY \
+    -DBUILD_TEST_0004_5BIT_ALLOCATION_FALLBACK \
+    -DBUILD_TEST_0005_6BIT_NEAR_TIE_TAIL \
+    -DBUILD_TEST_0006_6BIT_TINY_DISTANCES \
+    -DBUILD_TEST_0007_6BIT_MAGNITUDE_BOUNDARY \
+    -DBUILD_TEST_0008_6BIT_ALLOCATION_FALLBACK \
+    -DBUILD_FILTERED_5BIT_COMMON \
+    -DBUILD_FILTERED_6BIT_COMMON \
+    -DBUILD_TEST_0001_GRIDLUT_GAMMA_RANGE \
+    -DBUILD_TEST_0002_GRIDLUT_LINEAR_RANGE \
+    -DBUILD_TEST_0003_GRIDLUT_OKLAB_RANGE \
+    -DBUILD_TEST_0004_GRIDLUT_CIELAB_RANGE \
+    -DBUILD_TEST_0005_GRIDLUT_DIN99D_RANGE \
+    -DBUILD_TEST_0006_GRIDLUT_GAMMA_FRACTION \
+    -DBUILD_TEST_0007_GRIDLUT_LINEAR_FRACTION \
+    -DBUILD_TEST_0008_GRIDLUT_OKLAB_FRACTION \
+    -DBUILD_TEST_0009_GRIDLUT_CIELAB_FRACTION \
+    -DBUILD_TEST_0010_GRIDLUT_DIN99D_FRACTION \
+    -DBUILD_TEST_0011_GRIDLUT_GAMMA_ORACLE \
+    -DBUILD_TEST_0012_GRIDLUT_LINEAR_ORACLE \
+    -DBUILD_TEST_0013_GRIDLUT_OKLAB_ORACLE \
+    -DBUILD_TEST_0014_GRIDLUT_CIELAB_ORACLE \
+    -DBUILD_TEST_0015_GRIDLUT_DIN99D_ORACLE \
+    -DBUILD_TEST_0016_GRIDLUT_GAMMA_ORACLE_LARGE \
+    -DBUILD_TEST_0017_GRIDLUT_LINEAR_ORACLE_LARGE \
+    -DBUILD_TEST_0018_GRIDLUT_OKLAB_ORACLE_LARGE \
+    -DBUILD_TEST_0019_GRIDLUT_CIELAB_ORACLE_LARGE \
+    -DBUILD_TEST_0020_GRIDLUT_DIN99D_ORACLE_LARGE \
+    -DBUILD_TEST_0021_GRIDLUT_GAMMA_ORACLE_SMALL \
+    -DBUILD_TEST_0022_GRIDLUT_LINEAR_ORACLE_SMALL \
+    -DBUILD_TEST_0023_GRIDLUT_OKLAB_ORACLE_SMALL \
+    -DBUILD_TEST_0024_GRIDLUT_CIELAB_ORACLE_SMALL \
+    -DBUILD_TEST_0025_GRIDLUT_DIN99D_ORACLE_SMALL \
+    -DBUILD_TEST_0026_GRIDLUT_GAMMA_ORACLE_MIXED \
+    -DBUILD_TEST_0027_GRIDLUT_LINEAR_ORACLE_MIXED \
+    -DBUILD_TEST_0028_GRIDLUT_OKLAB_ORACLE_MIXED \
+    -DBUILD_TEST_0029_GRIDLUT_CIELAB_ORACLE_MIXED \
+    -DBUILD_TEST_0030_GRIDLUT_DIN99D_ORACLE_MIXED \
+    -DBUILD_TEST_0031_GRIDLUT_CIELAB_METRIC \
+    -DBUILD_TEST_0032_GRIDLUT_DIN99D_METRIC \
+    -DBUILD_TEST_0033_GRIDLUT_INSTANCE_ISOLATION \
     -DBUILD_TEST_0001_OPTION_ATOMICITY \
     -DBUILD_TEST_0002_STAGGERED_COVERAGE \
     -DBUILD_TEST_0003_SKIPPED_DEADLINES \
@@ -4169,6 +4268,8 @@ endif
 # Test-only code builds for check, never as part of all.
 check_LTLIBRARIES = libfloatlookuptests.la
 libfloatlookuptests_la_SOURCES = \
+    processing/lookup/filtered/filtered_5bit_common.c \
+    processing/lookup/filtered/filtered_6bit_common.c \
     processing/lookup/0018_lookup_float_batch_exact.c \
     processing/lookup/0019_lookup_float_simd_distance.c \
     processing/lookup/0030_delaunay_float_exact.c \
@@ -4178,6 +4279,103 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    planner/pipeline/0105_playback_wait_release.c \
+    planner/pipeline/0106_playback_wait_completion.c \
+    planner/pipeline/0107_playback_wait_failure.c \
+    planner/pipeline/0108_playback_drain_timeout.c \
+    planner/pipeline/0109_playback_serial_reservation.c \
+    planner/pipeline/0110_reserved_delta_cpu_per_frame_t0.c \
+    planner/pipeline/0111_reserved_delta_cpu_per_frame_t48.c \
+    planner/pipeline/0112_reserved_delta_cpu_latest_t0.c \
+    planner/pipeline/0113_reserved_delta_cpu_latest_t48.c \
+    planner/pipeline/0114_reserved_delta_gpu_per_frame_t0.c \
+    planner/pipeline/0115_reserved_delta_gpu_per_frame_t48.c \
+    planner/pipeline/0116_reserved_delta_gpu_latest_t0.c \
+    planner/pipeline/0117_reserved_delta_gpu_latest_t48.c \
+    processing/lookup/filtered/0001_5bit_near_tie_tail.c \
+    processing/lookup/filtered/0002_5bit_tiny_distances.c \
+    processing/lookup/filtered/0003_5bit_magnitude_boundary.c \
+    processing/lookup/filtered/0004_5bit_allocation_fallback.c \
+    processing/lookup/filtered/0005_6bit_near_tie_tail.c \
+    processing/lookup/filtered/0006_6bit_tiny_distances.c \
+    processing/lookup/filtered/0007_6bit_magnitude_boundary.c \
+    processing/lookup/filtered/0008_6bit_allocation_fallback.c \
+    processing/gpu-palette/0027_gridlut_allocation_failure.c \
+    processing/gpu-palette/0028_gridlut_encoder_failure.c \
+    processing/gpu-palette/0029_gridlut_completion_failure.c \
+    processing/gpu-palette/0030_ordered_allocation_failure.c \
+    processing/gpu-palette/0031_ordered_encoder_failure.c \
+    processing/gpu-palette/0032_ordered_completion_failure.c \
+    processing/lookup/blockcull/0001_blockcull_gamma_range.c \
+    processing/lookup/blockcull/0002_blockcull_linear_range.c \
+    processing/lookup/blockcull/0003_blockcull_oklab_range.c \
+    processing/lookup/blockcull/0004_blockcull_cielab_range.c \
+    processing/lookup/blockcull/0005_blockcull_din99d_range.c \
+    processing/lookup/blockcull/0006_blockcull_gamma_fraction.c \
+    processing/lookup/blockcull/0007_blockcull_linear_fraction.c \
+    processing/lookup/blockcull/0008_blockcull_oklab_fraction.c \
+    processing/lookup/blockcull/0009_blockcull_cielab_fraction.c \
+    processing/lookup/blockcull/0010_blockcull_din99d_fraction.c \
+    processing/lookup/blockcull/0011_blockcull_gamma_oracle.c \
+    processing/lookup/blockcull/0012_blockcull_linear_oracle.c \
+    processing/lookup/blockcull/0013_blockcull_oklab_oracle.c \
+    processing/lookup/blockcull/0014_blockcull_cielab_oracle.c \
+    processing/lookup/blockcull/0015_blockcull_din99d_oracle.c \
+    processing/lookup/blockcull/0016_blockcull_gamma_oracle_large.c \
+    processing/lookup/blockcull/0017_blockcull_linear_oracle_large.c \
+    processing/lookup/blockcull/0018_blockcull_oklab_oracle_large.c \
+    processing/lookup/blockcull/0019_blockcull_cielab_oracle_large.c \
+    processing/lookup/blockcull/0020_blockcull_din99d_oracle_large.c \
+    processing/lookup/blockcull/0021_blockcull_gamma_oracle_small.c \
+    processing/lookup/blockcull/0022_blockcull_linear_oracle_small.c \
+    processing/lookup/blockcull/0023_blockcull_oklab_oracle_small.c \
+    processing/lookup/blockcull/0024_blockcull_cielab_oracle_small.c \
+    processing/lookup/blockcull/0025_blockcull_din99d_oracle_small.c \
+    processing/lookup/blockcull/0026_blockcull_gamma_oracle_mixed.c \
+    processing/lookup/blockcull/0027_blockcull_linear_oracle_mixed.c \
+    processing/lookup/blockcull/0028_blockcull_oklab_oracle_mixed.c \
+    processing/lookup/blockcull/0029_blockcull_cielab_oracle_mixed.c \
+    processing/lookup/blockcull/0030_blockcull_din99d_oracle_mixed.c \
+    processing/lookup/blockcull/0031_blockcull_cielab_metric.c \
+    processing/lookup/blockcull/0032_blockcull_din99d_metric.c \
+    processing/lookup/blockcull/0033_blockcull_instance_isolation.c \
+    processing/lookup/gridlut/0001_gridlut_gamma_range.c \
+    processing/lookup/gridlut/0002_gridlut_linear_range.c \
+    processing/lookup/gridlut/0003_gridlut_oklab_range.c \
+    processing/lookup/gridlut/0004_gridlut_cielab_range.c \
+    processing/lookup/gridlut/0005_gridlut_din99d_range.c \
+    processing/lookup/gridlut/0006_gridlut_gamma_fraction.c \
+    processing/lookup/gridlut/0007_gridlut_linear_fraction.c \
+    processing/lookup/gridlut/0008_gridlut_oklab_fraction.c \
+    processing/lookup/gridlut/0009_gridlut_cielab_fraction.c \
+    processing/lookup/gridlut/0010_gridlut_din99d_fraction.c \
+    processing/lookup/gridlut/0011_gridlut_gamma_oracle.c \
+    processing/lookup/gridlut/0012_gridlut_linear_oracle.c \
+    processing/lookup/gridlut/0013_gridlut_oklab_oracle.c \
+    processing/lookup/gridlut/0014_gridlut_cielab_oracle.c \
+    processing/lookup/gridlut/0015_gridlut_din99d_oracle.c \
+    processing/lookup/gridlut/0016_gridlut_gamma_oracle_large.c \
+    processing/lookup/gridlut/0017_gridlut_linear_oracle_large.c \
+    processing/lookup/gridlut/0018_gridlut_oklab_oracle_large.c \
+    processing/lookup/gridlut/0019_gridlut_cielab_oracle_large.c \
+    processing/lookup/gridlut/0020_gridlut_din99d_oracle_large.c \
+    processing/lookup/gridlut/0021_gridlut_gamma_oracle_small.c \
+    processing/lookup/gridlut/0022_gridlut_linear_oracle_small.c \
+    processing/lookup/gridlut/0023_gridlut_oklab_oracle_small.c \
+    processing/lookup/gridlut/0024_gridlut_cielab_oracle_small.c \
+    processing/lookup/gridlut/0025_gridlut_din99d_oracle_small.c \
+    processing/lookup/gridlut/0026_gridlut_gamma_oracle_mixed.c \
+    processing/lookup/gridlut/0027_gridlut_linear_oracle_mixed.c \
+    processing/lookup/gridlut/0028_gridlut_oklab_oracle_mixed.c \
+    processing/lookup/gridlut/0029_gridlut_cielab_oracle_mixed.c \
+    processing/lookup/gridlut/0030_gridlut_din99d_oracle_mixed.c \
+    processing/lookup/gridlut/0031_gridlut_cielab_metric.c \
+    processing/lookup/gridlut/0032_gridlut_din99d_metric.c \
+    processing/lookup/gridlut/0033_gridlut_instance_isolation.c \
+    processing/assessment/vif_video_summary.c \
+    planner/pipeline/playback_lifecycle_common.c \
+    planner/pipeline/reserved_delta_common.c \
+    processing/gpu-palette/gpu_failure_common.c \
     quant/palette/adaptive_range/0027_range_model_budget.c \
     quant/palette/adaptive_range/0022_range_candidate_budget.c \
     quant/palette/adaptive_range/0023_range_perceptual_projection.c \
@@ -10116,6 +10314,7 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t \
     quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t \
     $(HELPER_FILES) \
+    processing/lookup/filtered/filtered_common.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_common.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_hdr.inc.c \
     loader/builtin/0014_loader_builtin_pixelformat_gif_psd.inc.c \

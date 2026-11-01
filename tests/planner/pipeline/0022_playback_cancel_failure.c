@@ -7,6 +7,8 @@
 #include <string.h>
 #include "playback_test_common.h"
 
+int playback_lifecycle_test(int mode);
+
 typedef struct playback_0022_counts {
     int completed;
     int interrupted;
@@ -90,6 +92,7 @@ test_playback_0022(int argc, char **argv)
 
     (void)argc;
     (void)argv;
+    if (playback_lifecycle_test(0)) return EXIT_FAILURE;
     memset(&buffer, 0, sizeof(buffer));
     output = NULL;
     failing = NULL;

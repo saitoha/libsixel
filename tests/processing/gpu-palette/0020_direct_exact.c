@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "src/gpu-palette.h"
 
 enum {
     GPUPAL_DIRECT_WIDTH = 61,
@@ -108,7 +109,9 @@ gpupal_direct_apply(sixel_allocator_t *allocator,
     unsigned char const *mask;
     size_t mask_size;
     SIXELSTATUS status;
+    sixel_gpu_palette_test_hooks_t hooks;
 
+    memset(&hooks, 0, sizeof(hooks));
     dither = NULL;
     indexes = NULL;
     mask = NULL;
@@ -125,6 +128,7 @@ gpupal_direct_apply(sixel_allocator_t *allocator,
     sixel_dither_set_lut_policy(dither, SIXEL_LUT_POLICY_NONE);
     sixel_dither_set_optimize_palette(dither, 0);
     dither->gpu_policy = gpu_policy;
+    dither->gpu_test_hooks = &hooks;
     if (keep) {
         sixel_dither_set_transparent(dither, ncolors);
         dither->keycolor_reserved = 1;
@@ -139,6 +143,16 @@ gpupal_direct_apply(sixel_allocator_t *allocator,
     indexes = sixel_dither_apply_palette(dither, pixels,
                                          GPUPAL_DIRECT_WIDTH,
                                          GPUPAL_DIRECT_HEIGHT);
+    /* Capability is independent of compilation/dispatch success. A silent
+     * direct fallback on a matrix-capable device must fail this test. */
+    if (indexes != NULL && gpu_policy == SIXEL_GPU_POLICY_FORCE &&
+            (!hooks.entered || hooks.kernel !=
+                (hooks.matrix_supported ? 2 : 1))) {
+        fprintf(stderr, "GPU kernel mismatch: matrix=%d kernel=%d\n",
+            hooks.matrix_supported, hooks.kernel);
+        sixel_allocator_free(allocator, indexes);
+        indexes = NULL;
+    }
     if (indexes != NULL && keep) {
         mask = sixel_dither_get_pipeline_accumulation_result_mask(
             dither, &mask_size);

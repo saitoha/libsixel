@@ -5,9 +5,9 @@
  *
  * Bulk blockcull lookup must equal the exhaustive palette-order scan. Byte
  * results are checked against an independent integer oracle. Float results
- * are checked against the policy's own single-sample scan, which uses the
- * same build arithmetic, and against the VP-tree float metric for finite
- * samples. Runs mix smooth gradients, where culling removes most colors,
+ * use an independent double scan, including nonfinite samples, and a
+ * supplementary VP-tree comparison for ordinary finite samples. Runs mix
+ * smooth gradients, where culling removes most colors,
  * with random bursts, exact palette hits, duplicate entries and equidistant
  * midpoints, in both scan directions and across partial runs.
  */
@@ -16,6 +16,7 @@
 #include "config.h"
 #endif
 
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
@@ -142,6 +143,37 @@ blockcull_exact_create(char const *class_name, sixel_allocator_t *allocator)
     return policy;
 }
 
+/* RGBFLOAT32 has unit channel ranges. Evaluate the distance independently
+ * in double, including nonfinite queries: no finite winner selects zero.
+ * Comparing bulk output only to its own scalar method would miss a shared
+ * regression in the delegated float backend. */
+static int
+blockcull_exact_float_oracle(float const *palette, int ncolors,
+                           float const *pixel)
+{
+    double minimum;
+    double distance;
+    double d;
+    int best;
+    int i;
+    int c;
+
+    best = 0;
+    minimum = DBL_MAX;
+    for (i = 0; i < ncolors; ++i) {
+        distance = 0.0;
+        for (c = 0; c < 3; ++c) {
+            d = (double)pixel[c] - (double)palette[i * 3 + c];
+            distance += d * d;
+        }
+        if (distance < minimum) {
+            minimum = distance;
+            best = i;
+        }
+    }
+    return best;
+}
+
 static int
 blockcull_exact_run(sixel_allocator_t *allocator, int is_float, int ncolors)
 {
@@ -230,7 +262,8 @@ blockcull_exact_run(sixel_allocator_t *allocator, int is_float, int ncolors)
                 direction, NULL);
             for (q = 0; q < length; ++q) {
                 expected = is_float
-                    ? policy->vtbl->map_pixel(policy, query + q * stride)
+                    ? blockcull_exact_float_oracle(palette_float, ncolors,
+                        pixels_float + q * 3)
                     : blockcull_exact_byte_oracle(palette, ncolors,
                                                   pixels + q * 3);
                 if ((int)actual[q] != expected

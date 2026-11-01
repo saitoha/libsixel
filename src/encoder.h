@@ -82,6 +82,14 @@ struct sixel_encoder_palette_test_hooks {
         int probe, double interval, double wait, char const *decision);
 };
 
+/* Test-only notification before a playback condition wait. The callback
+ * runs under the pipeline mutex: it may signal a separate test gate, but
+ * must not call playback APIs or wait for another playback operation. */
+struct sixel_playback_test_hooks {
+    void (*waiting)(void *context);
+    void *context;
+};
+
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
 #define SIXEL_COLOR_OPTION_MONOCHROME       1   /* use monochrome palette */
@@ -116,6 +124,7 @@ struct sixel_encoder {
     /* A sixel_playback_t owns the encoder; ordinary calls are refused. */
     int playback_attached;
     struct sixel_encoder_palette_test_hooks const *palette_test_hooks;
+    struct sixel_playback_test_hooks const *playback_test_hooks;
     struct sixel_encoder_callback_scope *active_callbacks;
     /* A setting candidate borrows runtime state. Destructive cache/history
      * effects are recorded here and run only after successful validation. */

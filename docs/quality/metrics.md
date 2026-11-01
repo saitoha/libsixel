@@ -527,6 +527,9 @@ These tests assert CLI behavior, including deliberate rejection controls; their 
 | MG-27 | Unknown direction is rejected. | [tests/quality_gate/gates/0025_unknown_direction.t](../../tests/quality_gate/gates/0025_unknown_direction.t) |
 | MG-28 | An ungated unavailable scalar video metric retains exit 4 and no stdout. | [tests/quality_gate/gates/0026_video_scalar_unavailable.t](../../tests/quality_gate/gates/0026_video_scalar_unavailable.t) |
 | MG-29 | Legacy limits outside float32 range are rejected before conversion. | [tests/quality_gate/gates/0027_legacy_float_overflow.t](../../tests/quality_gate/gates/0027_legacy_float_overflow.t) |
+| MG-30 | VIF-P unequal frame durations give mean 0.25. | [tests/quality_gate/vif_p/0020_video_weighted_mean.t](../../tests/quality_gate/vif_p/0020_video_weighted_mean.t) |
+| MG-31 | VIF-P temporal extrema remain 0 and 1. | [tests/quality_gate/vif_p/0021_video_extrema.t](../../tests/quality_gate/vif_p/0021_video_extrema.t) |
+| MG-32 | VIF-P bounds reject weighted 0.25 despite plain mean 0.5. | [tests/quality_gate/vif_p/0022_video_weighted_gate.t](../../tests/quality_gate/vif_p/0022_video_weighted_gate.t) |
 
 These are value, state and CLI-contract assertions. They do not establish an encoder quality floor or transfer an old threshold to the new metric.
 
@@ -540,3 +543,5 @@ These are value, state and CLI-contract assertions. They do not establish an enc
 - Wang, Z., E. P. Simoncelli, and A. C. Bovik. "Multiscale structural similarity for image quality assessment." 37th Asilomar Conference on Signals, Systems and Computers, 2003.
 - Xue, W., L. Zhang, X. Mou, and A. C. Bovik. "Gradient magnitude similarity deviation: a highly efficient perceptual image quality index." IEEE Transactions on Image Processing 23(2), 2014.
 - Zhang, X., and B. A. Wandell. "A spatial extension of CIELAB for digital color image reproduction." SID International Symposium Digest of Technical Papers, 1996.
+
+The [two-frame VIF-P fixture generator](../../tests/data/assessment/vif_video_fixture.py) repeats the decoded 64-by-64 snake reference and supplies identity then flat-black targets for 0.1 and 0.3 seconds. The known scores 1 and 0 give a duration-weighted mean of 0.25, temporal minimum 0 and maximum 1; an unweighted mean or last-frame-only result fails.

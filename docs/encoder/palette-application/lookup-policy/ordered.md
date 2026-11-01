@@ -103,5 +103,10 @@ Table construction is paid on a palette change even when delta keeps most pixels
 | ORF-31 | Native float cielab metric. | [tests/processing/lookup/ordered/0031_ord_cielab_metric.t](../../../../tests/processing/lookup/ordered/0031_ord_cielab_metric.t) |
 | ORF-32 | Native float din99d metric. | [tests/processing/lookup/ordered/0032_ord_din99d_metric.t](../../../../tests/processing/lookup/ordered/0032_ord_din99d_metric.t) |
 | ORF-33 | Native float instance isolation. | [tests/processing/lookup/ordered/0033_ord_instance_isolation.t](../../../../tests/processing/lookup/ordered/0033_ord_instance_isolation.t) |
+| ORF-34 | ordered allocation failure falls back and rebuilds. | [tests/processing/gpu-palette/0030_ordered_allocation_failure.t](../../../../tests/processing/gpu-palette/0030_ordered_allocation_failure.t) |
+| ORF-35 | ordered encoder failure falls back and rebuilds. | [tests/processing/gpu-palette/0031_ordered_encoder_failure.t](../../../../tests/processing/gpu-palette/0031_ordered_encoder_failure.t) |
+| ORF-36 | ordered completion failure falls back and rebuilds. | [tests/processing/gpu-palette/0032_ordered_completion_failure.t](../../../../tests/processing/gpu-palette/0032_ordered_completion_failure.t) |
 
 OR-03 through OR-06 skip without a Metal palette backend. OR-04 exercises request rejection before Metal dispatch; it does not inject Metal allocation or command-buffer failures. The shared [CLI prefix contract](../../../cli/prefix-matching.md) checks unique initials across registered policies. These tests establish numeric results and path selection, not a performance guarantee.
+
+The failure tests inject allocation, encoder-creation and post-completion errors while rebuilding an ordered table. They verify actual dither AUTO fallback, immutable retained input, index and keep-mask equality, and recovery followed by table reuse. These are backend fault-boundary tests, not device-reset or driver-failure tests.

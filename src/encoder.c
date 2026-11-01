@@ -12165,6 +12165,7 @@ sixel_encoder_new(
     (*ppencoder)->operation_playback = 0;
     (*ppencoder)->playback_attached = 0;
     (*ppencoder)->palette_test_hooks = NULL;
+    (*ppencoder)->playback_test_hooks = NULL;
     (*ppencoder)->active_callbacks = NULL;
     (*ppencoder)->operation_initialized = 0;
     (*ppencoder)->operation_active = 0;
@@ -20302,7 +20303,12 @@ static int
 sixel_playback_wait_locked(sixel_playback_t *playback, double deadline)
 {
     double remaining;
+    struct sixel_playback_test_hooks const *hooks;
 
+    hooks = playback->encoder->playback_test_hooks;
+    if (hooks != NULL && hooks->waiting != NULL) {
+        hooks->waiting(hooks->context);
+    }
     if (deadline < 0.0) {
         sixel_cond_wait(&playback->pipeline.cond, &playback->pipeline.mutex);
         return 0;

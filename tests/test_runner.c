@@ -124,6 +124,101 @@ int test_qa_0033(int argc, char **argv);
 int test_qa_0034(int argc, char **argv);
 int test_qa_0035(int argc, char **argv);
 int test_video_report_check(int argc, char **argv);
+int test_lifecycle_0105(int argc, char **argv);
+int test_lifecycle_0106(int argc, char **argv);
+int test_lifecycle_0107(int argc, char **argv);
+int test_lifecycle_0108(int argc, char **argv);
+int test_lifecycle_0109(int argc, char **argv);
+int test_reserved_delta_0110(int argc, char **argv);
+int test_reserved_delta_0111(int argc, char **argv);
+int test_reserved_delta_0112(int argc, char **argv);
+int test_reserved_delta_0113(int argc, char **argv);
+int test_reserved_delta_0114(int argc, char **argv);
+int test_reserved_delta_0115(int argc, char **argv);
+int test_reserved_delta_0116(int argc, char **argv);
+int test_reserved_delta_0117(int argc, char **argv);
+int test_filtered_0001(int argc, char **argv);
+int test_filtered_0002(int argc, char **argv);
+int test_filtered_0003(int argc, char **argv);
+int test_filtered_0004(int argc, char **argv);
+int test_filtered_0005(int argc, char **argv);
+int test_filtered_0006(int argc, char **argv);
+int test_filtered_0007(int argc, char **argv);
+int test_filtered_0008(int argc, char **argv);
+int test_gpu_failure_0027(int argc, char **argv);
+int test_gpu_failure_0028(int argc, char **argv);
+int test_gpu_failure_0029(int argc, char **argv);
+int test_gpu_failure_0030(int argc, char **argv);
+int test_gpu_failure_0031(int argc, char **argv);
+int test_gpu_failure_0032(int argc, char **argv);
+int test_blockcull_lookup_0001(int argc, char **argv);
+int test_blockcull_lookup_0002(int argc, char **argv);
+int test_blockcull_lookup_0003(int argc, char **argv);
+int test_blockcull_lookup_0004(int argc, char **argv);
+int test_blockcull_lookup_0005(int argc, char **argv);
+int test_blockcull_lookup_0006(int argc, char **argv);
+int test_blockcull_lookup_0007(int argc, char **argv);
+int test_blockcull_lookup_0008(int argc, char **argv);
+int test_blockcull_lookup_0009(int argc, char **argv);
+int test_blockcull_lookup_0010(int argc, char **argv);
+int test_blockcull_lookup_0011(int argc, char **argv);
+int test_blockcull_lookup_0012(int argc, char **argv);
+int test_blockcull_lookup_0013(int argc, char **argv);
+int test_blockcull_lookup_0014(int argc, char **argv);
+int test_blockcull_lookup_0015(int argc, char **argv);
+int test_blockcull_lookup_0016(int argc, char **argv);
+int test_blockcull_lookup_0017(int argc, char **argv);
+int test_blockcull_lookup_0018(int argc, char **argv);
+int test_blockcull_lookup_0019(int argc, char **argv);
+int test_blockcull_lookup_0020(int argc, char **argv);
+int test_blockcull_lookup_0021(int argc, char **argv);
+int test_blockcull_lookup_0022(int argc, char **argv);
+int test_blockcull_lookup_0023(int argc, char **argv);
+int test_blockcull_lookup_0024(int argc, char **argv);
+int test_blockcull_lookup_0025(int argc, char **argv);
+int test_blockcull_lookup_0026(int argc, char **argv);
+int test_blockcull_lookup_0027(int argc, char **argv);
+int test_blockcull_lookup_0028(int argc, char **argv);
+int test_blockcull_lookup_0029(int argc, char **argv);
+int test_blockcull_lookup_0030(int argc, char **argv);
+int test_blockcull_lookup_0031(int argc, char **argv);
+int test_blockcull_lookup_0032(int argc, char **argv);
+int test_blockcull_lookup_0033(int argc, char **argv);
+int test_gridlut_lookup_0001(int argc, char **argv);
+int test_gridlut_lookup_0002(int argc, char **argv);
+int test_gridlut_lookup_0003(int argc, char **argv);
+int test_gridlut_lookup_0004(int argc, char **argv);
+int test_gridlut_lookup_0005(int argc, char **argv);
+int test_gridlut_lookup_0006(int argc, char **argv);
+int test_gridlut_lookup_0007(int argc, char **argv);
+int test_gridlut_lookup_0008(int argc, char **argv);
+int test_gridlut_lookup_0009(int argc, char **argv);
+int test_gridlut_lookup_0010(int argc, char **argv);
+int test_gridlut_lookup_0011(int argc, char **argv);
+int test_gridlut_lookup_0012(int argc, char **argv);
+int test_gridlut_lookup_0013(int argc, char **argv);
+int test_gridlut_lookup_0014(int argc, char **argv);
+int test_gridlut_lookup_0015(int argc, char **argv);
+int test_gridlut_lookup_0016(int argc, char **argv);
+int test_gridlut_lookup_0017(int argc, char **argv);
+int test_gridlut_lookup_0018(int argc, char **argv);
+int test_gridlut_lookup_0019(int argc, char **argv);
+int test_gridlut_lookup_0020(int argc, char **argv);
+int test_gridlut_lookup_0021(int argc, char **argv);
+int test_gridlut_lookup_0022(int argc, char **argv);
+int test_gridlut_lookup_0023(int argc, char **argv);
+int test_gridlut_lookup_0024(int argc, char **argv);
+int test_gridlut_lookup_0025(int argc, char **argv);
+int test_gridlut_lookup_0026(int argc, char **argv);
+int test_gridlut_lookup_0027(int argc, char **argv);
+int test_gridlut_lookup_0028(int argc, char **argv);
+int test_gridlut_lookup_0029(int argc, char **argv);
+int test_gridlut_lookup_0030(int argc, char **argv);
+int test_gridlut_lookup_0031(int argc, char **argv);
+int test_gridlut_lookup_0032(int argc, char **argv);
+int test_gridlut_lookup_0033(int argc, char **argv);
+int test_vif_video_summary(int argc, char **argv);
+
 int test_image_values(int argc, char **argv);
 int test_image_sample_range(int argc, char **argv);
 int test_image_dimensions(int argc, char **argv);
@@ -4206,6 +4301,195 @@ typedef struct test_entry {
 } test_entry_t;
 
 static test_entry_t const test_entries[] = {
+    { "planner/pipeline/0105_playback_wait_release",
+      test_lifecycle_0105 },
+    { "planner/pipeline/0106_playback_wait_completion",
+      test_lifecycle_0106 },
+    { "planner/pipeline/0107_playback_wait_failure",
+      test_lifecycle_0107 },
+    { "planner/pipeline/0108_playback_drain_timeout",
+      test_lifecycle_0108 },
+    { "planner/pipeline/0109_playback_serial_reservation",
+      test_lifecycle_0109 },
+    { "planner/pipeline/0110_reserved_delta_cpu_per_frame_t0",
+      test_reserved_delta_0110 },
+    { "planner/pipeline/0111_reserved_delta_cpu_per_frame_t48",
+      test_reserved_delta_0111 },
+    { "planner/pipeline/0112_reserved_delta_cpu_latest_t0",
+      test_reserved_delta_0112 },
+    { "planner/pipeline/0113_reserved_delta_cpu_latest_t48",
+      test_reserved_delta_0113 },
+    { "planner/pipeline/0114_reserved_delta_gpu_per_frame_t0",
+      test_reserved_delta_0114 },
+    { "planner/pipeline/0115_reserved_delta_gpu_per_frame_t48",
+      test_reserved_delta_0115 },
+    { "planner/pipeline/0116_reserved_delta_gpu_latest_t0",
+      test_reserved_delta_0116 },
+    { "planner/pipeline/0117_reserved_delta_gpu_latest_t48",
+      test_reserved_delta_0117 },
+    { "lookup/filtered/0001_5bit_near_tie_tail",
+      test_filtered_0001 },
+    { "lookup/filtered/0002_5bit_tiny_distances",
+      test_filtered_0002 },
+    { "lookup/filtered/0003_5bit_magnitude_boundary",
+      test_filtered_0003 },
+    { "lookup/filtered/0004_5bit_allocation_fallback",
+      test_filtered_0004 },
+    { "lookup/filtered/0005_6bit_near_tie_tail",
+      test_filtered_0005 },
+    { "lookup/filtered/0006_6bit_tiny_distances",
+      test_filtered_0006 },
+    { "lookup/filtered/0007_6bit_magnitude_boundary",
+      test_filtered_0007 },
+    { "lookup/filtered/0008_6bit_allocation_fallback",
+      test_filtered_0008 },
+    { "gpu-palette/0027_gridlut_allocation_failure",
+      test_gpu_failure_0027 },
+    { "gpu-palette/0028_gridlut_encoder_failure",
+      test_gpu_failure_0028 },
+    { "gpu-palette/0029_gridlut_completion_failure",
+      test_gpu_failure_0029 },
+    { "gpu-palette/0030_ordered_allocation_failure",
+      test_gpu_failure_0030 },
+    { "gpu-palette/0031_ordered_encoder_failure",
+      test_gpu_failure_0031 },
+    { "gpu-palette/0032_ordered_completion_failure",
+      test_gpu_failure_0032 },
+    { "lookup/blockcull/0001_blockcull_gamma_range",
+      test_blockcull_lookup_0001 },
+    { "lookup/blockcull/0002_blockcull_linear_range",
+      test_blockcull_lookup_0002 },
+    { "lookup/blockcull/0003_blockcull_oklab_range",
+      test_blockcull_lookup_0003 },
+    { "lookup/blockcull/0004_blockcull_cielab_range",
+      test_blockcull_lookup_0004 },
+    { "lookup/blockcull/0005_blockcull_din99d_range",
+      test_blockcull_lookup_0005 },
+    { "lookup/blockcull/0006_blockcull_gamma_fraction",
+      test_blockcull_lookup_0006 },
+    { "lookup/blockcull/0007_blockcull_linear_fraction",
+      test_blockcull_lookup_0007 },
+    { "lookup/blockcull/0008_blockcull_oklab_fraction",
+      test_blockcull_lookup_0008 },
+    { "lookup/blockcull/0009_blockcull_cielab_fraction",
+      test_blockcull_lookup_0009 },
+    { "lookup/blockcull/0010_blockcull_din99d_fraction",
+      test_blockcull_lookup_0010 },
+    { "lookup/blockcull/0011_blockcull_gamma_oracle",
+      test_blockcull_lookup_0011 },
+    { "lookup/blockcull/0012_blockcull_linear_oracle",
+      test_blockcull_lookup_0012 },
+    { "lookup/blockcull/0013_blockcull_oklab_oracle",
+      test_blockcull_lookup_0013 },
+    { "lookup/blockcull/0014_blockcull_cielab_oracle",
+      test_blockcull_lookup_0014 },
+    { "lookup/blockcull/0015_blockcull_din99d_oracle",
+      test_blockcull_lookup_0015 },
+    { "lookup/blockcull/0016_blockcull_gamma_oracle_large",
+      test_blockcull_lookup_0016 },
+    { "lookup/blockcull/0017_blockcull_linear_oracle_large",
+      test_blockcull_lookup_0017 },
+    { "lookup/blockcull/0018_blockcull_oklab_oracle_large",
+      test_blockcull_lookup_0018 },
+    { "lookup/blockcull/0019_blockcull_cielab_oracle_large",
+      test_blockcull_lookup_0019 },
+    { "lookup/blockcull/0020_blockcull_din99d_oracle_large",
+      test_blockcull_lookup_0020 },
+    { "lookup/blockcull/0021_blockcull_gamma_oracle_small",
+      test_blockcull_lookup_0021 },
+    { "lookup/blockcull/0022_blockcull_linear_oracle_small",
+      test_blockcull_lookup_0022 },
+    { "lookup/blockcull/0023_blockcull_oklab_oracle_small",
+      test_blockcull_lookup_0023 },
+    { "lookup/blockcull/0024_blockcull_cielab_oracle_small",
+      test_blockcull_lookup_0024 },
+    { "lookup/blockcull/0025_blockcull_din99d_oracle_small",
+      test_blockcull_lookup_0025 },
+    { "lookup/blockcull/0026_blockcull_gamma_oracle_mixed",
+      test_blockcull_lookup_0026 },
+    { "lookup/blockcull/0027_blockcull_linear_oracle_mixed",
+      test_blockcull_lookup_0027 },
+    { "lookup/blockcull/0028_blockcull_oklab_oracle_mixed",
+      test_blockcull_lookup_0028 },
+    { "lookup/blockcull/0029_blockcull_cielab_oracle_mixed",
+      test_blockcull_lookup_0029 },
+    { "lookup/blockcull/0030_blockcull_din99d_oracle_mixed",
+      test_blockcull_lookup_0030 },
+    { "lookup/blockcull/0031_blockcull_cielab_metric",
+      test_blockcull_lookup_0031 },
+    { "lookup/blockcull/0032_blockcull_din99d_metric",
+      test_blockcull_lookup_0032 },
+    { "lookup/blockcull/0033_blockcull_instance_isolation",
+      test_blockcull_lookup_0033 },
+    { "lookup/gridlut/0001_gridlut_gamma_range",
+      test_gridlut_lookup_0001 },
+    { "lookup/gridlut/0002_gridlut_linear_range",
+      test_gridlut_lookup_0002 },
+    { "lookup/gridlut/0003_gridlut_oklab_range",
+      test_gridlut_lookup_0003 },
+    { "lookup/gridlut/0004_gridlut_cielab_range",
+      test_gridlut_lookup_0004 },
+    { "lookup/gridlut/0005_gridlut_din99d_range",
+      test_gridlut_lookup_0005 },
+    { "lookup/gridlut/0006_gridlut_gamma_fraction",
+      test_gridlut_lookup_0006 },
+    { "lookup/gridlut/0007_gridlut_linear_fraction",
+      test_gridlut_lookup_0007 },
+    { "lookup/gridlut/0008_gridlut_oklab_fraction",
+      test_gridlut_lookup_0008 },
+    { "lookup/gridlut/0009_gridlut_cielab_fraction",
+      test_gridlut_lookup_0009 },
+    { "lookup/gridlut/0010_gridlut_din99d_fraction",
+      test_gridlut_lookup_0010 },
+    { "lookup/gridlut/0011_gridlut_gamma_oracle",
+      test_gridlut_lookup_0011 },
+    { "lookup/gridlut/0012_gridlut_linear_oracle",
+      test_gridlut_lookup_0012 },
+    { "lookup/gridlut/0013_gridlut_oklab_oracle",
+      test_gridlut_lookup_0013 },
+    { "lookup/gridlut/0014_gridlut_cielab_oracle",
+      test_gridlut_lookup_0014 },
+    { "lookup/gridlut/0015_gridlut_din99d_oracle",
+      test_gridlut_lookup_0015 },
+    { "lookup/gridlut/0016_gridlut_gamma_oracle_large",
+      test_gridlut_lookup_0016 },
+    { "lookup/gridlut/0017_gridlut_linear_oracle_large",
+      test_gridlut_lookup_0017 },
+    { "lookup/gridlut/0018_gridlut_oklab_oracle_large",
+      test_gridlut_lookup_0018 },
+    { "lookup/gridlut/0019_gridlut_cielab_oracle_large",
+      test_gridlut_lookup_0019 },
+    { "lookup/gridlut/0020_gridlut_din99d_oracle_large",
+      test_gridlut_lookup_0020 },
+    { "lookup/gridlut/0021_gridlut_gamma_oracle_small",
+      test_gridlut_lookup_0021 },
+    { "lookup/gridlut/0022_gridlut_linear_oracle_small",
+      test_gridlut_lookup_0022 },
+    { "lookup/gridlut/0023_gridlut_oklab_oracle_small",
+      test_gridlut_lookup_0023 },
+    { "lookup/gridlut/0024_gridlut_cielab_oracle_small",
+      test_gridlut_lookup_0024 },
+    { "lookup/gridlut/0025_gridlut_din99d_oracle_small",
+      test_gridlut_lookup_0025 },
+    { "lookup/gridlut/0026_gridlut_gamma_oracle_mixed",
+      test_gridlut_lookup_0026 },
+    { "lookup/gridlut/0027_gridlut_linear_oracle_mixed",
+      test_gridlut_lookup_0027 },
+    { "lookup/gridlut/0028_gridlut_oklab_oracle_mixed",
+      test_gridlut_lookup_0028 },
+    { "lookup/gridlut/0029_gridlut_cielab_oracle_mixed",
+      test_gridlut_lookup_0029 },
+    { "lookup/gridlut/0030_gridlut_din99d_oracle_mixed",
+      test_gridlut_lookup_0030 },
+    { "lookup/gridlut/0031_gridlut_cielab_metric",
+      test_gridlut_lookup_0031 },
+    { "lookup/gridlut/0032_gridlut_din99d_metric",
+      test_gridlut_lookup_0032 },
+    { "lookup/gridlut/0033_gridlut_instance_isolation",
+      test_gridlut_lookup_0033 },
+    { "assessment/vif_video_summary",
+      test_vif_video_summary },
+
     { "writer/png/0015_p3_resize_coordinates", test_png_color_0015 },
     { "writer/png/0016_p3_k_undither_coordinates", test_png_color_0016 },
     { "writer/png/0021_p3_lso_fs_coordinates", test_png_color_0021 },

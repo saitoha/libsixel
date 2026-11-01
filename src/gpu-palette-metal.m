@@ -1958,6 +1958,15 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             goto end;
         }
 
+        if (request->test_hooks != NULL) {
+            request->test_hooks->entered = 1;
+            request->test_hooks->matrix_supported =
+                [g_sixel_gpu_metal_device supportsFamily:MTLGPUFamilyApple7];
+            request->test_hooks->kernel = 0;
+            request->test_hooks->rebuild = 0;
+            request->test_hooks->published = 0;
+        }
+
         result_length = (NSUInteger)request->pixel_count *
             (NSUInteger)sizeof(sixel_index_t);
         pixel_length = (NSUInteger)request->pixel_count * 3U;
@@ -2098,6 +2107,13 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         } else {
             accumulation_result_buffer = g_sixel_gpu_metal_dummy_buffer;
         }
+        if (request->test_hooks != NULL) {
+            request->test_hooks->rebuild = rebuild_grid || rebuild_ordered;
+            if (request->test_hooks->fault == 1) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        }
         if (result_buffer == nil || pixel_buffer == nil ||
                 palette_buffer == nil || transparent_buffer == nil ||
                 blue_noise_buffer == nil || gradient_buffer == nil ||
@@ -2141,6 +2157,10 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
                 }
             }
         }
+        if (request->test_hooks != NULL) {
+            request->test_hooks->kernel = use_ordered ? 5 : use_grid ? 4 :
+                use_blockcull ? 3 : use_gemm ? 2 : 1;
+        }
         if (sixel_trace_topic_is_enabled("gpu_contract")) {
             fprintf(stderr, "LSXGPU2|consumer=palette-apply|kernel=%s\n",
                     use_ordered ? "ordered" : use_grid ? "gridlut" :
@@ -2154,6 +2174,10 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
                     rebuild_ordered ? "rebuild" : "reuse");
         }
 
+        if (request->test_hooks != NULL && request->test_hooks->fault == 2) {
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
         command_buffer = [g_sixel_gpu_metal_queue commandBuffer];
         encoder = [command_buffer computeCommandEncoder];
         if (command_buffer == nil || encoder == nil) {
@@ -2277,6 +2301,12 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         [encoder endEncoding];
         [command_buffer commit];
         [command_buffer waitUntilCompleted];
+        if (request->test_hooks != NULL && request->test_hooks->fault == 3) {
+            /* GPU writes may already exist. The caller must reject them;
+             * no cache identity or retained history is published here. */
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
         if ([command_buffer status] != MTLCommandBufferStatusCompleted) {
             sixel_gpu_palette_metal_set_message(
                 "gpu palette apply: Metal command failed",
@@ -2294,6 +2324,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             memcpy(g_sixel_gpu_metal_grid_palette, request->palette,
                    palette_length);
             g_sixel_gpu_metal_grid_colors = request->ncolors;
+        }
+        if (request->test_hooks != NULL) {
+            request->test_hooks->published = 1;
         }
         if (result_buffer_direct == 0) {
             memcpy(request->dest, [result_buffer contents], result_length);

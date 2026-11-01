@@ -2222,6 +2222,7 @@ sixel_dither_new(
     (*ppdither)->lut_policy_fhedt_first_touch_override = 0;
     (*ppdither)->lut_policy_fhedt_first_touch = 0;
     (*ppdither)->gpu_policy = SIXEL_GPU_POLICY_OFF;
+    (*ppdither)->gpu_test_hooks = NULL;
     (*ppdither)->gpu_palette_threshold =
         (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
     (*ppdither)->lookup_policy = NULL;
@@ -4597,6 +4598,7 @@ sixel_dither_apply_palette(
                 (size_t)gpu_request.ncolors * 3U;
         }
         gpu_request.lut_policy = dither->lut_policy;
+        gpu_request.test_hooks = dither->gpu_test_hooks;
         gpu_request.method_for_diffuse = dither->method_for_diffuse;
         gpu_request.method_for_scan = method_for_scan;
 #if SIXEL_ENABLE_THREADS

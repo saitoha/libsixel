@@ -10,6 +10,8 @@
 #include "playback_test_common.h"
 #include "reserved_palette_test_common.h"
 
+int playback_lifecycle_test(int mode);
+
 static unsigned char const fixed_rgb[] = {
     255, 32, 32, 32, 255, 32, 255, 255, 255
 };
@@ -19,7 +21,6 @@ typedef struct reserved_state {
     int completed;
     int failed;
     int legacy;
-    int cancel;
 } reserved_state_t;
 
 /* Deliberately different geometries prove the source is not cropped to the
@@ -86,10 +87,6 @@ reserved_done(sixel_playback_result_t const *result, void *context)
     state = context;
     ++state->completed;
     pixels = palette = NULL;
-    if (state->cancel && result->status == SIXEL_INTERRUPTED) {
-        state->buffer.size = 0;
-        return;
-    }
     status = result->status;
     if (status == SIXEL_OK) {
         status = sixel_decode_raw(state->buffer.bytes,
@@ -212,12 +209,12 @@ reserved_palette_test(int scenario)
     size_t old_size;
     int i, failed;
 
+    if (scenario == 7) return playback_lifecycle_test(1);
     if (scenario == 4) {
         return reserved_validation();
     }
     memset(&state, 0, sizeof(state));
     state.legacy = scenario == 5;
-    state.cancel = scenario == 7;
     encoder = NULL;
     output = NULL;
     playback = NULL;
@@ -295,9 +292,6 @@ reserved_palette_test(int scenario)
         if (status != SIXEL_OK) {
             goto end;
         }
-    }
-    if (state.cancel) {
-        (void)sixel_playback_cancel(playback);
     }
     if (sixel_playback_drain(playback, -1) == SIXEL_OK &&
             state.completed == 4 && !state.failed) {

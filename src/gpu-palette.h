@@ -36,6 +36,19 @@ extern "C" {
 
 #define SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT 262144U
 
+/* Per-request fault/observation seam for backend integration tests. It is
+ * never configured by an option or environment variable. The caller owns
+ * this record through the synchronous request; ordinary requests use NULL.
+ * Faults model allocation, encoder creation and completion errors. */
+typedef struct sixel_gpu_palette_test_hooks {
+    int fault;
+    int entered;
+    int matrix_supported;
+    int kernel;             /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order */
+    int rebuild;
+    int published;
+} sixel_gpu_palette_test_hooks_t;
+
 /*
  * PaletteApply GPU request.
  *
@@ -52,6 +65,7 @@ extern "C" {
  */
 typedef struct sixel_gpu_palette_request {
     int policy;
+    sixel_gpu_palette_test_hooks_t *test_hooks;
     size_t auto_threshold;
     sixel_index_t *dest;
     unsigned char const *pixels;
