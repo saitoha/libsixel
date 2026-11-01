@@ -94,7 +94,9 @@ test_gamut_0065_pipeline_overlap(int argc, char **argv)
         producer.output = f.color->output;
         consumer.input = f.gamut->input;
         consumer.output = f.gamut->output;
-        ok = gamut_filter_scope(&scope, "balanced:global_budget=4");
+        /* This test needs four slots even on a two-CPU CI guest. Balanced
+         * policy deliberately caps its budget at the performance CPUs. */
+        ok = gamut_filter_scope(&scope, "greedy:global_budget=4");
         if (ok) {
             ok = sixel_filter_pipeline_run(&producer, &consumer,
                 f.allocator, NULL) == SIXEL_OK && state.overlap &&

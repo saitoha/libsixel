@@ -933,7 +933,7 @@ The model tests retain a 24-step dark ramp and three sparse bright gray values i
 | PC-05 | A visible nonfinite point fails without publishing a partial output. | [tests/palette/sampling/0011_palette_colors_failure_output.t](../../../../tests/palette/sampling/0011_palette_colors_failure_output.t) |
 | PC-06 | Binning rejects statistics tagged for a different color space. | [tests/palette/sampling/0012_binning_statistics_colorspace.t](../../../../tests/palette/sampling/0012_binning_statistics_colorspace.t) |
 | PC-07 | Explicit hard with matching coordinates omits the palette-colorspace stage. | [tests/palette/sampling/0013_palette_colors_hard_skips_statistics.t](../../../../tests/palette/sampling/0013_palette_colors_hard_skips_statistics.t) |
-| PC-08 | Automatic adaptive binning requests statistics without a color conversion. | [tests/palette/sampling/0014_processing_filter_palette_colors_identity_statistics.t](../../../../tests/palette/sampling/0014_processing_filter_palette_colors_identity_statistics.t) |
+| PC-08 | Automatic adaptive binning requests statistics without a color conversion when both working and clustering spaces are explicitly gamma (`-W gamma -X gamma`), independently of loader-selected defaults. | [tests/palette/sampling/0014_processing_filter_palette_colors_identity_statistics.t](../../../../tests/palette/sampling/0014_processing_filter_palette_colors_identity_statistics.t) |
 | PC-09 | Explicit hard with different coordinates executes conversion without collecting statistics. | [tests/palette/sampling/0015_palette_colors_hard_conversion_only.t](../../../../tests/palette/sampling/0015_palette_colors_hard_conversion_only.t) |
 
 ### Sampling contracts

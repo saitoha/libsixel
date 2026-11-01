@@ -8,8 +8,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 echo "1..1"
 set -v
+# Keep the identity branch independent of loader-selected working space.
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -Q kmeans -X gamma -5 auto \
+    "${IMG2SIXEL_PATH}" -Q kmeans -W gamma -X gamma -5 auto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
     echo "not ok 1 - palette colors conversion failed"
     exit 0
