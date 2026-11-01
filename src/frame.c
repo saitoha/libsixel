@@ -1315,12 +1315,16 @@ sixel_frame_new(
                                                    default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    int created_allocator;
+
+    created_allocator = 0;
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        created_allocator = 1;
     }
 
     /*
@@ -1376,6 +1380,11 @@ sixel_frame_new(
     status = SIXEL_OK;
 
 end:
+    /* The frame retains its own reference on success. Release the temporary
+     * constructor reference on both success and allocation failure. */
+    if (created_allocator) {
+        sixel_allocator_unref(allocator);
+    }
     return status;
 }
 
