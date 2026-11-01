@@ -50,18 +50,20 @@ END { exit found ? 0 : 1 }
 awk '
 /^libsixelquicklookcore_a_SOURCES =/ { core = 1 }
 core && /Sources\/SixelQuickLookStub\.c/ { stub = 1 }
-END { exit stub ? 0 : 1 }
+core && /src\/options\.c/ { options = 1 }
+END { exit stub && options ? 0 : 1 }
 ' "$src_root/quicklook-extension/Makefile.am" || {
-    echo "# Quick Look Autotools core must include its decoder hook stub"
+    echo "# Quick Look Autotools core must include option parsing and trace hooks"
     status=1
 }
 
 awk '
 /^srcs = files\(/ { core = 1 }
 core && /Sources\/SixelQuickLookStub\.c/ { stub = 1 }
-END { exit stub ? 0 : 1 }
+core && /src\/options\.c/ { options = 1 }
+END { exit stub && options ? 0 : 1 }
 ' "$src_root/quicklook-extension/meson.build" || {
-    echo "# Quick Look Meson core must include its decoder hook stub"
+    echo "# Quick Look Meson core must include option parsing and trace hooks"
     status=1
 }
 
@@ -70,8 +72,8 @@ awk '
     found = 1
 }
 END { exit found ? 0 : 1 }
-' "$src_root/quicklook-extension/Sources/SixelQuickLookStub.c" || {
-    echo "# Quick Look stub must provide the decoder failure hook"
+' "$src_root/src/options.c" || {
+    echo "# Quick Look option parser must provide the decoder failure hook"
     status=1
 }
 

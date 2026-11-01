@@ -16,15 +16,21 @@
 #include "options.h"
 #include "loader-common.h"
 
-/* CPU dispatch uses the topic diagnostic hook, but these decoder-only
- * targets do not link loader-common.c. Preserve its topic selection and
- * output contract without pulling image-loader backends into the codec. */
+/* CPU dispatch and the common option parser use loader-common.c diagnostics.
+ * Keep the same selection and output contracts in this standalone decoder
+ * without importing the image-loader backends. */
+int
+sixel_trace_topic_is_enabled(char const *topic)
+{
+    return sixel_diagnostics_trace_topic_is_enabled(topic);
+}
+
 SIXEL_INTERNAL_API void
 sixel_trace_topic_message(char const *topic, char const *format, ...)
 {
     va_list args;
 
-    if (!sixel_diagnostics_trace_topic_is_enabled(topic)) {
+    if (!sixel_trace_topic_is_enabled(topic)) {
         return;
     }
     fprintf(stderr, "libsixel[%s]: ",
@@ -36,12 +42,26 @@ sixel_trace_topic_message(char const *topic, char const *format, ...)
     fflush(stderr);
 }
 
-/* Keep the standalone decoder's failure-injection hook self-contained. */
-char const *
-sixel_test_environment_decoder_parallel_failure(void)
+/* Path-option diagnostics use the loader topic and its unscoped prefix. */
+int
+loader_trace_is_enabled(void)
 {
-    return sixel_compat_getenv(
-        "_SIXEL_TEST_DECODER_PARALLEL_FAILURE");
+    return sixel_trace_topic_is_enabled("loader");
+}
+
+void
+loader_trace_message(char const *format, ...)
+{
+    va_list args;
+
+    if (!loader_trace_is_enabled()) {
+        return;
+    }
+    fprintf(stderr, "libsixel: ");
+    va_start(args, format);
+    sixel_compat_vfprintf(stderr, format, args);
+    va_end(args);
+    fprintf(stderr, "\n");
 }
 
 /* emacs Local Variables:      */

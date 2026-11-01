@@ -61,7 +61,9 @@ noinst_LIBRARIES = libsixelquicklookcore.a
 # layer as the main library.  By keeping the
 # archive self-contained we avoid undefined
 # references when the Objective-C targets link it.
-# Include CPU detection for the decoder SIMD runtime policy.
+# Include CPU detection for the decoder SIMD runtime policy and the common
+# option parser for threading environment suboptions. The local diagnostic
+# hooks keep this archive independent of the external image loaders.
 #
 libsixelquicklookcore_a_SOURCES = \
     Sources/SixelQuickLookStub.c \
@@ -74,6 +76,7 @@ libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/timeline-logger.c \
     $(top_srcdir)/src/timeline-writer.c \
     $(top_srcdir)/src/compat_stub.c \
+    $(top_srcdir)/src/options.c \
     $(top_srcdir)/src/options-registry.c \
     $(top_srcdir)/src/threading.c \
     $(top_srcdir)/src/threading.h \

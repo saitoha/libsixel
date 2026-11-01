@@ -45,8 +45,9 @@ extension_objc_args = common_objc_args + ['-fapplication-extension']
 # |  Quick Look core aggregation                 |
 # +----------------------------------------------+
 # Keep the standalone decoder dependencies aligned with the Autotools
-# archive. The CPU detector gates decoder SIMD, the registry owns thread
-# parsing, and compat_stub.c supplies their portability helpers.
+# archive. The CPU detector gates decoder SIMD, options.c applies threading
+# environment suboptions, and the registry owns their schemas. Local trace
+# hooks avoid linking image loaders; compat_stub.c supplies portability.
 
 srcs = files(
   'Sources/SixelQuickLookStub.c',
@@ -59,6 +60,7 @@ srcs = files(
   '../src/timeline-logger.c',
   '../src/timeline-writer.c',
   '../src/compat_stub.c',
+  '../src/options.c',
   '../src/options-registry.c',
   '../src/threading.c',
   '../src/path.c',
