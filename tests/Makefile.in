@@ -12957,6 +12957,8 @@ HELPER_FILES = \
     _support/docs/consistency/list_envvars.sh \
     bindings/python/_taptest.py \
     _support/bindings/check-loader-setopt-sync.sh \
+    _support/bindings/perl-attach-gnu.h \
+    _support/bindings/perl-attach-declspec.h \
     bindings/ruby/_coverage_runner.rb \
     bindings/ruby/_coverage_to_lcov.rb \
     bindings/perl/_coverage_to_lcov.pl \

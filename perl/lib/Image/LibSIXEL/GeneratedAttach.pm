@@ -19,6 +19,7 @@ sub attach_all {
     $ffi->attach(['sixel_allocator_realloc' => 'Image::LibSIXEL::sixel_allocator_realloc'] => ['opaque', 'opaque', 'int'] => 'opaque');
     $ffi->attach(['sixel_allocator_free' => 'Image::LibSIXEL::sixel_allocator_free'] => ['opaque', 'opaque'] => 'void');
     $ffi->attach(['sixel_output_new' => 'Image::LibSIXEL::_sixel_output_new'] => ['opaque*', 'sixel_write_callback_t', 'opaque', 'opaque'] => 'int');
+    $ffi->attach(['sixel_output_create' => 'Image::LibSIXEL::sixel_output_create'] => ['sixel_write_callback_t', 'opaque'] => 'opaque');
     $ffi->attach(['sixel_output_destroy' => 'Image::LibSIXEL::sixel_output_destroy'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_output_ref' => 'Image::LibSIXEL::sixel_output_ref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_output_unref' => 'Image::LibSIXEL::sixel_output_unref'] => ['opaque'] => 'void');
@@ -32,6 +33,7 @@ sub attach_all {
     $ffi->attach(['sixel_output_set_ormode' => 'Image::LibSIXEL::sixel_output_set_ormode'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_output_set_encode_policy' => 'Image::LibSIXEL::sixel_output_set_encode_policy'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_new' => 'Image::LibSIXEL::_sixel_dither_new'] => ['opaque*', 'int', 'opaque'] => 'int');
+    $ffi->attach(['sixel_dither_create' => 'Image::LibSIXEL::sixel_dither_create'] => ['int'] => 'opaque');
     $ffi->attach(['sixel_dither_get' => 'Image::LibSIXEL::sixel_dither_get'] => ['int'] => 'opaque');
     $ffi->attach(['sixel_dither_destroy' => 'Image::LibSIXEL::sixel_dither_destroy'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_dither_ref' => 'Image::LibSIXEL::sixel_dither_ref'] => ['opaque'] => 'void');
@@ -46,7 +48,10 @@ sub attach_all {
     $ffi->attach(['sixel_dither_set_clamp_policy' => 'Image::LibSIXEL::sixel_dither_set_clamp_policy'] => ['opaque', 'int', 'double'] => 'int');
     $ffi->attach(['sixel_dither_get_num_of_palette_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_palette_colors'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_dither_get_num_of_histogram_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_histogram_colors'] => ['opaque'] => 'int');
+    $ffi->attach(['sixel_dither_get_num_of_histgram_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_histgram_colors'] => ['opaque'] => 'int');
+    $ffi->attach(['sixel_dither_get_palette' => 'Image::LibSIXEL::sixel_dither_get_palette'] => ['opaque'] => 'opaque');
     $ffi->attach(['sixel_dither_set_palette' => 'Image::LibSIXEL::sixel_dither_set_palette'] => ['opaque', 'opaque'] => 'void');
+    $ffi->attach(['sixel_dither_set_complexion_score' => 'Image::LibSIXEL::sixel_dither_set_complexion_score'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_body_only' => 'Image::LibSIXEL::sixel_dither_set_body_only'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_optimize_palette' => 'Image::LibSIXEL::sixel_dither_set_optimize_palette'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_pixelformat' => 'Image::LibSIXEL::sixel_dither_set_pixelformat'] => ['opaque', 'int'] => 'void');
@@ -59,6 +64,7 @@ sub attach_all {
     $ffi->attach(['sixel_decode_pixels_body_mapped' => 'Image::LibSIXEL::sixel_decode_pixels_body_mapped'] => ['opaque', 'int', 'opaque', 'int', 'opaque', 'opaque', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_decode_pixels' => 'Image::LibSIXEL::sixel_decode_pixels'] => ['opaque', 'int', 'int', 'int', 'opaque'] => 'int');
     $ffi->attach(['sixel_decode_pixels_body' => 'Image::LibSIXEL::sixel_decode_pixels_body'] => ['opaque', 'int', 'opaque', 'int', 'int', 'int', 'opaque'] => 'int');
+    $ffi->attach(['sixel_decode' => 'Image::LibSIXEL::sixel_decode'] => ['opaque', 'int', 'opaque*', 'opaque', 'opaque', 'opaque*', 'opaque', 'int'] => 'int');
     $ffi->attach(['sixel_tty_init_output_device' => 'Image::LibSIXEL::sixel_tty_init_output_device'] => ['int'] => 'void');
     $ffi->attach(['sixel_helper_set_additional_message' => 'Image::LibSIXEL::sixel_helper_set_additional_message'] => ['string'] => 'void');
     $ffi->attach(['sixel_helper_get_additional_message' => 'Image::LibSIXEL::sixel_helper_get_additional_message'] => [] => 'string');
@@ -69,6 +75,7 @@ sub attach_all {
     $ffi->attach(['sixel_helper_convert_colorspace' => 'Image::LibSIXEL::sixel_helper_convert_colorspace'] => ['opaque', 'int', 'int', 'int', 'int'] => 'int');
     $ffi->attach(['sixel_option_apply_cli_suggestion_defaults' => 'Image::LibSIXEL::sixel_option_apply_cli_suggestion_defaults'] => [] => 'void');
     $ffi->attach(['sixel_frame_new' => 'Image::LibSIXEL::_sixel_frame_new'] => ['opaque*', 'opaque'] => 'int');
+    $ffi->attach(['sixel_frame_create' => 'Image::LibSIXEL::sixel_frame_create'] => [] => 'opaque');
     $ffi->attach(['sixel_frame_ref' => 'Image::LibSIXEL::sixel_frame_ref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_frame_unref' => 'Image::LibSIXEL::sixel_frame_unref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_frame_init' => 'Image::LibSIXEL::sixel_frame_init'] => ['opaque', 'opaque', 'int', 'int', 'int', 'opaque', 'int'] => 'int');
@@ -108,13 +115,16 @@ sub attach_all {
     $ffi->attach(['sixel_loader_unref' => 'Image::LibSIXEL::sixel_loader_unref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_loader_setopt' => 'Image::LibSIXEL::_sixel_loader_setopt'] => ['opaque', 'int', 'opaque'] => 'int');
     $ffi->attach(['sixel_loader_load_file' => 'Image::LibSIXEL::_sixel_loader_load_file'] => ['opaque', 'string', 'sixel_loader_callback_t'] => 'int');
+    $ffi->attach(['sixel_helper_load_image_file' => 'Image::LibSIXEL::sixel_helper_load_image_file'] => ['string', 'int', 'int', 'int', 'opaque', 'int', 'sixel_loader_callback_t', 'int', 'opaque', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_helper_get_available_loader_names' => 'Image::LibSIXEL::sixel_helper_get_available_loader_names'] => ['opaque*', 'int'] => 'int');
     $ffi->attach(['sixel_probe_is_probable' => 'Image::LibSIXEL::sixel_probe_is_probable'] => ['opaque', 'int'] => 'int');
     $ffi->attach(['sixel_parse_header' => 'Image::LibSIXEL::sixel_parse_header'] => ['opaque', 'int', 'opaque*', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_helper_write_image_file' => 'Image::LibSIXEL::sixel_helper_write_image_file'] => ['opaque', 'int', 'int', 'opaque', 'int', 'string', 'int', 'opaque'] => 'int');
     $ffi->attach(['sixel_encoder_new' => 'Image::LibSIXEL::_sixel_encoder_new'] => ['opaque*', 'opaque'] => 'int');
+    $ffi->attach(['sixel_encoder_create' => 'Image::LibSIXEL::sixel_encoder_create'] => [] => 'opaque');
     $ffi->attach(['sixel_encoder_ref' => 'Image::LibSIXEL::sixel_encoder_ref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_encoder_unref' => 'Image::LibSIXEL::_sixel_encoder_unref'] => ['opaque'] => 'void');
+    $ffi->attach(['sixel_encoder_set_cancel_flag' => 'Image::LibSIXEL::sixel_encoder_set_cancel_flag'] => ['opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_encoder_set_cancel_callback' => 'Image::LibSIXEL::sixel_encoder_set_cancel_callback'] => ['opaque', 'int', 'opaque'] => 'int');
     $ffi->attach(['sixel_encoder_set_accumulation_buffer' => 'Image::LibSIXEL::sixel_encoder_set_accumulation_buffer'] => ['opaque', 'opaque', 'int', 'int', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_set_6delta_plane_size' => 'Image::LibSIXEL::sixel_encoder_set_6delta_plane_size'] => ['opaque', 'int', 'int'] => 'int');
@@ -123,6 +133,7 @@ sub attach_all {
     $ffi->attach(['sixel_encoder_set_6delta_threshold_limit' => 'Image::LibSIXEL::sixel_encoder_set_6delta_threshold_limit'] => ['opaque', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_needs_6delta_refinement' => 'Image::LibSIXEL::sixel_encoder_needs_6delta_refinement'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_encoder_get_6delta_painted_pixels' => 'Image::LibSIXEL::sixel_encoder_get_6delta_painted_pixels'] => ['opaque'] => 'int');
+    $ffi->attach(['sixel_encoder_set_reserved_palette' => 'Image::LibSIXEL::sixel_encoder_set_reserved_palette'] => ['opaque', 'opaque', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_setopt' => 'Image::LibSIXEL::_sixel_encoder_setopt'] => ['opaque', 'int', 'string'] => 'int');
     $ffi->attach(['sixel_encoder_encode' => 'Image::LibSIXEL::_sixel_encoder_encode'] => ['opaque', 'string'] => 'int');
     $ffi->attach(['sixel_encoder_encode_frame' => 'Image::LibSIXEL::sixel_encoder_encode_frame'] => ['opaque', 'opaque', 'opaque'] => 'int');
@@ -144,6 +155,7 @@ sub attach_all {
     $ffi->attach(['sixel_progressive_unref' => 'Image::LibSIXEL::sixel_progressive_unref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_encoder_encode_bytes' => 'Image::LibSIXEL::sixel_encoder_encode_bytes'] => ['opaque', 'opaque', 'int', 'int', 'int', 'opaque', 'int'] => 'int');
     $ffi->attach(['sixel_decoder_new' => 'Image::LibSIXEL::_sixel_decoder_new'] => ['opaque*', 'opaque'] => 'int');
+    $ffi->attach(['sixel_decoder_create' => 'Image::LibSIXEL::sixel_decoder_create'] => [] => 'opaque');
     $ffi->attach(['sixel_decoder_ref' => 'Image::LibSIXEL::sixel_decoder_ref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_decoder_unref' => 'Image::LibSIXEL::_sixel_decoder_unref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_decoder_setopt' => 'Image::LibSIXEL::_sixel_decoder_setopt'] => ['opaque', 'int', 'string'] => 'int');

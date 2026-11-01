@@ -16,10 +16,18 @@ open my $in, '<', $in_h or die "cannot open $in_h: $!\n";
 my $text = do { local $/; <$in> };
 close $in;
 
-# Remove comments and configure placeholder attributes to simplify parsing.
+# Remove comments and both forms of declaration attributes. Configured
+# headers contain compiler attributes instead of @attr_*@ placeholders;
+# leaving their parentheses in place makes the declaration parser skip APIs.
+# Balance nested arguments and quoted messages, including parentheses inside
+# a deprecation message, without consuming the following C declaration.
 $text =~ s{/\*.*?\*/}{}gs;
 $text =~ s{//.*$}{}mg;
 $text =~ s/\@attr_[^@]+\@//g;
+$text =~ s{
+    \b(?:__attribute__|__declspec)\s*
+    (\((?:[^()"']+|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|(?1))*\))
+}{}gx;
 
 my %callback_types = (
     sixel_write_function      => 'sixel_write_callback_t',

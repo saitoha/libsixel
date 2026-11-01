@@ -1,35 +1,28 @@
 #!/usr/bin/env perl
 
 use strict;
-use warnings;
-
+use warnings FATAL => 'all';
 use Test::More;
-
-my $loaded = eval {
-    require Image::LibSIXEL;
-    1;
-};
-if (!$loaded) {
-    plan skip_all => "libsixel perl binding failed to load: $@";
-}
+use Image::LibSIXEL;
+use FFI::Platypus::Buffer qw(scalar_to_buffer buffer_to_scalar);
 
 plan tests => 1;
 
 my $ok = eval {
     my $dither = Image::LibSIXEL::sixel_dither_new(2, undef);
-    Image::LibSIXEL::sixel_dither_set_palette(
-        $dither,
-        pack('C*', 0, 0, 0, 255, 255, 255)
+    my $input = pack('C*', 0, 127, 255, 255, 0, 128);
+    my ($pointer) = scalar_to_buffer($input);
+    Image::LibSIXEL::sixel_dither_set_palette($dither, $pointer);
+    # The borrowed pointer is binary data, not a NUL-terminated string.
+    # Copy the exact palette length before releasing its owning dither.
+    my $actual = buffer_to_scalar(
+        Image::LibSIXEL::sixel_dither_get_palette($dither), 6
     );
-    my $palette = Image::LibSIXEL::sixel_dither_get_palette($dither);
-    my $colors = Image::LibSIXEL::sixel_dither_get_num_of_palette_colors($dither);
     Image::LibSIXEL::sixel_dither_unref($dither);
-    die 'dither palette getter returned null pointer'
-        if !defined($palette) || !$palette;
-    die "dither palette color count was not updated: $colors"
-        if $colors < 2;
+    die 'palette bytes changed during setter/getter round trip'
+        if $actual ne pack('C*', 0, 127, 255, 255, 0, 128);
     1;
 };
 
-ok($ok, 'dither set_palette and palette getter are callable');
+ok($ok, 'palette round trip preserves embedded NUL and high bytes');
 diag($@) if !$ok && $@ ne '';

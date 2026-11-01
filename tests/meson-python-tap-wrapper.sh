@@ -316,7 +316,7 @@ if test ! -f "$perl_venv_exports_file"; then
     venv_progress perl "acquired lock; resolving test venv"
     perl_venv_exports="$("$TOP_SRCDIR"/build-aux/resolve-perl-test-venv.sh \
       "${ENABLE_PERL:-0}" "${SIXEL_CONFIGURED_PERL:-}" \
-      "$TOP_SRCDIR/perl" "$MESON_BUILD_ROOT/src/.libs" \
+      "$TOP_SRCDIR/perl" "$MESON_BUILD_ROOT/src" \
       "$MESON_BUILD_ROOT/tests/.perl-test-venv")"
     printf '%s\n' "$perl_venv_exports" > "$perl_venv_exports_file"
     rmdir "$perl_venv_lock_dir"

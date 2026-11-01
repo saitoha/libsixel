@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test for TGA chain: gd failure reaches builtin.
+# A valid paletted TGA recovers through builtin after a GD decode error.
 
 set -eux
 
@@ -16,31 +16,25 @@ test "${HAVE_DECL_GDIMAGECREATEFROMTGAPTR-}" = 1 || {
 echo "1..1"
 set -v
 
-input_tga="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type2-rgb.tga"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable \
-    "${input_tga}" >/dev/null || {
-    printf "ok 1 # SKIP builtin loader cannot decode TGA in this runtime\n"
-    exit 0
-}
-
-trace_log=$(set +xv; head -c 64 "${input_tga}" | \
-    SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable - \
+    < "${TOP_SRCDIR}/tests/data/inputs/formats/tga-pal-rgba-2x2-top-left.tga" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - gd,builtin chain failed for truncated TGA"
+    echo "not ok 1 - gd,builtin chain failed for valid paletted TGA"
     exit 0
 }
 
-case "${trace_log}" in *LSXLOAD1\|event=fail\|loader=gd\|code=L_ERR_GD**) true ;; *) false ;; esac || {
-    echo "not ok 1 - gd failure code was not reported"
+# A future GD implementation may decode this format itself. That does not
+# exercise fallback and must not be reported as a passing fallback test.
+case "${trace_log}" in *"LSXLOAD1|event=ok|loader=gd|code=L_OK"*) false ;; *) true ;; esac || {
+    echo "ok 1 # SKIP GD supports paletted TGA without fallback"
     exit 0
 }
 
-case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*LSXLOAD1\|event=ok\|loader=builtin\|code=L_OK**) true ;; *) false ;; esac || {
+case "${trace_log}" in *"LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD"*"LSXLOAD1|event=try|loader=builtin|code=L_TRY"*"LSXLOAD1|event=ok|loader=builtin|code=L_OK"*) true ;; *) false ;; esac || {
     echo "not ok 1 - builtin success code was not reported after gd"
     exit 0
 }
 
-echo "ok 1 - truncated TGA reaches builtin after gd failure"
+echo "ok 1 - valid paletted TGA succeeds through builtin after GD error"
 exit 0

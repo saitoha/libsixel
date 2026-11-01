@@ -261,6 +261,7 @@ run_loader_plugin_integration(void)
     gchar *stdout_data;
     gchar *stderr_data;
     gchar **argv;
+    gchar **environment;
     gboolean ok;
     int status;
     gboolean has_dylib;
@@ -308,13 +309,18 @@ run_loader_plugin_integration(void)
     img2sixel_path = plugin_resolve_build_path("converters/img2sixel");
     snake_path = plugin_resolve_source_path("tests/data/inputs/snake_64.six");
 
-    argv = g_new0(gchar *, 6);
+    argv = g_new0(gchar *, 5);
     argv[0] = img2sixel_path;
     argv[1] = snake_path;
     argv[2] = g_strdup("-Lgdk-pixbuf2");
     argv[3] = g_strdup("-o/dev/null");
-    argv[4] = g_strdup("-v");
-    argv[5] = NULL;
+    argv[4] = NULL;
+
+    /* Request loader evidence in the child; verbose output covers other
+     * topics and cannot establish which loader actually decoded the input. */
+    environment = g_get_environ();
+    environment = g_environ_setenv(environment, "SIXEL_TRACE_TOPIC",
+                                  "loader", TRUE);
 
     stdout_data = NULL;
     stderr_data = NULL;
@@ -322,7 +328,7 @@ run_loader_plugin_integration(void)
 
     ok = g_spawn_sync(NULL,
                       argv,
-                      NULL,
+                      environment,
                       G_SPAWN_SEARCH_PATH,
                       NULL,
                       NULL,
@@ -339,12 +345,13 @@ run_loader_plugin_integration(void)
                    stderr_data != NULL ? stderr_data : "<none>");
 
     if (stderr_data == NULL ||
-        g_strstr_len(stderr_data, -1, "loader gdk-pixbuf2 succeeded") ==
-            NULL) {
+        g_strstr_len(stderr_data, -1,
+            "LSXLOAD1|event=ok|loader=gdk-pixbuf2|code=L_OK") == NULL) {
         g_error("missing loader success marker");
     }
 
     g_strfreev(argv);
+    g_strfreev(environment);
     g_free(stdout_data);
     g_free(stderr_data);
 

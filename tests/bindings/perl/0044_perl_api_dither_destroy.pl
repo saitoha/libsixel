@@ -1,24 +1,15 @@
 #!/usr/bin/env perl
 
 use strict;
-use warnings;
-
+use warnings FATAL => 'all';
 use Test::More;
-
-my $loaded = eval {
-    require Image::LibSIXEL;
-    1;
-};
-if (!$loaded) {
-    plan skip_all => "libsixel perl binding failed to load: $@";
-}
+use Image::LibSIXEL;
 
 plan tests => 1;
 
 my $ok = eval {
-    my $dither = Image::LibSIXEL::sixel_dither_create(16);
-    die 'sixel_dither_create returned null pointer'
-        if !defined($dither) || !$dither;
+    # Use the supported constructor so this case isolates the destroy API.
+    my $dither = Image::LibSIXEL::sixel_dither_new(2, undef);
     Image::LibSIXEL::sixel_dither_destroy($dither);
     1;
 };
