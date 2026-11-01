@@ -38,3 +38,12 @@ sixel_filter_gamut_init(sixel_filter_t *filter,
     sixel_filter_gamut_config_t const *config);
 
 #endif
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
