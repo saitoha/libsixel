@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/output/gamut-mapping.md
 # Defensive coverage for the packed float gamut adapter.
 set -eux
 echo "1..1"

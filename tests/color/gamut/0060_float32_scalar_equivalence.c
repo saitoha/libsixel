@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT
+ * Policy: docs/encoder/output/gamut-mapping.md
  * The plane fast path must match scalar arithmetic bit for bit. Exercise
  * destination matrices, source workspaces and both sides of gamut edges. */
 #include "../../_support/processing/gamut/gamut_test_common.h"
@@ -58,11 +59,21 @@ test_gamut_0060_float32_scalar_equivalence(int argc, char **argv)
                     }
                     for (c = 0; c < 3; ++c) {
                         pixels[i * 3 + c] = (float)input[c];
+                    }
+                }
+                /* Read the completed float plane in a separate pass. GCC
+                 * loop vectorization can forward the unrounded double if
+                 * the float store and reload share the conversion loop. */
+                for (i = 0; ok && i < 259; ++i) {
+                    for (c = 0; c < 3; ++c) {
                         input[c] = pixels[i * 3 + c];
                     }
                     ok = ok && sixel_gamut_apply(fixture.mapper, input,
                         output, spaces[space]);
                     if (!ok) {
+                        fprintf(stderr, "scalar rejected sample %lu: "
+                            "%a %a %a\n", (unsigned long)i,
+                            input[0], input[1], input[2]);
                         break;
                     }
                     for (c = 0; c < 3; ++c) {
@@ -71,7 +82,20 @@ test_gamut_0060_float32_scalar_equivalence(int argc, char **argv)
                 }
                 ok = ok && SIXEL_SUCCEEDED(sixel_gamut_apply_float32(
                     fixture.mapper, pixels, 259, spaces[space], NULL, 0));
-                ok = ok && memcmp(pixels, expected, sizeof(pixels)) == 0;
+                if (ok) {
+                    for (i = 0; i < 259 * 3; ++i) {
+                        if (memcmp(&pixels[i], &expected[i],
+                                sizeof(pixels[i])) != 0) {
+                            fprintf(stderr,
+                                "sample %lu channel %lu: %a != %a\n",
+                                (unsigned long)(i / 3),
+                                (unsigned long)(i % 3),
+                                (double)pixels[i], (double)expected[i]);
+                            ok = 0;
+                            break;
+                        }
+                    }
+                }
                 if (!ok) {
                     fprintf(stderr, "plane/scalar mismatch: %d/%d/%d\n",
                         destination, policy, space);
