@@ -73,7 +73,7 @@ For commands and the complete option inventory, use the repository's [build guid
 | Configured headers and package metadata | `config.status`, `include/Makefile.am` | `configure_file()`, `include/meson.build` | Public header and pkg-config templates |
 | Library and program build graph | Root and per-directory `Makefile.am`, Libtool | Root and per-directory `meson.build` | C and Objective-C sources |
 | Embedded completion and amalgamation | Generated-file rules and `BUILT_SOURCES` | `custom_target()` and target dependencies | Completion generator and `tools/gen-amalgamation.sh` |
-| Runtime test discovery | Configure-time `SIXEL_CHECK_TESTS`, or an OpenVMS list file | Setup-time `run_command()` | `build-aux/read-check-test-list.sh` |
+| Runtime test discovery | Make-time inventory, or an OpenVMS list refreshed before execution | Setup-time `run_command()` | `build-aux/read-check-test-list.sh` |
 | Runtime test execution | Custom `check-TESTS`, `.log` rules, `lso-tap-driver.sh` | Meson `test()` with TAP and a shell wrapper | Individual test scripts, C dispatch names, feature exports, binding environment helpers |
 | Repository invariant checks | `make staticcheck` | `meson compile -C builddir staticcheck` | `tests/_static/sh/staticcheck-suite.sh` |
 | HTML documentation | `make docs` | `meson compile -C builddir docs` | `tools/build-docs`, `docs/README.md`, MkDocs hook |

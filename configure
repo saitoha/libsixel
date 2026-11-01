@@ -764,7 +764,6 @@ HAVE_RUBY_TRUE
 ENABLE_PERL
 ENABLE_PHP
 ENABLE_RUBY
-SIXEL_CHECK_TESTS
 PERL
 PHP
 RUBY_SITE_LIBDIR
@@ -29895,42 +29894,6 @@ then :
   ENABLE_PERL=1
 
 fi
-
-SIXEL_CHECK_TESTS=
-if test x$enable_tests != xno
-then :
-
-  sixel_ruby_tests_mode=include
-  if test "x$sixel_openvms_mode" = "xyes"
-then :
-
-    SIXEL_CHECK_TESTS=
-    as_dir=tests; as_fn_mkdir_p
-    $SHELL "$srcdir/build-aux/read-check-test-list.sh" \
-        tests "$srcdir/tests" "$sixel_ruby_tests_mode" newline \
-        > tests/check-tests.list ||
-      as_fn_error $? "could not create tests/check-tests.list" "$LINENO" 5
-
-else case e in #(
-  e)
-    # Autoconf serializes each substituted line in 148-character chunks.
-    # A single line containing the entire inventory makes that sed loop
-    # repeatedly scan a shrinking, very large string.  Keep one path per
-    # line and join them with make continuations to preserve TESTS ordering.
-    SIXEL_CHECK_TESTS=$($SHELL "$srcdir/build-aux/read-check-test-list.sh" \
-        tests "$srcdir/tests" "$sixel_ruby_tests_mode" newline) ||
-      as_fn_error $? "could not discover tests" "$LINENO" 5
-    SIXEL_CHECK_TESTS=$(printf '%s\n' "$SIXEL_CHECK_TESTS" | \
-        sed '$!s/$/ \\/')
-   ;;
-esac
-fi
-
-fi
-
-# Only tests/Makefile.am consumes this substitution directly.  Suppress the
-# unused assignment that Automake otherwise emits into every Makefile.
-
 
 
 

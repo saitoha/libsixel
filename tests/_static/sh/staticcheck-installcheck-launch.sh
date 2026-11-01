@@ -23,7 +23,8 @@ BEGIN {
     print "SIXEL_INSTALL_LIBDIR = ."
     print "abs_top_builddir = ."
 }
-/^override TESTS :=/ { print }
+# Discovery has its own tests; retain only the installed-selection rule.
+/^override TESTS :=/ && /SIXEL_INSTALLCHECK_GENERIC/ { print }
 /^installcheck-local:/ { recipe = 1 }
 recipe && /^# Override check-TESTS/ { recipe = 0 }
 recipe { gsub(/@EXEEXT@/, ""); print }

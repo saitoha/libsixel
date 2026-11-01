@@ -89,7 +89,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
+TESTS =
 check_PROGRAMS = test_runner$(EXEEXT)
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_1 = HAVE_QUICKLOOK_EXTENSION=1; export HAVE_QUICKLOOK_EXTENSION;
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@am__append_2 = HAVE_QUICKLOOK_EXTENSION=0; export HAVE_QUICKLOOK_EXTENSION;
@@ -12936,9 +12936,9 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-# OpenVMS record-oriented files can reject the full test list when
-# config.status writes it as one substituted line.  Avoid feeding the large
-# list to Automake variables on that platform; check-TESTS reads this file.
+# Keep OpenVMS inventories line-oriented: its make and RMS record limits
+# cannot accommodate the complete list in a make variable.  The check target
+# refreshes this file before launching workers, independently of configure.
 @OPENVMS_GNV_TRUE@OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
@@ -21552,7 +21552,15 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/edge-reference.py \
 	data/color-numeric/edge-reference.h \
 	data/color-numeric/ray-reference.py \
-	data/color-numeric/ray-reference.h test-time-allowlist.tsv \
+	data/color-numeric/ray-reference.h build/discovery/fixture.py \
+	build/discovery/0001_added.py build/discovery/0002_renamed.py \
+	build/discovery/0003_removed.py \
+	build/discovery/0004_selection.py \
+	build/discovery/0005_empty_selection.py \
+	build/discovery/0006_scan_failure.py \
+	build/discovery/0007_openvms_refresh.py \
+	build/discovery/0008_openvms_failure.py \
+	test-time-allowlist.tsv \
 	build/install/0001_pkgconfig_headers.py \
 	tools/child-time/0001_marker_backpressure.py \
 	extension/quicklook-lifecycle/private-user.inc.h \
@@ -96382,9 +96390,16 @@ uninstall-am:
 # experiments, but the extra GNV process and file I/O overhead is slower on the
 # current runner.
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 1
+# Discover once per make invocation, from the source tree even in VPATH
+# builds.  Preserve command-line TESTS selections, including an empty list.
+# The raw override is emitted after srcdir and before the custom log target;
+# no inventory passes through configure or recursive make arguments.
+@OPENVMS_GNV_FALSE@override TESTS := $(if $(filter file,$(origin TESTS)),$(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" tests "$(srcdir)" include newline || echo __SIXEL_TEST_DISCOVERY_FAILED__),$(TESTS))
 # Keep the installed-command selection inside make, including caller-supplied
 # TESTS. Passing the filtered inventory to recursive make exceeds argv limits.
-override TESTS := $(if $(filter 1,$(SIXEL_INSTALLCHECK_GENERIC)),$(filter-out extension/quicklook-installed/%,$(TESTS)),$(TESTS))
+# GNU make 3.81 has no .SHELLSTATUS; an explicit marker propagates scan
+# failures instead of silently accepting an empty or partial test suite.
+override TESTS := $(if $(filter __SIXEL_TEST_DISCOVERY_FAILED__,$(TESTS)),$(error could not discover tests in $(srcdir)),$(if $(filter 1,$(SIXEL_INSTALLCHECK_GENERIC)),$(filter-out extension/quicklook-installed/%,$(TESTS)),$(TESTS)))
 SIXEL_INSTALLCHECK ?= 0
 # The static suite and nested helpers need the same configured utility.
 export CKSUM
@@ -97475,7 +97490,12 @@ sixel-check-test-tools:
 @WANT_SIXEL2PNG_TRUE@	@set -eu; \
 @WANT_SIXEL2PNG_TRUE@	$(MAKE) -C "$(top_builddir)/converters" sixel2png@EXEEXT@
 
-@OPENVMS_GNV_TRUE@sixel-check-test-logs: sixel-check-test-tools
+@OPENVMS_GNV_TRUE@.PHONY: sixel-check-test-list
+@OPENVMS_GNV_TRUE@sixel-check-test-list:
+@OPENVMS_GNV_TRUE@	@$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+@OPENVMS_GNV_TRUE@	    tests "$(srcdir)" include newline > "$(OPENVMS_CHECK_TESTS_LIST)"
+
+@OPENVMS_GNV_TRUE@sixel-check-test-logs: sixel-check-test-tools sixel-check-test-list
 @OPENVMS_GNV_TRUE@	@set -eu; \
 @OPENVMS_GNV_TRUE@	jobs='$(OPENVMS_TEST_JOBS)'; \
 @OPENVMS_GNV_TRUE@	case "$$jobs" in \

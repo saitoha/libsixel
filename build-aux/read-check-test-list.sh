@@ -50,25 +50,31 @@ esac
 # Run the scan from tests_dir and emit normalized relative paths.
 # This avoids platform-specific absolute path forms (for example C:/...)
 # from leaking into Meson test names where ':' is deprecated.
-(
-    cd "$tests_dir"
-    find . \
-        \( \
-            -path './.perl-test-venv' -o \
-            -path './.php-test-venv' -o \
-            -path './.python-test-venv' -o \
-            -path './.ruby-test-venv' -o \
-            -path './_artifacts' \
-        \) -prune -o \
-        -type f \( \
-        -name '*.t' -o \
-        -path './bindings/php/[0-9][0-9][0-9][0-9]_*.php' -o \
-        -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' -o \
-        -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' -o \
-        -path './bindings/perl/[0-9][0-9][0-9][0-9]_*.pl' \
-        \) -print
-) |
-    LC_ALL=C sort |
+# POSIX shells lack pipefail.  Pass scan/sort failures through the stream so
+# the final awk cannot turn a partial inventory into a successful result.
+{
+    (
+        cd "$tests_dir" || exit 1
+        find . \
+            \( \
+                -path './.perl-test-venv' -o \
+                -path './.php-test-venv' -o \
+                -path './.python-test-venv' -o \
+                -path './.ruby-test-venv' -o \
+                -path './_artifacts' \
+            \) -prune -o \
+            -type f \( \
+            -name '*.t' -o \
+            -path './bindings/php/[0-9][0-9][0-9][0-9]_*.php' -o \
+            -path './bindings/python/[0-9][0-9][0-9][0-9]_*.py' -o \
+            -path './bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb' -o \
+            -path './bindings/perl/[0-9][0-9][0-9][0-9]_*.pl' \
+            \) -print
+    ) || printf '%s\n' __SIXEL_TEST_DISCOVERY_FAILED__
+} |
+{
+    LC_ALL=C sort || printf '%s\n' __SIXEL_TEST_DISCOVERY_FAILED__
+} |
     awk -v ruby_tests_mode="$ruby_tests_mode" \
         -v output_mode="$output_mode" '
         function emit_make_path(path) {
@@ -89,6 +95,10 @@ esac
             if (output_mode == "make") {
                 printf "TESTS =\n"
             }
+        }
+        $0 == "__SIXEL_TEST_DISCOVERY_FAILED__" {
+            failed = 1
+            next
         }
         {
             path = $0
@@ -134,6 +144,9 @@ esac
             }
         }
         END {
+            if (failed) {
+                exit 1
+            }
             if (output_mode == "make" && make_line_len != 0) {
                 printf "\n"
             } else if (output_mode != "newline") {

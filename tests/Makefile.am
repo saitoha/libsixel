@@ -10,9 +10,9 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 endif
-# OpenVMS record-oriented files can reject the full test list when
-# config.status writes it as one substituted line.  Avoid feeding the large
-# list to Automake variables on that platform; check-TESTS reads this file.
+# Keep OpenVMS inventories line-oriented: its make and RMS record limits
+# cannot accommodate the complete list in a make variable.  The check target
+# refreshes this file before launching workers, independently of configure.
 if OPENVMS_GNV
 OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
 # Keep the default serialized on OpenVMS.  N=2 sharding is still available for
@@ -21,13 +21,22 @@ OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
 OPENVMS_TEST_JOBS ?= 1
 OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
 OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
+endif
+# Leave Automake's static inventory empty.  It otherwise treats shell words
+# in TESTS as literal test names and emits bogus per-test log rules.
 TESTS =
-else
-TESTS = @SIXEL_CHECK_TESTS@
+if !OPENVMS_GNV
+# Discover once per make invocation, from the source tree even in VPATH
+# builds.  Preserve command-line TESTS selections, including an empty list.
+# The raw override is emitted after srcdir and before the custom log target;
+# no inventory passes through configure or recursive make arguments.
+override TESTS := $(if $(filter file,$(origin TESTS)),$(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" tests "$(srcdir)" include newline || echo __SIXEL_TEST_DISCOVERY_FAILED__),$(TESTS))
 endif
 # Keep the installed-command selection inside make, including caller-supplied
 # TESTS. Passing the filtered inventory to recursive make exceeds argv limits.
-override TESTS := $(if $(filter 1,$(SIXEL_INSTALLCHECK_GENERIC)),$(filter-out extension/quicklook-installed/%,$(TESTS)),$(TESTS))
+# GNU make 3.81 has no .SHELLSTATUS; an explicit marker propagates scan
+# failures instead of silently accepting an empty or partial test suite.
+override TESTS := $(if $(filter __SIXEL_TEST_DISCOVERY_FAILED__,$(TESTS)),$(error could not discover tests in $(srcdir)),$(if $(filter 1,$(SIXEL_INSTALLCHECK_GENERIC)),$(filter-out extension/quicklook-installed/%,$(TESTS)),$(TESTS)))
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
@@ -9555,7 +9564,12 @@ if WANT_SIXEL2PNG
 endif
 
 if OPENVMS_GNV
-sixel-check-test-logs: sixel-check-test-tools
+.PHONY: sixel-check-test-list
+sixel-check-test-list:
+	@$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+	    tests "$(srcdir)" include newline > "$(OPENVMS_CHECK_TESTS_LIST)"
+
+sixel-check-test-logs: sixel-check-test-tools sixel-check-test-list
 	@set -eu; \
 	jobs='$(OPENVMS_TEST_JOBS)'; \
 	case "$$jobs" in \
@@ -10536,6 +10550,16 @@ EXTRA_DIST += data/color-numeric/edge-reference.py \
 
 EXTRA_DIST += data/color-numeric/ray-reference.py \
     data/color-numeric/ray-reference.h
+
+EXTRA_DIST += build/discovery/fixture.py \
+    build/discovery/0001_added.py \
+    build/discovery/0002_renamed.py \
+    build/discovery/0003_removed.py \
+    build/discovery/0004_selection.py \
+    build/discovery/0005_empty_selection.py \
+    build/discovery/0006_scan_failure.py \
+    build/discovery/0007_openvms_refresh.py \
+    build/discovery/0008_openvms_failure.py
 
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv

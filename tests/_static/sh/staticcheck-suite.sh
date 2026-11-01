@@ -586,6 +586,38 @@ run_case_tap "staticcheck-test-log-cleanup" \
     "$src_root/tests/_static/sh/staticcheck-test-log-cleanup.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_plain "staticcheck-test-discovery-added" \
+    "$python_bin" "$src_root/tests/build/discovery/0001_added.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-renamed" \
+    "$python_bin" "$src_root/tests/build/discovery/0002_renamed.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-removed" \
+    "$python_bin" "$src_root/tests/build/discovery/0003_removed.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-selection" \
+    "$python_bin" "$src_root/tests/build/discovery/0004_selection.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-empty-selection" \
+    "$python_bin" "$src_root/tests/build/discovery/0005_empty_selection.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-scan-failure" \
+    "$python_bin" "$src_root/tests/build/discovery/0006_scan_failure.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-openvms-refresh" \
+    "$python_bin" "$src_root/tests/build/discovery/0007_openvms_refresh.py" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-openvms-failure" \
+    "$python_bin" "$src_root/tests/build/discovery/0008_openvms_failure.py" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-runner-link" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-link.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?
