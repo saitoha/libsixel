@@ -1748,7 +1748,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	delta/comparison/0014_filter_dither_6delta_diffusion_skip.c \
 	delta/comparison/0015_filter_gpu_6delta_disabled_reject.c \
 	delta/comparison/0016_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
-	delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
+	delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c \
 	encoder/pipeline/0040_filter_palette_failure_output.c \
 	encoder/pipeline/0041_filter_binning.c \
 	encoder/pipeline/0042_filter_binning_failure_output.c \
@@ -1814,6 +1814,31 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	delta/refresh/0022_partial_move_same_time.c \
 	delta/refresh/0023_partial_return.c \
 	delta/refresh/0024_partial_height.c \
+	delta/gpu-rectangle/0001_direct.c \
+	delta/gpu-rectangle/0002_eytzinger.c \
+	delta/gpu-rectangle/0003_blockcull.c \
+	delta/gpu-rectangle/0004_gridlut.c \
+	delta/gpu-rectangle/0005_ordered.c \
+	delta/gpu-rectangle/0006_arithmetic_a.c \
+	delta/gpu-rectangle/0007_arithmetic_x.c \
+	delta/gpu-rectangle/0008_bluenoise.c \
+	delta/gpu-rectangle/0009_skip_mask.c \
+	delta/gpu-rectangle/0010_rgb_upload.c \
+	delta/gpu-rectangle/0011_valid_upload.c \
+	delta/gpu-rectangle/0012_negative_origin.c \
+	delta/gpu-rectangle/0013_outside_canvas.c \
+	delta/gpu-rectangle/0014_short_rgb.c \
+	delta/gpu-rectangle/0015_short_valid.c \
+	delta/gpu-rectangle/0016_incomplete_shape.c \
+	delta/gpu-rectangle/0017_pixel_count.c \
+	delta/gpu-rectangle/0018_no_valid_mask.c \
+	delta/refresh/0025_gpu_direct.c delta/refresh/0026_gpu_ahead.c \
+	delta/refresh/0027_gpu_latest.c delta/refresh/0028_gpu_move.c \
+	delta/refresh/0029_gpu_failure.c \
+	delta/refresh/0030_gpu_return.c \
+	delta/gpu-rectangle/0019_auto_rectangle_cutoff.c \
+	delta/gpu-rectangle/0020_full_width_offset.c \
+	_support/processing/gpu-palette/rectangle_common.c \
 	_support/processing/delta-refresh/partial_test_common.c \
 	delta/refresh/0001_option_atomicity.c \
 	delta/refresh/0002_staggered_coverage.c \
@@ -5932,7 +5957,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0014_filter_dither_6delta_diffusion_skip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0015_filter_gpu_6delta_disabled_reject.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0016_filter_dither_6delta_bluenoise_gpu_exact_plane.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0040_filter_palette_failure_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0041_filter_binning.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0042_filter_binning_failure_output.$(OBJEXT) \
@@ -5996,6 +6021,33 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0022_partial_move_same_time.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0023_partial_return.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0024_partial_height.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0001_direct.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0002_eytzinger.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0003_blockcull.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0004_gridlut.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0005_ordered.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0006_arithmetic_a.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0007_arithmetic_x.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0008_bluenoise.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0009_skip_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0010_rgb_upload.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0011_valid_upload.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0012_negative_origin.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0013_outside_canvas.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0014_short_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0015_short_valid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0016_incomplete_shape.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0017_pixel_count.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0018_no_valid_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0025_gpu_direct.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0026_gpu_ahead.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0027_gpu_latest.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0028_gpu_move.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0029_gpu_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0030_gpu_return.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	delta/gpu-rectangle/test_runner-0020_full_width_offset.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-rectangle_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/delta-refresh/test_runner-partial_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0001_option_atomicity.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/refresh/test_runner-0002_staggered_coverage.$(OBJEXT) \
@@ -8941,6 +8993,7 @@ am__depfiles_remade =  \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po \
+	_support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-0035_blockcull_exact.Po \
@@ -9477,7 +9530,27 @@ am__depfiles_remade =  \
 	delta/comparison/$(DEPDIR)/test_runner-0014_filter_dither_6delta_diffusion_skip.Po \
 	delta/comparison/$(DEPDIR)/test_runner-0015_filter_gpu_6delta_disabled_reject.Po \
 	delta/comparison/$(DEPDIR)/test_runner-0016_filter_dither_6delta_bluenoise_gpu_exact_plane.Po \
-	delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po \
+	delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Po \
+	delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Po \
 	delta/output-representation/$(DEPDIR)/test_runner-0001_delta_plane_origin.Po \
 	delta/output-representation/$(DEPDIR)/test_runner-0002_delta_source_mask.Po \
 	delta/output-representation/$(DEPDIR)/test_runner-0003_delta_p3_or_recovery.Po \
@@ -9718,6 +9791,12 @@ am__depfiles_remade =  \
 	delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po \
 	delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po \
+	delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po \
 	delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po \
 	delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po \
 	delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po \
@@ -13487,6 +13566,33 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_PARTIAL_MOVE_SAME_TIME \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_PARTIAL_RETURN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_PARTIAL_HEIGHT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DIRECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_EYTZINGER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_BLOCKCULL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_GRIDLUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_ORDERED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_ARITHMETIC_A \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_ARITHMETIC_X \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_BLUENOISE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SKIP_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_RGB_UPLOAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_VALID_UPLOAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_NEGATIVE_ORIGIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_OUTSIDE_CANVAS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_SHORT_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_SHORT_VALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_INCOMPLETE_SHAPE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_PIXEL_COUNT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_NO_VALID_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_GPU_DIRECT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_GPU_AHEAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_GPU_LATEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_GPU_MOVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_GPU_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_GPU_RETURN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_AUTO_RECTANGLE_CUTOFF \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_FULL_WIDTH_OFFSET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RECTANGLE_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_PARTIAL_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_REFRESH_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
@@ -15315,7 +15421,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_FILTER_DITHER_6DELTA_DIFFUSION_SKIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_FILTER_GPU_6DELTA_DISABLED_REJECT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_BLUENOISE_GPU_PARTIAL_PLANE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_FILTER_PALETTE_FAILURE_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0041_FILTER_BINNING \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0042_FILTER_BINNING_FAILURE_OUTPUT \
@@ -19232,7 +19338,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0014_filter_dither_6delta_diffusion_skip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0015_filter_gpu_6delta_disabled_reject.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0016_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0040_filter_palette_failure_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0041_filter_binning.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0042_filter_binning_failure_output.c \
@@ -19298,6 +19404,33 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0022_partial_move_same_time.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0023_partial_return.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0024_partial_height.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0001_direct.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0002_eytzinger.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0003_blockcull.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0004_gridlut.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0005_ordered.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0006_arithmetic_a.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0007_arithmetic_x.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0008_bluenoise.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0009_skip_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0010_rgb_upload.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0011_valid_upload.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0012_negative_origin.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0013_outside_canvas.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0014_short_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0015_short_valid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0016_incomplete_shape.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0017_pixel_count.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0018_no_valid_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0025_gpu_direct.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0026_gpu_ahead.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0027_gpu_latest.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0028_gpu_move.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0029_gpu_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0030_gpu_return.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0019_auto_rectangle_cutoff.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    delta/gpu-rectangle/0020_full_width_offset.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/rectangle_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/delta-refresh/partial_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0001_option_atomicity.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/refresh/0002_staggered_coverage.c \
@@ -27261,7 +27394,7 @@ delta/comparison/test_runner-0015_filter_gpu_6delta_disabled_reject.$(OBJEXT):  
 delta/comparison/test_runner-0016_filter_dither_6delta_bluenoise_gpu_exact_plane.$(OBJEXT):  \
 	delta/comparison/$(am__dirstamp) \
 	delta/comparison/$(DEPDIR)/$(am__dirstamp)
-delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.$(OBJEXT):  \
+delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.$(OBJEXT):  \
 	delta/comparison/$(am__dirstamp) \
 	delta/comparison/$(DEPDIR)/$(am__dirstamp)
 encoder/pipeline/test_runner-0040_filter_palette_failure_output.$(OBJEXT):  \
@@ -27459,6 +27592,93 @@ delta/refresh/test_runner-0023_partial_return.$(OBJEXT):  \
 delta/refresh/test_runner-0024_partial_height.$(OBJEXT):  \
 	delta/refresh/$(am__dirstamp) \
 	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/$(am__dirstamp):
+	@$(MKDIR_P) delta/gpu-rectangle
+	@: >>delta/gpu-rectangle/$(am__dirstamp)
+delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) delta/gpu-rectangle/$(DEPDIR)
+	@: >>delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0001_direct.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0002_eytzinger.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0003_blockcull.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0004_gridlut.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0005_ordered.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0006_arithmetic_a.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0007_arithmetic_x.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0008_bluenoise.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0009_skip_mask.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0010_rgb_upload.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0011_valid_upload.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0012_negative_origin.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0013_outside_canvas.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0014_short_rgb.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0015_short_valid.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0016_incomplete_shape.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0017_pixel_count.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0018_no_valid_mask.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0025_gpu_direct.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0026_gpu_ahead.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0027_gpu_latest.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0028_gpu_move.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0029_gpu_failure.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/refresh/test_runner-0030_gpu_return.$(OBJEXT):  \
+	delta/refresh/$(am__dirstamp) \
+	delta/refresh/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+delta/gpu-rectangle/test_runner-0020_full_width_offset.$(OBJEXT):  \
+	delta/gpu-rectangle/$(am__dirstamp) \
+	delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+_support/processing/gpu-palette/test_runner-rectangle_common.$(OBJEXT):  \
+	_support/processing/gpu-palette/$(am__dirstamp) \
+	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 _support/processing/delta-refresh/$(am__dirstamp):
 	@$(MKDIR_P) _support/processing/delta-refresh
 	@: >>_support/processing/delta-refresh/$(am__dirstamp)
@@ -35760,6 +35980,7 @@ mostlyclean-compile:
 	-rm -f decoder/raster/*.$(OBJEXT)
 	-rm -f delta/commit/*.$(OBJEXT)
 	-rm -f delta/comparison/*.$(OBJEXT)
+	-rm -f delta/gpu-rectangle/*.$(OBJEXT)
 	-rm -f delta/output-representation/*.$(OBJEXT)
 	-rm -f delta/palette/*.$(OBJEXT)
 	-rm -f delta/refresh/*.$(OBJEXT)
@@ -36229,6 +36450,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-0035_blockcull_exact.Po@am__quote@ # am--include-marker
@@ -36765,7 +36987,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/comparison/$(DEPDIR)/test_runner-0014_filter_dither_6delta_diffusion_skip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/comparison/$(DEPDIR)/test_runner-0015_filter_gpu_6delta_disabled_reject.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/comparison/$(DEPDIR)/test_runner-0016_filter_dither_6delta_bluenoise_gpu_exact_plane.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/output-representation/$(DEPDIR)/test_runner-0001_delta_plane_origin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/output-representation/$(DEPDIR)/test_runner-0002_delta_source_mask.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/output-representation/$(DEPDIR)/test_runner-0003_delta_p3_or_recovery.Po@am__quote@ # am--include-marker
@@ -37006,6 +37248,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0022_partial_move_same_time.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0023_partial_return.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0024_partial_height.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0001_defaults.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0002_option_routes.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@delta/residual/$(DEPDIR)/test_runner-0003_invalid_option_atomicity.Po@am__quote@ # am--include-marker
@@ -62145,19 +62393,19 @@ delta/comparison/test_runner-0016_filter_dither_6delta_bluenoise_gpu_exact_plane
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/comparison/test_runner-0016_filter_dither_6delta_bluenoise_gpu_exact_plane.obj `if test -f 'delta/comparison/0016_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; then $(CYGPATH_W) 'delta/comparison/0016_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; else $(CYGPATH_W) '$(srcdir)/delta/comparison/0016_filter_dither_6delta_bluenoise_gpu_exact_plane.c'; fi`
 
-delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.o: delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.o -MD -MP -MF delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.o `test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' || echo '$(srcdir)/'`delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' object='delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.o' libtool=no @AMDEPBACKSLASH@
+delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.o: delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.o -MD -MP -MF delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Tpo -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.o `test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c' || echo '$(srcdir)/'`delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Tpo delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c' object='delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.o `test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' || echo '$(srcdir)/'`delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.o `test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c' || echo '$(srcdir)/'`delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c
 
-delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj: delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj -MD -MP -MF delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj `if test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; then $(CYGPATH_W) 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; else $(CYGPATH_W) '$(srcdir)/delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Tpo delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c' object='delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj' libtool=no @AMDEPBACKSLASH@
+delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.obj: delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.obj -MD -MP -MF delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Tpo -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.obj `if test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c'; then $(CYGPATH_W) 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c'; else $(CYGPATH_W) '$(srcdir)/delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Tpo delta/comparison/$(DEPDIR)/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c' object='delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.obj `if test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; then $(CYGPATH_W) 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; else $(CYGPATH_W) '$(srcdir)/delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/comparison/test_runner-0017_filter_dither_6delta_bluenoise_gpu_partial_plane.obj `if test -f 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c'; then $(CYGPATH_W) 'delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c'; else $(CYGPATH_W) '$(srcdir)/delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c'; fi`
 
 encoder/pipeline/test_runner-0040_filter_palette_failure_output.o: encoder/pipeline/0040_filter_palette_failure_output.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0040_filter_palette_failure_output.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0040_filter_palette_failure_output.Tpo -c -o encoder/pipeline/test_runner-0040_filter_palette_failure_output.o `test -f 'encoder/pipeline/0040_filter_palette_failure_output.c' || echo '$(srcdir)/'`encoder/pipeline/0040_filter_palette_failure_output.c
@@ -63040,6 +63288,384 @@ delta/refresh/test_runner-0024_partial_height.obj: delta/refresh/0024_partial_he
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0024_partial_height.c' object='delta/refresh/test_runner-0024_partial_height.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0024_partial_height.obj `if test -f 'delta/refresh/0024_partial_height.c'; then $(CYGPATH_W) 'delta/refresh/0024_partial_height.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0024_partial_height.c'; fi`
+
+delta/gpu-rectangle/test_runner-0001_direct.o: delta/gpu-rectangle/0001_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0001_direct.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Tpo -c -o delta/gpu-rectangle/test_runner-0001_direct.o `test -f 'delta/gpu-rectangle/0001_direct.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0001_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0001_direct.c' object='delta/gpu-rectangle/test_runner-0001_direct.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0001_direct.o `test -f 'delta/gpu-rectangle/0001_direct.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0001_direct.c
+
+delta/gpu-rectangle/test_runner-0001_direct.obj: delta/gpu-rectangle/0001_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0001_direct.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Tpo -c -o delta/gpu-rectangle/test_runner-0001_direct.obj `if test -f 'delta/gpu-rectangle/0001_direct.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0001_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0001_direct.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0001_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0001_direct.c' object='delta/gpu-rectangle/test_runner-0001_direct.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0001_direct.obj `if test -f 'delta/gpu-rectangle/0001_direct.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0001_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0001_direct.c'; fi`
+
+delta/gpu-rectangle/test_runner-0002_eytzinger.o: delta/gpu-rectangle/0002_eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0002_eytzinger.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Tpo -c -o delta/gpu-rectangle/test_runner-0002_eytzinger.o `test -f 'delta/gpu-rectangle/0002_eytzinger.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0002_eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0002_eytzinger.c' object='delta/gpu-rectangle/test_runner-0002_eytzinger.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0002_eytzinger.o `test -f 'delta/gpu-rectangle/0002_eytzinger.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0002_eytzinger.c
+
+delta/gpu-rectangle/test_runner-0002_eytzinger.obj: delta/gpu-rectangle/0002_eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0002_eytzinger.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Tpo -c -o delta/gpu-rectangle/test_runner-0002_eytzinger.obj `if test -f 'delta/gpu-rectangle/0002_eytzinger.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0002_eytzinger.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0002_eytzinger.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0002_eytzinger.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0002_eytzinger.c' object='delta/gpu-rectangle/test_runner-0002_eytzinger.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0002_eytzinger.obj `if test -f 'delta/gpu-rectangle/0002_eytzinger.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0002_eytzinger.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0002_eytzinger.c'; fi`
+
+delta/gpu-rectangle/test_runner-0003_blockcull.o: delta/gpu-rectangle/0003_blockcull.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0003_blockcull.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Tpo -c -o delta/gpu-rectangle/test_runner-0003_blockcull.o `test -f 'delta/gpu-rectangle/0003_blockcull.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0003_blockcull.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0003_blockcull.c' object='delta/gpu-rectangle/test_runner-0003_blockcull.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0003_blockcull.o `test -f 'delta/gpu-rectangle/0003_blockcull.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0003_blockcull.c
+
+delta/gpu-rectangle/test_runner-0003_blockcull.obj: delta/gpu-rectangle/0003_blockcull.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0003_blockcull.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Tpo -c -o delta/gpu-rectangle/test_runner-0003_blockcull.obj `if test -f 'delta/gpu-rectangle/0003_blockcull.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0003_blockcull.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0003_blockcull.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0003_blockcull.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0003_blockcull.c' object='delta/gpu-rectangle/test_runner-0003_blockcull.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0003_blockcull.obj `if test -f 'delta/gpu-rectangle/0003_blockcull.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0003_blockcull.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0003_blockcull.c'; fi`
+
+delta/gpu-rectangle/test_runner-0004_gridlut.o: delta/gpu-rectangle/0004_gridlut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0004_gridlut.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Tpo -c -o delta/gpu-rectangle/test_runner-0004_gridlut.o `test -f 'delta/gpu-rectangle/0004_gridlut.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0004_gridlut.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0004_gridlut.c' object='delta/gpu-rectangle/test_runner-0004_gridlut.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0004_gridlut.o `test -f 'delta/gpu-rectangle/0004_gridlut.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0004_gridlut.c
+
+delta/gpu-rectangle/test_runner-0004_gridlut.obj: delta/gpu-rectangle/0004_gridlut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0004_gridlut.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Tpo -c -o delta/gpu-rectangle/test_runner-0004_gridlut.obj `if test -f 'delta/gpu-rectangle/0004_gridlut.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0004_gridlut.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0004_gridlut.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0004_gridlut.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0004_gridlut.c' object='delta/gpu-rectangle/test_runner-0004_gridlut.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0004_gridlut.obj `if test -f 'delta/gpu-rectangle/0004_gridlut.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0004_gridlut.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0004_gridlut.c'; fi`
+
+delta/gpu-rectangle/test_runner-0005_ordered.o: delta/gpu-rectangle/0005_ordered.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0005_ordered.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Tpo -c -o delta/gpu-rectangle/test_runner-0005_ordered.o `test -f 'delta/gpu-rectangle/0005_ordered.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0005_ordered.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0005_ordered.c' object='delta/gpu-rectangle/test_runner-0005_ordered.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0005_ordered.o `test -f 'delta/gpu-rectangle/0005_ordered.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0005_ordered.c
+
+delta/gpu-rectangle/test_runner-0005_ordered.obj: delta/gpu-rectangle/0005_ordered.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0005_ordered.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Tpo -c -o delta/gpu-rectangle/test_runner-0005_ordered.obj `if test -f 'delta/gpu-rectangle/0005_ordered.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0005_ordered.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0005_ordered.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0005_ordered.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0005_ordered.c' object='delta/gpu-rectangle/test_runner-0005_ordered.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0005_ordered.obj `if test -f 'delta/gpu-rectangle/0005_ordered.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0005_ordered.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0005_ordered.c'; fi`
+
+delta/gpu-rectangle/test_runner-0006_arithmetic_a.o: delta/gpu-rectangle/0006_arithmetic_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0006_arithmetic_a.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Tpo -c -o delta/gpu-rectangle/test_runner-0006_arithmetic_a.o `test -f 'delta/gpu-rectangle/0006_arithmetic_a.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0006_arithmetic_a.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0006_arithmetic_a.c' object='delta/gpu-rectangle/test_runner-0006_arithmetic_a.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0006_arithmetic_a.o `test -f 'delta/gpu-rectangle/0006_arithmetic_a.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0006_arithmetic_a.c
+
+delta/gpu-rectangle/test_runner-0006_arithmetic_a.obj: delta/gpu-rectangle/0006_arithmetic_a.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0006_arithmetic_a.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Tpo -c -o delta/gpu-rectangle/test_runner-0006_arithmetic_a.obj `if test -f 'delta/gpu-rectangle/0006_arithmetic_a.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0006_arithmetic_a.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0006_arithmetic_a.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0006_arithmetic_a.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0006_arithmetic_a.c' object='delta/gpu-rectangle/test_runner-0006_arithmetic_a.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0006_arithmetic_a.obj `if test -f 'delta/gpu-rectangle/0006_arithmetic_a.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0006_arithmetic_a.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0006_arithmetic_a.c'; fi`
+
+delta/gpu-rectangle/test_runner-0007_arithmetic_x.o: delta/gpu-rectangle/0007_arithmetic_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0007_arithmetic_x.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Tpo -c -o delta/gpu-rectangle/test_runner-0007_arithmetic_x.o `test -f 'delta/gpu-rectangle/0007_arithmetic_x.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0007_arithmetic_x.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0007_arithmetic_x.c' object='delta/gpu-rectangle/test_runner-0007_arithmetic_x.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0007_arithmetic_x.o `test -f 'delta/gpu-rectangle/0007_arithmetic_x.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0007_arithmetic_x.c
+
+delta/gpu-rectangle/test_runner-0007_arithmetic_x.obj: delta/gpu-rectangle/0007_arithmetic_x.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0007_arithmetic_x.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Tpo -c -o delta/gpu-rectangle/test_runner-0007_arithmetic_x.obj `if test -f 'delta/gpu-rectangle/0007_arithmetic_x.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0007_arithmetic_x.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0007_arithmetic_x.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0007_arithmetic_x.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0007_arithmetic_x.c' object='delta/gpu-rectangle/test_runner-0007_arithmetic_x.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0007_arithmetic_x.obj `if test -f 'delta/gpu-rectangle/0007_arithmetic_x.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0007_arithmetic_x.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0007_arithmetic_x.c'; fi`
+
+delta/gpu-rectangle/test_runner-0008_bluenoise.o: delta/gpu-rectangle/0008_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0008_bluenoise.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Tpo -c -o delta/gpu-rectangle/test_runner-0008_bluenoise.o `test -f 'delta/gpu-rectangle/0008_bluenoise.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0008_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0008_bluenoise.c' object='delta/gpu-rectangle/test_runner-0008_bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0008_bluenoise.o `test -f 'delta/gpu-rectangle/0008_bluenoise.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0008_bluenoise.c
+
+delta/gpu-rectangle/test_runner-0008_bluenoise.obj: delta/gpu-rectangle/0008_bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0008_bluenoise.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Tpo -c -o delta/gpu-rectangle/test_runner-0008_bluenoise.obj `if test -f 'delta/gpu-rectangle/0008_bluenoise.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0008_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0008_bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0008_bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0008_bluenoise.c' object='delta/gpu-rectangle/test_runner-0008_bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0008_bluenoise.obj `if test -f 'delta/gpu-rectangle/0008_bluenoise.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0008_bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0008_bluenoise.c'; fi`
+
+delta/gpu-rectangle/test_runner-0009_skip_mask.o: delta/gpu-rectangle/0009_skip_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0009_skip_mask.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Tpo -c -o delta/gpu-rectangle/test_runner-0009_skip_mask.o `test -f 'delta/gpu-rectangle/0009_skip_mask.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0009_skip_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0009_skip_mask.c' object='delta/gpu-rectangle/test_runner-0009_skip_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0009_skip_mask.o `test -f 'delta/gpu-rectangle/0009_skip_mask.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0009_skip_mask.c
+
+delta/gpu-rectangle/test_runner-0009_skip_mask.obj: delta/gpu-rectangle/0009_skip_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0009_skip_mask.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Tpo -c -o delta/gpu-rectangle/test_runner-0009_skip_mask.obj `if test -f 'delta/gpu-rectangle/0009_skip_mask.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0009_skip_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0009_skip_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0009_skip_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0009_skip_mask.c' object='delta/gpu-rectangle/test_runner-0009_skip_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0009_skip_mask.obj `if test -f 'delta/gpu-rectangle/0009_skip_mask.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0009_skip_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0009_skip_mask.c'; fi`
+
+delta/gpu-rectangle/test_runner-0010_rgb_upload.o: delta/gpu-rectangle/0010_rgb_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0010_rgb_upload.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Tpo -c -o delta/gpu-rectangle/test_runner-0010_rgb_upload.o `test -f 'delta/gpu-rectangle/0010_rgb_upload.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0010_rgb_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0010_rgb_upload.c' object='delta/gpu-rectangle/test_runner-0010_rgb_upload.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0010_rgb_upload.o `test -f 'delta/gpu-rectangle/0010_rgb_upload.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0010_rgb_upload.c
+
+delta/gpu-rectangle/test_runner-0010_rgb_upload.obj: delta/gpu-rectangle/0010_rgb_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0010_rgb_upload.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Tpo -c -o delta/gpu-rectangle/test_runner-0010_rgb_upload.obj `if test -f 'delta/gpu-rectangle/0010_rgb_upload.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0010_rgb_upload.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0010_rgb_upload.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0010_rgb_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0010_rgb_upload.c' object='delta/gpu-rectangle/test_runner-0010_rgb_upload.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0010_rgb_upload.obj `if test -f 'delta/gpu-rectangle/0010_rgb_upload.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0010_rgb_upload.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0010_rgb_upload.c'; fi`
+
+delta/gpu-rectangle/test_runner-0011_valid_upload.o: delta/gpu-rectangle/0011_valid_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0011_valid_upload.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Tpo -c -o delta/gpu-rectangle/test_runner-0011_valid_upload.o `test -f 'delta/gpu-rectangle/0011_valid_upload.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0011_valid_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0011_valid_upload.c' object='delta/gpu-rectangle/test_runner-0011_valid_upload.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0011_valid_upload.o `test -f 'delta/gpu-rectangle/0011_valid_upload.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0011_valid_upload.c
+
+delta/gpu-rectangle/test_runner-0011_valid_upload.obj: delta/gpu-rectangle/0011_valid_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0011_valid_upload.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Tpo -c -o delta/gpu-rectangle/test_runner-0011_valid_upload.obj `if test -f 'delta/gpu-rectangle/0011_valid_upload.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0011_valid_upload.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0011_valid_upload.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0011_valid_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0011_valid_upload.c' object='delta/gpu-rectangle/test_runner-0011_valid_upload.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0011_valid_upload.obj `if test -f 'delta/gpu-rectangle/0011_valid_upload.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0011_valid_upload.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0011_valid_upload.c'; fi`
+
+delta/gpu-rectangle/test_runner-0012_negative_origin.o: delta/gpu-rectangle/0012_negative_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0012_negative_origin.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Tpo -c -o delta/gpu-rectangle/test_runner-0012_negative_origin.o `test -f 'delta/gpu-rectangle/0012_negative_origin.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0012_negative_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0012_negative_origin.c' object='delta/gpu-rectangle/test_runner-0012_negative_origin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0012_negative_origin.o `test -f 'delta/gpu-rectangle/0012_negative_origin.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0012_negative_origin.c
+
+delta/gpu-rectangle/test_runner-0012_negative_origin.obj: delta/gpu-rectangle/0012_negative_origin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0012_negative_origin.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Tpo -c -o delta/gpu-rectangle/test_runner-0012_negative_origin.obj `if test -f 'delta/gpu-rectangle/0012_negative_origin.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0012_negative_origin.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0012_negative_origin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0012_negative_origin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0012_negative_origin.c' object='delta/gpu-rectangle/test_runner-0012_negative_origin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0012_negative_origin.obj `if test -f 'delta/gpu-rectangle/0012_negative_origin.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0012_negative_origin.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0012_negative_origin.c'; fi`
+
+delta/gpu-rectangle/test_runner-0013_outside_canvas.o: delta/gpu-rectangle/0013_outside_canvas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0013_outside_canvas.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Tpo -c -o delta/gpu-rectangle/test_runner-0013_outside_canvas.o `test -f 'delta/gpu-rectangle/0013_outside_canvas.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0013_outside_canvas.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0013_outside_canvas.c' object='delta/gpu-rectangle/test_runner-0013_outside_canvas.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0013_outside_canvas.o `test -f 'delta/gpu-rectangle/0013_outside_canvas.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0013_outside_canvas.c
+
+delta/gpu-rectangle/test_runner-0013_outside_canvas.obj: delta/gpu-rectangle/0013_outside_canvas.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0013_outside_canvas.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Tpo -c -o delta/gpu-rectangle/test_runner-0013_outside_canvas.obj `if test -f 'delta/gpu-rectangle/0013_outside_canvas.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0013_outside_canvas.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0013_outside_canvas.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0013_outside_canvas.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0013_outside_canvas.c' object='delta/gpu-rectangle/test_runner-0013_outside_canvas.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0013_outside_canvas.obj `if test -f 'delta/gpu-rectangle/0013_outside_canvas.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0013_outside_canvas.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0013_outside_canvas.c'; fi`
+
+delta/gpu-rectangle/test_runner-0014_short_rgb.o: delta/gpu-rectangle/0014_short_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0014_short_rgb.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Tpo -c -o delta/gpu-rectangle/test_runner-0014_short_rgb.o `test -f 'delta/gpu-rectangle/0014_short_rgb.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0014_short_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0014_short_rgb.c' object='delta/gpu-rectangle/test_runner-0014_short_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0014_short_rgb.o `test -f 'delta/gpu-rectangle/0014_short_rgb.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0014_short_rgb.c
+
+delta/gpu-rectangle/test_runner-0014_short_rgb.obj: delta/gpu-rectangle/0014_short_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0014_short_rgb.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Tpo -c -o delta/gpu-rectangle/test_runner-0014_short_rgb.obj `if test -f 'delta/gpu-rectangle/0014_short_rgb.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0014_short_rgb.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0014_short_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0014_short_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0014_short_rgb.c' object='delta/gpu-rectangle/test_runner-0014_short_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0014_short_rgb.obj `if test -f 'delta/gpu-rectangle/0014_short_rgb.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0014_short_rgb.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0014_short_rgb.c'; fi`
+
+delta/gpu-rectangle/test_runner-0015_short_valid.o: delta/gpu-rectangle/0015_short_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0015_short_valid.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Tpo -c -o delta/gpu-rectangle/test_runner-0015_short_valid.o `test -f 'delta/gpu-rectangle/0015_short_valid.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0015_short_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0015_short_valid.c' object='delta/gpu-rectangle/test_runner-0015_short_valid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0015_short_valid.o `test -f 'delta/gpu-rectangle/0015_short_valid.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0015_short_valid.c
+
+delta/gpu-rectangle/test_runner-0015_short_valid.obj: delta/gpu-rectangle/0015_short_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0015_short_valid.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Tpo -c -o delta/gpu-rectangle/test_runner-0015_short_valid.obj `if test -f 'delta/gpu-rectangle/0015_short_valid.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0015_short_valid.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0015_short_valid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0015_short_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0015_short_valid.c' object='delta/gpu-rectangle/test_runner-0015_short_valid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0015_short_valid.obj `if test -f 'delta/gpu-rectangle/0015_short_valid.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0015_short_valid.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0015_short_valid.c'; fi`
+
+delta/gpu-rectangle/test_runner-0016_incomplete_shape.o: delta/gpu-rectangle/0016_incomplete_shape.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0016_incomplete_shape.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Tpo -c -o delta/gpu-rectangle/test_runner-0016_incomplete_shape.o `test -f 'delta/gpu-rectangle/0016_incomplete_shape.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0016_incomplete_shape.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0016_incomplete_shape.c' object='delta/gpu-rectangle/test_runner-0016_incomplete_shape.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0016_incomplete_shape.o `test -f 'delta/gpu-rectangle/0016_incomplete_shape.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0016_incomplete_shape.c
+
+delta/gpu-rectangle/test_runner-0016_incomplete_shape.obj: delta/gpu-rectangle/0016_incomplete_shape.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0016_incomplete_shape.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Tpo -c -o delta/gpu-rectangle/test_runner-0016_incomplete_shape.obj `if test -f 'delta/gpu-rectangle/0016_incomplete_shape.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0016_incomplete_shape.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0016_incomplete_shape.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0016_incomplete_shape.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0016_incomplete_shape.c' object='delta/gpu-rectangle/test_runner-0016_incomplete_shape.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0016_incomplete_shape.obj `if test -f 'delta/gpu-rectangle/0016_incomplete_shape.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0016_incomplete_shape.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0016_incomplete_shape.c'; fi`
+
+delta/gpu-rectangle/test_runner-0017_pixel_count.o: delta/gpu-rectangle/0017_pixel_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0017_pixel_count.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Tpo -c -o delta/gpu-rectangle/test_runner-0017_pixel_count.o `test -f 'delta/gpu-rectangle/0017_pixel_count.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0017_pixel_count.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0017_pixel_count.c' object='delta/gpu-rectangle/test_runner-0017_pixel_count.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0017_pixel_count.o `test -f 'delta/gpu-rectangle/0017_pixel_count.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0017_pixel_count.c
+
+delta/gpu-rectangle/test_runner-0017_pixel_count.obj: delta/gpu-rectangle/0017_pixel_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0017_pixel_count.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Tpo -c -o delta/gpu-rectangle/test_runner-0017_pixel_count.obj `if test -f 'delta/gpu-rectangle/0017_pixel_count.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0017_pixel_count.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0017_pixel_count.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0017_pixel_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0017_pixel_count.c' object='delta/gpu-rectangle/test_runner-0017_pixel_count.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0017_pixel_count.obj `if test -f 'delta/gpu-rectangle/0017_pixel_count.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0017_pixel_count.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0017_pixel_count.c'; fi`
+
+delta/gpu-rectangle/test_runner-0018_no_valid_mask.o: delta/gpu-rectangle/0018_no_valid_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0018_no_valid_mask.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Tpo -c -o delta/gpu-rectangle/test_runner-0018_no_valid_mask.o `test -f 'delta/gpu-rectangle/0018_no_valid_mask.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0018_no_valid_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0018_no_valid_mask.c' object='delta/gpu-rectangle/test_runner-0018_no_valid_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0018_no_valid_mask.o `test -f 'delta/gpu-rectangle/0018_no_valid_mask.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0018_no_valid_mask.c
+
+delta/gpu-rectangle/test_runner-0018_no_valid_mask.obj: delta/gpu-rectangle/0018_no_valid_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0018_no_valid_mask.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Tpo -c -o delta/gpu-rectangle/test_runner-0018_no_valid_mask.obj `if test -f 'delta/gpu-rectangle/0018_no_valid_mask.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0018_no_valid_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0018_no_valid_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0018_no_valid_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0018_no_valid_mask.c' object='delta/gpu-rectangle/test_runner-0018_no_valid_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0018_no_valid_mask.obj `if test -f 'delta/gpu-rectangle/0018_no_valid_mask.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0018_no_valid_mask.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0018_no_valid_mask.c'; fi`
+
+delta/refresh/test_runner-0025_gpu_direct.o: delta/refresh/0025_gpu_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0025_gpu_direct.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo -c -o delta/refresh/test_runner-0025_gpu_direct.o `test -f 'delta/refresh/0025_gpu_direct.c' || echo '$(srcdir)/'`delta/refresh/0025_gpu_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0025_gpu_direct.c' object='delta/refresh/test_runner-0025_gpu_direct.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0025_gpu_direct.o `test -f 'delta/refresh/0025_gpu_direct.c' || echo '$(srcdir)/'`delta/refresh/0025_gpu_direct.c
+
+delta/refresh/test_runner-0025_gpu_direct.obj: delta/refresh/0025_gpu_direct.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0025_gpu_direct.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo -c -o delta/refresh/test_runner-0025_gpu_direct.obj `if test -f 'delta/refresh/0025_gpu_direct.c'; then $(CYGPATH_W) 'delta/refresh/0025_gpu_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0025_gpu_direct.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Tpo delta/refresh/$(DEPDIR)/test_runner-0025_gpu_direct.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0025_gpu_direct.c' object='delta/refresh/test_runner-0025_gpu_direct.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0025_gpu_direct.obj `if test -f 'delta/refresh/0025_gpu_direct.c'; then $(CYGPATH_W) 'delta/refresh/0025_gpu_direct.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0025_gpu_direct.c'; fi`
+
+delta/refresh/test_runner-0026_gpu_ahead.o: delta/refresh/0026_gpu_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0026_gpu_ahead.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo -c -o delta/refresh/test_runner-0026_gpu_ahead.o `test -f 'delta/refresh/0026_gpu_ahead.c' || echo '$(srcdir)/'`delta/refresh/0026_gpu_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0026_gpu_ahead.c' object='delta/refresh/test_runner-0026_gpu_ahead.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0026_gpu_ahead.o `test -f 'delta/refresh/0026_gpu_ahead.c' || echo '$(srcdir)/'`delta/refresh/0026_gpu_ahead.c
+
+delta/refresh/test_runner-0026_gpu_ahead.obj: delta/refresh/0026_gpu_ahead.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0026_gpu_ahead.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo -c -o delta/refresh/test_runner-0026_gpu_ahead.obj `if test -f 'delta/refresh/0026_gpu_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0026_gpu_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0026_gpu_ahead.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Tpo delta/refresh/$(DEPDIR)/test_runner-0026_gpu_ahead.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0026_gpu_ahead.c' object='delta/refresh/test_runner-0026_gpu_ahead.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0026_gpu_ahead.obj `if test -f 'delta/refresh/0026_gpu_ahead.c'; then $(CYGPATH_W) 'delta/refresh/0026_gpu_ahead.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0026_gpu_ahead.c'; fi`
+
+delta/refresh/test_runner-0027_gpu_latest.o: delta/refresh/0027_gpu_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0027_gpu_latest.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo -c -o delta/refresh/test_runner-0027_gpu_latest.o `test -f 'delta/refresh/0027_gpu_latest.c' || echo '$(srcdir)/'`delta/refresh/0027_gpu_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0027_gpu_latest.c' object='delta/refresh/test_runner-0027_gpu_latest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0027_gpu_latest.o `test -f 'delta/refresh/0027_gpu_latest.c' || echo '$(srcdir)/'`delta/refresh/0027_gpu_latest.c
+
+delta/refresh/test_runner-0027_gpu_latest.obj: delta/refresh/0027_gpu_latest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0027_gpu_latest.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo -c -o delta/refresh/test_runner-0027_gpu_latest.obj `if test -f 'delta/refresh/0027_gpu_latest.c'; then $(CYGPATH_W) 'delta/refresh/0027_gpu_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0027_gpu_latest.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Tpo delta/refresh/$(DEPDIR)/test_runner-0027_gpu_latest.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0027_gpu_latest.c' object='delta/refresh/test_runner-0027_gpu_latest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0027_gpu_latest.obj `if test -f 'delta/refresh/0027_gpu_latest.c'; then $(CYGPATH_W) 'delta/refresh/0027_gpu_latest.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0027_gpu_latest.c'; fi`
+
+delta/refresh/test_runner-0028_gpu_move.o: delta/refresh/0028_gpu_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0028_gpu_move.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo -c -o delta/refresh/test_runner-0028_gpu_move.o `test -f 'delta/refresh/0028_gpu_move.c' || echo '$(srcdir)/'`delta/refresh/0028_gpu_move.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0028_gpu_move.c' object='delta/refresh/test_runner-0028_gpu_move.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0028_gpu_move.o `test -f 'delta/refresh/0028_gpu_move.c' || echo '$(srcdir)/'`delta/refresh/0028_gpu_move.c
+
+delta/refresh/test_runner-0028_gpu_move.obj: delta/refresh/0028_gpu_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0028_gpu_move.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo -c -o delta/refresh/test_runner-0028_gpu_move.obj `if test -f 'delta/refresh/0028_gpu_move.c'; then $(CYGPATH_W) 'delta/refresh/0028_gpu_move.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0028_gpu_move.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Tpo delta/refresh/$(DEPDIR)/test_runner-0028_gpu_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0028_gpu_move.c' object='delta/refresh/test_runner-0028_gpu_move.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0028_gpu_move.obj `if test -f 'delta/refresh/0028_gpu_move.c'; then $(CYGPATH_W) 'delta/refresh/0028_gpu_move.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0028_gpu_move.c'; fi`
+
+delta/refresh/test_runner-0029_gpu_failure.o: delta/refresh/0029_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0029_gpu_failure.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo -c -o delta/refresh/test_runner-0029_gpu_failure.o `test -f 'delta/refresh/0029_gpu_failure.c' || echo '$(srcdir)/'`delta/refresh/0029_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0029_gpu_failure.c' object='delta/refresh/test_runner-0029_gpu_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0029_gpu_failure.o `test -f 'delta/refresh/0029_gpu_failure.c' || echo '$(srcdir)/'`delta/refresh/0029_gpu_failure.c
+
+delta/refresh/test_runner-0029_gpu_failure.obj: delta/refresh/0029_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0029_gpu_failure.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo -c -o delta/refresh/test_runner-0029_gpu_failure.obj `if test -f 'delta/refresh/0029_gpu_failure.c'; then $(CYGPATH_W) 'delta/refresh/0029_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0029_gpu_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Tpo delta/refresh/$(DEPDIR)/test_runner-0029_gpu_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0029_gpu_failure.c' object='delta/refresh/test_runner-0029_gpu_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0029_gpu_failure.obj `if test -f 'delta/refresh/0029_gpu_failure.c'; then $(CYGPATH_W) 'delta/refresh/0029_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0029_gpu_failure.c'; fi`
+
+delta/refresh/test_runner-0030_gpu_return.o: delta/refresh/0030_gpu_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0030_gpu_return.o -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo -c -o delta/refresh/test_runner-0030_gpu_return.o `test -f 'delta/refresh/0030_gpu_return.c' || echo '$(srcdir)/'`delta/refresh/0030_gpu_return.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0030_gpu_return.c' object='delta/refresh/test_runner-0030_gpu_return.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0030_gpu_return.o `test -f 'delta/refresh/0030_gpu_return.c' || echo '$(srcdir)/'`delta/refresh/0030_gpu_return.c
+
+delta/refresh/test_runner-0030_gpu_return.obj: delta/refresh/0030_gpu_return.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/refresh/test_runner-0030_gpu_return.obj -MD -MP -MF delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo -c -o delta/refresh/test_runner-0030_gpu_return.obj `if test -f 'delta/refresh/0030_gpu_return.c'; then $(CYGPATH_W) 'delta/refresh/0030_gpu_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0030_gpu_return.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Tpo delta/refresh/$(DEPDIR)/test_runner-0030_gpu_return.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/refresh/0030_gpu_return.c' object='delta/refresh/test_runner-0030_gpu_return.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/refresh/test_runner-0030_gpu_return.obj `if test -f 'delta/refresh/0030_gpu_return.c'; then $(CYGPATH_W) 'delta/refresh/0030_gpu_return.c'; else $(CYGPATH_W) '$(srcdir)/delta/refresh/0030_gpu_return.c'; fi`
+
+delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o: delta/gpu-rectangle/0019_auto_rectangle_cutoff.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Tpo -c -o delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o `test -f 'delta/gpu-rectangle/0019_auto_rectangle_cutoff.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0019_auto_rectangle_cutoff.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0019_auto_rectangle_cutoff.c' object='delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.o `test -f 'delta/gpu-rectangle/0019_auto_rectangle_cutoff.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0019_auto_rectangle_cutoff.c
+
+delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.obj: delta/gpu-rectangle/0019_auto_rectangle_cutoff.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Tpo -c -o delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.obj `if test -f 'delta/gpu-rectangle/0019_auto_rectangle_cutoff.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0019_auto_rectangle_cutoff.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0019_auto_rectangle_cutoff.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0019_auto_rectangle_cutoff.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0019_auto_rectangle_cutoff.c' object='delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0019_auto_rectangle_cutoff.obj `if test -f 'delta/gpu-rectangle/0019_auto_rectangle_cutoff.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0019_auto_rectangle_cutoff.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0019_auto_rectangle_cutoff.c'; fi`
+
+delta/gpu-rectangle/test_runner-0020_full_width_offset.o: delta/gpu-rectangle/0020_full_width_offset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0020_full_width_offset.o -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Tpo -c -o delta/gpu-rectangle/test_runner-0020_full_width_offset.o `test -f 'delta/gpu-rectangle/0020_full_width_offset.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0020_full_width_offset.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0020_full_width_offset.c' object='delta/gpu-rectangle/test_runner-0020_full_width_offset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0020_full_width_offset.o `test -f 'delta/gpu-rectangle/0020_full_width_offset.c' || echo '$(srcdir)/'`delta/gpu-rectangle/0020_full_width_offset.c
+
+delta/gpu-rectangle/test_runner-0020_full_width_offset.obj: delta/gpu-rectangle/0020_full_width_offset.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/gpu-rectangle/test_runner-0020_full_width_offset.obj -MD -MP -MF delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Tpo -c -o delta/gpu-rectangle/test_runner-0020_full_width_offset.obj `if test -f 'delta/gpu-rectangle/0020_full_width_offset.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0020_full_width_offset.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0020_full_width_offset.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Tpo delta/gpu-rectangle/$(DEPDIR)/test_runner-0020_full_width_offset.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='delta/gpu-rectangle/0020_full_width_offset.c' object='delta/gpu-rectangle/test_runner-0020_full_width_offset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o delta/gpu-rectangle/test_runner-0020_full_width_offset.obj `if test -f 'delta/gpu-rectangle/0020_full_width_offset.c'; then $(CYGPATH_W) 'delta/gpu-rectangle/0020_full_width_offset.c'; else $(CYGPATH_W) '$(srcdir)/delta/gpu-rectangle/0020_full_width_offset.c'; fi`
+
+_support/processing/gpu-palette/test_runner-rectangle_common.o: _support/processing/gpu-palette/rectangle_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-rectangle_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Tpo -c -o _support/processing/gpu-palette/test_runner-rectangle_common.o `test -f '_support/processing/gpu-palette/rectangle_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/rectangle_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/rectangle_common.c' object='_support/processing/gpu-palette/test_runner-rectangle_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-rectangle_common.o `test -f '_support/processing/gpu-palette/rectangle_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/rectangle_common.c
+
+_support/processing/gpu-palette/test_runner-rectangle_common.obj: _support/processing/gpu-palette/rectangle_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-rectangle_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Tpo -c -o _support/processing/gpu-palette/test_runner-rectangle_common.obj `if test -f '_support/processing/gpu-palette/rectangle_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/rectangle_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/rectangle_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/rectangle_common.c' object='_support/processing/gpu-palette/test_runner-rectangle_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-rectangle_common.obj `if test -f '_support/processing/gpu-palette/rectangle_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/rectangle_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/rectangle_common.c'; fi`
 
 _support/processing/delta-refresh/test_runner-partial_test_common.o: _support/processing/delta-refresh/partial_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/delta-refresh/test_runner-partial_test_common.o -MD -MP -MF _support/processing/delta-refresh/$(DEPDIR)/test_runner-partial_test_common.Tpo -c -o _support/processing/delta-refresh/test_runner-partial_test_common.o `test -f '_support/processing/delta-refresh/partial_test_common.c' || echo '$(srcdir)/'`_support/processing/delta-refresh/partial_test_common.c
@@ -98705,6 +99331,8 @@ distclean-generic:
 	-$(am__rm_f) delta/commit/$(am__dirstamp)
 	-$(am__rm_f) delta/comparison/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) delta/comparison/$(am__dirstamp)
+	-$(am__rm_f) delta/gpu-rectangle/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) delta/gpu-rectangle/$(am__dirstamp)
 	-$(am__rm_f) delta/output-representation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) delta/output-representation/$(am__dirstamp)
 	-$(am__rm_f) delta/palette/$(DEPDIR)/$(am__dirstamp)

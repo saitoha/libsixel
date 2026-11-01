@@ -4664,11 +4664,9 @@ sixel_dither_apply_palette(
             apply_transparent_mask != 0 ? total_pixels : 0U;
         gpu_request.transparent_keycolor = keycolor_for_mask;
         gpu_request.sixdelta_enabled = dither->pipeline_6delta_enabled != 0;
-        /*
-         * Passing the frame extents here also requires the retained plane to
-         * be exactly this frame, which is what the GPU kernel assumes when it
-         * indexes the plane by frame pixel index.
-         */
+        /* The GPU request validates canvas bounds and packs only the damage
+         * rectangle. Preserve the canvas origin rather than treating its
+         * first pixel as this frame's first pixel. */
         gpu_request.has_6delta_accumulation =
             dither->pipeline_6delta_enabled != 0 &&
             (dither->method_for_diffuse == SIXEL_DIFFUSE_NONE ||
@@ -4676,11 +4674,16 @@ sixel_dither_apply_palette(
              dither->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
              dither->method_for_diffuse ==
                 SIXEL_DIFFUSE_BLUENOISE_DITHER) &&
-            sixel_dither_has_compatible_accumulation_hint(dither,
-                                                          width,
-                                                          height,
-                                                          total_pixels);
+            dither->pipeline_accumulation_pixels != NULL;
         if (gpu_request.has_6delta_accumulation != 0) {
+            gpu_request.accumulation_width =
+                dither->pipeline_accumulation_width;
+            gpu_request.accumulation_height =
+                dither->pipeline_accumulation_height;
+            gpu_request.accumulation_origin_x =
+                dither->pipeline_accumulation_origin_x;
+            gpu_request.accumulation_origin_y =
+                dither->pipeline_accumulation_origin_y;
             gpu_request.accumulation_pixels =
                 dither->pipeline_accumulation_pixels;
             gpu_request.accumulation_pixels_size =

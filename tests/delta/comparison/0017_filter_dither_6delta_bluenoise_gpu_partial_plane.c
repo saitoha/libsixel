@@ -1,8 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Verify that AUTO declines an offset retained plane and lets the CPU
- * blue-noise policy apply the origin-aware 6delta keep.
+ * Verify forced GPU blue-noise keeps against an offset retained plane.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -19,7 +18,7 @@
 #include "tests/_support/processing/filter/filter_test_common.h"
 
 int
-test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
+test_filter_0029_dither_6delta_bluenoise_gpu_partial_plane(
     int argc,
     char **argv)
 {
@@ -79,7 +78,7 @@ test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
     sixel_dither_set_lut_policy(dither, SIXEL_LUT_POLICY_NONE);
     sixel_dither_set_optimize_palette(dither, 0);
     sixel_dither_set_transparent(dither, 7);
-    dither->gpu_policy = SIXEL_GPU_POLICY_AUTO;
+    dither->gpu_policy = SIXEL_GPU_POLICY_FORCE;
     dither->bluenoise_strength_override = 1;
     dither->bluenoise_strength = 1.0f;
     dither->bluenoise_phase_override = 1;
@@ -105,7 +104,7 @@ test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
 
     indexes = sixel_dither_apply_palette(dither, pixel, 1, 1);
     if (indexes == NULL) {
-        fprintf(stderr, "AUTO blue-noise fallback failed\n");
+        fprintf(stderr, "forced GPU partial-plane application failed\n");
         goto end;
     }
     result_mask = sixel_dither_get_pipeline_accumulation_result_mask(
@@ -113,7 +112,7 @@ test_filter_0029_dither_6delta_bluenoise_gpu_auto_fallback(
         &result_mask_size);
     if (indexes[0] != 7u || result_mask == NULL ||
             result_mask_size != 1U || result_mask[0] != 1u) {
-        fprintf(stderr, "AUTO origin-aware CPU fallback mismatch\n");
+        fprintf(stderr, "GPU partial-plane keep mismatch\n");
         goto end;
     }
     ok = 1;

@@ -100,6 +100,9 @@ sixel_gpu_palette_accumulation_is_supported(
     sixel_gpu_palette_request_t const *request)
 {
     size_t expected_size;
+    size_t plane_pixels;
+    int width;
+    int height;
 
     expected_size = 0U;
     if (request == NULL) {
@@ -115,13 +118,8 @@ sixel_gpu_palette_accumulation_is_supported(
      */
     if (request->has_6delta_accumulation == 0) {
         /*
-         * The caller wants keeps but this request cannot express them, which
-         * happens when the retained plane is larger than the frame: the kernel
-         * below addresses the plane by frame pixel index and would compare
-         * against unrelated pixels.  Decline so the CPU dither policy, which
-         * does understand a plane origin, handles the frame instead.  All
-         * admitted GPU palette policies implement the keep gate and must
-         * not silently paint a frame whose retained plane they cannot address.
+         * All admitted GPU policies implement the keep gate. Missing retained
+         * history cannot be interpreted as permission to paint every pixel.
          */
         if (request->sixdelta_enabled != 0 &&
                 sixel_gpu_palette_method_is_supported(
@@ -147,9 +145,23 @@ sixel_gpu_palette_accumulation_is_supported(
             request->sixdelta_threshold > 255U) {
         return 0;
     }
-    if (request->pixel_count > SIZE_MAX / 3U) {
+    width = request->accumulation_width;
+    height = request->accumulation_height;
+    if (width == 0 && height == 0) {
+        width = request->width;
+        height = request->height;
+    }
+    /* Check subtraction before computing row offsets or upload sizes. The
+     * canvas buffers include every row, while result masks stay frame-local. */
+    if (width < request->width || height < request->height ||
+            request->accumulation_origin_x < 0 ||
+            request->accumulation_origin_y < 0 ||
+            request->accumulation_origin_x > width - request->width ||
+            request->accumulation_origin_y > height - request->height ||
+            (size_t)height > SIZE_MAX / 3U / (size_t)width) {
         return 0;
     }
+    plane_pixels = (size_t)width * (size_t)height;
     if (request->sixdelta_metric < SIXEL_DELTA_METRIC_AUTO ||
             request->sixdelta_metric > SIXEL_DELTA_METRIC_RGB241) return 0;
     if (request->residual_mask != NULL &&
@@ -160,12 +172,12 @@ sixel_gpu_palette_accumulation_is_supported(
              request->residual_mask->width != request->width ||
              request->residual_mask->height != request->height ||
              request->residual_mask->threshold > 255U)) return 0;
-    expected_size = request->pixel_count * 3U;
+    expected_size = plane_pixels * 3U;
     if (request->accumulation_pixels_size < expected_size) {
         return 0;
     }
     if (request->accumulation_valid_mask != NULL &&
-            request->accumulation_valid_mask_size < request->pixel_count) {
+            request->accumulation_valid_mask_size < plane_pixels) {
         return 0;
     }
     if (request->accumulation_result_mask != NULL &&
@@ -340,6 +352,11 @@ sixel_gpu_palette_request_is_supported(
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->width <= 0 || request->height <= 0 ||
             request->pixel_count == 0U) {
+        return 0;
+    }
+    if ((size_t)request->height > SIZE_MAX / 3U / (size_t)request->width ||
+            request->pixel_count !=
+                (size_t)request->width * (size_t)request->height) {
         return 0;
     }
     if (request->ncolors <= 0 || request->ncolors > SIXEL_PALETTE_MAX ||

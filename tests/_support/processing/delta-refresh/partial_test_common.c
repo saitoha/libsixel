@@ -34,7 +34,7 @@ partial_write(char *data, int size, void *opaque)
 }
 
 int
-test_partial_refresh(int mode)
+test_partial_refresh(int mode, int gpu)
 {
     sixel_allocator_t *allocator;
     sixel_encoder_t *encoder;
@@ -69,7 +69,7 @@ test_partial_refresh(int mode)
     REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_LUT_POLICY,
         "ordered") == SIXEL_OK);
     REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
-        "off") == SIXEL_OK);
+        gpu ? "force" : "off") == SIXEL_OK);
     REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
         "delta:T8:J64") == SIXEL_OK);
     REQUIRE(sixel_encoder_set_6delta_plane_size(encoder, 96, 72) == SIXEL_OK);
