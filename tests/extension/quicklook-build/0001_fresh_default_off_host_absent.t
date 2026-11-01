@@ -17,8 +17,8 @@ echo "1..1"
 set -v
 
 # Reject a missing or unbuilt fixture instead of accepting vacuous absence.
-test -f "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/config.h" &&
-    test -x "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/converters/img2sixel" || {
+{ test -f "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/config.h" &&
+    test -x "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/converters/img2sixel"; } || {
     echo "not ok 1 - Fresh default-off build input is missing or incomplete"
     exit 0
 }

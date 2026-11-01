@@ -49,8 +49,8 @@ while IFS= read -r line; do
         "AFAULT|phase=1|mode=3|"*) success=1 ;;
         "AFAULT|phase=1|"*) wanted=0; success=0 ;;
         esac
-        test "$active" -eq 1 && test "$applies" -eq "$wanted" &&
-            test "$applied" -eq "$success" || {
+        { test "$active" -eq 1 && test "$applies" -eq "$wanted" &&
+            test "$applied" -eq "$success"; } || {
             echo "$trace" >&2
             echo "not ok 1 - incomplete phase apply observation"
             exit 0
@@ -62,7 +62,7 @@ while IFS= read -r line; do
 done <<EOF
 $trace
 EOF
-test "$active" -eq 0 && test "$completed" -eq 9 || {
+{ test "$active" -eq 0 && test "$completed" -eq 9; } || {
     echo "not ok 1 - unexpected phase count"
     exit 0
 }

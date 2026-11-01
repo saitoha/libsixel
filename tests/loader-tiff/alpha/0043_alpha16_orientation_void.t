@@ -77,8 +77,8 @@ while IFS= read -r line; do
         esac
         ;;
     "TALPHA|load-end|ok=1")
-        test "$active" -eq 1 && test "$applies" -eq "$wanted" &&
-            test "$seen" -eq "$groups" || {
+        { test "$active" -eq 1 && test "$applies" -eq "$wanted" &&
+            test "$seen" -eq "$groups"; } || {
             echo "$trace" >&2
             echo "not ok 1 - incomplete engine observation"
             exit 0
@@ -90,7 +90,7 @@ while IFS= read -r line; do
 done <<EOF
 $trace
 EOF
-test "$active" -eq 0 && test "$completed" -eq 12 || {
+{ test "$active" -eq 0 && test "$completed" -eq 12; } || {
     echo "not ok 1 - unexpected load count"
     exit 0
 }

@@ -48,7 +48,7 @@ while IFS= read -r line; do
         esac
         ;;
     "LC1|end|ok=1")
-        test "$active" -eq 1 && test "$applies" -eq "$wanted" || {
+        { test "$active" -eq 1 && test "$applies" -eq "$wanted"; } || {
             echo "$trace" >&2
             echo "not ok 1 - unexpected CMS apply count"
             exit 0
@@ -61,8 +61,8 @@ while IFS= read -r line; do
 done <<EOF
 $trace
 EOF
-test "$active" -eq 0 && test "$completed" -gt 0 &&
-    test "$completed" -eq "$expected" || {
+{ test "$active" -eq 0 && test "$completed" -gt 0 &&
+    test "$completed" -eq "$expected"; } || {
     echo "not ok 1 - incomplete CMS phases"
     exit 0
 }

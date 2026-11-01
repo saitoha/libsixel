@@ -9,7 +9,7 @@ status=0
 value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
     -W gamma -P float32 -m VIF-P -b VIF-P:min=0 \
     "${TOP_SRCDIR}/tests/data/assessment/vif-p-flat.pgm" "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp") || status=$?
-test "${status}" -eq 5 && test "${value}" = nan || {
+{ test "${status}" -eq 5 && test "${value}" = nan; } || {
     echo "not ok 1 - VIF-P unavailable gate"
     exit 0
 }

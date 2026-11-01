@@ -8,7 +8,7 @@ test "${HAVE_QUICKLOOK_EXTENSION:?}" = 1 || {
     echo "1..0 # SKIP requires quicklook_extension=1"
     exit 0
 }
-test -n "${QUICKLOOK_STAGE_DIR:-}" && test -n "${QUICKLOOK_STAGE_SOURCE:-}" || {
+{ test -n "${QUICKLOOK_STAGE_DIR:-}" && test -n "${QUICKLOOK_STAGE_SOURCE:-}"; } || {
     echo "1..0 # SKIP requires an explicitly prepared distribution stage"
     exit 0
 }

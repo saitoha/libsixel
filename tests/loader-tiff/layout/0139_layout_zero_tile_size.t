@@ -45,9 +45,9 @@ while IFS= read -r line; do
     *"LSXCMS2|event=apply|"*)
         # Independent reference conversions run outside the loader phase.
         test "$active" -ne 0 || continue
-        case "${line}" in *"|engine=$engine|"*) true ;; *) false ;; esac &&
+        { case "${line}" in *"|engine=$engine|"*) true ;; *) false ;; esac &&
             case "${line}" in *"|src=$source|dst=4|"*) true ;; *) false ;; esac &&
-            test "${line##*|ok=}" -eq 1 || {
+            test "${line##*|ok=}" -eq 1; } || {
             echo "$trace" >&2
             echo "not ok 1 - wrong actual CMS backend, format or result"
             exit 0
@@ -55,7 +55,7 @@ while IFS= read -r line; do
         applies=$((applies + 1))
         ;;
     "TIL|end|ok=1")
-        test "$active" -eq 1 && test "$applies" -eq "$wanted" || {
+        { test "$active" -eq 1 && test "$applies" -eq "$wanted"; } || {
             echo "$trace" >&2
             echo "not ok 1 - unexpected actual CMS apply count"
             exit 0
@@ -67,7 +67,7 @@ while IFS= read -r line; do
 done <<EOF
 $trace
 EOF
-test "$active" -eq 0 && test "$completed" -eq 3 || {
+{ test "$active" -eq 0 && test "$completed" -eq 3; } || {
     echo "$trace" >&2
     echo "not ok 1 - incomplete loader phases"
     exit 0

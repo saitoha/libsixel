@@ -4,7 +4,7 @@
 set -eux
 echo "1..1"
 set -v
-test "${HAVE_WEBP-}" = 1 && test "${HAVE_IMG2SIXEL-}" = 1 || {
+{ test "${HAVE_WEBP-}" = 1 && test "${HAVE_IMG2SIXEL-}" = 1; } || {
     echo "ok 1 # SKIP img2sixel or libwebp unavailable"
     exit 0
 }

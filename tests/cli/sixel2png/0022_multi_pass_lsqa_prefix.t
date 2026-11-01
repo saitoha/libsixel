@@ -7,7 +7,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     echo "1..0 # SKIP sixel2png is disabled"
     exit 0
 }
-test -n "${LSQA_PATH-}" && test -x "${LSQA_PATH}" || {
+{ test -n "${LSQA_PATH-}" && test -x "${LSQA_PATH}"; } || {
     echo "1..0 # SKIP lsqa is disabled"
     exit 0
 }
@@ -39,8 +39,8 @@ long_score=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" --input-mode=6delta-pro \
     exit 0
 }
 
-test "${short_score}" = "${full_score}" && \
-    test "${long_score}" = "${full_score}" || {
+{ test "${short_score}" = "${full_score}" && \
+    test "${long_score}" = "${full_score}"; } || {
     echo "not ok 1 - input mode prefix scores differ from the full name"
     exit 0
 }

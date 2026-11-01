@@ -16,8 +16,8 @@ test -n "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR:-}" || {
 echo "1..1"
 set -v
 
-test -f "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/config.h" &&
-    test -x "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/converters/img2sixel" || {
+{ test -f "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/config.h" &&
+    test -x "${QUICKLOOK_FRESH_DEFAULT_OFF_BUILDDIR}/converters/img2sixel"; } || {
     echo "not ok 1 - Fresh default-off input is missing or incomplete"
     exit 0
 }

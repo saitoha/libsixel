@@ -44,7 +44,7 @@ while IFS= read -r line; do
     "TALPHA|load-end|ok=1")
         wanted=1
         test "$expected" != none || wanted=0
-        test "$active" -eq 1 && test "$applies" -eq "$wanted" || {
+        { test "$active" -eq 1 && test "$applies" -eq "$wanted"; } || {
             echo "$trace" >&2
             echo "not ok 1 - incomplete engine observation"
             exit 0
@@ -56,7 +56,7 @@ while IFS= read -r line; do
 done <<EOF
 $trace
 EOF
-test "$active" -eq 0 && test "$completed" -eq 32 || {
+{ test "$active" -eq 0 && test "$completed" -eq 32; } || {
     echo "not ok 1 - unexpected load count"
     exit 0
 }

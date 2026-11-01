@@ -7,7 +7,7 @@
 # Regenerate: python3 tests/data/loader/quality/generate_references.py
 
 set -eux
-test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_JPEG-}" = 1 || {
+{ test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_JPEG-}" = 1; } || {
     echo "1..0 # SKIP img2sixel or libjpeg is unavailable"
     exit 0
 }

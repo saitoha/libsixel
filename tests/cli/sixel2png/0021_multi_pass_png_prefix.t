@@ -7,7 +7,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     echo "1..0 # SKIP sixel2png is disabled"
     exit 0
 }
-test -n "${LSQA_PATH-}" && test -x "${LSQA_PATH}" || {
+{ test -n "${LSQA_PATH-}" && test -x "${LSQA_PATH}"; } || {
     echo "1..0 # SKIP lsqa is disabled"
     exit 0
 }

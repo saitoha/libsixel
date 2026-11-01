@@ -17,8 +17,8 @@ actual=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
     echo "not ok 1 - reference metric prefix"
     exit 0
 }
-test "${expected}" != nan && test "${expected}" != 1.000000 &&
-    test "${expected}" = "${actual}" || {
+{ test "${expected}" != nan && test "${expected}" != 1.000000 &&
+    test "${expected}" = "${actual}"; } || {
     echo "not ok 1 - reference prefix changed metric"
     exit 0
 }

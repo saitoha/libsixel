@@ -10,7 +10,7 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none \
     -m ms-ssim -b ms-ssim:0 \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp" \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp") || status=$?
-test "${status}" -eq 5 && test "${value}" = nan || {
+{ test "${status}" -eq 5 && test "${value}" = nan; } || {
     echo "not ok 1 - unavailable MS-SSIM cannot pass baseline"
     exit 0
 }

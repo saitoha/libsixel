@@ -60,7 +60,7 @@ while IFS= read -r line; do
         exit 0
         ;;
     "TBYTE|load-end|ok=1")
-        test "$active" -eq 1 && test "$applies" -eq 1 || {
+        { test "$active" -eq 1 && test "$applies" -eq 1; } || {
             echo "not ok 1 - load lacks exactly one requested successful apply"
             exit 0
         }
@@ -71,8 +71,8 @@ while IFS= read -r line; do
 done <<EOF
 $trace
 EOF
-test "$active" -eq 0 && test "$completed" -eq 2 && \
-    test "$plain" -eq 1 && test "$background" -eq 1 || {
+{ test "$active" -eq 0 && test "$completed" -eq 2 && \
+    test "$plain" -eq 1 && test "$background" -eq 1; } || {
     echo "not ok 1 - incomplete ordinary or background apply observations"
     exit 0
 }

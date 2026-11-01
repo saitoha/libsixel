@@ -10,7 +10,7 @@ single=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xgamma \
 parallel=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xgamma \
     -fpca -Qheckbert:Tsse:Osse -=greedy:B8 -M gpl:- -o /dev/null \
     "${TOP_SRCDIR}/tests/data/inputs/snake_192.png")
-test -n "$single" && test "$single" = "$parallel" || {
+{ test -n "$single" && test "$single" = "$parallel"; } || {
     echo "not ok 1 - worker count changed SSE palette"
     exit 0
 }

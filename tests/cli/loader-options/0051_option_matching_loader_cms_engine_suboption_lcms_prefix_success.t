@@ -7,7 +7,7 @@ set -eux
 echo "1..1"
 set -v
 
-test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_WEBP-}" = 1 || {
+{ test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_WEBP-}" = 1; } || {
     echo "ok 1 - CMS alias resolution # SKIP img2sixel/libwebp unavailable"
     exit 0
 }

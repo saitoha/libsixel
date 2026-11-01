@@ -5,7 +5,7 @@ set -eux
 echo "1..1"
 set -v
 
-test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_LIBTIFF-}" = 1 || {
+{ test "${HAVE_IMG2SIXEL-}" = 1 && test "${HAVE_LIBTIFF-}" = 1; } || {
     echo "ok 1 # SKIP img2sixel or libtiff disabled"
     exit 0
 }
