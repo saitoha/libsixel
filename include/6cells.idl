@@ -66,10 +66,9 @@
 module sixel {
 
 /*
- * Component services expose stable interface objects without exposing their
- * concrete storage.  Callers that need post-v1.8.7 component contracts should
- * include this header explicitly; sixel.h stays focused on the legacy public
- * API surface.
+ * Component services hide their concrete storage. Their interfaces may evolve
+ * together with their callers; the compatibility boundary is sixel.h.in at
+ * v1.8.7-r2. Legacy public entry points adapt to these component contracts.
  */
 struct sixel_option_argument_list_resolution;
 
@@ -220,6 +219,298 @@ interface encoder_core;
 [alias(sixel_writer_t)]
 interface sixel_writer;
 
+interface frame;
+
+/* Native data owners have no vtbl or factory identity. The declarations are
+ * emitted here, rather than added to the legacy sixel.h public surface. */
+cpp_quote <<
+#include <stdint.h>
+
+typedef struct sixel_wire_palette sixel_wire_palette_t;
+typedef struct sixel_indexed_frame sixel_indexed_frame_t;
+typedef struct sixel_retained_read sixel_retained_read_t;
+typedef struct sixel_retained_update sixel_retained_update_t;
+typedef struct sixel_stream_receipt sixel_stream_receipt_t;
+>>
+
+[native, opaque, refcounted]
+[responsibility("own immutable wire definitions and their retained RGB")]
+typedef sixel_wire_palette_t wire_palette;
+
+[native, opaque, refcounted]
+[responsibility("own indexed pixels and publish immutable completed rows")]
+typedef sixel_indexed_frame_t indexed_frame;
+
+[native, opaque, refcounted]
+[responsibility("pin one committed retained-plane generation for readers")]
+typedef sixel_retained_read_t retained_read;
+
+[native, opaque, refcounted]
+[responsibility("own one prepared retained-plane update transaction")]
+typedef sixel_retained_update_t retained_update;
+
+[native, opaque, refcounted]
+[responsibility("identify a successfully completed ordered writer image")]
+typedef sixel_stream_receipt_t stream_receipt;
+
+/* stream is allocated by the retained-plane instance, not by a transport.
+ * begin_update binds this identity once before a new producer publishes rows.
+ * Imported complete frames carry the identity used to compute their keeps;
+ * begin_update verifies that identity instead of rebinding it.
+ * sequence must exceed base_sequence; gaps for dropped source frames are OK.
+ * Zero stream denotes an untracked image, which cannot advance history. */
+struct encode_identity {
+    uint64_t stream;
+    uint64_t epoch;
+    uint64_t base_sequence;
+    uint64_t sequence;
+};
+
+struct wire_color_definition {
+    unsigned int register_index;
+    int type;
+    int fields[3];
+};
+
+struct wire_palette_request {
+    wire_color_definition const *definitions;
+    size_t count;
+    int color_definition;
+    int colorspace;
+};
+
+struct wire_color {
+    wire_color_definition definition;
+    unsigned char emitted_rgb[3];
+};
+
+struct wire_palette_view {
+    wire_color const *colors;
+    size_t count;
+    int color_definition;
+    int colorspace;
+};
+
+/* Definitions are copied and validated; emitted RGB is derived from those
+ * exact fields. In particular, never regenerate HLS fields from rounded RGB.
+ * Index i addresses colors[i]; the serializer uses its register_index.
+ * Unsupported wire interpretations fail without publishing a palette.
+ * Views borrow the immutable owner until its last unref. */
+SIXELAPI SIXELSTATUS sixel_wire_palette_new(
+    out wire_palette **result,
+    in wire_palette_request const *request,
+    in allocator *allocator);
+SIXELAPI void sixel_wire_palette_ref(in wire_palette *palette);
+SIXELAPI void sixel_wire_palette_unref(in wire_palette *palette);
+SIXELAPI SIXELSTATUS sixel_wire_palette_get_view(
+    in wire_palette const *palette, out wire_palette_view *view);
+
+enum indexed_skip {
+    SIXEL_INDEXED_PAINT = 0,
+    SIXEL_INDEXED_KEEP = 1,
+    SIXEL_INDEXED_KEEP_APPROXIMATE = 3
+};
+
+enum indexed_state {
+    SIXEL_INDEXED_BUILDING = 0,
+    SIXEL_INDEXED_COMPLETE = 1,
+    SIXEL_INDEXED_FAILED = 2
+};
+
+struct indexed_frame_description {
+    int width;
+    int height;
+    int encoded_width;
+    int encoded_height;
+    int encoded_x;
+    int encoded_y;
+    int origin_x;
+    int origin_y;
+    int plane_width;
+    int plane_height;
+    int keycolor;
+    int keycolor_reserved;
+    int transparent_background;
+    wire_palette *palette;
+};
+
+struct indexed_frame_take_request {
+    indexed_frame_description description;
+    encode_identity identity;
+    sixel_index_t *indexes;
+    size_t indexes_size;
+    unsigned char *skip;
+    size_t skip_size;
+};
+
+struct indexed_rows_view {
+    sixel_index_t const *indexes;
+    unsigned char const *skip;
+    size_t row_stride;
+    int first_row;
+    int rows;
+};
+
+/* new allocates BUILDING storage, including capacity for a final skip mask.
+ * PaletteApply is its sole producer; no writable view escapes this API.
+ * take accepts packed complete external data, validates all painted indexes
+ * and mask codes, and transfers both allocations only on success. Both must
+ * belong to the supplied allocator. It clears the transferred request pointers
+ * on success; failure leaves the request and empty result slot unchanged.
+ * take copies identity; stream zero is valid for standalone serialization.
+ * Both constructors retain the palette and allocator. No RGB plane is made.
+ *
+ * Final skip includes alpha/key transparency and delta keeps. A NULL skip
+ * view means all paint. Kept indexes need not name a palette entry and must
+ * not be dereferenced. Dimensions must be positive and offsets nonnegative.
+ * encoded_x/y place source pixels in the encoded raster;
+ * its extents must contain that rectangle without overflow. Leading padding
+ * and the final partial SIXEL band never become retained source pixels.
+ * origin_x/y independently place source pixels within the retained plane.
+ * Nonzero skip requires transparent_background. The session sets SIXEL P2=1
+ * for that description; a clearing header cannot represent retained keeps.
+ * Rows are published as an immutable contiguous prefix with release/acquire
+ * ordering. Completion seals the image; failure never turns into completion.
+ * get_rows returns SIXEL_FALSE for unpublished rows, BAD_ARGUMENT for invalid
+ * ranges, and a failure for an aborted producer. The owner pins returned views.
+ * Refcount operations are thread-safe; users pin resources until GPU/worker
+ * completion, including failure and cancellation. */
+SIXELAPI SIXELSTATUS sixel_indexed_frame_new(
+    out indexed_frame **result,
+    in indexed_frame_description const *description,
+    in allocator *allocator);
+SIXELAPI SIXELSTATUS sixel_indexed_frame_take(
+    out indexed_frame **result,
+    inout indexed_frame_take_request *request,
+    in allocator *allocator);
+SIXELAPI void sixel_indexed_frame_ref(in indexed_frame *image);
+SIXELAPI void sixel_indexed_frame_unref(in indexed_frame *image);
+SIXELAPI SIXELSTATUS sixel_indexed_frame_get_description(
+    in indexed_frame const *image, out indexed_frame_description *description);
+SIXELAPI SIXELSTATUS sixel_indexed_frame_get_identity(
+    in indexed_frame const *image, out encode_identity *identity);
+SIXELAPI SIXELSTATUS sixel_indexed_frame_get_rows(
+    in indexed_frame const *image, in int first_row, in int rows,
+    out indexed_rows_view *view);
+SIXELAPI indexed_state sixel_indexed_frame_get_state(
+    in indexed_frame const *image);
+
+struct retained_plane_description {
+    int width;
+    int height;
+    int color_definition;
+    int colorspace;
+};
+
+struct retained_read_view {
+    unsigned char const *rgb;
+    unsigned char const *valid;
+    size_t rgb_stride;
+    size_t valid_stride;
+    retained_plane_description description;
+    uint64_t stream;
+    uint64_t epoch;
+    uint64_t sequence;
+};
+
+struct retained_update_request {
+    retained_read *baseline;
+    indexed_frame *image;
+    uint64_t sequence;
+    int record_paint;
+};
+
+struct retained_update_stats {
+    size_t painted_pixels;
+    int refinement_needed;
+    unsigned char const *paint;
+    size_t paint_size;
+};
+
+enum retained_invalidation {
+    SIXEL_RETAINED_SEEK = 0,
+    SIXEL_RETAINED_GEOMETRY = 1,
+    SIXEL_RETAINED_OUTPUT_FORMAT = 2,
+    SIXEL_RETAINED_OUTPUT_FAILURE = 3,
+    SIXEL_RETAINED_QUEUE_DISCARD = 4
+};
+
+/* Read leases pin the plane, not a copy. Their view stays valid until the last
+ * read unref. Callers release all leases before committing or invalidating.
+ * Updates retain their plane and indexed image, but do not retain the baseline
+ * read lease. A plane holds only a non-owning reference to its active update.
+ * Dropping an uncommitted update aborts it after its last resource user exits.
+ * The optional paint view borrows the update and survives until its last unref.
+ * It is frame-local, one byte per source pixel; when record_paint is zero,
+ * stats.paint is NULL and paint_size is zero without a paint allocation.
+ * Receipts are immutable and can only be obtained from a successful writer
+ * end_image; they are output acceptance records, not presentation timestamps. */
+SIXELAPI void sixel_retained_read_ref(in retained_read *read);
+SIXELAPI void sixel_retained_read_unref(in retained_read *read);
+SIXELAPI SIXELSTATUS sixel_retained_read_get_view(
+    in retained_read const *read, out retained_read_view *view);
+SIXELAPI void sixel_retained_update_ref(in retained_update *update);
+SIXELAPI void sixel_retained_update_unref(in retained_update *update);
+SIXELAPI void sixel_stream_receipt_ref(in stream_receipt *receipt);
+SIXELAPI void sixel_stream_receipt_unref(in stream_receipt *receipt);
+
+/* configure is idle-only and allocates before changing the current plane.
+ * An unchanged description preserves history. A changed description advances
+ * epoch and invalidates every pixel; allocation failure preserves old state.
+ * acquire_read also works on an invalid plane: valid bytes identify holes.
+ *
+ * begin_update validates geometry, output interpretation and baseline identity,
+ * reserves all commit storage, retains the image and stamps its identity.
+ * It neither expands indexes nor changes committed RGB. Only one update can
+ * be active per plane. A COMPLETE imported image must already carry the same
+ * identity derived from this baseline and requested sequence; no published
+ * rows may be rebound to a new identity. FAILED images are always rejected.
+ *
+ * commit requires a COMPLETE image, its matching receipt, drained consumers
+ * and no read leases. It checks all preconditions before writing, then performs
+ * one allocation-free traversal: skip keeps, expand painted indexes directly
+ * into retained RGB, and collect statistics. Partial-band padding is excluded.
+ * Success advances sequence even for an all-keep image. Repeated/stale commits
+ * fail without mutation. It never waits for physical terminal writes.
+ *
+ * abort preserves the CPU baseline. invalidate requires quiescence, advances
+ * epoch, clears validity and makes delayed old receipts unusable. Neither
+ * operation can undo partially emitted bytes. The session must invalidate and
+ * discard dependent output after partial writes or transport queue loss.
+ * Calls with live readers/producers return LOGIC_ERROR instead of waiting
+ * under a gate. Cancellation first drains those users outside the component.
+ * This contract does not yet expose speculative in-place GPU mutation. */
+[component, refcounted]
+[responsibility("maintain the retained image of one ordered output stream")]
+[forbid_state("lookup_policy", "dither_policy", "sixel_runs")]
+[forbid_state("terminal_callback", "transport_queue", "audio_clock")]
+interface retained_plane {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    [mutates]
+    SIXELSTATUS configure(in retained_plane_description const *description);
+    SIXELSTATUS acquire_read(out retained_read **read);
+    [mutates]
+    SIXELSTATUS begin_update(
+        in retained_update_request const *request,
+        out retained_update **update);
+    [mutates]
+    SIXELSTATUS commit(
+        in retained_update *update, in stream_receipt const *receipt,
+        out retained_update_stats *stats);
+    [mutates]
+    SIXELSTATUS abort(in retained_update *update);
+    [mutates]
+    SIXELSTATUS invalidate(in retained_invalidation reason);
+};
+
+[classid("image/retained-plane")]
+coclass retained_plane_component {
+    [default] interface retained_plane;
+};
+
 struct writer_init_request {
     sixel_write_function fn_write;
     void *priv;
@@ -248,6 +539,14 @@ struct writer_image_header {
  * sixel_writer serializes terminal-framing bytes to the callback supplied by
  * the legacy public sixel_output_t wrapper.  The callback is invoked while the
  * writer lock is held, so a callback must not re-enter the same writer.
+ * begin_image copies identity; NULL denotes an untracked image. end_image
+ * publishes a receipt only after the complete image has reached the configured
+ * callback boundary successfully. It reserves receipt capacity before the
+ * first image byte. A NULL receipt output requests no receipt. Failure never
+ * publishes one. The session drains PaletteApply/body work before end_image.
+ * Buffered callbacks accept ordered packets ahead of physical display; a
+ * later discarded packet invalidates every dependent delta suffix.
+ * abort_image best-effort closes framing without creating a receipt.
  */
 [component, refcounted]
 [responsibility("write framed terminal SIXEL bytes to callback-backed output")]
@@ -264,9 +563,12 @@ interface sixel_writer {
     [mutates]
     SIXELSTATUS set_controls(in writer_controls const *controls);
     SIXELSTATUS get_controls(out writer_controls *controls);
-    SIXELSTATUS begin_image(in writer_image_header const *header);
+    SIXELSTATUS begin_image(
+        in writer_image_header const *header,
+        in encode_identity const *identity);
     SIXELSTATUS write(in char const *data, in int size);
-    SIXELSTATUS end_image();
+    SIXELSTATUS end_image(out stream_receipt **receipt);
+    SIXELSTATUS abort_image();
 };
 
 [classid("io/sixel-writer")]
@@ -276,43 +578,64 @@ coclass sixel_writer_component {
 
 struct encoder_core_options {
     int has_gri_arg_limit;
-    int palette_type;
     int encode_policy;
     int ormode;
-    int transparent_policy;
-    int transparent_offset_left;
-    int transparent_offset_top;
-    int pixelformat;
-    int source_colorspace;
-    int colorspace;
+    int emit_palette;
 };
 
-struct encoder_core_encode_request {
-    unsigned char *pixels;
-    int width;
-    int height;
-    int depth;
-    sixel_dither_t *dither;
-    sixel_output_t *output;
+/* A body sink accepts all bytes or reports failure. The session owns context
+ * through finish/abort; no terminal/framing state belongs to the body encoder.
+ * This callback is per byte chunk, never per pixel. */
+typedef SIXELSTATUS (*sixel_body_write_function_t)(
+    char const *data, size_t size, void *context);
+
+struct body_byte_sink {
+    sixel_body_write_function_t write;
+    void *context;
+};
+
+struct encoder_core_prepare_request {
+    indexed_frame *image;
+    encoder_core_options options;
+    body_byte_sink sink;
+    int threads;
+    int queue_bands;
 };
 
 /*
- * encoder_core owns SIXEL body generation.  It receives image/quantization
- * state from the request and emits ordered body bytes through sixel_writer via
- * the legacy sixel_output_t wrapper.
+ * prepare retains image, validates options and reserves scratch without
+ * emitting bytes. An instance owns at most one active image. consume accepts
+ * a monotonically growing count of published source rows; complete six-row
+ * encoded bands can run immediately, including before PaletteApply finishes.
+ * Source readiness is translated through encoded_y; empty leading bands do
+ * not require source rows. The last partial band is accepted only when all
+ * source rows have been published.
+ * Workers may complete out of order; emitted body bytes remain ordered.
+ * finish requires COMPLETE input and all rows consumed, then drains workers.
+ * abort cancels/drains workers without framing or retained-state mutation.
+ * Both release the image/sink borrow; failed jobs must be aborted before reuse.
+ * Final decoded coverage must equal the indexed result, including skip holes.
+ * Wire palette fields are serialized directly; no re-quantization occurs here.
+ * Highcolor's changing palettes stay in the legacy public adapter until a
+ * separate indexed representation can express them without losing semantics.
  */
 [component, refcounted]
-[responsibility("encode image data into the SIXEL body stream")]
+[responsibility("serialize published indexed rows into SIXEL body bytes")]
 [forbid_state("callback_output", "dcs_envelope", "terminal_multiplexer", "image_file_output", "clipboard_output")]
+[forbid_state("lookup_policy", "dither_policy", "retained_plane")]
 interface encoder_core {
     [lifetime(retained)]
     void ref();
     [lifetime(release)]
     void unref();
     [mutates]
-    SIXELSTATUS set_options(in encoder_core_options const *options);
-    SIXELSTATUS get_options(out encoder_core_options *options);
-    SIXELSTATUS encode(in encoder_core_encode_request const *request);
+    SIXELSTATUS prepare(in encoder_core_prepare_request const *request);
+    [mutates]
+    SIXELSTATUS consume(in int published_rows);
+    [mutates]
+    SIXELSTATUS finish();
+    [mutates]
+    SIXELSTATUS abort();
 };
 
 [classid("codec/encoder-core")]
@@ -322,11 +645,6 @@ coclass encoder_core_component {
 
 [classid("codec/encoder-core.normal")]
 coclass encoder_core_normal_component {
-    [default] interface encoder_core;
-};
-
-[classid("codec/encoder-core.highcolor")]
-coclass encoder_core_highcolor_component {
     [default] interface encoder_core;
 };
 
@@ -636,6 +954,109 @@ interface dither_policy {
     [const] dither_policy_supports_parallel_result supports_parallel_bands();
 };
 
+/* Packed selection uses bit (y * columns + x), low bit first in each word.
+ * Without tiling, cell edges are floor(i * extent / grid). Tiling requires
+ * a 64x64 grid and repeats in frame-local pixel coordinates, matching the
+ * current refresh mask. It is not shifted by the retained-plane origin.
+ * Coordinates outside width/height and NULL words select no cells.
+ * Selected cells use min(selected_threshold, frame threshold).
+ * The caller owns this immutable map through run and all its workers. */
+struct delta_threshold_map {
+    uint32_t const *words;
+    size_t word_count;
+    unsigned int columns;
+    unsigned int rows;
+    int width;
+    int height;
+    int tiled;
+    unsigned int selected_threshold;
+};
+
+struct palette_apply_delta {
+    int enabled;
+    unsigned int threshold;
+    int metric;
+    delta_threshold_map selection;
+};
+
+struct palette_apply_prepare_request {
+    palette *working_palette;
+    lookup_policy *lookup;
+    dither_policy *dither;
+    indexed_frame_description output;
+    int pixelformat;
+    int colorspace;
+    int scan;
+    int worker_threads;
+    int gpu_policy;
+    size_t gpu_auto_threshold;
+};
+
+/* Called serially by the producer with a monotonically increasing ready-row
+ * prefix. Publication precedes the callback. The callback can enqueue body
+ * work; its failure stops application and seals the indexed image FAILED.
+ * It must not re-enter PaletteApply, mutate its plans or commit history. */
+typedef SIXELSTATUS (*sixel_indexed_rows_ready_function_t)(
+    indexed_frame *image, int published_rows, void *context);
+
+struct palette_apply_run_request {
+    frame *source;
+    retained_read *baseline;
+    indexed_frame *result;
+    palette_apply_delta delta;
+    sixel_indexed_rows_ready_function_t rows_ready;
+    void *rows_context;
+    sixel_cancel_function cancel;
+    void *cancel_context;
+};
+
+/* prepare retains compatible prepared lookup/dither and palette objects.
+ * They stay unchanged from prepare through run completion. Reconfiguration
+ * between runs requires prepare again before the next run; retaining a cache
+ * reference alone does not prohibit its idle reuse. The component resolves
+ * the execution plan without output, reusing device capabilities;
+ * hot loops neither reread environment options nor probe device availability.
+ * The existing policy preparation contracts supply policy-specific settings.
+ * CPU/GPU implementations must consume the same resolved settings, including
+ * dither strength/phase and emitted-color comparison semantics.
+ *
+ * run requires BUILDING result storage matching the prepared description and
+ * an exclusively borrowed source frame. The source's working pixels may be
+ * modified as permitted by the selected dither; ownership never transfers.
+ * Baseline interpretation/geometry must match delta input. With delta enabled,
+ * a prepared retained update must already have bound the result identity.
+ * No baseline means no delta keeps. Transparency still contributes final skip.
+ *
+ * All source, baseline, result, map and callback borrows end only after run
+ * drains its producer/GPU work. Body consumers keep their own result reference.
+ * A non-NULL cancel callback uses the existing sixel_cancel_function contract;
+ * the legacy flag adapter supplies synchronized observations at this boundary.
+ * Complete CPU bands can be published during run; GPU can publish one prefix
+ * after completion. COMPLETE is set only after successful final publication.
+ * Unsupported execution plans are resolved before output; a runtime failure
+ * seals FAILED rather than rerunning a partially published image on CPU.
+ * Frame statistics and retained state are published by retained_plane.commit,
+ * not by this component. No persistent per-pixel error buffer is introduced. */
+[component, refcounted]
+[responsibility("apply dither and lookup into indexed pixels and final skip")]
+[forbid_state("retained_pixels", "sixel_runs", "terminal_callback")]
+[forbid_state("transport_queue", "audio_clock")]
+interface palette_apply {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    [mutates]
+    SIXELSTATUS prepare(in palette_apply_prepare_request const *request);
+    [mutates]
+    SIXELSTATUS run(in palette_apply_run_request const *request);
+};
+
+[classid("processing/palette-apply")]
+coclass palette_apply_component {
+    [default] interface palette_apply;
+};
+
 [alias(sixel_chunk_t)]
 interface chunk;
 
@@ -816,8 +1237,6 @@ coclass loader_manager_component {
  *   direct-field callers migrate toward this interface.
  * - src/frame.c owns frame operations that need concrete storage access.
  */
-interface frame;
-
 enum frame_pixels_kind {
     SIXEL_FRAME_PIXELS_U8 = 0,
     SIXEL_FRAME_PIXELS_FLOAT32 = 1
