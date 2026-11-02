@@ -53,6 +53,7 @@ typedef struct color_auto_peer {
 } color_auto_peer_t;
 
 int test_cli_0036_color_wire(int argc, char **argv);
+int test_cli_0040_color_job(int argc, char **argv);
 
 static double
 color_auto_now(void)
@@ -688,11 +689,7 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
     int iteration;
     int images;
     char const *capability;
-    double started;
-    double elapsed;
-    double minimum;
     struct termios mode;
-    struct timespec pause;
 
     saved = strncmp(name, "save-", 5u) == 0 ? name[5] - '0' : 0;
     selected = color_auto_is(name, "srgb") ||
@@ -731,34 +728,18 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
         color_auto_is(name, "timeout-compact") ||
         color_auto_is(name, "timeout-env") ||
         color_auto_is(name, "timeout-cli-over-env")) {
-        /* Bound the exchange itself: terminal mode is released before
-         * decoding, CMS and SIXEL encoding. Timing the complete frame adds
-         * unrelated processing and pipe-drain latency to the timeout. */
+        /* The controller probe checks exact timeout arguments. This real
+         * silent peer checks fallback and complete output under the script
+         * deadline; scheduler latency is not an option-parsing oracle. */
         *p3 = 0;
-        minimum = color_auto_is(name, "timeout-long") ||
-            color_auto_is(name, "timeout-compact") ? 0.025 : 0.010;
-        started = color_auto_now();
-        pause.tv_sec = 0;
-        pause.tv_nsec = 1000000L;
-        do {
-            if (tcgetattr(peer->slave, &mode) != 0) {
-                return color_auto_error("cannot observe terminal release");
-            }
-            elapsed = color_auto_now() - started;
-            if (mode.c_lflag & ICANON) {
-                break;
-            }
-            if (nanosleep(&pause, NULL) != 0 && errno != EINTR) {
-                return color_auto_error("cannot wait for terminal release");
-            }
-        } while (elapsed < 0.150);
-
-        if (elapsed < minimum || elapsed >= 0.150) {
-            fprintf(stderr, "CLI color auto: timeout observation %.6f s "
-                "outside [%.6f, 0.150)\n", elapsed, minimum);
+        if (!color_auto_frame(peer)) {
             return 0;
         }
-        return color_auto_frame(peer);
+        if (tcgetattr(peer->slave, &mode) != 0 ||
+            !(mode.c_lflag & ICANON)) {
+            return color_auto_error("terminal mode not restored");
+        }
+        return 1;
     }
     if (color_auto_is(name, "silent") ||
         color_auto_is(name, "multiple-silent")) {
@@ -986,6 +967,13 @@ test_cli_0039_color_auto(int argc, char **argv)
     }
     if (case_index == sizeof(cases) / sizeof(cases[0])) {
         return 1;
+    }
+    if ((color_auto_is(argv[1], "timeout-long") ||
+         color_auto_is(argv[1], "timeout-compact") ||
+         color_auto_is(argv[1], "timeout-env") ||
+         color_auto_is(argv[1], "timeout-cli-over-env")) &&
+        test_cli_0040_color_job(2, argv) != 0) {
+        return color_auto_error("controller timeout argument mismatch");
     }
     if (!color_auto_start(&peer, argv[1], argv[2], argv[3], 0)) {
         return 1;

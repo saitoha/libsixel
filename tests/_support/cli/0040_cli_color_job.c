@@ -16,6 +16,8 @@ static int cjf_abandoned;
 static int cjf_encodes;
 static int cjf_ends;
 static int cjf_active;
+static int cjf_timeout;
+static char const *cjf_timeout_environment;
 static char cjf_message[4096];
 
 /* A small independent receiver model, not the production response parser.
@@ -71,7 +73,9 @@ cjf_receive(char const *bytes, size_t size)
 static char const *
 cjf_getenv(char const *name)
 {
-    (void)name;
+    if (strcmp(name, "SIXEL_OUTPUT_COLORSPACE_AUTO_TIMEOUT_MS") == 0) {
+        return cjf_timeout_environment;
+    }
     return NULL;
 }
 
@@ -184,7 +188,7 @@ cjf_query(img2sixel_color_tty_t *tty, img2sixel_color_query_t query,
     reply->parser.definition = 4u;
     reply->parser.s2 = 1u;
     reply->parser.policy = cjf_queries == 3 ? 2u : 0u;
-    return cjf_active && !cjf_abandoned && timeout == 200
+    return cjf_active && !cjf_abandoned && timeout == cjf_timeout
         ? IMG2SIXEL_COLOR_IO_OK : IMG2SIXEL_COLOR_IO_ERROR;
 }
 
@@ -200,7 +204,7 @@ cjf_write(img2sixel_color_tty_t *tty, char const *bytes, size_t size,
     if (recovery && size == 8u && bytes[1] == '[' && cjf_inject == 1) {
         cjf_cancelled = 1;
     }
-    return cjf_active && timeout == 200
+    return cjf_active && timeout == cjf_timeout
         ? IMG2SIXEL_COLOR_IO_OK : IMG2SIXEL_COLOR_IO_ERROR;
 }
 
@@ -271,6 +275,7 @@ test_cli_0040_color_job(int argc, char **argv)
     int queries;
     int encodes;
     sixel_encoder_t *encoder;
+    char const *option;
 
     if (argc != 2) {
         return 1;
@@ -292,8 +297,32 @@ test_cli_0040_color_job(int argc, char **argv)
         strcmp(argv[1], "restore-error") != 0 &&
         strcmp(argv[1], "end-success") != 0 &&
         strcmp(argv[1], "end-error") != 0 &&
-        strcmp(argv[1], "partial-encode") != 0) {
+        strcmp(argv[1], "partial-encode") != 0 &&
+        strcmp(argv[1], "timeout-long") != 0 &&
+        strcmp(argv[1], "timeout-compact") != 0 &&
+        strcmp(argv[1], "timeout-env") != 0 &&
+        strcmp(argv[1], "timeout-cli-over-env") != 0) {
         return 1;
+    }
+    /* Observe the actual controller's I/O arguments rather than infer a
+     * configured duration from two independently scheduled PTY processes.
+     * Every query/write checks the value, including policy restoration. */
+    option = "auto";
+    cjf_timeout = 200;
+    cjf_timeout_environment = NULL;
+    if (strcmp(argv[1], "timeout-long") == 0) {
+        option = "auto:timeout_ms=40";
+        cjf_timeout = 40;
+    } else if (strcmp(argv[1], "timeout-compact") == 0) {
+        option = "auto:T40";
+        cjf_timeout = 40;
+    } else if (strcmp(argv[1], "timeout-env") == 0) {
+        cjf_timeout_environment = "20";
+        cjf_timeout = 20;
+    } else if (strcmp(argv[1], "timeout-cli-over-env") == 0) {
+        option = "auto:timeout_ms=20";
+        cjf_timeout_environment = "invalid";
+        cjf_timeout = 20;
     }
     cjf_inject = strncmp(argv[1], "restore-", 8u) == 0 ? 1
         : strncmp(argv[1], "end-", 4u) == 0 ? 2
@@ -310,7 +339,7 @@ test_cli_0040_color_job(int argc, char **argv)
     cjf_receive_restored = 0;
     cjf_message[0] = '\0';
     cjf_copy_init(&job);
-    if (cjf_copy_option(&job, NULL, "auto") != SIXEL_OK ||
+    if (cjf_copy_option(&job, NULL, option) != SIXEL_OK ||
         cjf_copy_prepare(&job, NULL, 1, cjf_cancel, NULL) != SIXEL_OK) {
         return 1;
     }
