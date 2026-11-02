@@ -30,6 +30,7 @@ SIXEL_TEST_RUNNER_LINK_COMMAND ?= $(if \
 # OpenVMS supplies its native command and an empty list prerequisite. Keep
 # one unconditional target so Automake does not emit a second link recipe.
 test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) \
-        $(EXTRA_test_runner_DEPENDENCIES) $(SIXEL_TEST_RUNNER_OBJECT_LIST)
+        $(EXTRA_test_runner_DEPENDENCIES) $(SIXEL_TEST_RUNNER_OBJECT_LIST) \
+        $(SIXEL_EMSCRIPTEN_STDIO)
 	@rm -f $@
 	$(AM_V_GEN)$(SIXEL_TEST_RUNNER_LINK_COMMAND)

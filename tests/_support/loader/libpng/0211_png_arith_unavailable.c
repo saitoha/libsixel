@@ -46,6 +46,12 @@ pau_unavailable_build(sixel_png_chrm_matrix_t *out,
 
 #define SIXEL_PNG_TRANSFER_SRGB pau_transfer_srgb
 #define SIXEL_PNG_TRANSFER_GAMA pau_transfer_gama
+#define SIXEL_PNG_TRANSFER_MEMO_SIZE pau_transfer_memo_size
+#define sixel_png_transfer_memo pau_transfer_memo
+#define sixel_png_transfer_memo_t pau_transfer_memo_t
+#define png_transfer_memo_init pau_transfer_memo_init
+#define png_transfer_memo_apply pau_transfer_memo_apply
+#define png_expand_float_palette pau_expand_float_palette
 #define apng_blend_rect pau_000
 #define apng_clear_rect pau_001
 #define apng_decode_trace_is_enabled pau_002
@@ -179,6 +185,12 @@ pau_new_manager(sixel_allocator_t *allocator,
 #include "src/loader-manager.c"
 #undef SIXEL_PNG_TRANSFER_SRGB
 #undef SIXEL_PNG_TRANSFER_GAMA
+#undef SIXEL_PNG_TRANSFER_MEMO_SIZE
+#undef sixel_png_transfer_memo
+#undef sixel_png_transfer_memo_t
+#undef png_transfer_memo_init
+#undef png_transfer_memo_apply
+#undef png_expand_float_palette
 #undef LIBPNG_DEBUG_LOG
 #undef apng_blend_rect
 #undef apng_clear_rect

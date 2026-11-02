@@ -175,6 +175,9 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-23 | A standalone compile-time skip excludes the following test body; literal controls distinguish alternative branches, runtime checks, comments and strings from unreachable C code. | [tests/_static/sh/staticcheck-c-test-skip-branches.sh](../../tests/_static/sh/staticcheck-c-test-skip-branches.sh) |
 | SC-24 | Emscripten executable targets retain paired thread-proxy and runtime-exit link settings in both build systems; missing settings, guards or consumers fail removal controls. | [tests/_static/sh/staticcheck-emscripten-thread-runtime.sh](../../tests/_static/sh/staticcheck-emscripten-thread-runtime.sh) |
 | SC-25 | VM build failures are captured for artifact copyback and subsequently fail host validation; retry guards and per-attempt result paths cannot be removed unnoticed. | [tests/_static/sh/staticcheck-ci-vm-result.sh](../../tests/_static/sh/staticcheck-ci-vm-result.sh) |
+| SC-26 | Amalgamated test-runner macro generation preserves the complete inventory and object dependencies while forbidding full-list expansion into command arguments. | [tests/_static/sh/staticcheck-amalgamation-define-header.sh](../../tests/_static/sh/staticcheck-amalgamation-define-header.sh) |
+| SC-27 | Node raw-filesystem builds retain the standard-stream initializer in both build descriptions, including the Node/main-thread boundary and all three stream handles. | [tests/_static/sh/staticcheck-emscripten-node-stdio.sh](../../tests/_static/sh/staticcheck-emscripten-node-stdio.sh) |
+| SC-28 | Lookup SSE2 includes require the active compiler target rather than a shared configuration result alone; the source audit follows conditional scopes and target-qualified aliases without compiling C. | [tests/_static/sh/staticcheck-lookup-intrinsics-target.sh](../../tests/_static/sh/staticcheck-lookup-intrinsics-target.sh) |
 
 ### Coverage boundary
 

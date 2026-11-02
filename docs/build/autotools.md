@@ -121,6 +121,8 @@ Consumers select the required parts of the generated source through compilation 
 
 Headers containing implementation fragments that depend on declarations at their inclusion site use the `.inc.h` suffix. The generator excludes these fragments from its common header preamble. Quick Look lifecycle controls inject their private Objective-C query and mutation bodies through `SIXEL_USER_PROBE` and `SIXEL_USER_MUTATOR`; those bodies belong inside the private driver and must not enter ordinary C library builds.
 
+The amalgamated test runner converts its macro inventory to `test-runner-amalgamation-defines.h` and includes that header before `sixel.c`. The compiler command never expands the complete `-D` list: a shell argument can exceed the operating system limit before compilation starts. The wrapper object depends on both generated inputs; the [test harness](test-harness.md) describes the inventory check.
+
 The tools-only amalgamation mode prepares shared generated inputs before parallel consumer builds. A stale `sixel.c` can retain an old feature selection or test registration, so rebuilding only `tests/test_runner` is insufficient when its generator inputs have changed but the owning generation path was bypassed.
 
 ## Test, install, and distribution targets
@@ -142,5 +144,6 @@ Before changing this layer, inspect the root orchestration and the owning subdir
 | ID | Contract | Owning check |
 | --- | --- | --- |
 | AT-01 | Private lifecycle injection bodies retain fragment names and remain absent from the generated common preamble, while ordinary public headers are still emitted. | [tests/_static/sh/staticcheck-amalgamation-test-fragments.sh](../../tests/_static/sh/staticcheck-amalgamation-test-fragments.sh) |
+| AT-02 | The amalgamated runner consumes the complete macro inventory through a generated header, with explicit object dependencies and no full-list command expansion. | [tests/_static/sh/staticcheck-amalgamation-define-header.sh](../../tests/_static/sh/staticcheck-amalgamation-define-header.sh) |
 
-This check verifies the generator boundary without compiling the generated C or the native Objective-C driver. Platform compilation and lifecycle behavior require their respective build and test jobs.
+These checks verify the generator boundary without compiling the generated C or the native Objective-C driver. Platform compilation and lifecycle behavior require their respective build and test jobs.

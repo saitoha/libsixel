@@ -1,3 +1,7 @@
+# Editing the embedded Node initializer must relink the executable.
+EXTRA_progressive_study_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
+EXTRA_jpegref_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
+
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif

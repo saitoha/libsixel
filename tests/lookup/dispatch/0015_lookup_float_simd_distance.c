@@ -8,6 +8,8 @@
 #endif
 #include <stdio.h>
 #include "src/colorspace.h"
+/* The amalgamation already exposes these private kernels. */
+#if !defined(SIXEL_AMALGAMATION)
 #define sixel_lookup_vptree_float32_create test_float_19_create
 #define sixel_lookup_vptree_float32_unref test_float_19_unref
 #define sixel_lookup_vptree_float32_configure test_float_19_configure
@@ -15,6 +17,20 @@
 #define sixel_lookup_vptree_float32_workspace_size test_float_19_workspace_size
 #define sixel_lookup_vptree_float32_map_pixels test_float_19_map_pixels
 #include "src/lookup-vptree-float32.c"
+#undef sixel_lookup_vptree_float32_create
+#undef sixel_lookup_vptree_float32_unref
+#undef sixel_lookup_vptree_float32_configure
+#undef sixel_lookup_vptree_float32_map
+#undef sixel_lookup_vptree_float32_workspace_size
+#undef sixel_lookup_vptree_float32_map_pixels
+#else
+#define test_float_19_create sixel_lookup_vptree_float32_create
+#define test_float_19_unref sixel_lookup_vptree_float32_unref
+#define test_float_19_configure sixel_lookup_vptree_float32_configure
+#define test_float_19_map sixel_lookup_vptree_float32_map
+#define test_float_19_workspace_size sixel_lookup_vptree_float32_workspace_size
+#define test_float_19_map_pixels sixel_lookup_vptree_float32_map_pixels
+#endif
 
 int
 test_lookup_0019_float_simd_distance(int argc, char **argv)
@@ -91,3 +107,10 @@ test_lookup_0019_float_simd_distance(int argc, char **argv)
     }
     return EXIT_SUCCESS;
 }
+
+#undef test_float_19_create
+#undef test_float_19_unref
+#undef test_float_19_configure
+#undef test_float_19_map
+#undef test_float_19_workspace_size
+#undef test_float_19_map_pixels

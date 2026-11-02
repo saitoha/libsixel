@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-23
 # Policy: docs/encoder/palette-construction/pipeline/README.md
 # Verify that thread creation failure reuses the completed sample.
 

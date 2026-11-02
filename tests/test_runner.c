@@ -50,6 +50,10 @@
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 # include <windows.h>
+# if defined(_WIN32)
+#  include <io.h>
+#  include <fcntl.h>
+# endif
 #endif
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__) \
@@ -12652,6 +12656,14 @@ main(int argc, char **argv)
     requested = NULL;
     first_index = 1;
 
+#if defined(_WIN32)
+    /* TAP observers compare serialized bytes and trace fields. Keep the CRT
+     * from appending CR to each line in either captured stream. */
+    if (_setmode(_fileno(stdout), _O_BINARY) == -1 ||
+        _setmode(_fileno(stderr), _O_BINARY) == -1) {
+        return test_runner_process_exit_status(EXIT_FAILURE);
+    }
+#endif
     if (test_runner_apply_env_options(argc, argv, &first_index) != 0) {
         print_usage(argv[0]);
         return test_runner_process_exit_status(EXIT_FAILURE);

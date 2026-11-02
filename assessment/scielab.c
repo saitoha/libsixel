@@ -159,7 +159,7 @@ scielab_filter(double const *xyz, double *filtered, double *plane,
 
 /* Invert the declared matrix, avoiding a separately rounded inverse. */
 static void
-scielab_inverse(double inverse[3][3])
+scielab_inverse(double (*inverse)[3][3])
 {
     double determinant;
     int i;
@@ -167,19 +167,19 @@ scielab_inverse(double inverse[3][3])
 
     for (i = 0; i < 3; ++i) {
         for (j = 0; j < 3; ++j) {
-            inverse[j][i] =
+            (*inverse)[j][i] =
                 scielab_opponent[(i + 1) % 3][(j + 1) % 3]
                 * scielab_opponent[(i + 2) % 3][(j + 2) % 3]
                 - scielab_opponent[(i + 1) % 3][(j + 2) % 3]
                 * scielab_opponent[(i + 2) % 3][(j + 1) % 3];
         }
     }
-    determinant = scielab_opponent[0][0] * inverse[0][0]
-        + scielab_opponent[0][1] * inverse[1][0]
-        + scielab_opponent[0][2] * inverse[2][0];
+    determinant = scielab_opponent[0][0] * (*inverse)[0][0]
+        + scielab_opponent[0][1] * (*inverse)[1][0]
+        + scielab_opponent[0][2] * (*inverse)[2][0];
     for (i = 0; i < 3; ++i) {
         for (j = 0; j < 3; ++j) {
-            inverse[i][j] /= determinant;
+            (*inverse)[i][j] /= determinant;
         }
     }
 }
@@ -242,8 +242,9 @@ sixel_qa_scielab(double const *reference, double const *output,
     temp = plane + pixels;
     scielab_filter(reference, ref, plane, temp, width, height, ppd);
     scielab_filter(output, out, plane, temp, width, height, ppd);
-    /* Spell out the first row: PCC misdiagnoses implicit 2-D array decay. */
-    scielab_inverse(&inverse[0]);
+    /* Pass the complete matrix: PCC rejects implicit 2-D decay, while
+     * GCC object-size analysis treats a first-row address as one row. */
+    scielab_inverse(&inverse);
     total = 0.0;
     peak = 0.0;
     total00 = 0.0;

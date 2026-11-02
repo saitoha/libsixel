@@ -397,6 +397,7 @@ if fuzz_enabled
   endif
 endif
 
+emscripten_link_depends = []
 if host_system == 'emscripten'
   # Emscripten -s settings below are link-time settings.
   # Keep them in link arguments to avoid compile-time warnings.
@@ -406,7 +407,9 @@ if host_system == 'emscripten'
     emscripten_ldflags += ['-sRETAIN_COMPILER_SETTINGS=1']
   endif
   if get_option('emscripten_noderawfs')
-    emscripten_ldflags += ['-sNODERAWFS=1']
+    emscripten_link_depends = files('build-aux/emscripten-node-stdio.js')
+    emscripten_ldflags += ['-sNODERAWFS=1', '--pre-js',
+      meson.current_source_dir() / 'build-aux/emscripten-node-stdio.js']
   endif
 
   emscripten_stack_size = get_option('emscripten_stack_size')

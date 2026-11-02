@@ -19,7 +19,7 @@ static char const *const lookup_options[] = {
 static char const *const lookup_spaces[] = {
     "gamma", "linear", "oklab", "cielab", "din99d"
 };
-static int const lookup_formats[] = {
+static int const palette_lookup_formats[] = {
     SIXEL_PIXELFORMAT_RGBFLOAT32, SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
     SIXEL_PIXELFORMAT_OKLABFLOAT32, SIXEL_PIXELFORMAT_CIELABFLOAT32,
     SIXEL_PIXELFORMAT_DIN99DFLOAT32
@@ -122,7 +122,7 @@ lookup_encode(int policy, int space, int p3, int byte,
     /* Neutral endpoints serialize as black and white in both output
      * definitions. They are NOT a canonical float black/white palette. */
     ok = dither->use_rgb101_palette != 0 &&
-        dither->pixelformat == lookup_formats[space] &&
+        dither->pixelformat == palette_lookup_formats[space] &&
         strstr(capture.data, ";2;0;0;0") != NULL &&
         strstr(capture.data, ";2;100;100;100") != NULL &&
         SIXEL_SUCCEEDED(dither->palette->vtbl->get_entries_float32(

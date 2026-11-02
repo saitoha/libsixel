@@ -62,6 +62,7 @@ if img2sixel_opt.enabled()
   if amalgamated_tools_enabled
     img2sixel_exe = executable('img2sixel',
       [amalgamation_out],
+      link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H'],
@@ -74,6 +75,7 @@ if img2sixel_opt.enabled()
   else
     img2sixel_exe = executable('img2sixel',
       img2sixel_core_sources,
+      link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H'],
@@ -121,6 +123,7 @@ if img2sixel_opt.enabled()
   if img2sixel_cli_fuzz_supported
     img2sixel_fuzz_harness = executable('fuzz-img2sixel-afl-persistent',
       ['../fuzz/fuzz-img2sixel-afl-persistent.c'],
+      link_depends: emscripten_link_depends,
       c_args: libsixel_posix_defs,
       objc_args: libsixel_posix_defs,
       dependencies: [libsixel_dep],
@@ -131,6 +134,7 @@ if img2sixel_opt.enabled()
 
     img2sixel_cli_parser_harness = executable('fuzz-img2sixel-cli-parser-afl-persistent',
       ['../fuzz/fuzz-img2sixel-cli-parser-afl-persistent.c'] + img2sixel_core_sources,
+      link_depends: emscripten_link_depends,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H',
                                      '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
@@ -145,6 +149,7 @@ if img2sixel_opt.enabled()
 
     img2sixel_cli_boundary_harness = executable('fuzz-img2sixel-cli-boundary-afl-persistent',
       ['../fuzz/fuzz-img2sixel-cli-boundary-afl-persistent.c'] + img2sixel_core_sources,
+      link_depends: emscripten_link_depends,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H',
                                      '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
@@ -159,6 +164,7 @@ if img2sixel_opt.enabled()
 
     img2sixel_cli_pathenv_harness = executable('fuzz-img2sixel-cli-pathenv-afl-persistent',
       ['../fuzz/fuzz-img2sixel-cli-pathenv-afl-persistent.c'] + img2sixel_core_sources,
+      link_depends: emscripten_link_depends,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H',
                                      '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
@@ -173,6 +179,7 @@ if img2sixel_opt.enabled()
 
     img2sixel_cli_numeric_harness = executable('fuzz-img2sixel-cli-numeric-afl-persistent',
       ['../fuzz/fuzz-img2sixel-cli-numeric-afl-persistent.c'] + img2sixel_core_sources,
+      link_depends: emscripten_link_depends,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H',
                                      '-DLIBSIXEL_IMG2SIXEL_EMBEDDED'],
@@ -437,6 +444,7 @@ if sixel2png_opt.enabled()
   if amalgamated_tools_enabled
     sixel2png_exe = executable('sixel2png',
       [amalgamation_out],
+      link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       objc_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
@@ -447,6 +455,7 @@ if sixel2png_opt.enabled()
   else
     sixel2png_exe = executable('sixel2png',
       ['sixel2png.c'] + sources_common + aborttrace_sources,
+      link_depends: emscripten_link_depends,
       link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       objc_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],

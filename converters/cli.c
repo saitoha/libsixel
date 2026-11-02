@@ -116,6 +116,14 @@ cli_setenv_portable(char const *name, char const *value)
         return -1;
     }
 
+#if defined(_MSC_VER) || HAVE__PUTENV_S
+    /* getenv() reads the CRT copy. Update it first: the CRT removes empty
+     * values, while the Win32 environment below must preserve them. */
+    if (_putenv_s(name, value) != 0) {
+        errno = EINVAL;
+        return -1;
+    }
+#endif
     if (SetEnvironmentVariableA(name, value) == 0) {
         errno = EINVAL;
         return -1;

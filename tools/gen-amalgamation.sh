@@ -374,11 +374,16 @@ BEGIN {
         name = $0;
         sub(/^[ \t]*#[ \t]*include[ \t]*["<]/, "", name);
         sub(/[">].*/, "", name);
-        if (name in header) {
+        # The registry contains basenames, including for qualified includes
+        # in test subdirectories. Those headers are already in the preamble.
+        local_name = name;
+        sub(/^.*\//, "", local_name);
+        if (local_name in header) {
             if (keep_local_includes == "1") {
                 print $0;
                 next;
             }
+            name = local_name;
             if (name in inline_once && !(name in emitted)) {
                 emitted[name] = 1;
                 print name >> inline_state;

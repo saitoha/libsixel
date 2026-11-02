@@ -969,8 +969,20 @@ run_case_tap "staticcheck-fuzz-loader-formats" \
     "$src_root/tests/_static/sh/staticcheck-fuzz-loader-formats.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-amalgamation-define-header" \
+    "$src_root/tests/_static/sh/staticcheck-amalgamation-define-header.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-ci-vm-result" \
     "$src_root/tests/_static/sh/staticcheck-ci-vm-result.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-emscripten-node-stdio" \
+    "$src_root/tests/_static/sh/staticcheck-emscripten-node-stdio.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-lookup-intrinsics-target" \
+    "$src_root/tests/_static/sh/staticcheck-lookup-intrinsics-target.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-emscripten-thread-runtime" \

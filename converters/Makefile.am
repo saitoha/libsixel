@@ -1,3 +1,7 @@
+# Editing the embedded Node initializer must relink the executable.
+EXTRA_img2sixel_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
+EXTRA_sixel2png_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
+
 DIST_SUBDIRS = $(SUBDIRS)
 
 srcdir = @srcdir@
@@ -168,7 +172,7 @@ img2sixel_LDADD += $(ABORTTRACE_LIBS)
 endif
 if BUILDING_ON_WINDOWS
 if USING_CL
-EXTRA_img2sixel_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
+EXTRA_img2sixel_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif
@@ -235,7 +239,7 @@ sixel2png_LDADD += $(ABORTTRACE_LIBS)
 endif
 if BUILDING_ON_WINDOWS
 if USING_CL
-EXTRA_sixel2png_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
+EXTRA_sixel2png_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif

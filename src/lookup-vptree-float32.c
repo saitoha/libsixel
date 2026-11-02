@@ -41,10 +41,17 @@
 #include "lookup-vptree-float32.h"
 #include "status.h"
 
+/* A shared config.h can describe a different cosmocc compiler target. */
+#if HAVE_SSE2 && HAVE_EMMINTRIN_H && \
+    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+# define SIXEL_VPTREE_FLOAT_SSE2 1
+#endif
+
 /* Require compiler headers even when the target CPU supports SIMD. */
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
 #include <arm_neon.h>
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_VPTREE_FLOAT_SSE2)
 #include <emmintrin.h>
 #endif
 
@@ -54,7 +61,7 @@
  * Neither pragmas nor an explicit fma may change the surrounding sources. */
 #if defined(SIXEL_FLOAT_LOOKUP_EXACT_SIMD) && !defined(__FAST_MATH__) \
     && ((HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)) \
-        || (HAVE_SSE2 && HAVE_EMMINTRIN_H))
+        || (defined(SIXEL_VPTREE_FLOAT_SSE2)))
 #define SIXEL_FLOAT_LOOKUP_SIMD 1
 #else
 #define SIXEL_FLOAT_LOOKUP_SIMD 0

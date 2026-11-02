@@ -10350,10 +10350,12 @@ sixel_palette_snapshot_clone(sixel_palette_snapshot_t const *snapshot,
     source = snapshot->built;
     copy = NULL;
     status = source->palette->vtbl->get_entries(source->palette, &bytes);
-    if (SIXEL_SUCCEEDED(status)) {
-        status = source->palette->vtbl->get_entries_float32(source->palette,
-                                                          &floats);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
+    /* A float view is consumed below only after its provider succeeds. */
+    status = source->palette->vtbl->get_entries_float32(source->palette,
+                                                       &floats);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -19346,6 +19348,7 @@ sixel_encoder_encode_frame_owned(
     sixel_timeline_logger_t *logger;
 
     status = SIXEL_FALSE;
+    memset(&controls, 0, sizeof(controls));
     restore_envelope = 0;
     logger = NULL;
 
@@ -19734,12 +19737,9 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     if (strcmp(path, "-") == 0) {
         stream = stdout;
     } else {
-        if (format_final == SIXEL_PALETTE_FORMAT_PAL_JASC ||
-                format_final == SIXEL_PALETTE_FORMAT_GPL) {
-            mode = "w";
-        } else {
-            mode = "wb";
-        }
+        /* Preserve the serialized palette bytes on every platform, including
+         * the LF separators emitted by the text palette writers. */
+        mode = "wb";
         stream = sixel_compat_fopen(path, mode);
         if (stream == NULL) {
             sixel_helper_set_additional_message(

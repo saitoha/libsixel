@@ -35,6 +35,13 @@
 #include "lookup-delaunay-float32.h"
 #include "lookup-delaunay-graph.h"
 
+/* A shared config.h can describe a different cosmocc compiler target. */
+#if HAVE_SSE2 && HAVE_EMMINTRIN_H && \
+    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+# define SIXEL_DLF_SSE2 1
+#endif
+
 /* Follow the existing isolated float-lookup build policy. Unknown native
  * contraction settings and amalgamation retain the scalar expression. */
 #if defined(SIXEL_FLOAT_LOOKUP_EXACT_SIMD) && !defined(__FAST_MATH__) \
@@ -42,7 +49,7 @@
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
 #include <arm_neon.h>
 #define SIXEL_DLF_SIMD 1
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
 #include <emmintrin.h>
 #define SIXEL_DLF_SIMD 1
 #elif defined(__wasm_simd128__)
@@ -372,7 +379,7 @@ sixel_lookup_delaunay_float32_walk_scalar(
 #if SIXEL_DLF_SIMD
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
 typedef float64x2_t sixel_delaunay_distance2_t;
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
 typedef __m128d sixel_delaunay_distance2_t;
 #else
 typedef v128_t sixel_delaunay_distance2_t;
@@ -396,7 +403,7 @@ sixel_delaunay_float_distance2(sixel_lookup_delaunay_float32_t const *graph,
     diff = vsubq_f64(vdupq_n_f64(pixel[2]), vld1q_f64(block->z + half));
     sum = vaddq_f64(sum, vmulq_n_f64(vmulq_f64(diff, diff),
                                     graph->weights_wide[2]));
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
     sum = _mm_setzero_pd();
     diff = _mm_sub_pd(_mm_set1_pd(pixel[0]), _mm_loadu_pd(block->x + half));
     sum = _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(diff, diff),
@@ -446,7 +453,7 @@ sixel_lookup_delaunay_float32_walk_simd(
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
         vd = vdupq_n_f64(distance);
         vi = vdupq_n_f64((double)center);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
         vd = _mm_set1_pd(distance);
         vi = _mm_set1_pd((double)center);
 #else
@@ -467,7 +474,7 @@ sixel_lookup_delaunay_float32_walk_simd(
                     vandq_u64(vceqq_f64(d, vd), vcltq_f64(id, vi)));
                 vd = vbslq_f64(mask, d, vd);
                 vi = vbslq_f64(mask, id, vi);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
                 id = _mm_loadu_pd(block->id + half);
                 mask = _mm_or_pd(_mm_cmplt_pd(d, vd),
                     _mm_and_pd(_mm_cmpeq_pd(d, vd), _mm_cmplt_pd(id, vi)));
@@ -488,7 +495,7 @@ sixel_lookup_delaunay_float32_walk_simd(
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
         vst1q_f64(distances, vd);
         vst1q_f64(ids, vi);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
         _mm_storeu_pd(distances, vd);
         _mm_storeu_pd(ids, vi);
 #else
@@ -622,7 +629,7 @@ sixel_delaunay_float_query_distance2(
     d = vsubq_f64(b, vdupq_n_f64(p[2]));
     return vaddq_f64(sum, vmulq_n_f64(vmulq_f64(d, d),
                                         graph->weights_wide[2]));
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
     sum = _mm_setzero_pd();
     d = _mm_sub_pd(r, _mm_set1_pd(p[0]));
     sum = _mm_add_pd(sum, _mm_mul_pd(_mm_mul_pd(d, d),
@@ -661,7 +668,7 @@ sixel_lookup_delaunay_float32_map_cold8(
     int i, j, c;
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
     uint64x2_t mask;
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
     __m128d mask;
 #else
     v128_t mask;
@@ -679,7 +686,7 @@ sixel_lookup_delaunay_float32_map_cold8(
         b[j] = vld1q_f64(channels[2] + j * 2);
         best[j] = vdupq_n_f64(DBL_MAX);
         idx[j] = vdupq_n_f64(0.0);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
         r[j] = _mm_loadu_pd(channels[0] + j * 2);
         g[j] = _mm_loadu_pd(channels[1] + j * 2);
         b[j] = _mm_loadu_pd(channels[2] + j * 2);
@@ -696,7 +703,7 @@ sixel_lookup_delaunay_float32_map_cold8(
     for (i = 0; i < graph->count; ++i) {
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
         index = vdupq_n_f64((double)graph->uindex[i]);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
         index = _mm_set1_pd((double)graph->uindex[i]);
 #else
         index = wasm_f64x2_splat((double)graph->uindex[i]);
@@ -708,7 +715,7 @@ sixel_lookup_delaunay_float32_map_cold8(
             mask = vcltq_f64(distance, best[j]);
             best[j] = vbslq_f64(mask, distance, best[j]);
             idx[j] = vbslq_f64(mask, index, idx[j]);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
             mask = _mm_cmplt_pd(distance, best[j]);
             best[j] = _mm_or_pd(_mm_and_pd(mask, distance),
                                 _mm_andnot_pd(mask, best[j]));
@@ -724,7 +731,7 @@ sixel_lookup_delaunay_float32_map_cold8(
     for (j = 0; j < 4; ++j) {
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
         vst1q_f64(out + j * 2, idx[j]);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DLF_SSE2)
         _mm_storeu_pd(out + j * 2, idx[j]);
 #else
         wasm_v128_store(out + j * 2, idx[j]);

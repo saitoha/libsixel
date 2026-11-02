@@ -35,10 +35,17 @@
 #include "lookup-delaunay-graph.h"
 #include "sixel_atomic.h"
 
+/* A shared config.h can describe a different cosmocc compiler target. */
+#if HAVE_SSE2 && HAVE_EMMINTRIN_H && \
+    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+# define SIXEL_DL8_SSE2 1
+#endif
+
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
 #include <arm_neon.h>
 #define SIXEL_DL8_SIMD 1
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
 #include <emmintrin.h>
 #define SIXEL_DL8_SIMD 1
 #elif defined(__wasm_simd128__)
@@ -47,6 +54,7 @@
 #else
 #define SIXEL_DL8_SIMD 0
 #endif
+
 
 /* Four neighbors in structure-of-arrays form. Repeating the last neighbor
  * pads a tail without introducing a new candidate or an out-of-bounds load. */
@@ -331,7 +339,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
     int32x4_t x, y, z, d, id, vd, vi, key;
     uint32x4_t mask;
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
     __m128i x, y, z, d, id, vd, vi, key;
     __m128i mask, xy, zz, zero;
 #else
@@ -351,7 +359,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
         vd = vdupq_n_s32(distance);
         vi = vdupq_n_s32(center);
         key = vdupq_n_s32(packed ? (distance << 8) | center : 0);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
         vd = _mm_set1_epi32(distance);
         vi = _mm_set1_epi32(center);
         key = _mm_set1_epi32(packed ? (distance << 8) | center : 0);
@@ -383,7 +391,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
                 vd = vbslq_s32(mask, d, vd);
                 vi = vbslq_s32(mask, id, vi);
             }
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
             x = _mm_sub_epi32(_mm_set1_epi32(pixel[0]),
                 _mm_loadu_si128((__m128i const *)(void const *)block->x));
             y = _mm_sub_epi32(_mm_set1_epi32(pixel[1]),
@@ -447,7 +455,7 @@ sixel_lookup_delaunay_8bit_walk_simd(
             vst1q_s32(distances, vd);
             vst1q_s32(ids, vi);
         }
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
         if (packed) {
             d = _mm_shuffle_epi32(key, _MM_SHUFFLE(1, 0, 3, 2));
             mask = _mm_cmplt_epi32(d, key);
@@ -560,7 +568,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
     int16x8_t r, g, b, dr, dg, db;
     int32x4_t lo, hi, best_lo, best_hi, idx_lo, idx_hi, index;
     uint32x4_t mask;
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
     __m128i r, g, b, dr, dg, db, zero;
     __m128i lo, hi, best_lo, best_hi, idx_lo, idx_hi, index, mask, v;
 #else
@@ -579,7 +587,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
     b = vld1q_s16(blue);
     best_lo = best_hi = vdupq_n_s32(INT_MAX);
     idx_lo = idx_hi = vdupq_n_s32(0);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
     r = _mm_loadu_si128((__m128i const *)(void const *)red);
     g = _mm_loadu_si128((__m128i const *)(void const *)green);
     b = _mm_loadu_si128((__m128i const *)(void const *)blue);
@@ -611,7 +619,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
         mask = vcltq_s32(hi, best_hi);
         idx_hi = vbslq_s32(mask, index, idx_hi);
         best_hi = vminq_s32(hi, best_hi);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
         /* Graph coordinates are byte values stored in int32_t slots. */
         dr = _mm_sub_epi16(r, _mm_set1_epi16((short)p[0]));
         dg = _mm_sub_epi16(g, _mm_set1_epi16((short)p[1]));
@@ -661,7 +669,7 @@ sixel_lookup_delaunay_8bit_map_cold8(
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
     vst1q_s32(indexes, idx_lo);
     vst1q_s32(indexes + 4, idx_hi);
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
+#elif defined(SIXEL_DL8_SSE2)
     _mm_storeu_si128((__m128i *)(void *)indexes, idx_lo);
     _mm_storeu_si128((__m128i *)(void *)(indexes + 4), idx_hi);
 #else

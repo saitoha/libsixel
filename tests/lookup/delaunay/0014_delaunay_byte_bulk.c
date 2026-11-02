@@ -9,12 +9,26 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+/* The amalgamation already exposes these private kernels. */
+#if !defined(SIXEL_AMALGAMATION)
 #define sixel_lookup_delaunay_8bit_create test_dl34_create
 #define sixel_lookup_delaunay_8bit_unref test_dl34_unref
 #define sixel_lookup_delaunay_8bit_configure test_dl34_configure
 #define sixel_lookup_delaunay_8bit_map test_dl34_map
 #define sixel_lookup_delaunay_8bit_map_pixels test_dl34_map_pixels
 #include "src/lookup-delaunay-8bit.c"
+#undef sixel_lookup_delaunay_8bit_create
+#undef sixel_lookup_delaunay_8bit_unref
+#undef sixel_lookup_delaunay_8bit_configure
+#undef sixel_lookup_delaunay_8bit_map
+#undef sixel_lookup_delaunay_8bit_map_pixels
+#else
+#define test_dl34_create sixel_lookup_delaunay_8bit_create
+#define test_dl34_unref sixel_lookup_delaunay_8bit_unref
+#define test_dl34_configure sixel_lookup_delaunay_8bit_configure
+#define test_dl34_map sixel_lookup_delaunay_8bit_map
+#define test_dl34_map_pixels sixel_lookup_delaunay_8bit_map_pixels
+#endif
 
 int
 test_lookup_0034_delaunay_byte_bulk(int argc, char **argv)
@@ -160,3 +174,9 @@ cleanup:
     sixel_allocator_unref(allocator);
     return rc;
 }
+
+#undef test_dl34_create
+#undef test_dl34_unref
+#undef test_dl34_configure
+#undef test_dl34_map
+#undef test_dl34_map_pixels

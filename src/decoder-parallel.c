@@ -2299,14 +2299,13 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].last_painted_row = (-1);
         contexts[i].direct_mode_kind = SIXEL_DECODER_DIRECT_PARSE;
         contexts[i].undither = undither_prepared ? undither : NULL;
+        /* Initialize every owner before any worker can allocate columns. */
+        contexts[i].columns = NULL;
     }
+    contexts_ready = threads;
 
     created = 0;
     for (i = 0; i < threads; ++i) {
-        /* Count initialized column owners separately from live workers:
-         * gather resets created and may fail after parsing allocated them. */
-        contexts[i].columns = NULL;
-        ++contexts_ready;
         contexts[i].result = (-1);
         contexts[i].runtime_error = 0;
         contexts[i].first_painted_row = (-1);

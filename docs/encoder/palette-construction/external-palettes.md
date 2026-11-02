@@ -286,6 +286,8 @@ The project then moved away from that dependency. A [July 2015 commit](https://g
 - [`tests/palette/mapfile-io/`](../../../tests/palette/mapfile-io/) covers format parsing, detection, malformed inputs, standard input, and format writers.
 - [`tests/palette`](../../../tests/palette) covers image mapfiles, lookup and diffusion application, fixed-palette bypasses, color-space conversion, animation, and palette export.
 
+Palette files preserve the bytes emitted by the selected serializer on Windows as well as POSIX. Text palette exports retain LF separators rather than applying CRT newline translation; the existing exact GPL/JASC comparisons verify the serialized ordering, values and separators together.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->

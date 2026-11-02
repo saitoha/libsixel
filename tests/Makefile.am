@@ -8,7 +8,7 @@ SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 if WANT_AMALGAMATED_TOOLS
-BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+BUILT_SOURCES = $(AMALGAMATION_SIXEL) test-runner-amalgamation-defines.h
 endif
 # Keep OpenVMS inventories line-oriented: its make and RMS record limits
 # cannot accommodate the complete list in a make variable.  The check target
@@ -212,7 +212,24 @@ TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_test_runner_SOURCES = test-runner-amalgamation.c \
+    test-runner-amalgamation-defines.h
+# Read the inventory from disk: expanding all -D switches in a recipe can
+# exceed the per-argument limit before the compiler itself even starts.
+test-runner-amalgamation-defines.h: $(srcdir)/Makefile.am \
+        $(top_srcdir)/build-aux/test-runner-amalgamation-defines.awk
+	$(AM_V_GEN)$(AWK) -f \
+	    $(top_srcdir)/build-aux/test-runner-amalgamation-defines.awk \
+	    $(srcdir)/Makefile.am >$@.tmp && mv -f $@.tmp $@
+
+test-runner-amalgamation.c: Makefile
+	$(AM_V_GEN)printf '%s\n' \
+	    '#include "test-runner-amalgamation-defines.h"' \
+	    '#include "../amalgamation/sixel.c"' >$@
+
+test_runner-test-runner-amalgamation.$(OBJEXT): \
+    test-runner-amalgamation-defines.h $(AMALGAMATION_SIXEL)
+
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
@@ -4394,7 +4411,6 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TERMINAL_COLOR \
     -DBUILD_TERMINAL_COLOR_TTY
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
-    $(TEST_RUNNER_AMALGAMATION_DEFINES) \
     $(GDK_PIXBUF_CFLAGS) \
     -DGDK_PIXBUF_ENABLE_BACKEND \
     -DSIXEL_PIXBUF_LOADER_TESTING \
@@ -10702,7 +10718,9 @@ dist-hook:
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = dist-files.list check-tests.list test_runner.objects test_runner.objects.tmp \
+CLEANFILES = test-runner-amalgamation.c test-runner-amalgamation-defines.h \
+    test-runner-amalgamation-defines.h.tmp \
+    dist-files.list check-tests.list test_runner.objects test_runner.objects.tmp \
     .openvms-current-test
 DISTCLEANFILES = check-tests.mk
 
@@ -10921,3 +10939,7 @@ EXTRA_DIST += _static/sh/staticcheck-emscripten-thread-runtime.sh \
 
 EXTRA_DIST += _static/sh/staticcheck-ci-vm-result.sh \
     _static/awk/ci-vm-result.awk
+
+EXTRA_DIST += _static/sh/staticcheck-amalgamation-define-header.sh
+EXTRA_DIST += _static/sh/staticcheck-emscripten-node-stdio.sh
+EXTRA_DIST += _static/sh/staticcheck-lookup-intrinsics-target.sh

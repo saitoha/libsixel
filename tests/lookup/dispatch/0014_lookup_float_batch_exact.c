@@ -8,6 +8,8 @@
 #endif
 #include <stdio.h>
 #include "src/colorspace.h"
+/* The amalgamation already exposes these private kernels. */
+#if !defined(SIXEL_AMALGAMATION)
 #define sixel_lookup_vptree_float32_create test_float_18_create
 #define sixel_lookup_vptree_float32_unref test_float_18_unref
 #define sixel_lookup_vptree_float32_configure test_float_18_configure
@@ -15,6 +17,20 @@
 #define sixel_lookup_vptree_float32_workspace_size test_float_18_workspace_size
 #define sixel_lookup_vptree_float32_map_pixels test_float_18_map_pixels
 #include "src/lookup-vptree-float32.c"
+#undef sixel_lookup_vptree_float32_create
+#undef sixel_lookup_vptree_float32_unref
+#undef sixel_lookup_vptree_float32_configure
+#undef sixel_lookup_vptree_float32_map
+#undef sixel_lookup_vptree_float32_workspace_size
+#undef sixel_lookup_vptree_float32_map_pixels
+#else
+#define test_float_18_create sixel_lookup_vptree_float32_create
+#define test_float_18_unref sixel_lookup_vptree_float32_unref
+#define test_float_18_configure sixel_lookup_vptree_float32_configure
+#define test_float_18_map sixel_lookup_vptree_float32_map
+#define test_float_18_workspace_size sixel_lookup_vptree_float32_workspace_size
+#define test_float_18_map_pixels sixel_lookup_vptree_float32_map_pixels
+#endif
 
 int
 test_lookup_0018_float_batch_exact(int argc, char **argv)
@@ -38,7 +54,7 @@ test_lookup_0018_float_batch_exact(int argc, char **argv)
     scratch = NULL;
     rc = EXIT_FAILURE;
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))
-            || SIXEL_FAILED(sixel_lookup_vptree_float32_create(allocator,
+            || SIXEL_FAILED(test_float_18_create(allocator,
                                                               &tree))) {
         goto cleanup;
     }
@@ -89,14 +105,14 @@ test_lookup_0018_float_batch_exact(int argc, char **argv)
     /* Reprepare clears caller scratch; oversize palettes and NULL scratch
      * exercise the exact fallback used after optional allocation failure. */
     for (n = 16; n <= 257; n += n == 16 ? 240 : 1) {
-        if (SIXEL_FAILED(sixel_lookup_vptree_float32_configure(tree,
+        if (SIXEL_FAILED(test_float_18_configure(tree,
                 palette, n, 3, weights))) {
             goto cleanup;
         }
         memset(scratch, 0, sizeof(*scratch));
         for (i = 0; i < 257; ++i) {
             expected[i] = (sixel_index_t)
-                sixel_lookup_vptree_float32_map(tree, pixels[i], -1);
+                test_float_18_map(tree, pixels[i], -1);
         }
         if (expected[0] != 0) {
             goto cleanup;
@@ -109,7 +125,7 @@ test_lookup_0018_float_batch_exact(int argc, char **argv)
                     }
                     memset(actual, 0xff, sizeof(actual));
                     i = reverse && count ? count - 1 : 0;
-                    sixel_lookup_vptree_float32_map_pixels(tree,
+                    test_float_18_map_pixels(tree,
                         (unsigned char const *)pixels[i], (size_t)count,
                         reverse ? -12 : 12, actual + i, reverse ? -1 : 1,
                         pass == 0 ? NULL : scratch);
@@ -130,14 +146,21 @@ test_lookup_0018_float_batch_exact(int argc, char **argv)
                 }
             }
         }
-        if (n == 257 && sixel_lookup_vptree_float32_workspace_size(tree)) {
+        if (n == 257 && test_float_18_workspace_size(tree)) {
             goto cleanup;
         }
     }
     rc = EXIT_SUCCESS;
 cleanup:
     free(scratch);
-    sixel_lookup_vptree_float32_unref(tree);
+    test_float_18_unref(tree);
     sixel_allocator_unref(allocator);
     return rc;
 }
+
+#undef test_float_18_create
+#undef test_float_18_unref
+#undef test_float_18_configure
+#undef test_float_18_map
+#undef test_float_18_workspace_size
+#undef test_float_18_map_pixels

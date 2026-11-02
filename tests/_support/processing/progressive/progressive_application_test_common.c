@@ -45,7 +45,9 @@ test_progressive_application_case(int mode)
     sixel_repair_application_t application;
     sixel_palette_emitted_color_t colors[2];
     float source[12];
-    double errors[4] = { .3, .3, .1875, 1 };
+    /* Dyadic values give the same exact gain under runtime arithmetic and
+     * compilers that fold decimal constant expressions at extra precision. */
+    double errors[4] = { .3125, .3125, .1875, 1 };
     unsigned char selected[4] = { 1, 1, 1, 0 };
     unsigned int palette[2] = { 0, 1 };
     unsigned char indices[4];
@@ -90,12 +92,12 @@ test_progressive_application_case(int mode)
     }
     APPLICATION_REQUIRE(application_test_run(&application, 1, totals));
     if (mode == 54 || mode == 56) {
-        /* Nearest black reduces .3 to .1875, but the equal-error third
+        /* Nearest black reduces .3125 to .1875, but the equal-error third
          * pixel keeps, as does the explicitly excluded fourth position. */
         APPLICATION_REQUIRE(memcmp(paint, "\1\1\0\0", 4) == 0);
         APPLICATION_REQUIRE(indices[0] == 0 && indices[1] == 0 &&
             application.painted == 2);
-        APPLICATION_REQUIRE(gains[0] == .3 - .1875);
+        APPLICATION_REQUIRE(gains[0] == .125);
     } else if (mode >= 55 && mode <= 58) {
         /* At (4,7), table taps 171/183 give noise +.3882353: the query
          * chooses white and must reject it against the unperturbed .25.

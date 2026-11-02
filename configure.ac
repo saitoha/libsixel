@@ -1857,12 +1857,15 @@ AC_ARG_ENABLE([emscripten-assertions],
               [enable_emscripten_assertions=yes])
 
 EMSCRIPTEN_LDFLAGS=""
+SIXEL_EMSCRIPTEN_STDIO=""
+AC_SUBST(SIXEL_EMSCRIPTEN_STDIO)
 AS_CASE([$host_os],
         [emscripten*],
         [AS_IF([test "x$enable_emscripten_retain_compiler_settings" = "xyes"],
                [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sRETAIN_COMPILER_SETTINGS=1"])
          AS_IF([test "x$enable_emscripten_noderawfs" = "xyes"],
-               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sNODERAWFS=1"])
+               [SIXEL_EMSCRIPTEN_STDIO="`cd "$srcdir" && pwd`/build-aux/emscripten-node-stdio.js"
+                EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sNODERAWFS=1 --pre-js $SIXEL_EMSCRIPTEN_STDIO"])
          AS_IF([test -n "$with_emscripten_stack_size"],
                [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sSTACK_SIZE=$with_emscripten_stack_size"])
          AS_IF([test -n "$with_emscripten_initial_memory"],
@@ -4608,10 +4611,13 @@ if test x$with_jpeg != xno; then
                       [whether libjpeg arithmetic decode support is available])
         fi
         loaders="${loaders} jpeg"
-        if test x$LIBJPEG_PKG_NAME != x; then
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"
-        else
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+        dnl Emscripten ports are link flags, not installed pkg-config modules.
+        if test x$host_os != xemscripten; then
+            if test x$LIBJPEG_PKG_NAME != x; then
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"
+            else
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+            fi
         fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBJPEG_LIBS"
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
@@ -4740,7 +4746,9 @@ if test x$with_png != xno; then
         fi
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE ${LIBPNG_PKG_NAME}"
+        if test x$host_os != xemscripten; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE ${LIBPNG_PKG_NAME}"
+        fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBPNG_LIBS"
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
         AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
@@ -4821,10 +4829,13 @@ if test x$with_tiff != xno; then
     if test x$have_tiff = xyes; then
         AC_DEFINE(HAVE_LIBTIFF, 1, [whether libtiff is available])
         loaders="${loaders} tiff"
-        if test x$LIBTIFF_PKG_NAME != x; then
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBTIFF_PKG_NAME"
-        else
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libtiff-4"
+        dnl Emscripten ports are link flags, not installed pkg-config modules.
+        if test x$host_os != xemscripten; then
+            if test x$LIBTIFF_PKG_NAME != x; then
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBTIFF_PKG_NAME"
+            else
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE libtiff-4"
+            fi
         fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBTIFF_LIBS"
         AC_MSG_NOTICE([libtiff cflags is ${LIBTIFF_CFLAGS}])
@@ -4968,10 +4979,13 @@ if test x$with_webp != xno; then
     if test x$have_webp = xyes; then
         AC_DEFINE(HAVE_WEBP, 1, [whether libwebp is available])
         loaders="${loaders} webp"
-        if test "x$LIBWEBP_PKG_NAME" != x; then
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
-        else
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"
+        dnl Emscripten ports are link flags, not installed pkg-config modules.
+        if test x$host_os != xemscripten; then
+            if test "x$LIBWEBP_PKG_NAME" != x; then
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
+            else
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"
+            fi
         fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBWEBP_LIBS"
         AC_MSG_NOTICE([libwebp cflags is ${LIBWEBP_CFLAGS}])

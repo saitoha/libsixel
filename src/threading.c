@@ -394,6 +394,10 @@ SIXELAPI int
 sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
 {
     int rc;
+#if defined(__VMS)
+    pthread_attr_t attributes;
+    size_t stack_size;
+#endif
 
     if (thread == NULL || fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -406,8 +410,26 @@ sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
     thread->arg = arg;
     thread->result = SIXEL_OK;
     thread->started = 0;
+#if defined(__VMS)
+    /* OpenVMS worker stacks cannot grow. Its roughly 40 KiB default is
+     * insufficient for palette construction and nested conversion calls.
+     * Preserve a larger system default while reserving at least 1 MiB. */
+    rc = pthread_attr_init(&attributes);
+    if (rc == 0) {
+        rc = pthread_attr_getstacksize(&attributes, &stack_size);
+        if (rc == 0 && stack_size < 1024U * 1024U) {
+            rc = pthread_attr_setstacksize(&attributes, 1024U * 1024U);
+        }
+        if (rc == 0) {
+            rc = pthread_create(&thread->handle, &attributes,
+                                sixel_thread_trampoline, thread);
+        }
+        (void)pthread_attr_destroy(&attributes);
+    }
+#else
     rc = pthread_create(&thread->handle, NULL, sixel_thread_trampoline,
                         thread);
+#endif
     if (rc != 0) {
         errno = rc;
         return SIXEL_RUNTIME_ERROR;

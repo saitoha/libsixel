@@ -8488,10 +8488,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-terminal-color.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-terminal-color-tty.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-path.$(OBJEXT)
-am__objects_2 =  \
-	$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_OBJECTS =  \
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_OBJECTS = test_runner-test-runner-amalgamation.$(OBJEXT)
 test_runner_OBJECTS = $(am_test_runner_OBJECTS) \
 	$(nodist_test_runner_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -8553,9 +8550,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade =  \
-	$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po \
-	$(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po \
+am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po \
 	$(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po \
 	$(top_builddir)/assessment/$(DEPDIR)/test_runner-persistence.Po \
 	$(top_builddir)/assessment/$(DEPDIR)/test_runner-scielab.Po \
@@ -8566,6 +8561,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
 	$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po \
+	./$(DEPDIR)/test_runner-test-runner-amalgamation.Po \
 	./$(DEPDIR)/test_runner-test_runner.Po \
 	_support/cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po \
 	_support/cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po \
@@ -13081,6 +13077,7 @@ SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
 SIXEL_EMSCRIPTEN_CC = @SIXEL_EMSCRIPTEN_CC@
+SIXEL_EMSCRIPTEN_STDIO = @SIXEL_EMSCRIPTEN_STDIO@
 SIXEL_LIBTOOL_BUILD_LIBS = @SIXEL_LIBTOOL_BUILD_LIBS@
 SIXEL_LIBTOOL_OBJDIR = @SIXEL_LIBTOOL_OBJDIR@
 SIXEL_LIBTOOL_PATH_SEPARATOR = @SIXEL_LIBTOOL_PATH_SEPARATOR@
@@ -13181,7 +13178,7 @@ zshcompletiondir = @zshcompletiondir@
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
-@WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL) test-runner-amalgamation-defines.h
 # Keep OpenVMS inventories line-oriented: its make and RMS record limits
 # cannot accommodate the complete list in a make variable.  The check target
 # refreshes this file before launching workers, independently of configure.
@@ -13340,7 +13337,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(ABORTTRACE_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
-@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_SOURCES = test-runner-amalgamation.c \
+@WANT_AMALGAMATED_TOOLS_TRUE@    test-runner-amalgamation-defines.h
+
+
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
@@ -17536,7 +17536,6 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
 
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
-@WANT_AMALGAMATED_TOOLS_TRUE@    $(TEST_RUNNER_AMALGAMATION_DEFINES) \
 @WANT_AMALGAMATED_TOOLS_TRUE@    $(GDK_PIXBUF_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DGDK_PIXBUF_ENABLE_BACKEND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DSIXEL_PIXBUF_LOADER_TESTING \
@@ -22123,12 +22122,17 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-emscripten-thread-runtime.sh \
 	_static/awk/emscripten-thread-runtime.awk \
 	_static/sh/staticcheck-ci-vm-result.sh \
-	_static/awk/ci-vm-result.awk
+	_static/awk/ci-vm-result.awk \
+	_static/sh/staticcheck-amalgamation-define-header.sh \
+	_static/sh/staticcheck-emscripten-node-stdio.sh \
+	_static/sh/staticcheck-lookup-intrinsics-target.sh
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = dist-files.list check-tests.list test_runner.objects test_runner.objects.tmp \
+CLEANFILES = test-runner-amalgamation.c test-runner-amalgamation-defines.h \
+    test-runner-amalgamation-defines.h.tmp \
+    dist-files.list check-tests.list test_runner.objects test_runner.objects.tmp \
     .openvms-current-test
 
 DISTCLEANFILES = check-tests.mk
@@ -35629,19 +35633,9 @@ $(top_builddir)/converters/test_runner-terminal-color-tty.$(OBJEXT):  \
 $(top_builddir)/converters/test_runner-path.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/amalgamation/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/amalgamation
-	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
-$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/amalgamation/$(DEPDIR)
-	@: >>$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT):  \
-	$(top_builddir)/amalgamation/$(am__dirstamp) \
-	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 	-rm -f $(top_builddir)/assessment/*.$(OBJEXT)
 	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
@@ -35832,7 +35826,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-assessment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/assessment/$(DEPDIR)/test_runner-persistence.Po@am__quote@ # am--include-marker
@@ -35844,6 +35837,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-terminal-color.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test-runner-amalgamation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test_runner.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po@am__quote@ # am--include-marker
@@ -98018,19 +98012,19 @@ $(top_builddir)/converters/test_runner-path.obj: $(top_builddir)/converters/path
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-path.obj `if test -f '$(top_builddir)/converters/path.c'; then $(CYGPATH_W) '$(top_builddir)/converters/path.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/path.c'; fi`
 
-$(top_builddir)/amalgamation/test_runner-sixel.o: $(top_builddir)/amalgamation/sixel.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/test_runner-sixel.o' libtool=no @AMDEPBACKSLASH@
+test_runner-test-runner-amalgamation.o: test-runner-amalgamation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT test_runner-test-runner-amalgamation.o -MD -MP -MF $(DEPDIR)/test_runner-test-runner-amalgamation.Tpo -c -o test_runner-test-runner-amalgamation.o `test -f 'test-runner-amalgamation.c' || echo '$(srcdir)/'`test-runner-amalgamation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_runner-test-runner-amalgamation.Tpo $(DEPDIR)/test_runner-test-runner-amalgamation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-runner-amalgamation.c' object='test_runner-test-runner-amalgamation.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test-runner-amalgamation.o `test -f 'test-runner-amalgamation.c' || echo '$(srcdir)/'`test-runner-amalgamation.c
 
-$(top_builddir)/amalgamation/test_runner-sixel.obj: $(top_builddir)/amalgamation/sixel.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/test_runner-sixel.obj' libtool=no @AMDEPBACKSLASH@
+test_runner-test-runner-amalgamation.obj: test-runner-amalgamation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT test_runner-test-runner-amalgamation.obj -MD -MP -MF $(DEPDIR)/test_runner-test-runner-amalgamation.Tpo -c -o test_runner-test-runner-amalgamation.obj `if test -f 'test-runner-amalgamation.c'; then $(CYGPATH_W) 'test-runner-amalgamation.c'; else $(CYGPATH_W) '$(srcdir)/test-runner-amalgamation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_runner-test-runner-amalgamation.Tpo $(DEPDIR)/test_runner-test-runner-amalgamation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-runner-amalgamation.c' object='test_runner-test-runner-amalgamation.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test-runner-amalgamation.obj `if test -f 'test-runner-amalgamation.c'; then $(CYGPATH_W) 'test-runner-amalgamation.c'; else $(CYGPATH_W) '$(srcdir)/test-runner-amalgamation.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -98330,8 +98324,6 @@ distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
 	-$(am__rm_f) $(DISTCLEANFILES)
-	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
-	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/assessment/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/assessment/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
@@ -98806,6 +98798,21 @@ override TESTS := $(if $(filter __SIXEL_TEST_DISCOVERY_FAILED__,$(TESTS)),$(erro
 SIXEL_INSTALLCHECK ?= 0
 # The static suite and nested helpers need the same configured utility.
 export CKSUM
+# Read the inventory from disk: expanding all -D switches in a recipe can
+# exceed the per-argument limit before the compiler itself even starts.
+@WANT_AMALGAMATED_TOOLS_TRUE@test-runner-amalgamation-defines.h: $(srcdir)/Makefile.am \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(top_srcdir)/build-aux/test-runner-amalgamation-defines.awk
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(AWK) -f \
+@WANT_AMALGAMATED_TOOLS_TRUE@	    $(top_srcdir)/build-aux/test-runner-amalgamation-defines.awk \
+@WANT_AMALGAMATED_TOOLS_TRUE@	    $(srcdir)/Makefile.am >$@.tmp && mv -f $@.tmp $@
+
+@WANT_AMALGAMATED_TOOLS_TRUE@test-runner-amalgamation.c: Makefile
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)printf '%s\n' \
+@WANT_AMALGAMATED_TOOLS_TRUE@	    '#include "test-runner-amalgamation-defines.h"' \
+@WANT_AMALGAMATED_TOOLS_TRUE@	    '#include "../amalgamation/sixel.c"' >$@
+
+@WANT_AMALGAMATED_TOOLS_TRUE@test_runner-test-runner-amalgamation.$(OBJEXT): \
+@WANT_AMALGAMATED_TOOLS_TRUE@    test-runner-amalgamation-defines.h $(AMALGAMATION_SIXEL)
 
 # Keep object names out of the shell's -c argument. Even relative paths can
 # exceed Linux's per-string limit long before the total argv limit is reached.
@@ -98839,7 +98846,8 @@ SIXEL_TEST_RUNNER_LINK_COMMAND ?= $(if \
 # OpenVMS supplies its native command and an empty list prerequisite. Keep
 # one unconditional target so Automake does not emit a second link recipe.
 test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) \
-        $(EXTRA_test_runner_DEPENDENCIES) $(SIXEL_TEST_RUNNER_OBJECT_LIST)
+        $(EXTRA_test_runner_DEPENDENCIES) $(SIXEL_TEST_RUNNER_OBJECT_LIST) \
+        $(SIXEL_EMSCRIPTEN_STDIO)
 	@rm -f $@
 	$(AM_V_GEN)$(SIXEL_TEST_RUNNER_LINK_COMMAND)
 

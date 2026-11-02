@@ -899,6 +899,7 @@ WANT_AMALGAMATED_LIB_FALSE
 WANT_AMALGAMATED_LIB_TRUE
 WITH_EMSCRIPTEN_SPLIT_MODE_FALSE
 WITH_EMSCRIPTEN_SPLIT_MODE_TRUE
+SIXEL_EMSCRIPTEN_STDIO
 HAVE_ABORT_TRACE_FALSE
 HAVE_ABORT_TRACE_TRUE
 WANT_SIXEL2PNG_FALSE
@@ -17877,6 +17878,8 @@ fi
 
 
 EMSCRIPTEN_LDFLAGS=""
+SIXEL_EMSCRIPTEN_STDIO=""
+
 case $host_os in #(
   emscripten*) :
     if test "x$enable_emscripten_retain_compiler_settings" = "xyes"
@@ -17885,7 +17888,8 @@ then :
 fi
          if test "x$enable_emscripten_noderawfs" = "xyes"
 then :
-  EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sNODERAWFS=1"
+  SIXEL_EMSCRIPTEN_STDIO="`cd "$srcdir" && pwd`/build-aux/emscripten-node-stdio.js"
+                EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sNODERAWFS=1 --pre-js $SIXEL_EMSCRIPTEN_STDIO"
 fi
          if test -n "$with_emscripten_stack_size"
 then :
@@ -26704,10 +26708,12 @@ printf "%s\n" "#define HAVE_JPEG_ARITH_DECODER 1" >>confdefs.h
 
         fi
         loaders="${loaders} jpeg"
-        if test x$LIBJPEG_PKG_NAME != x; then
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"
-        else
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+                if test x$host_os != xemscripten; then
+            if test x$LIBJPEG_PKG_NAME != x; then
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"
+            else
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+            fi
         fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBJPEG_LIBS"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: jpeg cflags is ${LIBJPEG_CFLAGS}" >&5
@@ -27121,7 +27127,9 @@ printf "%s\n" "$have_png" >&6; }
 printf "%s\n" "#define HAVE_LIBPNG 1" >>confdefs.h
 
         loaders="${loaders} png"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE ${LIBPNG_PKG_NAME}"
+        if test x$host_os != xemscripten; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE ${LIBPNG_PKG_NAME}"
+        fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBPNG_LIBS"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
 printf "%s\n" "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
@@ -27346,10 +27354,12 @@ fi
 printf "%s\n" "#define HAVE_LIBTIFF 1" >>confdefs.h
 
         loaders="${loaders} tiff"
-        if test x$LIBTIFF_PKG_NAME != x; then
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBTIFF_PKG_NAME"
-        else
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libtiff-4"
+                if test x$host_os != xemscripten; then
+            if test x$LIBTIFF_PKG_NAME != x; then
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBTIFF_PKG_NAME"
+            else
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE libtiff-4"
+            fi
         fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBTIFF_LIBS"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libtiff cflags is ${LIBTIFF_CFLAGS}" >&5
@@ -27816,10 +27826,12 @@ fi
 printf "%s\n" "#define HAVE_WEBP 1" >>confdefs.h
 
         loaders="${loaders} webp"
-        if test "x$LIBWEBP_PKG_NAME" != x; then
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
-        else
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"
+                if test x$host_os != xemscripten; then
+            if test "x$LIBWEBP_PKG_NAME" != x; then
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
+            else
+                REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"
+            fi
         fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBWEBP_LIBS"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libwebp cflags is ${LIBWEBP_CFLAGS}" >&5

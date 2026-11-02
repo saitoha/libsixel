@@ -401,6 +401,7 @@ SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
 SIXEL_EMSCRIPTEN_CC = @SIXEL_EMSCRIPTEN_CC@
+SIXEL_EMSCRIPTEN_STDIO = @SIXEL_EMSCRIPTEN_STDIO@
 SIXEL_LIBTOOL_BUILD_LIBS = @SIXEL_LIBTOOL_BUILD_LIBS@
 SIXEL_LIBTOOL_OBJDIR = @SIXEL_LIBTOOL_OBJDIR@
 SIXEL_LIBTOOL_PATH_SEPARATOR = @SIXEL_LIBTOOL_PATH_SEPARATOR@
@@ -497,6 +498,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
+
+# Editing the embedded Node initializer must relink the executable.
+EXTRA_progressive_study_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
+EXTRA_jpegref_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 bin_SCRIPTS = libsixel-config $(am__append_1)

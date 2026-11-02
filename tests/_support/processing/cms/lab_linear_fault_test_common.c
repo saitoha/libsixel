@@ -153,6 +153,8 @@ clf_cs(ColorSyncTransformRef tr, size_t w, size_t h,
 #define sixel_cdef_separable clf_local_linearized_separable
 #define sixel_cdef_transfer clf_local_transfer
 #define sixel_cdef_export_icc clf_local_13_export
+#define sixel_cdef_put32 clf_local_export_put32
+#define sixel_cdef_fixed clf_local_export_fixed
 #define sixel_cdef_finite clf_local_14
 #define sixel_cdef_free clf_local_15
 #define sixel_cdef_from_xyz clf_local_16
@@ -527,6 +529,8 @@ sixel_cdef_export_icc(sixel_color_def_t const *definition,
 #undef sixel_cdef_linearized
 #undef sixel_cdef_transfer
 #undef sixel_cdef_export_icc
+#undef sixel_cdef_put32
+#undef sixel_cdef_fixed
 #undef sixel_cdef_finite
 #undef sixel_cdef_free
 #undef sixel_cdef_from_xyz

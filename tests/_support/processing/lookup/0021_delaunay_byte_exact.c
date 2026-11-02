@@ -8,12 +8,25 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+/* The amalgamation already exposes the private walkers in this unit. */
+#if !defined(SIXEL_AMALGAMATION)
 #define sixel_lookup_delaunay_8bit_create test_dl21_create
 #define sixel_lookup_delaunay_8bit_unref test_dl21_unref
 #define sixel_lookup_delaunay_8bit_configure test_dl21_configure
 #define sixel_lookup_delaunay_8bit_map test_dl21_map
 #define sixel_lookup_delaunay_8bit_map_pixels test_dl21_map_pixels
 #include "src/lookup-delaunay-8bit.c"
+#undef sixel_lookup_delaunay_8bit_create
+#undef sixel_lookup_delaunay_8bit_unref
+#undef sixel_lookup_delaunay_8bit_configure
+#undef sixel_lookup_delaunay_8bit_map
+#undef sixel_lookup_delaunay_8bit_map_pixels
+#else
+#define test_dl21_create sixel_lookup_delaunay_8bit_create
+#define test_dl21_unref sixel_lookup_delaunay_8bit_unref
+#define test_dl21_configure sixel_lookup_delaunay_8bit_configure
+#define test_dl21_map sixel_lookup_delaunay_8bit_map
+#endif
 
 /* Bound routine checks without confining them to a low-red RGB prefix.
  * Keep exhaustive enumeration available for deliberate full-domain runs.
@@ -183,3 +196,9 @@ cleanup:
     sixel_allocator_unref(allocator);
     return rc;
 }
+#if defined(SIXEL_AMALGAMATION)
+#undef test_dl21_create
+#undef test_dl21_unref
+#undef test_dl21_configure
+#undef test_dl21_map
+#endif

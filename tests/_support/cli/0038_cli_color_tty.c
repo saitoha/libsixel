@@ -8,7 +8,11 @@
  */
 /* DragonFly's default feature set includes both POSIX and BSD termios
  * state. Strict POSIX/XSI hides PENDIN, which this test must observe. */
-#if !defined(__DragonFly__)
+#if defined(__DragonFly__)
+/* Meson supplies _POSIX_C_SOURCE on the compiler command line as well. */
+# undef _POSIX_C_SOURCE
+# undef _XOPEN_SOURCE
+#else
 # ifndef _POSIX_C_SOURCE
 #  define _POSIX_C_SOURCE 200809L
 # endif
@@ -630,9 +634,18 @@ color_tty_script(char const *name, int master, int command, int report,
         }
         /* Drain before waiting for child exit: BSD close can wait for its
          * output queue even when the transport descriptor was nonblocking. */
+        done = 0;
         while ((count = read(master, bytes, sizeof(bytes))) > 0) {
             for (result = 0; result < count; ++result) {
-                if (bytes[result] != 'x') {
+                if (done == 0 && bytes[result] == 'x') {
+                    continue;
+                }
+                /* PTY queue movement can admit a request prefix after the
+                 * filler reached EAGAIN. The child checks that the request
+                 * remains incomplete; account for those bytes here too. */
+                if (strcmp(name, "backpressure") != 0 ||
+                    done >= (int)sizeof(COLOR_TTY_QUERY) - 2 ||
+                    bytes[result] != COLOR_TTY_QUERY[done++]) {
                     return 0;
                 }
             }
