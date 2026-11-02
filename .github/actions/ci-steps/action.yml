@@ -1151,16 +1151,17 @@ runs:
         sync: rsync
         cpu: 2
         mem: 4096
-        prepare: |
-          echo "__DFBSD_PHASE_PREPARE__"
-          #pkg update -f
-          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
         run: |
+          cd "$GITHUB_WORKSPACE"
+          # Return the guest status as data so the action copies logs back.
+          sh tools/ci-vm-result.sh capture dragonflybsd-autotools-1.result.log <<'SIXEL_VM_BUILD'
           echo "__DFBSD_PHASE_RUN__"
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
           export MAKE=gmake
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+          SIXEL_VM_BUILD
 
     - name: Wait before DragonFlyBSD retry (Autotools)
       if: >-
@@ -1186,16 +1187,17 @@ runs:
         sync: rsync
         cpu: 2
         mem: 4096
-        prepare: |
-          echo "__DFBSD_PHASE_PREPARE__"
-          #pkg update -f
-          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
         run: |
+          cd "$GITHUB_WORKSPACE"
+          # Return the guest status as data so the action copies logs back.
+          sh tools/ci-vm-result.sh capture dragonflybsd-autotools-2.result.log <<'SIXEL_VM_BUILD'
           echo "__DFBSD_PHASE_RUN__"
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
           export MAKE=gmake
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+          SIXEL_VM_BUILD
 
     - name: Wait before DragonFlyBSD cacheless retry (Autotools)
       if: >-
@@ -1224,29 +1226,24 @@ runs:
         cpu: 2
         mem: 4096
         disable-cache: true
-        prepare: |
-          echo "__DFBSD_PHASE_PREPARE__"
-          #pkg update -f
-          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
         run: |
+          cd "$GITHUB_WORKSPACE"
+          # Return the guest status as data so the action copies logs back.
+          sh tools/ci-vm-result.sh capture dragonflybsd-autotools-3.result.log <<'SIXEL_VM_BUILD'
           echo "__DFBSD_PHASE_RUN__"
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
           export MAKE=gmake
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+          SIXEL_VM_BUILD
 
     - name: Validate DragonFlyBSD retry result (Autotools)
-      if: >-
-        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
-            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
-            && steps.dragonflybsd_autotools_1.outcome != 'success'
-            && steps.dragonflybsd_autotools_2.outcome != 'success'
-            && steps.dragonflybsd_autotools_3.outcome != 'success' }}
+      if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm' }}
       shell: bash
-      run: |
-        set -o igncr 2>/dev/null || true
-        echo "DragonFlyBSD Autotools failed on cached retries and cacheless final retry."
-        exit 1
+      env:
+        RESULT_FILE: ${{ steps.dragonflybsd_autotools_1.outcome == 'success' && 'dragonflybsd-autotools-1.result.log' || steps.dragonflybsd_autotools_2.outcome == 'success' && 'dragonflybsd-autotools-2.result.log' || steps.dragonflybsd_autotools_3.outcome == 'success' && 'dragonflybsd-autotools-3.result.log' || '' }}
+      run: sh tools/ci-vm-result.sh check "$RESULT_FILE"
 
     - name: Configure, build, and test (Meson, DragonFlyBSD) (attempt 1)
       id: dragonflybsd_meson_1
@@ -1259,16 +1256,16 @@ runs:
         sync: rsync
         cpu: 2
         mem: 4096
-        prepare: |
-          echo "__DFBSD_PHASE_PREPARE__"
-          #pkg update -f
-          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
         run: |
-          echo "__DFBSD_PHASE_RUN__"
           cd "$GITHUB_WORKSPACE"
+          # Return the guest status as data so the action copies logs back.
+          sh tools/ci-vm-result.sh capture dragonflybsd-meson-1.result.log <<'SIXEL_VM_BUILD'
+          echo "__DFBSD_PHASE_RUN__"
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+          SIXEL_VM_BUILD
 
     - name: Wait before DragonFlyBSD retry (Meson)
       if: >-
@@ -1294,16 +1291,16 @@ runs:
         sync: rsync
         cpu: 2
         mem: 4096
-        prepare: |
-          echo "__DFBSD_PHASE_PREPARE__"
-          #pkg update -f
-          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
         run: |
-          echo "__DFBSD_PHASE_RUN__"
           cd "$GITHUB_WORKSPACE"
+          # Return the guest status as data so the action copies logs back.
+          sh tools/ci-vm-result.sh capture dragonflybsd-meson-2.result.log <<'SIXEL_VM_BUILD'
+          echo "__DFBSD_PHASE_RUN__"
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+          SIXEL_VM_BUILD
 
     - name: Wait before DragonFlyBSD cacheless retry (Meson)
       if: >-
@@ -1332,29 +1329,23 @@ runs:
         cpu: 2
         mem: 4096
         disable-cache: true
-        prepare: |
-          echo "__DFBSD_PHASE_PREPARE__"
-          #pkg update -f
-          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
         run: |
-          echo "__DFBSD_PHASE_RUN__"
           cd "$GITHUB_WORKSPACE"
+          # Return the guest status as data so the action copies logs back.
+          sh tools/ci-vm-result.sh capture dragonflybsd-meson-3.result.log <<'SIXEL_VM_BUILD'
+          echo "__DFBSD_PHASE_RUN__"
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+          SIXEL_VM_BUILD
 
     - name: Validate DragonFlyBSD retry result (Meson)
-      if: >-
-        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
-            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
-            && steps.dragonflybsd_meson_1.outcome != 'success'
-            && steps.dragonflybsd_meson_2.outcome != 'success'
-            && steps.dragonflybsd_meson_3.outcome != 'success' }}
+      if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm' }}
       shell: bash
-      run: |
-        set -o igncr 2>/dev/null || true
-        echo "DragonFlyBSD Meson failed on cached retries and cacheless final retry."
-        exit 1
+      env:
+        RESULT_FILE: ${{ steps.dragonflybsd_meson_1.outcome == 'success' && 'dragonflybsd-meson-1.result.log' || steps.dragonflybsd_meson_2.outcome == 'success' && 'dragonflybsd-meson-2.result.log' || steps.dragonflybsd_meson_3.outcome == 'success' && 'dragonflybsd-meson-3.result.log' || '' }}
+      run: sh tools/ci-vm-result.sh check "$RESULT_FILE"
 
     - name: Build and test (Autotools, OpenIndiana)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'openindiana-vm' }}

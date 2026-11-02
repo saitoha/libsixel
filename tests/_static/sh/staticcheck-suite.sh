@@ -969,6 +969,10 @@ run_case_tap "staticcheck-fuzz-loader-formats" \
     "$src_root/tests/_static/sh/staticcheck-fuzz-loader-formats.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-ci-vm-result" \
+    "$src_root/tests/_static/sh/staticcheck-ci-vm-result.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-emscripten-thread-runtime" \
     "$src_root/tests/_static/sh/staticcheck-emscripten-thread-runtime.sh" \
     "$src_root" || fail_and_exit $?

@@ -6,11 +6,15 @@
  * Pipes synchronize exceptional paths without fixed sleeps. No library
  * TTY reader, terminal emulator, or installed converter is substituted.
  */
-#ifndef _POSIX_C_SOURCE
-# define _POSIX_C_SOURCE 200809L
-#endif
-#ifndef _XOPEN_SOURCE
-# define _XOPEN_SOURCE 700
+/* DragonFly's default feature set includes both POSIX and BSD termios
+ * state. Strict POSIX/XSI hides PENDIN, which this test must observe. */
+#if !defined(__DragonFly__)
+# ifndef _POSIX_C_SOURCE
+#  define _POSIX_C_SOURCE 200809L
+# endif
+# ifndef _XOPEN_SOURCE
+#  define _XOPEN_SOURCE 700
+# endif
 #endif
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
 # define _DARWIN_C_SOURCE 1
@@ -176,13 +180,22 @@ color_tty_mode_equal(struct termios const *a, struct termios const *b,
     tcflag_t expected_lflag;
 
     expected_lflag = a->c_lflag;
-#if defined(__APPLE__) && defined(__MACH__) && defined(PENDIN)
-    /* Darwin sets kernel-maintained PENDIN when ICANON returns, even with
-     * an empty input queue. xnu/bsd/kern/tty.c, TIOCSETA (2026-09-17), ORs
-     * that state with the requested flags. Do not flush/read input just to
-     * clear it. Only that canonical transition changes this expectation. */
+#if defined(PENDIN) && (defined(__DragonFly__) || \
+    (defined(__APPLE__) && defined(__MACH__)))
+    /* Darwin and DragonFly set kernel-maintained PENDIN when ICANON
+     * returns, even with an empty input queue. Their tty.c TIOCSETA paths
+     * OR that state with the requested flags. Do not flush/read input just
+     * to clear it: pending bytes belong to the caller. Only the canonical
+     * transition changes this expectation; all other flags remain exact. */
     if (canonical_restored && (a->c_lflag & ICANON) != 0) {
+# if defined(__DragonFly__)
+        /* ttyinput() can reprocess pending input before tcgetattr(), even
+         * without a user read. Accept either state of this kernel bit. */
+        expected_lflag = (expected_lflag & ~(tcflag_t)PENDIN) |
+            (b->c_lflag & PENDIN);
+# else
         expected_lflag |= PENDIN;
+# endif
     }
 #else
     (void)canonical_restored;
@@ -534,6 +547,12 @@ color_tty_child(char const *name, int command, int report)
                 return color_tty_error("read crossed first ST");
             }
         }
+        /* The prefix must already be queued in raw mode before cleanup;
+         * otherwise a late-arriving prefix could hide an accidental flush. */
+        if (strcmp(name, "pending-input") == 0 &&
+            !color_tty_expect(command, "q")) {
+            return color_tty_error("pending input was not queued");
+        }
         if (img2sixel_color_tty_end(tty) != IMG2SIXEL_COLOR_IO_OK ||
             !color_tty_restored(&original, &original_mask, flags, 1)) {
             return color_tty_error("phase did not release terminal state");
@@ -549,7 +568,12 @@ color_tty_child(char const *name, int command, int report)
             }
         }
         if (strcmp(name, "pending-input") == 0) {
-            if (!color_tty_expect(STDOUT_FILENO, "pending-after-reply\n")) {
+            /* Complete the line only after canonical mode returns. Some
+             * line disciplines retain a newline received in raw mode as
+             * data until a new canonical delimiter arrives. The queued
+             * prefix must survive cleanup, independently of that timing. */
+            if (!color_tty_send(report, "p", 1u) ||
+                !color_tty_expect(STDOUT_FILENO, "pending-after-reply\n")) {
                 return color_tty_error("cleanup discarded unread input");
             }
             /* The test's explicit read processes PENDIN; production does
@@ -705,8 +729,11 @@ color_tty_script(char const *name, int master, int command, int report,
             }
         } else if (strcmp(name, "pending-input") == 0) {
             if (!color_tty_send(master,
-                COLOR_TTY_REPLY "pending-after-reply\n",
-                sizeof(COLOR_TTY_REPLY "pending-after-reply\n") - 1u)) {
+                COLOR_TTY_REPLY "pending-after-reply",
+                sizeof(COLOR_TTY_REPLY "pending-after-reply") - 1u) ||
+                !color_tty_send(command, "q", 1u) ||
+                !color_tty_expect(report, "p") ||
+                !color_tty_send(master, "\n", 1u)) {
                 return 0;
             }
         } else {

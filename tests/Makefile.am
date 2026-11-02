@@ -10918,3 +10918,6 @@ EXTRA_DIST += _support/loader/libpng/png_metadata_test_common.h
 
 EXTRA_DIST += _static/sh/staticcheck-emscripten-thread-runtime.sh \
     _static/awk/emscripten-thread-runtime.awk
+
+EXTRA_DIST += _static/sh/staticcheck-ci-vm-result.sh \
+    _static/awk/ci-vm-result.awk

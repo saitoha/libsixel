@@ -1,4 +1,5 @@
 #!/bin/sh
+# Policy: docs/encoder/output/output-colorspace.md
 # Verify CLI terminal color transport late.
 set -eux
 

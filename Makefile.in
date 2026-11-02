@@ -568,9 +568,10 @@ DIST_SUBDIRS = \
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 
 # Perl bindings have no recursive Automake subdirectory.
-EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py \
-	tools/generate_output_icc_fixtures.py assessment/meson.build \
-	converters/meson.build examples/meson.build fuzz/meson.build \
+EXTRA_DIST = tools/ci-vm-result.sh tools/quicklook-user.sh \
+	tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
+	assessment/meson.build converters/meson.build \
+	examples/meson.build fuzz/meson.build \
 	gdk-pixbuf-loader/meson.build images/meson.build \
 	include/meson.build meson.build meson_options.txt \
 	php/meson.build python/meson.build \

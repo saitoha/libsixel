@@ -175,6 +175,8 @@ evidence that the synchronized inputs actually work.
 - Do not use retries or `continue-on-error` to mask deterministic failures.
 - Keep caches accelerative only; a clean build must remain correct.
 
+DragonFly BSD VM attempts run package setup, configure, build and tests through [`tools/ci-vm-result.sh`](../../tools/ci-vm-result.sh). The guest shell stops at the first failed command and writes its exit status to an attempt-specific result file, then lets the VM action copy artifacts back. Only a failed VM action is retried; a recorded build or test failure is validated on the host and fails the job without another build. A missing, incomplete or malformed result cannot become success. The [source-only handoff check](../testing/staticcheck.md#test-coverage) protects both build-system paths and exercises failure propagation without a VM.
+
 ## Artifact policy
 
 Preserve artifacts needed to reproduce or understand a failure:
@@ -184,6 +186,8 @@ Preserve artifacts needed to reproduce or understand a failure:
 - fuzz crash inputs and bounded run logs;
 - coverage reports;
 - intended release packages.
+
+DragonFly BSD result files use the `.log` suffix so the shared artifact upload preserves them alongside test diagnostics. Copyback must finish before the host reports a recorded build failure. A transport failure can still prevent artifact recovery; the retry limit does not establish that those missing tests passed.
 
 Do not upload arbitrary complete build trees. Artifact names must identify the
 job configuration, and retention or size must remain bounded.
@@ -258,3 +262,4 @@ change and directly required source, test, or generated-file updates.
 | CI-01 | CI documentation does not direct contributors to repositories or configuration paths that are unavailable from this source tree. | [tests/_static/sh/staticcheck-ci-doc-public-surface.sh](../../tests/_static/sh/staticcheck-ci-doc-public-surface.sh) |
 | CI-02 | Embedded CLI fuzz targets retain the normal converter source inventory. | [tests/_static/sh/staticcheck-fuzz-cli-sources.sh](../../tests/_static/sh/staticcheck-fuzz-cli-sources.sh) |
 | CI-03 | Both build systems provide every loader-format fuzz target selected by the workflow. | [tests/_static/sh/staticcheck-fuzz-loader-formats.sh](../../tests/_static/sh/staticcheck-fuzz-loader-formats.sh) |
+| CI-04 | DragonFly BSD build failures return through attempt-specific records after artifact copyback, propagate to the host, and do not trigger VM retries. | [tests/_static/sh/staticcheck-ci-vm-result.sh](../../tests/_static/sh/staticcheck-ci-vm-result.sh) |
