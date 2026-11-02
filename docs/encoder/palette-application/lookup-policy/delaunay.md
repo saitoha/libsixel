@@ -49,9 +49,30 @@ For `U` distinct colors, graph construction sorts `U` lists with radix passes an
 
 A query evaluates the neighbor blocks inside its current distance bound and may visit multiple colors. Sparse adjacency and coherent hints often reduce work, but no constant-time or logarithmic worst-case promise is made. Float queries outside the box scan all representatives. A bulk float workspace occupies 512 KiB per caller when the palette has at most 256 entries. A full cold batch scans `U` representatives for eight queries; warm keys avoid that scan. Its crossover with graph walking depends on palette size, spatial coherence and cache misses.
 
+## Metal byte path
+
+For byte RGB palettes of at most 256 entries, Metal builds a conservative superset of closed Voronoi adjacency. It does not transfer the CPU graph or tetrahedralize the palette. The existing byte palette-application admission rules select this path for `none`, `a_dither`, `x_dither` and `bluenoise` dithering; unsupported inputs retain CPU fallback under GPU `auto`. Native float lookup keeps its CPU implementation.
+
+| Stage | GPU operation | Exactness boundary |
+| --- | --- | --- |
+| Cell bounds | One parallel interval contraction of `[0,255]^3` per palette color | Signed integer division rounds outward, retaining every point of the continuous closed cell |
+| Adjacency | Intersect each pair of boxes and retain pairs whose bisector crosses the intersection; bitonic sorting compacts and packs the rows | Necessary neighbors survive; extra edges only increase query work |
+| Seeds | Find the nearest color to each exact rational center of a 16x16x16 grid | The seed chooses a starting color, not a quantized answer |
+| Lookup | Walk four neighbors at a time, ordered by squared color distance, with exact radius pruning and strict packed-key descent | Original post-dither byte queries and lowest-original-index ties match exhaustive lookup |
+
+All bounds, bisector tests, distances and tie keys use integer arithmetic. Duplicate coordinates retain separate indexes. Closed-cell adjacency includes shared faces, edges and vertices, including equal-distance ties. A nonempty vector tail repeats its final valid neighbor; a single-color palette has an empty row. Conservative boxes may retain a dense graph but cannot exclude a necessary improving edge. GPU construction requires 32-lane SIMD groups. Pipeline unavailability detected during execution fails an admitted indexed plan without retrying the frame on CPU.
+
+The indexed adapter selects the GPU-only preparation plan before constructing a CPU graph; [execution-map](../../execution-map/README.md) owns that admission and fallback contract. Bounds, compact sorted rows, seeds and palette application run in separate compute encoders in one command buffer. Tracked buffers establish dependencies without intermediate CPU waits. One lock protects the cache. Palette size and all palette bytes identify it independently of ordinary uploads and other lookup caches. Identity is published only after successful command completion; a failed rebuild invalidates it. Unchanged palettes reuse the table, while changed or alternating palettes rebuild it.
+
+The cache occupies 537 KiB: two fixed-stride 256x256 uint32 row arrays, 256 degrees, 4096 uint32 seeds and 512 int4 bounds. Construction performs quadratic pair work and `O(K^2 log^2 K)` bitonic work, plus `4096K` seed distance evaluations. Lookup may visit several rows; no universal speed advantage over `ordered` is promised. Include changed-palette construction, uploads and synchronization when measuring application cost.
+
+Transparency, positional dithering, blue-noise configuration and delta keep decisions use the shared GPU path. Kept pixels do no lookup. The retained result mask and history publication follow the same rules as other GPU policies. `SIXEL_TRACE_TOPIC=gpu_contract` reports `kernel=delaunay` and `lookup=delaunay|table=rebuild` or `lookup=delaunay|table=reuse`.
+
 ## Implementation map
 
 The common builder is [`lookup-delaunay-graph.c`](../../../../src/lookup-delaunay-graph.c). [`lookup-delaunay-8bit.c`](../../../../src/lookup-delaunay-8bit.c) and [`lookup-delaunay-float32.c`](../../../../src/lookup-delaunay-float32.c) own query arithmetic, SIMD and memoization. [`lookup-policy-delaunay.c`](../../../../src/lookup-policy-delaunay.c) owns preparation, representation conversion and reuse through `lookup/delaunay.8bit` and `lookup/delaunay.float32`.
+
+The Metal implementation and its cache live in [`gpu-palette-metal.m`](../../../../src/gpu-palette-metal.m); admission is shared through [`gpu-palette.c`](../../../../src/gpu-palette.c) and [`palette-apply.c`](../../../../src/palette-apply.c).
 
 ## Test coverage
 
@@ -116,6 +137,81 @@ The common builder is [`lookup-delaunay-graph.c`](../../../../src/lookup-delauna
 | DL-58 | Lookup with an out-of-range hint matches an integer oracle for a palette with duplicate colors. | [tests/lookup/delaunay/0042_delaunay_byte_stale_duplicates.t](../../../../tests/lookup/delaunay/0042_delaunay_byte_stale_duplicates.t) |
 | DL-59 | Lookup with an out-of-range hint matches an integer oracle for the grid palette. | [tests/lookup/delaunay/0043_delaunay_byte_stale_grid.t](../../../../tests/lookup/delaunay/0043_delaunay_byte_stale_grid.t) |
 | DL-60 | Lookup with an out-of-range hint matches an integer oracle for a 300-color palette. | [tests/lookup/delaunay/0044_delaunay_byte_stale_large.t](../../../../tests/lookup/delaunay/0044_delaunay_byte_stale_large.t) |
+
+### Metal behavioral contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| DLG-01 | Gpu none plain p1. | [tests/lookup/delaunay/0050_gpu_none_plain_p1.t](../../../../tests/lookup/delaunay/0050_gpu_none_plain_p1.t) |
+| DLG-02 | Gpu none plain p2. | [tests/lookup/delaunay/0051_gpu_none_plain_p2.t](../../../../tests/lookup/delaunay/0051_gpu_none_plain_p2.t) |
+| DLG-03 | Gpu none plain p4. | [tests/lookup/delaunay/0052_gpu_none_plain_p4.t](../../../../tests/lookup/delaunay/0052_gpu_none_plain_p4.t) |
+| DLG-04 | Gpu none plain p33. | [tests/lookup/delaunay/0053_gpu_none_plain_p33.t](../../../../tests/lookup/delaunay/0053_gpu_none_plain_p33.t) |
+| DLG-05 | Gpu none plain p129. | [tests/lookup/delaunay/0054_gpu_none_plain_p129.t](../../../../tests/lookup/delaunay/0054_gpu_none_plain_p129.t) |
+| DLG-06 | Gpu none plain p255. | [tests/lookup/delaunay/0055_gpu_none_plain_p255.t](../../../../tests/lookup/delaunay/0055_gpu_none_plain_p255.t) |
+| DLG-07 | Gpu none plain p256. | [tests/lookup/delaunay/0056_gpu_none_plain_p256.t](../../../../tests/lookup/delaunay/0056_gpu_none_plain_p256.t) |
+| DLG-08 | Gpu none keep p1. | [tests/lookup/delaunay/0057_gpu_none_keep_p1.t](../../../../tests/lookup/delaunay/0057_gpu_none_keep_p1.t) |
+| DLG-09 | Gpu none keep p2. | [tests/lookup/delaunay/0058_gpu_none_keep_p2.t](../../../../tests/lookup/delaunay/0058_gpu_none_keep_p2.t) |
+| DLG-10 | Gpu none keep p4. | [tests/lookup/delaunay/0059_gpu_none_keep_p4.t](../../../../tests/lookup/delaunay/0059_gpu_none_keep_p4.t) |
+| DLG-11 | Gpu none keep p33. | [tests/lookup/delaunay/0060_gpu_none_keep_p33.t](../../../../tests/lookup/delaunay/0060_gpu_none_keep_p33.t) |
+| DLG-12 | Gpu none keep p129. | [tests/lookup/delaunay/0061_gpu_none_keep_p129.t](../../../../tests/lookup/delaunay/0061_gpu_none_keep_p129.t) |
+| DLG-13 | Gpu none keep p255. | [tests/lookup/delaunay/0062_gpu_none_keep_p255.t](../../../../tests/lookup/delaunay/0062_gpu_none_keep_p255.t) |
+| DLG-14 | Gpu bluenoise plain p1. | [tests/lookup/delaunay/0063_gpu_bluenoise_plain_p1.t](../../../../tests/lookup/delaunay/0063_gpu_bluenoise_plain_p1.t) |
+| DLG-15 | Gpu bluenoise plain p2. | [tests/lookup/delaunay/0064_gpu_bluenoise_plain_p2.t](../../../../tests/lookup/delaunay/0064_gpu_bluenoise_plain_p2.t) |
+| DLG-16 | Gpu bluenoise plain p4. | [tests/lookup/delaunay/0065_gpu_bluenoise_plain_p4.t](../../../../tests/lookup/delaunay/0065_gpu_bluenoise_plain_p4.t) |
+| DLG-17 | Gpu bluenoise plain p33. | [tests/lookup/delaunay/0066_gpu_bluenoise_plain_p33.t](../../../../tests/lookup/delaunay/0066_gpu_bluenoise_plain_p33.t) |
+| DLG-18 | Gpu bluenoise plain p129. | [tests/lookup/delaunay/0067_gpu_bluenoise_plain_p129.t](../../../../tests/lookup/delaunay/0067_gpu_bluenoise_plain_p129.t) |
+| DLG-19 | Gpu bluenoise plain p255. | [tests/lookup/delaunay/0068_gpu_bluenoise_plain_p255.t](../../../../tests/lookup/delaunay/0068_gpu_bluenoise_plain_p255.t) |
+| DLG-20 | Gpu bluenoise plain p256. | [tests/lookup/delaunay/0069_gpu_bluenoise_plain_p256.t](../../../../tests/lookup/delaunay/0069_gpu_bluenoise_plain_p256.t) |
+| DLG-21 | Gpu bluenoise keep p1. | [tests/lookup/delaunay/0070_gpu_bluenoise_keep_p1.t](../../../../tests/lookup/delaunay/0070_gpu_bluenoise_keep_p1.t) |
+| DLG-22 | Gpu bluenoise keep p2. | [tests/lookup/delaunay/0071_gpu_bluenoise_keep_p2.t](../../../../tests/lookup/delaunay/0071_gpu_bluenoise_keep_p2.t) |
+| DLG-23 | Gpu bluenoise keep p4. | [tests/lookup/delaunay/0072_gpu_bluenoise_keep_p4.t](../../../../tests/lookup/delaunay/0072_gpu_bluenoise_keep_p4.t) |
+| DLG-24 | Gpu bluenoise keep p33. | [tests/lookup/delaunay/0073_gpu_bluenoise_keep_p33.t](../../../../tests/lookup/delaunay/0073_gpu_bluenoise_keep_p33.t) |
+| DLG-25 | Gpu bluenoise keep p129. | [tests/lookup/delaunay/0074_gpu_bluenoise_keep_p129.t](../../../../tests/lookup/delaunay/0074_gpu_bluenoise_keep_p129.t) |
+| DLG-26 | Gpu bluenoise keep p255. | [tests/lookup/delaunay/0075_gpu_bluenoise_keep_p255.t](../../../../tests/lookup/delaunay/0075_gpu_bluenoise_keep_p255.t) |
+| DLG-27 | Gpu x plain p1. | [tests/lookup/delaunay/0076_gpu_x_plain_p1.t](../../../../tests/lookup/delaunay/0076_gpu_x_plain_p1.t) |
+| DLG-28 | Gpu x plain p2. | [tests/lookup/delaunay/0077_gpu_x_plain_p2.t](../../../../tests/lookup/delaunay/0077_gpu_x_plain_p2.t) |
+| DLG-29 | Gpu x plain p4. | [tests/lookup/delaunay/0078_gpu_x_plain_p4.t](../../../../tests/lookup/delaunay/0078_gpu_x_plain_p4.t) |
+| DLG-30 | Gpu x plain p33. | [tests/lookup/delaunay/0079_gpu_x_plain_p33.t](../../../../tests/lookup/delaunay/0079_gpu_x_plain_p33.t) |
+| DLG-31 | Gpu x plain p129. | [tests/lookup/delaunay/0080_gpu_x_plain_p129.t](../../../../tests/lookup/delaunay/0080_gpu_x_plain_p129.t) |
+| DLG-32 | Gpu x plain p255. | [tests/lookup/delaunay/0081_gpu_x_plain_p255.t](../../../../tests/lookup/delaunay/0081_gpu_x_plain_p255.t) |
+| DLG-33 | Gpu x plain p256. | [tests/lookup/delaunay/0082_gpu_x_plain_p256.t](../../../../tests/lookup/delaunay/0082_gpu_x_plain_p256.t) |
+| DLG-34 | Gpu x keep p1. | [tests/lookup/delaunay/0083_gpu_x_keep_p1.t](../../../../tests/lookup/delaunay/0083_gpu_x_keep_p1.t) |
+| DLG-35 | Gpu x keep p2. | [tests/lookup/delaunay/0084_gpu_x_keep_p2.t](../../../../tests/lookup/delaunay/0084_gpu_x_keep_p2.t) |
+| DLG-36 | Gpu x keep p4. | [tests/lookup/delaunay/0085_gpu_x_keep_p4.t](../../../../tests/lookup/delaunay/0085_gpu_x_keep_p4.t) |
+| DLG-37 | Gpu x keep p33. | [tests/lookup/delaunay/0086_gpu_x_keep_p33.t](../../../../tests/lookup/delaunay/0086_gpu_x_keep_p33.t) |
+| DLG-38 | Gpu x keep p129. | [tests/lookup/delaunay/0087_gpu_x_keep_p129.t](../../../../tests/lookup/delaunay/0087_gpu_x_keep_p129.t) |
+| DLG-39 | Gpu x keep p255. | [tests/lookup/delaunay/0088_gpu_x_keep_p255.t](../../../../tests/lookup/delaunay/0088_gpu_x_keep_p255.t) |
+| DLG-40 | Gpu a plain p1. | [tests/lookup/delaunay/0089_gpu_a_plain_p1.t](../../../../tests/lookup/delaunay/0089_gpu_a_plain_p1.t) |
+| DLG-41 | Gpu a plain p2. | [tests/lookup/delaunay/0090_gpu_a_plain_p2.t](../../../../tests/lookup/delaunay/0090_gpu_a_plain_p2.t) |
+| DLG-42 | Gpu a plain p4. | [tests/lookup/delaunay/0091_gpu_a_plain_p4.t](../../../../tests/lookup/delaunay/0091_gpu_a_plain_p4.t) |
+| DLG-43 | Gpu a plain p33. | [tests/lookup/delaunay/0092_gpu_a_plain_p33.t](../../../../tests/lookup/delaunay/0092_gpu_a_plain_p33.t) |
+| DLG-44 | Gpu a plain p129. | [tests/lookup/delaunay/0093_gpu_a_plain_p129.t](../../../../tests/lookup/delaunay/0093_gpu_a_plain_p129.t) |
+| DLG-45 | Gpu a plain p255. | [tests/lookup/delaunay/0094_gpu_a_plain_p255.t](../../../../tests/lookup/delaunay/0094_gpu_a_plain_p255.t) |
+| DLG-46 | Gpu a plain p256. | [tests/lookup/delaunay/0095_gpu_a_plain_p256.t](../../../../tests/lookup/delaunay/0095_gpu_a_plain_p256.t) |
+| DLG-47 | Gpu a keep p1. | [tests/lookup/delaunay/0096_gpu_a_keep_p1.t](../../../../tests/lookup/delaunay/0096_gpu_a_keep_p1.t) |
+| DLG-48 | Gpu a keep p2. | [tests/lookup/delaunay/0097_gpu_a_keep_p2.t](../../../../tests/lookup/delaunay/0097_gpu_a_keep_p2.t) |
+| DLG-49 | Gpu a keep p4. | [tests/lookup/delaunay/0098_gpu_a_keep_p4.t](../../../../tests/lookup/delaunay/0098_gpu_a_keep_p4.t) |
+| DLG-50 | Gpu a keep p33. | [tests/lookup/delaunay/0099_gpu_a_keep_p33.t](../../../../tests/lookup/delaunay/0099_gpu_a_keep_p33.t) |
+| DLG-51 | Gpu a keep p129. | [tests/lookup/delaunay/0100_gpu_a_keep_p129.t](../../../../tests/lookup/delaunay/0100_gpu_a_keep_p129.t) |
+| DLG-52 | Gpu a keep p255. | [tests/lookup/delaunay/0101_gpu_a_keep_p255.t](../../../../tests/lookup/delaunay/0101_gpu_a_keep_p255.t) |
+| DLG-53 | Gpu allocation failure. | [tests/lookup/delaunay/0102_gpu_allocation_failure.t](../../../../tests/lookup/delaunay/0102_gpu_allocation_failure.t) |
+| DLG-54 | Gpu encoder failure. | [tests/lookup/delaunay/0103_gpu_encoder_failure.t](../../../../tests/lookup/delaunay/0103_gpu_encoder_failure.t) |
+| DLG-55 | Gpu completion failure. | [tests/lookup/delaunay/0104_gpu_completion_failure.t](../../../../tests/lookup/delaunay/0104_gpu_completion_failure.t) |
+| DLG-56 | Gpu geometry random. | [tests/lookup/delaunay/0105_gpu_geometry_random.t](../../../../tests/lookup/delaunay/0105_gpu_geometry_random.t) |
+| DLG-57 | Gpu geometry duplicate. | [tests/lookup/delaunay/0106_gpu_geometry_duplicate.t](../../../../tests/lookup/delaunay/0106_gpu_geometry_duplicate.t) |
+| DLG-58 | Gpu geometry grid. | [tests/lookup/delaunay/0107_gpu_geometry_grid.t](../../../../tests/lookup/delaunay/0107_gpu_geometry_grid.t) |
+| DLG-59 | Gpu geometry collinear. | [tests/lookup/delaunay/0108_gpu_geometry_collinear.t](../../../../tests/lookup/delaunay/0108_gpu_geometry_collinear.t) |
+| DLG-60 | Gpu geometry coplanar. | [tests/lookup/delaunay/0109_gpu_geometry_coplanar.t](../../../../tests/lookup/delaunay/0109_gpu_geometry_coplanar.t) |
+| DLG-61 | Gpu geometry cospherical. | [tests/lookup/delaunay/0110_gpu_geometry_cospherical.t](../../../../tests/lookup/delaunay/0110_gpu_geometry_cospherical.t) |
+| DLG-62 | Gpu cache reuse. | [tests/lookup/delaunay/0111_gpu_cache_reuse.t](../../../../tests/lookup/delaunay/0111_gpu_cache_reuse.t) |
+| DLG-63 | Gpu cache byte change. | [tests/lookup/delaunay/0112_gpu_cache_byte_change.t](../../../../tests/lookup/delaunay/0112_gpu_cache_byte_change.t) |
+| DLG-64 | Gpu cache size change. | [tests/lookup/delaunay/0113_gpu_cache_size_change.t](../../../../tests/lookup/delaunay/0113_gpu_cache_size_change.t) |
+| DLG-65 | Gpu cache after direct. | [tests/lookup/delaunay/0114_gpu_cache_after_direct.t](../../../../tests/lookup/delaunay/0114_gpu_cache_after_direct.t) |
+| DLG-66 | Gpu cache after gridlut. | [tests/lookup/delaunay/0115_gpu_cache_after_gridlut.t](../../../../tests/lookup/delaunay/0115_gpu_cache_after_gridlut.t) |
+| DLG-67 | Gpu cache after ordered. | [tests/lookup/delaunay/0116_gpu_cache_after_ordered.t](../../../../tests/lookup/delaunay/0116_gpu_cache_after_ordered.t) |
+| DLG-68 | Gpu cache alternating. | [tests/lookup/delaunay/0117_gpu_cache_alternating.t](../../../../tests/lookup/delaunay/0117_gpu_cache_alternating.t) |
+
+Each dither, keep mode and palette size has its own invocation against CPU exhaustive lookup. Geometry cases separately sample random, duplicate, grid, collinear, coplanar and cospherical palettes using palette hits, pair midpoints, seed boundaries and deterministic random queries; they observe actual GPU `auto` admission and the Delaunay kernel. Cache cases observe one transition per invocation. Fault cases exercise allocation, command-encoder and post-completion failure, actual CPU fallback and subsequent rebuild/reuse. These tests skip without a Metal backend and do not enumerate the RGB domain or prove performance on another device.
 
 ### Coverage boundary
 

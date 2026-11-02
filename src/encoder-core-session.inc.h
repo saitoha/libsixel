@@ -206,7 +206,8 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         (void)sixel_timeline_logger_prepare_env(dither->allocator, &logger);
     }
     dither->pipeline_logger = logger;
-    status = sixel_dither_prepare_indexed_components(dither, threads > 1);
+    status = sixel_dither_prepare_indexed_components(dither, threads > 1,
+        dither->gpu_policy == SIXEL_GPU_POLICY_OFF);
     if (status != SIXEL_OK) goto end;
     pixels = (size_t)request->width * (size_t)request->height;
     memset(&wire_request, 0, sizeof(wire_request));
@@ -288,7 +289,9 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     allocation.dither_threads = allocation.encode_threads = 1;
 #endif
     prepare.working_palette = dither->palette;
-    prepare.lookup = dither->lookup_policy;
+    prepare.lookup = dither->gpu_policy == SIXEL_GPU_POLICY_OFF
+        ? dither->lookup_policy : NULL;
+    prepare.lookup_kind = dither->lut_policy;
     prepare.dither = dither->dither_policy;
     prepare.output = description;
     prepare.pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -305,6 +308,16 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     if (SIXEL_FAILED(status)) goto end;
     apply = object;
     status = apply->vtbl->prepare(apply, &prepare);
+    if (status == SIXEL_FEATURE_ERROR && prepare.lookup == NULL &&
+            dither->gpu_policy != SIXEL_GPU_POLICY_FORCE) {
+        /* No output has started. Build the CPU policy only after GPU
+         * admission declines; never retry a partially published frame. */
+        status = sixel_dither_prepare_indexed_components(dither,
+            threads > 1, 1);
+        if (status != SIXEL_OK) goto end;
+        prepare.lookup = dither->lookup_policy;
+        status = apply->vtbl->prepare(apply, &prepare);
+    }
     if (status == SIXEL_FEATURE_ERROR) {
         /* Unsupported plans keep the legacy admission/framing behavior. */
         status = SIXEL_FALSE;

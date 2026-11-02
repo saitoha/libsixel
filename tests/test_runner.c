@@ -1385,6 +1385,11 @@ int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
+int test_delaunay_gpu_geometry(int argc, char **argv);
+int test_delaunay_gpu_cache(int argc, char **argv);
+int test_indexed_gpu_lookup_preparation(int argc, char **argv);
+int test_delaunay_gpu_exact(int argc, char **argv);
+int test_delaunay_gpu_failure(int argc, char **argv);
 int test_gpupal_0023_ordered_exact(int argc, char **argv);
 int test_gpupal_0024_ordered_cache_transitions(int argc, char **argv);
 int test_gpupal_0025_ordered_parallel_cache(int argc, char **argv);
@@ -5586,6 +5591,12 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0021_blockcull_exact },
     { "gpu-palette/0022_gridlut_exact",
       test_gpupal_0022_gridlut_exact },
+    { "delaunay/gpu_geometry", test_delaunay_gpu_geometry },
+    { "delaunay/gpu_cache", test_delaunay_gpu_cache },
+    { "encoder/indexed/gpu_lookup_preparation",
+      test_indexed_gpu_lookup_preparation },
+    { "delaunay/gpu_exact", test_delaunay_gpu_exact },
+    { "delaunay/gpu_failure", test_delaunay_gpu_failure },
     { "gpu-palette/0023_ordered_exact",
       test_gpupal_0023_ordered_exact },
     { "gpu-palette/0024_ordered_cache_transitions",

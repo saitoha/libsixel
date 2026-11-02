@@ -1614,6 +1614,7 @@ typedef struct sixel_palette_apply_delta {
 typedef struct sixel_palette_apply_prepare_request {
     sixel_palette_t *working_palette;
     sixel_lookup_policy_interface_t *lookup;
+    int lookup_kind; /* Used only when lookup is NULL. */
     sixel_dither_policy_interface_t *dither;
     sixel_indexed_frame_description_t output;
     int pixelformat;
@@ -1647,7 +1648,12 @@ typedef struct sixel_palette_apply_run_request {
     void *cancel_context;
 } sixel_palette_apply_run_request_t;
 
-/* prepare retains compatible prepared lookup/dither and palette objects.
+/* prepare retains compatible prepared dither and palette objects.
+ * A non-NULL lookup must be prepared and is retained unchanged. A NULL
+ * lookup requests GPU-only planning with lookup_kind; an unsupported GPU
+ * plan returns SIXEL_FEATURE_ERROR before output. The caller can then
+ * prepare a CPU lookup and retry prepare. No CPU table is built for an
+ * admitted GPU-only plan. Runtime failure does not retry on CPU.
  * They stay unchanged from prepare through run completion. Reconfiguration
  * between runs requires prepare again before the next run; retaining a cache
  * reference alone does not prohibit its idle reuse. The component resolves

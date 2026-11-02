@@ -4055,7 +4055,7 @@ sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
-    int parallel)
+    int parallel, int prepare_lookup)
 {
     sixel_palette_entries_view_t bytes;
     sixel_palette_float32_entries_view_t floats;
@@ -4098,6 +4098,9 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     if (configuration.options.bluenoise_gradient_factor != 0) {
         return SIXEL_FALSE;
     }
+    /* The GPU candidate uses only the requested policy kind. Defer CPU
+     * graph construction until PaletteApply rejects that physical plan. */
+    if (!prepare_lookup) return SIXEL_OK;
     return sixel_dither_prepare_lookup_policy(&dither->lookup_policy,
         bytes.entries, NULL, bytes.depth, 0,
         sixel_dither_lookup_ncolors(dither),
