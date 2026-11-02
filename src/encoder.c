@@ -10158,6 +10158,12 @@ sixel_encoder_apply_lut_filter(sixel_dither_t *dither,
     }
 
     policy = dither->lut_policy;
+    /* GPU admission resolves settings without constructing a CPU grid.
+     * Unsupported plans prepare that grid later, before publishing output. */
+    if (policy == SIXEL_LUT_POLICY_FHEDT &&
+            dither->gpu_policy != SIXEL_GPU_POLICY_OFF) {
+        return SIXEL_OK;
+    }
     if (policy != SIXEL_LUT_POLICY_FHEDT
             && policy != SIXEL_LUT_POLICY_VPTREE
             && policy != SIXEL_LUT_POLICY_EYTZINGER) {

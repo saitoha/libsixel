@@ -1843,7 +1843,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/blockcull/0001_blockcull_exact.c \
 	lookup/gridlut/0001_gridlut_exact.c \
 	lookup/ordered/0001_ordered_exact.c \
-	lookup/delaunay/0050_gpu_exact.c \
+	lookup/fhedt/0140_lookup_configuration.c \
+	lookup/fhedt/0099_gpu_reference.c \
+	lookup/fhedt/0111_gpu_apply.c lookup/delaunay/0050_gpu_exact.c \
 	encoder/indexed/0045_gpu_lookup_preparation.c \
 	lookup/delaunay/0105_gpu_geometry.c \
 	lookup/delaunay/0111_gpu_cache.c \
@@ -6023,6 +6025,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/blockcull/test_runner-0001_blockcull_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0140_lookup_configuration.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0099_gpu_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0111_gpu_apply.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0050_gpu_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0045_gpu_lookup_preparation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0105_gpu_geometry.$(OBJEXT) \
@@ -11866,6 +11871,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/fhedt/$(DEPDIR)/test_runner-0089_fh_din99d_p3.Po \
 	lookup/fhedt/$(DEPDIR)/test_runner-0090_fh_byte_eligibility.Po \
 	lookup/fhedt/$(DEPDIR)/test_runner-0091_fh_bands_private.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Po \
 	lookup/gridlut/$(DEPDIR)/test_runner-0001_gridlut_exact.Po \
 	lookup/gridlut/$(DEPDIR)/test_runner-0002_gridlut_allocation_failure.Po \
 	lookup/gridlut/$(DEPDIR)/test_runner-0003_gridlut_encoder_failure.Po \
@@ -13557,6 +13565,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GRIDLUT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ORDERED_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_LOOKUP_EXACT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0140_LOOKUP_CONFIGURATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_GPU_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0111_GPU_APPLY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_GPU_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_GPU_LOOKUP_PREPARATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_GPU_FAILURE \
@@ -19322,6 +19333,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/blockcull/0001_blockcull_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/gridlut/0001_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/ordered/0001_ordered_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0140_lookup_configuration.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0099_gpu_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0111_gpu_apply.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0050_gpu_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0045_gpu_lookup_preparation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0105_gpu_geometry.c \
@@ -27617,6 +27631,15 @@ lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT):  \
 lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT):  \
 	lookup/ordered/$(am__dirstamp) \
 	lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0140_lookup_configuration.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0099_gpu_reference.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0111_gpu_apply.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
 lookup/delaunay/test_runner-0050_gpu_exact.$(OBJEXT):  \
 	lookup/delaunay/$(am__dirstamp) \
 	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
@@ -39178,6 +39201,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0089_fh_din99d_p3.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0090_fh_byte_eligibility.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0091_fh_bands_private.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/gridlut/$(DEPDIR)/test_runner-0001_gridlut_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/gridlut/$(DEPDIR)/test_runner-0002_gridlut_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/gridlut/$(DEPDIR)/test_runner-0003_gridlut_encoder_failure.Po@am__quote@ # am--include-marker
@@ -63471,6 +63497,48 @@ lookup/ordered/test_runner-0001_ordered_exact.obj: lookup/ordered/0001_ordered_e
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/ordered/0001_ordered_exact.c' object='lookup/ordered/test_runner-0001_ordered_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/ordered/test_runner-0001_ordered_exact.obj `if test -f 'lookup/ordered/0001_ordered_exact.c'; then $(CYGPATH_W) 'lookup/ordered/0001_ordered_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/ordered/0001_ordered_exact.c'; fi`
+
+lookup/fhedt/test_runner-0140_lookup_configuration.o: lookup/fhedt/0140_lookup_configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0140_lookup_configuration.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Tpo -c -o lookup/fhedt/test_runner-0140_lookup_configuration.o `test -f 'lookup/fhedt/0140_lookup_configuration.c' || echo '$(srcdir)/'`lookup/fhedt/0140_lookup_configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0140_lookup_configuration.c' object='lookup/fhedt/test_runner-0140_lookup_configuration.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0140_lookup_configuration.o `test -f 'lookup/fhedt/0140_lookup_configuration.c' || echo '$(srcdir)/'`lookup/fhedt/0140_lookup_configuration.c
+
+lookup/fhedt/test_runner-0140_lookup_configuration.obj: lookup/fhedt/0140_lookup_configuration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0140_lookup_configuration.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Tpo -c -o lookup/fhedt/test_runner-0140_lookup_configuration.obj `if test -f 'lookup/fhedt/0140_lookup_configuration.c'; then $(CYGPATH_W) 'lookup/fhedt/0140_lookup_configuration.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0140_lookup_configuration.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0140_lookup_configuration.c' object='lookup/fhedt/test_runner-0140_lookup_configuration.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0140_lookup_configuration.obj `if test -f 'lookup/fhedt/0140_lookup_configuration.c'; then $(CYGPATH_W) 'lookup/fhedt/0140_lookup_configuration.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0140_lookup_configuration.c'; fi`
+
+lookup/fhedt/test_runner-0099_gpu_reference.o: lookup/fhedt/0099_gpu_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0099_gpu_reference.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Tpo -c -o lookup/fhedt/test_runner-0099_gpu_reference.o `test -f 'lookup/fhedt/0099_gpu_reference.c' || echo '$(srcdir)/'`lookup/fhedt/0099_gpu_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0099_gpu_reference.c' object='lookup/fhedt/test_runner-0099_gpu_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0099_gpu_reference.o `test -f 'lookup/fhedt/0099_gpu_reference.c' || echo '$(srcdir)/'`lookup/fhedt/0099_gpu_reference.c
+
+lookup/fhedt/test_runner-0099_gpu_reference.obj: lookup/fhedt/0099_gpu_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0099_gpu_reference.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Tpo -c -o lookup/fhedt/test_runner-0099_gpu_reference.obj `if test -f 'lookup/fhedt/0099_gpu_reference.c'; then $(CYGPATH_W) 'lookup/fhedt/0099_gpu_reference.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0099_gpu_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0099_gpu_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0099_gpu_reference.c' object='lookup/fhedt/test_runner-0099_gpu_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0099_gpu_reference.obj `if test -f 'lookup/fhedt/0099_gpu_reference.c'; then $(CYGPATH_W) 'lookup/fhedt/0099_gpu_reference.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0099_gpu_reference.c'; fi`
+
+lookup/fhedt/test_runner-0111_gpu_apply.o: lookup/fhedt/0111_gpu_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0111_gpu_apply.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Tpo -c -o lookup/fhedt/test_runner-0111_gpu_apply.o `test -f 'lookup/fhedt/0111_gpu_apply.c' || echo '$(srcdir)/'`lookup/fhedt/0111_gpu_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0111_gpu_apply.c' object='lookup/fhedt/test_runner-0111_gpu_apply.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0111_gpu_apply.o `test -f 'lookup/fhedt/0111_gpu_apply.c' || echo '$(srcdir)/'`lookup/fhedt/0111_gpu_apply.c
+
+lookup/fhedt/test_runner-0111_gpu_apply.obj: lookup/fhedt/0111_gpu_apply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0111_gpu_apply.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Tpo -c -o lookup/fhedt/test_runner-0111_gpu_apply.obj `if test -f 'lookup/fhedt/0111_gpu_apply.c'; then $(CYGPATH_W) 'lookup/fhedt/0111_gpu_apply.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0111_gpu_apply.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0111_gpu_apply.c' object='lookup/fhedt/test_runner-0111_gpu_apply.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0111_gpu_apply.obj `if test -f 'lookup/fhedt/0111_gpu_apply.c'; then $(CYGPATH_W) 'lookup/fhedt/0111_gpu_apply.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0111_gpu_apply.c'; fi`
 
 lookup/delaunay/test_runner-0050_gpu_exact.o: lookup/delaunay/0050_gpu_exact.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0050_gpu_exact.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Tpo -c -o lookup/delaunay/test_runner-0050_gpu_exact.o `test -f 'lookup/delaunay/0050_gpu_exact.c' || echo '$(srcdir)/'`lookup/delaunay/0050_gpu_exact.c

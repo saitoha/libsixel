@@ -29,6 +29,7 @@
 #include "delta-residual.h"
 
 #include <sixel.h>
+#include <6cells.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,7 +45,7 @@ typedef struct sixel_gpu_palette_test_hooks {
     int fault;
     int entered;
     int matrix_supported;
-    /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order, 6 graph. */
+    /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order, 6 graph, 7 FHEDT. */
     int kernel;
     int rebuild;
     int published;
@@ -60,7 +61,8 @@ typedef struct sixel_gpu_palette_test_hooks {
  * BLOCKCULL culls each pixel block's candidates before the same exact
  * scan; GRIDLUT reuses fixed RGB-cell candidates; ORDERED reuses
  * distance-sorted rows and seed colors; DELAUNAY walks conservative
- * closed-cell adjacency; EYTZINGER
+ * closed-cell adjacency; FHEDT constructs a quantized RGB grid and optional
+ * corner refinement; EYTZINGER
  * uses the one-dimensional projected lookup. Unsupported shapes
  * return SIXEL_FALSE for policy=auto so the caller can continue through the
  * CPU path.
@@ -80,6 +82,14 @@ typedef struct sixel_gpu_palette_request {
     int palette_depth;
     int ncolors;
     int lut_policy;
+    /* Resolved FHEDT query semantics. CPU construction controls do not
+     * affect GPU ownership; a missing snapshot is never guessed. */
+    int fhedt_configured;
+    int fhedt_resolution;
+    int fhedt_refine;
+    int fhedt_use_dist2;
+    int fhedt_use_cache;
+    double fhedt_weights[3];
     int method_for_diffuse;
     int method_for_scan;
     int has_parallel_bands;
@@ -129,6 +139,15 @@ typedef struct sixel_gpu_palette_request {
     int bluenoise_gradient_width;
     int bluenoise_gradient_height;
 } sixel_gpu_palette_request_t;
+
+/* Copy only query semantics; CPU grid ownership controls are not GPU keys. */
+SIXEL_INTERNAL_API void
+sixel_gpu_palette_set_lookup_configuration(sixel_gpu_palette_request_t *request,
+    sixel_lookup_policy_configuration_t const *configuration);
+
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_fhedt_is_supported(
+    sixel_gpu_palette_request_t const *request);
 
 /*
  * Resolve the AUTO cutoff independently of backend availability.  Keeping

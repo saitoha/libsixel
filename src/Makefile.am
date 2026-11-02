@@ -460,6 +460,7 @@ endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-palette-metal.m \
+$(srcdir)/gpu-palette-metal-fhedt.inc.h \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif

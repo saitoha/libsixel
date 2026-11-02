@@ -99,6 +99,7 @@ host_triplet = @host@
 
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_3 = \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal-fhedt.inc.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-metal.m
 
@@ -405,7 +406,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/gpu-palette-metal.m $(srcdir)/palette-kmeans-metal.m \
+	$(srcdir)/gpu-palette-metal.m \
+	$(srcdir)/gpu-palette-metal-fhedt.inc.h \
+	$(srcdir)/palette-kmeans-metal.m \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo

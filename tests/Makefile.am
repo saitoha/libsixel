@@ -428,6 +428,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_GRIDLUT_EXACT \
     -DBUILD_TEST_0001_ORDERED_EXACT \
     -DBUILD_LOOKUP_EXACT_COMMON \
+    -DBUILD_TEST_0140_LOOKUP_CONFIGURATION \
+    -DBUILD_TEST_0099_GPU_REFERENCE \
+    -DBUILD_TEST_0111_GPU_APPLY \
     -DBUILD_TEST_0050_GPU_EXACT \
     -DBUILD_TEST_0045_GPU_LOOKUP_PREPARATION \
     -DBUILD_TEST_0102_GPU_FAILURE \
@@ -6161,6 +6164,9 @@ test_runner_SOURCES = test_runner.c \
     lookup/blockcull/0001_blockcull_exact.c \
     lookup/gridlut/0001_gridlut_exact.c \
     lookup/ordered/0001_ordered_exact.c \
+    lookup/fhedt/0140_lookup_configuration.c \
+    lookup/fhedt/0099_gpu_reference.c \
+    lookup/fhedt/0111_gpu_apply.c \
     lookup/delaunay/0050_gpu_exact.c \
     encoder/indexed/0045_gpu_lookup_preparation.c \
     lookup/delaunay/0105_gpu_geometry.c \

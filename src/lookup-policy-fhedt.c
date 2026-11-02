@@ -182,6 +182,7 @@ typedef struct sixel_lookup_policy_fhedt_object {
     int backend_initialized;
     int prepared;
     int pixelformat;
+    sixel_lookup_policy_configuration_t configuration;
     sixel_lookup_policy_fhedt_8bit_t state_8bit;
     sixel_lookup_policy_fhedt_float32_t state_float;
 } sixel_lookup_policy_fhedt_object_t;
@@ -341,6 +342,39 @@ sixel_lookup_policy_fhedt_resolve_settings(
     settings->pin_threads = request->fhedt_pin_threads_override != 0
         ? request->fhedt_pin_threads
         : sixel_threading_policy_pin(0);
+}
+
+/* The numeric snapshot is independent of CPU allocation and ownership.
+ * Use the same resolver as CPU prepare so precedence cannot drift. */
+static void
+sixel_lookup_policy_fhedt_copy_configuration(
+    sixel_lookup_policy_prepare_request_t const *request,
+    sixel_lookup_policy_fhedt_settings_t const *settings,
+    sixel_lookup_policy_configuration_t *configuration)
+{
+    memset(configuration, 0, sizeof(*configuration));
+    configuration->kind = SIXEL_LUT_POLICY_FHEDT;
+    configuration->pixelformat = request->pixelformat;
+    configuration->fhedt_resolution = settings->resolution;
+    configuration->fhedt_refine = settings->refine;
+    configuration->fhedt_use_dist2 = settings->use_dist2;
+    configuration->fhedt_use_cache = settings->use_cache;
+    memcpy(configuration->fhedt_weights, settings->weights,
+        sizeof(configuration->fhedt_weights));
+}
+
+SIXELSTATUS
+sixel_lookup_policy_fhedt_resolve_configuration(
+    sixel_lookup_policy_prepare_request_t const *request,
+    sixel_lookup_policy_configuration_t *configuration)
+{
+    sixel_lookup_policy_fhedt_settings_t settings;
+
+    if (request == NULL || configuration == NULL) return SIXEL_BAD_ARGUMENT;
+    sixel_lookup_policy_fhedt_resolve_settings(request, &settings);
+    sixel_lookup_policy_fhedt_copy_configuration(request, &settings,
+        configuration);
+    return SIXEL_OK;
 }
 
 /* Ratios scale nominal-range-normalized coordinates before squaring.
@@ -876,6 +910,8 @@ sixel_lookup_policy_fhedt_prepare_8bit(
         sixel_lookup_policy_fhedt_reset_state(object);
         return status;
     }
+    sixel_lookup_policy_fhedt_copy_configuration(request, &settings,
+        &object->configuration);
     object->prepared = 1;
     object->pixelformat = request->pixelformat;
 
@@ -931,6 +967,8 @@ sixel_lookup_policy_fhedt_prepare_float32(
         sixel_lookup_policy_fhedt_reset_state(object);
         return status;
     }
+    sixel_lookup_policy_fhedt_copy_configuration(request, &settings,
+        &object->configuration);
     object->prepared = 1;
     object->pixelformat = request->pixelformat;
 
@@ -1017,6 +1055,20 @@ sixel_lookup_policy_fhedt_get_kind(
     return SIXEL_LUT_POLICY_FHEDT;
 }
 
+static SIXELSTATUS
+sixel_lookup_policy_fhedt_get_configuration(
+    sixel_lookup_policy_interface_t const *policy,
+    sixel_lookup_policy_configuration_t *configuration)
+{
+    sixel_lookup_policy_fhedt_object_t const *object;
+
+    if (policy == NULL || configuration == NULL) return SIXEL_BAD_ARGUMENT;
+    object = sixel_lookup_policy_fhedt_from_base_const(policy);
+    if (!object->prepared) return SIXEL_LOGIC_ERROR;
+    *configuration = object->configuration;
+    return SIXEL_OK;
+}
+
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_fhedt_8bit_vtbl = {
     sixel_lookup_policy_fhedt_ref,
@@ -1027,6 +1079,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_map_pixels_default,
     NULL,
     sixel_lookup_policy_fhedt_get_kind,
+    sixel_lookup_policy_fhedt_get_configuration,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -1039,6 +1092,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_map_pixels_default,
     NULL,
     sixel_lookup_policy_fhedt_get_kind,
+    sixel_lookup_policy_fhedt_get_configuration,
 };
 
 SIXELSTATUS

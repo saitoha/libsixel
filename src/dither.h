@@ -89,6 +89,10 @@ sixel_dither_perturb_float(sixel_dither_perturb_t const *context,
  * keeps unsupported precision/cache configurations on their legacy adapter.
  * A GPU candidate can defer CPU lookup preparation until plan rejection. */
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_get_lookup_configuration(sixel_dither_t const *dither,
+    int pixelformat, sixel_lookup_policy_configuration_t *configuration);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     int parallel, int prepare_lookup);
 

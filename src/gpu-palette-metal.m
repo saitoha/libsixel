@@ -54,6 +54,7 @@ enum {
     SIXEL_GPU_METAL_LOOKUP_GRIDLUT = 2,
     SIXEL_GPU_METAL_LOOKUP_ORDERED = 3,
     SIXEL_GPU_METAL_LOOKUP_DELAUNAY = 4,
+    SIXEL_GPU_METAL_LOOKUP_FHEDT = 5,
     SIXEL_GPU_METAL_EYTZINGER_KEY_MAX = 255 * 3
 };
 
@@ -63,6 +64,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t height;
     uint32_t ncolors;
     uint32_t lookup_mode;
+    uint32_t fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;
     uint32_t mode;
     uint32_t has_transparent;
     uint32_t transparent_size;
@@ -549,6 +551,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint height;\n"
 "    uint ncolors;\n"
 "    uint lookup_mode;\n"
+"    uint fhedt_resolution, fhedt_shift, fhedt_refine, fhedt_dist2;\n"
 "    uint mode;\n"
 "    uint has_transparent;\n"
 "    uint transparent_size;\n"
@@ -1145,6 +1148,50 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 " * 6delta), after writing any result.  Otherwise it yields the search query\n"
 " * (after dither noise) and the untouched source color.\n"
 " */\n"
+"/* Byte FHEDT preserves the CPU quantized-coordinate and corner tie order.\n"
+" * F0 uses a byte table; F1 carries boundary and zero-distance flags. */\n"
+"static uint fhedt_palette_lookup(constant uchar *palette,\n"
+"    device const uint *storage, uchar3 query, constant Params& p)\n"
+"{\n"
+"    device const uchar *bytes;\n"
+"    device const ushort *table;\n"
+"    uint3 q, cell, corner;\n"
+"    uint r, at, word, best, minimum, distance, candidate, x, y, z;\n"
+"    int3 d, color;\n"
+"\n"
+"    q = uint3(query);\n"
+"    r = p.fhedt_resolution;\n"
+"    cell = q >> p.fhedt_shift;\n"
+"    at = cell.x + cell.y * r + cell.z * r * r;\n"
+"    bytes = (device const uchar *)storage;\n"
+"    if (!p.fhedt_refine) return uint(bytes[at]);\n"
+"    table = (device const ushort *)storage;\n"
+"    word = table[at];\n"
+"    best = word & 255u;\n"
+"    if ((word & 256u) && !(p.fhedt_dist2 && (word & 512u))) {\n"
+"        minimum = UINT_MAX;\n"
+"        for (z = 0u; z < 2u; ++z) {\n"
+"            for (y = 0u; y < 2u; ++y) {\n"
+"                for (x = 0u; x < 2u; ++x) {\n"
+"                    corner = min(cell + uint3(x, y, z), uint3(r - 1u));\n"
+"                    at = corner.x + corner.y * r + corner.z * r * r;\n"
+"                    candidate = table[at] & 255u;\n"
+"                    color = int3(palette[candidate * 3u],\n"
+"                        palette[candidate * 3u + 1u],\n"
+"                        palette[candidate * 3u + 2u]);\n"
+"                    color = (color >> p.fhedt_shift) << p.fhedt_shift;\n"
+"                    d = int3(q) - color;\n"
+"                    distance = uint(d.x * d.x + d.y * d.y + d.z * d.z);\n"
+"                    if (distance < minimum) {\n"
+"                        minimum = distance;\n"
+"                        best = candidate;\n"
+"                    }\n"
+"                }\n"
+"            }\n"
+"        }\n"
+"    }\n"
+"    return best;\n"
+"}\n",
 "static bool prepare_query(\n"
 "    device uchar *result,\n"
 "    device const uchar *pixels,\n"
@@ -1314,7 +1361,9 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "                      gid, query, source)) {\n"
 "        return;\n"
 "    }\n"
-"    if (params.lookup_mode == 4u) {\n"
+"    if (params.lookup_mode == 5u) {\n"
+"        best = fhedt_palette_lookup(palette, ordered, query, params);\n"
+"    } else if (params.lookup_mode == 4u) {\n"
 "        best = delaunay_palette_lookup(palette, ordered, query);\n"
 "    } else if (params.lookup_mode == 3u) {\n"
 "        best = ordered_palette_lookup(palette, ordered,\n"
@@ -1606,6 +1655,8 @@ sixel_gpu_palette_metal_append_chunks(NSMutableString *source,
     }
     return 1;
 }
+
+#include "gpu-palette-metal-fhedt.inc.h"
 
 static NSString *
 sixel_gpu_palette_metal_create_source(void)
@@ -2134,6 +2185,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     int rebuild_ordered;
     int use_delaunay;
     int rebuild_delaunay;
+    int use_fhedt;
+    int rebuild_fhedt;
+    NSUInteger fhedt_grid_size;
     NSUInteger build_stage;
     id<MTLComputePipelineState> builders[3];
     NSUInteger sort_width;
@@ -2188,6 +2242,10 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     use_delaunay = request != NULL &&
         request->lut_policy == SIXEL_LUT_POLICY_DELAUNAY;
     rebuild_delaunay = 0;
+    use_fhedt = request != NULL &&
+        request->lut_policy == SIXEL_LUT_POLICY_FHEDT;
+    rebuild_fhedt = 0;
+    fhedt_grid_size = 0U;
     lookup_buffer = nil;
     sort_width = 0U;
     dispatched = 0U;
@@ -2347,6 +2405,39 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
                 memcmp(g_sixel_gpu_metal_delaunay_palette, request->palette,
                        palette_length) != 0;
         }
+        if (use_fhedt) {
+            if (!sixel_gpu_fhedt_prepare(request->fhedt_resolution,
+                    request->fhedt_refine)) {
+                sixel_helper_set_additional_message(
+                    "gpu palette apply: FHEDT pipelines unavailable.");
+                status = SIXEL_FEATURE_ERROR;
+                goto end;
+            }
+            params.lookup_mode = SIXEL_GPU_METAL_LOOKUP_FHEDT;
+            params.fhedt_resolution = request->fhedt_resolution;
+            params.fhedt_shift = request->fhedt_resolution == 64 ? 2U :
+                request->fhedt_resolution == 128 ? 1U : 0U;
+            params.fhedt_refine = request->fhedt_refine;
+            params.fhedt_dist2 = request->fhedt_use_dist2;
+            fhedt_grid_size = (NSUInteger)request->fhedt_resolution;
+            fhedt_grid_size *= fhedt_grid_size * fhedt_grid_size;
+            rebuild_fhedt = g_sixel_gpu_fhedt_colors != request->ncolors ||
+                g_sixel_gpu_fhedt_resolution != request->fhedt_resolution ||
+                g_sixel_gpu_fhedt_refine != request->fhedt_refine ||
+                g_sixel_gpu_fhedt_dist2 != request->fhedt_use_dist2 ||
+                memcmp(g_sixel_gpu_fhedt_palette, request->palette,
+                    palette_length) != 0;
+            lookup_buffer = sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_table,
+                fhedt_grid_size * (request->fhedt_refine ? 2U : 1U));
+            if (rebuild_fhedt &&
+                    (sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_first,
+                        fhedt_grid_size * 4U) == nil ||
+                     sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_second,
+                        fhedt_grid_size * 4U) == nil)) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        }
         params_buffer = sixel_gpu_metal_upload_buffer(
             &g_sixel_gpu_metal_params_buffer,
             &params,
@@ -2391,7 +2482,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         }
         if (request->test_hooks != NULL) {
             request->test_hooks->rebuild =
-                rebuild_grid || rebuild_ordered || rebuild_delaunay;
+                rebuild_grid || rebuild_ordered || rebuild_delaunay ||
+                rebuild_fhedt;
             if (request->test_hooks->fault == 1) {
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
@@ -2416,7 +2508,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         /* Direct lookup runs as a matrix product where the device supports
          * simdgroup matrices; both kernels return the same indexes. */
         pipeline = g_sixel_gpu_metal_pipeline;
-        if (!use_grid && !use_ordered && !use_delaunay &&
+        if (!use_grid && !use_ordered && !use_delaunay && !use_fhedt &&
                 request->lut_policy != SIXEL_LUT_POLICY_EYTZINGER &&
                 sixel_gpu_palette_metal_prepare_gemm_locked()) {
             gemm_tiles_length = sixel_gpu_palette_metal_build_gemm_tiles(
@@ -2441,19 +2533,25 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             }
         }
         if (request->test_hooks != NULL) {
-            request->test_hooks->kernel = use_delaunay ? 6 :
+            request->test_hooks->kernel = use_fhedt ? 7 : use_delaunay ? 6 :
                 use_ordered ? 5 : use_grid ? 4 :
                 use_blockcull ? 3 : use_gemm ? 2 : 1;
         }
         if (sixel_trace_topic_is_enabled("gpu_contract")) {
             fprintf(stderr, "LSXGPU2|consumer=palette-apply|kernel=%s\n",
-                    use_delaunay ? "delaunay" :
+                    use_fhedt ? "fhedt" : use_delaunay ? "delaunay" :
                     use_ordered ? "ordered" : use_grid ? "gridlut" :
                     use_blockcull ? "blockcull" : use_gemm ? "gemm" :
                     request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER ?
                     "eytzinger" : "direct");
         }
 
+        if (use_fhedt && sixel_trace_topic_is_enabled("gpu_contract")) {
+            fprintf(stderr, "LSXGPU3|lookup=fhedt|table=%s|R=%d|F=%d|D=%d\n",
+                rebuild_fhedt ? "rebuild" : "reuse",
+                request->fhedt_resolution, request->fhedt_refine,
+                request->fhedt_use_dist2);
+        }
         if (use_delaunay && sixel_trace_topic_is_enabled("gpu_contract")) {
             fprintf(stderr, "LSXGPU3|lookup=delaunay|table=%s\n",
                     rebuild_delaunay ? "rebuild" : "reuse");
@@ -2476,6 +2574,17 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             goto end;
         }
 
+        if (rebuild_fhedt) {
+            [encoder endEncoding];
+            status = sixel_gpu_fhedt_build(command_buffer, palette_buffer,
+                lookup_buffer, request);
+            if (SIXEL_FAILED(status)) goto end;
+            encoder = [command_buffer computeCommandEncoder];
+            if (encoder == nil) {
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+        }
         if (rebuild_delaunay) {
             /* Bounds, compact sorted adjacency and seeds stay on the GPU.
              * Encoder boundaries establish tracked-buffer visibility; apply
@@ -2635,6 +2744,14 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             goto end;
         }
 
+        if (rebuild_fhedt) {
+            memcpy(g_sixel_gpu_fhedt_palette, request->palette,
+                palette_length);
+            g_sixel_gpu_fhedt_colors = request->ncolors;
+            g_sixel_gpu_fhedt_resolution = request->fhedt_resolution;
+            g_sixel_gpu_fhedt_refine = request->fhedt_refine;
+            g_sixel_gpu_fhedt_dist2 = request->fhedt_use_dist2;
+        }
         if (rebuild_delaunay) {
             memcpy(g_sixel_gpu_metal_delaunay_palette, request->palette,
                    palette_length);
@@ -2664,6 +2781,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         status = SIXEL_OK;
 
     end:
+        if (rebuild_fhedt && status != SIXEL_OK) {
+            g_sixel_gpu_fhedt_colors = 0;
+        }
         if (rebuild_delaunay && status != SIXEL_OK) {
             g_sixel_gpu_metal_delaunay_colors = 0;
         }

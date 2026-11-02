@@ -1389,6 +1389,10 @@ int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
+int test_fhedt_lookup_configuration(int argc, char **argv);
+int test_fhedt_gpu_reference(int argc, char **argv);
+int test_fhedt_gpu_apply(int argc, char **argv);
+int test_fhedt_gpu_state(int argc, char **argv);
 int test_delaunay_gpu_geometry(int argc, char **argv);
 int test_delaunay_gpu_cache(int argc, char **argv);
 int test_indexed_gpu_lookup_preparation(int argc, char **argv);
@@ -5595,6 +5599,10 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0021_blockcull_exact },
     { "gpu-palette/0022_gridlut_exact",
       test_gpupal_0022_gridlut_exact },
+    { "fhedt/lookup_configuration", test_fhedt_lookup_configuration },
+    { "fhedt/gpu_reference", test_fhedt_gpu_reference },
+    { "fhedt/gpu_apply", test_fhedt_gpu_apply },
+    { "fhedt/gpu_state", test_fhedt_gpu_state },
     { "delaunay/gpu_geometry", test_delaunay_gpu_geometry },
     { "delaunay/gpu_cache", test_delaunay_gpu_cache },
     { "encoder/indexed/gpu_lookup_preparation",

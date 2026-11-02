@@ -347,6 +347,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_map_pixels_default,
     NULL,
     sixel_lookup_policy_none_get_kind,
+    NULL,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -359,6 +360,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_map_pixels_default,
     NULL,
     sixel_lookup_policy_none_get_kind,
+    NULL,
 };
 
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)

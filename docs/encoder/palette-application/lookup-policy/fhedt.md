@@ -121,11 +121,19 @@ Byte refinement performs at most eight distance comparisons without a growing du
 
 Float exterior scans and native entries colliding at a seed account for the `O(K)` query bound. Collision chains add one integer per palette entry; they do not add an image-sized buffer. The fixed grid-build cost is substantial: increasing `R` from 64 to 256 multiplies cell count by 64. Small images may not amortize construction, and memory bandwidth can dominate the transform.
 
-With `SIXEL_LOOKUP_FHEDT_SHARED=1` (the default), the encoder builds one immutable grid immediately after finalizing the working palette. An asynchronous palette job constructs it inside its existing thread-budget scope, independently of the full-frame working-colorspace conversion. Serial and parallel palette application retain references to that grid; preparing a consumer never consumes the source policy. Each handle owns one grid reference and its cache settings; cache entries remain thread-local, and the non-TLS parallel fallback disables the cache. Mapping needs no grid lock.
+On the CPU path, with `SIXEL_LOOKUP_FHEDT_SHARED=1` (the default), the encoder builds one immutable grid immediately after finalizing the working palette. An asynchronous palette job constructs it inside its existing thread-budget scope, independently of the full-frame working-colorspace conversion. Serial and parallel palette application retain references to that grid; preparing a consumer never consumes the source policy. Each handle owns one grid reference and its cache settings; cache entries remain thread-local, and the non-TLS parallel fallback disables the cache. Mapping needs no grid lock.
 
 Reuse requires the same representation, pixel format, allocator, palette signature, resolution, refinement, metric weights and retained-distance setting. A mismatch builds a new grid while existing consumers retain the original. Tiling, first-touch and pinning govern construction only. `SIXEL_LOOKUP_FHEDT_SHARED=0` deliberately disables reference reuse, retaining independent construction for diagnostics and memory/performance comparisons; it does not promise one build per encode. This opt-out preserves the ability to compare sharing against independent grids without changing lookup results.
 
 Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs change constants and NUMA behavior, not the asymptotic order. Their current names and defaults are in the [`img2sixel(1)` manual](../../../../converters/img2sixel.1).
+
+The Metal backend supports RGB888 with uniform positive weights, `R64`, `R128` or `R256`, either `refine` and `dist2` setting, and `cache=0`. It preserves byte FHEDT's quantized seed coordinates, last-index seed collisions, axis tie order and strict corner-refinement comparisons. This is CPU/GPU equivalence at identical settings; R64/R128 and disabled refinement remain approximate. Positional `none`, `a_dither`, `x_dither` and `bluenoise` application use the existing transparency and delta gates.
+
+GPU construction runs the three EDT axes in separate tracked compute encoders within one command buffer. Packed 32-bit scratch cells carry distance and label. Without refinement, the final axis writes a one-byte LUT directly. With refinement, a separate packing pass produces a two-byte LUT carrying the label, boundary flag and zero-distance flag; the last flag implements the uniform-metric `dist2` shortcut. Construction and application complete before index publication.
+
+GPU pipelines and buffers are process-wide under the backend's execution lock, with one reusable table slot. The key contains palette bytes, palette count, resolution, refinement and dist2. It is published only after successful command completion; a failed rebuild invalidates it. CPU-only `shared`, tiling, first-touch and pinning settings do not partition or disable GPU sharing. Uniform weight scaling does not change byte geometry. Scratch buffers and the LUT grow to the largest requested resolution and remain allocated for reuse: at R256 they occupy up to 128 MiB of scratch plus 32 MiB of LUT storage.
+
+A GPU candidate resolves query settings without building a CPU grid. Unsupported settings, including the history-dependent voxel cache and nonuniform/float metrics, decline GPU admission before output; AUTO can prepare a compatible CPU plan, while FORCE reports an error rather than replacing FHEDT with direct lookup. This does not make otherwise invalid CPU settings valid. The component's copied configuration and fallback boundary are described in the [execution map](../../execution-map/README.md).
 
 ## Name and sources
 
@@ -134,3 +142,58 @@ Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs c
 The libsixel option was originally named `vpte` and was renamed to `fhedt` in the [attribution-oriented rename commit](https://github.com/saitoha/libsixel/commit/ac25344a8d49e9f8c2545dfad1b1d00598e48343). The three-dimensional palette-label construction and bounded corner refinement are libsixel adaptations of the separable transform.
 
 The policy wrapper is [`lookup-policy-fhedt.c`](../../../../src/lookup-policy-fhedt.c). The representation backends are [`lookup-fhedt-8bit.c`](../../../../src/lookup-fhedt-8bit.c) and [`lookup-fhedt-float32.c`](../../../../src/lookup-fhedt-float32.c).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+The finite GPU references scan palette sites only at queried voxels and refinement neighbors; they do not construct a second dense grid. Separate CPU/GPU application cases cover real dithering, omission indexes and keep masks. Each parameter combination has its own TAP file. These tests do not establish perceptual equivalence between different FHEDT settings or end-to-end terminal throughput. GPU cases skip when Metal execution is unavailable.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FHG-01 | Gpu reference r64 f0 d0. | [tests/lookup/fhedt/0099_gpu_reference_r64_f0_d0.t](../../../../tests/lookup/fhedt/0099_gpu_reference_r64_f0_d0.t) |
+| FHG-02 | Gpu reference r64 f0 d1. | [tests/lookup/fhedt/0100_gpu_reference_r64_f0_d1.t](../../../../tests/lookup/fhedt/0100_gpu_reference_r64_f0_d1.t) |
+| FHG-03 | Gpu reference r64 f1 d0. | [tests/lookup/fhedt/0101_gpu_reference_r64_f1_d0.t](../../../../tests/lookup/fhedt/0101_gpu_reference_r64_f1_d0.t) |
+| FHG-04 | Gpu reference r64 f1 d1. | [tests/lookup/fhedt/0102_gpu_reference_r64_f1_d1.t](../../../../tests/lookup/fhedt/0102_gpu_reference_r64_f1_d1.t) |
+| FHG-05 | Gpu reference r128 f0 d0. | [tests/lookup/fhedt/0103_gpu_reference_r128_f0_d0.t](../../../../tests/lookup/fhedt/0103_gpu_reference_r128_f0_d0.t) |
+| FHG-06 | Gpu reference r128 f0 d1. | [tests/lookup/fhedt/0104_gpu_reference_r128_f0_d1.t](../../../../tests/lookup/fhedt/0104_gpu_reference_r128_f0_d1.t) |
+| FHG-07 | Gpu reference r128 f1 d0. | [tests/lookup/fhedt/0105_gpu_reference_r128_f1_d0.t](../../../../tests/lookup/fhedt/0105_gpu_reference_r128_f1_d0.t) |
+| FHG-08 | Gpu reference r128 f1 d1. | [tests/lookup/fhedt/0106_gpu_reference_r128_f1_d1.t](../../../../tests/lookup/fhedt/0106_gpu_reference_r128_f1_d1.t) |
+| FHG-09 | Gpu reference r256 f0 d0. | [tests/lookup/fhedt/0107_gpu_reference_r256_f0_d0.t](../../../../tests/lookup/fhedt/0107_gpu_reference_r256_f0_d0.t) |
+| FHG-10 | Gpu reference r256 f0 d1. | [tests/lookup/fhedt/0108_gpu_reference_r256_f0_d1.t](../../../../tests/lookup/fhedt/0108_gpu_reference_r256_f0_d1.t) |
+| FHG-11 | Gpu reference r256 f1 d0. | [tests/lookup/fhedt/0109_gpu_reference_r256_f1_d0.t](../../../../tests/lookup/fhedt/0109_gpu_reference_r256_f1_d0.t) |
+| FHG-12 | Gpu reference r256 f1 d1. | [tests/lookup/fhedt/0110_gpu_reference_r256_f1_d1.t](../../../../tests/lookup/fhedt/0110_gpu_reference_r256_f1_d1.t) |
+| FHG-13 | Gpu none keep0. | [tests/lookup/fhedt/0111_gpu_none_keep0.t](../../../../tests/lookup/fhedt/0111_gpu_none_keep0.t) |
+| FHG-14 | Gpu none keep1. | [tests/lookup/fhedt/0112_gpu_none_keep1.t](../../../../tests/lookup/fhedt/0112_gpu_none_keep1.t) |
+| FHG-15 | Gpu bluenoise keep0. | [tests/lookup/fhedt/0113_gpu_bluenoise_keep0.t](../../../../tests/lookup/fhedt/0113_gpu_bluenoise_keep0.t) |
+| FHG-16 | Gpu bluenoise keep1. | [tests/lookup/fhedt/0114_gpu_bluenoise_keep1.t](../../../../tests/lookup/fhedt/0114_gpu_bluenoise_keep1.t) |
+| FHG-17 | Gpu x keep0. | [tests/lookup/fhedt/0115_gpu_x_keep0.t](../../../../tests/lookup/fhedt/0115_gpu_x_keep0.t) |
+| FHG-18 | Gpu x keep1. | [tests/lookup/fhedt/0116_gpu_x_keep1.t](../../../../tests/lookup/fhedt/0116_gpu_x_keep1.t) |
+| FHG-19 | Gpu a keep0. | [tests/lookup/fhedt/0117_gpu_a_keep0.t](../../../../tests/lookup/fhedt/0117_gpu_a_keep0.t) |
+| FHG-20 | Gpu a keep1. | [tests/lookup/fhedt/0118_gpu_a_keep1.t](../../../../tests/lookup/fhedt/0118_gpu_a_keep1.t) |
+| FHG-21 | Gpu palette p1. | [tests/lookup/fhedt/0119_gpu_palette_p1.t](../../../../tests/lookup/fhedt/0119_gpu_palette_p1.t) |
+| FHG-22 | Gpu palette p2. | [tests/lookup/fhedt/0120_gpu_palette_p2.t](../../../../tests/lookup/fhedt/0120_gpu_palette_p2.t) |
+| FHG-23 | Gpu palette p129. | [tests/lookup/fhedt/0121_gpu_palette_p129.t](../../../../tests/lookup/fhedt/0121_gpu_palette_p129.t) |
+| FHG-24 | Gpu palette p256. | [tests/lookup/fhedt/0122_gpu_palette_p256.t](../../../../tests/lookup/fhedt/0122_gpu_palette_p256.t) |
+| FHG-25 | Gpu cache reuse. | [tests/lookup/fhedt/0123_gpu_cache_reuse.t](../../../../tests/lookup/fhedt/0123_gpu_cache_reuse.t) |
+| FHG-26 | Gpu cache palette. | [tests/lookup/fhedt/0124_gpu_cache_palette.t](../../../../tests/lookup/fhedt/0124_gpu_cache_palette.t) |
+| FHG-27 | Gpu cache count. | [tests/lookup/fhedt/0125_gpu_cache_count.t](../../../../tests/lookup/fhedt/0125_gpu_cache_count.t) |
+| FHG-28 | Gpu cache resolution. | [tests/lookup/fhedt/0126_gpu_cache_resolution.t](../../../../tests/lookup/fhedt/0126_gpu_cache_resolution.t) |
+| FHG-29 | Gpu cache refine. | [tests/lookup/fhedt/0127_gpu_cache_refine.t](../../../../tests/lookup/fhedt/0127_gpu_cache_refine.t) |
+| FHG-30 | Gpu cache dist2. | [tests/lookup/fhedt/0128_gpu_cache_dist2.t](../../../../tests/lookup/fhedt/0128_gpu_cache_dist2.t) |
+| FHG-31 | Gpu cache after ordered. | [tests/lookup/fhedt/0129_gpu_cache_after_ordered.t](../../../../tests/lookup/fhedt/0129_gpu_cache_after_ordered.t) |
+| FHG-32 | Gpu cache alternate. | [tests/lookup/fhedt/0130_gpu_cache_alternate.t](../../../../tests/lookup/fhedt/0130_gpu_cache_alternate.t) |
+| FHG-33 | Gpu cache allocation failure. | [tests/lookup/fhedt/0131_gpu_cache_allocation_failure.t](../../../../tests/lookup/fhedt/0131_gpu_cache_allocation_failure.t) |
+| FHG-34 | Gpu cache encoder failure. | [tests/lookup/fhedt/0132_gpu_cache_encoder_failure.t](../../../../tests/lookup/fhedt/0132_gpu_cache_encoder_failure.t) |
+| FHG-35 | Gpu cache completion failure. | [tests/lookup/fhedt/0133_gpu_cache_completion_failure.t](../../../../tests/lookup/fhedt/0133_gpu_cache_completion_failure.t) |
+| FHG-36 | Gpu force no cpu grid. | [tests/lookup/fhedt/0134_gpu_force_no_cpu_grid.t](../../../../tests/lookup/fhedt/0134_gpu_force_no_cpu_grid.t) |
+| FHG-37 | Gpu auto no cpu grid. | [tests/lookup/fhedt/0135_gpu_auto_no_cpu_grid.t](../../../../tests/lookup/fhedt/0135_gpu_auto_no_cpu_grid.t) |
+| FHG-38 | Gpu threshold cpu grid. | [tests/lookup/fhedt/0136_gpu_threshold_cpu_grid.t](../../../../tests/lookup/fhedt/0136_gpu_threshold_cpu_grid.t) |
+| FHG-39 | Gpu off cpu grid. | [tests/lookup/fhedt/0137_gpu_off_cpu_grid.t](../../../../tests/lookup/fhedt/0137_gpu_off_cpu_grid.t) |
+| FHG-40 | Gpu diffusion cpu grid. | [tests/lookup/fhedt/0138_gpu_diffusion_cpu_grid.t](../../../../tests/lookup/fhedt/0138_gpu_diffusion_cpu_grid.t) |
+| FHG-41 | Gpu cache cpu grid. | [tests/lookup/fhedt/0139_gpu_cache_cpu_grid.t](../../../../tests/lookup/fhedt/0139_gpu_cache_cpu_grid.t) |
+| FHG-42 | Snapshot f0. | [tests/lookup/fhedt/0140_snapshot_f0.t](../../../../tests/lookup/fhedt/0140_snapshot_f0.t) |
+| FHG-43 | Snapshot f1. | [tests/lookup/fhedt/0141_snapshot_f1.t](../../../../tests/lookup/fhedt/0141_snapshot_f1.t) |
+| FHG-44 | Unprepared configuration. | [tests/lookup/fhedt/0142_unprepared_configuration.t](../../../../tests/lookup/fhedt/0142_unprepared_configuration.t) |
