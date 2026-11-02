@@ -38,9 +38,9 @@ test_qa_0029(int argc, char **argv)
         }
     }
     if (SIXEL_FAILED(sixel_qa_scielab(reference, checker, 16, 16, 60,
-            &fine_mean, &maximum, NULL))
+            &fine_mean, &maximum, NULL, NULL, NULL))
             || SIXEL_FAILED(sixel_qa_scielab(reference, broad, 16, 16, 60,
-                &broad_mean, &maximum, NULL))
+                &broad_mean, &maximum, NULL, NULL, NULL))
             || !isfinite(fine_mean) || !isfinite(broad_mean)) {
         return EXIT_FAILURE;
     }

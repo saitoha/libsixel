@@ -13,7 +13,7 @@ test_qa_0013(int argc, char **argv)
     sixel_frame_t *a;
     sixel_frame_t *b;
     sixel_assessment_t *qa;
-    unsigned int mask;
+    sixel_assessment_mask_t mask;
     int max_index;
     int mean_index;
     int ok;

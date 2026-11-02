@@ -11,7 +11,7 @@ test_qa_0033(int argc, char **argv)
     sixel_frame_t *a;
     sixel_frame_t *b;
     sixel_assessment_t *qa;
-    unsigned int mask;
+    sixel_assessment_mask_t mask;
     int index;
     int ok;
 
@@ -38,12 +38,12 @@ test_qa_0033(int argc, char **argv)
             || !isfinite(qa->results[index]) || qa->results[index] < 99) {
         goto end;
     }
-    qa->scielab_ppd = NAN;
+    qa->ppd = NAN;
     if (sixel_assessment_analyze(qa, a, b) != SIXEL_BAD_ARGUMENT
             || qa->results_ready || qa->results_valid_mask != 0) {
         goto end;
     }
-    qa->scielab_ppd = 60;
+    qa->ppd = 60;
     ok = SIXEL_SUCCEEDED(sixel_assessment_analyze(qa, a, a))
         && qa->results_ready && qa->results_valid_mask == mask
         && qa->results[index] == 0;

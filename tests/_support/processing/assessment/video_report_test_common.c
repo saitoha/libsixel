@@ -101,6 +101,11 @@ test_video_report_check(int argc, char **argv)
     double total;
     double score;
     int byte;
+    char const *spatial_names[2] = {"S-CIEDE2000", "S-CIEDE2000_max"};
+    double spatial_weighted[2] = {0, 0};
+    double spatial_plain[2] = {0, 0};
+    double spatial_peak[2] = {0, 0};
+    int metric;
 
     if (argc < 3) { return EXIT_FAILURE; }
     mode = atoi(argv[1]);
@@ -119,6 +124,16 @@ test_video_report_check(int argc, char **argv)
     while (ok && fgets(line, sizeof(line), report) != NULL) {
         if (strstr(line, "\"type\":\"metadata\"") != NULL) {
             ++metadata;
+            if (mode == 15) {
+                ok = video_report_test_number(line, "ppd") == 60
+                    && strstr(line, "\"scielab_difference\":\"CIE76\"")
+                        != NULL
+                    && strstr(line,
+                        "\"sciede2000_difference\":\"CIEDE2000\"") != NULL
+                    && strstr(line,
+                        "\"sciede2000_parameters\":{\"kL\":1,"
+                        "\"kC\":1,\"kH\":1}") != NULL;
+            }
         } else if (strstr(line, "\"type\":\"frame\"") != NULL) {
             mean = video_report_test_number(line, "mean");
             maximum = video_report_test_number(line, "max");
@@ -143,6 +158,22 @@ test_video_report_check(int argc, char **argv)
             duration += dt;
             weighted += mean * dt;
             plain += mean;
+            if (mode == 15) {
+                for (metric = 0; metric < 2; ++metric) {
+                    score = video_report_test_number(line,
+                        spatial_names[metric]);
+                    if (!isfinite(score) || score < 0) {
+                        ok = 0;
+                        break;
+                    }
+                    spatial_weighted[metric] += score * dt;
+                    spatial_plain[metric] += score;
+                    if (score > spatial_peak[metric]) {
+                        spatial_peak[metric] = score;
+                    }
+                }
+                if (!ok) { break; }
+            }
             if (mode == 2 && frames == 2) {
                 ok = count == 0 && mean == previous
                     && video_report_test_number(line, "packets") == 0;
@@ -178,6 +209,27 @@ test_video_report_check(int argc, char **argv)
                 score = video_report_test_number(line, "S-CIELAB");
                 ok = isfinite(score) && fabs(score - weighted / duration)
                     < 1e-6 && score - plain / frames > 1;
+            }
+            if (ok && mode == 15) {
+                region = strstr(line, "\"temporal_max\":");
+                if (region == NULL) { ok = 0; break; }
+                for (metric = 0; metric < 2; ++metric) {
+                    score = video_report_test_number(line,
+                        spatial_names[metric]);
+                    maximum = video_report_test_number(region,
+                        spatial_names[metric]);
+                    /* This stale three-frame fixture has unequal durations
+                     * and increasing errors, distinguishing all poolings. */
+                    if (!isfinite(score) || !isfinite(maximum)
+                            || fabs(score - spatial_weighted[metric]
+                                / duration) > 1e-6
+                            || score - spatial_plain[metric] / frames < .1
+                            || fabs(maximum - spatial_peak[metric]) > 1e-6
+                            || maximum - score < .1) {
+                        ok = 0;
+                        break;
+                    }
+                }
             }
         } else {
             ok = 0;

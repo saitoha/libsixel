@@ -25,7 +25,7 @@ lsqa -m MS-SSIM,DE00_region_max reference.png output.six
 lsqa -m PSNR_Y -b MS-SSIM:min=0.98 reference.png output.six
 ```
 
-Legacy `METRIC:VALUE` remains accepted: S-CIELAB and S-CIELAB_max use upper bounds, and all other metrics use lower bounds, including legacy color-difference names. Prefer explicit directions for new gates. Legacy values retain float32 threshold rounding; explicit bounds retain parsed double precision. The existing metric collection precision is retained: still-image gates collect six-decimal JSON values into float32, and video gates collect temporal means into float32. A displayed value alone may therefore be insufficient to reproduce a decision at a rounding boundary. Names retain their existing aliases and case rules; `-m` also retains its established unique-prefix matching. `SSIM` remains an alias for MS-SSIM, not a single-scale metric. The `min=` and `max=` keywords are lowercase.
+Legacy `METRIC:VALUE` remains accepted: S-CIELAB, S-CIEDE2000 and their `_max` metrics use upper bounds, and all other metrics use lower bounds, including legacy color-difference names. Prefer explicit directions for new gates. Legacy values retain float32 threshold rounding; explicit bounds retain parsed double precision. The existing metric collection precision is retained: still-image gates collect six-decimal JSON values into float32, and video gates collect temporal means into float32. A displayed value alone may therefore be insufficient to reproduce a decision at a rounding boundary. Names retain their existing aliases and case rules; `-m` also retains its established unique-prefix matching. `SSIM` remains an alias for MS-SSIM, not a single-scale metric. The `min=` and `max=` keywords are lowercase.
 
 At most one lower and one upper bound may be supplied for each canonical metric. Duplicate bounds, including through aliases or mixed legacy/explicit spelling, are usage errors (exit 2). Opposite bounds form an inclusive interval; a lower bound greater than its upper bound is rejected in either order. Numeric values must be finite and parse without range errors or trailing garbage. Empty comma members and unknown directions are rejected. Spaces and tabs around list members are ignored.
 
@@ -36,7 +36,7 @@ At most one lower and one upper bound may be supplied for each canonical metric.
 `lsqa` compares a reference image `x` with a test image `y` over their common top-left rectangle of `W × H` pixels. Two kinds of signal are used:
 
 - **Spatial and luma metrics** (MS-SSIM, VIF-P, GMSD, PSNR-Y, HighFreqRatio, StripeScore, BandingIndex, and the luma ClipRate) read a single-channel comparison signal. By default it is encoded sRGB luma `Y' = 0.2126 R' + 0.7152 G' + 0.0722 B'` with the ITU-R BT.709 coefficients on gamma-encoded samples in the nominal range 0 to 1. `--compare-colorspace` can select linear `Y` instead; see [physical color and comparison signal](color-evaluation.md#physical-color-and-comparison-signal).
-- **Color metrics** (`Δ E00_mean`, `DE00_max`, `Δ Chroma_mean`, the regional ΔE00 values, and S-CIELAB) read CIELAB computed from physical XYZ with the ICC D50 white. They do not depend on the comparison-signal options.
+- **Color metrics** (`Δ E00_mean`, `DE00_max`, `Δ Chroma_mean`, the regional ΔE00 values, S-CIELAB, and S-CIEDE2000) read CIELAB computed from physical XYZ with the ICC D50 white. They do not depend on the comparison-signal options.
 
 `Y'` is *luma*, a weighted sum of gamma-encoded components. It is not CIE luminance `Y`, and with saturated colors it departs from the lightness that a viewer perceives (the non-constant-luminance error of video luma). It is nevertheless roughly perceptually uniform in the way that encoded sRGB is, which is why it remains the default.
 
@@ -53,6 +53,7 @@ Formulas use plain-text notation: `Σ` is a sum, `Π` a product, `E[·]` an aver
 | `Δ E00_mean`, `DE00_max` | CIELAB | lower | per-pixel color difference |
 | `DE00_region_mean`, `DE00_region_max` | CIELAB of tile means | lower | low-pass color difference |
 | `S-CIELAB`, `S-CIELAB_max` | spatially filtered opponent color, then CIELAB | lower, 0 = identical | spatial CIE76 difference |
+| `S-CIEDE2000`, `S-CIEDE2000_max` | same spatially filtered CIELAB | lower, 0 = identical | spatial CIEDE2000 difference |
 | `Δ Chroma_mean` | CIELAB | lower | chroma magnitude |
 | `HighFreqRatio_*` | luma | descriptive | spectral distribution |
 | `StripeScore_*` | luma | descriptive | spectral orientation |
@@ -332,7 +333,7 @@ Every spatial metric assumes, explicitly or implicitly, how large one image pixe
 | `DE00_region_mean`, `DE00_region_max` | Square tiles of 8 to 64 pixels, default 16 | A 16-pixel tile spans 0.5° at 32 ppd and about 0.27° at 60 ppd |
 | `MS-SSIM` | Implicitly 32 ppd at scale 1 | The published scale weights were calibrated at that density |
 | `VIF-P` | Four Gaussian scales in pixel units, no ppd parameter | Information is pooled across the fixed pyramid without display calibration |
-| `S-CIELAB` | Explicit, `-v PPD`, default 60 | The opponent filters are defined in degrees of visual angle |
+| `S-CIELAB`, `S-CIEDE2000` | Explicit, `-v PPD`, default 60 | The opponent filters are defined in degrees of visual angle |
 
 The MS-SSIM weights were fitted in a psychophysical experiment that used ten 64 × 64 grayscale images viewed at 32 pixels per degree (Wang, Simoncelli and Bovik, 2003, section 3.2). `lsqa` treats the input pixels as scale 1, so its MS-SSIM assumes that each image pixel subtends 1/32 of a degree: the density of the SIXEL terminals of the 1980s and of the desktop LCDs of the 2000s, and coarser than the high-density displays that followed. At a higher effective density the viewer integrates fine-scale error that the finest factors still count. Error diffusion and blue-noise dithering, which place their error at the highest frequencies, are therefore penalized more than a viewer at that density sees. `lsqa` has no viewing-geometry option for MS-SSIM. To approximate an effective density of `P` ppd, reduce the reference and the output by the same integer factor near `P / 32` with an area filter before the comparison, keeping both images at least 176 pixels in each dimension, and report the factor with the score.
 
@@ -340,17 +341,32 @@ Metrics with different assumed geometry can rank the same outputs in opposite or
 
 ## Spatial color difference: S-CIELAB
 
-`lsqa -m S-CIELAB reference.png output.six` reports the pixel-weighted mean spatial CIE76 difference; `-m S-CIELAB_max` reports its maximum. Both are lower-is-better, zero for identical inputs, and included in the full JSON report. Names are case-insensitive and use the shared exact/unique-prefix selection rules. For these two metrics, `-b S-CIELAB:VALUE` or `-b S-CIELAB_max:VALUE` is an **upper** bound: equality passes and a larger value exits with status 5. Previously available metrics retain their existing baseline behavior.
+`lsqa -m S-CIELAB reference.png output.six` reports the pixel-weighted mean spatial CIE76 difference; `-m S-CIELAB_max` reports its maximum. Both are lower-is-better, zero for identical inputs, and included in the full JSON report. Names are case-insensitive and use the shared exact/unique-prefix selection rules. For both spatial color families, the legacy `METRIC:VALUE` gate is an **upper** bound: equality passes and a larger value exits with status 5. Previously available metrics retain their existing baseline behavior.
+
+### Spatial CIEDE2000
+
+`lsqa -m S-CIEDE2000 reference.png output.six` reports the pixel-weighted mean CIEDE2000 difference after the same spatial filtering; `-m S-CIEDE2000_max` reports its maximum. Both are lower-is-better, zero for identical inputs, and included in the full JSON report. They support the shared selection, environment, verbose reporting and gate interfaces. No extra parameter is required: the CIEDE2000 coefficients `kL`, `kC` and `kH` are fixed at one. Explicit upper gates use `-b S-CIEDE2000:max=VALUE` and `-b S-CIEDE2000_max:max=VALUE`; their legacy `METRIC:VALUE` forms also mean upper bounds. Limits must be calibrated for the selected metric and viewing geometry.
+
+Johnson and Fairchild describe this composition in ["A top down description of S-CIELAB and CIEDE2000"](https://doi.org/10.1002/col.10195) (Color Research and Application 28(6), 2003), including a halftone-image example. Each image passes through physical XYZ, linear opponent filtering, inverse XYZ and nonlinear Lab conversion before the corresponding Lab pixels enter CIEDE2000. Both difference formulas share one filtering pass when selected together. The implementation uses the spatial filter variant declared below; the paper reference does not imply bit-identical reproduction of a different filter release.
+
+| Selected name | Difference after the shared filters | Spatial reduction |
+| --- | --- | --- |
+| `S-CIELAB` / `S-CIELAB_max` | Euclidean CIELAB, CIE76 | Mean / maximum |
+| `S-CIEDE2000` / `S-CIEDE2000_max` | CIEDE2000, all parametric factors one | Mean / maximum |
+
+```sh
+lsqa -m S-CIELAB,S-CIEDE2000,S-CIEDE2000_max --ppd=60 reference.png output.six
+```
 
 ### Viewing geometry
 
-`-v PPD` / `--scielab-ppd=PPD` sets pixels per degree of visual angle, accepting finite real values from 1 through 1024. The default is 60, an explicit viewing assumption, not a measurement of the terminal. Repeated options use the last value. Hold PPD fixed across comparisons. For physical pixel pitch `p` and viewing distance `D` in the same units, the small-angle approximation is `PPD = (pi / 180) * D / p`. Scaling an image on the display changes its effective pixel pitch. Higher PPD means each image pixel subtends a smaller angle, so fine alternating errors generally become less visible; it does not guarantee a monotonic score for arbitrary images.
+`-v PPD` / `--ppd=PPD` sets pixels per degree of visual angle, accepting finite real values from 1 through 1024. Both spatial color families share this setting. The default is 60, an explicit viewing assumption, not a measurement of the terminal. Repeated options use the last value. Hold PPD fixed across comparisons. For physical pixel pitch `p` and viewing distance `D` in the same units, the small-angle approximation is `PPD = (pi / 180) * D / p`. Scaling an image on the display changes its effective pixel pitch. Higher PPD means each image pixel subtends a smaller angle, so fine alternating errors generally become less visible; it does not guarantee a monotonic score for arbitrary images.
 
-The full JSON records `scielab_ppd`, `scielab_model`, `scielab_difference`, and `scielab_boundary` in `color_evaluation`. The metric is evaluated over the existing common top-left image rectangle, including every boundary pixel. It works on one-pixel axes and on images smaller than the filter support.
+The full JSON records shared `ppd`, `scielab_model`, and `scielab_boundary` in `color_evaluation`. It identifies the formulas with `scielab_difference: "CIE76"` and `sciede2000_difference: "CIEDE2000"`, and records `sciede2000_parameters: {"kL": 1, "kC": 1, "kH": 1}`. The metric is evaluated over the existing common top-left image rectangle, including every boundary pixel. It works on one-pixel axes and on images smaller than the filter support.
 
 ### Computation and reproducibility
 
-The method follows Zhang and Wandell's S-CIELAB: transform each image's physical XYZ to linear opponent channels, filter the channels separately, transform back to XYZ, then evaluate ordinary CIELAB Euclidean distance. It filters the two images before the nonlinear Lab conversion; it does not blur a map of already-computed color differences. The [physical color contract](color-evaluation.md#physical-color-and-comparison-signal) supplies XYZ D50, white `(0.9642, 1, 0.8249)`, and preserves signed and above-white samples. `-W`, `-P`, and `-g` do not change these inputs. The difference formula is **CIE76**, not CIEDE2000; thresholds for ΔE00 are not interchangeable with S-CIELAB values.
+The method follows Zhang and Wandell's S-CIELAB: transform each image's physical XYZ to linear opponent channels, filter the channels separately, transform back to XYZ, then evaluate ordinary CIELAB Euclidean distance. It filters the two images before the nonlinear Lab conversion; it does not blur a map of already-computed color differences. The [physical color contract](color-evaluation.md#physical-color-and-comparison-signal) supplies XYZ D50, white `(0.9642, 1, 0.8249)`, and preserves signed and above-white samples. `-W`, `-P`, and `-g` do not change these inputs. The S-CIELAB difference formula is **CIE76**; S-CIEDE2000 uses **CIEDE2000** on the same filtered Lab pairs. CIE76 and ΔE00 thresholds are not interchangeable, and per-pixel ΔE00 thresholds do not automatically apply to spatial ΔE00.
 
 The coefficients and sampled Gaussian convention come from the [author's released implementation](https://github.com/wandell/SCIELAB-1996/tree/cacbc977c07a29c3e92a1aec849ee63bba72e6bf), specifically `cmatrix.m`, `separableFilters.m`, and `gauss.m`. The XYZ transform, acting on column vectors, is:
 
@@ -374,17 +390,21 @@ The declared variant is `zhang-wandell-1998-unit-dc`. It adds unit-DC normalizat
 
 ### Interpretation and limits
 
-S-CIELAB discounts fine spatial variations according to separate achromatic and chromatic filters. Compensating dither can therefore have much less spatial color error than a broad shift with the same per-pixel colors. It remains a general full-reference spatial color difference, not a banding detector or a counter of low-frequency artifacts. Blur, edge displacement and lost detail can also contribute. The maximum exposes a local peak while the mean reflects its area; neither alone classifies the cause.
+Both spatial color metrics discount fine spatial variations according to separate achromatic and chromatic filters. Compensating dither can therefore have much less spatial color error than a broad shift with the same per-pixel colors. They are general full-reference spatial color differences, not banding detectors or counters of low-frequency artifacts. Changing the color-difference formula does not establish that a particular dither ranking agrees with visual banding or grain. Blur, edge displacement and lost detail can also contribute. The maximum exposes a local peak while the mean reflects its area; neither alone classifies the cause.
 
-[Video assessment](video-evaluation.md) evaluates this spatial metric per source frame or reference/display clock interval, exports its error maps and distributions, and supplies a separate screen-coordinate persistence diagnostic.
+[Video assessment](video-evaluation.md) evaluates both spatial metrics per source frame or reference/display clock interval. Its error-map export, distributions and screen-coordinate persistence diagnostic use spatial CIE76.
 
-S-CIELAB itself is a CPU image metric. It has no temporal persistence weighting, motion tracking, gaze model, masking model, or universal perceptual pass threshold. A single-frame score cannot distinguish a transient defect from one that remains for seconds. Such evaluation needs a separately specified temporal layer.
+Both spatial color metrics run on the CPU. They have no temporal persistence weighting, motion tracking, gaze model, masking model, or universal perceptual pass threshold. A single-frame score cannot distinguish a transient defect from one that remains for seconds. Such evaluation needs a separately specified temporal layer.
 
 ### Numeric evidence
 
 [The independent reference generator](../../tests/data/assessment/scielab_reference.py) uses NumPy dense 2-D mixtures and matrix inversion, without calling production C, and emits frozen maps for signed binary-fraction XYZ on a 5×4 image at PPD 12, 28.5, 60 and 224. Tests check every map pixel, mean and maximum. The dense-reference tolerance is `1e-6` CIE76 units. The reference sums at most `223²` terms per output pixel; double-precision accumulation error, a kernel absolute-weight sum at most 1.236, and the opponent/inverse matrix norms bound XYZ perturbation conservatively by `5e-11` per image on this fixture. Propagating both images through the largest Lab derivatives (about 7932, 3446 and 904 for a*, b* and L* under a uniform XYZ error bound) and the Euclidean norm stays below `1e-6`. This budget includes the different reduction order of dense versus separable convolution. No float32 storage lies between these fixture inputs and the metric. The frame integration check starts from exact binary-fraction float32 samples and separately verifies that luma-only options leave the physical input path intact.
 
 Uniform neutral fields supply an analytic check independent of that generator: `Y=1/8` and `Y=1` have `L*=42` and `L*=100`, hence mean and maximum 58 at every PPD. Identity, chromatic spatial cancellation, thin-image symmetry, invalid inputs, result reuse and CLI behavior have separate tests. These checks establish the implementation contract, not subjective validation of a video quality threshold.
+
+[The spatial CIEDE2000 generator](../../tests/data/assessment/sciede2000_reference.py) reuses the independent dense filtering and supplies a separate vectorized CIEDE2000 equation, checked against a published Sharma pair. It freezes mean and maximum values for the same signed 5×4 fixture at PPD 12, 28.5, 60 and 224. Tests use an absolute `1e-5` ΔE00 budget: the preceding `5e-11` XYZ component allowance propagates to Lab allowances of approximately `4.52e-8`, `3.97e-7`, and `1.73e-7`. Evaluating all 64 corners of these six Lab-component perturbations gives less than `1.15e-6` ΔE00 variation on this fixture; the tolerance leaves additional headroom for nonlinear evaluation and reference arithmetic. This is a fixture-specific sensitivity check, not a global error bound across CIEDE2000 hue discontinuities.
+
+Analytic neutral flat-field tests use `1e-7` ΔE00, allowing double filtering and Lab arithmetic while detecting loss of unit DC. Separate tests verify shared CIE76 map preservation, input exchange, fine chromatic cancellation, physical-signal independence and result-mask reuse beyond bit 31.
 
 ## Measuring dither noise
 
@@ -430,7 +450,7 @@ The spatial metrics in `lsqa` operate on a single luma signal, while color is me
 
 ### Behavioral contract tests
 
-This inventory covers reference MS-SSIM, VIF-P, S-CIELAB, and their coexistence with the other metrics. It does not claim to independently validate every other metric described in this document; color-coordinate coverage is owned by [color-aware evaluation](color-evaluation.md#test-coverage).
+This inventory covers reference MS-SSIM, VIF-P, S-CIELAB, S-CIEDE2000, and their coexistence with the other metrics. It does not claim to independently validate every other metric described in this document; color-coordinate coverage is owned by [color-aware evaluation](color-evaluation.md#test-coverage).
 
 | ID | Contract | Owning test |
 | --- | --- | --- |
@@ -449,7 +469,23 @@ This inventory covers reference MS-SSIM, VIF-P, S-CIELAB, and their coexistence 
 | MO-13 | The full JSON report includes an unavailable MS-SSIM as null. | [tests/assessment/ms-ssim/0048_json_unavailable.t](../../tests/assessment/ms-ssim/0048_json_unavailable.t) |
 | MO-14 | A finite MS-SSIM score below its baseline exits with quality failure. | [tests/assessment/ms-ssim/0049_finite_baseline.t](../../tests/assessment/ms-ssim/0049_finite_baseline.t) |
 | MO-15 | Help describes the reference formula and minimum dimensions. | [tests/assessment/ms-ssim/0050_reference_help.t](../../tests/assessment/ms-ssim/0050_reference_help.t) |
-
+| SD-01 | Neutral flat fields retain the analytic CIEDE2000 difference at every tested PPD. | [tests/assessment/sciede2000/0001_sciede2000_uniform.t](../../tests/assessment/sciede2000/0001_sciede2000_uniform.t) |
+| SD-02 | Spatial CIEDE2000 matches an independent dense reference, input exchange and combined/separate execution. | [tests/assessment/sciede2000/0002_sciede2000_dense_reference.t](../../tests/assessment/sciede2000/0002_sciede2000_dense_reference.t) |
+| SD-03 | Fine chromatic alternation has less spatial CIEDE2000 error than broad regions of the same colors. | [tests/assessment/sciede2000/0003_sciede2000_spatial_cancellation.t](../../tests/assessment/sciede2000/0003_sciede2000_spatial_cancellation.t) |
+| SD-04 | The maximum-only result above bit 31 stays isolated and clears on failed reuse. | [tests/assessment/sciede2000/0004_sciede2000_selection_reuse.t](../../tests/assessment/sciede2000/0004_sciede2000_selection_reuse.t) |
+| SD-05 | Invalid requests and arithmetic overflow leave both summaries and the CIE76 map untouched. | [tests/assessment/sciede2000/0005_sciede2000_invalid.t](../../tests/assessment/sciede2000/0005_sciede2000_invalid.t) |
+| SD-06 | Spatial CIEDE2000 preserves physical color independently of luma-only controls. | [tests/assessment/sciede2000/0006_sciede2000_physical_signal.t](../../tests/assessment/sciede2000/0006_sciede2000_physical_signal.t) |
+| SD-07 | Case-insensitive mean selection, deduplication and the legacy upper gate admit identity. | [tests/assessment/sciede2000/0007_mean_identity.t](../../tests/assessment/sciede2000/0007_mean_identity.t) |
+| SD-08 | The maximum supports a unique prefix and explicit upper gate. | [tests/assessment/sciede2000/0008_maximum_selection.t](../../tests/assessment/sciede2000/0008_maximum_selection.t) |
+| SD-09 | Selected JSON preserves canonical keys and an unavailable MS-SSIM companion. | [tests/assessment/sciede2000/0009_selected_json.t](../../tests/assessment/sciede2000/0009_selected_json.t) |
+| SD-10 | A maximum above its legacy ceiling fails with exit 5. | [tests/assessment/sciede2000/0010_maximum_gate_failure.t](../../tests/assessment/sciede2000/0010_maximum_gate_failure.t) |
+| SD-11 | A mean above its explicit ceiling fails with exit 5. | [tests/assessment/sciede2000/0011_mean_gate_failure.t](../../tests/assessment/sciede2000/0011_mean_gate_failure.t) |
+| SD-12 | Full JSON reports both metrics, fixed coefficients and the last shared PPD. | [tests/assessment/sciede2000/0012_metadata.t](../../tests/assessment/sciede2000/0012_metadata.t) |
+| SD-13 | Environment selection and gates accept the new metric names. | [tests/assessment/sciede2000/0013_environment.t](../../tests/assessment/sciede2000/0013_environment.t) |
+| SD-14 | Video maximum selection and gating retain the high metric bit. | [tests/assessment/sciede2000/0014_video_maximum.t](../../tests/assessment/sciede2000/0014_video_maximum.t) |
+| SD-15 | The video maximum mean rejects stale output above its ceiling. | [tests/assessment/sciede2000/0015_video_gate_failure.t](../../tests/assessment/sciede2000/0015_video_gate_failure.t) |
+| SD-16 | Video summaries distinguish duration-weighted means from temporal maxima and record the spatial definitions. | [tests/assessment/sciede2000/0016_video_pooling.t](../../tests/assessment/sciede2000/0016_video_pooling.t) |
+| SD-17 | Verbose output names and prints both spatial CIEDE2000 summaries. | [tests/assessment/sciede2000/0017_verbose.t](../../tests/assessment/sciede2000/0017_verbose.t) |
 | SC-01 | Identical signed color images have a zero error map. | [tests/assessment/scielab/0001_scielab_identity.t](../../tests/assessment/scielab/0001_scielab_identity.t) |
 | SC-02 | Flat fields retain the analytic CIE76 difference across PPD settings. | [tests/assessment/scielab/0002_scielab_uniform.t](../../tests/assessment/scielab/0002_scielab_uniform.t) |
 | SC-03 | Independent dense convolution matches every map pixel and both summaries. | [tests/assessment/scielab/0003_scielab_dense_reference.t](../../tests/assessment/scielab/0003_scielab_dense_reference.t) |

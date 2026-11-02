@@ -398,7 +398,7 @@ def main():
     p = json.loads((args.directory / 'results.json').read_text())
     meta = p['metadata']
     assert meta['settings'] == REP, meta['settings']
-    assert meta['scielab_ppd_requested'] == 60 and meta['scielab_ppd'] in (None, 60)
+    assert meta['ppd_requested'] == 60 and meta['ppd'] in (None, 60)
     photos = set(meta['photo_sources'])
     corpora = {'photo': ('Photographs', photos), 'chart': ('Charts', set(meta.get('chart_sources') or {}))}
     corpora = {k: v for k, v in corpora.items() if v[1]}

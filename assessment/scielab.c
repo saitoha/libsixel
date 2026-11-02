@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * S-CIELAB: opponent filtering followed by CIE76, Zhang and Wandell.
+ * S-CIELAB filtering followed by CIE76 and/or CIEDE2000 differences.
+ * Spatial CIEDE2000 follows the composition described by Johnson and
+ * Fairchild (2003), retaining the filter variant declared below.
  * Coefficients and sampled Gaussian convention: author's 1998 release,
  * wandell/SCIELAB-1996, revision cacbc977c07a29c3e92a1aec849ee63bba72e6bf.
  * This implementation normalizes each resampled Gaussian to unit DC and
@@ -185,7 +187,8 @@ scielab_inverse(double inverse[3][3])
 SIXELSTATUS
 sixel_qa_scielab(double const *reference, double const *output,
                   int width, int height, double ppd,
-                  double *mean, double *maximum, double *map)
+                  double *mean, double *maximum, double *map,
+                  double *mean00, double *maximum00)
 {
     double *storage;
     double *ref;
@@ -201,15 +204,21 @@ sixel_qa_scielab(double const *reference, double const *output,
     double difference;
     double total;
     double peak;
+    double total00;
+    double peak00;
     size_t pixels;
     size_t p;
     int i;
     int j;
 
-    if (reference == NULL || output == NULL || mean == NULL
-            || maximum == NULL || width <= 0 || height <= 0
-            || !isfinite(ppd) || ppd < SIXEL_QA_SCIELAB_PPD_MIN
-            || ppd > SIXEL_QA_SCIELAB_PPD_MAX) {
+    if (reference == NULL || output == NULL
+            || (mean == NULL) != (maximum == NULL)
+            || (mean00 == NULL) != (maximum00 == NULL)
+            || (mean == NULL && mean00 == NULL)
+            || (map != NULL && mean == NULL)
+            || width <= 0 || height <= 0
+            || !isfinite(ppd) || ppd < SIXEL_QA_PPD_MIN
+            || ppd > SIXEL_QA_PPD_MAX) {
         return SIXEL_BAD_ARGUMENT;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height / (8 * sizeof(double))) {
@@ -234,6 +243,8 @@ sixel_qa_scielab(double const *reference, double const *output,
     scielab_inverse(inverse);
     total = 0.0;
     peak = 0.0;
+    total00 = 0.0;
+    peak00 = 0.0;
     for (p = 0; p < pixels; ++p) {
         for (i = 0; i < 3; ++i) {
             xyz1[i] = 0.0;
@@ -247,29 +258,49 @@ sixel_qa_scielab(double const *reference, double const *output,
          * linear branch is defined below zero; clipping changes scores. */
         sixel_qa_lab(xyz1, lab1);
         sixel_qa_lab(xyz2, lab2);
-        delta = 0.0;
-        for (i = 0; i < 3; ++i) {
-            difference = lab1[i] - lab2[i];
-            delta += difference * difference;
+        if (mean != NULL) {
+            delta = 0.0;
+            for (i = 0; i < 3; ++i) {
+                difference = lab1[i] - lab2[i];
+                delta += difference * difference;
+            }
+            delta = sqrt(delta);
+            if (!isfinite(delta) || !isfinite(total + delta)) {
+                free(storage);
+                return SIXEL_BAD_INPUT;
+            }
+            /* Stage the CIE76 map until both summaries have succeeded. */
+            plane[p] = delta;
+            total += delta;
+            if (delta > peak) {
+                peak = delta;
+            }
         }
-        delta = sqrt(delta);
-        if (!isfinite(delta) || !isfinite(total + delta)) {
-            free(storage);
-            return SIXEL_BAD_INPUT;
-        }
-        /* The plane is no longer needed; stage map values so a failed
-         * comparison cannot expose a partially updated result map. */
-        plane[p] = delta;
-        total += delta;
-        if (delta > peak) {
-            peak = delta;
+        if (mean00 != NULL) {
+            /* Apply the nonlinear color difference AFTER spatial
+             * integration, never filter a precomputed error image. */
+            delta = sixel_qa_de00(lab1, lab2);
+            if (!isfinite(delta) || !isfinite(total00 + delta)) {
+                free(storage);
+                return SIXEL_BAD_INPUT;
+            }
+            total00 += delta;
+            if (delta > peak00) {
+                peak00 = delta;
+            }
         }
     }
     if (map != NULL) {
         memcpy(map, plane, pixels * sizeof(*map));
     }
-    *mean = total / pixels;
-    *maximum = peak;
+    if (mean != NULL) {
+        *mean = total / pixels;
+        *maximum = peak;
+    }
+    if (mean00 != NULL) {
+        *mean00 = total00 / pixels;
+        *maximum00 = peak00;
+    }
     free(storage);
     return SIXEL_OK;
 }

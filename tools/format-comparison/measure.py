@@ -241,15 +241,15 @@ def quality(reference, image, lsqa, work, metadata):
     image.convert('RGB').save(path)
     env = os.environ.copy()
     env.update(LSQA_VERBOSE='0', LSQA_PREFIX=str(work / 'lsqa'), SIXEL_ENCODER_THREADING_POLICY='greedy', SIXEL_ENCODER_THREADING_GLOBAL_BUDGET='1')
-    p = subprocess.run([str(lsqa), '--scielab-ppd=60', str(reference), str(path)],
+    p = subprocess.run([str(lsqa), '-v60', str(reference), str(path)],
                        capture_output=True, env=env, check=True)
     q = json.loads(p.stdout)
     # Preserve the reported viewing geometry before selecting the scores.
     # Older full reports may omit it; the explicit request still fixes PPD.
-    ppd = q.get('color_evaluation', {}).get('scielab_ppd')
+    ppd = q.get('color_evaluation', {}).get('ppd')
     if ppd is not None:
         assert ppd == 60, ppd
-        metadata['scielab_ppd'] = ppd
+        metadata['ppd'] = ppd
     q = q.get('quality', q)
     QUALITY_CACHE[key] = {field: float(q[name]) for field, name in QUALITY_METRICS.items()}
     return dict(QUALITY_CACHE[key])
@@ -357,7 +357,7 @@ def main():
             'runs': args.runs, 'warmups': 2, 'generations': args.generations,
             'settings': settings, 'fit': list(fit),
             'quality_metrics': QUALITY_METRICS,
-            'scielab_ppd_requested': 60, 'scielab_ppd': None,
+            'ppd_requested': 60, 'ppd': None,
             'corpus_stride': args.corpus_stride,
             'corpus_sizes': {'photo': len(photo_names), 'chart': len(chart_names)},
             'generation_images': generation_images,

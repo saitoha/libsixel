@@ -9,7 +9,7 @@ help=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none --help) 
     exit 0
 }
 case "${help}" in
-    *'--scielab-ppd=PPD: pixels/degree,'*'S-CIELAB and S-CIELAB_max use CIE76.'*) ;;
+    *'--ppd=PPD: pixels/degree,'*'S-CIELAB uses CIE76; S-CIEDE2000 uses'*'CIEDE2000 (kL=kC=kH=1). Both share PPD.'*) ;;
     *) echo "not ok 1 - scielab help contract"; exit 0 ;;
 esac
 

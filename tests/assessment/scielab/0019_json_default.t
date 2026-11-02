@@ -9,7 +9,7 @@ value=$(${SIXEL_RUNTIME-} "${LSQA_PATH}" -L 'builtin!' --cms-engine=none "${TOP_
     exit 0
 }
 case "${value}" in
-    *'"scielab_ppd": 60'*'"S-CIELAB": 0.000000'*'"S-CIELAB_max": 0.000000'*) ;;
+    *'"ppd": 60'*'"S-CIELAB": 0.000000'*'"S-CIELAB_max": 0.000000'*) ;;
     *) echo "not ok 1 - scielab JSON contract"; exit 0 ;;
 esac
 

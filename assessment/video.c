@@ -66,8 +66,8 @@ typedef struct lsqa_video_state {
     double averages[SIXEL_ASSESSMENT_METRIC_COUNT];
     double minima[SIXEL_ASSESSMENT_METRIC_COUNT];
     double maxima[SIXEL_ASSESSMENT_METRIC_COUNT];
-    unsigned int valid_mask;
-    unsigned int finite_mask;
+    sixel_assessment_mask_t valid_mask;
+    sixel_assessment_mask_t finite_mask;
 } lsqa_video_state_t;
 
 static SIXELSTATUS
@@ -107,7 +107,8 @@ lsqa_video_number(FILE *file, double value)
 }
 
 static void
-lsqa_video_metrics(FILE *file, double const *values, unsigned int mask)
+lsqa_video_metrics(FILE *file, double const *values,
+                   sixel_assessment_mask_t mask)
 {
     int i;
     int comma;
@@ -117,7 +118,7 @@ lsqa_video_metrics(FILE *file, double const *values, unsigned int mask)
     fputc('{', file);
     for (i = 0; i < SIXEL_ASSESSMENT_METRIC_COUNT; ++i) {
         name = sixel_assessment_metric_name(i);
-        if (name == NULL || (mask & (1u << i)) == 0) {
+        if (name == NULL || (mask & (UINT64_C(1) << i)) == 0) {
             continue;
         }
         if (comma) {
@@ -426,7 +427,7 @@ lsqa_video_measure(sixel_frame_t *reference, lsqa_video_state_t *v,
     size_t i;
     double percentile;
     double weight;
-    int bit;
+    sixel_assessment_mask_t bit;
     int channel;
 
     qa = v->qa;
@@ -491,10 +492,10 @@ lsqa_video_measure(sixel_frame_t *reference, lsqa_video_state_t *v,
     v->valid_mask &= qa->results_valid_mask;
     weight = duration / (pts + duration);
     for (channel = 0; channel < SIXEL_ASSESSMENT_METRIC_COUNT; ++channel) {
-        bit = (int)(1u << channel);
-        if ((qa->results_valid_mask & (unsigned int)bit) == 0) { continue; }
+        bit = UINT64_C(1) << channel;
+        if ((qa->results_valid_mask & bit) == 0) { continue; }
         if (!isfinite(qa->results[channel])) {
-            v->finite_mask &= ~(unsigned int)bit;
+            v->finite_mask &= ~bit;
         }
         /* A weighted running mean avoids overflowing value * duration for
          * valid but very long timelines. Do not discard nonfinite frames. */
@@ -753,7 +754,8 @@ lsqa_video_summary(FILE *file, lsqa_video_state_t const *v,
 
 SIXEL_INTERNAL_API SIXELSTATUS
 lsqa_video_run(lsqa_video_options_t const *options,
-    sixel_allocator_t *allocator, double *means, unsigned int *valid_mask)
+    sixel_allocator_t *allocator, double *means,
+    sixel_assessment_mask_t *valid_mask)
 {
     lsqa_video_state_t v;
     sixel_chunk_t *chunk;
@@ -773,7 +775,7 @@ lsqa_video_run(lsqa_video_options_t const *options,
     int height;
     int value;
     int i;
-    unsigned int metrics;
+    sixel_assessment_mask_t metrics;
 
     memset(&v, 0, sizeof(v));
     chunk = NULL;
@@ -896,9 +898,11 @@ lsqa_video_run(lsqa_video_options_t const *options,
             "\"ramp_seconds\":%.17g,\"threshold\":%.17g,"
             "\"motion_compensated\":false}", options->persistence_time,
             options->threshold);
-        fprintf(v.report, ",\"scielab_ppd\":%.17g,"
+        fprintf(v.report, ",\"ppd\":%.17g,"
             "\"scielab_model\":\"zhang-wandell-1998-unit-dc\","
             "\"scielab_difference\":\"CIE76\","
+            "\"sciede2000_difference\":\"CIEDE2000\","
+            "\"sciede2000_parameters\":{\"kL\":1,\"kC\":1,\"kH\":1},"
             "\"scielab_boundary\":\"edge-repeating reflection\","
             "\"scielab_threshold\":%.17g,\"timing\":\"%s\","
             "\"mapping\":\"%s\"", options->ppd, options->threshold,
@@ -926,7 +930,7 @@ lsqa_video_run(lsqa_video_options_t const *options,
     }
     status = sixel_assessment_new(&v.qa, allocator);
     if (SIXEL_FAILED(status)) { goto cleanup; }
-    v.qa->scielab_ppd = options->ppd;
+    v.qa->ppd = options->ppd;
     v.qa->region_window = options->region_window;
     v.qa->grayscale = options->grayscale;
     /* Scalar-only invocations keep the existing -m computation limit.

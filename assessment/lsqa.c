@@ -898,6 +898,8 @@ load_input_frame(char const *path, char const *spec, int direct,
 typedef struct Metrics {
     float scielab;
     float scielab_max;
+    float sciede2000;
+    float sciede2000_max;
     float ms_ssim;
     float vif_p;
     float high_freq_out;
@@ -927,7 +929,7 @@ typedef struct Metrics {
     float psnr_y;
     float region_mean;
     float region_max;
-    unsigned int valid_mask;
+    sixel_assessment_mask_t valid_mask;
 } Metrics;
 
 typedef struct MetricBinding {
@@ -941,6 +943,10 @@ static const MetricBinding g_metric_bindings[] = {
      SIXEL_ASSESSMENT_METRIC_SCIELAB},
     {"S-CIELAB_max", offsetof(Metrics, scielab_max),
      SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX},
+    {"S-CIEDE2000", offsetof(Metrics, sciede2000),
+     SIXEL_ASSESSMENT_METRIC_SCIEDE2000},
+    {"S-CIEDE2000_max", offsetof(Metrics, sciede2000_max),
+     SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX},
     {"DE00_region_mean", offsetof(Metrics, region_mean),
      SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
     {"DE00_region_max", offsetof(Metrics, region_max),
@@ -1010,6 +1016,9 @@ typedef struct MetricSpec {
 static const MetricSpec sixel_metric_specs[] = {
     {"S-CIELAB", "S-CIELAB", SIXEL_ASSESSMENT_METRIC_SCIELAB},
     {"S-CIELAB_max", "S-CIELAB_max", SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX},
+    {"S-CIEDE2000", "S-CIEDE2000", SIXEL_ASSESSMENT_METRIC_SCIEDE2000},
+    {"S-CIEDE2000_max", "S-CIEDE2000_max",
+     SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX},
     {"DE00_region_mean", "DE00_region_mean",
      SIXEL_ASSESSMENT_METRIC_REGION_MEAN},
     {"DE00_region_max", "DE00_region_max",
@@ -1089,15 +1098,14 @@ metrics_set_value(Metrics *metrics,
 {
     size_t i;
     unsigned char *base;
+    float *field;
+    sixel_assessment_mask_t mask;
 
     base = (unsigned char *)metrics;
     for (i = 0;
             i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
             ++i) {
         if (strcmp(name, g_metric_bindings[i].name) == 0) {
-            float *field;
-            unsigned int mask;
-
             field = (float *)(void *)(base + g_metric_bindings[i].offset);
             mask = SIXEL_ASSESSMENT_METRIC_MASK(
                     g_metric_bindings[i].metric_id);
@@ -1381,7 +1389,8 @@ metrics_get_value(const Metrics *metrics,
 {
     size_t i;
     const unsigned char *base;
-    unsigned int mask;
+    sixel_assessment_mask_t mask;
+    const float *field;
 
     if (metrics == NULL || name == NULL || out_value == NULL) {
         return -1;
@@ -1391,8 +1400,6 @@ metrics_get_value(const Metrics *metrics,
     for (i = 0; i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
             ++i) {
         if (strcmp(name, g_metric_bindings[i].name) == 0) {
-            const float *field;
-
             field = (const float *)(const void *)(base +
                     g_metric_bindings[i].offset);
             mask = SIXEL_ASSESSMENT_METRIC_MASK(
@@ -1407,7 +1414,7 @@ metrics_get_value(const Metrics *metrics,
     return -1;
 }
 
-static unsigned int
+static sixel_assessment_mask_t
 metrics_mask_for_name(const char *name)
 {
     size_t i;
@@ -1436,6 +1443,8 @@ verbose_print(const Metrics *m)
     MetricItem items[] = {
         {"S-CIELAB", m->scielab},
         {"S-CIELAB_max", m->scielab_max},
+        {"S-CIEDE2000", m->sciede2000},
+        {"S-CIEDE2000_max", m->sciede2000_max},
         {"MS-SSIM", m->ms_ssim},
         {"VIF-P", m->vif_p},
         {"HighFreqRatio_out", m->high_freq_out},
@@ -1465,11 +1474,10 @@ verbose_print(const Metrics *m)
         {"PSNR_Y", m->psnr_y},
     };
     size_t i;
+    sixel_assessment_mask_t mask;
 
     fprintf(stderr, "\n=== Image Quality Report (Raw Metrics) ===\n");
     for (i = 0; i < sizeof(items) / sizeof(items[0]); ++i) {
-        unsigned int mask;
-
         mask = metrics_mask_for_name(items[i].name);
         if (mask == 0u || (m->valid_mask & mask) == 0u) {
             fprintf(stderr, "%24s: NaN\n", items[i].name);
@@ -1922,7 +1930,7 @@ typedef struct Baseline {
 typedef struct Options {
     const char *ref_spec;
     const char *out_spec;
-    double scielab_ppd;
+    double ppd;
     int region_window;
     int direct;
     int progressive_input;
@@ -1942,9 +1950,9 @@ typedef struct Options {
     const MetricSpec *metric_spec;
     const char *metric_key;
     Baseline baselines[2 * SIXEL_ASSESSMENT_METRIC_COUNT];
-    unsigned int report_mask;
-    unsigned int baseline_mask;
-    unsigned int metric_mask;
+    sixel_assessment_mask_t report_mask;
+    sixel_assessment_mask_t baseline_mask;
+    sixel_assessment_mask_t metric_mask;
     int report_count;
     int baseline_count;
     int verbose;
@@ -2244,7 +2252,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "-b METRIC:min=VALUE, --baseline=METRIC:max=VALUE (repeatable)\n"
         "                           comma lists; all bounds must pass.\n"
         "                           METRIC:VALUE retains legacy directions:\n"
-        "                           minimum except S-CIELAB/S-CIELAB_max.\n"
+        "                           maximum for S-CIELAB/S-CIEDE2000 and\n"
+        "                           their _max metrics; minimum otherwise.\n"
     },
     {
         '%',
@@ -2276,9 +2285,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           Independent target input definition.\n"
     },
     {
-        'v', "scielab-ppd",
-        "-v PPD, --scielab-ppd=PPD: pixels/degree, 1..1024 (default 60).\n"
-        "                           S-CIELAB and S-CIELAB_max use CIE76.\n"
+        'v', "ppd",
+        "-v PPD, --ppd=PPD: pixels/degree, 1..1024 (default 60).\n"
+        "                           S-CIELAB uses CIE76; S-CIEDE2000 uses\n"
+        "                           CIEDE2000 (kL=kC=kH=1). Both share PPD.\n"
         "                           Lower is better; zero is identical.\n"
     },
     {
@@ -2594,9 +2604,10 @@ print_usage(const char *prog)
             "                        repeat or use commas; AND all bounds\n"
             "                        each bound names its metric; -m optional\n"
             "                        METRIC:VALUE keeps its legacy direction\n"
-            "                        (minimum except S-CIELAB/S-CIELAB_max)\n");
+            "                        maximum for S-CIELAB/S-CIEDE2000 and\n"
+            "                        their _max metrics; minimum otherwise\n");
     fprintf(stderr,
-            "  -v, --scielab-ppd PPD  pixels/degree, 1..1024 (default 60)\n");
+            "  -v, --ppd PPD  pixels/degree, 1..1024 (default 60)\n");
     fprintf(stderr,
             "  -g, --grayscale     compare in grayscale\n");
     fprintf(stderr,
@@ -2658,6 +2669,13 @@ show_help(void)
             "MS-SSIM metric:\n"
             "  MS-SSIM         reference five-scale product (>=176x176)\n"
             "                  unavailable results print nan; JSON uses null\n"
+            "\n"
+            "Spatial color metrics (lower is better):\n"
+            "  S-CIELAB        mean spatial CIE76 difference\n"
+            "  S-CIELAB_max    maximum spatial CIE76 difference\n"
+            "  S-CIEDE2000     mean spatial CIEDE2000 difference\n"
+            "  S-CIEDE2000_max maximum spatial CIEDE2000 difference\n"
+            "                  shared --ppd; kL=kC=kH=1 for CIEDE2000\n"
             "\n"
             "VIF-P metric:\n"
             "  VIF-P           four-scale pixel-domain VIF (>=41x41)\n"
@@ -2732,7 +2750,9 @@ lsqa_parse_baseline(const char *arg, Options *opts)
     /* Preserve legacy METRIC:VALUE directions. Explicit min/max can gate
      * any metric, including lower-is-better color errors, unambiguously. */
     maximum = spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIELAB
-        || spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX;
+        || spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIELAB_MAX
+        || spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIEDE2000
+        || spec->metric_id == SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX;
     explicit_direction = 0;
     value_text = colon + 1;
     if (strncmp(value_text, "min=", 4) == 0
@@ -2814,7 +2834,7 @@ lsqa_parse_selection(const char *arg, Options *opts, int baseline)
     char *next;
     char *end;
     const MetricSpec *spec;
-    unsigned int bit;
+    sixel_assessment_mask_t bit;
     int status;
     char detail[256];
 
@@ -3143,7 +3163,7 @@ parse_args(int argc, char **argv, Options *opts)
 
     opts->ref_spec = "auto";
     opts->out_spec = "auto";
-    opts->scielab_ppd = SIXEL_QA_SCIELAB_PPD_DEFAULT;
+    opts->ppd = SIXEL_QA_PPD_DEFAULT;
     opts->region_window = 16;
     opts->ref_path = NULL;
     opts->out_path = "-";
@@ -3227,7 +3247,7 @@ parse_args(int argc, char **argv, Options *opts)
             {"reference-colorspace", required_argument, &long_opt, 'R'},
             {"target-colorspace", required_argument, &long_opt, 'T'},
             {"region-window", required_argument, &long_opt, 'w'},
-            {"scielab-ppd", required_argument, &long_opt, 'v'},
+            {"ppd", required_argument, &long_opt, 'v'},
             {"metrics", required_argument, &long_opt, 'm'},
             {"baseline", required_argument, &long_opt, 'b'},
             {"env", required_argument, &long_opt, '%'},
@@ -3313,11 +3333,11 @@ parse_args(int argc, char **argv, Options *opts)
             break;
         case 'v':
             errno = 0;
-            opts->scielab_ppd = strtod(optarg, &ppd_end);
+            opts->ppd = strtod(optarg, &ppd_end);
             if (errno != 0 || ppd_end == optarg || *ppd_end != '\0'
-                    || !isfinite(opts->scielab_ppd)
-                    || opts->scielab_ppd < SIXEL_QA_SCIELAB_PPD_MIN
-                    || opts->scielab_ppd > SIXEL_QA_SCIELAB_PPD_MAX) {
+                    || !isfinite(opts->ppd)
+                    || opts->ppd < SIXEL_QA_PPD_MIN
+                    || opts->ppd > SIXEL_QA_PPD_MAX) {
                 lsqa_report_invalid_argument('v', optarg,
                     "expected finite pixels/degree in 1..1024");
                 parse_status = -1;
@@ -3613,7 +3633,7 @@ lsqa_run_video(Options const *opts, sixel_allocator_t *allocator)
 {
     lsqa_video_options_t video;
     double means[SIXEL_ASSESSMENT_METRIC_COUNT];
-    unsigned int valid_mask;
+    sixel_assessment_mask_t valid_mask;
     SIXELSTATUS status;
     Metrics metrics;
     int i;
@@ -3633,7 +3653,7 @@ lsqa_run_video(Options const *opts, sixel_allocator_t *allocator)
     video.target_colorspace = opts->out_spec;
     video.background = opts->has_bgcolor ? opts->bgcolor : NULL;
     video.metrics = opts->metric_mask;
-    video.ppd = opts->scielab_ppd;
+    video.ppd = opts->ppd;
     video.threshold = opts->scielab_threshold;
     video.reference_fps = opts->reference_fps;
     video.signal_space = opts->compare_colorspace;
@@ -3652,7 +3672,7 @@ lsqa_run_video(Options const *opts, sixel_allocator_t *allocator)
     }
     metrics_init(&metrics);
     for (i = 0; i < SIXEL_ASSESSMENT_METRIC_COUNT; ++i) {
-        if ((valid_mask & (1u << i)) != 0) {
+        if ((valid_mask & (UINT64_C(1) << i)) != 0) {
             metrics_set_value(&metrics, sixel_assessment_metric_name(i),
                 means[i], 1);
         }
@@ -3811,7 +3831,7 @@ main(int argc, char **argv)
     assessment->signal_space = target_colorspace;
     assessment->signal_bytes = target_precision == LSQA_COMPARE_PRECISION_8BIT;
     assessment->grayscale = opts.grayscale_compare;
-    assessment->scielab_ppd = opts.scielab_ppd;
+    assessment->ppd = opts.ppd;
     assessment->region_window = opts.region_window;
     assessment->direct = opts.direct;
     assessment->drawing[0] = drawing[0];

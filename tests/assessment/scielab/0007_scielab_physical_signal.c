@@ -19,7 +19,7 @@ test_qa_0032(int argc, char **argv)
     sixel_frame_t *a;
     sixel_frame_t *b;
     sixel_assessment_t *qa;
-    unsigned int mask;
+    sixel_assessment_mask_t mask;
     int index;
     int p;
     int c;
@@ -54,7 +54,7 @@ test_qa_0032(int argc, char **argv)
         }
     }
     if (SIXEL_FAILED(sixel_qa_scielab(axyz, bxyz, 2, 1, 28.5,
-            &expected, &maximum, NULL))
+            &expected, &maximum, NULL, NULL, NULL))
             || SIXEL_FAILED(sixel_frame_init_borrowed(a, av, 2, 1,
                 SIXEL_PIXELFORMAT_LINEARRGBFLOAT32, NULL, 0))
             || SIXEL_FAILED(sixel_frame_init_borrowed(b, bv, 2, 1,
@@ -64,7 +64,7 @@ test_qa_0032(int argc, char **argv)
     mask = SIXEL_ASSESSMENT_METRIC_MASK(SIXEL_ASSESSMENT_METRIC_SCIELAB);
     index = SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_SCIELAB);
     sixel_assessment_select_metrics(qa, mask);
-    qa->scielab_ppd = 28.5;
+    qa->ppd = 28.5;
     /* Luma-only controls must not clip or gray the physical color path. */
     qa->signal_space = SIXEL_COLORSPACE_GAMMA;
     qa->signal_bytes = 1;

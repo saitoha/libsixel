@@ -16,8 +16,8 @@ assert settings == ['SIXEL -d none', 'GIF', 'PNG', 'QOI', 'JPEG 80', 'WebP 80',
 metrics = {'ms_ssim': 'MS-SSIM', 'scielab': 'S-CIELAB',
            'delta_e': 'Δ E00_mean', 'scielab_max': 'S-CIELAB_max'}
 assert meta['quality_metrics'] == metrics
-assert meta['scielab_ppd_requested'] == 60
-assert meta['scielab_ppd'] in (None, 60)
+assert meta['ppd_requested'] == 60
+assert meta['ppd'] in (None, 60)
 generation_codecs = settings
 images = set(meta['inputs'])
 workloads = [set(meta['photo_sources']), set(meta.get('chart_sources') or {})]

@@ -27,6 +27,7 @@
 #include <limits.h>
 #include <setjmp.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include <sixel.h>
 #include <6cells.h>
@@ -40,6 +41,8 @@ enum { SIXEL_ASSESSMENT_PATH_CAPACITY = 4096 };
 struct sixel_encoder;
 struct sixel_assessment;
 typedef struct sixel_assessment sixel_assessment_t;
+/* Metric selection and availability share one bit per registry index. */
+typedef uint64_t sixel_assessment_mask_t;
 
 typedef enum sixel_assessment_mode {
     SIXEL_ASSESSMENT_MODE_NONE = 0,
@@ -98,7 +101,7 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
 #define SIXEL_ASSESSMENT_INDEX_MASK      0x00000fff
 #define SIXEL_ASSESSMENT_INDEX(value) \
     ((value) & SIXEL_ASSESSMENT_INDEX_MASK)
-#define SIXEL_ASSESSMENT_METRIC_COUNT    31
+#define SIXEL_ASSESSMENT_METRIC_COUNT    33
 
 #define SIXEL_ASSESSMENT_METRIC_MS_SSIM \
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
@@ -194,14 +197,17 @@ sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
 #define SIXEL_ASSESSMENT_METRIC_VIF_P \
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
      SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x001e)
+#define SIXEL_ASSESSMENT_METRIC_SCIEDE2000 \
+    (SIXEL_ASSESSMENT_KIND_RELATIVE | \
+     SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x001f)
+#define SIXEL_ASSESSMENT_METRIC_SCIEDE2000_MAX \
+    (SIXEL_ASSESSMENT_KIND_RELATIVE | \
+     SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x0020)
 
 #define SIXEL_ASSESSMENT_METRIC_MASK(metric_id) \
-    (1u << SIXEL_ASSESSMENT_INDEX(metric_id))
+    (UINT64_C(1) << SIXEL_ASSESSMENT_INDEX(metric_id))
 #define SIXEL_ASSESSMENT_METRIC_MASK_ALL \
-    (((SIXEL_ASSESSMENT_METRIC_COUNT) >= \
-      (int)(sizeof(unsigned int) * 8u)) ? \
-     0xffffffffu : \
-     ((1u << (SIXEL_ASSESSMENT_METRIC_COUNT)) - 1u))
+    (UINT64_MAX >> (64 - SIXEL_ASSESSMENT_METRIC_COUNT))
 
 typedef enum sixel_assessment_stage {
     SIXEL_ASSESSMENT_STAGE_NONE = 0,
@@ -246,7 +252,7 @@ struct sixel_assessment {
     SIXELSTATUS last_error;
     jmp_buf bailout;
     char error_message[256];
-    unsigned int results_valid_mask; /* valid bits for results[] */
+    sixel_assessment_mask_t results_valid_mask; /* valid results[] bits */
     double results[SIXEL_ASSESSMENT_METRIC_COUNT];
     sixel_assessment_stage_t active_stage;
     double stage_started_at;
@@ -267,14 +273,14 @@ struct sixel_assessment {
     int palette_colors;
     size_t output_bytes;
     size_t output_bytes_written;
-    unsigned int metrics_mask;
+    sixel_assessment_mask_t metrics_mask;
     unsigned int sections_mask;
     unsigned int view_mask;
     /* Measurement configuration; strings are borrowed for the job lifetime. */
     int signal_space;
     int signal_bytes;
     int grayscale;
-    double scielab_ppd;
+    double ppd;
     /* Optional caller-owned row-major error map. Valid only after a
      * successful analysis; storage must cover the aligned image. */
     double *scielab_map;
@@ -395,7 +401,7 @@ sixel_assessment_record_encode_work(sixel_assessment_stage_t stage,
 
 SIXEL_INTERNAL_API void
 sixel_assessment_select_metrics(sixel_assessment_t *assessment,
-                                unsigned int metrics);
+                                sixel_assessment_mask_t metrics);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_assessment_get_json(sixel_assessment_t *assessment,
