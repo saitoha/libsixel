@@ -2,6 +2,8 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+/* Exclude unavailable test code, including its private helpers. */
+#if !(defined(__PCC__) || defined(__TINYC__))
 #include "../../_support/planner/pipeline/palette_store_test_common.h"
 
 int
@@ -16,10 +18,6 @@ test_palette_store_0034(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-#if defined(__PCC__) || defined(__TINYC__)
-    /* Match the production scheduler's compile-time availability. */
-    return 77;
-#endif
     failed = 1;
     PALETTE_STORE_CHECK(!palette_store_fixture_init(&f));
     PALETTE_STORE_CHECK(palette_store_test_admit(&f, 1, &f.gates[0],
@@ -64,3 +62,12 @@ end:
     sixel_palette_snapshot_unref(b.snapshot);
     return palette_store_fixture_free(&f) || failed;
 }
+#else
+int
+test_palette_store_0034(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return 77;
+}
+#endif

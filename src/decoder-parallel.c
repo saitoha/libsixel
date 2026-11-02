@@ -2115,6 +2115,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int i;
     int offset;
     int created;
+    int contexts_ready;
     int parallel_failed;
     int runtime_error;
     int sync_ready;
@@ -2135,6 +2136,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     global_capacity = 0;
     offset = 0;
     created = 0;
+    contexts_ready = 0;
     parallel_failed = 0;
     runtime_error = 0;
     sync_ready = 0;
@@ -2210,12 +2212,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                        sizeof(sixel_thread_t));
     contexts = (sixel_decoder_worker_context_t *)calloc(
         (size_t)threads, sizeof(sixel_decoder_worker_context_t));
-    /* Keep cleanup ownership explicit before any later allocation fails. */
-    if (contexts != NULL) {
-        for (i = 0; i < threads; ++i) {
-            contexts[i].columns = NULL;
-        }
-    }
     spans = (int *)calloc((size_t)threads, sizeof(int));
     if (workers == NULL || contexts == NULL || spans == NULL) {
         runtime_error = 1;
@@ -2307,6 +2303,10 @@ sixel_decoder_parallel_request_start(int direct_mode,
 
     created = 0;
     for (i = 0; i < threads; ++i) {
+        /* Count initialized column owners separately from live workers:
+         * gather resets created and may fail after parsing allocated them. */
+        contexts[i].columns = NULL;
+        ++contexts_ready;
         contexts[i].result = (-1);
         contexts[i].runtime_error = 0;
         contexts[i].first_painted_row = (-1);
@@ -2497,7 +2497,7 @@ cleanup:
     }
 
     if (contexts != NULL) {
-        for (i = 0; i < threads; ++i) {
+        for (i = 0; i < contexts_ready; ++i) {
             free(contexts[i].columns);
         }
     }

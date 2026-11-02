@@ -343,6 +343,10 @@ sixel_lookup_delaunay_8bit_walk_simd(
     distance = sixel_delaunay_byte_distance(graph->points + center * 3,
                                           pixel);
     for (;;) {
+        /* The current vertex remains the candidate when no neighbor wins.
+         * Initialize it before either packed or separate-lane reduction. */
+        best = center;
+        best_distance = distance;
 #if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__)
         vd = vdupq_n_s32(distance);
         vi = vdupq_n_s32(center);
@@ -475,8 +479,6 @@ sixel_lookup_delaunay_8bit_walk_simd(
         }
 #endif
         if (!packed) {
-            best = center;
-            best_distance = distance;
             for (lane = 0; lane < 4; ++lane) {
                 if (distances[lane] < best_distance
                         || (distances[lane] == best_distance

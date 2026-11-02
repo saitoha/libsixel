@@ -7588,7 +7588,8 @@ sixel_encoder_attach_alpha_keycolor(unsigned char const *bgcolor,
         memcpy(native_entries, float_view.entries,
             (size_t)base_colors * 3U * sizeof(float));
         for (channel = 0U; channel < 3U; ++channel) {
-            key_source[channel] = expanded[key_index * 3U + channel] / 255.0;
+            key_source[channel] = bgcolor != NULL
+                ? bgcolor[channel] / 255.0 : 0.0;
         }
         if (!sixel_color_convert(key_work, key_source,
                 SIXEL_COLORSPACE_GAMMA, working_colorspace)) {

@@ -17,6 +17,7 @@ The fat-binary checks are part of release confidence because a successful build 
 - Use Cosmopolitan runtime predicates for OS behavior; reserve `__COSMOPOLITAN__` for API availability and compilation.
 - Keep library and converter path adapters in lockstep.
 - Exercise the same APE on Windows and at least one Unix runtime after changing path logic.
+- The [CI setup action](../../../.github/actions/ci-steps/action.yml) pins the official GitHub release of `cosmocc` and its SHA-256 digest. The archive path and cache key derive from that selection before download; both restored and downloaded bytes must match the digest. Downloads have bounded connection and transfer times, reject HTTP errors, and become cacheable only after verification. When updating the compiler, update the version and digest together using the [official release assets](https://github.com/jart/cosmopolitan/releases).
 
 ## Test coverage
 

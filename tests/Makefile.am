@@ -10617,6 +10617,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/awk/test-runner-meson-link.awk _static/sh/check-test-runner-link.sh \
     _static/awk/c-preprocessor-portability.awk \
     _static/sh/staticcheck-c-preprocessor-portability.sh \
+    _static/awk/c-test-skip-branches.awk \
+    _static/sh/staticcheck-c-test-skip-branches.sh \
     _static/sh/staticcheck-command-dependencies.sh \
     _static/python/command_dependencies.py \
     _static/python/command-dependencies-requirements.txt \

@@ -3,6 +3,8 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+/* Exclude unavailable test code, including its private helpers. */
+#if HAVE_COREGRAPHICS
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,9 +121,6 @@ test_loader_0187_coregraphics_png(int argc, char **argv)
     int no;
     int previous_policy;
 
-#if !HAVE_COREGRAPHICS
-    return 77;
-#endif
     --argc;
     ++argv;
     if (argc != 8 || !sixel_cms_engine_from_string(argv[6], &engine)) {
@@ -193,3 +192,12 @@ end:
     return SIXEL_FAILED(status) ||
         probe.calls != (probe.background ? 2 : 1);
 }
+#else
+int
+test_loader_0187_coregraphics_png(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return 77;
+}
+#endif

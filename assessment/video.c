@@ -139,7 +139,7 @@ static int
 lsqa_video_record(FILE *file, char const *const *names, int count,
     double *values)
 {
-    char line[1024] = {0};
+    char line[1024];
     char key[32];
     char *p;
     char *end;
@@ -159,10 +159,12 @@ lsqa_video_record(FILE *file, char const *const *names, int count,
     }
     p = line;
     seen = 0;
-    while (*p == ' ' || *p == '\t') { ++p; }
+    /* fgets publishes a terminated string, not the entire array. Keep
+     * whitespace scans within that string's initialized prefix. */
+    p += strspn(p, " \t");
     if (*p++ != '{') { return -1; }
     for (;;) {
-        while (*p == ' ' || *p == '\t') { ++p; }
+        p += strspn(p, " \t");
         if (*p++ != '"') { return -1; }
         end = strchr(p, '"');
         if (end == NULL) { return -1; }
@@ -174,9 +176,9 @@ lsqa_video_record(FILE *file, char const *const *names, int count,
         if (i == count || (seen & (1u << i)) != 0) { return -1; }
         seen |= 1u << i;
         p = end + 1;
-        while (*p == ' ' || *p == '\t') { ++p; }
+        p += strspn(p, " \t");
         if (*p++ != ':') { return -1; }
-        while (*p == ' ' || *p == '\t') { ++p; }
+        p += strspn(p, " \t");
         number = p;
         if (*p == '-') { ++p; }
         if (*p < '0' || *p > '9') { return -1; }
@@ -200,14 +202,14 @@ lsqa_video_record(FILE *file, char const *const *names, int count,
         values[i] = strtod(number, &end);
         if (errno != 0 || end != p || !isfinite(values[i])
                 || values[i] < 0) { return -1; }
-        while (*p == ' ' || *p == '\t') { ++p; }
+        p += strspn(p, " \t");
         if (*p == '}') {
             ++p;
             break;
         }
         if (*p++ != ',') { return -1; }
     }
-    while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') { ++p; }
+    p += strspn(p, " \t\r\n");
     return *p == '\0' && seen == (1u << count) - 1u ? 1 : -1;
 }
 

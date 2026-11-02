@@ -104,6 +104,8 @@ Both targets run the [independent oracle auditor](../../tools/verify_color_oracl
 
 The preprocessor portability check scans maintained C sources and headers, including test helpers, for `near`, `far` and `interface` identifiers that collide with Windows macros. Comments and string literals are excluded. It also requires `<stdint.h>`, `<inttypes.h>`, or the public `<sixel.h>` (directly or through a maintained quoted header) before a `SIZE_MAX` fallback definition, because `<limits.h>` alone does not prevent later redefinition. This conservative source check inspects all conditional branches; it does not replace compilation on each platform.
 
+The separate compile-time skip check rejects a standalone `return 77;` preprocessor branch followed immediately by unconditional C test code. A disabled test uses an alternative compilation branch so compilers such as PCC do not reject its unreachable body; exclude private helpers with that body to avoid unused-function warnings. The awk check ignores comments and literals, accepts runtime conditions, and exercises valid and invalid controls without Python or a target compiler. It deliberately does not evaluate macro expressions or prove general reachability.
+
 Ordinary source and registration checks use the host shell, awk and base utilities; they must not require Python to start, enumerate files, dispatch checks or validate source policy. Python binding checks and explicitly selected optional parser and image-audit tools own their separate interpreter requirements. Absence of Python does not waive an ordinary invariant. Test-source enumeration is shared within one suite invocation; this avoids repeated filesystem traversal without caching checker verdicts. Direct invocations retain the same filtering and argument boundaries.
 
 ## Adding or changing a staticcheck
@@ -166,6 +168,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-21 | Shell field extraction escapes literal pipes, including those following a wildcard, in parameter-removal patterns, avoiding Korn shell alternation semantics. | [tests/_static/sh/staticcheck-shell-field-delimiters.sh](../../tests/_static/sh/staticcheck-shell-field-delimiters.sh) |
 
 | SC-22 | Source enumeration works without Python and preserves regular-file membership, hidden/artifact pruning, symbolic-link exclusion, glob filters, depth, NUL-separated argument boundaries and missing-root failure with or without the shared invocation inventory. | [tests/_static/sh/staticcheck-source-inventory.sh](../../tests/_static/sh/staticcheck-source-inventory.sh) |
+
+| SC-23 | A standalone compile-time skip excludes the following test body; literal controls distinguish alternative branches, runtime checks, comments and strings from unreachable C code. | [tests/_static/sh/staticcheck-c-test-skip-branches.sh](../../tests/_static/sh/staticcheck-c-test-skip-branches.sh) |
 
 ### Coverage boundary
 

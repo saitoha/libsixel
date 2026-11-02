@@ -442,32 +442,48 @@ runs:
       run: |
         Write-Error 'Cygwin setup failed on all configured mirrors.'
 
+    - name: Select Cosmopolitan toolchain
+      if: ${{ contains(fromJSON(inputs.matrix_json).setup_prefix, 'CC=cosmocc') }}
+      id: cosmocc
+      shell: bash
+      run: |
+        echo 'version=4.0.2' >> "$GITHUB_OUTPUT"
+        echo 'sha256=85b8c37a406d862e656ad4ec14be9f6ce474c1b436b9615e91a55208aced3f44' >> "$GITHUB_OUTPUT"
+
     - name: Cache Cosmopolitan toolchain
       if: ${{ contains(fromJSON(inputs.matrix_json).setup_prefix, 'CC=cosmocc') }}
       uses: actions/cache@v5
       with:
-        path: cosmopolitan/cosmocc.zip
-        key: cosmocc-${{ hashFiles('cosmopolitan/cosmocc.zip') }}
+        path: cosmopolitan/cosmocc-${{ steps.cosmocc.outputs.version }}.zip
+        key: cosmocc-${{ steps.cosmocc.outputs.version }}-${{ steps.cosmocc.outputs.sha256 }}
 
     - name: Prepare Cosmopolitan toolchain
       if: ${{ contains(fromJSON(inputs.matrix_json).setup_prefix, 'CC=cosmocc') }}
       shell: bash
+      env:
+        COSMOCC_VERSION: ${{ steps.cosmocc.outputs.version }}
+        COSMOCC_SHA256: ${{ steps.cosmocc.outputs.sha256 }}
       run: |
         set -exv
         mkdir -p cosmopolitan
-        if [ ! -f cosmopolitan/cosmocc.zip ]; then
-          # Retry with backoff because DNS resolution can fail transiently.
-          for attempt in 1 2 3; do
-            curl -L -o cosmopolitan/cosmocc.zip \
-              https://cosmo.zip/pub/cosmocc/cosmocc.zip && break
-            if [ "$attempt" -eq 3 ]; then
-              echo "Failed to download cosmocc.zip after ${attempt} attempts." >&2
-              exit 1
-            fi
-            sleep $((attempt * 5))
-          done
+        archive="cosmopolitan/cosmocc-${COSMOCC_VERSION}.zip"
+        sha256=(sha256sum)
+        if ! command -v sha256sum >/dev/null 2>&1; then
+          sha256=(shasum -a 256)
         fi
-        unzip -o -q cosmopolitan/cosmocc.zip
+        # The cache is keyed before download, so use the pinned release and
+        # digest rather than hashFiles on a file that may not exist yet.
+        if ! printf '%s  %s\n' "$COSMOCC_SHA256" "$archive" |
+            "${sha256[@]}" --check --status; then
+          curl --fail --location --connect-timeout 15 --max-time 600 \
+            --retry 2 --output "$archive.part" \
+            "https://github.com/jart/cosmopolitan/releases/download/${COSMOCC_VERSION}/cosmocc-${COSMOCC_VERSION}.zip"
+          # Never publish a partial download or an HTTP error as a cache hit.
+          printf '%s  %s\n' "$COSMOCC_SHA256" "$archive.part" |
+            "${sha256[@]}" --check -
+          mv "$archive.part" "$archive"
+        fi
+        unzip -o -q "$archive"
         chmod +x bin/cosmo*
 
     - name: Prepare Emscripten toolchain

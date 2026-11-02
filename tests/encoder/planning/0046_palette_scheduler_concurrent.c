@@ -2,6 +2,8 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+/* Exclude unavailable test code, including its private helpers. */
+#if !(defined(__PCC__) || defined(__TINYC__))
 #include <string.h>
 #include "../../_support/planner/pipeline/palette_store_test_common.h"
 
@@ -42,10 +44,6 @@ test_palette_scheduler_0046(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-#if defined(__PCC__) || defined(__TINYC__)
-    /* Match the production scheduler's compile-time availability. */
-    return 77;
-#endif
     started = initialized = 0;
     failed = 1;
     memset(probes, 0, sizeof(probes));
@@ -87,3 +85,12 @@ end:
     }
     return palette_store_fixture_free(&f) || failed;
 }
+#else
+int
+test_palette_scheduler_0046(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return 77;
+}
+#endif

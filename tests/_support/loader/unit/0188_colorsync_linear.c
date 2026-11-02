@@ -3,6 +3,8 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+/* Exclude unavailable test code, including its private helpers. */
+#if HAVE_COREGRAPHICS
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,9 +33,6 @@ test_loader_0188_colorsync_linear(int argc, char **argv)
     int p;
     int c;
 
-#if !HAVE_COREGRAPHICS
-    return 77;
-#endif
     --argc;
     ++argv;
     if (argc != 4 || !sixel_cms_engine_from_string(argv[2], &engine)) {
@@ -96,3 +95,12 @@ test_loader_0188_colorsync_linear(int argc, char **argv)
     }
     return 0;
 }
+#else
+int
+test_loader_0188_colorsync_linear(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return 77;
+}
+#endif

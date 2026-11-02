@@ -3438,6 +3438,11 @@ sixel_sequence_next(sixel_sequence_decoder_t *d,
             goto failure;
         }
     }
+    /* Success must publish storage before either clearing or decoding. */
+    if (d->image.pixels.p == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto failure;
+    }
     /* Clear only display samples, not color registers. Transparent samples
      * are flattened against the assessment background after composition. */
     if (d->state.clear) {

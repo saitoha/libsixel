@@ -2437,6 +2437,12 @@ static int stbi__arith_bit(stbi__jpeg *j, stbi_uc *bin)
    int lps;
 
    index = *bin & 127;
+   /* Model transitions produce states 0..113. Reject an invalid state
+    * before indexing the table, and propagate the sticky decoder error. */
+   if (index >= sizeof(stbi__jpeg_qm) / sizeof(stbi__jpeg_qm[0])) {
+      j->arith_error = 1;
+      return 0;
+   }
    qe = stbi__jpeg_qm[index].qe;
    bit = *bin >> 7;
    j->arith_a -= qe;

@@ -2,6 +2,8 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+/* Exclude unavailable test code, including its private helpers. */
+#if !(defined(__PCC__) || defined(__TINYC__))
 #include <string.h>
 #include "../../_support/planner/pipeline/palette_store_test_common.h"
 
@@ -19,10 +21,6 @@ test_palette_scheduler_0040(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-#if defined(__PCC__) || defined(__TINYC__)
-    /* Match the production scheduler's compile-time availability. */
-    return 77;
-#endif
     failed = 1;
     initialized = 0;
     memset(&policy, 0, sizeof(policy));
@@ -101,3 +99,12 @@ end:
     }
     return failed;
 }
+#else
+int
+test_palette_scheduler_0040(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return 77;
+}
+#endif

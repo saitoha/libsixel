@@ -2,6 +2,8 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+/* Exclude unavailable test code, including its private helpers. */
+#if !(defined(__PCC__) || defined(__TINYC__))
 #include "../../_support/planner/pipeline/palette_store_test_common.h"
 
 int
@@ -15,10 +17,6 @@ test_palette_scheduler_0042(int argc, char **argv)
 
     (void)argc;
     (void)argv;
-#if defined(__PCC__) || defined(__TINYC__)
-    /* Match the production scheduler's compile-time availability. */
-    return 77;
-#endif
     failed = 1;
     PALETTE_STORE_CHECK(!palette_store_fixture_init(&f));
     /* W=1 serializes build jobs without reducing the emission budget. */
@@ -51,3 +49,12 @@ end:
     sixel_palette_lease_release(&m);
     return palette_store_fixture_free(&f) || failed;
 }
+#else
+int
+test_palette_scheduler_0042(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return 77;
+}
+#endif
