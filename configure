@@ -677,6 +677,7 @@ LS_SH_PATH
 LS_DASH_PATH
 SIXEL_TEST_SHELL
 HAVE_TREE_SITTER_C
+ENABLE_STATICCHECK_IMAGE_AUDITS
 PYTHON_STATICCHECK
 CODESPELL
 SHELLCHECK
@@ -1140,6 +1141,7 @@ enable_fuzz
 with_python_sys_prefix
 with_python_prefix
 with_python_exec_prefix
+enable_staticcheck_image_audits
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1912,6 +1914,9 @@ Optional Features:
   --enable-gcov           Deprecated alias for --enable-coverage
   --disable-tests         Do not build tests for make check
   --enable-fuzz           Build libFuzzer targets under fuzz/ (default: no)
+  --enable-staticcheck-image-audits
+                          enable optional Python image-fixture and
+                          numeric-oracle audits (default: no)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -26987,11 +26992,10 @@ fi
         fi
     fi
     if test x$have_png = xyes; then
-        if test x$LIBPNG_PKG_NAME = x; then
-            LIBPNG_PKG_NAME=${PNG_LIBNAME}
-        fi
-        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
+                        CFLAGS_BACKUP=$CFLAGS
+        LIBS_BACKUP=$LIBS
+        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        LIBS="$LIBPNG_LIBS $LIBS"
         ac_fn_check_decl "$LINENO" "png_set_gray_1_2_4_to_8" "ac_cv_have_decl_png_set_gray_1_2_4_to_8" " #include <png.h>
 " "$ac_c_undeclared_builtin_options" "CFLAGS"
 if test "x$ac_cv_have_decl_png_set_gray_1_2_4_to_8" = xyes
@@ -27013,8 +27017,40 @@ esac
 fi
 printf "%s\n" "#define HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8 $ac_have_decl" >>confdefs.h
 
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for required libpng reader and writer APIs" >&5
+printf %s "checking for required libpng reader and writer APIs... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include "$srcdir/build-aux/libpng-api-probe.c"
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_png=yes
+else case e in #(
+  e) have_png=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_png" >&5
+printf "%s\n" "$have_png" >&6; }
         CFLAGS=$CFLAGS_BACKUP
-        LDFLAGS=$LDFLAGS_BACKUP
+        LIBS=$LIBS_BACKUP
+        if test x$have_png != xyes; then
+            LIBPNG_CFLAGS=
+            LIBPNG_LIBS=
+            LIBPNG_PKG_NAME=
+            if test x$with_png != xauto; then
+                as_fn_error $? "libpng lacks required reader/writer APIs; see config.log" "$LINENO" 5
+            fi
+        fi
+    fi
+    if test x$have_png = xyes; then
+        if test x$LIBPNG_PKG_NAME = x; then
+            LIBPNG_PKG_NAME=${PNG_LIBNAME}
+        fi
 
 printf "%s\n" "#define HAVE_LIBPNG 1" >>confdefs.h
 
@@ -33977,6 +34013,40 @@ fi
 
   test -n "$PYTHON_STATICCHECK" && break
 done
+
+# Check whether --enable-staticcheck-image-audits was given.
+if test ${enable_staticcheck_image_audits+y}
+then :
+  enableval=$enable_staticcheck_image_audits;
+else case e in #(
+  e) enable_staticcheck_image_audits=no ;;
+esac
+fi
+
+case $enable_staticcheck_image_audits in #(
+  yes) :
+    ENABLE_STATICCHECK_IMAGE_AUDITS=1 ;; #(
+  no) :
+    ENABLE_STATICCHECK_IMAGE_AUDITS=0 ;; #(
+  *) :
+    as_fn_error $? "--enable-staticcheck-image-audits accepts yes or no" "$LINENO" 5 ;;
+esac
+if test "$ENABLE_STATICCHECK_IMAGE_AUDITS" = 1
+then :
+
+    if test -z "$PYTHON_STATICCHECK"
+then :
+  as_fn_error $? "staticcheck image audits require Python 3.9 or newer" "$LINENO" 5
+fi
+    if "$PYTHON_STATICCHECK" -c 'import sys; sys.exit(sys.version_info < (3, 9))'
+then :
+
+else case e in #(
+  e) as_fn_error $? "staticcheck image audits require Python 3.9 or newer" "$LINENO" 5 ;;
+esac
+fi
+
+fi
 
 HAVE_TREE_SITTER_C=0
 if test "x$PYTHON_STATICCHECK" != x

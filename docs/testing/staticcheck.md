@@ -100,9 +100,11 @@ meson compile -C build staticcheck-png-color-oracles
 meson compile -C build staticcheck-tiff-uint16-oracles
 ```
 
-Both targets run the [independent oracle auditor](../../tools/verify_color_oracles.py) with the configured host Python interpreter and only its standard library. The PNG check independently derives the stored cHRM exact values, error bounds, and binary32 rounding certificates. The TIFF check covers every UINT16 normalization and MINISWHITE complement, then the separate-plane source tables for orientations 1–4. These checks require neither optional image libraries nor a CMS or built converter; a missing Python interpreter is reported as a skip. A mismatch fails the target and the umbrella suite. They verify stored expectations, while loader value assertions and final-image MS-SSIM regressions remain separate runtime observations.
+Both targets run the [independent oracle auditor](../../tools/verify_color_oracles.py) with the configured host Python interpreter and only its standard library. The PNG check independently derives the stored cHRM exact values, error bounds, and binary32 rounding certificates. The TIFF check covers every UINT16 normalization and MINISWHITE complement, then the separate-plane source tables for orientations 1–4. These checks require neither optional image libraries nor a CMS or built converter. Enable them explicitly with `--enable-staticcheck-image-audits` under Autotools or `-Dstaticcheck_image_audits=true` under Meson; the default is disabled. Enabling the option requires Python 3.9 or newer at configuration time, and a missing or invalid interpreter is an error. The same option enables the separate `staticcheck-png-cms-matrix` audit of PNG chunk CRCs, decompressed raster identity, reference classes and generated matrix tables. Disabled audits report a skip without starting Python. A mismatch fails the target and the umbrella suite. They verify stored expectations, while loader value assertions and final-image MS-SSIM regressions remain separate runtime observations.
 
-The preprocessor portability check scans maintained C sources and headers, including test helpers, for `near` and `far` identifiers that collide with Windows macros. Comments and string literals are excluded. It also requires `<stdint.h>`, `<inttypes.h>`, or the public `<sixel.h>` (directly or through a maintained quoted header) before a `SIZE_MAX` fallback definition, because `<limits.h>` alone does not prevent later redefinition. This conservative source check inspects all conditional branches; it does not replace compilation on each platform.
+The preprocessor portability check scans maintained C sources and headers, including test helpers, for `near`, `far` and `interface` identifiers that collide with Windows macros. Comments and string literals are excluded. It also requires `<stdint.h>`, `<inttypes.h>`, or the public `<sixel.h>` (directly or through a maintained quoted header) before a `SIZE_MAX` fallback definition, because `<limits.h>` alone does not prevent later redefinition. This conservative source check inspects all conditional branches; it does not replace compilation on each platform.
+
+Ordinary source and registration checks use the host shell, awk and base utilities; they must not require Python to start, enumerate files, dispatch checks or validate source policy. Python binding checks and explicitly selected optional parser and image-audit tools own their separate interpreter requirements. Absence of Python does not waive an ordinary invariant. Test-source enumeration is shared within one suite invocation; this avoids repeated filesystem traversal without caching checker verdicts. Direct invocations retain the same filtering and argument boundaries.
 
 ## Adding or changing a staticcheck
 
@@ -124,7 +126,7 @@ A staticcheck should fail with enough normalized evidence to locate the divergen
 
 Both documentation reciprocal checks scan PowerShell `.ps1` comments as well as the existing source languages. The [traceability policy](../AGENTS.md#documentation-to-test-traceability) defines the supported nonrecursive inventory patterns, including `????_*.ps1` for numbered cases beside shared helpers, and the requirements when adding another language. Invalid marker syntax, missing/extra files, duplicate inventory entries and one-sided references are errors. Source descriptions and evidence claims still need semantic review.
 
-The documentation-link check also validates the [generated PNG CMS matrix](../loader/png-color-metadata.md#maintaining-the-tables) against its input chunks, committed reference bytes, test ownership, and recorded quality floors. Adding or remapping a matrix test requires reviewing and regenerating that shared table.
+The explicitly enabled `staticcheck-png-cms-matrix` image audit validates the [generated PNG CMS matrix](../loader/png-color-metadata.md#maintaining-the-tables) against its input chunks, committed reference bytes, test ownership, and recorded quality floors. Adding or remapping a matrix test requires reviewing and regenerating that shared table.
 
 ## Test coverage
 
@@ -155,6 +157,15 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-15 | The Meson case inventory remains in a whole-linked archive with matching compile inputs; mutations that flatten objects or drop archive semantics and dependencies are rejected. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
 
 | SC-16 | The DLL declaration scanner ignores balanced compiler attributes while preserving local storage classes, external declarations and source locations; literal controls reject treating attributes or their arguments as function names. | [tests/_static/sh/staticcheck-test-runner-dllexport.sh](../../tests/_static/sh/staticcheck-test-runner-dllexport.sh) |
+
+
+| SC-17 | Embedded CLI fuzz targets retain the normal converter's C source inventory; a missing source mutation is rejected. | [tests/_static/sh/staticcheck-fuzz-cli-sources.sh](../../tests/_static/sh/staticcheck-fuzz-cli-sources.sh) |
+| SC-18 | Loader-format fuzz targets match the workflow matrix in both build systems; removed or renamed formats are rejected. | [tests/_static/sh/staticcheck-fuzz-loader-formats.sh](../../tests/_static/sh/staticcheck-fuzz-loader-formats.sh) |
+| SC-19 | Every Autotools test-runner mode applies configured thread ABI flags to its support objects. | [tests/_static/sh/staticcheck-test-thread-flags.sh](../../tests/_static/sh/staticcheck-test-thread-flags.sh) |
+| SC-20 | Test distribution writes a bounded, complete manifest and selects source, generated and directory inputs correctly. | [tests/_static/sh/staticcheck-test-distribution.sh](../../tests/_static/sh/staticcheck-test-distribution.sh) |
+| SC-21 | Shell field extraction escapes a leading literal pipe in parameter-removal patterns, avoiding Korn shell alternation semantics. | [tests/_static/sh/staticcheck-shell-field-delimiters.sh](../../tests/_static/sh/staticcheck-shell-field-delimiters.sh) |
+
+| SC-22 | Source enumeration works without Python and preserves regular-file membership, hidden/artifact pruning, symbolic-link exclusion, glob filters, depth, NUL-separated argument boundaries and missing-root failure with or without the shared invocation inventory. | [tests/_static/sh/staticcheck-source-inventory.sh](../../tests/_static/sh/staticcheck-source-inventory.sh) |
 
 ### Coverage boundary
 

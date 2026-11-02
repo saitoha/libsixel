@@ -22,6 +22,17 @@ case "${trace}" in *"PNG_CHRM_SAMPLE|fixture=206|engine=builtin|checked=24|"*) t
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }
+# The independent libpng getter probe determines whether ICC is available.
+case "${trace}" in
+    *"PNG_CHRM_ICC_EXPECTED|count=0"*"LSXCMS2|event=apply"*)
+        echo "not ok 1 - rejected ICC metadata triggered a transform"
+        exit 0
+        ;;
+    *"PNG_CHRM_ICC_EXPECTED|count=0"*)
+        echo "ok 1 - builtin 16-file-bg-collinear-0-priority-icc-srgb original samples and coverage"
+        exit 0
+        ;;
+esac
 # Consume every apply in order; partial or extra records must fail.
 case "${trace}" in *"LSXCMS2|event=apply"*) true ;; *) false ;; esac || {
     echo "not ok 1 - ICC apply 1 is missing"

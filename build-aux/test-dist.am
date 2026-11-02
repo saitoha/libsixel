@@ -1,0 +1,15 @@
+# Bound the shell command even when Automake collects thousands of C sources.
+# Separate recipe lines also work with GNU make versions without $(file ...).
+define sixel_write_dist_files
+$(if $(strip $(1)),@printf '%s\n' $(wordlist 1,128,$(1)) >>dist-files.list
+$(call sixel_write_dist_files,$(wordlist 129,$(words $(1)),$(1))))
+endef
+
+distdir-am: $(DISTFILES)
+	@: >dist-files.list
+	$(call sixel_write_dist_files,$(DISTFILES))
+	@$(SHELL) "$(top_srcdir)/build-aux/copy-test-dist.sh" \
+	    "$(srcdir)" "$(top_srcdir)" "$(top_builddir)" "$(distdir)" \
+	    <dist-files.list
+	$(MAKE) $(AM_MAKEFLAGS) top_distdir="$(top_distdir)" \
+	    distdir="$(distdir)" dist-hook

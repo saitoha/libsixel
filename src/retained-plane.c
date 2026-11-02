@@ -9,7 +9,7 @@
 #include "threading.h"
 
 typedef struct sixel_retained_plane_storage {
-    sixel_retained_plane_interface_t interface;
+    sixel_retained_plane_interface_t iface;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
     sixel_mutex_t gate;
@@ -216,7 +216,7 @@ sixel_retained_read_unref(sixel_retained_read_t *read)
     --plane->readers;
     sixel_mutex_unlock(&plane->gate);
     sixel_allocator_free(plane->allocator, read);
-    sixel_retained_plane_unref(&plane->interface);
+    sixel_retained_plane_unref(&plane->iface);
 }
 
 SIXELAPI SIXELSTATUS
@@ -354,11 +354,11 @@ sixel_retained_update_unref(sixel_retained_update_t *update)
     }
     plane = update->plane;
     /* Resource-user references defer final abort until workers drain. */
-    (void)sixel_retained_plane_abort(&plane->interface, update);
+    (void)sixel_retained_plane_abort(&plane->iface, update);
     sixel_indexed_frame_unref(update->image);
     sixel_allocator_free(plane->allocator, update->paint);
     sixel_allocator_free(plane->allocator, update);
-    sixel_retained_plane_unref(&plane->interface);
+    sixel_retained_plane_unref(&plane->iface);
 }
 
 static SIXELSTATUS
@@ -498,12 +498,12 @@ sixel_retained_plane_factory_new(sixel_allocator_t *allocator, void **object)
         return SIXEL_RUNTIME_ERROR;
     }
 #endif
-    plane->interface.vtbl = &g_retained_plane_vtbl;
+    plane->iface.vtbl = &g_retained_plane_vtbl;
     plane->ref = 1;
     plane->allocator = allocator;
     plane->stream = stream;
     sixel_allocator_ref(allocator);
-    *object = &plane->interface;
+    *object = &plane->iface;
     return SIXEL_OK;
 }
 

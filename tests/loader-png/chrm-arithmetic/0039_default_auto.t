@@ -14,6 +14,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+result=0
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    loader/0210_png_arith_loader 5 getter || result=$?
+test "$result" -ne 77 || {
+    echo "ok 1 # SKIP libpng does not expose the fixture cHRM"
+    exit 0
+}
+test "$result" -eq 0 || {
+    echo "not ok 1 - external cHRM getter probe failed"
+    exit 0
+}
 trace=$(set +xv; SIXEL_TRACE_TOPIC=loader \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_LOADER_LIBPNG_CHRM_ARITHMETIC= "-Llibpng:cms_engine=builtin!" \
     "${TOP_SRCDIR}/tests/data/color-numeric/png-arithmetic-5.png" 2>&1 >/dev/null) || {

@@ -9,6 +9,7 @@
 #include "src/loader-common.h"
 
 #if HAVE_LIBPNG
+#include "tests/_support/loader/libpng/png_metadata_test_common.h"
 #define IP_WIDTH 5
 #define IP_HEIGHT 3
 #define IP_FLOAT_BYTES (IP_WIDTH * IP_HEIGHT * 3u * sizeof(float))
@@ -401,6 +402,7 @@ test_libpng_indexed_precision(int argc, char **argv)
 #if HAVE_LIBPNG
     ip_png_t fixture;
     ip_probe_t probe;
+    png_metadata_test_t metadata;
     sixel_loader_t *loader;
     sixel_chunk_t *chunk;
     sixel_allocator_t *allocator;
@@ -441,6 +443,14 @@ test_libpng_indexed_precision(int argc, char **argv)
     if (ip_fixture(&fixture, &probe) != 0) {
         sixel_cms_set_engine(previous);
         return 1;
+    }
+    if (probe.variant == 10) {
+        if (png_metadata_read(fixture.bytes, fixture.size, &metadata) ||
+            metadata.icc || (metadata.gamma && metadata.gamma_value != 0.5)) {
+            sixel_cms_set_engine(previous);
+            return 1;
+        }
+        probe.managed = metadata.gamma;
     }
     allocator = NULL;
     chunk = NULL;

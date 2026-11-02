@@ -84,6 +84,13 @@ test_palette_scheduler_0075(int argc, char **argv)
         PALETTE_STORE_CHECK(sixel_palette_scheduler_init(&probe.scheduler,
             &policy) == SIXEL_OK);
         initialized = 1;
+        /* CLI trace tests share this cheap capability query. Inspect the
+         * compiled scheduler before expecting asynchronous events. */
+        if (!probe.scheduler.enabled ||
+                (argc == 2 && strcmp(argv[1], "available") == 0)) {
+            failed = probe.scheduler.enabled ? 0 : 77;
+            goto end;
+        }
         PALETTE_STORE_CHECK(sixel_palette_scheduler_acquire(&probe.scheduler,
             SIXEL_PALETTE_LANE_BUILD, 0, &p) == budget / 2);
         PALETTE_STORE_CHECK(sixel_palette_scheduler_acquire(&probe.scheduler,

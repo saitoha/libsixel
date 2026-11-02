@@ -1141,6 +1141,7 @@ runs:
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
         run: |
           echo "__DFBSD_PHASE_RUN__"
+          export MAKE=gmake
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
@@ -1175,6 +1176,7 @@ runs:
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
         run: |
           echo "__DFBSD_PHASE_RUN__"
+          export MAKE=gmake
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
@@ -1212,6 +1214,7 @@ runs:
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
         run: |
           echo "__DFBSD_PHASE_RUN__"
+          export MAKE=gmake
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}

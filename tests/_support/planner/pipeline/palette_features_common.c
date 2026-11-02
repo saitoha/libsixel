@@ -11,7 +11,7 @@
 #include "playback_test_common.h"
 #include "palette_features_common.h"
 
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
 enum { FEATURE_WIDTH = 16, FEATURE_HEIGHT = 12, FEATURE_PIXELS = 192 };
 typedef struct feature_state feature_state_t;
 typedef struct feature_gate {
@@ -517,11 +517,11 @@ end:
 int
 palette_features_test(int scenario)
 {
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     return feature_run(scenario, scenario == 3, 0) ||
         ((scenario == 1 || scenario == 2) && feature_run(scenario, 1, 1));
 #else
     (void)scenario;
-    return 0;
+    return 77;
 #endif
 }

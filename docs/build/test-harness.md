@@ -19,7 +19,7 @@ The ordinary Autotools path resolves the inventory once per make invocation and 
 
 The [testing guide](../testing/guide.md) owns one-observation rules, numbering, shell structure, and validation. This chapter describes the infrastructure around those tests.
 
-The classification inventory is broader than the ordinary runtime inventory. Its counted unit is an independently invoked test-entry file, not every numbered source file and not only the cases enabled by one configuration. Runtime TAP scripts and numbered binding scripts, numbered static regression cases, and numbered installed-product cases each count once. For example, the discovery checks under `tests/build/discovery/` are Python cases run by staticcheck, and the PowerShell cases under `tests/extension/wic-installed/` belong to installed Windows product validation. Their placement under `tests/` does not register them with ordinary `make check`.
+The classification inventory is broader than the ordinary runtime inventory. Its counted unit is an independently invoked test-entry file, not every numbered source file and not only the cases enabled by one configuration. Runtime TAP scripts and numbered binding scripts, numbered static regression cases, and numbered installed-product cases each count once. For example, the discovery checks under `tests/build/discovery/` are shell cases run by staticcheck, and the PowerShell cases under `tests/extension/wic-installed/` belong to installed Windows product validation. Their placement under `tests/` does not register them with ordinary `make check`.
 
 C implementations behind TAP wrappers, common language helpers, fixture payloads, umbrella staticcheck implementations and generated `.log` or `.trs` files are support rather than additional case entries. A classification move must preserve the owning suite's registration and capability requirements; blindly collecting every Python or PowerShell file changes execution semantics. The [organization rules](../testing/guide.md#organization-and-naming) own category counts and limits, while the shared runtime helper and each additional suite remain responsible for execution selection.
 
@@ -84,6 +84,8 @@ Autotools prepares the environments before the parallel log targets. [meson-pyth
 
 Meson binding workers use `MESON_TEST_RUN_ID`, falling back to their parent PID, to name shared preparation locks and exported-state files. The [child-time executor](../testing/guide.md#test-timing) preserves the original invoker identity before its guardian changes the command's parent, so measured siblings use the same lock. A successful resolver result is written to a sibling temporary file and renamed into place before releasing the lock; waiting workers cannot read a partially written result. This coordination applies to Python, Ruby, Perl and PHP.
 
+The test runner's support translation units use the configured thread compiler flags in both ordinary and amalgamated builds. A link flag alone cannot supply compile-time ABI features such as WebAssembly atomics. Distribution also writes Automake's complete C/support inventory in bounded batches before copying it, so a large `DISTFILES` value never becomes one shell command string. [Static coverage](#test-coverage) checks these two build boundaries separately.
+
 ## Inside the custom TAP driver
 
 [test-driver](../../build-aux/test-driver) is Automake's shipped basic driver, whose primary observation is process status. The project's configured `lso-tap-driver.sh` instead consumes TAP output. Extension-specific log-driver settings in [tests/Makefile.am](../../tests/Makefile.am) select it for the runtime scripts. The custom suite collector then reads its `.trs` records; these two layers have different responsibilities.
@@ -109,7 +111,7 @@ The driver normally returns success after recording a failed observation so make
 
 ## Result semantics
 
-The assertion protocol is TAP. A normal shell test declares one observation with `1..1`, emits `ok` or `not ok`, and exits zero even on an assertion mismatch. An unavailable supported optional capability can emit `1..0 # SKIP`. The driver, rather than the assertion's process exit code, decides the test outcome.
+The assertion protocol is TAP. A normal shell test declares one observation with `1..1`, emits `ok` or `not ok`, and exits zero even on an assertion mismatch. An unavailable supported optional capability can emit `1..0 # SKIP`. Asynchronous palette trace tests query the compiled scheduler before requiring its events; the query initializes only the scheduler and does not run an encode. This distinguishes compiler-specific serial fallback from a failed asynchronous operation. The driver, rather than the assertion's process exit code, decides the test outcome.
 
 The `.trs` collector counts `PASS`, `SKIP`, `XFAIL`, `FAIL`, `XPASS`, and `ERROR`. It uses the per-file global result and copy flag when assembling diagnostics. `FAIL`, `XPASS`, or `ERROR` makes the suite fail; an expected failure does not. Failure to launch a TAP producer or a timeout is an infrastructure observation, distinct from a normal `not ok` assertion.
 
@@ -225,14 +227,16 @@ This is a declaration audit, not a complete shell interpreter or proof of option
 | TH-03 | Runtime-report cleanup batches removals, preserves other file owners, propagates POSIX discovery/removal failures and retains repeated version removal on the OpenVMS path. | [tests/_static/sh/staticcheck-test-log-cleanup.sh](../../tests/_static/sh/staticcheck-test-log-cleanup.sh) |
 | TH-04 | Single-pass suite aggregation preserves per-observation totals, global failure selection, timing records and native shell diagnostic-copy semantics; incomplete metadata cannot publish a successful report. | [tests/_static/sh/staticcheck-test-suite-report.sh](../../tests/_static/sh/staticcheck-test-suite-report.sh) |
 | TH-05 | Installed-command dispatch keeps large test inventories inside make, preserves explicit selections, excludes Quick Look installed tests, and skips empty selections or an inactive driver. | [tests/_static/sh/staticcheck-installcheck-launch.sh](../../tests/_static/sh/staticcheck-installcheck-launch.sh) |
-| TH-06 | An added runtime script appears on the next make invocation. | [tests/build/discovery/0001_added.py](../../tests/build/discovery/0001_added.py) |
-| TH-07 | Renaming a runtime script replaces its registered name without configure. | [tests/build/discovery/0002_renamed.py](../../tests/build/discovery/0002_renamed.py) |
-| TH-08 | Removing a source script unregisters it even if a build copy remains. | [tests/build/discovery/0003_removed.py](../../tests/build/discovery/0003_removed.py) |
-| TH-09 | An explicit command-line TESTS selection bypasses discovery. | [tests/build/discovery/0004_selection.py](../../tests/build/discovery/0004_selection.py) |
-| TH-10 | An explicitly empty TESTS selection remains empty. | [tests/build/discovery/0005_empty_selection.py](../../tests/build/discovery/0005_empty_selection.py) |
-| TH-11 | A partial discovery failure stops the ordinary make path. | [tests/build/discovery/0006_scan_failure.py](../../tests/build/discovery/0006_scan_failure.py) |
-| TH-12 | The OpenVMS list prerequisite refreshes the inventory before execution. | [tests/build/discovery/0007_openvms_refresh.py](../../tests/build/discovery/0007_openvms_refresh.py) |
-| TH-13 | A partial discovery failure stops the OpenVMS list prerequisite. | [tests/build/discovery/0008_openvms_failure.py](../../tests/build/discovery/0008_openvms_failure.py) |
+| TH-06 | An added runtime script appears on the next make invocation. | [tests/build/discovery/0001_added.sh](../../tests/build/discovery/0001_added.sh) |
+| TH-07 | Renaming a runtime script replaces its registered name without configure. | [tests/build/discovery/0002_renamed.sh](../../tests/build/discovery/0002_renamed.sh) |
+| TH-08 | Removing a source script unregisters it even if a build copy remains. | [tests/build/discovery/0003_removed.sh](../../tests/build/discovery/0003_removed.sh) |
+| TH-09 | An explicit command-line TESTS selection bypasses discovery. | [tests/build/discovery/0004_selection.sh](../../tests/build/discovery/0004_selection.sh) |
+| TH-10 | An explicitly empty TESTS selection remains empty. | [tests/build/discovery/0005_empty_selection.sh](../../tests/build/discovery/0005_empty_selection.sh) |
+| TH-11 | A partial discovery failure stops the ordinary make path. | [tests/build/discovery/0006_scan_failure.sh](../../tests/build/discovery/0006_scan_failure.sh) |
+| TH-12 | The OpenVMS list prerequisite refreshes the inventory before execution. | [tests/build/discovery/0007_openvms_refresh.sh](../../tests/build/discovery/0007_openvms_refresh.sh) |
+| TH-13 | A partial discovery failure stops the OpenVMS list prerequisite. | [tests/build/discovery/0008_openvms_failure.sh](../../tests/build/discovery/0008_openvms_failure.sh) |
 | TH-14 | Measured sibling workers retain the original invoker identity for shared binding preparation, and an explicit run identity is preserved. | [tests/tools/child-time/0002_binding_run_identity.py](../../tests/tools/child-time/0002_binding_run_identity.py) |
+| TH-15 | Normal and amalgamated runner support objects retain configured thread ABI compile flags. | [tests/_static/sh/staticcheck-test-thread-flags.sh](../../tests/_static/sh/staticcheck-test-thread-flags.sh) |
+| TH-16 | Bounded distribution manifests preserve source/build selection and nested fixture directories. | [tests/_static/sh/staticcheck-test-distribution.sh](../../tests/_static/sh/staticcheck-test-distribution.sh) |
 
 The discovery checks execute production make assignments and the OpenVMS list recipe with tiny source trees in separate build directories. Each file owns one observation. They do not invoke configure, compile the C dispatcher, or reproduce GNV/RMS behavior; native OpenVMS execution remains a platform validation boundary.

@@ -19,6 +19,10 @@ test_palette_scheduler_0040(int argc, char **argv)
 
     (void)argc;
     (void)argv;
+#if defined(__PCC__) || defined(__TINYC__)
+    /* Match the production scheduler's compile-time availability. */
+    return 77;
+#endif
     failed = 1;
     initialized = 0;
     memset(&policy, 0, sizeof(policy));

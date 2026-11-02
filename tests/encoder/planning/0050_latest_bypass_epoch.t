@@ -11,8 +11,14 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 echo "1..1"
 set -v
 
+result=0
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    planner/pipeline/0050_latest_bypass_epoch || {
+    planner/pipeline/0050_latest_bypass_epoch || result=$?
+test "$result" -ne 77 || {
+    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    exit 0
+}
+test "$result" -eq 0 || {
     echo "not ok 1 - latest bypass epoch"
     exit 0
 }

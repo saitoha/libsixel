@@ -40,6 +40,8 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     unsigned long long started[8];
     unsigned int session;
     unsigned int pipeline_session;
+    int expected_dither;
+    char const *expected_geometry;
     int planned_dither;
     int planned_encode;
     int dither_count;
@@ -51,12 +53,19 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     int grew;
     int ok;
 
+#if defined(__PCC__) || defined(__TINYC__)
+    expected_dither = 1;
+    expected_geometry = "band_height=450 overlap=0";
+#else
+    expected_dither = 6;
+    expected_geometry = "band_height=78 overlap=0";
+#endif
     field = strstr(plan, "threads: dither=");
     if (field == NULL || sscanf(field, "threads: dither=%d encode=%d",
             &planned_dither, &planned_encode) != 2 ||
-            planned_dither != 6 || planned_encode != 2 ||
+            planned_dither != expected_dither || planned_encode != 2 ||
             strstr(plan, "bands=75 queue=6 mode=pipeline") == NULL ||
-            strstr(plan, "band_height=78 overlap=0") == NULL ||
+            strstr(plan, expected_geometry) == NULL ||
             strstr(plan, automatic ? "workers: total=8 main=4 palette=4" :
                 "workers: total=8 main=8 palette=0") == NULL) {
         fprintf(stderr, "Unexpected pipeline plan:\n%s\n", plan);
@@ -130,7 +139,7 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     fclose(file);
     ok &= configured == 1 && grew == 1;
     /* A runnable pool slot is not guaranteed a job before the queue drains.
-     * Require all six jobs and enforce the split as an identity upper bound;
+     * Require all planned jobs and enforce the split as an identity upper bound;
      * scheduler fairness is not part of the thread-pool contract. */
     ok &= start_count == planned_dither && finish_count == planned_dither;
     ok &= dither_count > 0 && dither_count <= planned_dither;

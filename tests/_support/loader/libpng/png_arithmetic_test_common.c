@@ -15,6 +15,7 @@
 #include "src/loader-common.h"
 #include "tests/data/color-numeric/png-arithmetic.h"
 #include "png_arithmetic_test_common.h"
+#include "png_metadata_test_common.h"
 
 int
 png_arith_dispatch(int sample, int requested)
@@ -350,12 +351,25 @@ png_arith_load(int sample, char const *order, int exact)
     sixel_allocator_t *allocator;
     sixel_chunk_t *chunk;
     png_arith_capture_t probe;
+    png_metadata_test_t metadata;
     SIXELSTATUS status;
     int result;
     int old_policy;
 
     if (sample < 0 || sample >= 10) {
         return 1;
+    }
+    /* Direct arithmetic cases cover every integer grid. A component-level
+     * adoption case requires the external decoder to publish its cHRM. */
+    if (png_metadata_read(png_arith_png[sample].bytes,
+            png_arith_png[sample].size, &metadata)) {
+        return 1;
+    }
+    if (!metadata.chrm) {
+        return 77;
+    }
+    if (order == NULL) {
+        return 0;
     }
     old_policy = loader_transparent_policy();
     sixel_helper_set_loader_transparent_policy(SIXEL_ALPHA_POLICY_COMPOSITE);

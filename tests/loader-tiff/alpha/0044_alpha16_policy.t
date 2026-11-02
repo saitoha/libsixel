@@ -48,7 +48,7 @@ while IFS= read -r line; do
         ;;
     "TALPHA16|applies="*)
         wanted=${line#*applies=}
-        wanted=${wanted%%|*}
+        wanted=${wanted%%\|*}
         groups=${line##*=}
         ;;
     "TALPHA16|source="*)

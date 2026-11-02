@@ -29,7 +29,7 @@ case "${output}" in *"PNGMETA|evaluator="*) true ;; *) false ;; esac || {
 }
 evaluator=${output##*"PNGMETA|evaluator="}
 expected=${evaluator#*"|applies="}
-evaluator=${evaluator%%|*}
+evaluator=${evaluator%%\|*}
 count=0
 first=${output#*"LSXCMS2|event=apply|"}
 case "${output}" in *"LSXCMS2|event=apply|"*) false ;; *) true ;; esac || count=1

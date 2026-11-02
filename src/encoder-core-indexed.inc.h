@@ -4,7 +4,7 @@
  * uses no SIXEL writer, terminal framing, lookup or retained-plane state. */
 
 typedef struct sixel_indexed_core {
-    sixel_encoder_core_t interface;
+    sixel_encoder_core_t iface;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
     sixel_indexed_frame_t *image;
@@ -388,7 +388,7 @@ sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object)
     if (core == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
-    core->interface.vtbl = &g_indexed_core_vtbl;
+    core->iface.vtbl = &g_indexed_core_vtbl;
     core->ref = 1;
     core->allocator = allocator;
     sixel_encode_work_init(&core->work);
@@ -398,7 +398,7 @@ sixel_encoder_core_factory_new(sixel_allocator_t *allocator, void **object)
         return status;
     }
     sixel_allocator_ref(allocator);
-    *object = &core->interface;
+    *object = &core->iface;
     return SIXEL_OK;
 }
 

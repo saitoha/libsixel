@@ -17,6 +17,7 @@
 #include "src/png-chrm-arithmetic.h"
 #include "src/chunk-factory.h"
 #include "tests/data/color-numeric/png-arithmetic.h"
+#include "png_metadata_test_common.h"
 
 #if HAVE_LIBPNG
 static sixel_factory_t *pau_real_factory;
@@ -332,6 +333,7 @@ test_loader_0211_png_arith_unavailable(int argc, char **argv)
 {
 #if HAVE_LIBPNG
     sixel_loader_manager_t *manager;
+    png_metadata_test_t metadata;
     sixel_loader_component_t *selected;
     sixel_allocator_t *allocator;
     sixel_chunk_t *chunk;
@@ -347,6 +349,15 @@ test_loader_0211_png_arith_unavailable(int argc, char **argv)
     (void)argv;
     if (argc != 1) {
         return 1;
+    }
+    /* Unsupported arithmetic is reachable only after the external cHRM
+     * getter accepts this fixture; direct core cases cover all builds. */
+    if (png_metadata_read(png_arith_png_5, sizeof(png_arith_png_5),
+            &metadata)) {
+        return 1;
+    }
+    if (!metadata.chrm) {
+        return 77;
     }
     manager = NULL;
     allocator = NULL;

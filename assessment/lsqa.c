@@ -704,6 +704,10 @@ load_defined_frame(char const *path, char const *spec,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    if (chunk == NULL) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
     bytes = sixel_chunk_get_buffer(chunk);
     count = sixel_chunk_get_size(chunk);
     status = SIXEL_BAD_INPUT;
@@ -868,7 +872,7 @@ load_input_frame(char const *path, char const *spec, int direct,
     }
     chunk = NULL;
     status = sixel_chunk_create_from_source(&chunk, path, 0, NULL, allocator);
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_FAILED(status) || chunk == NULL) {
         fprintf(stderr, "Cannot read %s: %s\n", path,
                 sixel_helper_get_additional_message());
         return -1;

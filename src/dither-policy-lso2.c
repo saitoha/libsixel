@@ -436,7 +436,8 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
 
-    lso2_prepare_terms_8bit(terms);
+    /* PCC needs an explicit row pointer for this array typedef. */
+    lso2_prepare_terms_8bit((int32_t (*)[6])terms);
     lookup_hint = -1;
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;

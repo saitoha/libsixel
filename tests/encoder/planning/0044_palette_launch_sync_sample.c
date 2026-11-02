@@ -34,6 +34,10 @@ test_palette_scheduler_0044(int argc, char **argv)
 
     (void)argc;
     (void)argv;
+#if defined(__PCC__) || defined(__TINYC__)
+    /* Match the production scheduler's compile-time availability. */
+    return 77;
+#endif
     failed = 1;
     hooks.fail_thread_create = 1;
     hooks.before_publish = palette_sync_observe_budget;

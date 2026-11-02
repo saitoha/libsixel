@@ -4679,15 +4679,34 @@ if test x$with_png != xno; then
         fi
     fi
     if test x$have_png = xyes; then
+        dnl Dependency discovery alone does not guarantee the required API.
+        dnl Link the same probe as Meson without running target programs.
+        CFLAGS_BACKUP=$CFLAGS
+        LIBS_BACKUP=$LIBS
+        CFLAGS="$CFLAGS $LIBPNG_CFLAGS"
+        LIBS="$LIBPNG_LIBS $LIBS"
+        AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
+                       [], [], [ #include <png.h> ])
+        AC_MSG_CHECKING([for required libpng reader and writer APIs])
+        AC_LINK_IFELSE([AC_LANG_SOURCE([[
+#include "$srcdir/build-aux/libpng-api-probe.c"
+        ]])], [have_png=yes], [have_png=no])
+        AC_MSG_RESULT([$have_png])
+        CFLAGS=$CFLAGS_BACKUP
+        LIBS=$LIBS_BACKUP
+        if test x$have_png != xyes; then
+            LIBPNG_CFLAGS=
+            LIBPNG_LIBS=
+            LIBPNG_PKG_NAME=
+            if test x$with_png != xauto; then
+                AC_MSG_ERROR([libpng lacks required reader/writer APIs; see config.log])
+            fi
+        fi
+    fi
+    if test x$have_png = xyes; then
         if test x$LIBPNG_PKG_NAME = x; then
             LIBPNG_PKG_NAME=${PNG_LIBNAME}
         fi
-        CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
-        AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
-                       [], [], [ #include <png.h> ])
-        CFLAGS=$CFLAGS_BACKUP
-        LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
         REQUIRES_PRIVATE="$REQUIRES_PRIVATE ${LIBPNG_PKG_NAME}"
@@ -5700,6 +5719,21 @@ AC_PATH_PROG([ACTIONLINT], [actionlint], [])
 AC_PATH_PROG([SHELLCHECK], [shellcheck], [])
 AC_PATH_PROG([CODESPELL], [codespell], [])
 AC_PATH_PROGS([PYTHON_STATICCHECK], [python3 python], [])
+AC_ARG_ENABLE([staticcheck-image-audits],
+    [AS_HELP_STRING([--enable-staticcheck-image-audits],
+        [enable optional Python image-fixture and numeric-oracle audits (default: no)])],
+    [], [enable_staticcheck_image_audits=no])
+AS_CASE([$enable_staticcheck_image_audits],
+    [yes], [ENABLE_STATICCHECK_IMAGE_AUDITS=1],
+    [no], [ENABLE_STATICCHECK_IMAGE_AUDITS=0],
+    [AC_MSG_ERROR([--enable-staticcheck-image-audits accepts yes or no])])
+AS_IF([test "$ENABLE_STATICCHECK_IMAGE_AUDITS" = 1], [
+    AS_IF([test -z "$PYTHON_STATICCHECK"],
+        [AC_MSG_ERROR([staticcheck image audits require Python 3.9 or newer])])
+    AS_IF(["$PYTHON_STATICCHECK" -c 'import sys; sys.exit(sys.version_info < (3, 9))'],
+        [], [AC_MSG_ERROR([staticcheck image audits require Python 3.9 or newer])])
+])
+AC_SUBST([ENABLE_STATICCHECK_IMAGE_AUDITS])
 HAVE_TREE_SITTER_C=0
 AS_IF([test "x$PYTHON_STATICCHECK" != x], [
   AS_IF(["$PYTHON_STATICCHECK" "$srcdir/tests/_static/python/staticcheck_c_ast.py" --probe >/dev/null 2>&1],

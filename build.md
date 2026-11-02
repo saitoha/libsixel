@@ -152,6 +152,7 @@ or provide the desired directory path explicitly.
 | `--enable-simd` / `--disable-simd` | `auto` | Control SSE2/NEON SIMD acceleration detection; `auto` enables when supported. |
 | `--enable-wiccodec` / `--disable-wiccodec` | `no` | Build the Windows WIC codec DLL and MSI installer (MSI generation requires Windows). |
 | `--enable-register-dll` | `no` | Deprecated compatibility option; the WIC installer always handles registration. |
+| `--enable-staticcheck-image-audits` | `no` | Enable optional image-fixture and numeric-oracle static audits; requires Python 3.9 or newer. |
 | `--enable-python` | `no` | Build and install the Python bindings. |
 | `--enable-ruby` | `no` | Build and install the Ruby bindings. |
 | `--enable-perl` | `no` | Enable the Perl binding compatibility checks used by build scripts. |
@@ -329,6 +330,7 @@ meson setup builddir
 | `-Dbashcompletiondir=` | string, `disabled` | Install the bash completion script (`auto` selects the system default path). |
 | `-Dzshcompletiondir=` | string, `disabled` | Install the zsh completion script (`auto` selects the system default path). |
 | `-Dsimd=` | feature, `enabled` | Control SIMD acceleration; `auto` defers to detection, `disabled` forces off. |
+| `-Dstaticcheck_image_audits=` | boolean, `false` | Enable optional image-fixture and numeric-oracle static audits; requires Python 3.9 or newer. |
 | `-Dpython=` | feature, `disabled` | Build and install the Python bindings. |
 | `-Druby=` | feature, `disabled` | Build and install the Ruby bindings. |
 | `-Dphp=` | feature, `disabled` | Build the bundled PHP FFI package artifact under `build/php/dist/`. |

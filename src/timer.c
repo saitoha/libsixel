@@ -66,7 +66,8 @@ sixel_timer_monotonic(void)
         return (double)counter.QuadPart / (double)frequency.QuadPart;
     }
     return (double)GetTickCount64() / 1000.0;
-#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
+#else
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
     struct timespec ts;
 
     if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
@@ -74,6 +75,7 @@ sixel_timer_monotonic(void)
     }
 #endif
     return 0.0;
+#endif
 }
 
 SIXELAPI double

@@ -456,7 +456,7 @@ The existing [lookup quality suite](../../../../tests/lookup) checks perceptual 
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | LUTC-01 | One byte grid is built for an encode with multiple active dither workers. | [tests/lookup/fhedt/0034_fh_build_once_byte.t](../../../../tests/lookup/fhedt/0034_fh_build_once_byte.t) |
-| LUTC-02 | One native float grid is built for an encode with multiple active dither workers. | [tests/lookup/fhedt/0035_fh_build_once_float.t](../../../../tests/lookup/fhedt/0035_fh_build_once_float.t) |
+| LUTC-02 | One native float grid is built for an encode with multiple active dither workers when supported, or one on PCC and TinyCC where dither application is serial. | [tests/lookup/fhedt/0035_fh_build_once_float.t](../../../../tests/lookup/fhedt/0035_fh_build_once_float.t) |
 | LUTC-03 | Under a bounded palette workload and larger full-frame conversion, the async palette thread begins construction before the main working-colorspace filter finishes. This verifies event order, not a latency threshold or an ordering promise for every workload. | [tests/lookup/fhedt/0036_fh_build_overlap.t](../../../../tests/lookup/fhedt/0036_fh_build_overlap.t) |
 | LUTC-04 | Byte reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/lookup/fhedt/0037_fh_reuse_byte.t](../../../../tests/lookup/fhedt/0037_fh_reuse_byte.t) |
 | LUTC-05 | Float reuse preserves the source and isolates changed palettes, warm caches and owner lifetimes. | [tests/lookup/fhedt/0038_fh_reuse_float.t](../../../../tests/lookup/fhedt/0038_fh_reuse_float.t) |

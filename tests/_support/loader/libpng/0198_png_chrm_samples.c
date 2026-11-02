@@ -46,7 +46,12 @@ png_chrm_capture(sixel_frame_t *frame, void *context)
         frame->alpha_zero_is_transparent != source->alpha ||
         frame->transparent_mask_size != (mask ? 8u : 0u) ||
         (frame->transparent_mask != NULL) != mask) {
-        fprintf(stderr, "PNG cHRM frame representation or coverage differs\n");
+        fprintf(stderr, "PNG cHRM representation: format=%x/%x "
+            "space=%d alpha=%d/%d mask=%lu/%lu\n",
+            frame->pixelformat, format, frame->colorspace,
+            frame->alpha_zero_is_transparent, source->alpha,
+            (unsigned long)frame->transparent_mask_size,
+            (unsigned long)(mask ? 8u : 0u));
         return SIXEL_BAD_INPUT;
     }
     bytes = sixel_frame_get_pixels(frame);
@@ -160,6 +165,12 @@ test_loader_0198_png_chrm_samples(int argc, char **argv)
     if (png_chrm_read_metadata(probe.source, &metadata)) {
         goto end;
     }
+    if (probe.matrix_only && !metadata.chrm) {
+        /* Matrix adoption requires libpng to publish the source primaries.
+         * The ordinary sample tests still verify this version's fallback. */
+        result = 77;
+        goto end;
+    }
     if (probe.matrix_only && (engine == SIXEL_CMS_ENGINE_NONE ||
         !metadata.chrm || !probe.source->valid_chrm ||
         probe.source->srgb_priority || probe.source->icc_priority ||
@@ -184,10 +195,12 @@ test_loader_0198_png_chrm_samples(int argc, char **argv)
         !probe.source->background && engine == SIXEL_CMS_ENGINE_NONE) {
         probe.format = SIXEL_PIXELFORMAT_RGBA8888;
     } else if (probe.source->alpha && probe.source->depth == 8 &&
-        !probe.source->background && !metadata.gamma && !metadata.chrm &&
-        !metadata.icc && !probe.source->srgb_priority) {
+        !probe.source->background && !metadata.source_color_work) {
         probe.format = SIXEL_PIXELFORMAT_RGB888;
     }
+    /* This expectation comes from external getters, not libsixel traces. */
+    fprintf(stderr, "PNG_CHRM_ICC_EXPECTED|count=%d\n",
+        probe.interpretation == 4 ? (probe.source->background ? 2 : 1) : 0);
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;

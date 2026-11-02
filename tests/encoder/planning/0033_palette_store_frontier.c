@@ -16,6 +16,10 @@ test_palette_store_0033(int argc, char **argv)
 
     (void)argc;
     (void)argv;
+#if defined(__PCC__) || defined(__TINYC__)
+    /* Match the production scheduler's compile-time availability. */
+    return 77;
+#endif
     failed = 1;
     PALETTE_STORE_CHECK(!palette_store_fixture_init(&f));
     PALETTE_STORE_CHECK(palette_store_test_admit(&f, 1, &f.gates[0],

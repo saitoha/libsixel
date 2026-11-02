@@ -372,7 +372,7 @@ Inputs below use the bit order iCCP/sRGB/cHRM/gAMA. Every test explicitly select
 
 | ID | Observation | Owning test |
 | --- | --- | --- |
-| PCMD-01 | Generated tables match all matrix inputs, reference classes, owning tests, and numeric error budgets. | [tests/_static/sh/staticcheck-doc-test-links.sh](../../tests/_static/sh/staticcheck-doc-test-links.sh) |
+| PCMD-01 | Generated tables match all matrix inputs, reference classes, owning tests, and numeric error budgets. | [tests/_static/sh/staticcheck-png-cms-matrix.sh](../../tests/_static/sh/staticcheck-png-cms-matrix.sh) |
 
 ### Coverage boundary
 

@@ -8,7 +8,7 @@
 #include "src/encoder.h"
 #include "../../_support/planner/pipeline/playback_test_common.h"
 
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
 typedef struct latest_write_state {
     sixel_mutex_t mutex;
     sixel_cond_t cond;
@@ -119,7 +119,7 @@ latest_write_done(sixel_playback_result_t const *result, void *context)
 int
 test_latest_write_0071(int argc, char **argv)
 {
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     latest_write_state_t state;
     struct sixel_encoder_palette_test_hooks hooks;
     sixel_playback_config_t config;

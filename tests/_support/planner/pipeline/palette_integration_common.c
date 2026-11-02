@@ -10,7 +10,7 @@
 #include "playback_test_common.h"
 #include "palette_integration_common.h"
 
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
 typedef struct integration_state integration_state_t;
 typedef struct integration_gate {
     integration_state_t *state;
@@ -289,7 +289,7 @@ integration_frame(int sequence, int scenario)
 int
 palette_integration_test(int scenario)
 {
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     integration_state_t state;
     struct sixel_encoder_palette_test_hooks hooks;
     sixel_encoder_t *encoder;
@@ -455,6 +455,6 @@ end:
     return failed;
 #else
     (void)scenario;
-    return 0;
+    return 77;
 #endif
 }

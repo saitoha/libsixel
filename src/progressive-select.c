@@ -389,12 +389,12 @@ sixel_repair_selection_advance(sixel_repair_selection_t *selection,
                 /* Float thresholds can cross canonical double ties. The
                  * audited predicate also restores omitted tiny residuals;
                  * a GPU miss must not starve a protected candidate. */
-                selection->selected[position] = proposed;
+                selection->selected[position] = (unsigned char)proposed;
                 if (proposed != selected) {
-                    selection->selected[position] = selected;
+                    selection->selected[position] = (unsigned char)selected;
                 }
             } else {
-                selection->selected[position] = selected;
+                selection->selected[position] = (unsigned char)selected;
             }
             selection->selected_count += selection->selected[position];
             if (selection->cursor == selection->count) {

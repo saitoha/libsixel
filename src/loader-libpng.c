@@ -338,7 +338,8 @@ png_transfer_memo_apply(sixel_png_transfer_memo_t *memo, float input)
     double value;
 
     memcpy(&bits, &input, sizeof(bits));
-    slot = (size_t)((bits * 2654435761u) >> 22);
+    /* Keep the intended low 32 bits without overflowing the multiply. */
+    slot = (size_t)((uint32_t)((uint64_t)bits * 2654435761u) >> 22);
     if (memo->filled[slot] != 0 && memo->key[slot] == bits) {
         return memo->value[slot];
     }

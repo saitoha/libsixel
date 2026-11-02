@@ -11911,7 +11911,7 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
     if (job->context.dither) {
         sixel_dither_unref(job->context.dither);
     }
-    if (publish != 0 && status == SIXEL_OK) {
+    if (encoder != NULL && publish != 0 && status == SIXEL_OK) {
         if (encoder->residual_state.pending) {
             memcpy(encoder->residual_state.age,
                    encoder->residual_state.next_age,
@@ -11929,12 +11929,13 @@ sixel_encoder_frame_job_release(sixel_encoder_frame_job_t *job,
         }
         sixel_encoder_revision_advance(encoder, &encoder->history_revision);
         sixel_encoder_revision_advance(encoder, &encoder->ordinary_revision);
-    } else if (publish != 0) {
+    } else if (encoder != NULL && publish != 0) {
         /* Ordinary output can fail after accepting a prefix. Until a new
          * baseline is established, repair must not trust that history. */
         (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);
     }
-    if (encoder->gamut_mapper != NULL && job->context.frame != frame) {
+    if (encoder != NULL && encoder->gamut_mapper != NULL &&
+            job->context.frame != frame) {
         sixel_frame_unref(job->context.frame);
     }
     if (encoder) {

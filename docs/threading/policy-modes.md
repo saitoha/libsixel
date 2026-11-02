@@ -89,7 +89,7 @@ Each encoder and decoder owns its mode. A work entry resolves a policy snapshot 
 | PM-07 | Load concurrency routes preserve output. | [tests/cli/option-syntax/0085_threading_load_image_regression.t](../../tests/cli/option-syntax/0085_threading_load_image_regression.t) |
 | PM-08 | Playback admits its configured capacity independently of loader read-ahead depth. | [tests/encoder/planning/0021_playback_admission.t](../../tests/encoder/planning/0021_playback_admission.t) |
 | PM-09 | Object settings and encoder/decoder defaults stay independent. | [tests/platform/threadpool/0005_object_policy_isolation.t](../../tests/platform/threadpool/0005_object_policy_isolation.t) |
-| PM-10 | Concurrent encode and playback calls preserve their own budgets and dither plans. | [tests/platform/threadpool/0006_concurrent_object_policies.t](../../tests/platform/threadpool/0006_concurrent_object_policies.t) |
+| PM-10 | Concurrent encode and playback calls preserve their own budgets and dither plans, including serial dither restrictions in PCC and TinyCC builds. | [tests/platform/threadpool/0006_concurrent_object_policies.t](../../tests/platform/threadpool/0006_concurrent_object_policies.t) |
 
 | PM-11 | Auto executes both scheduling behaviors at frame boundaries and resets to frame on playback reattachment. | [tests/encoder/planning/0086_palette_auto_serial.t](../../tests/encoder/planning/0086_palette_auto_serial.t), [tests/encoder/planning/0145_palette_auto_ahead.t](../../tests/encoder/planning/0145_palette_auto_ahead.t) |
 

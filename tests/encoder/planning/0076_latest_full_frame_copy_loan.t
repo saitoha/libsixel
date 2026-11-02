@@ -15,6 +15,19 @@ test "${HAVE_IMG2SIXEL-0}" = 1 || {
 echo "1..1"
 set -v
 
+# Query the compiled scheduler before requiring its asynchronous trace.
+result=0
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    planner/pipeline/0075_latest_emit_priority_loans available || result=$?
+test "$result" -ne 77 || {
+    echo "ok 1 # SKIP asynchronous palette scheduling is unavailable"
+    exit 0
+}
+test "$result" -eq 0 || {
+    echo "not ok 1 - palette scheduler capability query failed"
+    exit 0
+}
+
 trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_latest \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -v -l disable -Lbuiltin! \
     "-=greedy:B4:palette=latest:prepare=ahead" -4 full-frame -p16 \

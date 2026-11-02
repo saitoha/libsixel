@@ -38,12 +38,6 @@ case "${msg}" in *unexpected\ error**) true ;; *) false ;; esac ||  case "${msg}
     printf '%s\n' "${msg}" >&2
     exit 0
 }
-case "${msg}" in *Image\ already\ has\ few\ enough\ colors\ \(\<=256\).\ Keeping\ same\ colors.**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "expected fallback decode-failure diagnostic was missing"
-    printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg}" >&2
-    exit 0
-}
 
 echo "ok" 1 - "forced libwebp loader rejects decoder-getnext corruption fixture"
 

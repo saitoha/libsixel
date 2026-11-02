@@ -216,15 +216,15 @@ jp_mutate(unsigned char *data, size_t *size, int mutation)
     return 0;
 }
 
-int
-jpeg_process_test(int fixture, int mutation)
+/* Keep the raster capture out of malformed-input calls. Their rejection
+ * helper owns a capture too, and nesting both exceeds small target stacks. */
+static int
+jp_samples(int fixture, unsigned char const *data, size_t size)
 {
     struct jp_fixture const *f;
     edge_frame_probe_t probe;
     edge_loader_options_t options;
-    unsigned char data[8192];
     SIXELSTATUS status;
-    size_t size;
     size_t i;
     size_t count;
     float actual;
@@ -233,17 +233,6 @@ jpeg_process_test(int fixture, int mutation)
     int byte;
 
     f = jp_fixtures + fixture;
-    size = f->size;
-    if (size > sizeof(data)) {
-        return 1;
-    }
-    memcpy(data, f->data, size);
-    if (mutation) {
-        if (size + 64u > sizeof(data) ||
-            jp_mutate(data, &size, mutation) != 0) return 1;
-        if (mutation < 100)
-            return edge_expect_failure("invalid JPEG process", data, size);
-    }
     memset(&probe, 0, sizeof(probe));
     edge_loader_options_init(&options);
     options.require_static = 1;
@@ -288,4 +277,29 @@ jpeg_process_test(int fixture, int mutation)
         }
     }
     return 0;
+}
+
+int
+jpeg_process_test(int fixture, int mutation)
+{
+    struct jp_fixture const *f;
+    unsigned char data[8192];
+    size_t size;
+
+    f = jp_fixtures + fixture;
+    size = f->size;
+    if (size > sizeof(data)) {
+        return 1;
+    }
+    memcpy(data, f->data, size);
+    if (mutation) {
+        if (size + 64u > sizeof(data) ||
+            jp_mutate(data, &size, mutation) != 0) {
+            return 1;
+        }
+        if (mutation < 100) {
+            return edge_expect_failure("invalid JPEG process", data, size);
+        }
+    }
+    return jp_samples(fixture, data, size);
 }

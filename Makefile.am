@@ -70,6 +70,8 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
     tests/data/color-numeric/icc-output.h \
     LICENSE build.md build-aux/depcomp \
     build-aux/dependency-bootstrap.am \
+    build-aux/test-dist.am \
+    build-aux/copy-test-dist.sh \
     build-aux/test-runner-link.am \
     build-aux/clean-test-logs.sh \
     build-aux/list-tree-files.sh \
@@ -92,6 +94,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output
 	build-aux/test-suite-report.sh \
 	build-aux/read-check-test-list.sh \
 	build-aux/cli-color-tty-probe.c \
+	build-aux/libpng-api-probe.c \
 	build-aux/resolve-binding-test-common.sh \
 	build-aux/resolve-config-h-exports.sh \
 	build-aux/sanitizer-ignorelist.txt \
@@ -1253,6 +1256,9 @@ FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/include
 FUZZ_IMG2SIXEL_EMBED_SRCS = \
+	$(top_srcdir)/converters/terminal-color.c \
+	$(top_srcdir)/converters/terminal-color-tty.c \
+	$(top_srcdir)/converters/terminal-color-job.c \
 	$(top_srcdir)/converters/img2sixel.c \
 	$(top_srcdir)/converters/completion_utils.c \
 	$(top_srcdir)/converters/compat.c \
@@ -1266,7 +1272,7 @@ FUZZ_IMG2SIXEL_EMBED_LIBS += $(ABORTTRACE_LIBS)
 endif
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
-FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
+FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp tga webp
 FUZZ_STRUCT_TARGETS = \
 	png-chunk \
 	png-apng \

@@ -2061,6 +2061,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         }
 
         gpu_completed = 0;
+        gpu_iterations = 0u;
         gpu_status = SIXEL_FALSE;
         if (gpu_requested) {
             iteration_wall_start = sixel_timer_now();
@@ -2069,7 +2070,6 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
             job_iteration = sixel_palette_kmeans_log_start(logger,
                 job_seq, engine_name, "palette/iterate", "iterate");
-            gpu_iterations = 0u;
             gpu_status = sixel_kmeans_gpu_refine(&gpu_request,
                                                   &gpu_iterations);
             gpu_completed = gpu_status == SIXEL_OK;

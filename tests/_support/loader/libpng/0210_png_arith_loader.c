@@ -1,12 +1,15 @@
 /* SPDX-License-Identifier: MIT */
 /* One arithmetic observation, with setup shared across registered entries. */
 #include <stdlib.h>
+#include <string.h>
 #include "png_arithmetic_test_common.h"
 
 int
 test_loader_0210_png_arith_loader(int argc, char **argv)
 {
-    (void)argv;
+    if (argc == 3 && strcmp(argv[2], "getter") == 0) {
+        return png_arith_load(atoi(argv[1]), NULL, 0);
+    }
     if (!(argc == 4)) {
         return 1;
     }

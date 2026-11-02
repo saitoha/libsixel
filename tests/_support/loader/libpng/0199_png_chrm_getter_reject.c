@@ -11,14 +11,20 @@ test_loader_0199_png_chrm_getter_reject(int argc, char **argv)
     png_chrm_metadata_t metadata;
     int fixture;
 
-    if (argc != 2) {
+    if (argc != 2 && (argc != 3 || strcmp(argv[2], "getter") != 0)) {
         return 1;
     }
     fixture = atoi(argv[1]);
     if (fixture < 0 || fixture >=
         (int)(sizeof(color_png_chrm) / sizeof(color_png_chrm[0])) ||
-        png_chrm_read_metadata(&color_png_chrm[fixture], &metadata) ||
-        metadata.chrm) {
+        png_chrm_read_metadata(&color_png_chrm[fixture], &metadata)) {
+        return 1;
+    }
+    if (argc == 3) {
+        puts(metadata.chrm ? "undefined-chrm" : "no-selected-chrm");
+        return 0;
+    }
+    if (metadata.chrm) {
         return 1;
     }
     fprintf(stderr, "PNG_CHRM_GETTER|fixture=%d|rejected=1\n", fixture);

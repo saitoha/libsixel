@@ -205,7 +205,7 @@ palette_auto_test(int scenario)
     return EXIT_FAILURE;
 }
 
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
 typedef struct auto_playback_state {
     playback_test_buffer_t buffer;
     int callbacks;
@@ -280,7 +280,7 @@ auto_playback_done(sixel_playback_result_t const *result, void *context)
 int
 palette_auto_playback_test(int ahead)
 {
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     auto_playback_state_t state;
     struct sixel_encoder_palette_test_hooks hooks;
     sixel_encoder_t *encoder;
@@ -362,11 +362,11 @@ end:
     return failed;
 #else
     (void)ahead;
-    return EXIT_SUCCESS;
+    return 77;
 #endif
 }
 
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
 typedef struct auto_store_state {
     sixel_mutex_t mutex;
     sixel_cond_t cond;
@@ -564,7 +564,7 @@ auto_store_done(sixel_playback_result_t const *result, void *context)
 int
 palette_auto_store_test(int profile_change, int delta, int period)
 {
-#if SIXEL_ENABLE_THREADS
+#if SIXEL_ENABLE_THREADS && !defined(__PCC__) && !defined(__TINYC__)
     auto_store_state_t state;
     struct sixel_encoder_palette_test_hooks hooks;
     sixel_encoder_t *encoder;
@@ -679,6 +679,6 @@ end:
     (void)profile_change;
     (void)delta;
     (void)period;
-    return EXIT_SUCCESS;
+    return 77;
 #endif
 }

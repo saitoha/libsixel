@@ -331,6 +331,7 @@ ENABLE_PERL = @ENABLE_PERL@
 ENABLE_PHP = @ENABLE_PHP@
 ENABLE_PYTHON = @ENABLE_PYTHON@
 ENABLE_RUBY = @ENABLE_RUBY@
+ENABLE_STATICCHECK_IMAGE_AUDITS = @ENABLE_STATICCHECK_IMAGE_AUDITS@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
@@ -579,6 +580,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py \
 	tests/data/color-numeric/black-offset.icc \
 	tests/data/color-numeric/icc-output.h LICENSE build.md \
 	build-aux/depcomp build-aux/dependency-bootstrap.am \
+	build-aux/test-dist.am build-aux/copy-test-dist.sh \
 	build-aux/test-runner-link.am build-aux/clean-test-logs.sh \
 	build-aux/list-tree-files.sh build-aux/list-test-reports.sh \
 	tools/generate_cms_quality_references.py \
@@ -595,7 +597,7 @@ EXTRA_DIST = tools/quicklook-user.sh tools/quicklook-ci.py \
 	build-aux/lso-tap-driver.sh.in build-aux/test-suite-report.awk \
 	build-aux/test-suite-report.sh \
 	build-aux/read-check-test-list.sh \
-	build-aux/cli-color-tty-probe.c \
+	build-aux/cli-color-tty-probe.c build-aux/libpng-api-probe.c \
 	build-aux/resolve-binding-test-common.sh \
 	build-aux/resolve-config-h-exports.sh \
 	build-aux/sanitizer-ignorelist.txt \
@@ -1611,6 +1613,9 @@ FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
 	-I$(top_srcdir)/include
 
 FUZZ_IMG2SIXEL_EMBED_SRCS = \
+	$(top_srcdir)/converters/terminal-color.c \
+	$(top_srcdir)/converters/terminal-color-tty.c \
+	$(top_srcdir)/converters/terminal-color-job.c \
 	$(top_srcdir)/converters/img2sixel.c \
 	$(top_srcdir)/converters/completion_utils.c \
 	$(top_srcdir)/converters/compat.c \
@@ -1621,7 +1626,7 @@ FUZZ_IMG2SIXEL_EMBED_SRCS = \
 
 FUZZ_IMG2SIXEL_EMBED_LIBS = $(top_builddir)/src/libsixel.la $(LIBS) \
 	$(am__append_8)
-FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
+FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp tga webp
 FUZZ_STRUCT_TARGETS = \
 	png-chunk \
 	png-apng \

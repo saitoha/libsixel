@@ -89,7 +89,7 @@ end:
 
 /* Observe the input to nearest lookup, independently of the chosen index. */
 typedef struct prepared_query_probe {
-    sixel_lookup_policy_interface_t interface;
+    sixel_lookup_policy_interface_t iface;
     int red;
     int calls;
 } prepared_query_probe_t;
@@ -147,7 +147,7 @@ prepared_query_test(char const *classid, int method, int expected_red)
     memset(&lookup_vtbl, 0, sizeof(lookup_vtbl));
     lookup_vtbl.map_pixel = prepared_query_map;
     lookup_vtbl.map_pixel_hint = prepared_query_hint;
-    probe.interface.vtbl = &lookup_vtbl;
+    probe.iface.vtbl = &lookup_vtbl;
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) goto end;
     status = sixel_components_getservice("services/factory", &object);
@@ -192,7 +192,7 @@ prepared_query_test(char const *classid, int method, int expected_red)
     request.data = pixel;
     request.result = &index;
     request.palette = colors;
-    request.lookup_policy = &probe.interface;
+    request.lookup_policy = &probe.iface;
     request.execution = &execution;
     status = policy->vtbl->apply(policy, &request);
     passed = status == SIXEL_OK && probe.calls == 1 &&

@@ -36,6 +36,21 @@ elif python_for_tests.found()
   python_for_tests_path = python_for_tests.full_path()
 endif
 
+# Image audits are opt-in; ordinary static checks need no host Python.
+staticcheck_image_env = environment()
+staticcheck_image_env.set('SIXEL_STATICCHECK_IMAGE_AUDITS',
+  get_option('staticcheck_image_audits') ? '1' : '0')
+if get_option('staticcheck_image_audits')
+  if python_for_tests_path == ''
+    error('staticcheck_image_audits requires Python 3.9 or newer')
+  endif
+  image_python_probe = run_command(python_for_tests_path, '-c',
+    'import sys; sys.exit(sys.version_info < (3, 9))', check: false)
+  if image_python_probe.returncode() != 0
+    error('staticcheck_image_audits requires Python 3.9 or newer')
+  endif
+endif
+
 tree_sitter_c_staticcheck = '0'
 if python_for_tests_path != ''
   tree_sitter_c_probe = run_command(
@@ -1195,7 +1210,7 @@ foreach oracle_case : [
   ['staticcheck-png-color-oracles', 'png'],
   ['staticcheck-tiff-uint16-oracles', 'uint16'],
 ]
-  if python_for_tests_path != ''
+  if get_option('staticcheck_image_audits')
     run_target(oracle_case[0], command: [
       python_for_tests_path,
       meson.project_source_root() / 'tools/verify_color_oracles.py',
@@ -1204,13 +1219,19 @@ foreach oracle_case : [
     ])
   else
     run_target(oracle_case[0], command: [
-      sh, '-c', 'echo "SKIP $1: python interpreter not found"',
+      sh, '-c', 'echo "SKIP $1: image audits are disabled"',
       'staticcheck-oracle', oracle_case[0],
     ])
   endif
 endforeach
 
+run_target('staticcheck-png-cms-matrix',
+  command: [sh, meson.current_source_dir() / '_static/sh/staticcheck-png-cms-matrix.sh',
+    meson.project_source_root(), python_for_tests_path],
+  env: staticcheck_image_env)
+
 run_target('staticcheck',
+  env: staticcheck_image_env,
   command: [
     sh,
     meson.current_source_dir() / '_static/sh/staticcheck-suite.sh',

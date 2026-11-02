@@ -51,6 +51,13 @@ export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 # their stable roles once; the registrations below require exactly one owner.
 if test -z "$worker_index"; then
     printf '[staticcheck] preparing checks\n' >&2
+    # Every check sees the same source snapshot; enumerate the large test tree
+    # once rather than repeating shell traversal for each source-only policy.
+    sh "$src_root/tests/_static/sh/list-source-files.sh" "$src_root/tests" \
+        > "$tmpdir/test-source-inventory"
+    SIXEL_STATICCHECK_INVENTORY_ROOT=$src_root/tests
+    SIXEL_STATICCHECK_TEST_INVENTORY=$tmpdir/test-source-inventory
+    export SIXEL_STATICCHECK_INVENTORY_ROOT SIXEL_STATICCHECK_TEST_INVENTORY
     sh "$src_root/tests/_static/sh/collect-source-references.sh" \
         "$src_root" "$tmpdir"
     SIXEL_STATICCHECK_REFERENCE_DIR=$tmpdir
@@ -590,7 +597,7 @@ run_case_tap "staticcheck-test-log-cleanup" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-windows-source-exclusion" \
-    "$python_bin" "$src_root/tests/build/discovery/0009_windows_source_exclusion.py" \
+    sh "$src_root/tests/build/discovery/0009_windows_source_exclusion.sh" \
     "$src_root"
 
 run_case_tap "staticcheck-no-find" \
@@ -598,27 +605,31 @@ run_case_tap "staticcheck-no-find" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-no-find-direct" \
-    "$python_bin" "$src_root/tests/build/no-find/0001_direct.py" \
+    sh "$src_root/tests/build/no-find/0001_direct.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-no-find-substitution" \
-    "$python_bin" "$src_root/tests/build/no-find/0002_substitution.py" \
+    sh "$src_root/tests/build/no-find/0002_substitution.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-no-find-make-shell" \
-    "$python_bin" "$src_root/tests/build/no-find/0003_make_shell.py" \
+    sh "$src_root/tests/build/no-find/0003_make_shell.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-no-find-wrapped" \
-    "$python_bin" "$src_root/tests/build/no-find/0004_wrapped.py" \
+    sh "$src_root/tests/build/no-find/0004_wrapped.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-no-find-shell-code" \
-    "$python_bin" "$src_root/tests/build/no-find/0005_shell_code.py" \
+    sh "$src_root/tests/build/no-find/0005_shell_code.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-no-find-python-subprocess" \
+    sh "$src_root/tests/build/no-find/0007_python_subprocess.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-no-find-inert-word" \
-    "$python_bin" "$src_root/tests/build/no-find/0006_inert_word.py" \
+    sh "$src_root/tests/build/no-find/0006_inert_word.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-test-layout" \
@@ -626,91 +637,91 @@ run_case_tap "staticcheck-test-layout" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-two-levels" \
-    "$python_bin" "$src_root/tests/build/layout/0001_two_levels.py" \
+    sh "$src_root/tests/build/layout/0001_two_levels.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-third-level" \
-    "$python_bin" "$src_root/tests/build/layout/0002_third_level.py" \
+    sh "$src_root/tests/build/layout/0002_third_level.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-leaf-200" \
-    "$python_bin" "$src_root/tests/build/layout/0003_leaf_200.py" \
+    sh "$src_root/tests/build/layout/0003_leaf_200.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-leaf-201" \
-    "$python_bin" "$src_root/tests/build/layout/0004_leaf_201.py" \
+    sh "$src_root/tests/build/layout/0004_leaf_201.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-children-24" \
-    "$python_bin" "$src_root/tests/build/layout/0005_children_24.py" \
+    sh "$src_root/tests/build/layout/0005_children_24.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-children-25" \
-    "$python_bin" "$src_root/tests/build/layout/0006_children_25.py" \
+    sh "$src_root/tests/build/layout/0006_children_25.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-roots-24" \
-    "$python_bin" "$src_root/tests/build/layout/0007_roots_24.py" \
+    sh "$src_root/tests/build/layout/0007_roots_24.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-roots-25" \
-    "$python_bin" "$src_root/tests/build/layout/0008_roots_25.py" \
+    sh "$src_root/tests/build/layout/0008_roots_25.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-number-gap" \
-    "$python_bin" "$src_root/tests/build/layout/0009_number_gap.py" \
+    sh "$src_root/tests/build/layout/0009_number_gap.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-duplicate-number" \
-    "$python_bin" "$src_root/tests/build/layout/0010_duplicate_number.py" \
+    sh "$src_root/tests/build/layout/0010_duplicate_number.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-support-excluded" \
-    "$python_bin" "$src_root/tests/build/layout/0011_support_excluded.py" \
+    sh "$src_root/tests/build/layout/0011_support_excluded.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-execution-modes" \
-    "$python_bin" "$src_root/tests/build/layout/0012_execution_modes.py" \
+    sh "$src_root/tests/build/layout/0012_execution_modes.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-symlink" \
-    "$python_bin" "$src_root/tests/build/layout/0013_symlink.py" \
+    sh "$src_root/tests/build/layout/0013_symlink.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-layout-unnumbered" \
-    "$python_bin" "$src_root/tests/build/layout/0014_unnumbered.py" \
+    sh "$src_root/tests/build/layout/0014_unnumbered.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-added" \
-    "$python_bin" "$src_root/tests/build/discovery/0001_added.py" \
+    sh "$src_root/tests/build/discovery/0001_added.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-renamed" \
-    "$python_bin" "$src_root/tests/build/discovery/0002_renamed.py" \
+    sh "$src_root/tests/build/discovery/0002_renamed.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-removed" \
-    "$python_bin" "$src_root/tests/build/discovery/0003_removed.py" \
+    sh "$src_root/tests/build/discovery/0003_removed.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-selection" \
-    "$python_bin" "$src_root/tests/build/discovery/0004_selection.py" \
+    sh "$src_root/tests/build/discovery/0004_selection.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-empty-selection" \
-    "$python_bin" "$src_root/tests/build/discovery/0005_empty_selection.py" \
+    sh "$src_root/tests/build/discovery/0005_empty_selection.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-scan-failure" \
-    "$python_bin" "$src_root/tests/build/discovery/0006_scan_failure.py" \
+    sh "$src_root/tests/build/discovery/0006_scan_failure.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-openvms-refresh" \
-    "$python_bin" "$src_root/tests/build/discovery/0007_openvms_refresh.py" \
+    sh "$src_root/tests/build/discovery/0007_openvms_refresh.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-discovery-openvms-failure" \
-    "$python_bin" "$src_root/tests/build/discovery/0008_openvms_failure.py" \
+    sh "$src_root/tests/build/discovery/0008_openvms_failure.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-test-runner-link" \
@@ -741,7 +752,7 @@ run_case_tap "staticcheck-python-compileall" \
     "$src_root/tests/_static/sh/staticcheck-python-compileall.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?
 
-if tool_is_available "$python_bin"; then
+if test "${SIXEL_STATICCHECK_IMAGE_AUDITS:-0}" = 1; then
     run_case_plain "staticcheck-png-color-oracles" \
         "$python_bin" "$src_root/tools/verify_color_oracles.py" \
         --source-root "$src_root" --kind png || fail_and_exit $?
@@ -749,9 +760,13 @@ if tool_is_available "$python_bin"; then
         "$python_bin" "$src_root/tools/verify_color_oracles.py" \
         --source-root "$src_root" --kind uint16 || fail_and_exit $?
 else
-    run_case_skip "staticcheck-png-color-oracles" "python interpreter not found"
-    run_case_skip "staticcheck-tiff-uint16-oracles" "python interpreter not found"
+    run_case_skip "staticcheck-png-color-oracles" "image audits are disabled"
+    run_case_skip "staticcheck-tiff-uint16-oracles" "image audits are disabled"
 fi
+
+run_case_tap "staticcheck-png-cms-matrix" \
+    "$src_root/tests/_static/sh/staticcheck-png-cms-matrix.sh" \
+    "$src_root" "$python_bin" || fail_and_exit $?
 
 run_case_tap "staticcheck-actionlint" \
     "$src_root/tests/_static/sh/staticcheck-actionlint.sh" \
@@ -904,31 +919,31 @@ run_case_tap "staticcheck-doc-test-links" \
     "$src_root" || fail_and_exit $?
 
 run_case_plain "staticcheck-test-plan-manifest-agreement" \
-    "$python_bin" "$src_root/tests/build/test-plan/0001_manifest_agreement.py" \
+    sh "$src_root/tests/build/test-plan/0001_manifest_agreement.sh" \
     "$src_root"
 
 run_case_plain "staticcheck-test-plan-duplicate-member" \
-    "$python_bin" "$src_root/tests/build/test-plan/0002_duplicate_member.py" \
+    sh "$src_root/tests/build/test-plan/0002_duplicate_member.sh" \
     "$src_root"
 
 run_case_plain "staticcheck-test-plan-missing-member" \
-    "$python_bin" "$src_root/tests/build/test-plan/0003_missing_member.py" \
+    sh "$src_root/tests/build/test-plan/0003_missing_member.sh" \
     "$src_root"
 
 run_case_plain "staticcheck-test-plan-missing-backlink" \
-    "$python_bin" "$src_root/tests/build/test-plan/0004_missing_backlink.py" \
+    sh "$src_root/tests/build/test-plan/0004_missing_backlink.sh" \
     "$src_root"
 
 run_case_plain "staticcheck-test-plan-duplicate-link" \
-    "$python_bin" "$src_root/tests/build/test-plan/0005_duplicate_link.py" \
+    sh "$src_root/tests/build/test-plan/0005_duplicate_link.sh" \
     "$src_root"
 
 run_case_plain "staticcheck-test-plan-invalid-member" \
-    "$python_bin" "$src_root/tests/build/test-plan/0006_invalid_member.py" \
+    sh "$src_root/tests/build/test-plan/0006_invalid_member.sh" \
     "$src_root"
 
 run_case_plain "staticcheck-test-plan-scope-not-inferred" \
-    "$python_bin" "$src_root/tests/build/test-plan/0007_scope_not_inferred.py" \
+    sh "$src_root/tests/build/test-plan/0007_scope_not_inferred.sh" \
     "$src_root"
 
 run_case_tap "staticcheck-test-plan-links" \
@@ -940,6 +955,31 @@ run_source_contract "staticcheck-psd-deferred-solid-overlay" || fail_and_exit $?
 run_source_contract "staticcheck-psd-deferred-stroke-adjust" || fail_and_exit $?
 
 run_source_contract "staticcheck-kcenter-auto-perceptual-preference" || fail_and_exit $?
+
+
+run_case_tap "staticcheck-fuzz-cli-sources" \
+    "$src_root/tests/_static/sh/staticcheck-fuzz-cli-sources.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-fuzz-loader-formats" \
+    "$src_root/tests/_static/sh/staticcheck-fuzz-loader-formats.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-thread-flags" \
+    "$src_root/tests/_static/sh/staticcheck-test-thread-flags.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-distribution" \
+    "$src_root/tests/_static/sh/staticcheck-test-distribution.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-shell-field-delimiters" \
+    "$src_root/tests/_static/sh/staticcheck-shell-field-delimiters.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-source-inventory" \
+    "$src_root/tests/_static/sh/staticcheck-source-inventory.sh" \
+    "$src_root" || fail_and_exit $?
 
 # Dispatch all registered cases, then replay complete logs in registry order.
 # Worker failures are data, not scheduler failures: an early failed case must not

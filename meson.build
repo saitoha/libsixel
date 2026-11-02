@@ -1060,16 +1060,37 @@ if not png_opt.disabled()
 endif
 
 if png_dep.found()
+  # Share the exact required API with Autotools, including custom libpng
+  # builds. Metadata acceptance is input-dependent and is tested at runtime.
+  png_gray_legacy = cc.has_function('png_set_gray_1_2_4_to_8',
+                                    dependencies: png_dep)
+  png_gray_expand = cc.has_function('png_set_expand_gray_1_2_4_to_8',
+                                    dependencies: png_dep)
+  if not cc.links(files('build-aux/libpng-api-probe.c')[0],
+                  dependencies: png_dep,
+                  args: [
+                    '-DHAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8=' +
+                      (png_gray_legacy ? '1' : '0'),
+                    '-DHAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8=' +
+                      (png_gray_expand ? '1' : '0'),
+                  ],
+                  name: 'required libpng reader and writer APIs')
+    if png_opt.enabled()
+      error('libpng lacks required reader/writer APIs; see meson-log.txt')
+    endif
+    png_dep = disabler()
+  endif
+endif
+
+if png_dep.found()
   deps += png_dep
   reqs += png_dep
   conf.set('HAVE_LIBPNG', 1)
   loaders += 'png'
   conf.set10('HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8',
-             cc.has_function('png_set_gray_1_2_4_to_8',
-                             dependencies: png_dep))
+             png_gray_legacy)
   conf.set10('HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8',
-             cc.has_function('png_set_expand_gray_1_2_4_to_8',
-                             dependencies: png_dep))
+             png_gray_expand)
 endif
 
 tiff_opt = get_option('tiff')

@@ -81,6 +81,8 @@ Fuzz jobs should:
 - distinguish a harness/configuration error from a discovered crash;
 - replay known regression inputs in ordinary tests where practical.
 
+Embedded CLI fuzz targets compile the same converter sources as the normal `img2sixel` executable. Loader-format targets match the workflow's format matrix in both build systems. Separate [source-only checks](../testing/staticcheck.md#test-coverage) compare these inventories and reject missing-source or missing-format controls without compiling fuzz binaries.
+
 ### Nightly builds
 
 `.github/workflows/nightly.yml` performs scheduled pre-release builds across
@@ -254,3 +256,5 @@ change and directly required source, test, or generated-file updates.
 | ID | Contract | Owning test |
 | --- | --- | --- |
 | CI-01 | CI documentation does not direct contributors to repositories or configuration paths that are unavailable from this source tree. | [tests/_static/sh/staticcheck-ci-doc-public-surface.sh](../../tests/_static/sh/staticcheck-ci-doc-public-surface.sh) |
+| CI-02 | Embedded CLI fuzz targets retain the normal converter source inventory. | [tests/_static/sh/staticcheck-fuzz-cli-sources.sh](../../tests/_static/sh/staticcheck-fuzz-cli-sources.sh) |
+| CI-03 | Both build systems provide every loader-format fuzz target selected by the workflow. | [tests/_static/sh/staticcheck-fuzz-loader-formats.sh](../../tests/_static/sh/staticcheck-fuzz-loader-formats.sh) |

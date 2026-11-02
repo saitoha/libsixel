@@ -34,6 +34,11 @@ if amalgamated_tools_enabled
   lsqa_rpath = ''
 endif
 
+# These tools use portable C library calls, including under MSVC analysis.
+if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
+  lsqa_c_args += ['-D_CRT_SECURE_NO_WARNINGS', '-D_CRT_NONSTDC_NO_WARNINGS']
+endif
+
 lsqa_bin = executable('lsqa',
            lsqa_sources,
            include_directories: lsqa_inc,

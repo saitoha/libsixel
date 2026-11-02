@@ -22,6 +22,17 @@ case "${trace}" in *"PNG_CHRM_SAMPLE|fixture=70|engine=colorsync|checked=24|"*) 
     echo "not ok 1 - numeric observation did not complete"
     exit 0
 }
+# The independent libpng getter probe determines whether ICC is available.
+case "${trace}" in
+    *"PNG_CHRM_ICC_EXPECTED|count=0"*"LSXCMS2|event=apply"*)
+        echo "not ok 1 - rejected ICC metadata triggered a transform"
+        exit 0
+        ;;
+    *"PNG_CHRM_ICC_EXPECTED|count=0"*)
+        echo "ok 1 - colorsync 16-file-bg-zero-icc-chrm original samples and coverage"
+        exit 0
+        ;;
+esac
 # Consume every apply in order; partial or extra records must fail.
 case "${trace}" in *"LSXCMS2|event=apply"*) true ;; *) false ;; esac || {
     echo "not ok 1 - ICC apply 1 is missing"

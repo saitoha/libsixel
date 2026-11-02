@@ -625,7 +625,8 @@ sixel_palette_bin_range_count(sixel_sample_statistics_t const *statistics,
         ++visible_index;
         /* Heckbert includes alpha in its rounded byte histogram. Other
          * consumers exclude hidden samples and aggregate RGB alone. */
-        if (byte_lut != NULL && channels == 4u && !floating) {
+        if (stream != NULL && byte_lut != NULL &&
+                channels == 4u && !floating) {
             key = key * levels + byte_lut[view.pixels[index * 4u + 3u]];
         }
         /* A safe color may straddle nominal cells which must remain

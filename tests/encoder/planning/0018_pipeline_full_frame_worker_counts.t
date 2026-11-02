@@ -15,7 +15,8 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-# The original image provides six substantial dither jobs and 75 encode jobs.
+# The original image provides six dither jobs (one on serial-only builds)
+# and 75 encode jobs.
 # Keep geometry unchanged so the pre-scale plan describes the same raster.
 plan=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_ENCODER_THREADING_POLICY=greedy --env SIXEL_ENCODER_THREADING_GLOBAL_BUDGET=8 \

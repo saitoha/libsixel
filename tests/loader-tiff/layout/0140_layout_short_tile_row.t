@@ -38,9 +38,9 @@ while IFS= read -r line; do
         applies=0
         wanted=${line##*=}
         engine=${line#*engine=}
-        engine=${engine%%|*}
+        engine=${engine%%\|*}
         source=${line#*src=}
-        source=${source%%|*}
+        source=${source%%\|*}
         ;;
     *"LSXCMS2|event=apply|"*)
         # Independent reference conversions run outside the loader phase.

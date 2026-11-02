@@ -41,22 +41,22 @@ while case "$remaining" in *"PFTRACE|kind="*) true ;; *) false ;; esac; do
     case "${block}" in *PFTRACE*) false ;; *) true ;; esac || ok=0
     marker=${block%%'
 '*}
-    kind=${marker%%|*}
+    kind=${marker%%\|*}
     test "$kind" = known || test "$kind" = positive ||
         test "$kind" = outside || ok=0
     field=${marker#*|engine=}
-    engine=${field%%|*}
+    engine=${field%%\|*}
     test "$engine" != 2 || engine=builtin
     test "$engine" != 4 || engine=colorsync
     field=${marker#*|src=}
-    src=${field%%|*}
+    src=${field%%\|*}
     field=${marker#*|expected=}
-    expected=${field%%|*}
+    expected=${field%%\|*}
     rest=$block
     test "$kind" != known || {
         known=$((known + 1))
         field=${marker#*|profile=}
-        profile=${field%%|*}
+        profile=${field%%\|*}
         test "${marker##*|created=}" = 1 || ok=0
         wanted="LSXCMS2|event=reject|engine=$engine|reason=source-profile-format|src=$src|dst=4|profile=$profile|expected=$expected
 "

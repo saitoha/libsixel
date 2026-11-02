@@ -147,6 +147,9 @@ lsqa_video_record(FILE *file, char const *const *names, int count,
     size_t length;
     int i;
 
+    if (count <= 0 || count >= 32) {
+        return -1;
+    }
     if (fgets(line, sizeof(line), file) == NULL) {
         return ferror(file) ? -1 : 0;
     }

@@ -30,6 +30,7 @@ fhedt_build_trace(char const *path, int overlap)
     int workers;
     int main_finish;
     int early_builder;
+    int minimum_workers;
 
     file = sixel_compat_fopen(path, "rb");
     if (file == NULL) {
@@ -66,7 +67,13 @@ fhedt_build_trace(char const *path, int overlap)
         }
     }
     fclose(file);
-    if (builders != 1 || workers < 2 || (overlap &&
+    /* Grid construction remains shared even when the compiled dither path
+     * is serial. Keep the independent builder/filter ordering assertion. */
+    minimum_workers = 2;
+#if defined(__PCC__) || defined(__TINYC__)
+    minimum_workers = 1;
+#endif
+    if (builders != 1 || workers < minimum_workers || (overlap &&
             (!main_thread || !main_finish || !early_builder ||
              builder_thread == main_thread))) {
         fprintf(stderr, "builders=%d workers=%d finish=%d early=%d\n",

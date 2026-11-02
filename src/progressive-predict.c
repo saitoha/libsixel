@@ -189,7 +189,8 @@ sixel_repair_predict(sixel_repair_predict_model_t const *model,
         for (sample = 0; sample < band->count; ++sample) {
             points[sample] = band->points + sample;
         }
-        qsort(points, band->count, sizeof(*points),
+        /* Sort pointer slots; the pointed-to samples remain const. */
+        qsort((void *)points, band->count, sizeof(*points),
             sixel_repair_predict_order);
         count = band->count < quotas[index] ? band->count : quotas[index];
         weight = (double)band->population / count;

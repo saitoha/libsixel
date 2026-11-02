@@ -101,3 +101,6 @@ option('emscripten_assertions', type: 'boolean', value: true,
 
 option('quicklook_package_version', type: 'string', value: '1.0.0',
        description: 'Quick Look distribution build number (M.m.p)')
+
+option('staticcheck_image_audits', type: 'boolean', value: false,
+       description: 'Enable optional Python image-fixture and numeric-oracle audits')

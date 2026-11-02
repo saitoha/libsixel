@@ -187,6 +187,7 @@ fuzz_loader_formats = [
   'pic',
   'bmp',
   'tga',
+  'webp',
 ]
 
 foreach fmt : fuzz_loader_formats

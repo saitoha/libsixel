@@ -1,37 +1,32 @@
 #!/bin/sh
-# Emit TAP for private include validation.
-
-set -eu
-
+# Public converter code must not reach into private library headers.
+set -eux
+echo '1..1'
+set -v
 src_root=$1
-python_bin=${2:-}
-
-if test -z "$python_bin"; then
-    if command -v python3 >/dev/null 2>&1; then
-        python_bin=python3
-    elif command -v python >/dev/null 2>&1; then
-        python_bin=python
-    else
-        echo "1..0 # SKIP python interpreter not found"
-        exit 0
-    fi
-fi
-
-if test ! -x "$python_bin" && ! command -v "$python_bin" >/dev/null 2>&1; then
-    echo "1..0 # SKIP python executable not found: $python_bin"
-    exit 0
-fi
-
-echo "1..1"
-
-cd "$src_root" || {
-    echo "not ok 1 - private include check"
-    exit 1
+sh "$src_root/tests/_static/sh/list-source-files.sh" "$src_root/converters" \
+    --name '*.c' --name '*.h' --name '*.m' --name '*.mm' \
+    --exec awk -v root="$src_root" '
+function exists(path,    status, unused) {
+    status = (getline unused < path)
+    close(path)
+    return status >= 0
 }
-
-if "$python_bin" "$src_root/tools/check_private_includes.py"; then
-    echo "ok 1 - private include check"
-else
-    echo "not ok 1 - private include check"
-    exit 1
-fi
+/^[[:space:]]*#[[:space:]]*include[[:space:]]+"/ {
+    target = $0
+    sub(/^[^"]*"/, "", target); sub(/".*/, "", target)
+    directory = FILENAME; sub(/[^\/]*$/, "", directory)
+    if (target ~ /^(\.\.\/)?src\// ||
+        (target !~ /\// && exists(root "/src/" target) &&
+         !exists(directory target))) {
+        print FILENAME ":" FNR ": private header in public converter: " target
+        failed = 1
+    }
+}
+END { exit failed }
+' >&2 || {
+    echo 'not ok 1 - private include check'
+    exit 0
+}
+echo 'ok 1 - private include check'
+exit 0

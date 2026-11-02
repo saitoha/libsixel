@@ -28,7 +28,7 @@ The unavailable-backend test includes the actual PNG decoder and actual loader m
 
 ## Inventory
 
-Core tests run independently of the optional libpng dependency. Loader/CLI observations skip early when their required component is disabled. The internal source-only, invalid-input, and transactional-build probes are supplementary defensive controls rather than additional public loader options.
+Core tests run independently of the optional libpng dependency. Loader/CLI observations skip early when their required component is disabled. Loader arithmetic adoption also requires an independent external getter to expose the fixture cHRM; a rejected chunk cannot exercise a selected matrix implementation. This gate does not skip direct core arithmetic checks. CLI fallback reasons follow the same independent getter observation, distinguishing an unpublished cHRM from a published but undefined matrix. The internal source-only, invalid-input, and transactional-build probes are supplementary defensive controls rather than additional public loader options.
 
 <!-- test-plan: @tests/_support/test-plans/png-chrm-arithmetic-01.list -->
 

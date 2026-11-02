@@ -97,11 +97,17 @@ policy_encode_worker(void *context)
         sixel_frame_unref(frame);
         worker->ok &= status == SIXEL_OK;
         worker->ok &= worker->encoder->planner.total_threads == worker->budget;
+        /* These compilers use serial dither application even under greedy
+         * policy; object budgets and scope isolation still apply. */
+#if defined(__PCC__) || defined(__TINYC__)
+        worker->ok &= worker->encoder->planner.pipeline_dither_threads == 1;
+#else
         if (worker->lazy) {
             worker->ok &= worker->encoder->planner.pipeline_dither_threads == 1;
         } else {
             worker->ok &= worker->encoder->planner.pipeline_dither_threads > 1;
         }
+#endif
         /* Public calls and their helper threads must remove every scope. */
         worker->ok &= !sixel_threading_policy_capture(&outside, 0);
     }

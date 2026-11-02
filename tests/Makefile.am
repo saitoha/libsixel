@@ -148,7 +148,8 @@ TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
         @THREAD_CFLAGS@ \
         $(MAYBE_COVERAGE)
 else
-TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+# Thread ABI flags apply to support objects as well as included library code.
+TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) @THREAD_CFLAGS@ \
         $(MAYBE_COVERAGE)
 endif
 TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
@@ -8887,6 +8888,7 @@ staticcheck: staticcheck-clean prepare-staticcheck-headers
 	+@$(SHELL) "$(top_srcdir)/tests/_static/sh/run-check-batches.sh" \
 	--make-command '$(MAKE)' env TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	SIXEL_STATICCHECK_IMAGE_AUDITS='$(ENABLE_STATICCHECK_IMAGE_AUDITS)' \
 	"$(SHELL)" "$(top_srcdir)/tests/_static/sh/staticcheck-suite.sh" \
 		"$(abs_top_srcdir)" \
 		"$(abs_top_builddir)" \
@@ -9032,8 +9034,8 @@ staticcheck-python-compileall:
 		"$(abs_top_srcdir)" "$(PYTHON)"
 
 staticcheck-png-color-oracles staticcheck-tiff-uint16-oracles:
-	@test -n "$(PYTHON_STATICCHECK)" || { \
-		echo "SKIP $@: python interpreter not found"; exit 0; }; \
+	@test "$(ENABLE_STATICCHECK_IMAGE_AUDITS)" = 1 || { \
+		echo "SKIP $@: image audits are disabled"; exit 0; }; \
 	"$(PYTHON_STATICCHECK)" "$(top_srcdir)/tools/verify_color_oracles.py" \
 		--source-root "$(abs_top_srcdir)" \
 		--kind $(if $(filter staticcheck-png-color-oracles,$@),png,uint16)
@@ -10600,8 +10602,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
     _static/sh/staticcheck-installcheck-launch.sh \
     _static/sh/staticcheck-amalgamation-test-fragments.sh \
     _static/sh/staticcheck-test-runner-link.sh \
-    _static/python/test_runner_link.py \
-    _static/python/c_preprocessor_portability.py \
+    _static/awk/test-runner-meson-link.awk _static/sh/check-test-runner-link.sh \
+    _static/awk/c-preprocessor-portability.awk \
     _static/sh/staticcheck-c-preprocessor-portability.sh \
     _static/sh/staticcheck-command-dependencies.sh \
     _static/python/command_dependencies.py \
@@ -10668,6 +10670,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
 # Keep distdir recipe lines below per-argument shell limits by copying
 # discovered test scripts in dist-hook instead of expanding $(TESTS) in
 # EXTRA_DIST.
+include $(top_srcdir)/build-aux/test-dist.am
+
 dist-hook:
 	@set -eu; \
 	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
@@ -10682,7 +10686,7 @@ dist-hook:
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp \
+CLEANFILES = dist-files.list check-tests.list test_runner.objects test_runner.objects.tmp \
     .openvms-current-test
 DISTCLEANFILES = check-tests.mk
 
@@ -10757,15 +10761,15 @@ EXTRA_DIST += data/color-numeric/edge-reference.py \
 EXTRA_DIST += data/color-numeric/ray-reference.py \
     data/color-numeric/ray-reference.h
 
-EXTRA_DIST += build/discovery/fixture.py \
-    build/discovery/0001_added.py \
-    build/discovery/0002_renamed.py \
-    build/discovery/0003_removed.py \
-    build/discovery/0004_selection.py \
-    build/discovery/0005_empty_selection.py \
-    build/discovery/0006_scan_failure.py \
-    build/discovery/0007_openvms_refresh.py \
-    build/discovery/0008_openvms_failure.py
+EXTRA_DIST += build/discovery/fixture.sh \
+    build/discovery/0001_added.sh \
+    build/discovery/0002_renamed.sh \
+    build/discovery/0003_removed.sh \
+    build/discovery/0004_selection.sh \
+    build/discovery/0005_empty_selection.sh \
+    build/discovery/0006_scan_failure.sh \
+    build/discovery/0007_openvms_refresh.sh \
+    build/discovery/0008_openvms_failure.sh
 
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
@@ -10807,8 +10811,7 @@ EXTRA_DIST += extension/quicklook-render/specimen.six \
     extension/quicklook-render/wrong-size.png
 
 EXTRA_DIST += _static/python/source_files.py \
-    _static/python/test_layout.py \
-    _static/python/test_plan_links.py \
+    _static/awk/test-layout.awk _static/sh/check-test-layout.sh \
     _static/sh/list-source-files.sh \
     _static/sh/staticcheck-test-layout.sh \
     _support/test-plans/builtin-loader.list \
@@ -10826,43 +10829,73 @@ EXTRA_DIST += _static/python/source_files.py \
     _support/test-plans/resampling-coverage-01.list \
     _support/test-plans/resampling-coverage-02.list
 
-EXTRA_DIST += build/layout/fixture.py \
-    build/layout/0001_two_levels.py \
-    build/layout/0002_third_level.py \
-    build/layout/0003_leaf_200.py \
-    build/layout/0004_leaf_201.py \
-    build/layout/0005_children_24.py \
-    build/layout/0006_children_25.py \
-    build/layout/0007_roots_24.py \
-    build/layout/0008_roots_25.py \
-    build/layout/0009_number_gap.py \
-    build/layout/0010_duplicate_number.py \
-    build/layout/0011_support_excluded.py \
-    build/layout/0012_execution_modes.py \
-    build/layout/0013_symlink.py \
-    build/layout/0014_unnumbered.py
+EXTRA_DIST += build/layout/fixture.sh \
+    build/layout/0001_two_levels.sh \
+    build/layout/0002_third_level.sh \
+    build/layout/0003_leaf_200.sh \
+    build/layout/0004_leaf_201.sh \
+    build/layout/0005_children_24.sh \
+    build/layout/0006_children_25.sh \
+    build/layout/0007_roots_24.sh \
+    build/layout/0008_roots_25.sh \
+    build/layout/0009_number_gap.sh \
+    build/layout/0010_duplicate_number.sh \
+    build/layout/0011_support_excluded.sh \
+    build/layout/0012_execution_modes.sh \
+    build/layout/0013_symlink.sh \
+    build/layout/0014_unnumbered.sh
 
-EXTRA_DIST += _static/python/no_find.py _static/sh/staticcheck-no-find.sh
+EXTRA_DIST += _static/awk/shell-words.awk _static/awk/no-find.awk _static/sh/staticcheck-no-find.sh
 
-EXTRA_DIST += build/no-find/0001_direct.py \
-    build/no-find/0002_substitution.py \
-    build/no-find/0003_make_shell.py \
-    build/no-find/0004_wrapped.py \
-    build/no-find/0005_shell_code.py \
-    build/no-find/0006_inert_word.py
+EXTRA_DIST += build/no-find/0001_direct.sh \
+    build/no-find/0002_substitution.sh \
+    build/no-find/0003_make_shell.sh \
+    build/no-find/0004_wrapped.sh \
+    build/no-find/0005_shell_code.sh \
+    build/no-find/0006_inert_word.sh
 
 EXTRA_DIST += _static/data/suboption-image-cases.list
 EXTRA_DIST += _support/loader/libwebp/bench_lossy_alpha_decode.sh
 
-EXTRA_DIST += build/test-plan/fixture.py \
-    build/test-plan/0001_manifest_agreement.py \
-    build/test-plan/0002_duplicate_member.py \
-    build/test-plan/0003_missing_member.py \
-    build/test-plan/0004_missing_backlink.py \
-    build/test-plan/0005_duplicate_link.py \
-    build/test-plan/0006_invalid_member.py \
-    build/test-plan/0007_scope_not_inferred.py
+EXTRA_DIST += build/test-plan/fixture.sh \
+    build/test-plan/0001_manifest_agreement.sh \
+    build/test-plan/0002_duplicate_member.sh \
+    build/test-plan/0003_missing_member.sh \
+    build/test-plan/0004_missing_backlink.sh \
+    build/test-plan/0005_duplicate_link.sh \
+    build/test-plan/0006_invalid_member.sh \
+    build/test-plan/0007_scope_not_inferred.sh
 
-EXTRA_DIST += build/discovery/0009_windows_source_exclusion.py
+EXTRA_DIST += build/discovery/0009_windows_source_exclusion.sh
 
 EXTRA_DIST += _support/codec/indexed_component_common.h
+
+EXTRA_DIST += _static/sh/staticcheck-fuzz-cli-sources.sh _static/awk/fuzz-cli-sources.awk
+EXTRA_DIST += _static/sh/staticcheck-fuzz-loader-formats.sh _static/awk/fuzz-loader-formats.awk
+EXTRA_DIST += _static/sh/staticcheck-test-thread-flags.sh _static/awk/test-thread-flags.awk
+EXTRA_DIST += _static/sh/staticcheck-test-distribution.sh
+EXTRA_DIST += _static/sh/staticcheck-shell-field-delimiters.sh _static/awk/shell-field-delimiters.awk
+
+EXTRA_DIST += _static/awk/source-inventory-select.awk
+
+EXTRA_DIST += _static/sh/check-test-plan-inventory.sh
+
+EXTRA_DIST += _static/sh/staticcheck-source-inventory.sh
+
+.PHONY: staticcheck-png-cms-matrix
+staticcheck-png-cms-matrix:
+	@SIXEL_STATICCHECK_IMAGE_AUDITS='$(ENABLE_STATICCHECK_IMAGE_AUDITS)' \
+	$(SHELL) "$(top_srcdir)/tests/_static/sh/staticcheck-png-cms-matrix.sh" \
+	    "$(abs_top_srcdir)" "$(PYTHON_STATICCHECK)"
+
+EXTRA_DIST += _static/sh/staticcheck-png-cms-matrix.sh
+
+EXTRA_DIST += _static/sh/check-test-file-modes.sh
+
+EXTRA_DIST += _static/awk/sha256.awk _static/awk/test-pattern-whitelist.awk \
+    _static/awk/test-pattern-controls.awk _static/awk/test-pattern-match.awk \
+    _static/awk/builtin-loader-coverage.awk
+
+EXTRA_DIST += build/no-find/0007_python_subprocess.sh
+
+EXTRA_DIST += _support/loader/libpng/png_metadata_test_common.h

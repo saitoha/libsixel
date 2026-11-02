@@ -12,7 +12,7 @@
 #include "timeline-logger.h"
 
 typedef struct sixel_palette_apply_storage {
-    sixel_palette_apply_interface_t interface;
+    sixel_palette_apply_interface_t iface;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
     sixel_palette_apply_prepare_request_t plan;
@@ -609,10 +609,10 @@ sixel_palette_apply_factory_new(sixel_allocator_t *allocator, void **object)
         return SIXEL_RUNTIME_ERROR;
     }
 #endif
-    apply->interface.vtbl = &g_palette_apply_vtbl;
+    apply->iface.vtbl = &g_palette_apply_vtbl;
     apply->ref = 1;
     apply->allocator = allocator;
     sixel_allocator_ref(allocator);
-    *object = &apply->interface;
+    *object = &apply->iface;
     return SIXEL_OK;
 }

@@ -12904,6 +12904,7 @@ PHP_LOG_COMPILE = $(PHP_LOG_COMPILER) $(AM_PHP_LOG_FLAGS) \
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/dependency-bootstrap.am \
+	$(top_srcdir)/build-aux/test-dist.am \
 	$(top_srcdir)/build-aux/test-driver \
 	$(top_srcdir)/build-aux/test-runner-link.am
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -12953,6 +12954,7 @@ ENABLE_PERL = @ENABLE_PERL@
 ENABLE_PHP = @ENABLE_PHP@
 ENABLE_PYTHON = @ENABLE_PYTHON@
 ENABLE_RUBY = @ENABLE_RUBY@
+ENABLE_STATICCHECK_IMAGE_AUDITS = @ENABLE_STATICCHECK_IMAGE_AUDITS@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
@@ -13243,7 +13245,8 @@ TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
        -I$(top_srcdir)
 
-@WANT_AMALGAMATED_TOOLS_FALSE@TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+# Thread ABI flags apply to support objects as well as included library code.
+@WANT_AMALGAMATED_TOOLS_FALSE@TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) @THREAD_CFLAGS@ \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(MAYBE_COVERAGE)
 
 @WANT_AMALGAMATED_TOOLS_TRUE@TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
@@ -21913,8 +21916,9 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-installcheck-launch.sh \
 	_static/sh/staticcheck-amalgamation-test-fragments.sh \
 	_static/sh/staticcheck-test-runner-link.sh \
-	_static/python/test_runner_link.py \
-	_static/python/c_preprocessor_portability.py \
+	_static/awk/test-runner-meson-link.awk \
+	_static/sh/check-test-runner-link.sh \
+	_static/awk/c-preprocessor-portability.awk \
 	_static/sh/staticcheck-c-preprocessor-portability.sh \
 	_static/sh/staticcheck-command-dependencies.sh \
 	_static/python/command_dependencies.py \
@@ -21985,14 +21989,14 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	data/color-numeric/edge-reference.py \
 	data/color-numeric/edge-reference.h \
 	data/color-numeric/ray-reference.py \
-	data/color-numeric/ray-reference.h build/discovery/fixture.py \
-	build/discovery/0001_added.py build/discovery/0002_renamed.py \
-	build/discovery/0003_removed.py \
-	build/discovery/0004_selection.py \
-	build/discovery/0005_empty_selection.py \
-	build/discovery/0006_scan_failure.py \
-	build/discovery/0007_openvms_refresh.py \
-	build/discovery/0008_openvms_failure.py \
+	data/color-numeric/ray-reference.h build/discovery/fixture.sh \
+	build/discovery/0001_added.sh build/discovery/0002_renamed.sh \
+	build/discovery/0003_removed.sh \
+	build/discovery/0004_selection.sh \
+	build/discovery/0005_empty_selection.sh \
+	build/discovery/0006_scan_failure.sh \
+	build/discovery/0007_openvms_refresh.sh \
+	build/discovery/0008_openvms_failure.sh \
 	test-time-allowlist.tsv \
 	build/install/0001_pkgconfig_headers.py \
 	tools/child-time/0001_marker_backpressure.py \
@@ -22015,8 +22019,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	extension/quicklook-render/reference/Preview.png \
 	extension/quicklook-render/wrong-color/Preview.png \
 	extension/quicklook-render/wrong-size.png \
-	_static/python/source_files.py _static/python/test_layout.py \
-	_static/python/test_plan_links.py \
+	_static/python/source_files.py _static/awk/test-layout.awk \
+	_static/sh/check-test-layout.sh \
 	_static/sh/list-source-files.sh \
 	_static/sh/staticcheck-test-layout.sh \
 	_support/test-plans/builtin-loader.list \
@@ -22033,38 +22037,58 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_support/test-plans/png-chrm-boundaries-01.list \
 	_support/test-plans/resampling-coverage-01.list \
 	_support/test-plans/resampling-coverage-02.list \
-	build/layout/fixture.py build/layout/0001_two_levels.py \
-	build/layout/0002_third_level.py build/layout/0003_leaf_200.py \
-	build/layout/0004_leaf_201.py build/layout/0005_children_24.py \
-	build/layout/0006_children_25.py build/layout/0007_roots_24.py \
-	build/layout/0008_roots_25.py build/layout/0009_number_gap.py \
-	build/layout/0010_duplicate_number.py \
-	build/layout/0011_support_excluded.py \
-	build/layout/0012_execution_modes.py \
-	build/layout/0013_symlink.py build/layout/0014_unnumbered.py \
-	_static/python/no_find.py _static/sh/staticcheck-no-find.sh \
-	build/no-find/0001_direct.py \
-	build/no-find/0002_substitution.py \
-	build/no-find/0003_make_shell.py build/no-find/0004_wrapped.py \
-	build/no-find/0005_shell_code.py \
-	build/no-find/0006_inert_word.py \
+	build/layout/fixture.sh build/layout/0001_two_levels.sh \
+	build/layout/0002_third_level.sh build/layout/0003_leaf_200.sh \
+	build/layout/0004_leaf_201.sh build/layout/0005_children_24.sh \
+	build/layout/0006_children_25.sh build/layout/0007_roots_24.sh \
+	build/layout/0008_roots_25.sh build/layout/0009_number_gap.sh \
+	build/layout/0010_duplicate_number.sh \
+	build/layout/0011_support_excluded.sh \
+	build/layout/0012_execution_modes.sh \
+	build/layout/0013_symlink.sh build/layout/0014_unnumbered.sh \
+	_static/awk/shell-words.awk _static/awk/no-find.awk \
+	_static/sh/staticcheck-no-find.sh build/no-find/0001_direct.sh \
+	build/no-find/0002_substitution.sh \
+	build/no-find/0003_make_shell.sh build/no-find/0004_wrapped.sh \
+	build/no-find/0005_shell_code.sh \
+	build/no-find/0006_inert_word.sh \
 	_static/data/suboption-image-cases.list \
 	_support/loader/libwebp/bench_lossy_alpha_decode.sh \
-	build/test-plan/fixture.py \
-	build/test-plan/0001_manifest_agreement.py \
-	build/test-plan/0002_duplicate_member.py \
-	build/test-plan/0003_missing_member.py \
-	build/test-plan/0004_missing_backlink.py \
-	build/test-plan/0005_duplicate_link.py \
-	build/test-plan/0006_invalid_member.py \
-	build/test-plan/0007_scope_not_inferred.py \
-	build/discovery/0009_windows_source_exclusion.py \
-	_support/codec/indexed_component_common.h
+	build/test-plan/fixture.sh \
+	build/test-plan/0001_manifest_agreement.sh \
+	build/test-plan/0002_duplicate_member.sh \
+	build/test-plan/0003_missing_member.sh \
+	build/test-plan/0004_missing_backlink.sh \
+	build/test-plan/0005_duplicate_link.sh \
+	build/test-plan/0006_invalid_member.sh \
+	build/test-plan/0007_scope_not_inferred.sh \
+	build/discovery/0009_windows_source_exclusion.sh \
+	_support/codec/indexed_component_common.h \
+	_static/sh/staticcheck-fuzz-cli-sources.sh \
+	_static/awk/fuzz-cli-sources.awk \
+	_static/sh/staticcheck-fuzz-loader-formats.sh \
+	_static/awk/fuzz-loader-formats.awk \
+	_static/sh/staticcheck-test-thread-flags.sh \
+	_static/awk/test-thread-flags.awk \
+	_static/sh/staticcheck-test-distribution.sh \
+	_static/sh/staticcheck-shell-field-delimiters.sh \
+	_static/awk/shell-field-delimiters.awk \
+	_static/awk/source-inventory-select.awk \
+	_static/sh/check-test-plan-inventory.sh \
+	_static/sh/staticcheck-source-inventory.sh \
+	_static/sh/staticcheck-png-cms-matrix.sh \
+	_static/sh/check-test-file-modes.sh _static/awk/sha256.awk \
+	_static/awk/test-pattern-whitelist.awk \
+	_static/awk/test-pattern-controls.awk \
+	_static/awk/test-pattern-match.awk \
+	_static/awk/builtin-loader-coverage.awk \
+	build/no-find/0007_python_subprocess.sh \
+	_support/loader/libpng/png_metadata_test_common.h
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = check-tests.list test_runner.objects test_runner.objects.tmp \
+CLEANFILES = dist-files.list check-tests.list test_runner.objects test_runner.objects.tmp \
     .openvms-current-test
 
 DISTCLEANFILES = check-tests.mk
@@ -22074,7 +22098,7 @@ all: $(BUILT_SOURCES)
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .log .o .obj .php .php$(EXEEXT) .pl .pl$(EXEEXT) .py .py$(EXEEXT) .rb .rb$(EXEEXT) .t .t$(EXEEXT) .trs
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/build-aux/test-runner-link.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/build-aux/test-runner-link.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(top_srcdir)/build-aux/test-dist.am $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -22094,7 +22118,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles);; \
 	esac;
-$(top_srcdir)/build-aux/test-runner-link.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(am__empty):
+$(top_srcdir)/build-aux/test-runner-link.am $(top_srcdir)/build-aux/dependency-bootstrap.am $(top_srcdir)/build-aux/test-dist.am $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -98115,40 +98139,6 @@ recheck: all $(check_PROGRAMS) $(check_LTLIBRARIES)
 
 distdir: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) distdir-am
-
-distdir-am: $(DISTFILES)
-	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	list='$(DISTFILES)'; \
-	  dist_files=`for file in $$list; do echo $$file; done | \
-	  sed -e "s|^$$srcdirstrip/||;t" \
-	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t"`; \
-	case $$dist_files in \
-	  */*) $(MKDIR_P) `echo "$$dist_files" | \
-			   sed '/\//!d;s|^|$(distdir)/|;s,/[^/]*$$,,' | \
-			   sort -u` ;; \
-	esac; \
-	for file in $$dist_files; do \
-	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
-	  if test -d $$d/$$file; then \
-	    dir=`echo "/$$file" | sed -e 's,/[^/]*$$,,'`; \
-	    if test -d "$(distdir)/$$file"; then \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
-	      cp -fpR $(srcdir)/$$file "$(distdir)$$dir" || exit 1; \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    cp -fpR $$d/$$file "$(distdir)$$dir" || exit 1; \
-	  else \
-	    test -f "$(distdir)/$$file" \
-	    || cp -p $$d/$$file "$(distdir)/$$file" \
-	    || exit 1; \
-	  fi; \
-	done
-	$(MAKE) $(AM_MAKEFLAGS) \
-	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
-	  dist-hook
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_LTLIBRARIES)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
@@ -98870,6 +98860,7 @@ staticcheck: staticcheck-clean prepare-staticcheck-headers
 	+@$(SHELL) "$(top_srcdir)/tests/_static/sh/run-check-batches.sh" \
 	--make-command '$(MAKE)' env TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	SIXEL_STATICCHECK_IMAGE_AUDITS='$(ENABLE_STATICCHECK_IMAGE_AUDITS)' \
 	"$(SHELL)" "$(top_srcdir)/tests/_static/sh/staticcheck-suite.sh" \
 		"$(abs_top_srcdir)" \
 		"$(abs_top_builddir)" \
@@ -99014,8 +99005,8 @@ staticcheck-python-compileall:
 		"$(abs_top_srcdir)" "$(PYTHON)"
 
 staticcheck-png-color-oracles staticcheck-tiff-uint16-oracles:
-	@test -n "$(PYTHON_STATICCHECK)" || { \
-		echo "SKIP $@: python interpreter not found"; exit 0; }; \
+	@test "$(ENABLE_STATICCHECK_IMAGE_AUDITS)" = 1 || { \
+		echo "SKIP $@: image audits are disabled"; exit 0; }; \
 	"$(PYTHON_STATICCHECK)" "$(top_srcdir)/tools/verify_color_oracles.py" \
 		--source-root "$(abs_top_srcdir)" \
 		--kind $(if $(filter staticcheck-png-color-oracles,$@),png,uint16)
@@ -100494,9 +100485,26 @@ check-php: prepare-binding-artifacts
 	fi; \
 	echo "php TAP logs exported to $$artifact_root"
 
+# Bound the shell command even when Automake collects thousands of C sources.
+# Separate recipe lines also work with GNU make versions without $(file ...).
+define sixel_write_dist_files
+$(if $(strip $(1)),@printf '%s\n' $(wordlist 1,128,$(1)) >>dist-files.list
+$(call sixel_write_dist_files,$(wordlist 129,$(words $(1)),$(1))))
+endef
+
+distdir-am: $(DISTFILES)
+	@: >dist-files.list
+	$(call sixel_write_dist_files,$(DISTFILES))
+	@$(SHELL) "$(top_srcdir)/build-aux/copy-test-dist.sh" \
+	    "$(srcdir)" "$(top_srcdir)" "$(top_builddir)" "$(distdir)" \
+	    <dist-files.list
+	$(MAKE) $(AM_MAKEFLAGS) top_distdir="$(top_distdir)" \
+	    distdir="$(distdir)" dist-hook
+
 # Keep distdir recipe lines below per-argument shell limits by copying
 # discovered test scripts in dist-hook instead of expanding $(TESTS) in
 # EXTRA_DIST.
+
 dist-hook:
 	@set -eu; \
 	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
@@ -100563,6 +100571,12 @@ $(COPY_TESTS) $(HELPER_FILES):
 @BUILD_LSO_TIMEOUT_TRUE@.PHONY: prepare-child-time-executor
 @BUILD_LSO_TIMEOUT_TRUE@prepare-child-time-executor:
 @BUILD_LSO_TIMEOUT_TRUE@	$(MAKE) $(AM_MAKEFLAGS) -C "$(top_builddir)/tools" lso-timeout$(EXEEXT)
+
+.PHONY: staticcheck-png-cms-matrix
+staticcheck-png-cms-matrix:
+	@SIXEL_STATICCHECK_IMAGE_AUDITS='$(ENABLE_STATICCHECK_IMAGE_AUDITS)' \
+	$(SHELL) "$(top_srcdir)/tests/_static/sh/staticcheck-png-cms-matrix.sh" \
+	    "$(abs_top_srcdir)" "$(PYTHON_STATICCHECK)"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

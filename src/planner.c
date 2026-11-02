@@ -1133,6 +1133,11 @@ sixel_dither_encode_allocate(sixel_dither_encode_request_t const *request,
         }
     }
 
+#if defined(__PCC__) || defined(__TINYC__)
+    /* Dither application disables parallel bands on these compilers. Keep
+     * the advertised job count and geometry consistent with that executor. */
+    dither_threads = 1;
+#endif
     band_height = request->band_height_set
         ? (int)request->band_height : 0;
     if (band_height <= 0) {

@@ -39,7 +39,7 @@ static double const scielab_weights[3][3] = {
 static int
 scielab_kernel(double ppd, double spread, double *kernel)
 {
-    double gaussian[1025];
+    double gaussian[1025] = {0};
     double grid;
     double alpha;
     double sum;
@@ -100,7 +100,7 @@ static void
 scielab_filter(double const *xyz, double *filtered, double *plane,
                 double *temp, int width, int height, double ppd)
 {
-    double kernel[1025];
+    double kernel[1025] = {0};
     double value;
     double weight;
     size_t pixels;
@@ -221,7 +221,9 @@ sixel_qa_scielab(double const *reference, double const *output,
             return SIXEL_BAD_INPUT;
         }
     }
-    storage = (double *)malloc(pixels * 8 * sizeof(*storage));
+    /* Initialize the scratch planes as well as the accumulated outputs.
+     * Their horizontal and vertical passes use different index mappings. */
+    storage = (double *)calloc(pixels * 8, sizeof(*storage));
     if (storage == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }

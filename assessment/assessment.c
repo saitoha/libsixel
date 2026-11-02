@@ -1150,21 +1150,21 @@ frame_to_rgb_float(sixel_frame_t *frame,
             status = SIXEL_BAD_INPUT;
             goto cleanup;
         }
+        /* Initialize and remap each channel in one pass. The channel index
+         * stays within count even when analyzing a symbolic image size. */
         for (index = 0; index < count; ++index) {
             converted[index] = pixels[index] / 255.0f;
-        }
-        for (index = 0; index < count; index += 3) {
+            if (index % 3u == 0u) {
+                continue;
+            }
             if (sixel_frame_get_colorspace(frame) == SIXEL_COLORSPACE_OKLAB) {
-                converted[index + 1] -= 0.5f;
-                converted[index + 2] -= 0.5f;
+                converted[index] -= 0.5f;
             } else if (sixel_frame_get_colorspace(frame)
                            == SIXEL_COLORSPACE_CIELAB) {
-                converted[index + 1] = (converted[index + 1] - 0.5f) * 3;
-                converted[index + 2] = (converted[index + 2] - 0.5f) * 3;
+                converted[index] = (converted[index] - 0.5f) * 3;
             } else if (sixel_frame_get_colorspace(frame)
                            == SIXEL_COLORSPACE_DIN99D) {
-                converted[index + 1] = (converted[index + 1] - 0.5f) * 2;
-                converted[index + 2] = (converted[index + 2] - 0.5f) * 2;
+                converted[index] = (converted[index] - 0.5f) * 2;
             }
         }
     }
@@ -2767,8 +2767,8 @@ assessment_color_pixels(float *pixels, double *xyz, size_t count,
     size_t i;
     int c;
     int ok;
-    double sample[3];
-    double value[3];
+    double sample[3] = {0};
+    double value[3] = {0};
     float gray;
 
     /* Byte samples in the selected basis already have the requested
