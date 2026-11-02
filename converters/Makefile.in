@@ -98,20 +98,22 @@ noinst_PROGRAMS =
 @WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_3 = img2sixel
 @WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_4 = img2sixel
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_5 = $(ABORTTRACE_LIBS)
-@WANT_IMG2SIXEL_TRUE@am__append_6 = $(srcdir)/img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_9 = sixel2png
-@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_10 = sixel2png
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(AMALGAMATION_TOOL_CPPFLAGS) \
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_6 = $(top_builddir)/src/.libs/sixel.dll.lib
+@WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_10 = sixel2png
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_11 = sixel2png
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_12 = $(AMALGAMATION_TOOL_CPPFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@        -DBUILD_SIXEL2PNG
 
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_12 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_13 = $(ABORTTRACE_LIBS)
-@WANT_SIXEL2PNG_TRUE@am__append_14 = $(srcdir)/sixel2png.1
-@WITH_SHEBANG_FILE_TRUE@am__append_15 = $(SIXEL_SHEBANG_STAMP)
-@WANT_IMG2SIXEL_TRUE@am__append_16 = $(img2sixel_OBJECTS)
-@WANT_SIXEL2PNG_TRUE@am__append_17 = $(sixel2png_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_13 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_14 = $(ABORTTRACE_LIBS)
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_15 = $(top_builddir)/src/.libs/sixel.dll.lib
+@WANT_SIXEL2PNG_TRUE@am__append_16 = $(srcdir)/sixel2png.1
+@WITH_SHEBANG_FILE_TRUE@am__append_17 = $(SIXEL_SHEBANG_STAMP)
+@WANT_IMG2SIXEL_TRUE@am__append_18 = $(img2sixel_OBJECTS)
+@WANT_SIXEL2PNG_TRUE@am__append_19 = $(sixel2png_OBJECTS)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -539,6 +541,7 @@ SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
 SIXEL_EMSCRIPTEN_CC = @SIXEL_EMSCRIPTEN_CC@
+SIXEL_EMSCRIPTEN_STDIO = @SIXEL_EMSCRIPTEN_STDIO@
 SIXEL_LIBTOOL_BUILD_LIBS = @SIXEL_LIBTOOL_BUILD_LIBS@
 SIXEL_LIBTOOL_OBJDIR = @SIXEL_LIBTOOL_OBJDIR@
 SIXEL_LIBTOOL_PATH_SEPARATOR = @SIXEL_LIBTOOL_PATH_SEPARATOR@
@@ -635,6 +638,12 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
+
+# Editing the embedded Node initializer must relink the executable.
+EXTRA_img2sixel_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO) \
+	$(am__append_6)
+EXTRA_sixel2png_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO) \
+	$(am__append_15)
 DIST_SUBDIRS = $(SUBDIRS)
 BUILT_SOURCES = completion_embed.h $(am__append_1)
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
@@ -643,9 +652,9 @@ EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
              $(srcdir)/img2sixel-node-launcher.in \
              $(srcdir)/sixel2png-node-launcher.in
 
-dist_man_MANS = $(am__append_6) $(am__append_14)
-dist_bashcompletion_DATA = $(am__append_7)
-dist_zshcompletion_DATA = $(am__append_8)
+dist_man_MANS = $(am__append_7) $(am__append_16)
+dist_bashcompletion_DATA = $(am__append_8)
+dist_zshcompletion_DATA = $(am__append_9)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_builddir)/include/ \
@@ -674,7 +683,7 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
-CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
+CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_17)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/terminal-color.h \
@@ -729,7 +738,6 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__append_5)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__append_5)
-@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@EXTRA_img2sixel_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 @OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_IMG2SIXEL_TRUE@	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
@@ -740,7 +748,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 # default for the other branch.
 @OPENVMS_GNV_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = $(AM_CPPFLAGS) \
-@WANT_SIXEL2PNG_TRUE@	$(am__append_11) $(am__append_12)
+@WANT_SIXEL2PNG_TRUE@	$(am__append_12) $(am__append_13)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.h \
@@ -770,10 +778,9 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(QUICKLOOK_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CLIPBOARD_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	@THREAD_CFLAGS@ \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_13)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_14)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_13)
-@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@EXTRA_sixel2png_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_14)
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 @OPENVMS_GNV_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
@@ -786,7 +793,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 #
 # This target is consumed by the top-level parallel orchestration to overlap
 # compilation in converters/ with libsixel shared library creation.
-PRELINK_OBJECTS = $(am__append_16) $(am__append_17)
+PRELINK_OBJECTS = $(am__append_18) $(am__append_19)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

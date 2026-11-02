@@ -29,6 +29,8 @@ Legacy `METRIC:VALUE` remains accepted: S-CIELAB, S-CIEDE2000 and their `_max` m
 
 At most one lower and one upper bound may be supplied for each canonical metric. Duplicate bounds, including through aliases or mixed legacy/explicit spelling, are usage errors (exit 2). Opposite bounds form an inclusive interval; a lower bound greater than its upper bound is rejected in either order. Numeric values must be finite and parse without range errors or trailing garbage. Empty comma members and unknown directions are rejected. Spaces and tabs around list members are ignored.
 
+JSON emitted by the CLI uses LF line endings on Windows as well as POSIX. Standard input remains binary so piped image bytes are not changed by the Windows CRT.
+
 `LSQA_METRICS` and `LSQA_BASELINE` accept the respective comma-list grammars. Any explicit `-m` replaces the entire environment metric list, and any explicit `-b` replaces the entire environment gate list; the two families are independent. Ignored environment lists are not parsed. Multiple CLI occurrences accumulate within their family rather than replacing earlier occurrences.
 
 ## Reading the definitions

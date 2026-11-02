@@ -7,7 +7,7 @@
 
 #include "jpeg_process_test_common.h"
 #include "loader_builtin_memory_test_common.h"
-#include "../../../data/color-numeric/jpeg-process.h"
+#include "tests/data/color-numeric/jpeg-process.h"
 
 /* Walk independently generated marker streams, including entropy stuffing.
  * This is a fixture editor, never a parser used by the product. */

@@ -32,6 +32,7 @@ endif
 
 if jpeg_dep.found()
   executable('jpegref', ['jpegref.c'],
+    link_depends: emscripten_link_depends,
     dependencies: [jpeg_dep],
     include_directories: [project_inc, local_inc],
     build_rpath: src_build_dir,
@@ -40,6 +41,7 @@ if jpeg_dep.found()
 endif
 
 executable('progressive-study', ['progressive-study.c'],
+  link_depends: emscripten_link_depends,
   dependencies: [libsixel_dep],
   include_directories: [project_inc, include_directories('..')],
   build_rpath: src_build_dir,

@@ -4586,6 +4586,9 @@ static int stbi__jpeg_commit_frame(stbi__jpeg *j)
       }
       if (n == j->dhp_n) return 0;
       plane = j->img_comp[c].data16;
+      /* Only decoded, owned planes may be accumulated or published. */
+      if (plane == NULL)
+         return stbi__err("missing hierarchy plane", "Corrupt JPEG");
       stride = j->img_comp[c].w2;
       if (j->differential) {
          for (y = 0; y < j->img_comp[c].y; ++y) {

@@ -2,6 +2,8 @@
 
 This inventory covers the libpng-only arithmetic selector and its fixed-capacity rational evaluator. The [libpng policy](../loader/libpng.md#chrm-arithmetic-selection) defines the user-facing modes. The separate [cHRM boundary plan](png-chrm-boundaries.md) continues to own original-grid validation and metadata selection.
 
+The exact integer implementation materializes sibling structure-valued operands in separate statements before arithmetic calls. This preserves distinct operands on PCC, whose struct-return code generation can otherwise reuse one temporary for both arguments. The existing exact-output bit comparisons remain unchanged; compiler portability does not relax their numeric contract.
+
 ## Independent expectations and distinct changes
 
 [`generate_png_arithmetic_tests.py`](../../tools/generate_png_arithmetic_tests.py) derives RGB-to-XYZ from literal PNG grid coordinates by rational Gaussian elimination, independently inverts the standard sRGB matrix, optionally applies rational Bradford adaptation, and rounds the resulting rational value directly to binary32. `--check` verifies checked-in bytes without changing fixtures; the common color fixture generator also includes these outputs. No production matrix or pixel evaluator supplies expected values or an error tolerance.

@@ -314,7 +314,7 @@ rmb_load_baselines(char const *path,
 
 static void
 rmb_init_accumulators(
-    rmb_accumulator_t values[RMB_SCENARIO_COUNT][RMB_METHOD_COUNT])
+    rmb_accumulator_t (*values)[RMB_SCENARIO_COUNT][RMB_METHOD_COUNT])
 {
     int scenario;
     int method;
@@ -323,9 +323,9 @@ rmb_init_accumulators(
            RMB_SCENARIO_COUNT * RMB_METHOD_COUNT);
     for (scenario = 0; scenario < RMB_SCENARIO_COUNT; ++scenario) {
         for (method = 0; method < RMB_METHOD_COUNT; ++method) {
-            values[scenario][method].nearest_distance = DBL_MAX;
-            values[scenario][method].isotropy_minimum = DBL_MAX;
-            values[scenario][method].isotropy_maximum = -DBL_MAX;
+            (*values)[scenario][method].nearest_distance = DBL_MAX;
+            (*values)[scenario][method].isotropy_minimum = DBL_MAX;
+            (*values)[scenario][method].isotropy_maximum = -DBL_MAX;
         }
     }
 }
@@ -689,8 +689,8 @@ test_geometry_resampling_measurement_baseline(int argc, char **argv)
         fprintf(stderr, "unknown measurement type: %s\n", argv[1]);
         return EXIT_FAILURE;
     }
-    /* Spell out the first row: PCC misdiagnoses implicit 2-D array decay. */
-    rmb_init_accumulators(&values[0]);
+    /* Preserve the complete object extent without implicit 2-D decay. */
+    rmb_init_accumulators(&values);
     if (!rmb_load_baselines(argv[2],
                             measurement,
                             baselines,

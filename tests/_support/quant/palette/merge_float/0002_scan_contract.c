@@ -71,10 +71,12 @@ typedef struct ward_scan_cluster ward_scan_cluster_t;
 #define sixel_kmeans_threshold_override_enabled ward_scan_local_31
 #define sixel_kmeans_threshold_override_value ward_scan_local_32
 #define sixel_palette_merge_impl ward_scan_impl
+#define sixel_final_merge_snap_cluster ward_scan_snap_cluster
 #define sixel_final_merge_cluster ward_scan_cluster
 #define sixel_final_merge_cluster_t ward_scan_cluster_t
 #define malloc ward_scan_malloc
 #include "src/palette-common-merge.c"
+#undef sixel_final_merge_snap_cluster
 #undef malloc
 #undef sixel_resolve_final_merge_mode
 #undef sixel_final_merge_load_env

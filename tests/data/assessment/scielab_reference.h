@@ -3,7 +3,7 @@
 #ifndef LIBSIXEL_TEST_SCIELAB_REFERENCE_H
 #define LIBSIXEL_TEST_SCIELAB_REFERENCE_H
 #if !defined(SIXEL_AMALGAMATION) || \
-    defined(BUILD_TEST_0028_SCIELAB_DENSE_REFERENCE)
+    defined(BUILD_TEST_0003_SCIELAB_DENSE_REFERENCE)
 static double const scielab_reference_xyz[60] = {
     -0.0625, 0.15625, 0.375,
     0.46875, 0.6875, 0,

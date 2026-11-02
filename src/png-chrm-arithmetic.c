@@ -236,6 +236,8 @@ png_chrm_round_exact_search(sixel_png_chrm_integer_t n,
     uint32_t sign;
     int cmp;
     sixel_png_chrm_integer_t rhs;
+    sixel_png_chrm_integer_t lower;
+    sixel_png_chrm_integer_t upper;
 
     assert(d.sign > 0);
     if (!n.sign) {
@@ -255,8 +257,11 @@ png_chrm_round_exact_search(sixel_png_chrm_integer_t n,
             high = mid;
         }
     }
-    rhs = png_chrm_times(d, png_chrm_plus(png_chrm_float_units(low),
-                                          png_chrm_float_units(high)));
+    /* Keep struct-return temporaries distinct. PCC can reuse one return
+     * slot for sibling calls in a single argument list. */
+    lower = png_chrm_float_units(low);
+    upper = png_chrm_float_units(high);
+    rhs = png_chrm_times(d, png_chrm_plus(lower, upper));
     cmp = png_chrm_magnitude_compare(png_chrm_shift(n, 1), rhs);
     if (cmp > 0 || (cmp == 0 && (low & 1u))) {
         low = high;
@@ -306,22 +311,25 @@ png_chrm_exact_cell(sixel_png_chrm_integer_t n, sixel_png_chrm_integer_t d,
 {
     sixel_png_chrm_integer_t twice;
     sixel_png_chrm_integer_t rhs;
+    sixel_png_chrm_integer_t lower;
+    sixel_png_chrm_integer_t upper;
     int cmp;
     int odd;
 
     twice = png_chrm_shift(n, 1);
     odd = (candidate & 1u) != 0;
     if (candidate) {
-        rhs =
-            png_chrm_times(d, png_chrm_plus(png_chrm_float_units(candidate - 1),
-                                            png_chrm_float_units(candidate)));
+        lower = png_chrm_float_units(candidate - 1);
+        upper = png_chrm_float_units(candidate);
+        rhs = png_chrm_times(d, png_chrm_plus(lower, upper));
         cmp = png_chrm_magnitude_compare(twice, rhs);
         if (cmp < 0 || (!cmp && odd)) {
             return -1;
         }
     }
-    rhs = png_chrm_times(d, png_chrm_plus(png_chrm_float_units(candidate),
-                                          png_chrm_float_units(candidate + 1)));
+    lower = png_chrm_float_units(candidate);
+    upper = png_chrm_float_units(candidate + 1);
+    rhs = png_chrm_times(d, png_chrm_plus(lower, upper));
     cmp = png_chrm_magnitude_compare(twice, rhs);
     return cmp > 0 || (!cmp && odd) ? 1 : 0;
 }
@@ -405,6 +413,7 @@ png_chrm_exact_build(sixel_png_chrm_matrix_t *m)
     int64_t q[3];
     int64_t cone;
     sixel_png_chrm_integer_t term;
+    sixel_png_chrm_integer_t factor;
     sixel_png_chrm_integer_t sum;
     int r;
     int c;
@@ -412,8 +421,10 @@ png_chrm_exact_build(sixel_png_chrm_matrix_t *m)
     int k;
 
     png_chrm_geometry(m, &a, weights, points, q);
-    m->d = png_chrm_times(png_chrm_integer(a),
-                          png_chrm_integer(PNG_CHRM_TARGET_DEN));
+    /* Materialize each operand before another struct-valued call. */
+    m->d = png_chrm_integer(a);
+    factor = png_chrm_integer(PNG_CHRM_TARGET_DEN);
+    m->d = png_chrm_times(m->d, factor);
     if (m->cat) {
         m->d = png_chrm_times(m->d, png_chrm_integer(32900));
         m->d = png_chrm_times(m->d, png_chrm_integer(1790016463355LL));
@@ -428,9 +439,9 @@ png_chrm_exact_build(sixel_png_chrm_matrix_t *m)
             sum = png_chrm_integer(0);
             for (j = 0; j < 3; ++j) {
                 if (!m->cat) {
-                    term =
-                        png_chrm_times(png_chrm_integer(weights[c]),
-                                       png_chrm_integer(png_chrm_target[r][j]));
+                    term = png_chrm_integer(weights[c]);
+                    factor = png_chrm_integer(png_chrm_target[r][j]);
+                    term = png_chrm_times(term, factor);
                     term = png_chrm_times(term, png_chrm_integer(points[c][j]));
                     sum = png_chrm_plus(sum, term);
                     continue;
@@ -439,9 +450,9 @@ png_chrm_exact_build(sixel_png_chrm_matrix_t *m)
                     cone = png_chrm_bradford[k][0] * points[c][0] +
                            png_chrm_bradford[k][1] * points[c][1] +
                            png_chrm_bradford[k][2] * points[c][2];
-                    term =
-                        png_chrm_times(png_chrm_integer(weights[c]),
-                                       png_chrm_integer(png_chrm_target[r][j]));
+                    term = png_chrm_integer(weights[c]);
+                    factor = png_chrm_integer(png_chrm_target[r][j]);
+                    term = png_chrm_times(term, factor);
                     term = png_chrm_times(
                         term, png_chrm_integer(png_chrm_adjugate[j][k]));
                     term = png_chrm_times(

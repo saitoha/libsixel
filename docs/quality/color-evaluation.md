@@ -112,6 +112,8 @@ The regional metrics first average XYZ within each tile, convert the two mean co
 
 A black/white dither with linear mean 0.5 can have zero regional error against a constant Y=0.5 patch while retaining substantial per-pixel error. Conversely, swapping black and white regions can preserve the whole-image mean while every local tile is wrong. Report both regional mean and maximum alongside spatial metrics: correct mean color does not imply acceptable grain, streaks, edges or banding. Natural images use the same fixed grid, not windows selected after seeing the result.
 
+On Windows, CLI environment assignments update both the process environment and the C runtime copy. The requested CMS reported by JSON therefore reflects `-#` / `--cms-engine`, including when it overrides a pre-existing environment value.
+
 A single unique `-m` selection outputs one number; multiple selections use the [named metric JSON interface](metrics.md#selecting-metrics-and-gates). Full JSON includes `color_evaluation`: requested per-input definitions and their origin, selected SIXEL drawing mode and per-input route, actual current frame formats and coordinates, requested loader CMS, actual builtin evaluator, plain SIXEL and background definitions, signal precision/range, PCS white/units, and tile layout/count. `legacy-loader-managed` records a pipeline origin; it does not claim that metadata was successfully applied merely because it existed.
 
 Use an explicit upper bound such as `-b DE00_region_max:max=VALUE` for color differences. Combine it with a structural lower bound in the same invocation; the [metric selection and gate reference](metrics.md#selecting-metrics-and-gates) defines the syntax, combined result, output and compatibility rules.

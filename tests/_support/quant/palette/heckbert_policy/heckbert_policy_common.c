@@ -85,8 +85,14 @@
 #define compareplaneTieDepth policy_compareplaneTieDepth
 #define sixel_palette_heckbert_max_channels \
     policy_sixel_palette_heckbert_max_channels
+#define sixel_palette_heckbert_colormap_request \
+    policy_sixel_palette_heckbert_colormap_request
+#define sixel_palette_heckbert_colormap_request_t \
+    policy_sixel_palette_heckbert_colormap_request_t
 #define sixel_palette_heckbert_axis_bins policy_sixel_palette_heckbert_axis_bins
 #include "src/palette-heckbert.c"
+#undef sixel_palette_heckbert_colormap_request
+#undef sixel_palette_heckbert_colormap_request_t
 #undef sixel_palette_heckbert_log_start
 #undef sixel_palette_heckbert_log_finish
 #undef sixel_palette_reversible_tuple
@@ -166,7 +172,7 @@ heckbert_policy_check(int scenario)
     policy_tupletable2 output;
     sixel_allocator_t *allocator;
     sixel_heckbert_options_t options;
-    sixel_palette_heckbert_colormap_request_t request;
+    policy_sixel_palette_heckbert_colormap_request_t request;
     sixel_palette_rep_stats_t stats[2];
     unsigned long cluster_weights[2];
     double cluster_sums[6];

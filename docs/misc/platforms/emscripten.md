@@ -12,9 +12,13 @@ Emscripten `-s` settings are final-link settings. `-sRETAIN_COMPILER_SETTINGS=1`
 
 Thread-enabled command-line programs and the test runner link with `-sPROXY_TO_PTHREAD=1 -sEXIT_RUNTIME=1` in both build systems. Running C `main()` on a worker leaves the JavaScript runtime available to process worker cleanup messages while C waits for queued frames or joins helper threads. Otherwise repeated frame work can accumulate completed workers and their stacks while the runtime message loop is blocked. Runtime exit also terminates the worker pool when `main()` returns. These settings apply to executable targets only: library consumers retain control over their own JavaScript lifecycle, and thread-disabled executables do not use the proxy. See Emscripten's [pthreads guidance](https://emscripten.org/docs/porting/pthreads.html).
 
+SDK codec ports contribute their `-sUSE_LIB...=1` link settings to `Libs.private`. They do not add host `libjpeg`, `libpng`, `libtiff` or `libwebp` pkg-config requirements: those SDK ports have no corresponding host `.pc` package. The generated metadata must resolve independently of host codec development packages.
+
 Split output contains both JavaScript and WebAssembly artifacts. Installation uses the sidecar installer and launcher templates so the executable entry point can find its `.js` and `.wasm` companions; installing only a nominal program file is incomplete.
 
 ## Runtime contract
+
+The Node raw-filesystem build includes [emscripten-node-stdio.js](../../../build-aux/emscripten-node-stdio.js) before runtime startup. On the Node main thread it puts available native stdin/stdout/stderr handles into blocking mode before pthread workers share those descriptors. This matches C stdio’s synchronous filesystem calls: a full pipe waits for its reader instead of failing an image write with `EAGAIN`. Browser runtimes and worker message streams are excluded. [Node documents asynchronous POSIX pipe streams](https://nodejs.org/api/process.html#a-note-on-process-io); the handle operation is Node-specific and requires runtime pipeline testing when upgrading Node.
 
 When `NODERAWFS` is enabled, Windows-style drive and MSYS paths can refer to the host filesystem. The path adapters query `emscripten_get_compiler_setting("NODERAWFS")` and conservatively assume enabled when the query API or value is unavailable. When raw filesystem access is disabled, these paths must remain untouched.
 
@@ -38,6 +42,7 @@ BSD libfetch is replaced by the synchronous `emscripten_fetch` adapter. Its `-sF
 | EM-01 | Emscripten toolchain intent remains ahead of generic compiler discovery, and the build retains link-only `NODERAWFS`, compiler-settings, and Fetch flags. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 | EM-02 | Runtime path handling queries `NODERAWFS`, network fetching uses `emscripten_fetch`, and terminal/temp-file exclusions remain explicit. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 | EM-03 | Both build systems retain paired worker-proxy and runtime-exit link settings for thread-enabled executable targets. | [tests/_static/sh/staticcheck-emscripten-thread-runtime.sh](../../../tests/_static/sh/staticcheck-emscripten-thread-runtime.sh) |
+| EM-04 | Both build systems retain the Node main-thread standard-stream initializer for raw filesystem I/O. | [tests/_static/sh/staticcheck-emscripten-node-stdio.sh](../../../tests/_static/sh/staticcheck-emscripten-node-stdio.sh) |
 
 ### Coverage boundary
 

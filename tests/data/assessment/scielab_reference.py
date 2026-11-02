@@ -79,7 +79,7 @@ def main():
     print("#ifndef LIBSIXEL_TEST_SCIELAB_REFERENCE_H")
     print("#define LIBSIXEL_TEST_SCIELAB_REFERENCE_H")
     print("#if !defined(SIXEL_AMALGAMATION) || " + chr(92))
-    print("    defined(BUILD_TEST_0028_SCIELAB_DENSE_REFERENCE)")
+    print("    defined(BUILD_TEST_0003_SCIELAB_DENSE_REFERENCE)")
     emit("scielab_reference_xyz", reference)
     emit("scielab_output_xyz", output)
     emit("scielab_reference_ppd", ppds)

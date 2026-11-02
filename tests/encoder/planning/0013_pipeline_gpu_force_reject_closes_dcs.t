@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-23
 # TAP test: forced GPU rejection closes an already-started SIXEL DCS.
 
 set -eux

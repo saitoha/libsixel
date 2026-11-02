@@ -236,8 +236,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in \
 	AUTHORS ChangeLog NEWS README.md build-aux/ar-lib \
 	build-aux/compile build-aux/config.guess build-aux/config.sub \
-	build-aux/depcomp build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/missing build-aux/py-compile ltmain.sh
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile ltmain.sh
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -440,6 +440,7 @@ SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
 SIXEL_EMSCRIPTEN_CC = @SIXEL_EMSCRIPTEN_CC@
+SIXEL_EMSCRIPTEN_STDIO = @SIXEL_EMSCRIPTEN_STDIO@
 SIXEL_LIBTOOL_BUILD_LIBS = @SIXEL_LIBTOOL_BUILD_LIBS@
 SIXEL_LIBTOOL_OBJDIR = @SIXEL_LIBTOOL_OBJDIR@
 SIXEL_LIBTOOL_PATH_SEPARATOR = @SIXEL_LIBTOOL_PATH_SEPARATOR@
@@ -584,8 +585,11 @@ EXTRA_DIST = tools/ci-vm-result.sh tools/quicklook-user.sh \
 	tests/data/color-numeric/icc-output.h LICENSE build.md \
 	build-aux/depcomp build-aux/dependency-bootstrap.am \
 	build-aux/test-dist.am build-aux/copy-test-dist.sh \
-	build-aux/test-runner-link.am build-aux/clean-test-logs.sh \
-	build-aux/list-tree-files.sh build-aux/list-test-reports.sh \
+	build-aux/test-runner-link.am \
+	build-aux/emscripten-node-stdio.js \
+	build-aux/test-runner-amalgamation-defines.awk \
+	build-aux/clean-test-logs.sh build-aux/list-tree-files.sh \
+	build-aux/list-test-reports.sh \
 	tools/generate_cms_quality_references.py \
 	tools/generate_color_fixtures.py \
 	tools/generate_palette_space_fixtures.py \

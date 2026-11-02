@@ -30,12 +30,17 @@
 #endif
 
 #include <stdint.h>
-/* CPU capability alone does not imply compiler intrinsics are available.
- * Keep the includes and every SIMD branch behind the same header probes. */
-#if HAVE_NEON && HAVE_ARM_NEON_H
-#include <arm_neon.h>
-#elif HAVE_SSE2 && HAVE_EMMINTRIN_H
-#include <emmintrin.h>
+/* A multi-architecture compiler can reuse config.h for another target.
+ * Require the current compiler target as well as the configured header. */
+#if HAVE_NEON && HAVE_ARM_NEON_H && \
+    (defined(__ARM_NEON) || defined(__ARM_NEON__))
+# define SIXEL_VPTREE_USE_NEON 1
+# include <arm_neon.h>
+#elif HAVE_SSE2 && HAVE_EMMINTRIN_H && \
+    (defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+     (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+# define SIXEL_VPTREE_USE_SSE2 1
+# include <emmintrin.h>
 #endif
 
 #include <limits.h>
@@ -774,7 +779,7 @@ sixel_lookup_vptree_8bit_map(sixel_lookup_vptree_8bit_t const *tree,
     return best_index;
 }
 
-#if (HAVE_NEON && HAVE_ARM_NEON_H) || (HAVE_SSE2 && HAVE_EMMINTRIN_H)
+#if defined(SIXEL_VPTREE_USE_NEON) || defined(SIXEL_VPTREE_USE_SSE2)
 /* Eight independent exhaustive searches amortize SIMD work over cold memo
  * entries. Strict comparison in palette order preserves the lowest-index
  * tie rule, including duplicate colors. All squared byte distances fit in
@@ -790,7 +795,7 @@ sixel_lookup_vptree_8bit_map_cold8(
     int i;
     int j;
     unsigned char const *p;
-#if HAVE_NEON && HAVE_ARM_NEON_H
+#if defined(SIXEL_VPTREE_USE_NEON)
     int16x8_t r, g, b, dr, dg, db;
     int32x4_t lo, hi, best_lo, best_hi, idx_lo, idx_hi, index;
     uint32x4_t mask;
@@ -804,7 +809,7 @@ sixel_lookup_vptree_8bit_map_cold8(
         green[j] = (int16_t)((keys[j] >> 8) & 255U);
         blue[j] = (int16_t)(keys[j] & 255U);
     }
-#if HAVE_NEON && HAVE_ARM_NEON_H
+#if defined(SIXEL_VPTREE_USE_NEON)
     r = vld1q_s16(red);
     g = vld1q_s16(green);
     b = vld1q_s16(blue);
@@ -819,7 +824,7 @@ sixel_lookup_vptree_8bit_map_cold8(
 #endif
     for (i = 0; i < tree->ncolors; ++i) {
         p = tree->palette + i * 3;
-#if HAVE_NEON && HAVE_ARM_NEON_H
+#if defined(SIXEL_VPTREE_USE_NEON)
         dr = vsubq_s16(r, vdupq_n_s16(p[0]));
         dg = vsubq_s16(g, vdupq_n_s16(p[1]));
         db = vsubq_s16(b, vdupq_n_s16(p[2]));
@@ -865,7 +870,7 @@ sixel_lookup_vptree_8bit_map_cold8(
                                _mm_andnot_si128(mask, best_hi));
 #endif
     }
-#if HAVE_NEON && HAVE_ARM_NEON_H
+#if defined(SIXEL_VPTREE_USE_NEON)
     vst1q_s32(indexes, idx_lo);
     vst1q_s32(indexes + 4, idx_hi);
 #else
@@ -887,7 +892,7 @@ sixel_lookup_vptree_8bit_map_pixels(
     unsigned int key;
     unsigned int previous;
     int hint;
-#if (HAVE_NEON && HAVE_ARM_NEON_H) || (HAVE_SSE2 && HAVE_EMMINTRIN_H)
+#if defined(SIXEL_VPTREE_USE_NEON) || defined(SIXEL_VPTREE_USE_SSE2)
     unsigned int keys[8];
     unsigned int slots[8];
     int indexes[8];
@@ -901,13 +906,13 @@ sixel_lookup_vptree_8bit_map_pixels(
 
     previous = 0x1000000U;
     hint = -1;
-#if (HAVE_NEON && HAVE_ARM_NEON_H) || (HAVE_SSE2 && HAVE_EMMINTRIN_H)
+#if defined(SIXEL_VPTREE_USE_NEON) || defined(SIXEL_VPTREE_USE_SSE2)
     pending = 0;
 #endif
     for (i = 0; i < count; ++i) {
         key = ((unsigned int)pixels[0] << 16)
             | ((unsigned int)pixels[1] << 8) | pixels[2];
-#if (HAVE_NEON && HAVE_ARM_NEON_H) || (HAVE_SSE2 && HAVE_EMMINTRIN_H)
+#if defined(SIXEL_VPTREE_USE_NEON) || defined(SIXEL_VPTREE_USE_SSE2)
         if (tree->memo != NULL && key != previous) {
             slot = (uint32_t)((uint64_t)key * 2654435761U)
                 >> (32 - SIXEL_LOOKUP_VPTREE_8BIT_MEMO_BITS);
@@ -952,7 +957,7 @@ sixel_lookup_vptree_8bit_map_pixels(
             result += result_stride;
         }
     }
-#if (HAVE_NEON && HAVE_ARM_NEON_H) || (HAVE_SSE2 && HAVE_EMMINTRIN_H)
+#if defined(SIXEL_VPTREE_USE_NEON) || defined(SIXEL_VPTREE_USE_SSE2)
     /* A short tail uses the ordinary exact search without reading padding. */
     for (j = 0; j < pending; ++j) {
         pixel[0] = (unsigned char)(keys[j] >> 16);

@@ -1,3 +1,6 @@
+# Editing the embedded Node initializer must relink the executable.
+EXTRA_lsqa_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
+
 BUILT_SOURCES =
 
 CLEANFILES =
@@ -113,7 +116,7 @@ lsqa_LDADD += -lm \
         @THREAD_LIBS@
 if BUILDING_ON_WINDOWS
 if USING_CL
-EXTRA_lsqa_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
+EXTRA_lsqa_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif

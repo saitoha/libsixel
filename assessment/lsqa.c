@@ -76,6 +76,8 @@
 #include "tty.h"
 
 #if defined(_WIN32)
+# include <io.h>
+# include <fcntl.h>
 # if !defined(UNICODE)
 #  define UNICODE
 # endif
@@ -3728,6 +3730,13 @@ main(int argc, char **argv)
     target_precision = LSQA_COMPARE_PRECISION_8BIT;
     input_passes = 0U;
 
+#if defined(_WIN32)
+    /* JSON and piped image input must retain their serialized bytes. */
+    if (_setmode(_fileno(stdin), _O_BINARY) == -1 ||
+        _setmode(_fileno(stdout), _O_BINARY) == -1) {
+        return LSQA_EXIT_RUNTIME_FAILED;
+    }
+#endif
     parse_status = parse_args(argc, argv, &opts);
     if (parse_status != 0) {
         if (parse_status > 0) {

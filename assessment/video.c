@@ -346,7 +346,14 @@ lsqa_video_map(lsqa_video_state_t *v)
     size_t j;
     size_t count;
 
-    if (sizeof(float) != 4 || FLT_RADIX != 2 || FLT_MANT_DIG != 24) {
+    /* The spool stores IEEE binary32, regardless of the host float ABI. */
+#if FLT_RADIX != 2 || FLT_MANT_DIG != 24
+    return SIXEL_NOT_IMPLEMENTED;
+#endif
+    switch (sizeof(float)) {
+    case 4:
+        break;
+    default:
         return SIXEL_NOT_IMPLEMENTED;
     }
     if ((uint64_t)v->pixels > (UINT64_MAX - v->map_bytes) / 4U) {

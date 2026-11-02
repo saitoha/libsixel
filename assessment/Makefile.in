@@ -93,7 +93,8 @@ host_triplet = @host@
 @WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATION_SIXEL)
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
 bin_PROGRAMS = lsqa$(EXEEXT)
-@WITH_SHEBANG_FILE_TRUE@am__append_3 = $(SIXEL_SHEBANG_STAMP)
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@am__append_3 = $(top_builddir)/src/.libs/sixel.dll.lib
+@WITH_SHEBANG_FILE_TRUE@am__append_4 = $(SIXEL_SHEBANG_STAMP)
 subdir = assessment
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -383,6 +384,7 @@ SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
 SIXEL_EMSCRIPTEN_CC = @SIXEL_EMSCRIPTEN_CC@
+SIXEL_EMSCRIPTEN_STDIO = @SIXEL_EMSCRIPTEN_STDIO@
 SIXEL_LIBTOOL_BUILD_LIBS = @SIXEL_LIBTOOL_BUILD_LIBS@
 SIXEL_LIBTOOL_OBJDIR = @SIXEL_LIBTOOL_OBJDIR@
 SIXEL_LIBTOOL_PATH_SEPARATOR = @SIXEL_LIBTOOL_PATH_SEPARATOR@
@@ -479,8 +481,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
+
+# Editing the embedded Node initializer must relink the executable.
+EXTRA_lsqa_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO) $(am__append_3)
 BUILT_SOURCES = $(am__append_1)
-CLEANFILES = $(am__append_3)
+CLEANFILES = $(am__append_4)
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
@@ -555,7 +560,6 @@ AMALGAMATION_LSQA_LIBS = -lm \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(QUICKLOOK_LIBS) $(METAL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(CLIPBOARD_LIBS) @THREAD_LIBS@
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
-@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@EXTRA_lsqa_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 @OPENVMS_GNV_FALSE@lsqa_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @OPENVMS_GNV_FALSE@	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lsqa_CFLAGS) \
 @OPENVMS_GNV_FALSE@	$(CFLAGS) $(lsqa_LDFLAGS) $(LDFLAGS) -o $@

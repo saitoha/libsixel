@@ -8,6 +8,8 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+/* The amalgamation already exposes these private kernels. */
+#if !defined(SIXEL_AMALGAMATION)
 #define sixel_lookup_delaunay_float32_create test_dl30_create
 #define sixel_lookup_delaunay_float32_unref test_dl30_unref
 #define sixel_lookup_delaunay_float32_configure test_dl30_configure
@@ -15,6 +17,20 @@
 #define sixel_lookup_delaunay_float32_map_pixels test_dl30_map_pixels
 #define sixel_lookup_delaunay_float32_workspace_size test_dl30_workspace_size
 #include "src/lookup-delaunay-float32.c"
+#undef sixel_lookup_delaunay_float32_create
+#undef sixel_lookup_delaunay_float32_unref
+#undef sixel_lookup_delaunay_float32_configure
+#undef sixel_lookup_delaunay_float32_map
+#undef sixel_lookup_delaunay_float32_map_pixels
+#undef sixel_lookup_delaunay_float32_workspace_size
+#else
+#define test_dl30_create sixel_lookup_delaunay_float32_create
+#define test_dl30_unref sixel_lookup_delaunay_float32_unref
+#define test_dl30_configure sixel_lookup_delaunay_float32_configure
+#define test_dl30_map sixel_lookup_delaunay_float32_map
+#define test_dl30_map_pixels sixel_lookup_delaunay_float32_map_pixels
+#define test_dl30_workspace_size sixel_lookup_delaunay_float32_workspace_size
+#endif
 
 int
 test_lookup_0030_delaunay_float_exact(int argc, char **argv)
@@ -165,3 +181,10 @@ cleanup:
     sixel_allocator_unref(allocator);
     return rc;
 }
+
+#undef test_dl30_create
+#undef test_dl30_unref
+#undef test_dl30_configure
+#undef test_dl30_map
+#undef test_dl30_map_pixels
+#undef test_dl30_workspace_size
