@@ -445,6 +445,7 @@ sixel_filter_binning_add_samples(
     strength = sixel_palette_bin_range_get_strength();
     adaptive = strength != 0u && config->adaptive_range &&
         policy == SIXEL_PALETTE_BINNING_HARD;
+    range.levels = histogram->bin_count;
     if (adaptive) {
         sixel_palette_bin_range_init(&range, histogram->bin_count);
         if (input->statistics == NULL ||
@@ -571,6 +572,7 @@ sixel_filter_binning_add_stream(
     strength = sixel_palette_bin_range_get_strength();
     adaptive = strength != 0u && config->adaptive_range &&
         policy == SIXEL_PALETTE_BINNING_HARD;
+    range.levels = histogram->bin_count;
     if (adaptive) {
         sixel_palette_bin_range_init(&range, histogram->bin_count);
         if (stream->statistics == NULL ||

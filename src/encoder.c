@@ -5618,7 +5618,7 @@ sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
         sixel_thread_budget_enter(&budget, context->planner != NULL
             ? context->planner->main_threads : sixel_threads_resolve());
     }
-    if (context->palette_job_started != 0) {
+    if (context->palette_job_started != 0 && context->planner != NULL) {
         sixel_thread_budget_set_reclaim(&budget,
             context->planner->main_threads + context->planner->palette_threads,
             sixel_encoder_palette_job_reclaim, &context->palette_job);
@@ -11605,6 +11605,10 @@ sixel_encoder_latest_select(sixel_encode_dag_context_t *context)
     int profile_changed;
     int finished;
 
+    if (context->pipeline == NULL ||
+            context->pipeline->palette_store == NULL) {
+        return SIXEL_LOGIC_ERROR;
+    }
     encoder = context->encoder;
     if (encoder->palette_test_hooks != NULL &&
             encoder->palette_test_hooks->before_select != NULL) {
@@ -11726,6 +11730,11 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
     work_entered = 0;
     context = &job->context;
     encoder = context->encoder;
+    /* Latest selection requires the store admitted by the frame pipeline. */
+    if (context->latest && (context->pipeline == NULL ||
+            context->pipeline->palette_store == NULL)) {
+        return SIXEL_LOGIC_ERROR;
+    }
     memset(&lease, 0, sizeof(lease));
     encoder->sixdelta_refinement_needed = 0;
     encoder->sixdelta_painted_pixels = 0u;

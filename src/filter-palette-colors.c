@@ -157,6 +157,8 @@ sixel_filter_palette_colors_apply(sixel_filter_t *filter,
     clone_if = NULL;
     clone = NULL;
     reuse_gamma = 0;
+    channels = gamma_channels = 0u;
+    floating = gamma_floating = 0;
     if (config == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }

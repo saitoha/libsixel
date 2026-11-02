@@ -20,6 +20,15 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 echo "1..1"
 set -v
 
+# Read the compiled dither capability; keep serial option routing covered.
+parallel_dither=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    planner/allocation/0001_allocation_slots parallel-dither) || {
+    echo "not ok 1 - cannot query the compiled dither capability"
+    exit 0
+}
+expected_band=18
+test "$parallel_dither" = 1 || expected_band=66
+
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
@@ -80,7 +89,7 @@ case "${range_trace}" in *LSXSUB1\|*key=band_width\|stored=1**) false ;; *) true
     exit 0
 }
 
-case "${range_trace}" in *LSXDTH1\|*band_height=18\|*band_width=0\|band_width_override=0**) true ;; *) false ;; esac || {
+case "${range_trace}" in *LSXDTH1\|*band_height=${expected_band}\|*band_width=0\|band_width_override=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "negative band_width changed the default"
     exit 0
 }
@@ -98,7 +107,7 @@ case "${zero_trace}" in *LSXSUB1\|*key=band_width\|stored=1**) false ;; *) true 
     exit 0
 }
 
-case "${zero_trace}" in *LSXDTH1\|*band_height=18\|*band_width=0\|band_width_override=0**) true ;; *) false ;; esac || {
+case "${zero_trace}" in *LSXDTH1\|*band_height=${expected_band}\|*band_width=0\|band_width_override=0**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "zero band_width changed the default"
     exit 0
 }

@@ -3914,6 +3914,8 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
 {
    int L;
    int q, value, table, i, id;
+   int p, sixteen, t, sizes[16], n, tc, th, ok;
+   stbi_uc *v;
    switch (m) {
       case STBI__MARKER_none: // no marker found
          return stbi__err("expected marker","Corrupt JPEG");
@@ -3999,9 +4001,10 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
              L > z->s->img_buffer_end - z->s->img_buffer))
             return stbi__err("bad DQT length", "Corrupt JPEG");
          while (L > 0) {
-            int q = stbi__get8(z->s);
-            int p = q >> 4, sixteen = (p != 0);
-            int t = q & 15,i;
+            q = stbi__get8(z->s);
+            p = q >> 4;
+            sixteen = (p != 0);
+            t = q & 15;
             if (p != 0 && p != 1) return stbi__err("bad DQT type","Corrupt JPEG");
             if (t > 3) return stbi__err("bad DQT table","Corrupt JPEG");
             if (L < (sixteen ? 129 : 65))
@@ -4017,11 +4020,10 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
       case 0xC4: // DHT - define huffman table
          L = stbi__get16be(z->s)-2;
          while (L > 0) {
-            stbi_uc *v;
-            int sizes[16],i,n=0;
-            int q = stbi__get8(z->s);
-            int tc = q >> 4;
-            int th = q & 15;
+            n = 0;
+            q = stbi__get8(z->s);
+            tc = q >> 4;
+            th = q & 15;
             if (tc > 1 || th > 3) return stbi__err("bad DHT header","Corrupt JPEG");
             for (i=0; i < 16; ++i) {
                sizes[i] = stbi__get8(z->s);
@@ -4058,8 +4060,7 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
 
       if (m == 0xE0 && L >= 5) { // JFIF APP0 segment
          static const unsigned char tag[5] = {'J','F','I','F','\0'};
-         int ok = 1;
-         int i;
+         ok = 1;
          for (i=0; i < 5; ++i)
             if (stbi__get8(z->s) != tag[i])
                ok = 0;
@@ -4068,8 +4069,7 @@ static int stbi__process_marker(stbi__jpeg *z, int m)
             z->jfif = 1;
       } else if (m == 0xEE && L >= 12) { // Adobe APP14 segment
          static const unsigned char tag[6] = {'A','d','o','b','e','\0'};
-         int ok = 1;
-         int i;
+         ok = 1;
          for (i=0; i < 6; ++i)
             if (stbi__get8(z->s) != tag[i])
                ok = 0;

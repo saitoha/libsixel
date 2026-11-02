@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 set +x
 
-# Match ordered markers directly; shortest-prefix glob removal is quadratic.
+# Inspect one line at a time to avoid shell glob limits on full traces.
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
@@ -37,18 +37,30 @@ test "${command_status}" -eq 0 || {
 }
 
 
-case "${trace_output}" in *builtin\ PSD:\ suppressing\ clbl=1\ deferred\ base\ solid/gradient\ overlays**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 overlay suppression trace"
+suppressed=0
+replayed=0
+alpha_preserved=0
+while IFS= read -r line; do
+    case "$line" in
+    *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*)
+        suppressed=1
+        ;;
+    *"builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback"*)
+        test "$suppressed" -eq 0 || replayed=1
+        ;;
+    *"builtin PSD: keeping deferred gradient overlay alpha unchanged in layer fallback"*)
+        test "$suppressed" -eq 0 || alpha_preserved=1
+        ;;
+    esac
+done <<EOF
+$trace_output
+EOF
+test "$replayed" -eq 1 || {
+    echo "not ok 1 - deferred gradient replay did not follow suppression"
     exit 0
 }
-
-case "${trace_output}" in *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ applying\ clip-weighted\ deferred\ gradient\ overlay\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred gradient overlay after suppression"
-    exit 0
-}
-
-case "${trace_output}" in *"builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays"*builtin\ PSD:\ keeping\ deferred\ gradient\ overlay\ alpha\ unchanged\ in\ layer\ fallback**) true ;; *) false ;; esac || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred gradient alpha-invariant trace"
+test "$alpha_preserved" -eq 1 || {
+    echo "not ok 1 - missing deferred gradient alpha-invariant trace"
     exit 0
 }
 

@@ -679,7 +679,7 @@ sixel_kmeans_float_unique(double const *points, unsigned int count,
     size_t byte;
     uint32_t hash;
     double key[3];
-    unsigned char const *bytes;
+    unsigned char bytes[sizeof(key)];
 
     if (limit == 0 || limit > SIXEL_PALETTE_MAX) {
         return SIXEL_BAD_ARGUMENT;
@@ -701,7 +701,8 @@ sixel_kmeans_float_unique(double const *points, unsigned int count,
                 key[channel] = 0.0;
             }
         }
-        bytes = (unsigned char const *)(void const *)key;
+        /* Copy the complete object representation before byte hashing. */
+        memcpy(bytes, key, sizeof(bytes));
         hash = 2166136261u;
         for (byte = 0; byte < sizeof(key); ++byte) {
             hash = (uint32_t)((uint64_t)(hash ^ bytes[byte]) * 16777619u);
@@ -3495,7 +3496,7 @@ sixel_palette_build_kmeans_internal(
     build_request.final_merge_mode = SIXEL_PALETTE_CONTEXT(palette)
         ->final_merge_mode;
     build_request.binning_state =
-        context != NULL && context->attempt != NULL
+        context->attempt != NULL
             ? &context->attempt->binning
             : NULL;
     build_request.statistics = sixel_palette_sample_statistics_for(

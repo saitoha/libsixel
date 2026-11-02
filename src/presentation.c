@@ -238,7 +238,7 @@ sixel_presentation_write(char *data, int size, void *priv)
     if (size <= 0) {
         return size == 0 ? 0 : -1;
     }
-    prefix = presentation->saved ? "\0338" : "\0337";
+    prefix = presentation->saved ? "\033" "8" : "\033" "7";
     if (presentation->async_submission) {
         bytes = (size_t)size + (presentation->prefix_pending ? 2u : 0u);
         sixel_mutex_lock(&presentation->transport_mutex);

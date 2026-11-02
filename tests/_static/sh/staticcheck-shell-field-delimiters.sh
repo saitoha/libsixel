@@ -7,12 +7,15 @@ src_root=$1
 checker=$src_root/tests/_static/awk/shell-field-delimiters.awk
 # shellcheck disable=SC2016
 # Feed literal controls directly; no interpreter is needed to run the scripts.
-printf '%s\n' 'field=${value%%|*}' | awk -f "$checker" >&2 && {
-    echo 'not ok 1 - unescaped delimiter escaped detection'
-    exit 0
-}
+for invalid in 'field=${value%%|*}' 'field=${value##*|ok=}'; do
+    printf '%s\n' "$invalid" | awk -f "$checker" >&2 && {
+        echo 'not ok 1 - unescaped delimiter escaped detection'
+        exit 0
+    }
+done
 # shellcheck disable=SC2016
 printf '%s\n' 'field=${value%%\|*}' 'field=${value%%"|"*}' \
+    'field=${value##*\|ok=}' 'field=${value#*"|ok="}' \
     '# field=${value%%|*}' | awk -f "$checker" >&2 || {
     echo 'not ok 1 - escaped delimiters or comments were rejected'
     exit 0

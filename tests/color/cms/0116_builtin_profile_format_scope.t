@@ -36,7 +36,7 @@ while IFS= read -r line; do
             ;;
         PFTRACE\|kind=*)
             test -z "$block" || ok=0
-            block=${line#PFTRACE|kind=}
+            block=${line#PFTRACE\|kind=}
             continue
             ;;
         *)
@@ -57,20 +57,20 @@ $line"
     kind=${marker%%\|*}
     test "$kind" = known || test "$kind" = positive ||
         test "$kind" = outside || ok=0
-    field=${marker#*|engine=}
+    field=${marker#*\|engine=}
     engine=${field%%\|*}
     test "$engine" != 2 || engine=builtin
     test "$engine" != 4 || engine=colorsync
-    field=${marker#*|src=}
+    field=${marker#*\|src=}
     src=${field%%\|*}
-    field=${marker#*|expected=}
+    field=${marker#*\|expected=}
     expected=${field%%\|*}
     rest=$block
     test "$kind" != known || {
         known=$((known + 1))
-        field=${marker#*|profile=}
+        field=${marker#*\|profile=}
         profile=${field%%\|*}
-        test "${marker##*|created=}" = 1 || ok=0
+        test "${marker##*\|created=}" = 1 || ok=0
         wanted="LSXCMS2|event=reject|engine=$engine|reason=source-profile-format|src=$src|dst=4|profile=$profile|expected=$expected
 "
         rest=${rest#*"$wanted"}
@@ -81,11 +81,11 @@ $line"
         wanted="LSXCMS2|event=apply|engine=$engine|path="
         apply=${block#*"$wanted"}
         { test -n "$wanted" && case "${block}" in *"$wanted"*) true ;; *) false ;; esac; } || ok=0
-        apply=${apply#*|src=}
+        apply=${apply#*\|src=}
         wanted="$src|dst=4|ok=0
 "
         { test -n "$wanted" && case "${apply}" in "$wanted"*) true ;; *) false ;; esac; } || ok=0
-        prefix=${block%%LSXCMS2|event=apply*}
+        prefix=${block%%LSXCMS2\|event=apply*}
         apply=${apply#"$wanted"}
         apply=$prefix$apply
         case "${apply}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || ok=0

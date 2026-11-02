@@ -500,8 +500,11 @@ png_chrm_supports_binary32(void)
     float one;
     uint32_t encoded;
 
-    if (sizeof(float) != 4 || FLT_RADIX != 2 || FLT_MANT_DIG != 24 ||
-        FLT_MAX_EXP != 128 || FLT_MIN_EXP != -125) {
+#if FLT_RADIX != 2 || FLT_MANT_DIG != 24 || \
+    FLT_MAX_EXP != 128 || FLT_MIN_EXP != -125
+    return 0;
+#endif
+    if (sizeof(float) != sizeof(encoded)) {
         return 0;
     }
     one = 1.0f;

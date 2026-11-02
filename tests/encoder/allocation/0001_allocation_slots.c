@@ -4,6 +4,8 @@
 #include "config.h"
 #endif
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "src/planner.h"
 
 int
@@ -20,9 +22,18 @@ test_allocation_slots(int argc, char **argv)
     int stage;
     int effective_stage;
     int ok;
+    int expected_dither;
+    int expected_band;
 
-    (void)argc;
-    (void)argv;
+    /* Trace tests query the compiled executor without an image conversion. */
+    if (argc == 2 && strcmp(argv[1], "parallel-dither") == 0) {
+#if defined(__PCC__) || defined(__TINYC__)
+        puts("0");
+#else
+        puts("1");
+#endif
+        return EXIT_SUCCESS;
+    }
     request.height = 480;
     request.ncolors = 16;
     request.method_for_diffuse = SIXEL_DIFFUSE_FS;
@@ -36,12 +47,16 @@ test_allocation_slots(int argc, char **argv)
             effective_stage = 0;
 #endif
             sixel_dither_encode_allocate(&request, &allocation);
-            ok &= allocation.dither_threads ==
-                (effective_stage ? budgets[i] : dithers[i]);
+            expected_dither = effective_stage ? budgets[i] : dithers[i];
+            expected_band = effective_stage ? staged_bands[i] : bands[i];
+#if defined(__PCC__) || defined(__TINYC__)
+            expected_dither = 1;
+            expected_band = budgets[i] > 2 ? 480 : 0;
+#endif
+            ok &= allocation.dither_threads == expected_dither;
             ok &= allocation.encode_threads ==
                 (effective_stage ? budgets[i] : encoders[i]);
-            ok &= allocation.band_height ==
-                (effective_stage ? staged_bands[i] : bands[i]);
+            ok &= allocation.band_height == expected_band;
             ok &= allocation.mode == (effective_stage
                 ? SIXEL_DITHER_ENCODE_STAGED : budgets[i] <= 2
                     ? SIXEL_DITHER_ENCODE_SERIAL

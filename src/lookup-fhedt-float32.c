@@ -2235,6 +2235,9 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
         return status;
     }
 
+    if (fhedt->shared == NULL) {
+        return SIXEL_LOGIC_ERROR;
+    }
     fhedt->shared->signature = sixel_lookup_fhedt_float32_signature(
         palette, ncolors, resolution, refine,
         wcomp1, wcomp2, wcomp3, 3, pixelformat);

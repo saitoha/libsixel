@@ -171,13 +171,18 @@ float_fault_free(void *memory)
 #define linear_to_gamma_lut cff_linear_to_gamma_lut
 #define linear_to_smptec_lut cff_linear_to_smptec_lut
 #define sixel_components_getservice float_fault_service
-/* The ordinary header can already be guarded in an amalgamated build. */
-double sixel_color_decode_srgb(double value);
-int sixel_color_convert(double out[3], double const in[3],
+/* The ordinary header can already be guarded in an amalgamated build.
+ * Keep its DLL attribute on these renamed declarations as well. */
+SIXEL_INTERNAL_API double
+sixel_color_decode_srgb(double value);
+SIXEL_INTERNAL_API int
+sixel_color_convert(double out[3], double const in[3],
     int source, int target);
-int sixel_color_convert_output(double out[3], double const in[3],
+SIXEL_INTERNAL_API int
+sixel_color_convert_output(double out[3], double const in[3],
     int source, int target);
-int sixel_color_from_output(double out[3], double const in[3],
+SIXEL_INTERNAL_API int
+sixel_color_from_output(double out[3], double const in[3],
     int source, int target);
 #define calloc float_fault_calloc
 #define free float_fault_free

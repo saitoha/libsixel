@@ -848,6 +848,8 @@ sixel_dither_carry_apply(sixel_dither_policy_effective_t const *request,
     denominator = perturb.enabled ? 16 << 8 : kernel->denominator;
     bounded = depth == 3 &&
         dither->clamp_policy != SIXEL_DITHER_CLAMP_NONE;
+    /* NONE does not evaluate thresholds, but keeps a defined descriptor. */
+    memset(&bounds, 0, sizeof(bounds));
     if (dither->clamp_policy != SIXEL_DITHER_CLAMP_NONE) {
         sixel_carry_prepare(&bounds, denominator, dither->clamp_policy,
             dither->clamp_threshold, dither->diffusion_deadzone);

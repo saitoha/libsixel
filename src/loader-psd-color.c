@@ -88,7 +88,7 @@ psd_render_ink(sixel_color_def_t const *srgb, sixel_psd_ink_t const *ink,
         sector = (unsigned int)h;
         t = h - sector;
         a = v * (1.0 - s);
-        b = v * (1.0 - s * (sector % 2u ? t : 1.0 - t));
+        b = v * (1.0 - s * ((sector % 2u) ? t : 1.0 - t));
         switch (sector % 6u) {
         case 0u: rgb[0] = v; rgb[1] = b; rgb[2] = a; break;
         case 1u: rgb[0] = b; rgb[1] = v; rgb[2] = a; break;

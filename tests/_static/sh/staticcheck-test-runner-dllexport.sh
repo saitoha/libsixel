@@ -23,6 +23,10 @@ decls_file=$tmpdir/decls.tsv
 calls_file=$tmpdir/calls.tsv
 missing_file=$tmpdir/missing.tsv
 headers_file=$tmpdir/headers.txt
+source_decls=$tmpdir/source-decls.tsv
+calls_scanner=$tmpdir/calls.awk
+# The sentinel detects accidentally truncating declarations in a later batch.
+printf '%s\n' '# all declaration batches' > "$source_decls"
 
 printf '%s\n' "$header_file" > "$headers_file"
 
@@ -49,7 +53,7 @@ tr '\n' '\0' < "$headers_file" | xargs -0 awk \
     > "$decls_file"
 LC_ALL=C sort -u "$decls_file" -o "$decls_file"
 
-sh "$source_files_helper" "$tests_root" --name '*.c' --exec awk '
+cat > "$calls_scanner" <<'AWK'
 {
     line = $0
     while (match(line, /[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\(/)) {
@@ -62,12 +66,22 @@ sh "$source_files_helper" "$tests_root" --name '*.c' --exec awk '
             name != "switch" &&
             name != "return" &&
             name != "sizeof") {
-            printf "%s\t%s:%d\n", name, FILENAME, NR
+            printf "%s\t%s:%d\n", name, FILENAME, FNR
         }
         line = substr(line, RSTART + RLENGTH)
     }
 }
-'| LC_ALL=C sort -u > "$calls_file"
+AWK
+sh "$source_files_helper" "$tests_root" --name '*.c' --exec awk \
+    -v declarations_file="$source_decls" \
+    -f "$src_root/tests/_static/awk/dllexport-declarations.awk" \
+    -f "$calls_scanner" | LC_ALL=C sort -u > "$calls_file"
+
+IFS= read -r first_declaration < "$source_decls"
+if test "$first_declaration" != '# all declaration batches'; then
+    echo "not ok 1 - DLL declaration batches were overwritten"
+    exit 1
+fi
 
 if test ! -s "$calls_file"; then
     echo "ok 1 # SKIP no callable symbol references found in tests"
@@ -91,6 +105,13 @@ FNR == NR {
     }
 }
 ' "$calls_file" "$decls_file" > "$missing_file"
+
+# A private implementation copy may rename symbols before including a C
+# file. Its explicit prototypes must keep the original header DLL linkage.
+awk -F '\t' '
+FNR == NR { if ($3 == 1) exported[$1] = 1; next }
+$3 == 0 && exported[$1] { print $1 "\t" $2 }
+' "$decls_file" "$source_decls" >> "$missing_file"
 
 if test ! -s "$missing_file"; then
     echo "ok 1 - test_runner header calls are dllexport-ready"

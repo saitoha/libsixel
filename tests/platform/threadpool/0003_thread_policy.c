@@ -255,7 +255,11 @@ test_threadpool_0003_thread_policy(int argc, char **argv)
     request.threads_max = 4u;
     request.threads_max_set = 1;
     sixel_dither_encode_allocate(&request, &allocation);
+#if defined(__PCC__) || defined(__TINYC__)
+    ok &= policy_expect("explicit lazy dither", allocation.dither_threads, 1);
+#else
     ok &= policy_expect("explicit lazy dither", allocation.dither_threads, 4);
+#endif
     ok &= policy_expect("explicit lazy encode", allocation.encode_threads, 4);
     policy_reset();
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;

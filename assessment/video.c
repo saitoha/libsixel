@@ -139,7 +139,7 @@ static int
 lsqa_video_record(FILE *file, char const *const *names, int count,
     double *values)
 {
-    char line[1024];
+    char line[1024] = {0};
     char key[32];
     char *p;
     char *end;

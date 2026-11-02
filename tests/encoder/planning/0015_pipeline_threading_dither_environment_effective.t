@@ -15,6 +15,15 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 echo "1..1"
 set -v
 
+# Read the compiled dither capability; keep serial option routing covered.
+parallel_dither=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    planner/allocation/0001_allocation_slots parallel-dither) || {
+    echo "not ok 1 - cannot query the compiled dither capability"
+    exit 0
+}
+expected_dither=4
+test "$parallel_dither" = 1 || expected_dither=1
+
 # Automatic sampling releases its palette slots before this pipeline.
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
@@ -39,7 +48,7 @@ negative_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-case "${negative_trace}" in *threads:\ dither=4\ encode=2**) true ;; *) false ;; esac || {
+case "${negative_trace}" in *threads:\ dither=${expected_dither}\ encode=2**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "negative threading dither changed the default"
     exit 0
 }

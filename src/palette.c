@@ -960,8 +960,7 @@ sixel_palette_resize_entries(sixel_palette_t *palette,
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
 
-    required = (size_t)colors * (size_t)depth;
-    if (required == 0U) {
+    if (colors == 0U || depth == 0U) {
         if (storage->entries != NULL) {
             sixel_allocator_free(allocator, storage->entries);
             storage->entries = NULL;
@@ -970,6 +969,10 @@ sixel_palette_resize_entries(sixel_palette_t *palette,
         return SIXEL_OK;
     }
 
+    if ((size_t)colors > SIZE_MAX / depth) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    required = (size_t)colors * (size_t)depth;
     if (storage->entries != NULL && storage->entries_size >= required) {
         return SIXEL_OK;
     }
@@ -1018,8 +1021,7 @@ sixel_palette_resize_entries_float32(sixel_palette_t *palette,
     }
     storage = SIXEL_PALETTE_STORAGE(palette);
 
-    required_bytes = (size_t)colors * (size_t)depth;
-    if (required_bytes == 0U) {
+    if (colors == 0U || depth == 0U) {
         if (storage->entries_float32 != NULL) {
             sixel_allocator_free(allocator, storage->entries_float32);
             storage->entries_float32 = NULL;
@@ -1028,6 +1030,10 @@ sixel_palette_resize_entries_float32(sixel_palette_t *palette,
         return SIXEL_OK;
     }
 
+    if ((size_t)colors > SIZE_MAX / depth) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    required_bytes = (size_t)colors * (size_t)depth;
     if (storage->entries_float32 != NULL
             && storage->entries_float32_size >= required_bytes) {
         return SIXEL_OK;
@@ -1233,6 +1239,9 @@ sixel_palette_repair_native(sixel_palette_t *palette,
         work_allocator);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+    if (repaired_count == 0u || repaired_count > SIXEL_PALETTE_MAX) {
+        return SIXEL_LOGIC_ERROR;
     }
     /* Reserve both views before publishing either. A failed allocation
      * can grow capacity, but cannot leave mismatched palette contents. */

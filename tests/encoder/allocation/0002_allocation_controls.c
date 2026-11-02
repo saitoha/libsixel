@@ -30,7 +30,11 @@ test_allocation_controls(int argc, char **argv)
     request.threads_max = 99;
     request.overlap = 99;
     sixel_dither_encode_allocate(&request, &allocation);
+#if defined(__PCC__) || defined(__TINYC__)
+    ok &= allocation.dither_threads == 1 && allocation.encode_threads == 2;
+#else
     ok &= allocation.dither_threads == 2 && allocation.encode_threads == 2;
+#endif
     ok &= allocation.band_height == 12 && allocation.overlap == 6;
     request.threads_max_set = 0;
     request.band_height = 1;

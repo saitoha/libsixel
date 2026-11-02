@@ -19,6 +19,15 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 echo "1..1"
 set -v
 
+# Read the compiled dither capability; keep serial option routing covered.
+parallel_dither=$(${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    planner/allocation/0001_allocation_slots parallel-dither) || {
+    echo "not ok 1 - cannot query the compiled dither capability"
+    exit 0
+}
+expected_dither=3
+test "$parallel_dither" = 1 || expected_dither=1
+
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
@@ -35,7 +44,7 @@ case "${short_trace}" in *LSXSUB1\|*key=encode\|stored=1\|binding=encode_threads
     echo "not ok" 1 - "threading encode short value was not stored"
     exit 0
 }
-case "${short_trace}" in *LSXDTH1\|*dither_threads=3\|encode_threads=3**) true ;; *) false ;; esac || {
+case "${short_trace}" in *LSXDTH1\|*dither_threads=${expected_dither}\|encode_threads=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "threading encode short did not reserve the encode workers"
     exit 0
 }
@@ -51,7 +60,7 @@ case "${env_trace}" in *LSXSUB1\|*key=encode\|stored=1\|binding=encode_threads,e
     echo "not ok" 1 - "threading encode environment value was not stored"
     exit 0
 }
-case "${env_trace}" in *LSXDTH1\|*dither_threads=3\|encode_threads=3**) true ;; *) false ;; esac || {
+case "${env_trace}" in *LSXDTH1\|*dither_threads=${expected_dither}\|encode_threads=3**) true ;; *) false ;; esac || {
     echo "not ok" 1 - "threading encode environment did not reserve the encode workers"
     exit 0
 }

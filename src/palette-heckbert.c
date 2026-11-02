@@ -769,6 +769,19 @@ sixel_lut_build_histogram(unsigned char const *data,
         limit = hist_size;
     }
 
+    if (limit == 0U) {
+        goto export_histogram;
+    }
+    /* Reserve the first occupied-cell block before entering the hot loops.
+     * Slot insertion still initializes only the cells actually visited. */
+    capacity = limit < 256U ? limit : 256U;
+    moments = sixel_allocator_malloc(allocator,
+        capacity * (depth_u + 1U) * sizeof(*moments));
+    if (moments == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+
     /*
      * Keep the dominant 8bit RGB/RGBA path branch-light so histogram packing
      * does not pay per-pixel reversible checks.
@@ -862,6 +875,7 @@ sixel_lut_build_histogram(unsigned char const *data,
         }
     }
 
+export_histogram:
     colorfreqtable->size = slots;
     status = alloctupletable(&colorfreqtable->table, depth, slots, allocator);
     if (SIXEL_FAILED(status)) {
@@ -2883,6 +2897,10 @@ sixel_heckbert_box_sse(tupletable2 table, unsigned int start,
     if (cut == NULL) {
         return sixel_heckbert_sse(sums, squares, population, depth);
     }
+    /* An unsplittable box reports an empty cut to the caller. */
+    *cut = 0U;
+    *lower = 0U;
+    children[0] = children[1] = 0.0;
     for (i = 0U; i + 1U < size; ++i) {
         weight = (double)sixel_palette_heckbert_entry_weight(
             table.table[start + i]);
@@ -2899,7 +2917,7 @@ sixel_heckbert_box_sse(tupletable2 table, unsigned int start,
             left_population, depth);
         errors[1] = sixel_heckbert_sse(right_sums, right_squares,
             population - left_population, depth);
-        if (best < 0.0 || errors[0] + errors[1] < best) {
+        if (i == 0U || errors[0] + errors[1] < best) {
             best = errors[0] + errors[1];
             *cut = i + 1U;
             *lower = (unsigned int)left_population;
@@ -4134,26 +4152,24 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
 
     if (input_is_float32 && colormap.size > 0U && depth > 0U) {
         float_stride = (int)((size_t)depth * (size_t)sizeof(float));
-        float_entries_size = (size_t)colormap.size
-                              * (size_t)depth
-                              * (size_t)sizeof(float);
         if (float_stride <= 0) {
             sixel_helper_set_additional_message(
                 "sixel_palette_build_heckbert: invalid float stride.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        if (float_entries_size > 0U) {
-            float_entries = (float *)sixel_allocator_malloc(
-                work_allocator,
-                float_entries_size);
-            if (float_entries == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_palette_build_heckbert: float palette alloc"
-                    " failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
+        if (colormap.size > SIZE_MAX / depth / sizeof(float)) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
+        float_entries_size = (size_t)colormap.size * depth * sizeof(float);
+        float_entries = (float *)sixel_allocator_malloc(
+            work_allocator, float_entries_size);
+        if (float_entries == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_build_heckbert: float palette alloc failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
         }
     }
 

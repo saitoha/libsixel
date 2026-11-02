@@ -1039,6 +1039,10 @@ static SIXELSTATUS copy_frame_to_rgb(sixel_frame_t *frame,
         return status;
     }
     pixelformat = sixel_frame_get_pixelformat(frame);
+    if (frame_width <= 0 || frame_height <= 0 ||
+            (size_t)frame_width > SIZE_MAX / (size_t)frame_height / 3u) {
+        return SIXEL_BAD_INPUT;
+    }
     size = (size_t)frame_width * (size_t)frame_height * 3u;
     /*
      * Use malloc here because the loader's allocator enforces a strict
@@ -1115,17 +1119,6 @@ frame_to_rgb_float(sixel_frame_t *frame,
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
     pixelformat = sixel_frame_get_pixelformat(frame);
-    count = (size_t)width * (size_t)height;
-    if (height != 0 && count / (size_t)height != (size_t)width) {
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
-    }
-    if (count > SIZE_MAX / (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS) {
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
-    }
-    count *= (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS;
-    converted = (float *)xmalloc(count * sizeof(float));
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_assessment_frame_get_pixels_view(frame, &view);
         if (SIXEL_FAILED(status)) {
@@ -1136,7 +1129,6 @@ frame_to_rgb_float(sixel_frame_t *frame,
             status = SIXEL_BAD_INPUT;
             goto cleanup;
         }
-        memcpy(converted, float_pixels, count * sizeof(float));
     } else {
         status = copy_frame_to_rgb(frame, &pixels, &width, &height);
         if (SIXEL_FAILED(status)) {
@@ -1146,6 +1138,20 @@ frame_to_rgb_float(sixel_frame_t *frame,
             status = SIXEL_BAD_INPUT;
             goto cleanup;
         }
+    }
+    /* Size the result from the dimensions of the buffer actually returned,
+     * not a separate earlier frame query. Validate the complete byte size. */
+    if (width <= 0 || height <= 0 ||
+            (size_t)width > SIZE_MAX / (size_t)height /
+                SIXEL_ASSESSMENT_RGB_CHANNELS / sizeof(float)) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    count = (size_t)width * (size_t)height * SIXEL_ASSESSMENT_RGB_CHANNELS;
+    converted = (float *)xmalloc(count * sizeof(float));
+    if (float_pixels != NULL) {
+        memcpy(converted, float_pixels, count * sizeof(float));
+    } else {
         /* Initialize and remap each channel in one pass. The channel index
          * stays within count even when analyzing a symbolic image size. */
         for (index = 0; index < count; ++index) {
@@ -3269,7 +3275,9 @@ align_frame_pixels(float **ref_pixels,
     out_new = (float *)xmalloc((size_t)width * (size_t)height *
                                (size_t)channels * sizeof(float));
     row_bytes = (size_t)width * (size_t)channels * sizeof(float);
-    for (y = 0; y < height; ++y) {
+    /* Dimensions are positive; copy the first row unconditionally. */
+    y = 0;
+    do {
         memcpy(ref_new + (size_t)y * (size_t)width * (size_t)channels,
                *ref_pixels + (size_t)y * (size_t)(*ref_width) *
                (size_t)channels,
@@ -3278,7 +3286,7 @@ align_frame_pixels(float **ref_pixels,
                *out_pixels + (size_t)y * (size_t)(*out_width) *
                (size_t)channels,
                row_bytes);
-    }
+    } while (++y < height);
     free(*ref_pixels);
     free(*out_pixels);
     *ref_pixels = ref_new;

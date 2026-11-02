@@ -610,9 +610,10 @@ sixel_lookup_delaunay_8bit_map_cold8(
         idx_hi = vbslq_s32(mask, index, idx_hi);
         best_hi = vminq_s32(hi, best_hi);
 #elif HAVE_SSE2 && HAVE_EMMINTRIN_H
-        dr = _mm_sub_epi16(r, _mm_set1_epi16(p[0]));
-        dg = _mm_sub_epi16(g, _mm_set1_epi16(p[1]));
-        db = _mm_sub_epi16(b, _mm_set1_epi16(p[2]));
+        /* Graph coordinates are byte values stored in int32_t slots. */
+        dr = _mm_sub_epi16(r, _mm_set1_epi16((short)p[0]));
+        dg = _mm_sub_epi16(g, _mm_set1_epi16((short)p[1]));
+        db = _mm_sub_epi16(b, _mm_set1_epi16((short)p[2]));
         v = _mm_unpacklo_epi16(dr, zero);
         lo = _mm_madd_epi16(v, v);
         v = _mm_unpackhi_epi16(dr, zero);

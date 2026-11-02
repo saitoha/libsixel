@@ -6,14 +6,16 @@ echo '1..1'
 set -v
 src_root=$1
 work=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-dist-XXXXXX")
-trap 'rm -rf "$work"' EXIT HUP INT TERM
+trap 'chmod -R u+w "$work"; rm -rf "$work"' EXIT HUP INT TERM
 # The observation is file distribution, so these small files are the evidence.
-mkdir -p "$work/source/sub" "$work/source/data"
+mkdir -p "$work/source/sub" "$work/source/data/nested" "$work/data"
 printf '%s\n' source > "$work/source/sub/file.c"
 printf '%s\n' generated > "$work/generated.h"
-printf '%s\n' fixture > "$work/source/data/fixture"
+printf '%s\n' fixture > "$work/source/data/nested/fixture"
+printf '%s\n' built > "$work/data/generated"
+chmod -R a-w "$work/source/data"
 cat > "$work/Makefile" <<MAKE
-DISTFILES = source/sub/file.c generated.h data
+DISTFILES = source/sub/file.c generated.h data data/nested
 VPATH = source
 srcdir = source
 top_srcdir = $src_root
@@ -33,7 +35,9 @@ command -v gmake >/dev/null 2>&1 && make_bin=gmake
 # shellcheck disable=SC2015
 cmp "$work/source/sub/file.c" "$work/package/sub/file.c" &&
 cmp "$work/generated.h" "$work/package/generated.h" &&
-cmp "$work/source/data/fixture" "$work/package/data/fixture" || {
+cmp "$work/source/data/nested/fixture" \
+    "$work/package/data/nested/fixture" &&
+cmp "$work/data/generated" "$work/package/data/generated" || {
     echo 'not ok 1 - test distribution selected incorrect file contents'
     exit 0
 }

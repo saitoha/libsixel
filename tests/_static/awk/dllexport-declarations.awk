@@ -53,12 +53,22 @@ function emit_declaration(    text, prefix, name, offset, location, exported,
     if (self_test) {
         observed[name] = exported
     } else {
-        printf "%s\t%s:%d\t%d\n", name, header, location, exported
+        if (declarations_file != "") {
+            printf "%s\t%s:%d\t%d\n", name, header, location, exported >> declarations_file
+        } else {
+            printf "%s\t%s:%d\t%d\n", name, header, location, exported
+        }
     }
 }
 function scan_line(line, number,    i, ch, next_ch, trimmed) {
     if (directive || line ~ /^[[:space:]]*#/) {
         directive = line ~ /\\[[:space:]]*$/
+        return
+    }
+    # Most body lines cannot change lexical state. Avoid character scanning
+    # for arithmetic, calls and numeric table rows with no delimiters.
+    if (body_depth && !block_comment && quote == "" &&
+        line !~ /[{}"'\/\\]/) {
         return
     }
     for (i = 1; i <= length(line); ++i) {

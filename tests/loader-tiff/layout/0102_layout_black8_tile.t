@@ -47,7 +47,7 @@ while IFS= read -r line; do
         test "$active" -ne 0 || continue
         { case "${line}" in *"|engine=$engine|"*) true ;; *) false ;; esac &&
             case "${line}" in *"|src=$source|dst=4|"*) true ;; *) false ;; esac &&
-            test "${line##*|ok=}" -eq 1; } || {
+            test "${line##*\|ok=}" -eq 1; } || {
             echo "$trace" >&2
             echo "not ok 1 - wrong actual CMS backend, format or result"
             exit 0

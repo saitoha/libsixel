@@ -156,14 +156,14 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 
 | SC-15 | The Meson case inventory remains in a whole-linked archive with matching compile inputs; mutations that flatten objects or drop archive semantics and dependencies are rejected. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
 
-| SC-16 | The DLL declaration scanner ignores balanced compiler attributes while preserving local storage classes, external declarations and source locations; literal controls reject treating attributes or their arguments as function names. | [tests/_static/sh/staticcheck-test-runner-dllexport.sh](../../tests/_static/sh/staticcheck-test-runner-dllexport.sh) |
+| SC-16 | The DLL declaration scanner ignores balanced compiler attributes while preserving local storage classes, external declarations and source locations; literal controls reject treating attributes or their arguments as function names. Test-source redeclarations of exported functions retain their DLL attribute, including renamed private implementation copies. | [tests/_static/sh/staticcheck-test-runner-dllexport.sh](../../tests/_static/sh/staticcheck-test-runner-dllexport.sh) |
 
 
 | SC-17 | Embedded CLI fuzz targets retain the normal converter's C source inventory; a missing source mutation is rejected. | [tests/_static/sh/staticcheck-fuzz-cli-sources.sh](../../tests/_static/sh/staticcheck-fuzz-cli-sources.sh) |
 | SC-18 | Loader-format fuzz targets match the workflow matrix in both build systems; removed or renamed formats are rejected. | [tests/_static/sh/staticcheck-fuzz-loader-formats.sh](../../tests/_static/sh/staticcheck-fuzz-loader-formats.sh) |
 | SC-19 | Every Autotools test-runner mode applies configured thread ABI flags to its support objects. | [tests/_static/sh/staticcheck-test-thread-flags.sh](../../tests/_static/sh/staticcheck-test-thread-flags.sh) |
-| SC-20 | Test distribution writes a bounded, complete manifest and selects source, generated and directory inputs correctly. | [tests/_static/sh/staticcheck-test-distribution.sh](../../tests/_static/sh/staticcheck-test-distribution.sh) |
-| SC-21 | Shell field extraction escapes a leading literal pipe in parameter-removal patterns, avoiding Korn shell alternation semantics. | [tests/_static/sh/staticcheck-shell-field-delimiters.sh](../../tests/_static/sh/staticcheck-shell-field-delimiters.sh) |
+| SC-20 | Test distribution writes a bounded, complete manifest and selects source, generated and directory inputs correctly, including overlapping read-only source directories merged with generated files. | [tests/_static/sh/staticcheck-test-distribution.sh](../../tests/_static/sh/staticcheck-test-distribution.sh) |
+| SC-21 | Shell field extraction escapes literal pipes, including those following a wildcard, in parameter-removal patterns, avoiding Korn shell alternation semantics. | [tests/_static/sh/staticcheck-shell-field-delimiters.sh](../../tests/_static/sh/staticcheck-shell-field-delimiters.sh) |
 
 | SC-22 | Source enumeration works without Python and preserves regular-file membership, hidden/artifact pruning, symbolic-link exclusion, glob filters, depth, NUL-separated argument boundaries and missing-root failure with or without the shared invocation inventory. | [tests/_static/sh/staticcheck-source-inventory.sh](../../tests/_static/sh/staticcheck-source-inventory.sh) |
 

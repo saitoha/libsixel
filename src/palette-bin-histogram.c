@@ -576,6 +576,8 @@ sixel_palette_bin_range_count(sixel_sample_statistics_t const *statistics,
     if (threshold <= 1u) {
         goto report;
     }
+    memset(&view, 0, sizeof(view));
+    memset(&transparency, 0, sizeof(transparency));
     channels = 0u;
     floating = 0;
     if (stream != NULL) {

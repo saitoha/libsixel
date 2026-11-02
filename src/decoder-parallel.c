@@ -2210,6 +2210,12 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                        sizeof(sixel_thread_t));
     contexts = (sixel_decoder_worker_context_t *)calloc(
         (size_t)threads, sizeof(sixel_decoder_worker_context_t));
+    /* Keep cleanup ownership explicit before any later allocation fails. */
+    if (contexts != NULL) {
+        for (i = 0; i < threads; ++i) {
+            contexts[i].columns = NULL;
+        }
+    }
     spans = (int *)calloc((size_t)threads, sizeof(int));
     if (workers == NULL || contexts == NULL || spans == NULL) {
         runtime_error = 1;

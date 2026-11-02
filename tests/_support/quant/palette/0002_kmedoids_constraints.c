@@ -77,104 +77,12 @@ sixel_kmedoids_test_update_assignments_after_swap(
     unsigned int *second_slot,
     double *cost_out);
 
-SIXELSTATUS
-sixel_kmedoids_test_build_clarans_guided_sets(
-    double const *weights,
-    unsigned int point_count,
-    unsigned int k,
-    unsigned int const *nearest_slot,
-    double const *nearest_dist,
-    unsigned char const *flags,
-    unsigned int hot_point_limit,
-    unsigned int hot_slot_limit,
-    unsigned int *hot_points,
-    unsigned int *hot_point_count_out,
-    unsigned int *hot_slots,
-    unsigned int *hot_slot_count_out,
-    sixel_allocator_t *allocator);
 
-SIXELSTATUS
-sixel_kmedoids_test_collect_samples(
-    unsigned char const *data,
-    unsigned int length,
-    unsigned int channels,
-    unsigned int pixel_stride,
-    int input_is_float32,
-    unsigned int histbits,
-    unsigned int point_budget,
-    unsigned int rare_keep,
-    double prune_mass,
-    uint32_t seed,
-    double **samples_out,
-    double **sample_weights_out,
-    unsigned int *sample_count_out,
-    unsigned int *visible_count_out,
-    sixel_allocator_t *allocator);
 
-double
-sixel_kmedoids_test_swap_cost_cutoff_with_row(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int const *nearest_slot,
-    double const *nearest_dist,
-    double const *second_dist,
-    unsigned int replace_slot,
-    unsigned int candidate_point,
-    double *candidate_dist_row,
-    unsigned int const *order,
-    double cutoff,
-    int *early_stop_out);
 
-double
-sixel_kmedoids_test_swap_cost_cutoff_with_row_generation(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int const *nearest_slot,
-    double const *nearest_dist,
-    double const *second_dist,
-    unsigned int replace_slot,
-    unsigned int candidate_point,
-    double *candidate_dist_row,
-    uint32_t *candidate_generation_row,
-    uint32_t candidate_row_epoch,
-    unsigned int const *order,
-    double cutoff,
-    int *early_stop_out);
 
-SIXELSTATUS
-sixel_kmedoids_test_build_eval_order_residual(
-    double const *weights,
-    double const *nearest_dist,
-    unsigned int point_count,
-    unsigned int *order_out,
-    sixel_allocator_t *allocator);
 
-SIXELSTATUS
-sixel_kmedoids_test_apply_eval_order_delta(
-    double const *weights,
-    double const *nearest_dist_before,
-    double const *nearest_dist_after,
-    unsigned int point_count,
-    unsigned int const *changed_points,
-    unsigned int changed_count,
-    unsigned int delta_threshold,
-    unsigned int *order_io,
-    int *full_refresh_out,
-    sixel_allocator_t *allocator);
 
-SIXELSTATUS
-sixel_kmedoids_test_build_clarans_slot_order(
-    double const *weights,
-    unsigned int const *nearest_slot,
-    double const *nearest_dist,
-    double const *second_dist,
-    unsigned int point_count,
-    unsigned int k,
-    unsigned int slot,
-    unsigned int *order_out,
-    sixel_allocator_t *allocator);
 
 SIXELSTATUS
 sixel_kmedoids_test_build_clarans_slot_order_lazy(
@@ -208,78 +116,11 @@ sixel_kmedoids_test_clarans_slot_order_dirty_rebuild(
     unsigned int *slot_orders_out,
     sixel_allocator_t *allocator);
 
-SIXELSTATUS
-sixel_kmedoids_test_clarans_candidate_batch_best(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int const *nearest_slot,
-    double const *nearest_dist,
-    double const *second_dist,
-    unsigned int k,
-    unsigned int candidate,
-    unsigned int const *slots,
-    unsigned int slot_count,
-    unsigned int const *slot_orders,
-    double cutoff,
-    unsigned int *best_slot_out,
-    double *best_cost_out,
-    unsigned int *evaluated_pairs_out,
-    sixel_allocator_t *allocator);
 
-SIXELSTATUS
-sixel_kmedoids_test_pam_polish_cost(double const *points,
-                                    double const *weights,
-                                    unsigned int point_count,
-                                    unsigned int const *initial_medoids,
-                                    unsigned int k,
-                                    double *before_cost_out,
-                                    double *after_cost_out,
-                                    unsigned int *iterations_out,
-                                    sixel_allocator_t *allocator);
 
-SIXELSTATUS
-sixel_kmedoids_test_apply_clarans_guided_delta(
-    double const *weights,
-    unsigned int point_count,
-    unsigned int k,
-    unsigned int const *nearest_slot_before,
-    double const *nearest_dist_before,
-    unsigned char const *flags_before,
-    unsigned int const *nearest_slot_after,
-    double const *nearest_dist_after,
-    unsigned char const *flags_after,
-    unsigned int hot_point_limit,
-    unsigned int hot_slot_limit,
-    unsigned int const *changed_points,
-    unsigned int changed_count,
-    unsigned int old_medoid,
-    unsigned int new_medoid,
-    unsigned int *hot_points_out,
-    unsigned int *hot_point_count_out,
-    unsigned int *hot_slots_out,
-    unsigned int *hot_slot_count_out,
-    sixel_allocator_t *allocator);
 
-void
-sixel_kmedoids_test_reset_clarans_guided_full_build_count(void);
 
-unsigned int
-sixel_kmedoids_test_get_clarans_guided_full_build_count(void);
 
-SIXELSTATUS
-sixel_kmedoids_test_two_step_pam_polish_cost(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int const *initial_medoids,
-    unsigned int k,
-    double *before_cost_out,
-    double *after_first_cost_out,
-    double *after_second_cost_out,
-    unsigned int *first_iterations_out,
-    unsigned int *second_iterations_out,
-    sixel_allocator_t *allocator);
 
 SIXELSTATUS
 sixel_kmedoids_test_bandit_select_topk(
@@ -297,13 +138,6 @@ sixel_kmedoids_test_clarans_cache_size(unsigned int point_count,
 unsigned int
 sixel_kmedoids_test_clarans_cheap_prefix_count(unsigned int point_count);
 
-SIXELSTATUS
-sixel_kmedoids_test_pick_unique_sorted_sample_indices(
-    unsigned int point_count,
-    unsigned int sample_size,
-    uint32_t seed,
-    unsigned int *indices_out,
-    sixel_allocator_t *allocator);
 
 static unsigned char const g_test_pixels_rgb[TEST_PIXEL_COUNT * 3u] = {
     255u, 0u,   0u,

@@ -280,7 +280,8 @@ image_buffer_finalize_normal_columns(image_buffer_t *image,
     int simd;
 #endif
 
-    if (source == NULL) {
+    if (source == NULL || (image->depth != 1 && image->depth != 2 &&
+            image->depth != 4)) {
         return;
     }
 #if SIXEL_DECODER_NEON
@@ -727,6 +728,12 @@ parser_context_store_ormode_run(parser_context_t *context,
     int rows;
     int count;
 
+    /* An incomplete plane allocation must use the checked parser path. */
+    if (image->ormode_planes == NULL ||
+            (context->ormode_high_spread != 0 &&
+             image->ormode_high_planes == NULL)) {
+        return p;
+    }
     band = (size_t)(context->pos_y / 6) * (size_t)image->width;
     low = image->ormode_planes + band;
     high = image->ormode_high_planes == NULL ? NULL :

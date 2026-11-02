@@ -22,8 +22,12 @@ while IFS= read -r file; do
         # VPATH distributions merge source and build trees, as Automake does.
         if test -d "$srcdir/$file" && test "$source_dir" != "$srcdir"; then
             cp -fpR "$srcdir/$file" "$parent"
+            chmod -R u+w "$destination"
         fi
         cp -fpR "$source_dir/$file" "$parent"
+        # distcheck sources are read-only. Later overlapping directory
+        # entries must be able to merge into this distribution copy.
+        chmod -R u+w "$destination"
     elif test ! -f "$destination"; then
         cp -p "$source_dir/$file" "$destination"
     fi

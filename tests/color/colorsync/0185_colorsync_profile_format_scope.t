@@ -28,36 +28,36 @@ outside=0
 native_controls=0
 ok=1
 while case "$remaining" in *"PFTRACE|kind="*) true ;; *) false ;; esac; do
-    prefix=${remaining%%PFTRACE|kind=*}
+    prefix=${remaining%%PFTRACE\|kind=*}
     case "${prefix}" in *"reason=source-profile-format"*) false ;; *) true ;; esac || ok=0
     case "${prefix}" in *"reason=native-source-channels"*) false ;; *) true ;; esac || ok=0
-    remaining=${remaining#*PFTRACE|kind=}
-    block=${remaining%%PFTRACE|kind=end*}
+    remaining=${remaining#*PFTRACE\|kind=}
+    block=${remaining%%PFTRACE\|kind=end*}
     case "${remaining}" in *PFTRACE\|kind=end*) true ;; *) false ;; esac || {
         ok=0
         break
     }
-    remaining=${remaining#*PFTRACE|kind=end}
+    remaining=${remaining#*PFTRACE\|kind=end}
     case "${block}" in *PFTRACE*) false ;; *) true ;; esac || ok=0
     marker=${block%%'
 '*}
     kind=${marker%%\|*}
     test "$kind" = known || test "$kind" = positive ||
         test "$kind" = outside || ok=0
-    field=${marker#*|engine=}
+    field=${marker#*\|engine=}
     engine=${field%%\|*}
     test "$engine" != 2 || engine=builtin
     test "$engine" != 4 || engine=colorsync
-    field=${marker#*|src=}
+    field=${marker#*\|src=}
     src=${field%%\|*}
-    field=${marker#*|expected=}
+    field=${marker#*\|expected=}
     expected=${field%%\|*}
     rest=$block
     test "$kind" != known || {
         known=$((known + 1))
-        field=${marker#*|profile=}
+        field=${marker#*\|profile=}
         profile=${field%%\|*}
-        test "${marker##*|created=}" = 1 || ok=0
+        test "${marker##*\|created=}" = 1 || ok=0
         wanted="LSXCMS2|event=reject|engine=$engine|reason=source-profile-format|src=$src|dst=4|profile=$profile|expected=$expected
 "
         rest=${rest#*"$wanted"}
@@ -68,11 +68,11 @@ while case "$remaining" in *"PFTRACE|kind="*) true ;; *) false ;; esac; do
         wanted="LSXCMS2|event=apply|engine=$engine|path="
         apply=${block#*"$wanted"}
         { test -n "$wanted" && case "${block}" in *"$wanted"*) true ;; *) false ;; esac; } || ok=0
-        apply=${apply#*|src=}
+        apply=${apply#*\|src=}
         wanted="$src|dst=4|ok=0
 "
         { test -n "$wanted" && case "${apply}" in "$wanted"*) true ;; *) false ;; esac; } || ok=0
-        prefix=${block%%LSXCMS2|event=apply*}
+        prefix=${block%%LSXCMS2\|event=apply*}
         apply=${apply#"$wanted"}
         apply=$prefix$apply
         case "${apply}" in *"LSXCMS2|event=apply"*) false ;; *) true ;; esac || ok=0

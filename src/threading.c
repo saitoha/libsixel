@@ -1309,7 +1309,7 @@ sixel_thread_work_event(int begin)
     /* No active operation means no hook. Do not resolve defaults or probe
      * topology at a serial solver checkpoint outside an encoder scope. */
     owner = sixel_thread_identity_current();
-    policy.work = NULL;
+    memset(&policy, 0, sizeof(policy));
     sixel_thread_config_lock();
     for (scope = g_thread_budget_scopes; scope != NULL; scope = scope->next) {
         if (sixel_thread_identity_equal(scope->owner, owner)) {
