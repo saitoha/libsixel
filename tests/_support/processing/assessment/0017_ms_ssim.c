@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 /* Reference values: tests/data/assessment/ms_ssim_reference.py. */
 #include <math.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,10 +15,10 @@ test_qa_0017(int argc, char **argv)
     sixel_assessment_t *qa;
     float *reference;
     float *target;
-    unsigned int mask;
-    unsigned int ms_ssim_mask;
-    unsigned int companion_mask;
-    unsigned int expected_mask;
+    sixel_assessment_mask_t mask;
+    sixel_assessment_mask_t ms_ssim_mask;
+    sixel_assessment_mask_t companion_mask;
+    sixel_assessment_mask_t expected_mask;
     double expected;
     double actual;
     float av;
@@ -152,7 +153,8 @@ test_qa_0017(int argc, char **argv)
         }
     }
     if (!ok) {
-        fprintf(stderr, "MS-SSIM case %d: %.12g, expected %.12g, mask %x\n",
+        fprintf(stderr, "MS-SSIM case %d: %.12g, expected %.12g, "
+            "mask %" PRIx64 "\n",
             scenario, actual, expected, qa->results_valid_mask);
     }
 end:

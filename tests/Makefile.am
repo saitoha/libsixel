@@ -418,6 +418,12 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_SCIELAB_SELECTION_REUSE \
     -DBUILD_TEST_0009_SCIELAB_MAP_OUTPUT \
     -DBUILD_TEST_0010_SCIELAB_MAP_CAPACITY \
+    -DBUILD_TEST_0001_SCIEDE2000_UNIFORM \
+    -DBUILD_TEST_0002_SCIEDE2000_DENSE_REFERENCE \
+    -DBUILD_TEST_0003_SCIEDE2000_SPATIAL_CANCELLATION \
+    -DBUILD_TEST_0004_SCIEDE2000_SELECTION_REUSE \
+    -DBUILD_TEST_0005_SCIEDE2000_INVALID \
+    -DBUILD_TEST_0006_SCIEDE2000_PHYSICAL_SIGNAL \
     -DBUILD_VIDEO_REPORT_TEST_COMMON \
     -DBUILD_IMAGE_VALUES_TEST_COMMON \
     -DBUILD_CLOCK_REPORT_TEST_COMMON \
@@ -4855,6 +4861,12 @@ test_runner_SOURCES = test_runner.c \
     assessment/scielab/0008_scielab_selection_reuse.c \
     assessment/scielab/0009_scielab_map_output.c \
     assessment/scielab/0010_scielab_map_capacity.c \
+    assessment/sciede2000/0001_sciede2000_uniform.c \
+    assessment/sciede2000/0002_sciede2000_dense_reference.c \
+    assessment/sciede2000/0003_sciede2000_spatial_cancellation.c \
+    assessment/sciede2000/0004_sciede2000_selection_reuse.c \
+    assessment/sciede2000/0005_sciede2000_invalid.c \
+    assessment/sciede2000/0006_sciede2000_physical_signal.c \
     _support/processing/assessment/video_report_test_common.c \
     _support/loader/image_values_test_common.c \
     _support/processing/assessment/clock_report_test_common.c \

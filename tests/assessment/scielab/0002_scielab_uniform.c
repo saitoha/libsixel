@@ -28,7 +28,7 @@ test_qa_0027(int argc, char **argv)
     }
     for (i = 0; i < 6; ++i) {
         if (SIXEL_FAILED(sixel_qa_scielab(a, b, 3, 2, ppds[i],
-                &mean, &maximum, NULL)) || !isfinite(mean)
+                &mean, &maximum, NULL, NULL, NULL)) || !isfinite(mean)
                 || !isfinite(maximum) || fabs(mean - 58) > 1e-7
                 || fabs(maximum - 58) > 1e-7) {
             return EXIT_FAILURE;

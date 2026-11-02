@@ -19,19 +19,19 @@ test_qa_0031(int argc, char **argv)
     mean = maximum = map = -7;
     for (i = 0; i < 5; ++i) {
         if (sixel_qa_scielab(a, a, 1, 1, bad_ppd[i],
-                &mean, &maximum, &map) != SIXEL_BAD_ARGUMENT) {
+                &mean, &maximum, &map, NULL, NULL) != SIXEL_BAD_ARGUMENT) {
             return EXIT_FAILURE;
         }
     }
     if (sixel_qa_scielab(a, a, INT_MAX, INT_MAX, 60,
-            &mean, &maximum, &map) != SIXEL_BAD_ALLOCATION
+            &mean, &maximum, &map, NULL, NULL) != SIXEL_BAD_ALLOCATION
             || sixel_qa_scielab(a, a, 0, 1, 60,
-                &mean, &maximum, &map) != SIXEL_BAD_ARGUMENT) {
+                &mean, &maximum, &map, NULL, NULL) != SIXEL_BAD_ARGUMENT) {
         return EXIT_FAILURE;
     }
     a[0] = NAN;
     if (sixel_qa_scielab(a, a, 1, 1, 60,
-            &mean, &maximum, &map) != SIXEL_BAD_INPUT) {
+            &mean, &maximum, &map, NULL, NULL) != SIXEL_BAD_INPUT) {
         return EXIT_FAILURE;
     }
     return mean == -7 && maximum == -7 && map == -7

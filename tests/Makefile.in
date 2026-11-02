@@ -575,6 +575,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	assessment/scielab/0008_scielab_selection_reuse.c \
 	assessment/scielab/0009_scielab_map_output.c \
 	assessment/scielab/0010_scielab_map_capacity.c \
+	assessment/sciede2000/0001_sciede2000_uniform.c \
+	assessment/sciede2000/0002_sciede2000_dense_reference.c \
+	assessment/sciede2000/0003_sciede2000_spatial_cancellation.c \
+	assessment/sciede2000/0004_sciede2000_selection_reuse.c \
+	assessment/sciede2000/0005_sciede2000_invalid.c \
+	assessment/sciede2000/0006_sciede2000_physical_signal.c \
 	_support/processing/assessment/video_report_test_common.c \
 	_support/loader/image_values_test_common.c \
 	_support/processing/assessment/clock_report_test_common.c \
@@ -4777,6 +4783,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	assessment/scielab/test_runner-0008_scielab_selection_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	assessment/scielab/test_runner-0009_scielab_map_output.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	assessment/scielab/test_runner-0010_scielab_map_capacity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	assessment/sciede2000/test_runner-0001_sciede2000_uniform.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	assessment/sciede2000/test_runner-0005_sciede2000_invalid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/assessment/test_runner-video_report_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/loader/test_runner-image_values_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/assessment/test_runner-clock_report_test_common.$(OBJEXT) \
@@ -9027,6 +9039,12 @@ am__depfiles_remade =  \
 	assessment/persistence/$(DEPDIR)/test_runner-0001_persistence_duration_weighting.Po \
 	assessment/persistence/$(DEPDIR)/test_runner-0002_persistence_pixel_reset.Po \
 	assessment/persistence/$(DEPDIR)/test_runner-0003_persistence_partition_invariance.Po \
+	assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Po \
+	assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Po \
+	assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Po \
+	assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Po \
+	assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Po \
+	assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Po \
 	assessment/scielab/$(DEPDIR)/test_runner-0001_scielab_identity.Po \
 	assessment/scielab/$(DEPDIR)/test_runner-0002_scielab_uniform.Po \
 	assessment/scielab/$(DEPDIR)/test_runner-0003_scielab_dense_reference.Po \
@@ -13526,6 +13544,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_SCIELAB_SELECTION_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_SCIELAB_MAP_OUTPUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_SCIELAB_MAP_CAPACITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SCIEDE2000_UNIFORM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SCIEDE2000_DENSE_REFERENCE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_SCIEDE2000_SPATIAL_CANCELLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_SCIEDE2000_SELECTION_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_SCIEDE2000_INVALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_SCIEDE2000_PHYSICAL_SIGNAL \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_VIDEO_REPORT_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_IMAGE_VALUES_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLOCK_REPORT_TEST_COMMON \
@@ -17995,6 +18019,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    assessment/scielab/0008_scielab_selection_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    assessment/scielab/0009_scielab_map_output.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    assessment/scielab/0010_scielab_map_capacity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    assessment/sciede2000/0001_sciede2000_uniform.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    assessment/sciede2000/0002_sciede2000_dense_reference.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    assessment/sciede2000/0003_sciede2000_spatial_cancellation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    assessment/sciede2000/0004_sciede2000_selection_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    assessment/sciede2000/0005_sciede2000_invalid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    assessment/sciede2000/0006_sciede2000_physical_signal.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/assessment/video_report_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/loader/image_values_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/assessment/clock_report_test_common.c \
@@ -23611,6 +23641,30 @@ assessment/scielab/test_runner-0009_scielab_map_output.$(OBJEXT):  \
 assessment/scielab/test_runner-0010_scielab_map_capacity.$(OBJEXT):  \
 	assessment/scielab/$(am__dirstamp) \
 	assessment/scielab/$(DEPDIR)/$(am__dirstamp)
+assessment/sciede2000/$(am__dirstamp):
+	@$(MKDIR_P) assessment/sciede2000
+	@: >>assessment/sciede2000/$(am__dirstamp)
+assessment/sciede2000/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) assessment/sciede2000/$(DEPDIR)
+	@: >>assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
+assessment/sciede2000/test_runner-0001_sciede2000_uniform.$(OBJEXT):  \
+	assessment/sciede2000/$(am__dirstamp) \
+	assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
+assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.$(OBJEXT):  \
+	assessment/sciede2000/$(am__dirstamp) \
+	assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
+assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.$(OBJEXT):  \
+	assessment/sciede2000/$(am__dirstamp) \
+	assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
+assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.$(OBJEXT):  \
+	assessment/sciede2000/$(am__dirstamp) \
+	assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
+assessment/sciede2000/test_runner-0005_sciede2000_invalid.$(OBJEXT):  \
+	assessment/sciede2000/$(am__dirstamp) \
+	assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
+assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.$(OBJEXT):  \
+	assessment/sciede2000/$(am__dirstamp) \
+	assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
 _support/processing/assessment/test_runner-video_report_test_common.$(OBJEXT):  \
 	_support/processing/assessment/$(am__dirstamp) \
 	_support/processing/assessment/$(DEPDIR)/$(am__dirstamp)
@@ -35653,6 +35707,7 @@ mostlyclean-compile:
 	-rm -f _support/quant/palette/solvers_float/*.$(OBJEXT)
 	-rm -f assessment/delta-e/*.$(OBJEXT)
 	-rm -f assessment/persistence/*.$(OBJEXT)
+	-rm -f assessment/sciede2000/*.$(OBJEXT)
 	-rm -f assessment/scielab/*.$(OBJEXT)
 	-rm -f cli/img2sixel/*.$(OBJEXT)
 	-rm -f cli/signals/*.$(OBJEXT)
@@ -36252,6 +36307,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@assessment/persistence/$(DEPDIR)/test_runner-0001_persistence_duration_weighting.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@assessment/persistence/$(DEPDIR)/test_runner-0002_persistence_pixel_reset.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@assessment/persistence/$(DEPDIR)/test_runner-0003_persistence_partition_invariance.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@assessment/scielab/$(DEPDIR)/test_runner-0001_scielab_identity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@assessment/scielab/$(DEPDIR)/test_runner-0002_scielab_uniform.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@assessment/scielab/$(DEPDIR)/test_runner-0003_scielab_dense_reference.Po@am__quote@ # am--include-marker
@@ -46076,6 +46137,90 @@ assessment/scielab/test_runner-0010_scielab_map_capacity.obj: assessment/scielab
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/scielab/0010_scielab_map_capacity.c' object='assessment/scielab/test_runner-0010_scielab_map_capacity.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/scielab/test_runner-0010_scielab_map_capacity.obj `if test -f 'assessment/scielab/0010_scielab_map_capacity.c'; then $(CYGPATH_W) 'assessment/scielab/0010_scielab_map_capacity.c'; else $(CYGPATH_W) '$(srcdir)/assessment/scielab/0010_scielab_map_capacity.c'; fi`
+
+assessment/sciede2000/test_runner-0001_sciede2000_uniform.o: assessment/sciede2000/0001_sciede2000_uniform.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0001_sciede2000_uniform.o -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Tpo -c -o assessment/sciede2000/test_runner-0001_sciede2000_uniform.o `test -f 'assessment/sciede2000/0001_sciede2000_uniform.c' || echo '$(srcdir)/'`assessment/sciede2000/0001_sciede2000_uniform.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0001_sciede2000_uniform.c' object='assessment/sciede2000/test_runner-0001_sciede2000_uniform.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0001_sciede2000_uniform.o `test -f 'assessment/sciede2000/0001_sciede2000_uniform.c' || echo '$(srcdir)/'`assessment/sciede2000/0001_sciede2000_uniform.c
+
+assessment/sciede2000/test_runner-0001_sciede2000_uniform.obj: assessment/sciede2000/0001_sciede2000_uniform.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0001_sciede2000_uniform.obj -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Tpo -c -o assessment/sciede2000/test_runner-0001_sciede2000_uniform.obj `if test -f 'assessment/sciede2000/0001_sciede2000_uniform.c'; then $(CYGPATH_W) 'assessment/sciede2000/0001_sciede2000_uniform.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0001_sciede2000_uniform.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0001_sciede2000_uniform.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0001_sciede2000_uniform.c' object='assessment/sciede2000/test_runner-0001_sciede2000_uniform.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0001_sciede2000_uniform.obj `if test -f 'assessment/sciede2000/0001_sciede2000_uniform.c'; then $(CYGPATH_W) 'assessment/sciede2000/0001_sciede2000_uniform.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0001_sciede2000_uniform.c'; fi`
+
+assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.o: assessment/sciede2000/0002_sciede2000_dense_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.o -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Tpo -c -o assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.o `test -f 'assessment/sciede2000/0002_sciede2000_dense_reference.c' || echo '$(srcdir)/'`assessment/sciede2000/0002_sciede2000_dense_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0002_sciede2000_dense_reference.c' object='assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.o `test -f 'assessment/sciede2000/0002_sciede2000_dense_reference.c' || echo '$(srcdir)/'`assessment/sciede2000/0002_sciede2000_dense_reference.c
+
+assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.obj: assessment/sciede2000/0002_sciede2000_dense_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.obj -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Tpo -c -o assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.obj `if test -f 'assessment/sciede2000/0002_sciede2000_dense_reference.c'; then $(CYGPATH_W) 'assessment/sciede2000/0002_sciede2000_dense_reference.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0002_sciede2000_dense_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0002_sciede2000_dense_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0002_sciede2000_dense_reference.c' object='assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0002_sciede2000_dense_reference.obj `if test -f 'assessment/sciede2000/0002_sciede2000_dense_reference.c'; then $(CYGPATH_W) 'assessment/sciede2000/0002_sciede2000_dense_reference.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0002_sciede2000_dense_reference.c'; fi`
+
+assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.o: assessment/sciede2000/0003_sciede2000_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.o -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Tpo -c -o assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.o `test -f 'assessment/sciede2000/0003_sciede2000_spatial_cancellation.c' || echo '$(srcdir)/'`assessment/sciede2000/0003_sciede2000_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0003_sciede2000_spatial_cancellation.c' object='assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.o `test -f 'assessment/sciede2000/0003_sciede2000_spatial_cancellation.c' || echo '$(srcdir)/'`assessment/sciede2000/0003_sciede2000_spatial_cancellation.c
+
+assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.obj: assessment/sciede2000/0003_sciede2000_spatial_cancellation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.obj -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Tpo -c -o assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.obj `if test -f 'assessment/sciede2000/0003_sciede2000_spatial_cancellation.c'; then $(CYGPATH_W) 'assessment/sciede2000/0003_sciede2000_spatial_cancellation.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0003_sciede2000_spatial_cancellation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0003_sciede2000_spatial_cancellation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0003_sciede2000_spatial_cancellation.c' object='assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0003_sciede2000_spatial_cancellation.obj `if test -f 'assessment/sciede2000/0003_sciede2000_spatial_cancellation.c'; then $(CYGPATH_W) 'assessment/sciede2000/0003_sciede2000_spatial_cancellation.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0003_sciede2000_spatial_cancellation.c'; fi`
+
+assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.o: assessment/sciede2000/0004_sciede2000_selection_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.o -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Tpo -c -o assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.o `test -f 'assessment/sciede2000/0004_sciede2000_selection_reuse.c' || echo '$(srcdir)/'`assessment/sciede2000/0004_sciede2000_selection_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0004_sciede2000_selection_reuse.c' object='assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.o `test -f 'assessment/sciede2000/0004_sciede2000_selection_reuse.c' || echo '$(srcdir)/'`assessment/sciede2000/0004_sciede2000_selection_reuse.c
+
+assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.obj: assessment/sciede2000/0004_sciede2000_selection_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.obj -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Tpo -c -o assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.obj `if test -f 'assessment/sciede2000/0004_sciede2000_selection_reuse.c'; then $(CYGPATH_W) 'assessment/sciede2000/0004_sciede2000_selection_reuse.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0004_sciede2000_selection_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0004_sciede2000_selection_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0004_sciede2000_selection_reuse.c' object='assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0004_sciede2000_selection_reuse.obj `if test -f 'assessment/sciede2000/0004_sciede2000_selection_reuse.c'; then $(CYGPATH_W) 'assessment/sciede2000/0004_sciede2000_selection_reuse.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0004_sciede2000_selection_reuse.c'; fi`
+
+assessment/sciede2000/test_runner-0005_sciede2000_invalid.o: assessment/sciede2000/0005_sciede2000_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0005_sciede2000_invalid.o -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Tpo -c -o assessment/sciede2000/test_runner-0005_sciede2000_invalid.o `test -f 'assessment/sciede2000/0005_sciede2000_invalid.c' || echo '$(srcdir)/'`assessment/sciede2000/0005_sciede2000_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0005_sciede2000_invalid.c' object='assessment/sciede2000/test_runner-0005_sciede2000_invalid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0005_sciede2000_invalid.o `test -f 'assessment/sciede2000/0005_sciede2000_invalid.c' || echo '$(srcdir)/'`assessment/sciede2000/0005_sciede2000_invalid.c
+
+assessment/sciede2000/test_runner-0005_sciede2000_invalid.obj: assessment/sciede2000/0005_sciede2000_invalid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0005_sciede2000_invalid.obj -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Tpo -c -o assessment/sciede2000/test_runner-0005_sciede2000_invalid.obj `if test -f 'assessment/sciede2000/0005_sciede2000_invalid.c'; then $(CYGPATH_W) 'assessment/sciede2000/0005_sciede2000_invalid.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0005_sciede2000_invalid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0005_sciede2000_invalid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0005_sciede2000_invalid.c' object='assessment/sciede2000/test_runner-0005_sciede2000_invalid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0005_sciede2000_invalid.obj `if test -f 'assessment/sciede2000/0005_sciede2000_invalid.c'; then $(CYGPATH_W) 'assessment/sciede2000/0005_sciede2000_invalid.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0005_sciede2000_invalid.c'; fi`
+
+assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.o: assessment/sciede2000/0006_sciede2000_physical_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.o -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Tpo -c -o assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.o `test -f 'assessment/sciede2000/0006_sciede2000_physical_signal.c' || echo '$(srcdir)/'`assessment/sciede2000/0006_sciede2000_physical_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0006_sciede2000_physical_signal.c' object='assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.o `test -f 'assessment/sciede2000/0006_sciede2000_physical_signal.c' || echo '$(srcdir)/'`assessment/sciede2000/0006_sciede2000_physical_signal.c
+
+assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.obj: assessment/sciede2000/0006_sciede2000_physical_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.obj -MD -MP -MF assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Tpo -c -o assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.obj `if test -f 'assessment/sciede2000/0006_sciede2000_physical_signal.c'; then $(CYGPATH_W) 'assessment/sciede2000/0006_sciede2000_physical_signal.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0006_sciede2000_physical_signal.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Tpo assessment/sciede2000/$(DEPDIR)/test_runner-0006_sciede2000_physical_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment/sciede2000/0006_sciede2000_physical_signal.c' object='assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o assessment/sciede2000/test_runner-0006_sciede2000_physical_signal.obj `if test -f 'assessment/sciede2000/0006_sciede2000_physical_signal.c'; then $(CYGPATH_W) 'assessment/sciede2000/0006_sciede2000_physical_signal.c'; else $(CYGPATH_W) '$(srcdir)/assessment/sciede2000/0006_sciede2000_physical_signal.c'; fi`
 
 _support/processing/assessment/test_runner-video_report_test_common.o: _support/processing/assessment/video_report_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/assessment/test_runner-video_report_test_common.o -MD -MP -MF _support/processing/assessment/$(DEPDIR)/test_runner-video_report_test_common.Tpo -c -o _support/processing/assessment/test_runner-video_report_test_common.o `test -f '_support/processing/assessment/video_report_test_common.c' || echo '$(srcdir)/'`_support/processing/assessment/video_report_test_common.c
@@ -98325,6 +98470,8 @@ distclean-generic:
 	-$(am__rm_f) assessment/delta-e/$(am__dirstamp)
 	-$(am__rm_f) assessment/persistence/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) assessment/persistence/$(am__dirstamp)
+	-$(am__rm_f) assessment/sciede2000/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) assessment/sciede2000/$(am__dirstamp)
 	-$(am__rm_f) assessment/scielab/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) assessment/scielab/$(am__dirstamp)
 	-$(am__rm_f) cli/img2sixel/$(DEPDIR)/$(am__dirstamp)

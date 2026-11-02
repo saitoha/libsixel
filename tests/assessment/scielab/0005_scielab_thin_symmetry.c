@@ -23,9 +23,9 @@ test_qa_0030(int argc, char **argv)
     /* Transpose and swap the inputs together. Isotropic kernels and a
      * symmetric color distance preserve the entire error map. */
     if (SIXEL_FAILED(sixel_qa_scielab(a, b, 5, 1, 60,
-            &mean1, &max1, map1))
+            &mean1, &max1, map1, NULL, NULL))
             || SIXEL_FAILED(sixel_qa_scielab(b, a, 1, 5, 60,
-                &mean2, &max2, map2))) {
+                &mean2, &max2, map2, NULL, NULL))) {
         return EXIT_FAILURE;
     }
     for (p = 0; p < 5; ++p) {

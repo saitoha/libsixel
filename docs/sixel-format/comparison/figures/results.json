@@ -70,8 +70,8 @@
       "delta_e": "\u0394 E00_mean",
       "scielab_max": "S-CIELAB_max"
     },
-    "scielab_ppd_requested": 60,
-    "scielab_ppd": 60,
+    "ppd_requested": 60,
+    "ppd": 60,
     "corpus_stride": 5,
     "corpus_sizes": {
       "photo": 100,

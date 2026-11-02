@@ -226,6 +226,12 @@ int test_clock_report_check(int argc, char **argv);
 int test_qa_0036(int argc, char **argv);
 int test_qa_0037(int argc, char **argv);
 int test_qa_0038(int argc, char **argv);
+int test_qa_0039(int argc, char **argv);
+int test_qa_0040(int argc, char **argv);
+int test_qa_0041(int argc, char **argv);
+int test_qa_0042(int argc, char **argv);
+int test_qa_0043(int argc, char **argv);
+int test_qa_0044(int argc, char **argv);
 
 int test_video_decode_0087(int argc, char **argv);
 int test_video_decode_0088(int argc, char **argv);
@@ -6701,6 +6707,18 @@ static test_entry_t const test_entries[] = {
     { "assessment/0036_persistence_duration_weighting", test_qa_0036 },
     { "assessment/0037_persistence_pixel_reset", test_qa_0037 },
     { "assessment/0038_persistence_partition_invariance", test_qa_0038 },
+    { "assessment/0039_sciede2000_uniform",
+      test_qa_0039 },
+    { "assessment/0040_sciede2000_dense_reference",
+      test_qa_0040 },
+    { "assessment/0041_sciede2000_spatial_cancellation",
+      test_qa_0041 },
+    { "assessment/0042_sciede2000_selection_reuse",
+      test_qa_0042 },
+    { "assessment/0043_sciede2000_invalid",
+      test_qa_0043 },
+    { "assessment/0044_sciede2000_physical_signal",
+      test_qa_0044 },
 
     { "decoder/0087_animation_palette_carry", test_video_decode_0087 },
     { "decoder/0088_animation_clear_canvas", test_video_decode_0088 },
