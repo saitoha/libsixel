@@ -342,6 +342,48 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_LEGACY_OPTIONS \
     -DBUILD_TEST_0009_FAILED_OUTPUT \
     -DBUILD_TEST_0010_LATEST_PLAYBACK \
+    -DBUILD_TEST_0011_PARTIAL_DIRECT \
+    -DBUILD_TEST_0012_PARTIAL_AHEAD \
+    -DBUILD_TEST_0013_PARTIAL_LATEST \
+    -DBUILD_TEST_0014_PARTIAL_MOVE_X \
+    -DBUILD_TEST_0015_PARTIAL_RESIZE \
+    -DBUILD_TEST_0016_PARTIAL_MOVE_Y \
+    -DBUILD_TEST_0017_PARTIAL_REPEAT_TIME \
+    -DBUILD_TEST_0018_PARTIAL_GAP \
+    -DBUILD_TEST_0019_PARTIAL_OUTPUT_FAILURE \
+    -DBUILD_TEST_0020_PARTIAL_OUT_OF_BOUNDS \
+    -DBUILD_TEST_0021_PARTIAL_ALPHA_REJECTED \
+    -DBUILD_TEST_0022_PARTIAL_MOVE_SAME_TIME \
+    -DBUILD_TEST_0023_PARTIAL_RETURN \
+    -DBUILD_TEST_0024_PARTIAL_HEIGHT \
+    -DBUILD_TEST_0001_DIRECT \
+    -DBUILD_TEST_0002_EYTZINGER \
+    -DBUILD_TEST_0003_BLOCKCULL \
+    -DBUILD_TEST_0004_GRIDLUT \
+    -DBUILD_TEST_0005_ORDERED \
+    -DBUILD_TEST_0006_ARITHMETIC_A \
+    -DBUILD_TEST_0007_ARITHMETIC_X \
+    -DBUILD_TEST_0008_BLUENOISE \
+    -DBUILD_TEST_0009_SKIP_MASK \
+    -DBUILD_TEST_0010_RGB_UPLOAD \
+    -DBUILD_TEST_0011_VALID_UPLOAD \
+    -DBUILD_TEST_0012_NEGATIVE_ORIGIN \
+    -DBUILD_TEST_0013_OUTSIDE_CANVAS \
+    -DBUILD_TEST_0014_SHORT_RGB \
+    -DBUILD_TEST_0015_SHORT_VALID \
+    -DBUILD_TEST_0016_INCOMPLETE_SHAPE \
+    -DBUILD_TEST_0017_PIXEL_COUNT \
+    -DBUILD_TEST_0018_NO_VALID_MASK \
+    -DBUILD_TEST_0025_GPU_DIRECT \
+    -DBUILD_TEST_0026_GPU_AHEAD \
+    -DBUILD_TEST_0027_GPU_LATEST \
+    -DBUILD_TEST_0028_GPU_MOVE \
+    -DBUILD_TEST_0029_GPU_FAILURE \
+    -DBUILD_TEST_0030_GPU_RETURN \
+    -DBUILD_TEST_0019_AUTO_RECTANGLE_CUTOFF \
+    -DBUILD_TEST_0020_FULL_WIDTH_OFFSET \
+    -DBUILD_RECTANGLE_COMMON \
+    -DBUILD_PARTIAL_TEST_COMMON \
     -DBUILD_REFRESH_TEST_COMMON \
     -DBUILD_TEST_0016_RANGE_SUFFICIENT_COLORS \
     -DBUILD_TEST_0017_RANGE_UNRECOVERABLE_TONES \
@@ -428,6 +470,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_GRIDLUT_EXACT \
     -DBUILD_TEST_0001_ORDERED_EXACT \
     -DBUILD_LOOKUP_EXACT_COMMON \
+    -DBUILD_TEST_0143_GPU_RECTANGLE \
     -DBUILD_TEST_0140_LOOKUP_CONFIGURATION \
     -DBUILD_TEST_0099_GPU_REFERENCE \
     -DBUILD_TEST_0111_GPU_APPLY \
@@ -2184,7 +2227,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0014_FILTER_DITHER_6DELTA_DIFFUSION_SKIP \
     -DBUILD_TEST_0015_FILTER_GPU_6DELTA_DISABLED_REJECT \
     -DBUILD_TEST_0016_FILTER_DITHER_6DELTA_BLUENOISE_GPU_EXACT_PLANE \
-    -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_BLUENOISE_GPU_AUTO_FALLBACK \
+    -DBUILD_TEST_0017_FILTER_DITHER_6DELTA_BLUENOISE_GPU_PARTIAL_PLANE \
     -DBUILD_TEST_0040_FILTER_PALETTE_FAILURE_OUTPUT \
     -DBUILD_TEST_0041_FILTER_BINNING \
     -DBUILD_TEST_0042_FILTER_BINNING_FAILURE_OUTPUT \
@@ -6074,7 +6117,7 @@ test_runner_SOURCES = test_runner.c \
     delta/comparison/0014_filter_dither_6delta_diffusion_skip.c \
     delta/comparison/0015_filter_gpu_6delta_disabled_reject.c \
     delta/comparison/0016_filter_dither_6delta_bluenoise_gpu_exact_plane.c \
-    delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_auto_fallback.c \
+    delta/comparison/0017_filter_dither_6delta_bluenoise_gpu_partial_plane.c \
     encoder/pipeline/0040_filter_palette_failure_output.c \
     encoder/pipeline/0041_filter_binning.c \
     encoder/pipeline/0042_filter_binning_failure_output.c \
@@ -6126,6 +6169,48 @@ test_runner_SOURCES = test_runner.c \
     delta/residual/0028_gpu_metric_x.c \
     delta/residual/0029_gpu_cells_a.c \
     delta/residual/0030_gpu_cells_x.c \
+    delta/refresh/0011_partial_direct.c \
+    delta/refresh/0012_partial_ahead.c \
+    delta/refresh/0013_partial_latest.c \
+    delta/refresh/0014_partial_move_x.c \
+    delta/refresh/0015_partial_resize.c \
+    delta/refresh/0016_partial_move_y.c \
+    delta/refresh/0017_partial_repeat_time.c \
+    delta/refresh/0018_partial_gap.c \
+    delta/refresh/0019_partial_output_failure.c \
+    delta/refresh/0020_partial_out_of_bounds.c \
+    delta/refresh/0021_partial_alpha_rejected.c \
+    delta/refresh/0022_partial_move_same_time.c \
+    delta/refresh/0023_partial_return.c \
+    delta/refresh/0024_partial_height.c \
+    delta/gpu-rectangle/0001_direct.c \
+    delta/gpu-rectangle/0002_eytzinger.c \
+    delta/gpu-rectangle/0003_blockcull.c \
+    delta/gpu-rectangle/0004_gridlut.c \
+    delta/gpu-rectangle/0005_ordered.c \
+    delta/gpu-rectangle/0006_arithmetic_a.c \
+    delta/gpu-rectangle/0007_arithmetic_x.c \
+    delta/gpu-rectangle/0008_bluenoise.c \
+    delta/gpu-rectangle/0009_skip_mask.c \
+    delta/gpu-rectangle/0010_rgb_upload.c \
+    delta/gpu-rectangle/0011_valid_upload.c \
+    delta/gpu-rectangle/0012_negative_origin.c \
+    delta/gpu-rectangle/0013_outside_canvas.c \
+    delta/gpu-rectangle/0014_short_rgb.c \
+    delta/gpu-rectangle/0015_short_valid.c \
+    delta/gpu-rectangle/0016_incomplete_shape.c \
+    delta/gpu-rectangle/0017_pixel_count.c \
+    delta/gpu-rectangle/0018_no_valid_mask.c \
+    delta/refresh/0025_gpu_direct.c \
+    delta/refresh/0026_gpu_ahead.c \
+    delta/refresh/0027_gpu_latest.c \
+    delta/refresh/0028_gpu_move.c \
+    delta/refresh/0029_gpu_failure.c \
+    delta/refresh/0030_gpu_return.c \
+    delta/gpu-rectangle/0019_auto_rectangle_cutoff.c \
+    delta/gpu-rectangle/0020_full_width_offset.c \
+    _support/processing/gpu-palette/rectangle_common.c \
+    _support/processing/delta-refresh/partial_test_common.c \
     delta/refresh/0001_option_atomicity.c \
     delta/refresh/0002_staggered_coverage.c \
     delta/refresh/0003_skipped_deadlines.c \
@@ -6164,6 +6249,7 @@ test_runner_SOURCES = test_runner.c \
     lookup/blockcull/0001_blockcull_exact.c \
     lookup/gridlut/0001_gridlut_exact.c \
     lookup/ordered/0001_ordered_exact.c \
+    lookup/fhedt/0143_gpu_rectangle.c \
     lookup/fhedt/0140_lookup_configuration.c \
     lookup/fhedt/0099_gpu_reference.c \
     lookup/fhedt/0111_gpu_apply.c \

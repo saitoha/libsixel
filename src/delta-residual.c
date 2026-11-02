@@ -152,7 +152,8 @@ sixel_delta_mask_threshold(sixel_delta_mask_t const *mask,
 
 void
 sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
-    int width, int height, unsigned int period_ms, uint64_t time_us,
+    int width, int height, int origin_x, int origin_y,
+    unsigned int period_ms, uint64_t time_us,
     int history_valid)
 {
     uint64_t period, previous, current, offset, epoch;
@@ -168,9 +169,13 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     state->mask.width = width;
     state->mask.height = height;
     state->refresh_next_us = time_us;
+    state->refresh_next_origin_x = origin_x;
+    state->refresh_next_origin_y = origin_y;
     state->refresh_next_valid = 1;
     reset = !state->refresh_valid || !history_valid ||
         state->width != width || state->height != height ||
+        state->refresh_origin_x != origin_x ||
+        state->refresh_origin_y != origin_y ||
         time_us < state->refresh_last_us;
     epoch = reset ? time_us : state->refresh_epoch_us;
     state->refresh_next_epoch_us = epoch;
@@ -199,8 +204,9 @@ sixel_delta_refresh_prepare(sixel_delta_residual_t *state,
     for (gy = 0U; gy < 64U; ++gy) {
         ny = (size_t)height / 64U + (gy < (unsigned int)height % 64U);
         for (gx = 0U; gx < 64U; ++gx) {
-            phase = sixel_bn64[((gy + 17U) & 63U) * 64U +
-                              ((gx + 37U) & 63U)] >> 2;
+            phase = sixel_bn64[
+                ((gy + (unsigned int)origin_y + 17U) & 63U) * 64U +
+                ((gx + (unsigned int)origin_x + 37U) & 63U)] >> 2;
             if (!(phases[phase / 32U] & ((uint32_t)1 << (phase % 32U))))
                 continue;
             cell = (size_t)gy * 64U + gx;

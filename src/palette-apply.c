@@ -153,9 +153,6 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
             &lookup_configuration);
     }
     gpu = request->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-        request->output.origin_x == 0 && request->output.origin_y == 0 &&
-        request->output.plane_width == request->output.width &&
-        request->output.plane_height == request->output.height &&
         options.bluenoise_gradient_factor == 0 &&
         (kind == SIXEL_LUT_POLICY_NONE || kind == SIXEL_LUT_POLICY_EYTZINGER ||
          kind == SIXEL_LUT_POLICY_BLOCKCULL ||
@@ -420,6 +417,10 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.has_6delta_accumulation = execution->delta_enabled;
     request.accumulation_pixels = execution->retained_rgb;
     request.accumulation_pixels_size = execution->retained_rgb_size;
+    request.accumulation_width = execution->plane_width;
+    request.accumulation_height = execution->plane_height;
+    request.accumulation_origin_x = execution->origin_x;
+    request.accumulation_origin_y = execution->origin_y;
     request.accumulation_valid_mask = execution->retained_valid;
     request.accumulation_valid_mask_size = execution->retained_valid_size;
     request.accumulation_keycolor = execution->delta_keycolor;

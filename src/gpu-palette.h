@@ -49,6 +49,8 @@ typedef struct sixel_gpu_palette_test_hooks {
     int kernel;
     int rebuild;
     int published;
+    size_t retained_rgb_upload_bytes;
+    size_t retained_valid_upload_bytes;
 } sixel_gpu_palette_test_hooks_t;
 
 /*
@@ -99,13 +101,19 @@ typedef struct sixel_gpu_palette_request {
     /*
      * sixdelta_enabled says the caller wants 6delta keeps for this frame;
      * has_6delta_accumulation says this request can actually produce them.
-     * The two differ when the retained plane is larger than the frame, because
-     * the GPU kernel addresses the plane by frame pixel index.
+     * Missing history must not silently turn a requested keep into a paint.
      */
     int sixdelta_enabled;
     int has_6delta_accumulation;
     unsigned char const *accumulation_pixels;
     size_t accumulation_pixels_size;
+    /* Tightly packed retained canvas and this frame's origin within it.
+     * Zero dimensions retain the standalone, frame-sized legacy view.
+     * Only the frame rectangle is uploaded; kernels use local pixel indexes. */
+    int accumulation_width;
+    int accumulation_height;
+    int accumulation_origin_x;
+    int accumulation_origin_y;
     unsigned char const *accumulation_valid_mask;
     size_t accumulation_valid_mask_size;
     int accumulation_keycolor;

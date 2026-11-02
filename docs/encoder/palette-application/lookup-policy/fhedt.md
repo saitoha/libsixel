@@ -127,7 +127,7 @@ Reuse requires the same representation, pixel format, allocator, palette signatu
 
 Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs change constants and NUMA behavior, not the asymptotic order. Their current names and defaults are in the [`img2sixel(1)` manual](../../../../converters/img2sixel.1).
 
-The Metal backend supports RGB888 with uniform positive weights, `R64`, `R128` or `R256`, either `refine` and `dist2` setting, and `cache=0`. It preserves byte FHEDT's quantized seed coordinates, last-index seed collisions, axis tie order and strict corner-refinement comparisons. This is CPU/GPU equivalence at identical settings; R64/R128 and disabled refinement remain approximate. Positional `none`, `a_dither`, `x_dither` and `bluenoise` application use the existing transparency and delta gates.
+The Metal backend supports RGB888 with uniform positive weights, `R64`, `R128` or `R256`, either `refine` and `dist2` setting, and `cache=0`. It preserves byte FHEDT's quantized seed coordinates, last-index seed collisions, axis tie order and strict corner-refinement comparisons. This is CPU/GPU equivalence at identical settings; R64/R128 and disabled refinement remain approximate. Positional `none`, `a_dither`, `x_dither` and `bluenoise` application use the existing transparency and delta gates, including offset retained-plane rectangles.
 
 GPU construction runs the three EDT axes in separate tracked compute encoders within one command buffer. Packed 32-bit scratch cells carry distance and label. Without refinement, the final axis writes a one-byte LUT directly. With refinement, a separate packing pass produces a two-byte LUT carrying the label, boundary flag and zero-distance flag; the last flag implements the uniform-metric `dist2` shortcut. Construction and application complete before index publication.
 
@@ -197,3 +197,7 @@ The finite GPU references scan palette sites only at queried voxels and refineme
 | FHG-42 | Snapshot f0. | [tests/lookup/fhedt/0140_snapshot_f0.t](../../../../tests/lookup/fhedt/0140_snapshot_f0.t) |
 | FHG-43 | Snapshot f1. | [tests/lookup/fhedt/0141_snapshot_f1.t](../../../../tests/lookup/fhedt/0141_snapshot_f1.t) |
 | FHG-44 | Unprepared configuration. | [tests/lookup/fhedt/0142_unprepared_configuration.t](../../../../tests/lookup/fhedt/0142_unprepared_configuration.t) |
+| FHG-45 | GPU rectangle none indexes. | [tests/lookup/fhedt/0143_gpu_rectangle_none_indexes.t](../../../../tests/lookup/fhedt/0143_gpu_rectangle_none_indexes.t) |
+| FHG-46 | GPU rectangle none mask. | [tests/lookup/fhedt/0144_gpu_rectangle_none_mask.t](../../../../tests/lookup/fhedt/0144_gpu_rectangle_none_mask.t) |
+| FHG-47 | GPU rectangle bluenoise indexes. | [tests/lookup/fhedt/0145_gpu_rectangle_bluenoise_indexes.t](../../../../tests/lookup/fhedt/0145_gpu_rectangle_bluenoise_indexes.t) |
+| FHG-48 | GPU rectangle bluenoise mask. | [tests/lookup/fhedt/0146_gpu_rectangle_bluenoise_mask.t](../../../../tests/lookup/fhedt/0146_gpu_rectangle_bluenoise_mask.t) |

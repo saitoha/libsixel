@@ -1740,6 +1740,43 @@ sixel_gpu_metal_upload_buffer(sixel_gpu_metal_cached_buffer_t *cache,
 }
 
 static id<MTLBuffer>
+sixel_gpu_metal_upload_retained(sixel_gpu_metal_cached_buffer_t *cache,
+    unsigned char const *bytes, sixel_gpu_palette_request_t const *request,
+    size_t depth)
+{
+    id<MTLBuffer> buffer;
+    unsigned char *dest;
+    size_t stride;
+    size_t row_bytes;
+    size_t length;
+    int y;
+
+    /* Validation has bounded the canvas and frame before this dispatch. Pack
+     * directly into the reusable shared buffer: a small desktop update must
+     * not upload the entire retained canvas or allocate a staging image. The
+     * synchronous command owns these packed rows until completion. */
+    stride = (size_t)(request->accumulation_width != 0
+        ? request->accumulation_width : request->width) * depth;
+    row_bytes = (size_t)request->width * depth;
+    length = request->pixel_count * depth;
+    bytes += (size_t)request->accumulation_origin_y * stride +
+        (size_t)request->accumulation_origin_x * depth;
+    if (stride == row_bytes) {
+        return sixel_gpu_metal_upload_buffer(cache, bytes, length);
+    }
+    buffer = sixel_gpu_metal_ensure_buffer(cache, length);
+    if (buffer == nil) {
+        return nil;
+    }
+    dest = [buffer contents];
+    for (y = 0; y < request->height; ++y) {
+        memcpy(dest, bytes + (size_t)y * stride, row_bytes);
+        dest += row_bytes;
+    }
+    return buffer;
+}
+
+static id<MTLBuffer>
 sixel_gpu_metal_wrap_dest_buffer(void *bytes, NSUInteger length)
 {
     NSUInteger requested_length;
@@ -2098,9 +2135,10 @@ sixel_gpu_palette_metal_fill_params(
             request->accumulation_keycolor < SIXEL_PALETTE_MAX) {
         params->has_6delta = 1U;
         params->accumulation_pixel_count =
-            (uint32_t)(request->accumulation_pixels_size / 3U);
+            (uint32_t)request->pixel_count;
         params->accumulation_valid_mask_size =
-            (uint32_t)request->accumulation_valid_mask_size;
+            request->accumulation_valid_mask != NULL
+                ? (uint32_t)request->pixel_count : 0U;
         params->accumulation_keycolor =
             (uint32_t)request->accumulation_keycolor;
         params->sixdelta_threshold =
@@ -2275,6 +2313,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             request->test_hooks->kernel = 0;
             request->test_hooks->rebuild = 0;
             request->test_hooks->published = 0;
+            request->test_hooks->retained_rgb_upload_bytes = 0U;
+            request->test_hooks->retained_valid_upload_bytes = 0U;
         }
 
         result_length = (NSUInteger)request->pixel_count *
@@ -2302,10 +2342,11 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             (NSUInteger)request->bluenoise_gradient_map_size : 1U;
         accumulation_length =
             request->has_6delta_accumulation != 0 ?
-            (NSUInteger)request->accumulation_pixels_size : 1U;
+            (NSUInteger)request->pixel_count * 3U : 0U;
         accumulation_valid_length =
+            request->has_6delta_accumulation != 0 &&
             request->accumulation_valid_mask != NULL ?
-            (NSUInteger)request->accumulation_valid_mask_size : 1U;
+            (NSUInteger)request->pixel_count : 0U;
         accumulation_result_length =
             request->accumulation_result_mask != NULL ?
             (NSUInteger)request->accumulation_result_mask_size : 1U;
@@ -2457,18 +2498,16 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
                 sizeof(eytzinger_params));
         }
         if (request->has_6delta_accumulation != 0) {
-            accumulation_buffer = sixel_gpu_metal_upload_buffer(
+            accumulation_buffer = sixel_gpu_metal_upload_retained(
                 &g_sixel_gpu_metal_accumulation_buffer,
-                request->accumulation_pixels,
-                accumulation_length);
+                request->accumulation_pixels, request, 3U);
         } else {
             accumulation_buffer = g_sixel_gpu_metal_dummy_buffer;
         }
-        if (request->accumulation_valid_mask != NULL) {
-            accumulation_valid_buffer = sixel_gpu_metal_upload_buffer(
+        if (accumulation_valid_length != 0U) {
+            accumulation_valid_buffer = sixel_gpu_metal_upload_retained(
                 &g_sixel_gpu_metal_accumulation_valid_buffer,
-                request->accumulation_valid_mask,
-                accumulation_valid_length);
+                request->accumulation_valid_mask, request, 1U);
         } else {
             accumulation_valid_buffer = g_sixel_gpu_metal_dummy_buffer;
         }
@@ -2484,6 +2523,11 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             request->test_hooks->rebuild =
                 rebuild_grid || rebuild_ordered || rebuild_delaunay ||
                 rebuild_fhedt;
+            request->test_hooks->retained_rgb_upload_bytes =
+                accumulation_buffer != nil ? accumulation_length : 0U;
+            request->test_hooks->retained_valid_upload_bytes =
+                accumulation_valid_buffer != nil
+                    ? accumulation_valid_length : 0U;
             if (request->test_hooks->fault == 1) {
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
