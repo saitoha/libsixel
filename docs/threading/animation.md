@@ -33,6 +33,8 @@ Each component can create an independent short-lived pool. The budget is not a p
 
 Within a latest session, application/encoding M receives the whole encoder budget N. Its fixed geometry and stage limits come from `sixel_dither_encode_allocate`, exactly as in frame mode. Ordinary next preparation retains its independent `prepare_workers` cap. Palette construction P has a bounded pool lease and borrows live CPU slots separately: its controller and child callbacks acquire loans only when emission leaves capacity. Pool submission and join release the caller’s CPU claim, allowing unused stage capacity, draining bands and output waits to admit background work. Emission resumes without waiting for borrowers; already admitted background jobs finish before trying to renew their loans. Latest-only preparation Q, the owned full-frame input copy, acquires a loan for its copy job; common sampling remains independent. P and Q together stay within the preparation cap at admission. Pool callbacks and serial solver iterations or box splits are cooperative boundaries; unsplit setup and finalization remain serial jobs. Thus reclamation is bounded by work granularity, not elapsed time, and a running job can temporarily overlap renewed emission demand. Publication and thread join remain distinct lifetime boundaries. The first frame and incompatible-palette recovery wait for the own build outside emission work accounting; final cleanup also releases emission demand before joining.
 
+The palette scheduler initializes mutexes and condition variables only when thread support is enabled. A build without threads still initializes a disabled scheduler, retains the resolved policy budget and grants no asynchronous lane reservations; synchronization stubs must not turn serial frame setup into an initialization error. The serial test also covers a one-slot budget and explicit frame mode in thread-enabled builds.
+
 A process-wide coordinator would need to account for both prepare and emit lanes, their internal pools and other concurrent clients. Dividing a budget eagerly at animation start would not model loader stalls, temporarily empty queues or completion-driven reclamation.
 
 ## Temporal state constrains parallelism
@@ -53,3 +55,11 @@ A process-wide budget design should be attempted as a separate architecture chan
 6. timeline fields that record requested, granted, active, and returned workers.
 
 The retained timelines establish host-specific measurement baselines. They do not prove process-wide accounting or simultaneous publication of frames.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| AT-01 | Serial palette scheduling initializes successfully, grants no lanes and preserves the requested budget, including builds without threads. | [tests/encoder/planning/0045_palette_scheduler_serial.t](../../tests/encoder/planning/0045_palette_scheduler_serial.t) |

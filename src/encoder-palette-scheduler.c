@@ -15,11 +15,13 @@ sixel_palette_scheduler_init(sixel_palette_scheduler_t *scheduler,
     if (sixel_mutex_init(&scheduler->mutex) != 0) {
         return SIXEL_RUNTIME_ERROR;
     }
-#endif
+    /* Serial builds expose failing synchronization stubs. Keep both native
+     * primitives inside the feature guard so frame-mode setup still works. */
     if (sixel_cond_init(&scheduler->changed) != 0) {
         sixel_mutex_destroy(&scheduler->mutex);
         return SIXEL_RUNTIME_ERROR;
     }
+#endif
     scheduler->policy = *policy;
     scheduler->prepare_limit = policy->budget;
     if (policy->options.prepare_threads_override &&

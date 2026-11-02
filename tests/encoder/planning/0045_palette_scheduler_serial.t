@@ -1,5 +1,6 @@
 #!/bin/sh
 # Verify palette scheduler serial.
+# Policy: docs/threading/animation.md
 set -eux
 
 echo "1..1"
