@@ -272,6 +272,7 @@ test_runner_cases = static_library('test_runner_cases', test_runner_sources,
   install: false)
 
 test_runner_exe = executable('test_runner',
+  link_args: program_link_args,
   link_whole: test_runner_cases,
   objects: float_lookup_tests.extract_all_objects(recursive: true),
   include_directories: test_runner_inc,

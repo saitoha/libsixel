@@ -879,6 +879,7 @@ pkgconfigdir
 QUICKLOOK_PACKAGE_VERSION
 WANT_THUMBNAILER_FALSE
 WANT_THUMBNAILER_TRUE
+SIXEL_PROGRAM_LDFLAGS
 THREAD_LIBS
 THREAD_CFLAGS
 THREAD_CPPFLAGS
@@ -18311,6 +18312,24 @@ fi
 
 
 
+
+
+# A synchronous main must not starve JavaScript's worker cleanup messages.
+# Apply these only to command-line programs, not library consumers/probes.
+SIXEL_PROGRAM_LDFLAGS=""
+if test "x$have_threads" = "xyes"
+then :
+
+  case $host_os in #(
+  emscripten*) :
+
+    SIXEL_PROGRAM_LDFLAGS="-sPROXY_TO_PTHREAD=1 -sEXIT_RUNTIME=1"
+   ;; #(
+  *) :
+     ;;
+esac
+
+fi
 
 
 thumbnailer_command_mode=$enable_thumbnailer_command

@@ -1573,6 +1573,13 @@ else
   conf.set('SIXEL_ENABLE_THREADS', 0)
 endif
 
+# Keep JavaScript's worker cleanup responsive during synchronous C work.
+# These flags belong to executable entry points, not library dependencies.
+program_link_args = []
+if host_system == 'emscripten' and have_threads
+  program_link_args = ['-sPROXY_TO_PTHREAD=1', '-sEXIT_RUNTIME=1']
+endif
+
 wiccodec_opt = get_option('wiccodec')
 wiccodec_message = 'no'
 have_wiccodec = false

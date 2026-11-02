@@ -70,7 +70,7 @@ lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) \
         -DBUILD_LSQA
 lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
         $(THREAD_CFLAGS)
-lsqa_LDFLAGS = $(MAYBE_COVERAGE)
+lsqa_LDFLAGS = $(MAYBE_COVERAGE) @SIXEL_PROGRAM_LDFLAGS@
 lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
 else
 lsqa_SOURCES = $(srcdir)/lsqa.c \
@@ -93,7 +93,7 @@ lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
                 $(AM_CPPFLAGS)
 lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
         $(THREAD_CFLAGS)
-lsqa_LDFLAGS = $(MAYBE_COVERAGE)
+lsqa_LDFLAGS = $(MAYBE_COVERAGE) @SIXEL_PROGRAM_LDFLAGS@
 lsqa_LDADD = $(top_builddir)/src/libsixel.la
 lsqa_LDADD += -lm \
         $(LIBCURL_LIBS) \

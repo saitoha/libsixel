@@ -153,7 +153,8 @@ TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) @THREAD_CFLAGS@ \
         $(MAYBE_COVERAGE)
 endif
 TESTS_COMMON_CFLAGS_VAL += @SIXEL_TEST_DEPRECATED_CFLAGS@
-TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
+TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE) \
+        @SIXEL_PROGRAM_LDFLAGS@
 if WANT_AMALGAMATED_TOOLS
 TESTS_COMMON_LDADD_VAL = -lm \
         $(LIBS) \
@@ -10914,3 +10915,6 @@ EXTRA_DIST += _static/awk/sha256.awk _static/awk/test-pattern-whitelist.awk \
 EXTRA_DIST += build/no-find/0007_python_subprocess.sh
 
 EXTRA_DIST += _support/loader/libpng/png_metadata_test_common.h
+
+EXTRA_DIST += _static/sh/staticcheck-emscripten-thread-runtime.sh \
+    _static/awk/emscripten-thread-runtime.awk

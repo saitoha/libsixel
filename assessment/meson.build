@@ -41,6 +41,7 @@ endif
 
 lsqa_bin = executable('lsqa',
            lsqa_sources,
+           link_args: program_link_args,
            include_directories: lsqa_inc,
            build_rpath: lsqa_rpath,
            dependencies: lsqa_dependencies,

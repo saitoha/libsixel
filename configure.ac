@@ -2061,6 +2061,16 @@ AC_SUBST([THREAD_CPPFLAGS])
 AC_SUBST([THREAD_CFLAGS])
 AC_SUBST([THREAD_LIBS])
 
+# A synchronous main must not starve JavaScript's worker cleanup messages.
+# Apply these only to command-line programs, not library consumers/probes.
+SIXEL_PROGRAM_LDFLAGS=""
+AS_IF([test "x$have_threads" = "xyes"], [
+  AS_CASE([$host_os], [emscripten*], [
+    SIXEL_PROGRAM_LDFLAGS="-sPROXY_TO_PTHREAD=1 -sEXIT_RUNTIME=1"
+  ])
+])
+AC_SUBST([SIXEL_PROGRAM_LDFLAGS])
+
 thumbnailer_command_mode=$enable_thumbnailer_command
 thumbnailer_auto_installed=no
 message_thumbnailer=no

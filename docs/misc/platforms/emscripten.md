@@ -10,6 +10,8 @@ Autotools detects Emscripten intent from the host triple or `emcc` before generi
 
 Emscripten `-s` settings are final-link settings. `-sRETAIN_COMPILER_SETTINGS=1`, `-sNODERAWFS=1`, `-sFETCH=1`, codec ports, stack size, memory size, and environment settings must reach the executable link without being mistaken for ordinary C compile flags. The compiler settings are retained because runtime path handling queries `NODERAWFS`.
 
+Thread-enabled command-line programs and the test runner link with `-sPROXY_TO_PTHREAD=1 -sEXIT_RUNTIME=1` in both build systems. Running C `main()` on a worker leaves the JavaScript runtime available to process worker cleanup messages while C waits for queued frames or joins helper threads. Otherwise repeated frame work can accumulate completed workers and their stacks while the runtime message loop is blocked. Runtime exit also terminates the worker pool when `main()` returns. These settings apply to executable targets only: library consumers retain control over their own JavaScript lifecycle, and thread-disabled executables do not use the proxy. See Emscripten's [pthreads guidance](https://emscripten.org/docs/porting/pthreads.html).
+
 Split output contains both JavaScript and WebAssembly artifacts. Installation uses the sidecar installer and launcher templates so the executable entry point can find its `.js` and `.wasm` companions; installing only a nominal program file is incomplete.
 
 ## Runtime contract
@@ -35,7 +37,8 @@ BSD libfetch is replaced by the synchronous `emscripten_fetch` adapter. Its `-sF
 | --- | --- | --- |
 | EM-01 | Emscripten toolchain intent remains ahead of generic compiler discovery, and the build retains link-only `NODERAWFS`, compiler-settings, and Fetch flags. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 | EM-02 | Runtime path handling queries `NODERAWFS`, network fetching uses `emscripten_fetch`, and terminal/temp-file exclusions remain explicit. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
+| EM-03 | Both build systems retain paired worker-proxy and runtime-exit link settings for thread-enabled executable targets. | [tests/_static/sh/staticcheck-emscripten-thread-runtime.sh](../../../tests/_static/sh/staticcheck-emscripten-thread-runtime.sh) |
 
 ### Coverage boundary
 
-The static check protects build and source structure but does not execute JavaScript, load a `.wasm` sidecar, or observe Node.js filesystem and descriptor behavior. Emscripten CI must cover those runtime properties.
+The static check protects build and source structure but does not execute JavaScript, load a `.wasm` sidecar, or observe Node.js filesystem and descriptor behavior. Emscripten CI must cover those runtime properties. Long palette-auto playback cases exercise repeated thread creation and joining; the static check does not prove worker reclamation or a runtime duration.

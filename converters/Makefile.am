@@ -115,7 +115,7 @@ nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
 img2sixel_CPPFLAGS = $(AMALGAMATION_TOOL_CPPFLAGS) \
         -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
+img2sixel_LDFLAGS = $(MAYBE_COVERAGE) @SIXEL_PROGRAM_LDFLAGS@
 img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS)
 else
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
@@ -147,7 +147,7 @@ img2sixel_CPPFLAGS = -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H \
 # Ensure completion_utils never compiles before the generated header exists.
 img2sixel-completion_utils.$(OBJEXT): completion_embed.h
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
+img2sixel_LDFLAGS = $(MAYBE_COVERAGE) @SIXEL_PROGRAM_LDFLAGS@
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 img2sixel_LDADD += \
         $(LIBCURL_CFLAGS) \
@@ -201,7 +201,7 @@ nodist_sixel2png_SOURCES = $(AMALGAMATION_SIXEL)
 sixel2png_CPPFLAGS += $(AMALGAMATION_TOOL_CPPFLAGS) \
         -DBUILD_SIXEL2PNG
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
+sixel2png_LDFLAGS = $(MAYBE_COVERAGE) @SIXEL_PROGRAM_LDFLAGS@
 sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS)
 else
 sixel2png_SOURCES = $(srcdir)/sixel2png.c \
@@ -214,7 +214,7 @@ sixel2png_SOURCES = $(srcdir)/sixel2png.c \
                     $(srcdir)/aborttrace.h
 sixel2png_CPPFLAGS += -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
+sixel2png_LDFLAGS = $(MAYBE_COVERAGE) @SIXEL_PROGRAM_LDFLAGS@
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 sixel2png_LDADD += \
         $(LIBCURL_CFLAGS) \

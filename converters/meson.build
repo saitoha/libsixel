@@ -62,6 +62,7 @@ if img2sixel_opt.enabled()
   if amalgamated_tools_enabled
     img2sixel_exe = executable('img2sixel',
       [amalgamation_out],
+      link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H'],
       objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
@@ -73,6 +74,7 @@ if img2sixel_opt.enabled()
   else
     img2sixel_exe = executable('img2sixel',
       img2sixel_core_sources,
+      link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H'],
       objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
@@ -435,6 +437,7 @@ if sixel2png_opt.enabled()
   if amalgamated_tools_enabled
     sixel2png_exe = executable('sixel2png',
       [amalgamation_out],
+      link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       objc_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       include_directories: [project_inc, local_inc],
@@ -444,6 +447,7 @@ if sixel2png_opt.enabled()
   else
     sixel2png_exe = executable('sixel2png',
       ['sixel2png.c'] + sources_common + aborttrace_sources,
+      link_args: program_link_args,
       c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       objc_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       dependencies: [libsixel_dep] + aborttrace_deps_local,
