@@ -689,7 +689,8 @@ test_geometry_resampling_measurement_baseline(int argc, char **argv)
         fprintf(stderr, "unknown measurement type: %s\n", argv[1]);
         return EXIT_FAILURE;
     }
-    rmb_init_accumulators(values);
+    /* Spell out the first row: PCC misdiagnoses implicit 2-D array decay. */
+    rmb_init_accumulators(&values[0]);
     if (!rmb_load_baselines(argv[2],
                             measurement,
                             baselines,

@@ -908,6 +908,7 @@ SIXEL_MSAN_BUILD
 SIXEL_TSAN_BUILD
 SIXEL_ANALYZER_MODE
 SIXEL_SCAN_BUILD
+SIXEL_TEST_DEPRECATED_CFLAGS
 BUILD_LSO_TIMEOUT_FALSE
 BUILD_LSO_TIMEOUT_TRUE
 BUILDING_ON_WINDOWS_FALSE
@@ -16476,6 +16477,52 @@ printf "%s\n" "#define HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS 1" >>confdefs.h
 
 
 fi
+
+# Compatibility tests intentionally call deprecated public interfaces. Keep
+# the fallback flag test-only when the compiler lacks scoped pragmas (PCC).
+SIXEL_TEST_DEPRECATED_CFLAGS=
+if test "x$ac_cv_have_diag_deprecated_declarations" != "xyes"
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether deprecated calls accept a test-only warning flag" >&5
+printf %s "checking whether deprecated calls accept a test-only warning flag... " >&6; }
+if test ${ac_cv_sixel_test_deprecated_flag+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -Werror -Wno-deprecated-declarations"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      __attribute__((deprecated)) int sixel_deprecated_test(void);
+      int main(void) { return sixel_deprecated_test(); }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_sixel_test_deprecated_flag=yes
+else case e in #(
+  e) ac_cv_sixel_test_deprecated_flag=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+    CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_test_deprecated_flag" >&5
+printf "%s\n" "$ac_cv_sixel_test_deprecated_flag" >&6; }
+  if test "x$ac_cv_sixel_test_deprecated_flag" = "xyes"
+then :
+
+    SIXEL_TEST_DEPRECATED_CFLAGS=-Wno-deprecated-declarations
+
+fi
+
+fi
+
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wanalyzer-fd-leak via pragmas" >&5
 printf %s "checking whether the compiler can silence -Wanalyzer-fd-leak via pragmas... " >&6; }

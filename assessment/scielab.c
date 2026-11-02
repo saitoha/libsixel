@@ -242,7 +242,8 @@ sixel_qa_scielab(double const *reference, double const *output,
     temp = plane + pixels;
     scielab_filter(reference, ref, plane, temp, width, height, ppd);
     scielab_filter(output, out, plane, temp, width, height, ppd);
-    scielab_inverse(inverse);
+    /* Spell out the first row: PCC misdiagnoses implicit 2-D array decay. */
+    scielab_inverse(&inverse[0]);
     total = 0.0;
     peak = 0.0;
     total00 = 0.0;

@@ -86,6 +86,8 @@ Meson binding workers use `MESON_TEST_RUN_ID`, falling back to their parent PID,
 
 The test runner's support translation units use the configured thread compiler flags in both ordinary and amalgamated builds. A link flag alone cannot supply compile-time ABI features such as WebAssembly atomics. Distribution also writes Automake's complete C/support inventory in bounded batches before copying it, so a large `DISTFILES` value never becomes one shell command string. Directory copies are made owner-writable in the distribution tree so overlapping entries can merge when `distcheck` makes the source tree read-only. The original source permissions are preserved. [Static coverage](#test-coverage) checks these two build boundaries separately.
 
+Compatibility tests intentionally call deprecated public interfaces. When scoped diagnostic pragmas are unavailable, configure and Meson compile an actual deprecated call with `-Werror -Wno-deprecated-declarations` to detect a test-only fallback. A successful probe applies that flag to runner support objects, including the separate float-lookup archive; installed library and program targets retain their warning settings. This preserves legacy API coverage on PCC without treating support for a command-line flag as support for GCC diagnostic pragmas.
+
 ## Inside the custom TAP driver
 
 [test-driver](../../build-aux/test-driver) is Automake's shipped basic driver, whose primary observation is process status. The project's configured `lso-tap-driver.sh` instead consumes TAP output. Extension-specific log-driver settings in [tests/Makefile.am](../../tests/Makefile.am) select it for the runtime scripts. The custom suite collector then reads its `.trs` records; these two layers have different responsibilities.

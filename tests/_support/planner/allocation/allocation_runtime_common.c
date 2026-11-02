@@ -13,6 +13,9 @@
 #include "src/planner.h"
 #include "allocation_runtime_common.h"
 
+#if !defined(__PCC__) && !defined(__TINYC__)
+/* Keep unavailable parallel cases and their private helpers out of the
+ * translation unit rather than leaving an unreachable runtime body. */
 #define ALLOCATION_WIDTH 64
 #define ALLOCATION_HEIGHT 96
 
@@ -257,15 +260,6 @@ allocation_runtime_cases(allocation_runtime_expected_t const *expected,
     int i;
     int ok;
 
-#if defined(__PCC__) || defined(__TINYC__)
-    /* These compilers deliberately disable parallel palette application. */
-    (void)expected;
-    (void)count;
-    (void)sparse;
-    (void)path;
-    fputs("allocation: compiler disables parallel apply\n", stderr);
-    return EXIT_SUCCESS;
-#endif
     (void)remove(path);
     if (sixel_compat_setenv("SIXEL_LOG_PATH", path) != 0 ||
             sixel_compat_setenv("SIXEL_TRACE_TOPIC", "dither_contract") != 0 ||
@@ -286,3 +280,16 @@ allocation_runtime_cases(allocation_runtime_expected_t const *expected,
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+#else
+int
+allocation_runtime_cases(allocation_runtime_expected_t const *expected,
+                         int count, int sparse, char const *path)
+{
+    (void)expected;
+    (void)count;
+    (void)sparse;
+    (void)path;
+    fputs("allocation: compiler disables parallel apply\n", stderr);
+    return EXIT_SUCCESS;
+}
+#endif

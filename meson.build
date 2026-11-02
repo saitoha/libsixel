@@ -543,6 +543,19 @@ if cc.compiles('''
   conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
 endif
 
+# Preserve legacy API coverage when scoped diagnostic pragmas are absent.
+# The flag belongs to test objects, never the installed library or tools.
+test_deprecated_c_args = []
+if conf.get('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 0) == 0
+  if cc.compiles('''
+      __attribute__((deprecated)) int sixel_deprecated_test(void);
+      int main(void) { return sixel_deprecated_test(); }
+    ''', name: 'test-only deprecated warning flag',
+    args: ['-Werror', '-Wno-deprecated-declarations'])
+    test_deprecated_c_args = ['-Wno-deprecated-declarations']
+  endif
+endif
+
 if cc.compiles('''
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"

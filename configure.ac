@@ -1090,6 +1090,27 @@ AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
             [Define to 1 if the compiler can ignore -Wdeprecated-declarations via pragmas])
 ])
 
+# Compatibility tests intentionally call deprecated public interfaces. Keep
+# the fallback flag test-only when the compiler lacks scoped pragmas (PCC).
+SIXEL_TEST_DEPRECATED_CFLAGS=
+AS_IF([test "x$ac_cv_have_diag_deprecated_declarations" != "xyes"], [
+  AC_CACHE_CHECK([whether deprecated calls accept a test-only warning flag],
+    [ac_cv_sixel_test_deprecated_flag], [
+    ac_save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -Werror -Wno-deprecated-declarations"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+      __attribute__((deprecated)) int sixel_deprecated_test(void);
+      int main(void) { return sixel_deprecated_test(); }
+    ]])], [ac_cv_sixel_test_deprecated_flag=yes],
+           [ac_cv_sixel_test_deprecated_flag=no])
+    CFLAGS="$ac_save_CFLAGS"
+  ])
+  AS_IF([test "x$ac_cv_sixel_test_deprecated_flag" = "xyes"], [
+    SIXEL_TEST_DEPRECATED_CFLAGS=-Wno-deprecated-declarations
+  ])
+])
+AC_SUBST([SIXEL_TEST_DEPRECATED_CFLAGS])
+
 AC_CACHE_CHECK(
   [whether the compiler can silence -Wanalyzer-fd-leak via pragmas],
   [ac_cv_have_diag_werror_analyzer_fd_leak],
