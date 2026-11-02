@@ -13,6 +13,7 @@
 #include "src/cms.h"
 #include "tests/_support/loader/chunk_test_common.h"
 #include "src/frompng.h"
+#include "src/loader-builtin.h"
 #include "src/frame-private.h"
 #include "src/loader-common.h"
 #include "tests/data/color-numeric/png-metadata.h"
@@ -107,9 +108,6 @@ pmfi_load8(unsigned char const *buffer, int length, int *width,
     return pixels;
 }
 
-char *stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
-    int length, int initial_size, int *out_length, int header);
-void stbi_image_free(void *pixels);
 
 static char *
 pmfi_inflate(char const *buffer, int length, int initial_size,

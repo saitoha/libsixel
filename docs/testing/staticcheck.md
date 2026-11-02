@@ -160,7 +160,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 
 | SC-15 | The Meson case inventory remains in a whole-linked archive with matching compile inputs; mutations that flatten objects or drop archive semantics and dependencies are rejected. | [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) |
 
-| SC-16 | The DLL declaration scanner ignores balanced compiler attributes while preserving local storage classes, external declarations and source locations; literal controls reject treating attributes or their arguments as function names. Test-source redeclarations of exported functions retain their DLL attribute, including renamed private implementation copies. | [tests/_static/sh/staticcheck-test-runner-dllexport.sh](../../tests/_static/sh/staticcheck-test-runner-dllexport.sh) |
+| SC-16 | The DLL declaration scanner preserves storage classes and balanced compiler attributes. It inventories all library headers and test C/header references, including headers reached indirectly, while excluding file-local macro aliases from external calls. Literal controls check alias lifetime and scanner-state isolation. Test-source redeclarations of exported functions retain their DLL attribute, including renamed private implementation copies. | [tests/_static/sh/staticcheck-test-runner-dllexport.sh](../../tests/_static/sh/staticcheck-test-runner-dllexport.sh) |
 
 
 | SC-17 | Embedded CLI fuzz targets retain the normal converter's C source inventory; a missing source mutation is rejected. | [tests/_static/sh/staticcheck-fuzz-cli-sources.sh](../../tests/_static/sh/staticcheck-fuzz-cli-sources.sh) |
@@ -174,5 +174,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-24 | Emscripten executable targets retain paired thread-proxy and runtime-exit link settings in both build systems; missing settings, guards or consumers fail removal controls. | [tests/_static/sh/staticcheck-emscripten-thread-runtime.sh](../../tests/_static/sh/staticcheck-emscripten-thread-runtime.sh) |
 
 ### Coverage boundary
+
+The DLL declaration check covers source-visible `sixel_`, `loader_` and `stbi_` references and their canonical export declarations. It scans test support headers as well as C files, so the declaration inventory is independent of direct `#include "src/..."` spellings. Literal object-like aliases suppress references only until `#undef` or the next file. This is not a C preprocessor or linker: references introduced inside included production implementations and configuration-specific expansions still require shared-library build validation, as described in the [test harness](../build/test-harness.md).
 
 The suite-registration check covers shell implementations named `staticcheck-*.sh`; inline compile probes remain explicit runner code and are not projected into a second generated inventory. The reciprocal policy-link check proves the behavioral documentation relationship, and the test-plan check proves exhaustive suite membership, but neither proves the completeness or accuracy of prose. Whether a new invariant belongs in staticcheck, whether normalization preserves the right distinctions, and whether a passing static contract has sufficient behavioral coverage remain review decisions.

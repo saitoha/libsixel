@@ -33,6 +33,13 @@
 #include "chunk.h"
 #include "loader.h"
 
+/* Metadata fault-injection tests use the same decompressor and allocator
+ * release as the builtin loader, including when it is a Windows DLL. */
+SIXEL_INTERNAL_API char *
+stbi_zlib_decode_malloc_guesssize_headerflag(char const *buffer,
+    int length, int initial_size, int *out_length, int header);
+SIXEL_INTERNAL_API void stbi_image_free(void *pixels);
+
 /* @classid loader/builtin */
 SIXELSTATUS
 sixel_loader_builtin_new(

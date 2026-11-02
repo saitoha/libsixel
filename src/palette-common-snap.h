@@ -118,7 +118,7 @@ sixel_palette_snap_output(unsigned char *entries,
                          float *entries_float32,
                          unsigned int colors);
 
-int
+SIXEL_INTERNAL_API int
 sixel_palette_should_snap(enum sixel_palette_snap_stage stage);
 
 /* Typed solver doubles remain untouched when the hook is inactive. Active

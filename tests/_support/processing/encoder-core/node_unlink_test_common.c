@@ -12,11 +12,6 @@
 
 /* These internal entry points also serve the high-color encoder. Calling
  * the body directly exposes palstate and an independent transparency mask. */
-SIXELSTATUS sixel_encode_header(int, int, int, sixel_output_t *);
-SIXELSTATUS sixel_encode_body(sixel_index_t *, int, int, unsigned char *,
-    float const *, int, int, int, sixel_output_t *, unsigned char *,
-    sixel_allocator_t *, int, sixel_timeline_logger_t *);
-SIXELSTATUS sixel_encode_footer(sixel_output_t *);
 
 typedef struct node_unlink_hash {
     uint32_t value;

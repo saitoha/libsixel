@@ -25,6 +25,8 @@
 #ifndef LIBSIXEL_PIXELFORMAT_H
 #define LIBSIXEL_PIXELFORMAT_H
 
+#include <sixel.h>
+
 /*
  * Shared upper bound for channel-oriented working buffers in dithering and
  * palette lookup internals.
@@ -44,7 +46,7 @@ float
 sixel_pixelformat_float_channel_max(int pixelformat,
                                     int channel);
 
-float
+SIXEL_INTERNAL_API float
 sixel_pixelformat_float_channel_range(int pixelformat,
                                       int channel);
 
@@ -53,18 +55,18 @@ sixel_pixelformat_float_channel_clamp(int pixelformat,
                                       int channel,
                                       float value);
 
-unsigned char
+SIXEL_INTERNAL_API unsigned char
 sixel_pixelformat_float_channel_to_byte(int pixelformat,
                                         int channel,
                                         float value);
 
-float
+SIXEL_INTERNAL_API float
 sixel_pixelformat_byte_to_float(int pixelformat,
                                 int channel,
                                 unsigned char value);
 
 /* Return the coordinate colorspace encoded by a pixel format. */
-int
+SIXEL_INTERNAL_API int
 sixel_pixelformat_get_colorspace(int pixelformat);
 
 int

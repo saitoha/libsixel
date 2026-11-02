@@ -51,7 +51,7 @@ sixel_status_restore_message(sixel_status_message_t *message);
 SIXEL_INTERNAL_API void
 sixel_status_dispose_message(sixel_status_message_t *message);
 
-void
+SIXEL_INTERNAL_API void
 sixel_debugf(char const *fmt, ...);
 
 void

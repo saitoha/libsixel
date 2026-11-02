@@ -40,7 +40,7 @@ extern "C" {
  * offsets[i + 1]) lists the neighbors of i, nearest first.  The caller
  * frees both with the allocator.
  */
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_delaunay_graph_build(sixel_allocator_t *allocator,
                                   double const *points,
                                   int count,

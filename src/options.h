@@ -354,7 +354,7 @@ sixel_test_environment_palette_quantizer_post_build_failure(void);
  * typed entry points reject a registry kind mismatch before exposing a value
  * to lower-level code.
  */
-int
+SIXEL_INTERNAL_API int
 sixel_option_resolve_registered_boolean_binding(
     sixel_option_schema_id_t option_id,
     char const *base_name,
@@ -368,7 +368,7 @@ sixel_option_resolve_registered_int_binding(
     char const *binding_identifier,
     int *value);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_resolve_registered_uint_binding(
     sixel_option_schema_id_t option_id,
     char const *base_name,
@@ -382,15 +382,15 @@ sixel_option_resolve_registered_choice_list_binding(
     char const *binding_identifier,
     unsigned int *value);
 
-size_t
+SIXEL_INTERNAL_API size_t
 sixel_option_choice_list_count(unsigned int value);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_choice_list_value_at(unsigned int value,
                                   size_t index,
                                   int *choice_value);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_choice_list_is_exclusive(unsigned int value);
 
 sixel_option_environment_result_t
@@ -407,7 +407,7 @@ sixel_option_resolve_registered_float_binding(
     char const *binding_identifier,
     float *value);
 
-int
+SIXEL_INTERNAL_API int
 sixel_option_resolve_registered_double_binding(
     sixel_option_schema_id_t option_id,
     char const *base_name,

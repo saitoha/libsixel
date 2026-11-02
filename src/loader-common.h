@@ -166,7 +166,7 @@ sixel_helper_set_loader_transparent_policy(int policy);
 SIXEL_INTERNAL_API int
 loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
-unsigned int loader_cms_rendering_intent_order(void);
+SIXEL_INTERNAL_API unsigned int loader_cms_rendering_intent_order(void);
 SIXEL_INTERNAL_API int
 loader_cms_target_colorspace(void);
 SIXEL_INTERNAL_API int
@@ -183,7 +183,7 @@ SIXEL_INTERNAL_API void
 loader_trace_try(char const *name);
 SIXEL_INTERNAL_API void
 loader_trace_result(char const *name, SIXELSTATUS status);
-int loader_trace_is_enabled(void);
+SIXEL_INTERNAL_API int loader_trace_is_enabled(void);
 SIXEL_INTERNAL_API void
 loader_trace_message(char const *format, ...);
 SIXEL_INTERNAL_API int
@@ -208,7 +208,7 @@ SIXEL_INTERNAL_API int loader_timeline_phase_start(char const *role);
 void loader_timeline_phase_finish(char const *role,
                                   int job_id,
                                   SIXELSTATUS status);
-void loader_timeline_optional_mark(char const *role);
+SIXEL_INTERNAL_API void loader_timeline_optional_mark(char const *role);
 SIXEL_INTERNAL_API void
 loader_timeline_optional_skip_if_unmarked(char const *role);
 SIXEL_INTERNAL_API void

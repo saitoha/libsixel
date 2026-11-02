@@ -39,7 +39,7 @@
 extern "C" {
 #endif
 
-void
+SIXEL_INTERNAL_API void
 sixel_final_merge_load_env(void);
 
 SIXEL_INTERNAL_API void
@@ -58,13 +58,13 @@ void
 sixel_set_kmeans_iter_max_override(int enabled,
                                    unsigned int iter_max);
 
-unsigned int
+SIXEL_INTERNAL_API unsigned int
 sixel_final_merge_lloyd_iterations(int merge_mode);
 
-unsigned int
+SIXEL_INTERNAL_API unsigned int
 sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode);
 
-int
+SIXEL_INTERNAL_API int
 sixel_resolve_final_merge_mode(int final_merge_mode);
 
 /* Optional representative statistics follow Ward membership without affecting

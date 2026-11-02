@@ -10,9 +10,6 @@
 #include "src/encoder-core-private.h"
 #include "src/threading.h"
 
-SIXELSTATUS sixel_encode_body(sixel_index_t *, int, int, unsigned char *,
-    float const *, int, int, int, sixel_output_t *, unsigned char *,
-    sixel_allocator_t *, int, sixel_timeline_logger_t *);
 
 static size_t classify_alloc_live;
 static int classify_alloc_fail;

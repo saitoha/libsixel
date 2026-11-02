@@ -25,6 +25,8 @@
 #ifndef SIXEL_PATH_H
 #define SIXEL_PATH_H
 
+#include <sixel.h>
+
 #include <stddef.h>
 
 /*
@@ -50,9 +52,9 @@
  * already compatible and the original pointer can be used. Otherwise, allocate
  * a buffer of that size and pass it to sixel_path_to_libc().
  */
-size_t sixel_path_to_libc_buffer_size(char const *path);
+SIXEL_INTERNAL_API size_t sixel_path_to_libc_buffer_size(char const *path);
 
-char const *sixel_path_to_libc(char const *path,
+SIXEL_INTERNAL_API char const *sixel_path_to_libc(char const *path,
                                char *buffer,
                                size_t buffer_size);
 

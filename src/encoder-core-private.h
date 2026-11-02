@@ -127,6 +127,19 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_encode_dispatch(
     sixel_legacy_encode_request_t const *request);
 
+/* White-box tests call these serial wire boundaries through the DLL. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_header(int width, int height, int keycolor,
+    sixel_output_t *output);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_body(sixel_index_t *pixels, int width, int height,
+    unsigned char *palette, float const *palette_float, int ncolors,
+    int keycolor, int bodyonly, sixel_output_t *output,
+    unsigned char *palstate, sixel_allocator_t *allocator, int pin_threads,
+    sixel_timeline_logger_t *logger);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_footer(sixel_output_t *output);
+
 /*
  * Emit OR-mode body bytes from a complete contiguous palette-index image.
  * Keeping this boundary explicit lets future band workers share the same

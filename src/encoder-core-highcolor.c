@@ -48,31 +48,6 @@ enum {
     PALETTE_CHANGE = 2
 };
 
-/*
- * Internal encoder helpers implemented in encoder-core-encode.c.
- * Keep prototypes here to avoid implicit declarations in this module.
- */
-SIXELSTATUS sixel_encode_header(
-    int width,
-    int height,
-    int keycolor,
-    sixel_output_t *output);
-SIXELSTATUS sixel_encode_body(
-    sixel_index_t *pixels,
-    int width,
-    int height,
-    unsigned char *palette,
-    float const *palette_float,
-    int ncolors,
-    int keycolor,
-    int bodyonly,
-    sixel_output_t *output,
-    unsigned char *palstate,
-    sixel_allocator_t *allocator,
-    int pin_threads,
-    sixel_timeline_logger_t *logger);
-SIXELSTATUS sixel_encode_footer(sixel_output_t *output);
-
 /* Prepare destination samples before emitting any bytes. The no-diffusion
  * path retains float representatives; the bounded byte projection below is
  * only a lookup key. Low-level 15bpp diffusion still owns byte samples.
