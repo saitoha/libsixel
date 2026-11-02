@@ -44,7 +44,8 @@ typedef struct sixel_gpu_palette_test_hooks {
     int fault;
     int entered;
     int matrix_supported;
-    int kernel;             /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order */
+    /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order, 6 graph. */
+    int kernel;
     int rebuild;
     int published;
 } sixel_gpu_palette_test_hooks_t;
@@ -58,7 +59,8 @@ typedef struct sixel_gpu_palette_test_hooks {
  * indexed SIXEL buffer. NONE uses the exact direct scan;
  * BLOCKCULL culls each pixel block's candidates before the same exact
  * scan; GRIDLUT reuses fixed RGB-cell candidates; ORDERED reuses
- * distance-sorted rows and seed colors; EYTZINGER
+ * distance-sorted rows and seed colors; DELAUNAY walks conservative
+ * closed-cell adjacency; EYTZINGER
  * uses the one-dimensional projected lookup. Unsupported shapes
  * return SIXEL_FALSE for policy=auto so the caller can continue through the
  * CPU path.

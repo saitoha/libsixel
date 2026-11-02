@@ -86,10 +86,11 @@ sixel_dither_perturb_float(sixel_dither_perturb_t const *context,
                            int x, int absolute_y, float weights[4]);
 
 /* Prepare the fixed RGB888 component route without emitting output. FALSE
- * keeps unsupported precision/cache configurations on their legacy adapter. */
+ * keeps unsupported precision/cache configurations on their legacy adapter.
+ * A GPU candidate can defer CPU lookup preparation until plan rejection. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
-    int parallel);
+    int parallel, int prepare_lookup);
 
 /* dither context object */
 struct sixel_dither {

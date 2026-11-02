@@ -178,7 +178,7 @@ Each policy has its own page because the algorithms, correctness arguments, and 
 | [`certlut`](certlut.md) | Intended cube certification and the float32 kd-tree |
 | [`eytzinger`](eytzinger.md) | One-dimensional projection in an Eytzinger array layout |
 | [`fhedt`](fhedt.md) | Separable three-dimensional Euclidean distance transform |
-| [`delaunay`](delaunay.md) | Closed Voronoi adjacency with exact scalar and SIMD graph walks |
+| [`delaunay`](delaunay.md) | Exact closed Voronoi graph walks; CPU scalar/SIMD and Metal byte construction |
 | [`gridlut`](gridlut.md) | Exact RGB cell candidate LUT, GPU construction and palette-identity reuse |
 | [`ordered`](ordered.md) | Exact distance-sorted candidates, seed grids and CPU/Metal construction |
 | [`blockcull`](blockcull.md) | Per-block candidate culling before an exact scan, with a Metal matrix-product kernel |

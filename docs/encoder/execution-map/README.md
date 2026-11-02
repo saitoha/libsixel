@@ -178,6 +178,8 @@ The legacy `sixel_dither_t` adapter resolves option precedence at preparation an
 
 The ordinary byte RGB path executes a typed subgraph in [`encoder-core-session.inc.h`](../../../src/encoder-core-session.inc.h). `PaletteApply` owns policy dispatch and publishes `IndexedFrame` rows. `WirePalette` owns the exact serialized definitions and their decoded display RGB. `encoder_core` consumes published indexes and final skip coverage and emits ordered body bytes; it has no dither, source-frame, writer or retained-plane dependency. `SixelWriter` owns framing and callback acceptance and returns a `StreamReceipt`. `RetainedPlane` accepts that receipt and commits painted indexes directly into its RGB/validity storage.
 
+A GPU candidate supplies `lookup=NULL` and `lookup_kind` to `PaletteApply.prepare`, alongside the prepared dither and palette. Admission resolves before CPU lookup construction or output. An unsupported GPU-only plan returns `SIXEL_FEATURE_ERROR`; the adapter may then prepare the CPU lookup and retry preparation when policy permits fallback. A non-NULL lookup remains a prepared CPU object whose kind is authoritative. Successful GPU-only planning builds no CPU lookup table. Runtime failure seals the indexed result FAILED and never retries the frame on CPU, even if no rows have been published.
+
 The physical `indexed-sixel-stream` filter drives its `palette-apply` producer while ready CPU bands flow to body workers. Its typed output is a receipt; the following `retained-commit` filter consumes that receipt and the indexed image after releasing the baseline read lease. This synchronous subgraph does not change the six-node macro scheduler. Filter edges identify working frames, indexed frames, retained reads and receipts separately. Timeline events describe actual apply, body and commit work rather than a fictitious RGB conversion filter.
 
 A native commit scans final skip coverage once, expands only painted indexes at their destination, and computes paint count, approximate-keep status and optional presentation marks in that loop. It allocates nothing after stream acceptance. It creates no full-frame emitted-RGB intermediate. This does not remove GPU baseline uploads, index validation or the body encoder's coverage scans.
@@ -279,3 +281,11 @@ These tests cover prepared configuration ownership at the dither-policy boundary
 | IB-05 | The body encoder refuses an incomplete producer at finish. | [tests/encoder/indexed/0042_core_early_finish.t](../../../tests/encoder/indexed/0042_core_early_finish.t) |
 | IB-06 | The normal factory publishes the indexed body interface. | [tests/encoder/indexed/0043_core_normal_factory.t](../../../tests/encoder/indexed/0043_core_normal_factory.t) |
 | IB-07 | The ormode factory publishes the indexed body interface. | [tests/encoder/indexed/0044_core_ormode_factory.t](../../../tests/encoder/indexed/0044_core_ormode_factory.t) |
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| IXGPU-01 | GPU `force` omits CPU lookup; the complete output agrees with CPU encoding. | [tests/encoder/indexed/0045_gpu_force_omits_cpu_lookup.t](../../../tests/encoder/indexed/0045_gpu_force_omits_cpu_lookup.t) |
+| IXGPU-02 | GPU `auto` omits CPU lookup; the complete output agrees with CPU encoding. | [tests/encoder/indexed/0046_gpu_auto_omits_cpu_lookup.t](../../../tests/encoder/indexed/0046_gpu_auto_omits_cpu_lookup.t) |
+| IXGPU-03 | Frames below the GPU threshold prepare CPU lookup and match CPU encoding. | [tests/encoder/indexed/0047_gpu_threshold_prepares_cpu_lookup.t](../../../tests/encoder/indexed/0047_gpu_threshold_prepares_cpu_lookup.t) |
+| IXGPU-04 | GPU `off` prepares CPU lookup and matches CPU encoding. | [tests/encoder/indexed/0048_gpu_off_prepares_cpu_lookup.t](../../../tests/encoder/indexed/0048_gpu_off_prepares_cpu_lookup.t) |
+| IXGPU-05 | GPU-ineligible dithering prepares CPU lookup and matches CPU encoding. | [tests/encoder/indexed/0049_gpu_unsupported_prepares_cpu_lookup.t](../../../tests/encoder/indexed/0049_gpu_unsupported_prepares_cpu_lookup.t) |

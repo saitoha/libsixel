@@ -48,7 +48,9 @@ sixel_palette_apply_clear_plan(sixel_palette_apply_storage_t *apply)
 {
     if (apply->prepared) {
         apply->plan.working_palette->vtbl->unref(apply->plan.working_palette);
-        apply->plan.lookup->vtbl->unref(apply->plan.lookup);
+        if (apply->plan.lookup != NULL) {
+            apply->plan.lookup->vtbl->unref(apply->plan.lookup);
+        }
         apply->plan.dither->vtbl->unref(apply->plan.dither);
         sixel_wire_palette_unref(apply->plan.output.palette);
     }
@@ -90,7 +92,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     SIXELSTATUS status;
 
     if (self == NULL || request == NULL || request->working_palette == NULL ||
-            request->lookup == NULL || request->dither == NULL ||
+            request->dither == NULL ||
             request->output.palette == NULL || request->output.width <= 0 ||
             request->output.height <= 0 || request->worker_threads < 1 ||
             request->band_height < 0 || request->band_overlap < 0) {
@@ -120,7 +122,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     }
     options = configuration.options;
     pixels = (size_t)request->output.width * request->output.height;
-    kind = request->lookup->vtbl->get_kind != NULL
+    kind = request->lookup == NULL ? request->lookup_kind
+        : request->lookup->vtbl->get_kind != NULL
         ? request->lookup->vtbl->get_kind(request->lookup) : -1;
     gpu = request->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
         request->output.origin_x == 0 && request->output.origin_y == 0 &&
@@ -130,7 +133,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         (kind == SIXEL_LUT_POLICY_NONE || kind == SIXEL_LUT_POLICY_EYTZINGER ||
          kind == SIXEL_LUT_POLICY_BLOCKCULL ||
          kind == SIXEL_LUT_POLICY_GRIDLUT ||
-         kind == SIXEL_LUT_POLICY_ORDERED) &&
+         kind == SIXEL_LUT_POLICY_ORDERED ||
+         kind == SIXEL_LUT_POLICY_DELAUNAY) &&
         (options.method_for_diffuse == SIXEL_DIFFUSE_NONE ||
          options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
          options.method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
@@ -142,7 +146,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     } else if (gpu) {
         gpu = sixel_gpu_palette_plan_available();
     }
-    if (!gpu && request->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+    if (!gpu && (request->lookup == NULL ||
+            request->gpu_policy == SIXEL_GPU_POLICY_FORCE)) {
         return SIXEL_FEATURE_ERROR;
     }
     /* Gradient analysis has its own prepared source map in the legacy
@@ -170,7 +175,9 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     apply->gpu = gpu;
     apply->ready = ready;
     request->working_palette->vtbl->ref(request->working_palette);
-    request->lookup->vtbl->ref(request->lookup);
+    if (request->lookup != NULL) {
+        request->lookup->vtbl->ref(request->lookup);
+    }
     request->dither->vtbl->ref(request->dither);
     sixel_wire_palette_ref(request->output.palette);
     for (i = 0; i < palette.count; ++i) {

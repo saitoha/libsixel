@@ -1843,6 +1843,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/blockcull/0001_blockcull_exact.c \
 	lookup/gridlut/0001_gridlut_exact.c \
 	lookup/ordered/0001_ordered_exact.c \
+	lookup/delaunay/0050_gpu_exact.c \
+	encoder/indexed/0045_gpu_lookup_preparation.c \
+	lookup/delaunay/0105_gpu_geometry.c \
+	lookup/delaunay/0111_gpu_cache.c \
+	lookup/delaunay/0102_gpu_failure.c \
+	_support/processing/gpu-palette/lookup_exact_common.c \
 	_support/processing/gpu-palette/ordered_state_common.c \
 	_support/processing/gpu-palette/ordered_state_common.h \
 	lookup/ordered/0002_ordered_cache_transitions.c \
@@ -6017,6 +6023,12 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/blockcull/test_runner-0001_blockcull_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0050_gpu_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0045_gpu_lookup_preparation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0105_gpu_geometry.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0111_gpu_cache.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/delaunay/test_runner-0102_gpu_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-lookup_exact_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-ordered_state_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/ordered/test_runner-0002_ordered_cache_transitions.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/ordered/test_runner-0003_ordered_parallel_cache.$(OBJEXT) \
@@ -8921,6 +8933,7 @@ am__depfiles_remade =  \
 	_support/processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po \
+	_support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po \
@@ -10086,6 +10099,7 @@ am__depfiles_remade =  \
 	encoder/indexed/$(DEPDIR)/test_runner-0042_core_early_finish.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0043_core_normal_factory.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0044_core_ormode_factory.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po \
@@ -11704,6 +11718,10 @@ am__depfiles_remade =  \
 	lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0011_delaunay_float_distance.Plo \
 	lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0012_delaunay_float_bulk.Plo \
 	lookup/delaunay/$(DEPDIR)/test_runner-0014_delaunay_byte_bulk.Po \
+	lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Po \
+	lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Po \
+	lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Po \
+	lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Po \
 	lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0014_lookup_float_batch_exact.Plo \
 	lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0015_lookup_float_simd_distance.Plo \
 	lookup/dispatch/$(DEPDIR)/test_runner-0001_filter_lookup.Po \
@@ -13535,6 +13553,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_BLOCKCULL_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GRIDLUT_EXACT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ORDERED_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_LOOKUP_EXACT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_GPU_EXACT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_GPU_LOOKUP_PREPARATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_GPU_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0105_GPU_GEOMETRY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0111_GPU_CACHE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SCIELAB_IDENTITY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_SCIELAB_UNIFORM \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_SCIELAB_DENSE_REFERENCE \
@@ -19296,6 +19320,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/blockcull/0001_blockcull_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/gridlut/0001_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/ordered/0001_ordered_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0050_gpu_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0045_gpu_lookup_preparation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0105_gpu_geometry.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0111_gpu_cache.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/delaunay/0102_gpu_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/lookup_exact_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/ordered_state_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/ordered_state_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/ordered/0002_ordered_cache_transitions.c \
@@ -27576,6 +27606,30 @@ lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT):  \
 lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT):  \
 	lookup/ordered/$(am__dirstamp) \
 	lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+lookup/delaunay/test_runner-0050_gpu_exact.$(OBJEXT):  \
+	lookup/delaunay/$(am__dirstamp) \
+	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/$(am__dirstamp):
+	@$(MKDIR_P) encoder/indexed
+	@: >>encoder/indexed/$(am__dirstamp)
+encoder/indexed/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) encoder/indexed/$(DEPDIR)
+	@: >>encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0045_gpu_lookup_preparation.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+lookup/delaunay/test_runner-0105_gpu_geometry.$(OBJEXT):  \
+	lookup/delaunay/$(am__dirstamp) \
+	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
+lookup/delaunay/test_runner-0111_gpu_cache.$(OBJEXT):  \
+	lookup/delaunay/$(am__dirstamp) \
+	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
+lookup/delaunay/test_runner-0102_gpu_failure.$(OBJEXT):  \
+	lookup/delaunay/$(am__dirstamp) \
+	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
+_support/processing/gpu-palette/test_runner-lookup_exact_common.$(OBJEXT):  \
+	_support/processing/gpu-palette/$(am__dirstamp) \
+	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 _support/processing/gpu-palette/test_runner-ordered_state_common.$(OBJEXT):  \
 	_support/processing/gpu-palette/$(am__dirstamp) \
 	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
@@ -28311,12 +28365,6 @@ _support/codec/$(DEPDIR)/$(am__dirstamp):
 _support/codec/test_runner-indexed_equivalence_common.$(OBJEXT):  \
 	_support/codec/$(am__dirstamp) \
 	_support/codec/$(DEPDIR)/$(am__dirstamp)
-encoder/indexed/$(am__dirstamp):
-	@$(MKDIR_P) encoder/indexed
-	@: >>encoder/indexed/$(am__dirstamp)
-encoder/indexed/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) encoder/indexed/$(DEPDIR)
-	@: >>encoder/indexed/$(DEPDIR)/$(am__dirstamp)
 encoder/indexed/test_runner-0026_none_cpu_rgb_bytes.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
@@ -36192,6 +36240,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-wire_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-0021_delaunay_byte_exact.Po@am__quote@ # am--include-marker
@@ -37357,6 +37406,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0042_core_early_finish.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0043_core_normal_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0044_core_ormode_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po@am__quote@ # am--include-marker
@@ -38975,6 +39025,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0011_delaunay_float_distance.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/libfloatlookuptests_la-0012_delaunay_float_bulk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0014_delaunay_byte_bulk.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0014_lookup_float_batch_exact.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/dispatch/$(DEPDIR)/libfloatlookuptests_la-0015_lookup_float_simd_distance.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/dispatch/$(DEPDIR)/test_runner-0001_filter_lookup.Po@am__quote@ # am--include-marker
@@ -63416,6 +63470,90 @@ lookup/ordered/test_runner-0001_ordered_exact.obj: lookup/ordered/0001_ordered_e
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/ordered/0001_ordered_exact.c' object='lookup/ordered/test_runner-0001_ordered_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/ordered/test_runner-0001_ordered_exact.obj `if test -f 'lookup/ordered/0001_ordered_exact.c'; then $(CYGPATH_W) 'lookup/ordered/0001_ordered_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/ordered/0001_ordered_exact.c'; fi`
+
+lookup/delaunay/test_runner-0050_gpu_exact.o: lookup/delaunay/0050_gpu_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0050_gpu_exact.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Tpo -c -o lookup/delaunay/test_runner-0050_gpu_exact.o `test -f 'lookup/delaunay/0050_gpu_exact.c' || echo '$(srcdir)/'`lookup/delaunay/0050_gpu_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0050_gpu_exact.c' object='lookup/delaunay/test_runner-0050_gpu_exact.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0050_gpu_exact.o `test -f 'lookup/delaunay/0050_gpu_exact.c' || echo '$(srcdir)/'`lookup/delaunay/0050_gpu_exact.c
+
+lookup/delaunay/test_runner-0050_gpu_exact.obj: lookup/delaunay/0050_gpu_exact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0050_gpu_exact.obj -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Tpo -c -o lookup/delaunay/test_runner-0050_gpu_exact.obj `if test -f 'lookup/delaunay/0050_gpu_exact.c'; then $(CYGPATH_W) 'lookup/delaunay/0050_gpu_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0050_gpu_exact.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0050_gpu_exact.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0050_gpu_exact.c' object='lookup/delaunay/test_runner-0050_gpu_exact.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0050_gpu_exact.obj `if test -f 'lookup/delaunay/0050_gpu_exact.c'; then $(CYGPATH_W) 'lookup/delaunay/0050_gpu_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0050_gpu_exact.c'; fi`
+
+encoder/indexed/test_runner-0045_gpu_lookup_preparation.o: encoder/indexed/0045_gpu_lookup_preparation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0045_gpu_lookup_preparation.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Tpo -c -o encoder/indexed/test_runner-0045_gpu_lookup_preparation.o `test -f 'encoder/indexed/0045_gpu_lookup_preparation.c' || echo '$(srcdir)/'`encoder/indexed/0045_gpu_lookup_preparation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0045_gpu_lookup_preparation.c' object='encoder/indexed/test_runner-0045_gpu_lookup_preparation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0045_gpu_lookup_preparation.o `test -f 'encoder/indexed/0045_gpu_lookup_preparation.c' || echo '$(srcdir)/'`encoder/indexed/0045_gpu_lookup_preparation.c
+
+encoder/indexed/test_runner-0045_gpu_lookup_preparation.obj: encoder/indexed/0045_gpu_lookup_preparation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0045_gpu_lookup_preparation.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Tpo -c -o encoder/indexed/test_runner-0045_gpu_lookup_preparation.obj `if test -f 'encoder/indexed/0045_gpu_lookup_preparation.c'; then $(CYGPATH_W) 'encoder/indexed/0045_gpu_lookup_preparation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0045_gpu_lookup_preparation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0045_gpu_lookup_preparation.c' object='encoder/indexed/test_runner-0045_gpu_lookup_preparation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0045_gpu_lookup_preparation.obj `if test -f 'encoder/indexed/0045_gpu_lookup_preparation.c'; then $(CYGPATH_W) 'encoder/indexed/0045_gpu_lookup_preparation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0045_gpu_lookup_preparation.c'; fi`
+
+lookup/delaunay/test_runner-0105_gpu_geometry.o: lookup/delaunay/0105_gpu_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0105_gpu_geometry.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Tpo -c -o lookup/delaunay/test_runner-0105_gpu_geometry.o `test -f 'lookup/delaunay/0105_gpu_geometry.c' || echo '$(srcdir)/'`lookup/delaunay/0105_gpu_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0105_gpu_geometry.c' object='lookup/delaunay/test_runner-0105_gpu_geometry.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0105_gpu_geometry.o `test -f 'lookup/delaunay/0105_gpu_geometry.c' || echo '$(srcdir)/'`lookup/delaunay/0105_gpu_geometry.c
+
+lookup/delaunay/test_runner-0105_gpu_geometry.obj: lookup/delaunay/0105_gpu_geometry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0105_gpu_geometry.obj -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Tpo -c -o lookup/delaunay/test_runner-0105_gpu_geometry.obj `if test -f 'lookup/delaunay/0105_gpu_geometry.c'; then $(CYGPATH_W) 'lookup/delaunay/0105_gpu_geometry.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0105_gpu_geometry.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0105_gpu_geometry.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0105_gpu_geometry.c' object='lookup/delaunay/test_runner-0105_gpu_geometry.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0105_gpu_geometry.obj `if test -f 'lookup/delaunay/0105_gpu_geometry.c'; then $(CYGPATH_W) 'lookup/delaunay/0105_gpu_geometry.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0105_gpu_geometry.c'; fi`
+
+lookup/delaunay/test_runner-0111_gpu_cache.o: lookup/delaunay/0111_gpu_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0111_gpu_cache.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Tpo -c -o lookup/delaunay/test_runner-0111_gpu_cache.o `test -f 'lookup/delaunay/0111_gpu_cache.c' || echo '$(srcdir)/'`lookup/delaunay/0111_gpu_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0111_gpu_cache.c' object='lookup/delaunay/test_runner-0111_gpu_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0111_gpu_cache.o `test -f 'lookup/delaunay/0111_gpu_cache.c' || echo '$(srcdir)/'`lookup/delaunay/0111_gpu_cache.c
+
+lookup/delaunay/test_runner-0111_gpu_cache.obj: lookup/delaunay/0111_gpu_cache.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0111_gpu_cache.obj -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Tpo -c -o lookup/delaunay/test_runner-0111_gpu_cache.obj `if test -f 'lookup/delaunay/0111_gpu_cache.c'; then $(CYGPATH_W) 'lookup/delaunay/0111_gpu_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0111_gpu_cache.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0111_gpu_cache.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0111_gpu_cache.c' object='lookup/delaunay/test_runner-0111_gpu_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0111_gpu_cache.obj `if test -f 'lookup/delaunay/0111_gpu_cache.c'; then $(CYGPATH_W) 'lookup/delaunay/0111_gpu_cache.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0111_gpu_cache.c'; fi`
+
+lookup/delaunay/test_runner-0102_gpu_failure.o: lookup/delaunay/0102_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0102_gpu_failure.o -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Tpo -c -o lookup/delaunay/test_runner-0102_gpu_failure.o `test -f 'lookup/delaunay/0102_gpu_failure.c' || echo '$(srcdir)/'`lookup/delaunay/0102_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0102_gpu_failure.c' object='lookup/delaunay/test_runner-0102_gpu_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0102_gpu_failure.o `test -f 'lookup/delaunay/0102_gpu_failure.c' || echo '$(srcdir)/'`lookup/delaunay/0102_gpu_failure.c
+
+lookup/delaunay/test_runner-0102_gpu_failure.obj: lookup/delaunay/0102_gpu_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/delaunay/test_runner-0102_gpu_failure.obj -MD -MP -MF lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Tpo -c -o lookup/delaunay/test_runner-0102_gpu_failure.obj `if test -f 'lookup/delaunay/0102_gpu_failure.c'; then $(CYGPATH_W) 'lookup/delaunay/0102_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0102_gpu_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Tpo lookup/delaunay/$(DEPDIR)/test_runner-0102_gpu_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/delaunay/0102_gpu_failure.c' object='lookup/delaunay/test_runner-0102_gpu_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/delaunay/test_runner-0102_gpu_failure.obj `if test -f 'lookup/delaunay/0102_gpu_failure.c'; then $(CYGPATH_W) 'lookup/delaunay/0102_gpu_failure.c'; else $(CYGPATH_W) '$(srcdir)/lookup/delaunay/0102_gpu_failure.c'; fi`
+
+_support/processing/gpu-palette/test_runner-lookup_exact_common.o: _support/processing/gpu-palette/lookup_exact_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-lookup_exact_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Tpo -c -o _support/processing/gpu-palette/test_runner-lookup_exact_common.o `test -f '_support/processing/gpu-palette/lookup_exact_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/lookup_exact_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/lookup_exact_common.c' object='_support/processing/gpu-palette/test_runner-lookup_exact_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-lookup_exact_common.o `test -f '_support/processing/gpu-palette/lookup_exact_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/lookup_exact_common.c
+
+_support/processing/gpu-palette/test_runner-lookup_exact_common.obj: _support/processing/gpu-palette/lookup_exact_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-lookup_exact_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Tpo -c -o _support/processing/gpu-palette/test_runner-lookup_exact_common.obj `if test -f '_support/processing/gpu-palette/lookup_exact_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/lookup_exact_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/lookup_exact_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/lookup_exact_common.c' object='_support/processing/gpu-palette/test_runner-lookup_exact_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-lookup_exact_common.obj `if test -f '_support/processing/gpu-palette/lookup_exact_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/lookup_exact_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/lookup_exact_common.c'; fi`
 
 _support/processing/gpu-palette/test_runner-ordered_state_common.o: _support/processing/gpu-palette/ordered_state_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-ordered_state_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Tpo -c -o _support/processing/gpu-palette/test_runner-ordered_state_common.o `test -f '_support/processing/gpu-palette/ordered_state_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/ordered_state_common.c
