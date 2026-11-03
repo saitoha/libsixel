@@ -20,8 +20,8 @@ typedef struct sixel_palette_apply_storage {
     sixel_mutex_t row_gate;
     unsigned char *ready;
     unsigned char comparison[SIXEL_PALETTE_MAX * 3];
-    sixel_lookup_policy_configuration_t lookup_configuration;
-    int lookup_kind;
+    sixel_lookup_policy_interface_t *lookup;
+    sixel_gpu_program_t *program;
     int gpu;
     int prepared;
     int running;
@@ -49,12 +49,15 @@ sixel_palette_apply_clear_plan(sixel_palette_apply_storage_t *apply)
 {
     if (apply->prepared) {
         apply->plan.working_palette->vtbl->unref(apply->plan.working_palette);
-        if (apply->plan.lookup != NULL) {
-            apply->plan.lookup->vtbl->unref(apply->plan.lookup);
+        if (apply->lookup != NULL) {
+            apply->lookup->vtbl->unref(apply->lookup);
         }
         apply->plan.dither->vtbl->unref(apply->plan.dither);
         sixel_wire_palette_unref(apply->plan.output.palette);
     }
+    sixel_gpu_program_destroy(apply->program);
+    apply->program = NULL;
+    apply->lookup = NULL;
     sixel_allocator_free(apply->allocator, apply->ready);
     apply->ready = NULL;
     apply->prepared = 0;
@@ -85,12 +88,13 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     sixel_dither_policy_options_t options;
     sixel_dither_policy_prepare_request_t configuration;
     sixel_wire_palette_view_t palette;
-    sixel_lookup_policy_configuration_t lookup_configuration;
-    sixel_gpu_palette_request_t admission;
+    sixel_lookup_execution_request_t execution;
+    sixel_lookup_policy_interface_t *lookup;
+    sixel_gpu_lookup_plan_interface_t *gpu_plan;
+    sixel_gpu_program_t *program;
     unsigned char *ready;
     size_t pixels;
     size_t i;
-    int kind;
     int gpu;
     SIXELSTATUS status;
 
@@ -125,58 +129,18 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     }
     options = configuration.options;
     pixels = (size_t)request->output.width * request->output.height;
-    kind = request->lookup == NULL ? request->lookup_kind
-        : request->lookup->vtbl->get_kind != NULL
-        ? request->lookup->vtbl->get_kind(request->lookup) : -1;
-    memset(&lookup_configuration, 0, sizeof(lookup_configuration));
-    memset(&admission, 0, sizeof(admission));
-    if (kind == SIXEL_LUT_POLICY_FHEDT) {
-        /* A prepared lookup is authoritative. Never replace its resolved
-         * semantics with a caller's stale or independently resolved values. */
-        if (request->lookup != NULL) {
-            if (request->lookup->vtbl->get_configuration == NULL) {
-                return SIXEL_FEATURE_ERROR;
-            }
-            status = request->lookup->vtbl->get_configuration(request->lookup,
-                &lookup_configuration);
-            if (SIXEL_FAILED(status)) return status;
-        } else if (request->lookup_configuration != NULL) {
-            lookup_configuration = *request->lookup_configuration;
-        } else {
-            return SIXEL_FEATURE_ERROR;
-        }
-        if (lookup_configuration.kind != kind ||
-                lookup_configuration.pixelformat != request->pixelformat) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        sixel_gpu_palette_set_lookup_configuration(&admission,
-            &lookup_configuration);
-    }
-    gpu = request->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-        options.bluenoise_gradient_factor == 0 &&
-        (kind == SIXEL_LUT_POLICY_5BIT || kind == SIXEL_LUT_POLICY_6BIT ||
-         kind == SIXEL_LUT_POLICY_NONE || kind == SIXEL_LUT_POLICY_EYTZINGER ||
-         kind == SIXEL_LUT_POLICY_BLOCKCULL ||
-         kind == SIXEL_LUT_POLICY_GRIDLUT ||
-         kind == SIXEL_LUT_POLICY_ORDERED ||
-         kind == SIXEL_LUT_POLICY_DELAUNAY ||
-         (kind == SIXEL_LUT_POLICY_FHEDT &&
-          sixel_gpu_palette_fhedt_is_supported(&admission))) &&
-        (options.method_for_diffuse == SIXEL_DIFFUSE_NONE ||
-         options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
-         options.method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
-         options.method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER);
-    if (request->gpu_policy == SIXEL_GPU_POLICY_OFF ||
-            (request->gpu_policy == SIXEL_GPU_POLICY_AUTO &&
-             pixels < request->gpu_auto_threshold)) {
-        gpu = 0;
-    } else if (gpu) {
-        gpu = sixel_gpu_palette_plan_available();
-    }
-    if (!gpu && (request->lookup == NULL ||
-            request->gpu_policy == SIXEL_GPU_POLICY_FORCE)) {
-        return SIXEL_FEATURE_ERROR;
-    }
+    memset(&execution, 0, sizeof(execution));
+    execution.working_palette = request->working_palette;
+    execution.ncolors = options.ncolors - (options.keycolor_reserved != 0);
+    execution.pixelformat = request->pixelformat;
+    execution.colorspace = request->colorspace;
+    execution.parallel_dither_active = request->worker_threads > 1;
+    lookup = NULL;
+    gpu_plan = NULL;
+    program = NULL;
+    gpu = request->gpu_policy != SIXEL_GPU_POLICY_OFF &&
+        !(request->gpu_policy == SIXEL_GPU_POLICY_AUTO &&
+          pixels < request->gpu_auto_threshold);
     /* Gradient analysis has its own prepared source map in the legacy
      * adapter. Do not silently discard a requested modulation. */
     if (options.bluenoise_gradient_factor != 0) {
@@ -195,18 +159,44 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         sixel_allocator_free(apply->allocator, ready);
         return SIXEL_BAD_ARGUMENT;
     }
+    status = SIXEL_FEATURE_ERROR;
+    if (gpu && request->gpu_lookup != NULL && request->device != NULL &&
+            (options.method_for_diffuse == SIXEL_DIFFUSE_NONE ||
+             options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
+             options.method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
+             options.method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
+        status = request->gpu_lookup->vtbl->prepare(request->gpu_lookup,
+            &execution, request->device, &gpu_plan);
+        if (status == SIXEL_OK && gpu_plan == NULL) {
+            status = SIXEL_LOGIC_ERROR;
+        }
+        if (status == SIXEL_OK) {
+            status = sixel_gpu_program_prepare(request->device, gpu_plan,
+                &program);
+            gpu_plan->vtbl->unref(gpu_plan);
+        }
+    }
+    if (status == SIXEL_FEATURE_ERROR &&
+            request->gpu_policy != SIXEL_GPU_POLICY_FORCE &&
+            request->cpu_lookup != NULL) {
+        status = request->cpu_lookup->vtbl->prepare(request->cpu_lookup,
+            &execution, &lookup);
+    }
+    if (status == SIXEL_OK && program == NULL && lookup == NULL) {
+        status = SIXEL_LOGIC_ERROR;
+    }
+    if (status != SIXEL_OK) {
+        sixel_allocator_free(apply->allocator, ready);
+        return status;
+    }
     sixel_palette_apply_clear_plan(apply);
     apply->plan = *request;
-    apply->lookup_configuration = lookup_configuration;
-    apply->plan.lookup_configuration = &apply->lookup_configuration;
+    apply->lookup = lookup;
+    apply->program = program;
     apply->options = options;
-    apply->lookup_kind = kind;
-    apply->gpu = gpu;
+    apply->gpu = program != NULL;
     apply->ready = ready;
     request->working_palette->vtbl->ref(request->working_palette);
-    if (request->lookup != NULL) {
-        request->lookup->vtbl->ref(request->lookup);
-    }
     request->dither->vtbl->ref(request->dither);
     sixel_wire_palette_ref(request->output.palette);
     for (i = 0; i < palette.count; ++i) {
@@ -288,7 +278,7 @@ sixel_palette_apply_band(sixel_palette_apply_storage_t *apply,
     request.output_start = start;
     request.depth = 3;
     request.palette = apply->entries.entries;
-    request.lookup_policy = apply->plan.lookup;
+    request.lookup_policy = apply->lookup;
     request.execution = &apply->execution;
     job = apply->plan.band_height > 0 ? start / apply->plan.band_height : 0;
     sixel_timeline_logger_logf(apply->run->logger, "worker", "dither",
@@ -406,9 +396,7 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.palette_depth = apply->entries.depth;
     request.ncolors = apply->options.ncolors -
         (apply->options.keycolor_reserved != 0);
-    request.lut_policy = apply->lookup_kind;
-    sixel_gpu_palette_set_lookup_configuration(&request,
-        &apply->lookup_configuration);
+    request.program = apply->program;
     request.method_for_diffuse = apply->options.method_for_diffuse;
     request.method_for_scan = apply->plan.scan;
     request.transparent_mask = execution->transparent_mask;

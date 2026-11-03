@@ -1,0 +1,14 @@
+/* SPDX-License-Identifier: MIT */
+/*
+ * Policy: docs/encoder/execution-map/README.md
+ */
+#include <sixel.h>
+int indexed_gpu_lookup_preparation_test(int, int);
+
+int
+test_vptree_auto_no_cpu(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return indexed_gpu_lookup_preparation_test(1, SIXEL_LUT_POLICY_VPTREE);
+}

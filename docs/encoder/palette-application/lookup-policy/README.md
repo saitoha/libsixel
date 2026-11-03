@@ -183,7 +183,7 @@ Each policy has its own page because the algorithms, correctness arguments, and 
 | [`gridlut`](gridlut.md) | Exact RGB cell candidate LUT, GPU construction and palette-identity reuse |
 | [`ordered`](ordered.md) | Exact distance-sorted candidates, seed grids and CPU/Metal construction |
 | [`blockcull`](blockcull.md) | Per-block candidate culling before an exact scan, with a Metal matrix-product kernel |
-| [`vptree`](vptree.md) | Metric VP-tree with neighbor-list refinement from a caller hint |
+| [`vptree`](vptree.md) | CPU metric VP-tree and neighbor refinement; independent Metal RGB8 neighbor-row construction and exact lookup |
 | [`rbc`](rbc.md) | Random Ball Cover cluster pruning |
 | [`mahalanobis`](mahalanobis.md) | Exhaustive normalized lookup in deterministic RBC cluster order |
 

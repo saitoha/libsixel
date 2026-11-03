@@ -27,6 +27,7 @@
 
 #include <stddef.h>
 #include "delta-residual.h"
+#include "gpu-program.h"
 
 #include <sixel.h>
 #include <6cells.h>
@@ -46,7 +47,7 @@ typedef struct sixel_gpu_palette_test_hooks {
     int entered;
     int matrix_supported;
     /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order, 6 graph,
-     * 7 FHEDT, 8 bit LUT. */
+     * 7 FHEDT, 8 bit LUT, 9 injected RGB8 program. */
     int kernel;
     int rebuild;
     int published;
@@ -60,21 +61,17 @@ typedef struct sixel_gpu_palette_test_hooks {
 /*
  * PaletteApply GPU request.
  *
- * The GPU path is intentionally below lookup-policy and dither-policy.  It sees
- * the same normalized RGB888 source, byte palette, transparent mask, and
- * positional controls that the CPU lookup would read, then materializes the
- * indexed SIXEL buffer. NONE uses the exact direct scan;
- * BLOCKCULL culls each pixel block's candidates before the same exact
- * scan; GRIDLUT reuses fixed RGB-cell candidates; ORDERED reuses
- * distance-sorted rows and seed colors; DELAUNAY walks conservative
- * closed-cell adjacency; FHEDT constructs a quantized RGB grid and optional
- * corner refinement; 5BIT/6BIT build immutable cell-center tables; EYTZINGER
- * uses the one-dimensional projected lookup. Unsupported shapes
- * return SIXEL_FALSE for policy=auto so the caller can continue through the
- * CPU path.
+ * The fused consumer applies positional controls, invokes an injected lookup
+ * program, and materializes indexed pixels and delta decisions. Lookup plans
+ * own their shader, construction and workspace; this request carries only an
+ * opaque prepared program. The enum/configuration fields remain for the
+ * explicit legacy adapter and standalone compatibility entry point. Admission
+ * rejects unsupported inputs before output; a prepared execution does not
+ * retry a failed GPU frame on the CPU.
  */
 typedef struct sixel_gpu_palette_request {
     int policy;
+    sixel_gpu_program_t *program;
     sixel_gpu_palette_test_hooks_t *test_hooks;
     size_t auto_threshold;
     sixel_index_t *dest;

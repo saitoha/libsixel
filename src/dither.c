@@ -55,6 +55,7 @@
 
 #include "factory.h"
 #include "gpu-palette.h"
+#include "gpu-lookup.h"
 #include "loader-common.h"
 #include "lookup-policy.h"
 #include "lookup-policy-fhedt.h"
@@ -2224,6 +2225,9 @@ sixel_dither_new(
     (*ppdither)->gpu_test_hooks = NULL;
     (*ppdither)->gpu_palette_threshold =
         (size_t)SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT;
+    (*ppdither)->gpu_lookup = NULL;
+    memset(&(*ppdither)->gpu_lookup_configuration, 0,
+        sizeof((*ppdither)->gpu_lookup_configuration));
     (*ppdither)->lookup_policy = NULL;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
@@ -2341,6 +2345,9 @@ sixel_dither_destroy(
             dither->dither_policy->vtbl->unref(dither->dither_policy);
             dither->dither_policy = NULL;
             dither->dither_policy_class_name = NULL;
+        }
+        if (dither->gpu_lookup != NULL) {
+            dither->gpu_lookup->vtbl->unref(dither->gpu_lookup);
         }
         if (dither->lookup_policy != NULL) {
             dither->lookup_policy->vtbl->unref(dither->lookup_policy);
@@ -4142,6 +4149,8 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
         SIXEL_PIXELFORMAT_RGB888, parallel, dither->lookup_policy, NULL,
         dither->allocator);
 }
+
+#include "dither-lookup-preparer.inc.h"
 
 /* apply palette */
 SIXEL_INTERNAL_API sixel_index_t *

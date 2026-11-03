@@ -1633,13 +1633,396 @@ typedef struct sixel_palette_apply_delta {
     sixel_delta_threshold_map_t selection;
 } sixel_palette_apply_delta_t;
 
-/* lookup_configuration is borrowed through prepare and copied. It is used
- * only for lookup=NULL and must match configurable GPU policy semantics. */
+/* Lookup preparation consumes a palette view only for this call. Successful
+ * preparers copy or retain a frozen representation; later palette mutation
+ * cannot change the returned lookup. Query settings are already resolved and
+ * owned by the concrete preparer. No environment lookup occurs here.
+ * ncolors is the searchable prefix, in 1..palette.entry_count. The caller
+ * excludes any reserved transparency slot; lookup must not add it back. */
+typedef struct sixel_lookup_execution_request {
+    sixel_palette_t *working_palette;
+    unsigned int ncolors;
+    int pixelformat;
+    int colorspace;
+    int parallel_dither_active;
+} sixel_lookup_execution_request_t;
+
+/* CPU and GPU preparation are separate capabilities. Creating either
+ * preparer does not build a CPU tree, GPU table or memo. A prepared CPU
+ * lookup can be adapted here without surrendering its resolved settings. */
+typedef struct sixel_lookup_preparer_interface
+    sixel_lookup_preparer_interface_t;
+
+/*
+ * IDL responsibility:
+ * - prepare CPU lookup from resolved policy settings
+ */
+
+/*
+ * IDL forbidden state:
+ * - image_pixels
+ * - output_pixels
+ * - gpu_resources
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("prepare CPU lookup from resolved policy settings")]
+ * [forbid_state("image_pixels", "output_pixels", "gpu_resources")]
+ * interface lookup_preparer {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const]
+ *     SIXELSTATUS prepare(in lookup_execution_request const *request,
+ *         out lookup_policy **lookup);
+ * };
+ */
+
+typedef struct sixel_lookup_preparer_vtbl {
+    void (*ref)(sixel_lookup_preparer_interface_t *self);
+    void (*unref)(sixel_lookup_preparer_interface_t *self);
+    SIXELSTATUS (*prepare)(
+        sixel_lookup_preparer_interface_t const *self,
+        sixel_lookup_execution_request_t const *request,
+        sixel_lookup_policy_interface_t **lookup);
+} sixel_lookup_preparer_vtbl_t;
+
+struct sixel_lookup_preparer_interface {
+    sixel_lookup_preparer_vtbl_t const *vtbl;
+};
+
+/* GPU allocation belongs to the device runtime. Providers retain buffers
+ * through this interface and never cast them to another owner's storage.
+ * Only the matching runtime implementation accesses its native GPU handle. */
+typedef struct sixel_gpu_buffer_interface sixel_gpu_buffer_interface_t;
+
+/*
+ * IDL responsibility:
+ * - own one device-local allocation
+ */
+
+/*
+ * IDL forbidden state:
+ * - lookup_kind
+ * - palette_identity
+ * - frame_history
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("own one device-local allocation")]
+ * [forbid_state("lookup_kind", "palette_identity", "frame_history")]
+ * interface gpu_buffer {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const] size_t size();
+ * };
+ */
+
+typedef struct sixel_gpu_buffer_vtbl {
+    void (*ref)(sixel_gpu_buffer_interface_t *self);
+    void (*unref)(sixel_gpu_buffer_interface_t *self);
+    size_t (*size)(sixel_gpu_buffer_interface_t const *self);
+} sixel_gpu_buffer_vtbl_t;
+
+struct sixel_gpu_buffer_interface {
+    sixel_gpu_buffer_vtbl_t const *vtbl;
+};
+
+/* This is a cached device capability, not a discovery or fallback service.
+ * Backend-specific execution uses the same retained device identity. Device
+ * discovery happens before injection, never in a lookup query. Format names
+ * describe a program ABI, not an algorithm or policy allowlist. */
+typedef struct sixel_gpu_device_interface sixel_gpu_device_interface_t;
+
+/*
+ * IDL responsibility:
+ * - provide allocation on one selected GPU device
+ */
+
+/*
+ * IDL forbidden state:
+ * - lookup_kind
+ * - palette_identity
+ * - frame_history
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("provide allocation on one selected GPU device")]
+ * [forbid_state("lookup_kind", "palette_identity", "frame_history")]
+ * interface gpu_device {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const, borrows(program_format)]
+ *     char const *program_format();
+ *     SIXELSTATUS create_buffer(in size_t bytes, out gpu_buffer **buffer);
+ * };
+ */
+
+typedef struct sixel_gpu_device_vtbl {
+    void (*ref)(sixel_gpu_device_interface_t *self);
+    void (*unref)(sixel_gpu_device_interface_t *self);
+    char const *(*program_format)(sixel_gpu_device_interface_t const *self);
+    SIXELSTATUS (*create_buffer)(
+        sixel_gpu_device_interface_t *self,
+        size_t bytes,
+        sixel_gpu_buffer_interface_t **buffer);
+} sixel_gpu_device_vtbl_t;
+
+struct sixel_gpu_device_interface {
+    sixel_gpu_device_vtbl_t const *vtbl;
+};
+
+/* Groups and local threads describe one builder dispatch. Commands for
+ * successive passes are ordered with GPU write/read visibility. The runtime
+ * validates dimensions and pipeline limits before accepting any output. */
+typedef struct sixel_gpu_lookup_build_pass {
+    char const *entry_point;
+    size_t groups[3];
+    size_t threads[3];
+} sixel_gpu_lookup_build_pass_t;
+
+/* Frozen program description borrowed from one retained plan. Chunk strings
+ * are NUL-terminated; chunk_count is explicit. The runtime assembles/compiles
+ * these chunks but does not inspect their algorithm or private table layout.
+ * It keys compiled programs by full source and ABI/specialization inputs,
+ * never by a policy name alone. Entry points are local to this program.
+ *
+ * The initial ABI is "metal.lookup-rgb8.v1". It has one private byte-addressed
+ * workspace. Builders use palette at buffer 0, uint32 color count at buffer 1,
+ * opaque constants at buffer 2, writable workspace at buffer 3. Constants
+ * are copied verbatim; only this program's code interprets their contents.
+ * A zero constant size uses a harmless zero word for binding; nonzero size
+ * requires non-NULL storage. Workspace size is positive and device-valid.
+ * Every builder writes all locations subsequently read by query or builders;
+ * newly allocated storage is not assumed zero. No implicit clear dispatch.
+ *
+ * The query entry has the Metal signature
+ *   uint lookup_rgb8(uchar3 query, constant uchar *palette, uint ncolors,
+ *       constant uchar *configuration, device const uchar *workspace);
+ * The composer calls it directly from its fused per-pixel kernel. It returns
+ * an ordinary palette index under the concrete policy's declared semantics;
+ * transparency and delta keep are handled by the application component.
+ * It does not read pixel position, previous queries or retained history.
+ * This ABI does not claim to support float or collective block lookup.
+ *
+ * Providers own builders, constants, workspace layout and query code together.
+ * VP-tree and ordered maintain separate implementations and caches. There is
+ * no shared distance-row, candidate-builder or search service. */
+typedef struct sixel_gpu_lookup_program_view {
+    char const *program_format;
+    char const *logical_name;
+    char const * const *chunks;
+    size_t chunk_count;
+    unsigned char const *palette;
+    size_t palette_size;
+    unsigned int ncolors;
+    void const *constants;
+    size_t constants_size;
+    size_t workspace_size;
+    sixel_gpu_lookup_build_pass_t const *build_passes;
+    size_t build_pass_count;
+} sixel_gpu_lookup_program_view_t;
+
+typedef struct sixel_gpu_lookup_binding_view {
+    sixel_gpu_buffer_interface_t *workspace;
+    int needs_build;
+} sixel_gpu_lookup_binding_view_t;
+
+/* A successful begin gives the caller one exclusive lease. Bindings and the
+ * frozen program must remain alive until encoded work has completed/drained.
+ * workspace is borrowed until finish; only the GPU builder writes it.
+ *
+ * finish is called exactly once, also on cancellation or encoding failure
+ * before submission. SIXEL_OK means every build and consuming command has
+ * completed successfully. Any other status prevents cache publication; an
+ * attempted in-place build invalidates its overwritten cache identity.
+ * A failed, unsubmitted invocation cannot publish successful construction.
+ * finish is not a submission, wait, fallback or retained-history operation.
+ * unref does not implicitly signal completion or release in-flight storage.
+ * get_view/finish after finish return SIXEL_LOGIC_ERROR. */
+typedef struct sixel_gpu_lookup_binding_interface
+    sixel_gpu_lookup_binding_interface_t;
+
+/*
+ * IDL responsibility:
+ * - lease one lookup workspace until GPU completion
+ */
+
+/*
+ * IDL forbidden state:
+ * - terminal_callback
+ * - frame_history
+ * - submission_queue
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("lease one lookup workspace until GPU completion")]
+ * [forbid_state("terminal_callback", "frame_history", "submission_queue")]
+ * interface gpu_lookup_binding {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const, borrows(binding_view)]
+ *     SIXELSTATUS get_view(out gpu_lookup_binding_view *view);
+ *     [mutates, invalidates(binding_view)]
+ *     SIXELSTATUS finish(in SIXELSTATUS outcome);
+ * };
+ */
+
+typedef struct sixel_gpu_lookup_binding_vtbl {
+    void (*ref)(sixel_gpu_lookup_binding_interface_t *self);
+    void (*unref)(sixel_gpu_lookup_binding_interface_t *self);
+    SIXELSTATUS (*get_view)(
+        sixel_gpu_lookup_binding_interface_t const *self,
+        sixel_gpu_lookup_binding_view_t *view);
+    SIXELSTATUS (*finish)(
+        sixel_gpu_lookup_binding_interface_t *self,
+        SIXELSTATUS outcome);
+} sixel_gpu_lookup_binding_vtbl_t;
+
+struct sixel_gpu_lookup_binding_interface {
+    sixel_gpu_lookup_binding_vtbl_t const *vtbl;
+};
+
+/* A plan retains its device and freezes palette, configuration and program.
+ * Its owner may reuse policy-private cache storage, but begin must pin the
+ * correct identity until finish. Another live plan may never overwrite it.
+ * Exact palette bytes/order/count and result-affecting settings determine
+ * reuse; palette pointer equality is insufficient. Device identity is part
+ * of resource compatibility. No peer policy's cache is inspected.
+ *
+ * A second begin on an unfinished plan returns SIXEL_LOGIC_ERROR. Across
+ * plans, a provider must use another allocation or synchronize its cache
+ * before granting a lease. It cannot require the caller to know cache locks.
+ * A binding retains the plan; releasing the preparer never breaks the plan.
+ * describe has no allocation, command submission or device discovery effect.
+ * begin failures are runtime failures, not pre-output unsupported results. */
+typedef struct sixel_gpu_lookup_plan_interface
+    sixel_gpu_lookup_plan_interface_t;
+
+/*
+ * IDL responsibility:
+ * - own one frozen GPU palette lookup program
+ */
+
+/*
+ * IDL forbidden state:
+ * - image_pixels
+ * - output_pixels
+ * - dither
+ * - frame_history
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("own one frozen GPU palette lookup program")]
+ * [forbid_state("image_pixels", "output_pixels", "dither", "frame_history")]
+ * interface gpu_lookup_plan {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const, borrows(program_view)]
+ *     SIXELSTATUS describe(out gpu_lookup_program_view *view);
+ *     [mutates]
+ *     SIXELSTATUS begin(out gpu_lookup_binding **binding);
+ * };
+ */
+
+typedef struct sixel_gpu_lookup_plan_vtbl {
+    void (*ref)(sixel_gpu_lookup_plan_interface_t *self);
+    void (*unref)(sixel_gpu_lookup_plan_interface_t *self);
+    SIXELSTATUS (*describe)(
+        sixel_gpu_lookup_plan_interface_t const *self,
+        sixel_gpu_lookup_program_view_t *view);
+    SIXELSTATUS (*begin)(
+        sixel_gpu_lookup_plan_interface_t *self,
+        sixel_gpu_lookup_binding_interface_t **binding);
+} sixel_gpu_lookup_plan_vtbl_t;
+
+struct sixel_gpu_lookup_plan_interface {
+    sixel_gpu_lookup_plan_vtbl_t const *vtbl;
+};
+
+/* Preparation is a consumer-owned capability. Each implementation validates
+ * its own resolved settings and request representation. Success transfers
+ * one retained plan; failures leave *plan NULL and publish no mutable state.
+ * SIXEL_FEATURE_ERROR means unsupported before output. Other failures remain
+ * failures and must not be disguised as a reason to retry on the CPU.
+ * The composer validates/compiles the returned program during preparation.
+ * It never branches on logical_name or the concrete policy's enum value. */
+typedef struct sixel_gpu_lookup_preparer_interface
+    sixel_gpu_lookup_preparer_interface_t;
+
+/*
+ * IDL responsibility:
+ * - prepare GPU lookup from resolved policy settings
+ */
+
+/*
+ * IDL forbidden state:
+ * - image_pixels
+ * - output_pixels
+ * - dither
+ * - frame_history
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("prepare GPU lookup from resolved policy settings")]
+ * [forbid_state("image_pixels", "output_pixels", "dither", "frame_history")]
+ * interface gpu_lookup_preparer {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [const]
+ *     SIXELSTATUS prepare(in lookup_execution_request const *request,
+ *         in gpu_device *device, out gpu_lookup_plan **plan);
+ * };
+ */
+
+typedef struct sixel_gpu_lookup_preparer_vtbl {
+    void (*ref)(sixel_gpu_lookup_preparer_interface_t *self);
+    void (*unref)(sixel_gpu_lookup_preparer_interface_t *self);
+    SIXELSTATUS (*prepare)(
+        sixel_gpu_lookup_preparer_interface_t const *self,
+        sixel_lookup_execution_request_t const *request,
+        sixel_gpu_device_interface_t *device,
+        sixel_gpu_lookup_plan_interface_t **plan);
+} sixel_gpu_lookup_preparer_vtbl_t;
+
+struct sixel_gpu_lookup_preparer_interface {
+    sixel_gpu_lookup_preparer_vtbl_t const *vtbl;
+};
+
+/* Preparers carry already resolved settings. The composition root supplies
+ * the CPU/GPU capabilities of the same selected policy. A NULL capability is
+ * unavailable, not a request for enum-based discovery. At least one preparer
+ * is required. A GPU preparer requires the selected runtime device.
+ * Legacy lookup_kind/configuration and already prepared CPU objects are
+ * adapted before this boundary, never inspected by PaletteApply. */
 typedef struct sixel_palette_apply_prepare_request {
     sixel_palette_t *working_palette;
-    sixel_lookup_policy_interface_t *lookup;
-    int lookup_kind; /* Used only when lookup is NULL. */
-    sixel_lookup_policy_configuration_t const *lookup_configuration;
+    sixel_lookup_preparer_interface_t *cpu_lookup;
+    sixel_gpu_lookup_preparer_interface_t *gpu_lookup;
+    sixel_gpu_device_interface_t *device;
     sixel_dither_policy_interface_t *dither;
     sixel_indexed_frame_description_t output;
     int pixelformat;
@@ -1673,22 +2056,25 @@ typedef struct sixel_palette_apply_run_request {
     void *cancel_context;
 } sixel_palette_apply_run_request_t;
 
-/* prepare retains compatible prepared dither and palette objects.
- * A non-NULL lookup must be prepared and is retained unchanged. A NULL
- * lookup requests GPU-only planning with lookup_kind and, for configurable
- * lookup semantics, lookup_configuration. A prepared lookup supplies its own
- * configuration; caller-provided snapshots cannot override it. An unsupported
- * GPU plan returns SIXEL_FEATURE_ERROR before output. The caller can then
- * prepare a CPU lookup and retry prepare. No CPU table is built for an
- * admitted GPU-only plan. Runtime failure does not retry on CPU.
- * They stay unchanged from prepare through run completion. Reconfiguration
- * between runs requires prepare again before the next run; retaining a cache
- * reference alone does not prohibit its idle reuse. The component resolves
- * the execution plan without output, reusing device capabilities;
- * hot loops neither reread environment options nor probe device availability.
- * The existing policy preparation contracts supply policy-specific settings.
- * CPU/GPU implementations must consume the same resolved settings, including
- * dither strength/phase and emitted-color comparison semantics.
+/* prepare retains compatible prepared dither and palette objects and the
+ * supplied preparation capabilities. GPU eligibility of the application
+ * shape is separate from lookup eligibility, which the provider owns.
+ * GPU off or a below-threshold auto request prepares CPU lookup. Otherwise
+ * the injected GPU preparer and composer attempt a plan without CPU lookup
+ * construction. Only unsupported preparation (SIXEL_FEATURE_ERROR) permits
+ * auto to prepare CPU lookup. Force returns that error. Missing required
+ * capabilities also report SIXEL_FEATURE_ERROR; other errors propagate.
+ * The composer validates and compiles the program before successful prepare.
+ * No policy enum/name, table layout or policy-specific option is interpreted
+ * by this component. An unsuccessful prepare preserves its previous plan.
+ *
+ * All resolved settings stay unchanged through run completion. Reconfiguration
+ * requires prepare again. Hot loops do not reread options or probe devices.
+ * Prepared CPU objects remain authoritative when supplied through an adapter;
+ * the composition root must not pair them with a stale GPU configuration.
+ * The CPU/GPU providers implement their declared selection semantics for the
+ * same logical policy. The composer uses the prepared dither settings without
+ * letting lookup change dither, transparency or emitted-color comparison.
  *
  * run requires BUILDING result storage matching the prepared description and
  * an exclusively borrowed source frame. The source's working pixels may be

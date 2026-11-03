@@ -154,6 +154,21 @@ srcs = [
   'delta-residual.c',
   'delta-residual.h',
   'gpu-palette.c',
+  'gpu-lookup-ordered.c',
+  'gpu-lookup-vptree.c',
+  'gpu-lookup-legacy.c',
+  'gpu-lookup-registry.c',
+  'gpu-lookup.h',
+  'gpu-lookup-ordered.h',
+  'gpu-lookup-vptree.h',
+  'gpu-lookup-legacy.h',
+  'gpu-program.h',
+  'gpu-lookup-ordered-shader.inc.h',
+  'gpu-lookup-vptree-shader.inc.h',
+  'gpu-palette-program.inc.h',
+  'gpu-palette-fused-prefix.inc.h',
+  'gpu-palette-fused-suffix.inc.h',
+  'dither-lookup-preparer.inc.h',
   'progressive-gpu.c',
   'progressive-gpu.h',
   'gpu-palette.h',
@@ -361,7 +376,7 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['gpu-palette-metal.m', 'palette-kmeans-metal.m',
+  srcs += ['gpu-lookup-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
            'progressive-gpu-metal.m']
 endif
 

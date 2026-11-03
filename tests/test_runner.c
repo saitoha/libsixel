@@ -1506,6 +1506,51 @@ int test_indexed_gpu_lookup_preparation(int argc, char **argv);
 int test_delaunay_gpu_exact(int argc, char **argv);
 int test_delaunay_gpu_failure(int argc, char **argv);
 int test_gpupal_0023_ordered_exact(int argc, char **argv);
+int test_injected_gpu_program(int, char **);
+int test_vptree_force_no_cpu(int, char **);
+int test_vptree_auto_no_cpu(int, char **);
+int test_cpu_palette_snapshot(int, char **);
+int test_invalid_gpu_index(int, char **);
+int test_lookup_auto_unsupported_fallback(int, char **);
+int test_lookup_force_unsupported_no_fallback(int, char **);
+int test_lookup_runtime_no_fallback(int, char **);
+int test_lookup_allocation_no_fallback(int, char **);
+int test_lookup_off_cpu_only(int, char **);
+int test_lookup_cutoff_cpu_only(int, char **);
+int test_component_vptree_palette_snapshot(int, char **);
+int test_component_vptree_cache_reuse(int, char **);
+int test_component_vptree_device_identity(int, char **);
+int test_component_vptree_live_plan_isolation(int, char **);
+int test_component_vptree_busy_lease(int, char **);
+int test_component_vptree_completed_reuse(int, char **);
+int test_component_vptree_aborted_rebuild(int, char **);
+int test_component_vptree_double_finish(int, char **);
+int test_component_vptree_finished_view(int, char **);
+int test_component_vptree_provider_lifetime(int, char **);
+int test_component_vptree_binding_lifetime(int, char **);
+int test_component_vptree_float_decline(int, char **);
+int test_component_ordered_palette_snapshot(int, char **);
+int test_component_ordered_cache_reuse(int, char **);
+int test_component_ordered_device_identity(int, char **);
+int test_component_ordered_live_plan_isolation(int, char **);
+int test_component_ordered_busy_lease(int, char **);
+int test_component_ordered_completed_reuse(int, char **);
+int test_component_ordered_aborted_rebuild(int, char **);
+int test_component_ordered_double_finish(int, char **);
+int test_component_ordered_finished_view(int, char **);
+int test_component_ordered_provider_lifetime(int, char **);
+int test_component_ordered_binding_lifetime(int, char **);
+int test_component_ordered_float_decline(int, char **);
+int test_vptree_gpu_exact_0_0_1(int, char **);
+int test_vptree_gpu_exact_0_0_2(int, char **);
+int test_vptree_gpu_exact_0_0_7(int, char **);
+int test_vptree_gpu_exact_0_0_33(int, char **);
+int test_vptree_gpu_exact_0_0_256(int, char **);
+int test_vptree_gpu_exact_1_0_64(int, char **);
+int test_vptree_gpu_exact_2_0_33(int, char **);
+int test_vptree_gpu_exact_4_0_33(int, char **);
+int test_vptree_gpu_exact_0_1_33(int, char **);
+int test_vptree_gpu_exact_1_1_33(int, char **);
 int test_gpupal_0024_ordered_cache_transitions(int argc, char **argv);
 int test_gpupal_0025_ordered_parallel_cache(int argc, char **argv);
 int test_gpupal_0026_ordered_delta_history(int argc, char **argv);
@@ -5784,6 +5829,51 @@ static test_entry_t const test_entries[] = {
       test_indexed_gpu_lookup_preparation },
     { "delaunay/gpu_exact", test_delaunay_gpu_exact },
     { "delaunay/gpu_failure", test_delaunay_gpu_failure },
+    { "component/vptree_palette_snapshot", test_component_vptree_palette_snapshot },
+    { "component/vptree_cache_reuse", test_component_vptree_cache_reuse },
+    { "component/vptree_device_identity", test_component_vptree_device_identity },
+    { "component/vptree_live_plan_isolation", test_component_vptree_live_plan_isolation },
+    { "component/vptree_busy_lease", test_component_vptree_busy_lease },
+    { "component/vptree_completed_reuse", test_component_vptree_completed_reuse },
+    { "component/vptree_aborted_rebuild", test_component_vptree_aborted_rebuild },
+    { "component/vptree_double_finish", test_component_vptree_double_finish },
+    { "component/vptree_finished_view", test_component_vptree_finished_view },
+    { "component/vptree_provider_lifetime", test_component_vptree_provider_lifetime },
+    { "component/vptree_binding_lifetime", test_component_vptree_binding_lifetime },
+    { "component/vptree_float_decline", test_component_vptree_float_decline },
+    { "component/ordered_palette_snapshot", test_component_ordered_palette_snapshot },
+    { "component/ordered_cache_reuse", test_component_ordered_cache_reuse },
+    { "component/ordered_device_identity", test_component_ordered_device_identity },
+    { "component/ordered_live_plan_isolation", test_component_ordered_live_plan_isolation },
+    { "component/ordered_busy_lease", test_component_ordered_busy_lease },
+    { "component/ordered_completed_reuse", test_component_ordered_completed_reuse },
+    { "component/ordered_aborted_rebuild", test_component_ordered_aborted_rebuild },
+    { "component/ordered_double_finish", test_component_ordered_double_finish },
+    { "component/ordered_finished_view", test_component_ordered_finished_view },
+    { "component/ordered_provider_lifetime", test_component_ordered_provider_lifetime },
+    { "component/ordered_binding_lifetime", test_component_ordered_binding_lifetime },
+    { "component/ordered_float_decline", test_component_ordered_float_decline },
+    { "vptree/gpu_exact_0_0_1", test_vptree_gpu_exact_0_0_1 },
+    { "vptree/gpu_exact_0_0_2", test_vptree_gpu_exact_0_0_2 },
+    { "vptree/gpu_exact_0_0_7", test_vptree_gpu_exact_0_0_7 },
+    { "vptree/gpu_exact_0_0_33", test_vptree_gpu_exact_0_0_33 },
+    { "vptree/gpu_exact_0_0_256", test_vptree_gpu_exact_0_0_256 },
+    { "vptree/gpu_exact_1_0_64", test_vptree_gpu_exact_1_0_64 },
+    { "vptree/gpu_exact_2_0_33", test_vptree_gpu_exact_2_0_33 },
+    { "vptree/gpu_exact_4_0_33", test_vptree_gpu_exact_4_0_33 },
+    { "vptree/gpu_exact_0_1_33", test_vptree_gpu_exact_0_1_33 },
+    { "vptree/gpu_exact_1_1_33", test_vptree_gpu_exact_1_1_33 },
+    { "component/auto_unsupported_fallback", test_lookup_auto_unsupported_fallback },
+    { "component/force_unsupported_no_fallback", test_lookup_force_unsupported_no_fallback },
+    { "component/runtime_no_fallback", test_lookup_runtime_no_fallback },
+    { "component/allocation_no_fallback", test_lookup_allocation_no_fallback },
+    { "component/off_cpu_only", test_lookup_off_cpu_only },
+    { "component/cutoff_cpu_only", test_lookup_cutoff_cpu_only },
+    { "component/injected_gpu_program", test_injected_gpu_program },
+    { "component/vptree_force_no_cpu", test_vptree_force_no_cpu },
+    { "component/vptree_auto_no_cpu", test_vptree_auto_no_cpu },
+    { "component/cpu_palette_snapshot", test_cpu_palette_snapshot },
+    { "component/invalid_gpu_index", test_invalid_gpu_index },
     { "gpu-palette/0023_ordered_exact",
       test_gpupal_0023_ordered_exact },
     { "gpu-palette/0024_ordered_cache_transitions",
