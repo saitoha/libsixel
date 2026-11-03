@@ -15,14 +15,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_image="${TOP_SRCDIR}/images/pngsuite/basic/basn6a08.png"
 
 
-target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I "${input_image}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I "${input_image}" -o/dev/null || {
     echo "not ok" 1 - "inspection with high color and RGBA input failed"
     exit 0
 }

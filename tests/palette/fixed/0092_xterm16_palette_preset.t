@@ -10,12 +10,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
-target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-xterm16.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bxterm16 "${snake_six}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -bxterm16 "${snake_six}" -o/dev/null || {
     echo "not ok" 1 - "xterm16 preset failed"
     exit 0
 }

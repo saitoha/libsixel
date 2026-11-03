@@ -1460,96 +1460,39 @@ runs:
           exit 0
         fi
         coverage_captured=0
+        GCOV_TOOL=""
         if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
-          LLVM_PROFDATA=""
-          LLVM_COV=""
-          for tool_dir in "" "$PWD/emsdk/upstream/bin" "$HOME/emsdk/upstream/bin"; do
-            [ -n "$LLVM_PROFDATA" ] || LLVM_PROFDATA="${tool_dir:+$tool_dir/}llvm-profdata"
-            [ -x "$LLVM_PROFDATA" ] || LLVM_PROFDATA=""
-            [ -n "$LLVM_COV" ] || LLVM_COV="${tool_dir:+$tool_dir/}llvm-cov"
-            [ -x "$LLVM_COV" ] || LLVM_COV=""
-          done
-          [ -n "$LLVM_PROFDATA" ] || LLVM_PROFDATA="$(command -v llvm-profdata || true)"
-          [ -n "$LLVM_COV" ] || LLVM_COV="$(command -v llvm-cov || true)"
-          [ -n "$LLVM_PROFDATA" ] || LLVM_PROFDATA="$(xcrun --find llvm-profdata 2>/dev/null || true)"
-          [ -n "$LLVM_COV" ] || LLVM_COV="$(xcrun --find llvm-cov 2>/dev/null || true)"
-          profraw_count=$(find . -type f -name '*.profraw' | wc -l | tr -d '[:space:]')
-          profraw_nonempty_count=$(find . -type f -name '*.profraw' -size +0c | wc -l | tr -d '[:space:]')
-          gcda_count=$(find . -type f -name '*.gcda' | wc -l | tr -d '[:space:]')
-          echo "Coverage probe (emscripten): profraw=$profraw_count profraw_nonempty=$profraw_nonempty_count gcda=$gcda_count"
-          if [ -n "$LLVM_PROFDATA" ] && [ -n "$LLVM_COV" ]; then
-            echo "Using llvm-profdata: $LLVM_PROFDATA"
-            echo "Using llvm-cov: $LLVM_COV"
-            PROFRAW_FILES=()
-            while IFS= read -r profraw_file; do
-              PROFRAW_FILES+=("$profraw_file")
-            done < <(find . -type f -name '*.profraw' -size +0c)
-            if [ "${#PROFRAW_FILES[@]}" -eq 0 ]; then
-              echo "No non-empty .profraw files found for llvm-cov; trying gcovr/lcov fallback"
-            else
-              rm -f coverage.profdata
-              if ! "$LLVM_PROFDATA" merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata; then
-                echo "llvm-profdata merge failed; trying gcovr/lcov fallback"
-              else
-                COV_OBJECTS=()
-                # Prefer instrumented local .wasm artifacts and skip external
-                # toolchain trees (for example emsdk) that flood logs with
-                # non-instrumented files.
-                while IFS= read -r cov_object; do
-                  COV_OBJECTS+=("$cov_object")
-                done < <(
-                  find . \
-                    \( -path './emsdk' -o -path './.venv' \) -prune -o \
-                    -type f -name '*.wasm' -print
-                )
-                if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
-                  while IFS= read -r cov_object; do
-                    COV_OBJECTS+=("$cov_object")
-                  done < <(
-                    find . \
-                      \( -path './emsdk' -o -path './.venv' \) -prune -o \
-                      -type f \( -name '*.o' -o -name '*.so' -o -name '*.a' \) -print
-                  )
-                fi
-                if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
-                  echo "No coverage objects found for llvm-cov; trying gcovr/lcov fallback"
-                else
-                  rm -f coverage.info coverage.info.tmp
-                  : > coverage.info.tmp
-                  COVERAGE_OBJECTS_EXPORTED=0
-                  for cov_object in "${COV_OBJECTS[@]}"; do
-                    if "$LLVM_COV" export -format=lcov \
-                      -instr-profile=coverage.profdata \
-                      "$cov_object" >> coverage.info.tmp 2>/dev/null; then
-                      COVERAGE_OBJECTS_EXPORTED=$((COVERAGE_OBJECTS_EXPORTED + 1))
-                    else
-                      echo "Skipping non-instrumented coverage object: $cov_object"
-                    fi
-                  done
-                  if [ "$COVERAGE_OBJECTS_EXPORTED" -eq 0 ]; then
-                    echo "No instrumented coverage objects found for llvm-cov; trying gcovr/lcov fallback"
-                    rm -f coverage.info.tmp
-                  else
-                    mv coverage.info.tmp coverage.info
-                    coverage_captured=1
-                    echo "Captured coverage via llvm-cov from $COVERAGE_OBJECTS_EXPORTED object(s)"
-                  fi
-                fi
-              fi
+          # Use the SDK reader for its gcov counters. The separate source-
+          # profiling runtime can have a different ABI from the SDK clang.
+          for tool_dir in "$PWD/emsdk/upstream/bin" "$HOME/emsdk/upstream/bin"; do
+            if [ -x "$tool_dir/llvm-cov" ]; then
+              GCOV_TOOL="$tool_dir/llvm-cov gcov"
+              break
             fi
-          else
-            echo "llvm-profdata/llvm-cov are missing; trying gcovr/lcov fallback"
+          done
+          if [ -z "$GCOV_TOOL" ]; then
+            GCOV_TOOL="$(command -v llvm-cov) gcov"
           fi
+          # Coverage is part of this matrix contract, including actual
+          # counters. Do not replace a failed read with an initial-only map.
+          gcovr -r . --lcov -o coverage.info \
+            --exclude '.*\.gperf$' \
+            --gcov-executable "$GCOV_TOOL" \
+            --gcov-ignore-errors=no_working_dir_found
+          test -s coverage.info
+          grep -q '^SF:' coverage.info
+          coverage_captured=1
         fi
         if [ "$coverage_captured" -ne 1 ] && command -v gcovr >/dev/null 2>&1; then
           # Generated headers map lines to *.gperf via #line directives.
           # In some out-of-tree builds the virtual builddir path does not
           # exist, so exclude those sources to prevent gcovr report failures.
           GCOVR_GPERF_EXCLUDE='.*\.gperf$'
-          GCOV_TOOL=""
           # Prefer llvm-cov for clang coverage so gcovr can read
           # llvm-generated profiling data correctly.
-          if command -v llvm-cov >/dev/null 2>&1; then
+          if [ -n "$GCOV_TOOL" ]; then
+            :
+          elif command -v llvm-cov >/dev/null 2>&1; then
             GCOV_TOOL="llvm-cov gcov"
           elif command -v gcov-14 >/dev/null 2>&1; then
             # Keep gcc-14 compatibility where gcov-14 is available.
@@ -1581,17 +1524,6 @@ runs:
             -o coverage.info || true
         elif [ "$coverage_captured" -ne 1 ]; then
           echo "No gcovr, lcov, or llvm-cov found; skipping coverage capture"
-        fi
-        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
-          if ! test -s coverage.info || ! grep -q '^SF:' coverage.info 2>/dev/null; then
-            if command -v lcov >/dev/null 2>&1; then
-              echo "coverage.info is empty for emscripten; retrying lcov initial capture"
-              lcov -c -i \
-                -d "$PWD" \
-                --rc branch_coverage=1 \
-                -o coverage.info || true
-            fi
-          fi
         fi
         # Normalize absolute paths so Coveralls can map files to the repo tree.
         # Meson may emit builddir paths, so strip builddir before the repo root.

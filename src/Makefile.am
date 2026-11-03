@@ -68,14 +68,16 @@ libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
 	$(AMALGAMATION_COMPILE) -c -o $@ $<
 
 else
-# Isolate arithmetic flags from every other translation unit.
-noinst_LTLIBRARIES = libfloatlookup.la
+# Isolate arithmetic flags from every other translation unit. Link these
+# objects directly: cosmoar cannot extract dual-architecture convenience
+# archives into the separate object directories expected by cosmocc.
+EXTRA_LTLIBRARIES = libfloatlookup.la
 libfloatlookup_la_SOURCES = $(srcdir)/lookup-vptree-float32.c \
     $(srcdir)/lookup-delaunay-float32.c \
     $(srcdir)/lookup-blockcull-float32.c
 libfloatlookup_la_CPPFLAGS = $(libsixel_la_CPPFLAGS)
 libfloatlookup_la_CFLAGS = $(libsixel_la_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
-FLOAT_LOOKUP_LIB = libfloatlookup.la
+FLOAT_LOOKUP_LIB = $(libfloatlookup_la_OBJECTS)
 libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \

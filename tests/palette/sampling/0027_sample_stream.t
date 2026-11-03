@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0025_sample_stream" || {
-    echo "not ok 1 - sample stream ownership contract"
+    echo "not ok" 1 - "sample stream ownership contract"
     exit 0
 }
 
-echo "ok 1 - sample stream ownership contract"
+echo "ok" 1 - "sample stream ownership contract"
 exit 0

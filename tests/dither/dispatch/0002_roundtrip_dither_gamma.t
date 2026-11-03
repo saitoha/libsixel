@@ -14,7 +14,6 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 snake_stage="${ARTIFACT_LOCAL_DIR}/snake-stage.sixel"
-snake_roundtrip="${ARTIFACT_LOCAL_DIR}/snake-roundtrip.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${snake_jpg}" -datkinson -flum -save \
     >"${snake_stage}" || {
@@ -22,7 +21,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${snake_jpg}" -datkinson -flum -save \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" <"${snake_stage}" >"${snake_roundtrip}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" <"${snake_stage}" -o/dev/null || {
     echo "not ok" 1 - "round-trip conversion failed"
     exit 0
 }

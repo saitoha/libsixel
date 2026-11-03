@@ -10,7 +10,7 @@ test_gamut_0017_palette_continuous(int argc, char **argv)
     gamut_fixture_t fixture = {0};
     sixel_dither_t *dither = NULL;
     sixel_palette_float32_entries_request_t request;
-    sixel_palette_float32_entries_view_t view;
+    sixel_palette_float32_entries_view_t view = {0};
     float colors[6] = {1.4f, -.1f, .15f, 0, 0, 0};
     int ok;
     int c;

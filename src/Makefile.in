@@ -153,7 +153,7 @@ am__uninstall_files_from_dir = { \
        $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"
-LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
+LTLIBRARIES = $(lib_LTLIBRARIES)
 libfloatlookup_la_LIBADD =
 am__libfloatlookup_la_SOURCES_DIST =  \
 	$(srcdir)/lookup-vptree-float32.c \
@@ -1537,15 +1537,17 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_2) $(am__append_3) \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4) $(am__append_5)
 
-# Isolate arithmetic flags from every other translation unit.
-@WANT_AMALGAMATED_LIB_FALSE@noinst_LTLIBRARIES = libfloatlookup.la
+# Isolate arithmetic flags from every other translation unit. Link these
+# objects directly: cosmoar cannot extract dual-architecture convenience
+# archives into the separate object directories expected by cosmocc.
+@WANT_AMALGAMATED_LIB_FALSE@EXTRA_LTLIBRARIES = libfloatlookup.la
 @WANT_AMALGAMATED_LIB_FALSE@libfloatlookup_la_SOURCES = $(srcdir)/lookup-vptree-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@    $(srcdir)/lookup-delaunay-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@    $(srcdir)/lookup-blockcull-float32.c
 
 @WANT_AMALGAMATED_LIB_FALSE@libfloatlookup_la_CPPFLAGS = $(libsixel_la_CPPFLAGS)
 @WANT_AMALGAMATED_LIB_FALSE@libfloatlookup_la_CFLAGS = $(libsixel_la_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
-@WANT_AMALGAMATED_LIB_FALSE@FLOAT_LOOKUP_LIB = libfloatlookup.la
+@WANT_AMALGAMATED_LIB_FALSE@FLOAT_LOOKUP_LIB = $(libfloatlookup_la_OBJECTS)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include \
                 -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
@@ -1743,15 +1745,6 @@ uninstall-libLTLIBRARIES:
 clean-libLTLIBRARIES:
 	-$(am__rm_f) $(lib_LTLIBRARIES)
 	@list='$(lib_LTLIBRARIES)'; \
-	locs=`for p in $$list; do echo $$p; done | \
-	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
-	      sort -u`; \
-	echo rm -f $${locs}; \
-	$(am__rm_f) $${locs}
-
-clean-noinstLTLIBRARIES:
-	-$(am__rm_f) $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; \
 	locs=`for p in $$list; do echo $$p; done | \
 	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
 	      sort -u`; \
@@ -3463,6 +3456,8 @@ check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(MANS)
+install-EXTRALTLIBRARIES: install-libLTLIBRARIES
+
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -3507,7 +3502,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstLTLIBRARIES mostlyclean-am
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
@@ -3952,20 +3947,19 @@ uninstall-man: uninstall-man5
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am \
 	check-local clean clean-generic clean-libLTLIBRARIES \
-	clean-libtool clean-noinstLTLIBRARIES cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-libLTLIBRARIES install-man \
-	install-man5 install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-libLTLIBRARIES uninstall-man \
-	uninstall-man5
+	clean-libtool cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-man install-man5 install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES \
+	uninstall-man uninstall-man5
 
 .PRECIOUS: Makefile
 

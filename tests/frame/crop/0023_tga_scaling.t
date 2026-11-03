@@ -10,13 +10,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_tga="${TOP_SRCDIR}/tests/data/inputs/snake_64.tga"
-target_sixel="${ARTIFACT_LOCAL_DIR}/snake-tga.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 -sauto -w100 -rga -qauto -dburkes -tauto \
-    "${snake_tga}" >"${target_sixel}" || {
+    "${snake_tga}" -o/dev/null || {
     echo "not ok" 1 - "TGA conversion with scaling failed"
     exit 0
 }

@@ -10,13 +10,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_palette_png="${TOP_SRCDIR}/images/snake-palette.png"
-target_sixel="${ARTIFACT_LOCAL_DIR}/indexed-scale.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -7 -w300 "${snake_palette_png}" \
-        >"${target_sixel}" || {
+        -o/dev/null || {
     echo "not ok" 1 - "indexed PNG scaling fails"
     exit 0
 }

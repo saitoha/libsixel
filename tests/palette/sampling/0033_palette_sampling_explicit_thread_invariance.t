@@ -16,7 +16,7 @@ serial_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy
     -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     -M gpl:- -o /dev/null "${TOP_SRCDIR}/images/snake.png") || {
-    echo "not ok 1 - explicit serial adaptive sampling failed"
+    echo "not ok" 1 - "explicit serial adaptive sampling failed"
     exit 0
 }
 
@@ -25,14 +25,14 @@ parallel_palette=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=gree
     -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     -M gpl:- -o /dev/null "${TOP_SRCDIR}/images/snake.png") || {
-    echo "not ok 1 - explicit parallel adaptive sampling failed"
+    echo "not ok" 1 - "explicit parallel adaptive sampling failed"
     exit 0
 }
 
 test "${serial_palette}" = "${parallel_palette}" || {
-    echo "not ok 1 - explicit adaptive palette changed with thread count"
+    echo "not ok" 1 - "explicit adaptive palette changed with thread count"
     exit 0
 }
 
-echo "ok 1 - explicit adaptive palette is invariant across thread counts"
+echo "ok" 1 - "explicit adaptive palette is invariant across thread counts"
 exit 0

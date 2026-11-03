@@ -10,13 +10,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_ascii_pbm="${TOP_SRCDIR}/images/snake-ascii.pbm"
-target_txt="${ARTIFACT_LOCAL_DIR}/ascii-pbm-inspection.txt"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -datkinson "${snake_ascii_pbm}" \
-        >"${target_txt}" || {
+        -o/dev/null || {
     echo "not ok" 1 - "ASCII PBM Atkinson inspection fails"
     exit 0
 }

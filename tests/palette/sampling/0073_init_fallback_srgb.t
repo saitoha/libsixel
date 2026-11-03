@@ -17,28 +17,28 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/sampling_float/0001_sampling_contract \
     auto-worker 0 0 auto 2>&1) || {
-    echo "not ok 1 - init fallback srgb"
+    echo "not ok" 1 - "init fallback srgb"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"LSXPFB1|stage=init|action=full-frame-sync|"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - init fallback srgb dispatch"
+    echo "not ok" 1 - "init fallback srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"points=8|quantizer_retries=0"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - init fallback srgb dispatch"
+    echo "not ok" 1 - "init fallback srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"effective=full-frame|source=preprocessed-frame"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - init fallback srgb dispatch"
+    echo "not ok" 1 - "init fallback srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-echo "ok 1 - init fallback srgb"
+echo "ok" 1 - "init fallback srgb"
 exit 0

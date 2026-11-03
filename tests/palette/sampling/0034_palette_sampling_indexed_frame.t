@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0037_palette_sampling_indexed_frame" || {
-    echo "not ok 1 - indexed frame adaptive sampling"
+    echo "not ok" 1 - "indexed frame adaptive sampling"
     exit 0
 }
 
-echo "ok 1 - indexed frame adaptive sampling"
+echo "ok" 1 - "indexed frame adaptive sampling"
 exit 0

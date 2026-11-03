@@ -474,6 +474,10 @@ emit_all_headers() {
                 # Parser fixtures are input text, not compilable library headers.
                 continue
                 ;;
+            tests/test-runner-amalgamation-defines.h)
+                # Build products must not select test bodies in the library.
+                continue
+                ;;
             *.inc.h)
                 # Include fragments are expanded inside their owning source.
                 continue
@@ -564,6 +568,10 @@ emit_all_units() {
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
+            tests/test-runner-amalgamation.c)
+                # This wrapper includes the output we are generating.
+                continue
+                ;;
             gdk-pixbuf-loader/*.[cm]|tests/*.[cm])
                 case "${unit}" in
                     *.inc.c)

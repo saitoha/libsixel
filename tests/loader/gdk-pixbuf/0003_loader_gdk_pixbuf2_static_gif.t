@@ -15,12 +15,10 @@ test "${HAVE_GDK_PIXBUF2-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
-output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_static_gif.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -S "${input_gif}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! -S "${input_gif}" -o/dev/null || {
     echo "not ok" 1 - "gdk-pixbuf2 static GIF decode failed"
     exit 0
 }

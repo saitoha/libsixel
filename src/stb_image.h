@@ -5542,8 +5542,10 @@ static void stbi__jpeg_cmyk_sample(float *out, unsigned int c0,
    double y;
    double k;
 
-   maximum = (double)((1u << precision) - 1u);
-   center = (double)(1u << (precision - 1));
+   /* The JPEG header validates 2..16-bit precision. Shift in a wide
+    * unsigned type before conversion, without a math call per pixel. */
+   maximum = (double)((1ULL << precision) - 1ULL);
+   center = (maximum + 1.0) * 0.5;
    c = (double)c0 / maximum;
    m = (double)c1 / maximum;
    y = (double)c2 / maximum;

@@ -16,6 +16,8 @@ The fat-binary checks are part of release confidence because a successful build 
 
 - Use Cosmopolitan runtime predicates for OS behavior; reserve `__COSMOPOLITAN__` for API availability and compilation.
 - Keep library and converter path adapters in lockstep.
+- Autotools links the individually compiled float-lookup objects directly into the library and test runner. Their per-object arithmetic flags remain isolated. A convenience archive would require Libtool to list and extract it, but `cosmoar` lists both architectures and extracts them into the same directory; the resulting duplicates and misplaced companion objects do not satisfy Libtool or `cosmocc`.
+
 - Lookup intrinsics require both a configured header and the active compiler target. `cosmocc` reuses one `config.h` across its CPU builds, so an x86 configure result alone cannot enable `<emmintrin.h>` in the AArch64 compilation. Keep target-qualified aliases shared by the header and SIMD branches; the [source check](../../../tests/_static/sh/staticcheck-lookup-intrinsics-target.sh) audits the SSE2 include boundary without a compiler.
 - Exercise the same APE on Windows and at least one Unix runtime after changing path logic.
 - The [CI setup action](../../../.github/actions/ci-steps/action.yml) pins the official GitHub release of `cosmocc` and its SHA-256 digest. The archive path and cache key derive from that selection before download; both restored and downloaded bytes must match the digest. Downloads have bounded connection and transfer times, reject HTTP errors, and become cacheable only after verification. When updating the compiler, update the version and digest together using the [official release assets](https://github.com/jart/cosmopolitan/releases).

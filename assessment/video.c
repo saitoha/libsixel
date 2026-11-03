@@ -350,10 +350,11 @@ lsqa_video_map(lsqa_video_state_t *v)
 #if FLT_RADIX != 2 || FLT_MANT_DIG != 24
     return SIXEL_NOT_IMPLEMENTED;
 #endif
-    switch (sizeof(float)) {
-    case 4:
-        break;
-    default:
+#if defined(_MSC_VER)
+    /* This is an intentional ABI guard, not a runtime data comparison. */
+# pragma warning(suppress: 6326)
+#endif
+    if (sizeof(float) != 4u) {
         return SIXEL_NOT_IMPLEMENTED;
     }
     if ((uint64_t)v->pixels > (UINT64_MAX - v->map_bytes) / 4U) {

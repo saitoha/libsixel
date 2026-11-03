@@ -26,7 +26,6 @@ reference_sixel="${TOP_SRCDIR}/tests/data/inputs/formats/animated_lossless_8x8_2
 artifact_dir="${ARTIFACT_LOCAL_DIR}"
 short_output="${artifact_dir}/0107-loader-libwebp-max-frames-short-$$.six"
 env_output="${artifact_dir}/0107-loader-libwebp-max-frames-env-$$.six"
-quality_output="${artifact_dir}/0107-loader-libwebp-max-frames-quality-$$.six"
 
 short_trace=$(set +xv; SIXEL_TRACE_TOPIC=suboption_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -85,7 +84,7 @@ cmp -s "${reference_sixel}" "${short_output}" || {
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    "-Llibwebp:M2!" -=greedy:B1 -S "${input_image}" >"${quality_output}" || {
+    "-Llibwebp:M2!" -=greedy:B1 -S "${input_image}" -o/dev/null || {
     echo "not ok" 1 - "max_output_frames static quality conversion failed"
     exit 0
 }

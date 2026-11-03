@@ -8,9 +8,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "filter/0034_filter_binning_sample_stream" || {
-    echo "not ok 1 - sample-stream binning filter contract"
+    echo "not ok" 1 - "sample-stream binning filter contract"
     exit 0
 }
 
-echo "ok 1 - sample-stream binning filter contract"
+echo "ok" 1 - "sample-stream binning filter contract"
 exit 0

@@ -3211,7 +3211,8 @@ libpng_classify_stream(sixel_chunk_t const *chunk, int *animated)
             *animated = 1;
         } else if (memcmp(p + 4, "fcTL", 4) == 0) {
             if (!*animated || (controls != 0u && !frame_data) ||
-                !parse_fctl(p + 8, length, &frame_sequence, &control) ||
+                !parse_fctl(p + 8, (png_uint_32)length,
+                    &frame_sequence, &control) ||
                 frame_sequence != sequence || sequence == UINT32_MAX) {
                 goto invalid;
             }

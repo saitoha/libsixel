@@ -19,10 +19,9 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/corrupted/truncated.png"
-output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_corrupted_png.sixel"
 error_log="${ARTIFACT_LOCAL_DIR}/gdk_corrupted_png.err"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! "${input_png}" >"${output_sixel}" 2>"${error_log}" && {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L gdk-pixbuf2! "${input_png}" -o/dev/null 2>"${error_log}" && {
     echo "not ok" 1 - "forced gdk-pixbuf2 corrupted PNG should fail"
     exit 0
 }

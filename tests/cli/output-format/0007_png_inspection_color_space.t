@@ -10,12 +10,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-target_txt="${ARTIFACT_LOCAL_DIR}/png-inspection.txt"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -C10 -djajuni "${snake_png}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -C10 -djajuni "${snake_png}" -o/dev/null || {
     echo "not ok" 1 - "PNG inspection colour space failed"
     exit 0
 }

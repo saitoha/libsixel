@@ -20,18 +20,18 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=4 -w 64 \
     -Qheckbert -d none -p 16 "-~none" -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - four-thread resized palette encode failed"
+    echo "not ok" 1 - "four-thread resized palette encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=4\|heavy=2\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - resized four-thread sampling plan changed"
+    echo "not ok" 1 - "resized four-thread sampling plan changed"
     exit 0
 }
 case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
-    echo "not ok 1 - resized four-thread path skipped adaptive sampling"
+    echo "not ok" 1 - "resized four-thread path skipped adaptive sampling"
     exit 0
 }
 
-echo "ok 1 - four threads admit sampling alongside resize work"
+echo "ok" 1 - "four threads admit sampling alongside resize work"
 exit 0

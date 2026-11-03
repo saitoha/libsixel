@@ -8,6 +8,45 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/compat_stub.h"
+#include "src/encoder.h"
+#include "src/threading.h"
+
+/* Hold the main thread after launch so the worker must make progress
+ * independently. Image size and host scheduling must not create the order. */
+struct fhedt_build_gate {
+    sixel_mutex_t mutex;
+    sixel_cond_t changed;
+    int finished;
+    int observed;
+};
+
+static void
+fhedt_build_finished(void *context)
+{
+    struct fhedt_build_gate *gate;
+
+    gate = context;
+    sixel_mutex_lock(&gate->mutex);
+    gate->finished = 1;
+    sixel_cond_broadcast(&gate->changed);
+    sixel_mutex_unlock(&gate->mutex);
+}
+
+static void
+fhedt_build_launched(void *context)
+{
+    struct fhedt_build_gate *gate;
+
+    gate = context;
+    sixel_mutex_lock(&gate->mutex);
+    while (!gate->finished) {
+        if (sixel_cond_timedwait(&gate->changed, &gate->mutex, 5000) != 0) {
+            break;
+        }
+    }
+    gate->observed = gate->finished;
+    sixel_mutex_unlock(&gate->mutex);
+}
 
 static int
 fhedt_build_sink(char *data, int size, void *context)
@@ -86,6 +125,9 @@ fhedt_build_trace(char const *path, int overlap)
 int
 fhedt_build_encode(int quality, int overlap, char const *path)
 {
+    struct fhedt_build_gate gate;
+    struct sixel_encoder_palette_test_hooks hooks;
+    int gate_ready;
     sixel_encoder_t *encoder;
     sixel_output_t *output;
     sixel_frame_t *frame;
@@ -95,6 +137,9 @@ fhedt_build_encode(int quality, int overlap, char const *path)
     int i;
     int ok;
 
+    memset(&gate, 0, sizeof(gate));
+    memset(&hooks, 0, sizeof(hooks));
+    gate_ready = 0;
     encoder = NULL;
     output = NULL;
     frame = NULL;
@@ -115,8 +160,21 @@ fhedt_build_encode(int quality, int overlap, char const *path)
                 NULL, NULL)) || SIXEL_FAILED(sixel_frame_new(&frame, NULL))) {
         goto end;
     }
-    /* Bound palette work so the larger full-frame conversion remains live.
-     * Explicit sampling retains the same asynchronous palette dependency. */
+    if (overlap) {
+        if (sixel_mutex_init(&gate.mutex) != 0) {
+            goto end;
+        }
+        if (sixel_cond_init(&gate.changed) != 0) {
+            sixel_mutex_destroy(&gate.mutex);
+            goto end;
+        }
+        gate_ready = 1;
+        hooks.context = &gate;
+        hooks.async_launched = fhedt_build_launched;
+        hooks.async_finished = fhedt_build_finished;
+        encoder->palette_test_hooks = &hooks;
+    }
+    /* Explicit bounded sampling retains the asynchronous dependency. */
     if (SIXEL_FAILED(sixel_encoder_setopt(encoder, '=', "greedy:B8")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, 'G', "off")) ||
             SIXEL_FAILED(sixel_encoder_setopt(encoder, '~', "fhedt")) ||
@@ -143,6 +201,11 @@ end:
     sixel_output_unref(output);
     sixel_frame_unref(frame);
     sixel_encoder_unref(encoder);
+    if (gate_ready) {
+        ok = ok && gate.observed;
+        sixel_cond_destroy(&gate.changed);
+        sixel_mutex_destroy(&gate.mutex);
+    }
     free(pixels);
     return ok ? fhedt_build_trace(path, overlap) : EXIT_FAILURE;
 }

@@ -1,5 +1,5 @@
 # Detect a compile-time skip followed by an unconditional test body.
-# This deliberately recognizes standalone return-77 branches, not general
+# This deliberately recognizes standalone skip/success-return branches, not general
 # control flow. Runtime conditions and branches containing other work are
 # left to the compiler; no target macros are evaluated here.
 function strip(line,    result, token) {
@@ -59,9 +59,11 @@ function inspect(    i, code, level, braces, pending, errors, scratch, previous)
             pending = 0
         }
         if (level > 0 && simple[level]) {
-            if (code ~ /^[[:space:]]*return[[:space:]]+77[[:space:]]*;[[:space:]]*$/)
+            if (code ~ /^[[:space:]]*return[[:space:]]+(77|0|EXIT_SUCCESS)[[:space:]]*;[[:space:]]*$/)
                 skipped[level] = i
-            else if (code !~ /^[[:space:]]*\(void\)[[:space:]]*[[:alnum:]_]+[[:space:]]*;[[:space:]]*$/)
+            else if (code ~ /^[[:space:]]*(fputs|puts|fprintf)[[:space:]]*\(.*\)[[:space:]]*;[[:space:]]*$/) {
+                # A complete diagnostic call cannot make the return conditional.
+            } else if (code !~ /^[[:space:]]*\(void\)[[:space:]]*[[:alnum:]_]+[[:space:]]*;[[:space:]]*$/)
                 simple[level] = 0
         }
         scratch = code
@@ -79,6 +81,8 @@ BEGIN {
     prefix = "int test(void)\n{\n#if DISABLED\n"
     if (!specimen(prefix "return 77;\n#endif\nrun();\n}") ||
         !specimen(prefix "/* skip */\n(void)argv;\nreturn 77;\n#endif\nrun();\n}") ||
+        !specimen(prefix "fputs(\"disabled\", stderr);\nreturn EXIT_SUCCESS;\n#endif\nrun();\n}") ||
+        !specimen(prefix "return 0;\n#endif\nrun();\n}") ||
         specimen(prefix "return 77;\n#else\nrun();\n#endif\n}") ||
         specimen(prefix "if (absent)\nreturn 77;\n#endif\nrun();\n}") ||
         specimen("int test(void)\n{\nif (absent)\n#if FEATURE\nreturn 77;\n#endif\nrun();\n}") ||
@@ -98,7 +102,7 @@ FNR == 1 {
 }
 {
     lines[++count] = $0
-    if ($0 ~ /return[[:space:]]+77[[:space:]]*;/) candidate = 1
+    if ($0 ~ /return[[:space:]]+(77|0|EXIT_SUCCESS)[[:space:]]*;/) candidate = 1
 }
 END {
     if (!control && candidate && inspect()) failed = 1

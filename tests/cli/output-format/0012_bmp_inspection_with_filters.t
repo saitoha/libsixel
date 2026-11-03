@@ -10,12 +10,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_bmp="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
-target_txt="${ARTIFACT_LOCAL_DIR}/bmp-inspection.txt"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone         -rhamming -thls "${snake_bmp}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone         -rhamming -thls "${snake_bmp}" -o/dev/null || {
     echo "not ok" 1 - "BMP inspection with filters fails"
     exit 0
 }

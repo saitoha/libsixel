@@ -24,19 +24,19 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     --sampling-policy=adaptive-grid \
     -Qheckbert -d none -p 16 "-~none" --cms-engine=none -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - explicit sampling thread fallback stopped encoding"
+    echo "not ok" 1 - "explicit sampling thread fallback stopped encoding"
     exit 0
 }
 
 case "${trace}" in *LSXPFB1\|stage=thread-create\|action=same-sample-sync\|*\|rc=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit sampling did not reuse the completed sample"
+    echo "not ok" 1 - "explicit sampling did not reuse the completed sample"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=executed\|reason=explicit\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit thread fallback changed sampling state"
+    echo "not ok" 1 - "explicit thread fallback changed sampling state"
     exit 0
 }
 
-echo "ok 1 - explicit adaptive sampling reuses its completed sample"
+echo "ok" 1 - "explicit adaptive sampling reuses its completed sample"
 exit 0

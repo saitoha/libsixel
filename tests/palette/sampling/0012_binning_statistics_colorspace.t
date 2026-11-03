@@ -5,8 +5,8 @@ set -eux
 echo "1..1"
 set -v
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "filter/0054_binning_statistics_colorspace" || {
-    echo "not ok 1 - binning statistics colorspace"
+    echo "not ok" 1 - "binning statistics colorspace"
     exit 0
 }
-echo "ok 1 - binning statistics colorspace"
+echo "ok" 1 - "binning statistics colorspace"
 exit 0

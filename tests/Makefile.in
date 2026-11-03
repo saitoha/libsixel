@@ -8526,8 +8526,7 @@ am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1)
-@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_DEPENDENCIES =  \
-@WANT_AMALGAMATED_TOOLS_FALSE@	libfloatlookuptests.la \
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_DEPENDENCIES = $(libfloatlookuptests_la_OBJECTS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1) \
@@ -13235,7 +13234,7 @@ SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null 
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; \
-	TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR; \
+	TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; export TOP_SRCDIR; \
 	TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR; \
 	$(am__append_1) $(am__append_2) \
 	QUICKLOOK_HOST_SYSTEM='@host_os@'; export \
@@ -13275,6 +13274,9 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	SIXEL_TEST_HOST_ARCH; \
 	RUNTIME_ENV_IS_OPENVMS='@RUNTIME_ENV_IS_OPENVMS@'; export \
 	RUNTIME_ENV_IS_OPENVMS;
+# MSYS automatic argv conversion cannot find filenames inside icc:... or
+# other compound options. Its pwd builtin can provide a drive-qualified root.
+SIXEL_TEST_TOP_SRCDIR := $(shell cd '$(abs_top_srcdir)' && { pwd -W 2>/dev/null || pwd; })
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
@@ -17569,7 +17571,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDADD = libfloatlookuptests.la $(TESTS_COMMON_LDADD_VAL) \
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDADD = $(libfloatlookuptests_la_OBJECTS) $(TESTS_COMMON_LDADD_VAL) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(LIBS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(LIBCURL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(LIBFETCH_LIBS) \
@@ -17596,7 +17598,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
 
 # Test-only code builds for check, never as part of all.
-@WANT_AMALGAMATED_TOOLS_FALSE@check_LTLIBRARIES = libfloatlookuptests.la
+@WANT_AMALGAMATED_TOOLS_FALSE@EXTRA_LTLIBRARIES = libfloatlookuptests.la
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_SOURCES = \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/lookup/filtered/filtered_5bit_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/lookup/filtered/filtered_6bit_common.c \
@@ -22155,7 +22157,11 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/awk/ci-vm-result.awk \
 	_static/sh/staticcheck-amalgamation-define-header.sh \
 	_static/sh/staticcheck-emscripten-node-stdio.sh \
-	_static/sh/staticcheck-lookup-intrinsics-target.sh
+	_static/sh/staticcheck-lookup-intrinsics-target.sh \
+	_static/sh/staticcheck-amalgamation-generated-inputs.sh \
+	_static/sh/staticcheck-cli-discard-output.sh \
+	_static/awk/cli-discard-output.awk \
+	_static/sh/staticcheck-emscripten-coverage.sh
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -22206,15 +22212,6 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
-
-clean-checkLTLIBRARIES:
-	-$(am__rm_f) $(check_LTLIBRARIES)
-	@list='$(check_LTLIBRARIES)'; \
-	locs=`for p in $$list; do echo $$p; done | \
-	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
-	      sort -u`; \
-	echo rm -f $${locs}; \
-	$(am__rm_f) $${locs}
 _support/processing/lookup/filtered/$(am__dirstamp):
 	@$(MKDIR_P) _support/processing/lookup/filtered
 	@: >>_support/processing/lookup/filtered/$(am__dirstamp)
@@ -98370,7 +98367,7 @@ echo "information.  Thanks.";                                                \
 	  echo "$$col$$br$$std";					\
 	fi;								\
 	$$success || exit 1
-recheck: all $(check_PROGRAMS) $(check_LTLIBRARIES)
+recheck: all $(check_PROGRAMS)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; $(am__set_TESTS_bases); \
 	bases=`for i in $$bases; do echo $$i; done \
@@ -98427,7 +98424,7 @@ recheck: all $(check_PROGRAMS) $(check_LTLIBRARIES)
 distdir: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) distdir-am
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_LTLIBRARIES)
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
@@ -98835,8 +98832,8 @@ maintainer-clean-generic:
 	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-checkLTLIBRARIES clean-checkPROGRAMS clean-generic \
-	clean-libtool clean-local mostlyclean-am
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
+	mostlyclean-am
 
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -98902,20 +98899,19 @@ uninstall-am:
 	install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
-	check-am clean clean-checkLTLIBRARIES clean-checkPROGRAMS \
-	clean-generic clean-libtool clean-local cscopelist-am ctags \
-	ctags-am dist-hook distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installcheck-local installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
-	uninstall-am
+	check-am clean clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-local cscopelist-am ctags ctags-am dist-hook distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installcheck-local \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
+	uninstall uninstall-am
 
 .PRECIOUS: Makefile
 

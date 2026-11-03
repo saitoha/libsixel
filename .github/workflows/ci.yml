@@ -4363,8 +4363,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CC=emcc CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -4374,6 +4373,7 @@ jobs:
             extra_packages: >-
               nodejs
               lcov
+              gcovr
               llvm
             exec_type: bash
 
@@ -4381,8 +4381,7 @@ jobs:
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
@@ -4392,6 +4391,7 @@ jobs:
               meson
               nodejs
               lcov
+              gcovr
               llvm
             exec_type: bash
 
@@ -4399,8 +4399,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CC=emcc CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -4412,6 +4411,7 @@ jobs:
             extra_packages: >-
               nodejs
               lcov
+              gcovr
               llvm
             exec_type: bash
 
@@ -4419,8 +4419,7 @@ jobs:
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
@@ -4432,6 +4431,7 @@ jobs:
               meson
               nodejs
               lcov
+              gcovr
               llvm
             exec_type: bash
 
@@ -4439,8 +4439,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CC=emcc CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CC=emcc CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -4451,6 +4450,7 @@ jobs:
             extra_packages: >-
               nodejs
               lcov
+              gcovr
               llvm
             exec_type: bash
 
@@ -4458,8 +4458,7 @@ jobs:
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static
@@ -4470,6 +4469,7 @@ jobs:
               meson
               nodejs
               lcov
+              gcovr
               llvm
             exec_type: bash
 
@@ -4477,8 +4477,7 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -4497,8 +4496,7 @@ jobs:
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
-              export LLVM_PROFILE_FILE="$PWD/pgo/default-%p.profraw";
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping" LDFLAGS="-fprofile-instr-generate -g"
+              CFLAGS="-O0 -g" LDFLAGS="-g"
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static

@@ -21,18 +21,18 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     -c 64x64+0+0 -w 32 -Qheckbert -d none -p 16 "-~none" \
     -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - five-thread cropped resize encode failed"
+    echo "not ok" 1 - "five-thread cropped resize encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=5\|heavy=3\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - cropped resize five-thread sampling plan changed"
+    echo "not ok" 1 - "cropped resize five-thread sampling plan changed"
     exit 0
 }
 case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
-    echo "not ok 1 - cropped resize five-thread path skipped sampling"
+    echo "not ok" 1 - "cropped resize five-thread path skipped sampling"
     exit 0
 }
 
-echo "ok 1 - five threads admit sampling beside crop and resize"
+echo "ok" 1 - "five threads admit sampling beside crop and resize"
 exit 0

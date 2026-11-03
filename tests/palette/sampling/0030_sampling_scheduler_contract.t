@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0028_sampling_scheduler_contract" || {
-    echo "not ok 1 - sampling scheduler contract"
+    echo "not ok" 1 - "sampling scheduler contract"
     exit 0
 }
 
-echo "ok 1 - sampling scheduler contract"
+echo "ok" 1 - "sampling scheduler contract"
 exit 0

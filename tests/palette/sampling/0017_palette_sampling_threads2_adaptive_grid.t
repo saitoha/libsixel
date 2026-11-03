@@ -21,18 +21,18 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --threading-policy=greedy:global_budget=2 \
     -Qheckbert -d none -p 16 "-~none" --cms-engine=none -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - two-thread palette encode failed"
+    echo "not ok" 1 - "two-thread palette encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=2\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - two-thread sampling plan changed"
+    echo "not ok" 1 - "two-thread sampling plan changed"
     exit 0
 }
 case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
-    echo "not ok 1 - two-thread path did not run adaptive sampling"
+    echo "not ok" 1 - "two-thread path did not run adaptive sampling"
     exit 0
 }
 
-echo "ok 1 - two idle threads use adaptive sampling"
+echo "ok" 1 - "two idle threads use adaptive sampling"
 exit 0

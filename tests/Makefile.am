@@ -73,7 +73,10 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
 AM_TESTS_ENVIRONMENT += CKSUM='$(CKSUM)'; export CKSUM;
 # The static suite and nested helpers need the same configured utility.
 export CKSUM
-AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
+# MSYS automatic argv conversion cannot find filenames inside icc:... or
+# other compound options. Its pwd builtin can provide a drive-qualified root.
+SIXEL_TEST_TOP_SRCDIR := $(shell cd '$(abs_top_srcdir)' && { pwd -W 2>/dev/null || pwd; })
+AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; export TOP_SRCDIR;
 AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
 if HAVE_APPLE_QUICKLOOK_EXTENSION
 AM_TESTS_ENVIRONMENT += HAVE_QUICKLOOK_EXTENSION=1; export HAVE_QUICKLOOK_EXTENSION;
@@ -4435,7 +4438,7 @@ TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 endif
 
 # Test-only code builds for check, never as part of all.
-check_LTLIBRARIES = libfloatlookuptests.la
+EXTRA_LTLIBRARIES = libfloatlookuptests.la
 libfloatlookuptests_la_SOURCES = \
     _support/processing/lookup/filtered/filtered_5bit_common.c \
     _support/processing/lookup/filtered/filtered_6bit_common.c \
@@ -8704,7 +8707,7 @@ test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
     -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
 test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
 test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-test_runner_LDADD = libfloatlookuptests.la $(TESTS_COMMON_LDADD_VAL) \
+test_runner_LDADD = $(libfloatlookuptests_la_OBJECTS) $(TESTS_COMMON_LDADD_VAL) \
         $(LIBS) \
         $(LIBCURL_LIBS) \
         $(LIBFETCH_LIBS) \
@@ -10955,3 +10958,8 @@ EXTRA_DIST += _static/sh/staticcheck-ci-vm-result.sh \
 EXTRA_DIST += _static/sh/staticcheck-amalgamation-define-header.sh
 EXTRA_DIST += _static/sh/staticcheck-emscripten-node-stdio.sh
 EXTRA_DIST += _static/sh/staticcheck-lookup-intrinsics-target.sh
+
+EXTRA_DIST += _static/sh/staticcheck-amalgamation-generated-inputs.sh
+EXTRA_DIST += _static/sh/staticcheck-cli-discard-output.sh \
+    _static/awk/cli-discard-output.awk \
+    _static/sh/staticcheck-emscripten-coverage.sh
