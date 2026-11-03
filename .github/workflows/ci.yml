@@ -4580,7 +4580,7 @@ jobs:
             setup_prefix: >-
               CC=cosmocc-meson
               LD=cosmocc-meson
-              AR=cosmoar
+              AR=cosmoar-meson
               RANLIB=cosmoranlib
               INSTALL=cosmoinstall
             setup_options: >-
@@ -4624,7 +4624,7 @@ jobs:
             setup_prefix: >-
               CC=cosmocc-meson
               LD=cosmocc-meson
-              AR=cosmoar
+              AR=cosmoar-meson
               RANLIB=cosmoranlib
               INSTALL=cosmoinstall
             setup_options: >-
@@ -4673,7 +4673,7 @@ jobs:
             setup_prefix: >-
               CC=cosmocc-meson
               LD=cosmocc-meson
-              AR=cosmoar
+              AR=cosmoar-meson
               RANLIB=cosmoranlib
               INSTALL=cosmoinstall
             setup_options: >-
@@ -4727,7 +4727,7 @@ jobs:
             setup_prefix: >-
               CC=cosmocc-meson
               LD=cosmocc-meson
-              AR=cosmoar
+              AR=cosmoar-meson
               RANLIB=cosmoranlib
               INSTALL=cosmoinstall
             setup_options: >-

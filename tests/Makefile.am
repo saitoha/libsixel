@@ -11188,6 +11188,9 @@ EXTRA_DIST += _static/sh/staticcheck-emscripten-node-stdio.sh
 EXTRA_DIST += _static/sh/staticcheck-lookup-intrinsics-target.sh
 
 EXTRA_DIST += _static/sh/staticcheck-amalgamation-generated-inputs.sh
+EXTRA_DIST += _static/sh/staticcheck-cosmoar-selection.sh \
+    _static/sh/staticcheck-cosmoar-response.sh \
+    _static/sh/staticcheck-cosmoar-failure.sh
 EXTRA_DIST += _static/sh/staticcheck-cli-discard-output.sh \
     _static/awk/cli-discard-output.awk \
     _static/sh/staticcheck-emscripten-coverage.sh

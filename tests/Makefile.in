@@ -22726,6 +22726,9 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-emscripten-node-stdio.sh \
 	_static/sh/staticcheck-lookup-intrinsics-target.sh \
 	_static/sh/staticcheck-amalgamation-generated-inputs.sh \
+	_static/sh/staticcheck-cosmoar-selection.sh \
+	_static/sh/staticcheck-cosmoar-response.sh \
+	_static/sh/staticcheck-cosmoar-failure.sh \
 	_static/sh/staticcheck-cli-discard-output.sh \
 	_static/awk/cli-discard-output.awk \
 	_static/sh/staticcheck-emscripten-coverage.sh
