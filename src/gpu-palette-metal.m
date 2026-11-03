@@ -2448,7 +2448,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         }
         if (use_fhedt) {
             if (!sixel_gpu_fhedt_prepare(request->fhedt_resolution,
-                    request->fhedt_refine)) {
+                    sixel_gpu_fhedt_needs_refine(request))) {
                 sixel_helper_set_additional_message(
                     "gpu palette apply: FHEDT pipelines unavailable.");
                 status = SIXEL_FEATURE_ERROR;
@@ -2458,8 +2458,12 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             params.fhedt_resolution = request->fhedt_resolution;
             params.fhedt_shift = request->fhedt_resolution == 64 ? 2U :
                 request->fhedt_resolution == 128 ? 1U : 0U;
-            params.fhedt_refine = request->fhedt_refine;
+            params.fhedt_refine = sixel_gpu_fhedt_needs_refine(request);
             params.fhedt_dist2 = request->fhedt_use_dist2;
+            if (request->test_hooks != NULL) {
+                request->test_hooks->fhedt_table_entry_bytes =
+                    params.fhedt_refine ? 2U : 1U;
+            }
             fhedt_grid_size = (NSUInteger)request->fhedt_resolution;
             fhedt_grid_size *= fhedt_grid_size * fhedt_grid_size;
             rebuild_fhedt = g_sixel_gpu_fhedt_colors != request->ncolors ||
@@ -2469,7 +2473,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
                 memcmp(g_sixel_gpu_fhedt_palette, request->palette,
                     palette_length) != 0;
             lookup_buffer = sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_table,
-                fhedt_grid_size * (request->fhedt_refine ? 2U : 1U));
+                fhedt_grid_size * (params.fhedt_refine ? 2U : 1U));
             if (rebuild_fhedt &&
                     (sixel_gpu_fhedt_buffer(&g_sixel_gpu_fhedt_first,
                         fhedt_grid_size * 4U) == nil ||

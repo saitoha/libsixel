@@ -37,8 +37,8 @@ static char const * const g_sixel_gpu_fhedt_source[] = {
 "#endif\n"
 "\n"
 "#if PACKED\n"
-"/* A grid cost needs 18 bits and a label needs eight. Reverse label bits\n"
-" * make an atomic minimum select the last colliding palette entry. */\n"
+"/* A grid cost needs 18 bits and a label needs eight. Reserve UINT_MAX\n"
+" * for a seedless cell; actual distances fit below that sentinel. */\n"
 "typedef uint Grid;\n"
 "static Grid grid_value(int cost, int label)\n"
 "{\n"
@@ -62,37 +62,62 @@ static char const * const g_sixel_gpu_fhedt_source[] = {
 "    uint colors, pixels, shift, axis, refine, dist2;\n"
 "};\n"
 "\n"
-"kernel void sixel_gpu_fhedt_clear(device Grid *grid [[buffer(0)]],\n"
+"/* Only R squared column heads need clearing. Seed lists contain at most\n"
+" * 256 entries and are consumed after the tracked seed encoder completes. */\n"
+"kernel void sixel_gpu_fhedt_clear(device uint *heads [[buffer(0)]],\n"
 "                       uint i [[thread_position_in_grid]])\n"
 "{\n"
-"    if (i < R * R * R) grid[i] = grid_value(1 << 28, -1);\n"
+"    if (i < R * R) heads[i] = UINT_MAX;\n"
 "}\n"
 "\n"
-"#if PACKED\n"
-"#define SeedAtomic atomic_uint\n"
-"#else\n"
-"#define SeedAtomic atomic_int\n"
-"#endif\n"
-"kernel void sixel_gpu_fhedt_seed(device SeedAtomic *grid [[buffer(0)]],\n"
+"kernel void sixel_gpu_fhedt_seed(device atomic_uint *heads [[buffer(0)]],\n"
 "                      constant uchar *palette [[buffer(2)]],\n"
 "                      constant FhedtBuildParams &p [[buffer(6)]],\n"
 "                      uint i [[thread_position_in_grid]])\n"
 "{\n"
-"    uint x, y, z, at;\n"
+"    uint y, z, previous;\n"
 "\n"
 "    if (i >= p.colors) return;\n"
-"    x = palette[3 * i] >> p.shift;\n"
 "    y = palette[3 * i + 1] >> p.shift;\n"
 "    z = palette[3 * i + 2] >> p.shift;\n"
-"    at = x + y * R + z * R * R;\n"
-"    /* A colliding seed selects the last palette entry, as on CPU. */\n"
-"#if PACKED\n"
-"    atomic_fetch_min_explicit(grid + at, 255u - i, memory_order_relaxed);\n"
-"#else\n"
-"    atomic_store_explicit(grid + 2 * at, 0, memory_order_relaxed);\n"
-"    atomic_fetch_max_explicit(grid + 2 * at + 1, int(i),\n"
-"                              memory_order_relaxed);\n"
-"#endif\n"
+"    previous = atomic_exchange_explicit(heads + y + z * R, i,\n"
+"        memory_order_relaxed);\n"
+"    atomic_store_explicit(heads + R * R + i, previous,\n"
+"        memory_order_relaxed);\n"
+"}\n"
+"\n"
+"/* A seed's X cost is zero, so scan only that column's palette entries.\n"
+" * Threads write consecutive X cells. Explicit tie rules make the result\n"
+" * independent of list order: earlier X, then last colliding label. */\n"
+"kernel void sixel_gpu_fhedt_x(device const uint *heads [[buffer(0)]],\n"
+"                     device Grid *output [[buffer(1)]],\n"
+"                     constant uchar *palette [[buffer(2)]],\n"
+"                     constant FhedtBuildParams &p [[buffer(6)]],\n"
+"                     uint at [[thread_position_in_grid]])\n"
+"{\n"
+"    uint candidate;\n"
+"    int x, seed, best_x, best, distance, minimum;\n"
+"\n"
+"    if (at >= R * R * R) return;\n"
+"    x = int(at % R);\n"
+"    candidate = heads[at / R];\n"
+"    minimum = 1 << 28;\n"
+"    best_x = R;\n"
+"    best = -1;\n"
+"    while (candidate != UINT_MAX) {\n"
+"        seed = palette[3 * candidate] >> p.shift;\n"
+"        distance = (x - seed) * (x - seed);\n"
+"        if (distance < minimum || (distance == minimum &&\n"
+"                (seed < best_x ||\n"
+"                 (seed == best_x && int(candidate) > best)))) {\n"
+"            minimum = distance;\n"
+"            best_x = seed;\n"
+,
+"            best = int(candidate);\n"
+"        }\n"
+"        candidate = heads[R * R + candidate];\n"
+"    }\n"
+"    output[at] = grid_value(minimum, best);\n"
 "}\n"
 "\n"
 "kernel void sixel_gpu_fhedt_edt(device const Grid *input [[buffer(0)]],\n"
@@ -118,7 +143,6 @@ static char const * const g_sixel_gpu_fhedt_source[] = {
 "        if (grid_label(source) < 0) continue;\n"
 "        start = -1000000000;\n"
 "        while (k >= 0) {\n"
-,
 "            old = sites[k];\n"
 "            numerator = grid_cost(source) + q * q\n"
 "                - grid_cost(input[base + uint(old) * stride]) - old * old;\n"
@@ -177,6 +201,7 @@ static char const * const g_sixel_gpu_fhedt_source[] = {
 "    label = grid[at] & 255;\n"
 "    boundary = (x > 0 && (grid[at - 1] & 255) != label)\n"
 "        || (x + 1 < R && (grid[at + 1] & 255) != label)\n"
+,
 "        || (y > 0 && (grid[at - R] & 255) != label)\n"
 "        || (y + 1 < R && (grid[at + R] & 255) != label)\n"
 "        || (z > 0 && (grid[at - R * R] & 255) != label)\n"
@@ -186,7 +211,8 @@ static char const * const g_sixel_gpu_fhedt_source[] = {
 "    table[at] = ushort(label | (boundary << 8)\n"
 "        | (grid[at] & 512));\n"
 "}\n"
-"\n",
+"\n"
+,
 NULL
 };
 
@@ -194,7 +220,7 @@ typedef struct sixel_gpu_fhedt_build_params {
     uint32_t colors, pixels, shift, axis, refine, dist2;
 } sixel_gpu_fhedt_build_params_t;
 
-static id<MTLComputePipelineState> g_sixel_gpu_fhedt_pipelines[3][2][4];
+static id<MTLComputePipelineState> g_sixel_gpu_fhedt_pipelines[3][2][5];
 static int g_sixel_gpu_fhedt_attempted[3][2];
 static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_fhedt_first = { nil, 0U };
 static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_fhedt_second = { nil, 0U };
@@ -204,6 +230,15 @@ static int g_sixel_gpu_fhedt_colors;
 static int g_sixel_gpu_fhedt_resolution;
 static int g_sixel_gpu_fhedt_refine;
 static int g_sixel_gpu_fhedt_dist2;
+
+/* Byte queries at R256 are exact lattice points. Their stored label is
+ * already nearest, and corner refinement visits that label first with a
+ * strict distance comparison. Use the byte table without changing ties. */
+static int
+sixel_gpu_fhedt_needs_refine(sixel_gpu_palette_request_t const *request)
+{
+    return request->fhedt_refine && request->fhedt_resolution != 256;
+}
 
 static id<MTLBuffer>
 sixel_gpu_fhedt_buffer(sixel_gpu_metal_cached_buffer_t *cache,
@@ -230,7 +265,7 @@ sixel_gpu_fhedt_prepare(int resolution, int refine)
     id<MTLLibrary> library;
     id<MTLFunction> function;
     NSError *error;
-    NSString *names[4];
+    NSString *names[5];
     unsigned int index, i, ready;
 
     index = resolution == 64 ? 0U : resolution == 128 ? 1U : 2U;
@@ -254,10 +289,11 @@ sixel_gpu_fhedt_prepare(int resolution, int refine)
     if (library == nil) return 0;
     names[0] = @"sixel_gpu_fhedt_clear";
     names[1] = @"sixel_gpu_fhedt_seed";
-    names[2] = @"sixel_gpu_fhedt_edt";
-    names[3] = @"sixel_gpu_fhedt_pack";
+    names[2] = @"sixel_gpu_fhedt_x";
+    names[3] = @"sixel_gpu_fhedt_edt";
+    names[4] = @"sixel_gpu_fhedt_pack";
     ready = 1U;
-    for (i = 0U; i < 4U; ++i) {
+    for (i = 0U; i < 5U; ++i) {
         function = [library newFunctionWithName:names[i]];
         if (function == nil) {
             ready = 0U;
@@ -275,7 +311,7 @@ sixel_gpu_fhedt_prepare(int resolution, int refine)
     }
     [library release];
     if (!ready) {
-        for (i = 0U; i < 4U; ++i) {
+        for (i = 0U; i < 5U; ++i) {
             [g_sixel_gpu_fhedt_pipelines[index][refine][i] release];
             g_sixel_gpu_fhedt_pipelines[index][refine][i] = nil;
         }
@@ -300,17 +336,18 @@ sixel_gpu_fhedt_build(id<MTLCommandBuffer> command, id<MTLBuffer> palette,
     memset(&params, 0, sizeof(params));
     params.colors = request->ncolors;
     params.shift = size == 64U ? 2U : size == 128U ? 1U : 0U;
-    params.refine = request->fhedt_refine;
+    params.refine = sixel_gpu_fhedt_needs_refine(request);
     params.dist2 = request->fhedt_use_dist2;
     first = g_sixel_gpu_fhedt_first.buffer;
     second = g_sixel_gpu_fhedt_second.buffer;
     for (pass = 0U; pass < (params.refine ? 6U : 5U); ++pass) {
-        slot = pass < 2U ? pass : pass < 5U ? 2U : 3U;
+        slot = pass < 3U ? pass : pass < 5U ? 3U : 4U;
         params.axis = pass >= 2U && pass < 5U ? pass - 2U : 0U;
         count = pass == 1U ? params.colors :
-            pass >= 2U && pass < 5U ? size * size : size * size * size;
+            pass == 0U || pass == 3U || pass == 4U ? size * size :
+            size * size * size;
         pipeline = g_sixel_gpu_fhedt_pipelines[index][params.refine][slot];
-        group = slot == 1U || slot == 2U ? 32U : 128U;
+        group = slot == 1U || slot == 3U ? 32U : 128U;
         if (group > [pipeline maxTotalThreadsPerThreadgroup]) group = 32U;
         encoder = [command computeCommandEncoder];
         if (encoder == nil) return SIXEL_RUNTIME_ERROR;

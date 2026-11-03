@@ -1883,6 +1883,18 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/blockcull/0001_blockcull_exact.c \
 	lookup/gridlut/0001_gridlut_exact.c \
 	lookup/ordered/0001_ordered_exact.c \
+	lookup/fhedt/0147_gpu_r256_compact_table.c \
+	lookup/fhedt/0148_gpu_sparse_r64.c \
+	lookup/fhedt/0149_gpu_sparse_r128.c \
+	lookup/fhedt/0150_gpu_sparse_r256.c \
+	lookup/fhedt/0151_cpu_sparse_r64.c \
+	lookup/fhedt/0152_cpu_sparse_r128.c \
+	lookup/fhedt/0153_cpu_sparse_r256_refine.c \
+	lookup/fhedt/0154_cpu_r256_aux_memory.c \
+	lookup/fhedt/0155_cpu_unrefined_aux_memory.c \
+	lookup/fhedt/0156_cpu_weighted_sparse_r64.c \
+	lookup/fhedt/0157_gpu_dense_column_r64.c \
+	lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c \
 	lookup/fhedt/0143_gpu_rectangle.c \
 	lookup/fhedt/0140_lookup_configuration.c \
 	lookup/fhedt/0099_gpu_reference.c \
@@ -3733,6 +3745,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/monochrome/0008_encoder_dark.c \
 	lookup/monochrome/0009_encoder_light.c \
 	lookup/monochrome/0010_encoder_fs.c \
+	_support/processing/lookup/fhedt_sparse_test_common.c \
 	_support/processing/lookup/fhedt_byte_test_common.c \
 	lookup/fhedt/0039_y_labels.c lookup/fhedt/0040_z_labels.c \
 	lookup/fhedt/0041_grid.c lookup/fhedt/0042_weighted_grid.c \
@@ -6108,6 +6121,18 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/blockcull/test_runner-0001_blockcull_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0147_gpu_r256_compact_table.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0148_gpu_sparse_r64.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0149_gpu_sparse_r128.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0150_gpu_sparse_r256.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0151_cpu_sparse_r64.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0152_cpu_sparse_r128.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0157_gpu_dense_column_r64.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0143_gpu_rectangle.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0140_lookup_configuration.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0099_gpu_reference.$(OBJEXT) \
@@ -7923,6 +7948,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/monochrome/test_runner-0008_encoder_dark.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/monochrome/test_runner-0009_encoder_light.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/monochrome/test_runner-0010_encoder_fs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/lookup/test_runner-fhedt_sparse_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/lookup/test_runner-fhedt_byte_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0039_y_labels.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/fhedt/test_runner-0040_z_labels.$(OBJEXT) \
@@ -9031,6 +9057,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_reuse_common.Po \
+	_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po \
 	_support/processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po \
@@ -12001,6 +12028,18 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Po \
 	lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Po \
 	lookup/fhedt/$(DEPDIR)/test_runner-0143_gpu_rectangle.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Po \
+	lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Po \
 	lookup/gridlut/$(DEPDIR)/test_runner-0001_gridlut_exact.Po \
 	lookup/gridlut/$(DEPDIR)/test_runner-0002_gridlut_allocation_failure.Po \
 	lookup/gridlut/$(DEPDIR)/test_runner-0003_gridlut_encoder_failure.Po \
@@ -16271,6 +16310,19 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_FLOAT_REFERENCE_R64 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_FLOAT_REFERENCE_R128 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_FLOAT_REFERENCE_R256 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_SPARSE_TEST_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0147_GPU_R256_COMPACT_TABLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0148_GPU_SPARSE_R64 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0149_GPU_SPARSE_R128 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0150_GPU_SPARSE_R256 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0151_CPU_SPARSE_R64 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0152_CPU_SPARSE_R128 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0153_CPU_SPARSE_R256_REFINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0154_CPU_R256_AUX_MEMORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0155_CPU_UNREFINED_AUX_MEMORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0156_CPU_WEIGHTED_SPARSE_R64 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0157_GPU_DENSE_COLUMN_R64 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0158_CPU_WEIGHTED_SPARSE_R256_REFINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_FHEDT_BYTE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_Y_LABELS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0040_Z_LABELS \
@@ -19545,6 +19597,18 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/blockcull/0001_blockcull_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/gridlut/0001_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/ordered/0001_ordered_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0147_gpu_r256_compact_table.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0148_gpu_sparse_r64.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0149_gpu_sparse_r128.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0150_gpu_sparse_r256.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0151_cpu_sparse_r64.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0152_cpu_sparse_r128.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0153_cpu_sparse_r256_refine.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0154_cpu_r256_aux_memory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0155_cpu_unrefined_aux_memory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0156_cpu_weighted_sparse_r64.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0157_gpu_dense_column_r64.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0143_gpu_rectangle.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0140_lookup_configuration.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0099_gpu_reference.c \
@@ -21410,6 +21474,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/monochrome/0008_encoder_dark.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/monochrome/0009_encoder_light.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/monochrome/0010_encoder_fs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/lookup/fhedt_sparse_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/lookup/fhedt_byte_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0039_y_labels.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/fhedt/0040_z_labels.c \
@@ -27976,6 +28041,42 @@ lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT):  \
 lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT):  \
 	lookup/ordered/$(am__dirstamp) \
 	lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0147_gpu_r256_compact_table.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0148_gpu_sparse_r64.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0149_gpu_sparse_r128.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0150_gpu_sparse_r256.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0151_cpu_sparse_r64.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0152_cpu_sparse_r128.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0157_gpu_dense_column_r64.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
+lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.$(OBJEXT):  \
+	lookup/fhedt/$(am__dirstamp) \
+	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
 lookup/fhedt/test_runner-0143_gpu_rectangle.$(OBJEXT):  \
 	lookup/fhedt/$(am__dirstamp) \
 	lookup/fhedt/$(DEPDIR)/$(am__dirstamp)
@@ -33942,6 +34043,9 @@ lookup/monochrome/test_runner-0009_encoder_light.$(OBJEXT):  \
 lookup/monochrome/test_runner-0010_encoder_fs.$(OBJEXT):  \
 	lookup/monochrome/$(am__dirstamp) \
 	lookup/monochrome/$(DEPDIR)/$(am__dirstamp)
+_support/processing/lookup/test_runner-fhedt_sparse_test_common.$(OBJEXT):  \
+	_support/processing/lookup/$(am__dirstamp) \
+	_support/processing/lookup/$(DEPDIR)/$(am__dirstamp)
 _support/processing/lookup/test_runner-fhedt_byte_test_common.$(OBJEXT):  \
 	_support/processing/lookup/$(am__dirstamp) \
 	_support/processing/lookup/$(DEPDIR)/$(am__dirstamp)
@@ -36626,6 +36730,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_refine_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_reuse_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-fhedt_weight_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/lookup/$(DEPDIR)/test_runner-mono_lookup_common.Po@am__quote@ # am--include-marker
@@ -39596,6 +39701,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0111_gpu_apply.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0140_lookup_configuration.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0143_gpu_rectangle.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/gridlut/$(DEPDIR)/test_runner-0001_gridlut_exact.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/gridlut/$(DEPDIR)/test_runner-0002_gridlut_allocation_failure.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/gridlut/$(DEPDIR)/test_runner-0003_gridlut_encoder_failure.Po@am__quote@ # am--include-marker
@@ -64477,6 +64594,174 @@ lookup/ordered/test_runner-0001_ordered_exact.obj: lookup/ordered/0001_ordered_e
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/ordered/0001_ordered_exact.c' object='lookup/ordered/test_runner-0001_ordered_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/ordered/test_runner-0001_ordered_exact.obj `if test -f 'lookup/ordered/0001_ordered_exact.c'; then $(CYGPATH_W) 'lookup/ordered/0001_ordered_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/ordered/0001_ordered_exact.c'; fi`
+
+lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o: lookup/fhedt/0147_gpu_r256_compact_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Tpo -c -o lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o `test -f 'lookup/fhedt/0147_gpu_r256_compact_table.c' || echo '$(srcdir)/'`lookup/fhedt/0147_gpu_r256_compact_table.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0147_gpu_r256_compact_table.c' object='lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0147_gpu_r256_compact_table.o `test -f 'lookup/fhedt/0147_gpu_r256_compact_table.c' || echo '$(srcdir)/'`lookup/fhedt/0147_gpu_r256_compact_table.c
+
+lookup/fhedt/test_runner-0147_gpu_r256_compact_table.obj: lookup/fhedt/0147_gpu_r256_compact_table.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0147_gpu_r256_compact_table.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Tpo -c -o lookup/fhedt/test_runner-0147_gpu_r256_compact_table.obj `if test -f 'lookup/fhedt/0147_gpu_r256_compact_table.c'; then $(CYGPATH_W) 'lookup/fhedt/0147_gpu_r256_compact_table.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0147_gpu_r256_compact_table.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0147_gpu_r256_compact_table.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0147_gpu_r256_compact_table.c' object='lookup/fhedt/test_runner-0147_gpu_r256_compact_table.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0147_gpu_r256_compact_table.obj `if test -f 'lookup/fhedt/0147_gpu_r256_compact_table.c'; then $(CYGPATH_W) 'lookup/fhedt/0147_gpu_r256_compact_table.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0147_gpu_r256_compact_table.c'; fi`
+
+lookup/fhedt/test_runner-0148_gpu_sparse_r64.o: lookup/fhedt/0148_gpu_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0148_gpu_sparse_r64.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Tpo -c -o lookup/fhedt/test_runner-0148_gpu_sparse_r64.o `test -f 'lookup/fhedt/0148_gpu_sparse_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0148_gpu_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0148_gpu_sparse_r64.c' object='lookup/fhedt/test_runner-0148_gpu_sparse_r64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0148_gpu_sparse_r64.o `test -f 'lookup/fhedt/0148_gpu_sparse_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0148_gpu_sparse_r64.c
+
+lookup/fhedt/test_runner-0148_gpu_sparse_r64.obj: lookup/fhedt/0148_gpu_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0148_gpu_sparse_r64.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Tpo -c -o lookup/fhedt/test_runner-0148_gpu_sparse_r64.obj `if test -f 'lookup/fhedt/0148_gpu_sparse_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0148_gpu_sparse_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0148_gpu_sparse_r64.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0148_gpu_sparse_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0148_gpu_sparse_r64.c' object='lookup/fhedt/test_runner-0148_gpu_sparse_r64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0148_gpu_sparse_r64.obj `if test -f 'lookup/fhedt/0148_gpu_sparse_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0148_gpu_sparse_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0148_gpu_sparse_r64.c'; fi`
+
+lookup/fhedt/test_runner-0149_gpu_sparse_r128.o: lookup/fhedt/0149_gpu_sparse_r128.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0149_gpu_sparse_r128.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Tpo -c -o lookup/fhedt/test_runner-0149_gpu_sparse_r128.o `test -f 'lookup/fhedt/0149_gpu_sparse_r128.c' || echo '$(srcdir)/'`lookup/fhedt/0149_gpu_sparse_r128.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0149_gpu_sparse_r128.c' object='lookup/fhedt/test_runner-0149_gpu_sparse_r128.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0149_gpu_sparse_r128.o `test -f 'lookup/fhedt/0149_gpu_sparse_r128.c' || echo '$(srcdir)/'`lookup/fhedt/0149_gpu_sparse_r128.c
+
+lookup/fhedt/test_runner-0149_gpu_sparse_r128.obj: lookup/fhedt/0149_gpu_sparse_r128.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0149_gpu_sparse_r128.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Tpo -c -o lookup/fhedt/test_runner-0149_gpu_sparse_r128.obj `if test -f 'lookup/fhedt/0149_gpu_sparse_r128.c'; then $(CYGPATH_W) 'lookup/fhedt/0149_gpu_sparse_r128.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0149_gpu_sparse_r128.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0149_gpu_sparse_r128.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0149_gpu_sparse_r128.c' object='lookup/fhedt/test_runner-0149_gpu_sparse_r128.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0149_gpu_sparse_r128.obj `if test -f 'lookup/fhedt/0149_gpu_sparse_r128.c'; then $(CYGPATH_W) 'lookup/fhedt/0149_gpu_sparse_r128.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0149_gpu_sparse_r128.c'; fi`
+
+lookup/fhedt/test_runner-0150_gpu_sparse_r256.o: lookup/fhedt/0150_gpu_sparse_r256.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0150_gpu_sparse_r256.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Tpo -c -o lookup/fhedt/test_runner-0150_gpu_sparse_r256.o `test -f 'lookup/fhedt/0150_gpu_sparse_r256.c' || echo '$(srcdir)/'`lookup/fhedt/0150_gpu_sparse_r256.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0150_gpu_sparse_r256.c' object='lookup/fhedt/test_runner-0150_gpu_sparse_r256.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0150_gpu_sparse_r256.o `test -f 'lookup/fhedt/0150_gpu_sparse_r256.c' || echo '$(srcdir)/'`lookup/fhedt/0150_gpu_sparse_r256.c
+
+lookup/fhedt/test_runner-0150_gpu_sparse_r256.obj: lookup/fhedt/0150_gpu_sparse_r256.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0150_gpu_sparse_r256.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Tpo -c -o lookup/fhedt/test_runner-0150_gpu_sparse_r256.obj `if test -f 'lookup/fhedt/0150_gpu_sparse_r256.c'; then $(CYGPATH_W) 'lookup/fhedt/0150_gpu_sparse_r256.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0150_gpu_sparse_r256.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0150_gpu_sparse_r256.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0150_gpu_sparse_r256.c' object='lookup/fhedt/test_runner-0150_gpu_sparse_r256.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0150_gpu_sparse_r256.obj `if test -f 'lookup/fhedt/0150_gpu_sparse_r256.c'; then $(CYGPATH_W) 'lookup/fhedt/0150_gpu_sparse_r256.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0150_gpu_sparse_r256.c'; fi`
+
+lookup/fhedt/test_runner-0151_cpu_sparse_r64.o: lookup/fhedt/0151_cpu_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0151_cpu_sparse_r64.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Tpo -c -o lookup/fhedt/test_runner-0151_cpu_sparse_r64.o `test -f 'lookup/fhedt/0151_cpu_sparse_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0151_cpu_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0151_cpu_sparse_r64.c' object='lookup/fhedt/test_runner-0151_cpu_sparse_r64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0151_cpu_sparse_r64.o `test -f 'lookup/fhedt/0151_cpu_sparse_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0151_cpu_sparse_r64.c
+
+lookup/fhedt/test_runner-0151_cpu_sparse_r64.obj: lookup/fhedt/0151_cpu_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0151_cpu_sparse_r64.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Tpo -c -o lookup/fhedt/test_runner-0151_cpu_sparse_r64.obj `if test -f 'lookup/fhedt/0151_cpu_sparse_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0151_cpu_sparse_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0151_cpu_sparse_r64.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0151_cpu_sparse_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0151_cpu_sparse_r64.c' object='lookup/fhedt/test_runner-0151_cpu_sparse_r64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0151_cpu_sparse_r64.obj `if test -f 'lookup/fhedt/0151_cpu_sparse_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0151_cpu_sparse_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0151_cpu_sparse_r64.c'; fi`
+
+lookup/fhedt/test_runner-0152_cpu_sparse_r128.o: lookup/fhedt/0152_cpu_sparse_r128.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0152_cpu_sparse_r128.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Tpo -c -o lookup/fhedt/test_runner-0152_cpu_sparse_r128.o `test -f 'lookup/fhedt/0152_cpu_sparse_r128.c' || echo '$(srcdir)/'`lookup/fhedt/0152_cpu_sparse_r128.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0152_cpu_sparse_r128.c' object='lookup/fhedt/test_runner-0152_cpu_sparse_r128.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0152_cpu_sparse_r128.o `test -f 'lookup/fhedt/0152_cpu_sparse_r128.c' || echo '$(srcdir)/'`lookup/fhedt/0152_cpu_sparse_r128.c
+
+lookup/fhedt/test_runner-0152_cpu_sparse_r128.obj: lookup/fhedt/0152_cpu_sparse_r128.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0152_cpu_sparse_r128.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Tpo -c -o lookup/fhedt/test_runner-0152_cpu_sparse_r128.obj `if test -f 'lookup/fhedt/0152_cpu_sparse_r128.c'; then $(CYGPATH_W) 'lookup/fhedt/0152_cpu_sparse_r128.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0152_cpu_sparse_r128.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0152_cpu_sparse_r128.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0152_cpu_sparse_r128.c' object='lookup/fhedt/test_runner-0152_cpu_sparse_r128.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0152_cpu_sparse_r128.obj `if test -f 'lookup/fhedt/0152_cpu_sparse_r128.c'; then $(CYGPATH_W) 'lookup/fhedt/0152_cpu_sparse_r128.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0152_cpu_sparse_r128.c'; fi`
+
+lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.o: lookup/fhedt/0153_cpu_sparse_r256_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Tpo -c -o lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.o `test -f 'lookup/fhedt/0153_cpu_sparse_r256_refine.c' || echo '$(srcdir)/'`lookup/fhedt/0153_cpu_sparse_r256_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0153_cpu_sparse_r256_refine.c' object='lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.o `test -f 'lookup/fhedt/0153_cpu_sparse_r256_refine.c' || echo '$(srcdir)/'`lookup/fhedt/0153_cpu_sparse_r256_refine.c
+
+lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.obj: lookup/fhedt/0153_cpu_sparse_r256_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Tpo -c -o lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.obj `if test -f 'lookup/fhedt/0153_cpu_sparse_r256_refine.c'; then $(CYGPATH_W) 'lookup/fhedt/0153_cpu_sparse_r256_refine.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0153_cpu_sparse_r256_refine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0153_cpu_sparse_r256_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0153_cpu_sparse_r256_refine.c' object='lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0153_cpu_sparse_r256_refine.obj `if test -f 'lookup/fhedt/0153_cpu_sparse_r256_refine.c'; then $(CYGPATH_W) 'lookup/fhedt/0153_cpu_sparse_r256_refine.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0153_cpu_sparse_r256_refine.c'; fi`
+
+lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.o: lookup/fhedt/0154_cpu_r256_aux_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Tpo -c -o lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.o `test -f 'lookup/fhedt/0154_cpu_r256_aux_memory.c' || echo '$(srcdir)/'`lookup/fhedt/0154_cpu_r256_aux_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0154_cpu_r256_aux_memory.c' object='lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.o `test -f 'lookup/fhedt/0154_cpu_r256_aux_memory.c' || echo '$(srcdir)/'`lookup/fhedt/0154_cpu_r256_aux_memory.c
+
+lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.obj: lookup/fhedt/0154_cpu_r256_aux_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Tpo -c -o lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.obj `if test -f 'lookup/fhedt/0154_cpu_r256_aux_memory.c'; then $(CYGPATH_W) 'lookup/fhedt/0154_cpu_r256_aux_memory.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0154_cpu_r256_aux_memory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0154_cpu_r256_aux_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0154_cpu_r256_aux_memory.c' object='lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0154_cpu_r256_aux_memory.obj `if test -f 'lookup/fhedt/0154_cpu_r256_aux_memory.c'; then $(CYGPATH_W) 'lookup/fhedt/0154_cpu_r256_aux_memory.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0154_cpu_r256_aux_memory.c'; fi`
+
+lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.o: lookup/fhedt/0155_cpu_unrefined_aux_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Tpo -c -o lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.o `test -f 'lookup/fhedt/0155_cpu_unrefined_aux_memory.c' || echo '$(srcdir)/'`lookup/fhedt/0155_cpu_unrefined_aux_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0155_cpu_unrefined_aux_memory.c' object='lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.o `test -f 'lookup/fhedt/0155_cpu_unrefined_aux_memory.c' || echo '$(srcdir)/'`lookup/fhedt/0155_cpu_unrefined_aux_memory.c
+
+lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.obj: lookup/fhedt/0155_cpu_unrefined_aux_memory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Tpo -c -o lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.obj `if test -f 'lookup/fhedt/0155_cpu_unrefined_aux_memory.c'; then $(CYGPATH_W) 'lookup/fhedt/0155_cpu_unrefined_aux_memory.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0155_cpu_unrefined_aux_memory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0155_cpu_unrefined_aux_memory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0155_cpu_unrefined_aux_memory.c' object='lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0155_cpu_unrefined_aux_memory.obj `if test -f 'lookup/fhedt/0155_cpu_unrefined_aux_memory.c'; then $(CYGPATH_W) 'lookup/fhedt/0155_cpu_unrefined_aux_memory.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0155_cpu_unrefined_aux_memory.c'; fi`
+
+lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.o: lookup/fhedt/0156_cpu_weighted_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Tpo -c -o lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.o `test -f 'lookup/fhedt/0156_cpu_weighted_sparse_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0156_cpu_weighted_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0156_cpu_weighted_sparse_r64.c' object='lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.o `test -f 'lookup/fhedt/0156_cpu_weighted_sparse_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0156_cpu_weighted_sparse_r64.c
+
+lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.obj: lookup/fhedt/0156_cpu_weighted_sparse_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Tpo -c -o lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.obj `if test -f 'lookup/fhedt/0156_cpu_weighted_sparse_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0156_cpu_weighted_sparse_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0156_cpu_weighted_sparse_r64.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0156_cpu_weighted_sparse_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0156_cpu_weighted_sparse_r64.c' object='lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0156_cpu_weighted_sparse_r64.obj `if test -f 'lookup/fhedt/0156_cpu_weighted_sparse_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0156_cpu_weighted_sparse_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0156_cpu_weighted_sparse_r64.c'; fi`
+
+lookup/fhedt/test_runner-0157_gpu_dense_column_r64.o: lookup/fhedt/0157_gpu_dense_column_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0157_gpu_dense_column_r64.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Tpo -c -o lookup/fhedt/test_runner-0157_gpu_dense_column_r64.o `test -f 'lookup/fhedt/0157_gpu_dense_column_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0157_gpu_dense_column_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0157_gpu_dense_column_r64.c' object='lookup/fhedt/test_runner-0157_gpu_dense_column_r64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0157_gpu_dense_column_r64.o `test -f 'lookup/fhedt/0157_gpu_dense_column_r64.c' || echo '$(srcdir)/'`lookup/fhedt/0157_gpu_dense_column_r64.c
+
+lookup/fhedt/test_runner-0157_gpu_dense_column_r64.obj: lookup/fhedt/0157_gpu_dense_column_r64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0157_gpu_dense_column_r64.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Tpo -c -o lookup/fhedt/test_runner-0157_gpu_dense_column_r64.obj `if test -f 'lookup/fhedt/0157_gpu_dense_column_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0157_gpu_dense_column_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0157_gpu_dense_column_r64.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0157_gpu_dense_column_r64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0157_gpu_dense_column_r64.c' object='lookup/fhedt/test_runner-0157_gpu_dense_column_r64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0157_gpu_dense_column_r64.obj `if test -f 'lookup/fhedt/0157_gpu_dense_column_r64.c'; then $(CYGPATH_W) 'lookup/fhedt/0157_gpu_dense_column_r64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0157_gpu_dense_column_r64.c'; fi`
+
+lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.o: lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Tpo -c -o lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.o `test -f 'lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c' || echo '$(srcdir)/'`lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c' object='lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.o `test -f 'lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c' || echo '$(srcdir)/'`lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c
+
+lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.obj: lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.obj -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Tpo -c -o lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.obj `if test -f 'lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c'; then $(CYGPATH_W) 'lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Tpo lookup/fhedt/$(DEPDIR)/test_runner-0158_cpu_weighted_sparse_r256_refine.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c' object='lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/fhedt/test_runner-0158_cpu_weighted_sparse_r256_refine.obj `if test -f 'lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c'; then $(CYGPATH_W) 'lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c'; else $(CYGPATH_W) '$(srcdir)/lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c'; fi`
 
 lookup/fhedt/test_runner-0143_gpu_rectangle.o: lookup/fhedt/0143_gpu_rectangle.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/fhedt/test_runner-0143_gpu_rectangle.o -MD -MP -MF lookup/fhedt/$(DEPDIR)/test_runner-0143_gpu_rectangle.Tpo -c -o lookup/fhedt/test_runner-0143_gpu_rectangle.o `test -f 'lookup/fhedt/0143_gpu_rectangle.c' || echo '$(srcdir)/'`lookup/fhedt/0143_gpu_rectangle.c
@@ -89887,6 +90172,20 @@ lookup/monochrome/test_runner-0010_encoder_fs.obj: lookup/monochrome/0010_encode
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/monochrome/0010_encoder_fs.c' object='lookup/monochrome/test_runner-0010_encoder_fs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/monochrome/test_runner-0010_encoder_fs.obj `if test -f 'lookup/monochrome/0010_encoder_fs.c'; then $(CYGPATH_W) 'lookup/monochrome/0010_encoder_fs.c'; else $(CYGPATH_W) '$(srcdir)/lookup/monochrome/0010_encoder_fs.c'; fi`
+
+_support/processing/lookup/test_runner-fhedt_sparse_test_common.o: _support/processing/lookup/fhedt_sparse_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/lookup/test_runner-fhedt_sparse_test_common.o -MD -MP -MF _support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Tpo -c -o _support/processing/lookup/test_runner-fhedt_sparse_test_common.o `test -f '_support/processing/lookup/fhedt_sparse_test_common.c' || echo '$(srcdir)/'`_support/processing/lookup/fhedt_sparse_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Tpo _support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/lookup/fhedt_sparse_test_common.c' object='_support/processing/lookup/test_runner-fhedt_sparse_test_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/lookup/test_runner-fhedt_sparse_test_common.o `test -f '_support/processing/lookup/fhedt_sparse_test_common.c' || echo '$(srcdir)/'`_support/processing/lookup/fhedt_sparse_test_common.c
+
+_support/processing/lookup/test_runner-fhedt_sparse_test_common.obj: _support/processing/lookup/fhedt_sparse_test_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/lookup/test_runner-fhedt_sparse_test_common.obj -MD -MP -MF _support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Tpo -c -o _support/processing/lookup/test_runner-fhedt_sparse_test_common.obj `if test -f '_support/processing/lookup/fhedt_sparse_test_common.c'; then $(CYGPATH_W) '_support/processing/lookup/fhedt_sparse_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/lookup/fhedt_sparse_test_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Tpo _support/processing/lookup/$(DEPDIR)/test_runner-fhedt_sparse_test_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/lookup/fhedt_sparse_test_common.c' object='_support/processing/lookup/test_runner-fhedt_sparse_test_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/lookup/test_runner-fhedt_sparse_test_common.obj `if test -f '_support/processing/lookup/fhedt_sparse_test_common.c'; then $(CYGPATH_W) '_support/processing/lookup/fhedt_sparse_test_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/lookup/fhedt_sparse_test_common.c'; fi`
 
 _support/processing/lookup/test_runner-fhedt_byte_test_common.o: _support/processing/lookup/fhedt_byte_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/lookup/test_runner-fhedt_byte_test_common.o -MD -MP -MF _support/processing/lookup/$(DEPDIR)/test_runner-fhedt_byte_test_common.Tpo -c -o _support/processing/lookup/test_runner-fhedt_byte_test_common.o `test -f '_support/processing/lookup/fhedt_byte_test_common.c' || echo '$(srcdir)/'`_support/processing/lookup/fhedt_byte_test_common.c

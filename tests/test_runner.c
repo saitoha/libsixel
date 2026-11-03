@@ -1429,6 +1429,18 @@ int test_gpupal_0019_wire_x(int argc, char **argv);
 int test_gpupal_0020_direct_exact(int argc, char **argv);
 int test_gpupal_0021_blockcull_exact(int argc, char **argv);
 int test_gpupal_0022_gridlut_exact(int argc, char **argv);
+int test_fh_gpu_r256_compact_table(int argc, char **argv);
+int test_fh_gpu_sparse_r64(int argc, char **argv);
+int test_fh_gpu_sparse_r128(int argc, char **argv);
+int test_fh_gpu_sparse_r256(int argc, char **argv);
+int test_fh_cpu_sparse_r64(int argc, char **argv);
+int test_fh_cpu_sparse_r128(int argc, char **argv);
+int test_fh_cpu_sparse_r256_refine(int argc, char **argv);
+int test_fh_cpu_r256_aux_memory(int argc, char **argv);
+int test_fh_cpu_unrefined_aux_memory(int argc, char **argv);
+int test_fh_cpu_weighted_sparse_r64(int argc, char **argv);
+int test_fh_gpu_dense_column_r64(int argc, char **argv);
+int test_fh_cpu_weighted_sparse_r256_refine(int argc, char **argv);
 int test_fhedt_gpu_rectangle(int argc, char **argv);
 int test_fhedt_lookup_configuration(int argc, char **argv);
 int test_fhedt_gpu_reference(int argc, char **argv);
@@ -5640,6 +5652,19 @@ static test_entry_t const test_entries[] = {
       test_gpupal_0021_blockcull_exact },
     { "gpu-palette/0022_gridlut_exact",
       test_gpupal_0022_gridlut_exact },
+    { "fhedt/gpu_r256_compact_table", test_fh_gpu_r256_compact_table },
+    { "fhedt/gpu_sparse_r64", test_fh_gpu_sparse_r64 },
+    { "fhedt/gpu_sparse_r128", test_fh_gpu_sparse_r128 },
+    { "fhedt/gpu_sparse_r256", test_fh_gpu_sparse_r256 },
+    { "fhedt/cpu_sparse_r64", test_fh_cpu_sparse_r64 },
+    { "fhedt/cpu_sparse_r128", test_fh_cpu_sparse_r128 },
+    { "fhedt/cpu_sparse_r256_refine", test_fh_cpu_sparse_r256_refine },
+    { "fhedt/cpu_r256_aux_memory", test_fh_cpu_r256_aux_memory },
+    { "fhedt/cpu_unrefined_aux_memory", test_fh_cpu_unrefined_aux_memory },
+    { "fhedt/cpu_weighted_sparse_r64", test_fh_cpu_weighted_sparse_r64 },
+    { "fhedt/gpu_dense_column_r64", test_fh_gpu_dense_column_r64 },
+    { "fhedt/cpu_weighted_sparse_r256_refine",
+      test_fh_cpu_weighted_sparse_r256_refine },
     { "fhedt/gpu_rectangle", test_fhedt_gpu_rectangle },
     { "fhedt/lookup_configuration", test_fhedt_lookup_configuration },
     { "fhedt/gpu_reference", test_fhedt_gpu_reference },

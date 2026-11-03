@@ -3007,6 +3007,19 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0050_FLOAT_REFERENCE_R64 \
     -DBUILD_TEST_0051_FLOAT_REFERENCE_R128 \
     -DBUILD_TEST_0052_FLOAT_REFERENCE_R256 \
+    -DBUILD_FHEDT_SPARSE_TEST_COMMON \
+    -DBUILD_TEST_0147_GPU_R256_COMPACT_TABLE \
+    -DBUILD_TEST_0148_GPU_SPARSE_R64 \
+    -DBUILD_TEST_0149_GPU_SPARSE_R128 \
+    -DBUILD_TEST_0150_GPU_SPARSE_R256 \
+    -DBUILD_TEST_0151_CPU_SPARSE_R64 \
+    -DBUILD_TEST_0152_CPU_SPARSE_R128 \
+    -DBUILD_TEST_0153_CPU_SPARSE_R256_REFINE \
+    -DBUILD_TEST_0154_CPU_R256_AUX_MEMORY \
+    -DBUILD_TEST_0155_CPU_UNREFINED_AUX_MEMORY \
+    -DBUILD_TEST_0156_CPU_WEIGHTED_SPARSE_R64 \
+    -DBUILD_TEST_0157_GPU_DENSE_COLUMN_R64 \
+    -DBUILD_TEST_0158_CPU_WEIGHTED_SPARSE_R256_REFINE \
     -DBUILD_FHEDT_BYTE_TEST_COMMON \
     -DBUILD_TEST_0039_Y_LABELS \
     -DBUILD_TEST_0040_Z_LABELS \
@@ -6249,6 +6262,18 @@ test_runner_SOURCES = test_runner.c \
     lookup/blockcull/0001_blockcull_exact.c \
     lookup/gridlut/0001_gridlut_exact.c \
     lookup/ordered/0001_ordered_exact.c \
+    lookup/fhedt/0147_gpu_r256_compact_table.c \
+    lookup/fhedt/0148_gpu_sparse_r64.c \
+    lookup/fhedt/0149_gpu_sparse_r128.c \
+    lookup/fhedt/0150_gpu_sparse_r256.c \
+    lookup/fhedt/0151_cpu_sparse_r64.c \
+    lookup/fhedt/0152_cpu_sparse_r128.c \
+    lookup/fhedt/0153_cpu_sparse_r256_refine.c \
+    lookup/fhedt/0154_cpu_r256_aux_memory.c \
+    lookup/fhedt/0155_cpu_unrefined_aux_memory.c \
+    lookup/fhedt/0156_cpu_weighted_sparse_r64.c \
+    lookup/fhedt/0157_gpu_dense_column_r64.c \
+    lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.c \
     lookup/fhedt/0143_gpu_rectangle.c \
     lookup/fhedt/0140_lookup_configuration.c \
     lookup/fhedt/0099_gpu_reference.c \
@@ -8114,6 +8139,7 @@ test_runner_SOURCES = test_runner.c \
     lookup/monochrome/0008_encoder_dark.c \
     lookup/monochrome/0009_encoder_light.c \
     lookup/monochrome/0010_encoder_fs.c \
+    _support/processing/lookup/fhedt_sparse_test_common.c \
     _support/processing/lookup/fhedt_byte_test_common.c \
     lookup/fhedt/0039_y_labels.c \
     lookup/fhedt/0040_z_labels.c \
