@@ -200,7 +200,11 @@ td_target(void)
 #define sixel_cms_do_transform td_apply
 #define TIFFReadTile td_tile
 #define loader_cms_target_pixelformat td_target
+#define tiff_alpha_source td_ns_41_alpha_source
+#define tiff_alpha_source_t td_ns_41_alpha_source_t
 #include "src/loader-libtiff.c"
+#undef tiff_alpha_source_t
+#undef tiff_alpha_source
 #undef loader_cms_target_pixelformat
 #undef TIFFReadTile
 #undef sixel_cms_do_transform

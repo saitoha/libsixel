@@ -156,7 +156,11 @@ uf_rgba_read(TIFF *tif, uint32_t width, uint32_t height, uint32_t *raster,
 #define tiff_lab8_ranges tlx_copy_3_ranges
 #define tiff_lab8_to_linear tlx_copy_3_linear
 #define tiff_convert_cmyk_to_linear tiff_floatf_ink_linear
+#define tiff_alpha_source til_ns_6_1_alpha_source
+#define tiff_alpha_source_t til_ns_6_1_alpha_source_t
 #include "src/loader-libtiff.c"
+#undef tiff_alpha_source_t
+#undef tiff_alpha_source
 #undef tiff_convert_cmyk_to_linear
 #undef tiff_lab8_to_linear
 #undef tiff_lab8_ranges

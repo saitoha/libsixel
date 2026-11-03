@@ -238,7 +238,11 @@ tlf_target(sixel_frame_t *frame, int format)
 #define tiff_lab8_ranges tlx_copy_6_ranges
 #define tiff_lab8_to_linear tlx_copy_6_linear
 #define tiff_convert_cmyk_to_linear tiff_logluvf_ink_linear
+#define tiff_alpha_source til_ns_1_1_alpha_source
+#define tiff_alpha_source_t til_ns_1_1_alpha_source_t
 #include "src/loader-libtiff.c"
+#undef tiff_alpha_source_t
+#undef tiff_alpha_source
 #undef tiff_convert_cmyk_to_linear
 #undef tiff_lab8_to_linear
 #undef tiff_lab8_ranges

@@ -820,6 +820,14 @@ cleanup:
     return converted;
 }
 
+/* Keep source representation choices together. PCC's debug-info path
+ * corrupts its argument table after definitions exceeding 16 parameters. */
+typedef struct tiff_alpha_source {
+    uint16_t bits;
+    int linear;
+    int byte_eligible;
+} tiff_alpha_source_t;
+
 /* Finish normalized integer alpha using the same transaction, background
  * and mask policy for contiguous, separate and tiled source storage. The
  * caller retains both allocations on failure; success transfers color and
@@ -827,13 +835,13 @@ cleanup:
 static SIXELSTATUS
 tiff_publish_integer_alpha(unsigned char **result, float **ppixels,
                             unsigned char **palpha, uint32_t width,
-                            uint32_t height, uint16_t bits,
+                            uint32_t height,
+                            tiff_alpha_source_t const *source_format,
                             uint16_t photometric, int associated,
                             int all_opaque, void const *profile,
                             uint32_t profile_length, int *ppixelformat,
                             int *pnegotiate_target, unsigned char **pmask,
-                            unsigned char const *bgcolor,
-                            int source_linear, int byte_eligible)
+                            unsigned char const *bgcolor)
 {
     SIXELSTATUS status;
     float *pixels;
@@ -854,8 +862,8 @@ tiff_publish_integer_alpha(unsigned char **result, float **ppixels,
     pixels = *ppixels;
     alpha = *palpha;
     count = (size_t)width * height;
-    maximum = bits == 8u ? 255u : 65535u;
-    managed = source_linear;
+    maximum = source_format->bits == 8u ? 255u : 65535u;
+    managed = source_format->linear;
     has_mask = composed = 0;
     if (!managed && profile != NULL && profile_length > 0u) {
         managed = tiff_convert_samples_to_linear(
@@ -874,7 +882,7 @@ tiff_publish_integer_alpha(unsigned char **result, float **ppixels,
         }
     }
     for (i = 0u; i < count; ++i) {
-        a = bits == 8u ? alpha[i] : ((uint16_t const *)alpha)[i];
+        a = source_format->bits == 8u ? alpha[i] : ((uint16_t const *)alpha)[i];
         /* Retain original alpha through CMS. After consuming element i,
          * byte i can hold its mask without overwriting an unread UINT16.
          * Only exact source zero is masked, never a rounded byte zero. */
@@ -904,7 +912,7 @@ tiff_publish_integer_alpha(unsigned char **result, float **ppixels,
 
     *ppixelformat = managed ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
                            : SIXEL_PIXELFORMAT_RGBFLOAT32;
-    if (byte_eligible && bits == 8u && !managed &&
+    if (source_format->byte_eligible && source_format->bits == 8u && !managed &&
         (all_opaque || (!associated && !composed))) {
         /* Only original byte sources can compact without precision
          * loss, including all255 associated alpha. UINT16 stays float even
@@ -938,6 +946,7 @@ tiff_try_load_integer_alpha(unsigned char **result, TIFF *tif,
                             int *pnegotiate_target, unsigned char **pmask,
                             unsigned char const *bgcolor)
 {
+    tiff_alpha_source_t source_format;
     SIXELSTATUS status;
     unsigned char *row;
     unsigned char *alpha;
@@ -1071,10 +1080,13 @@ tiff_try_load_integer_alpha(unsigned char **result, TIFF *tif,
             }
         }
     }
+    source_format.bits = bits;
+    source_format.linear = 0;
+    source_format.byte_eligible = 1;
     status = tiff_publish_integer_alpha(result, &pixels, &alpha,
-        width, height, bits, photometric, associated, all_opaque,
+        width, height, &source_format, photometric, associated, all_opaque,
         profile, profile_length, ppixelformat, pnegotiate_target,
-        pmask, bgcolor, 0, 1);
+        pmask, bgcolor);
 
 cleanup:
     sixel_allocator_free(allocator, row);
@@ -1272,6 +1284,7 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
                               unsigned char const *bgcolor,
                               int *pwidth, int *pheight)
 {
+    tiff_alpha_source_t source_format;
     tiff_integer_layout_t layout;
     SIXELSTATUS status;
     unsigned char *buffer;
@@ -1627,11 +1640,14 @@ tiff_try_load_integer_layouts(unsigned char **result, TIFF *tif,
         profile_length = 0u;
     }
     if (layout.has_alpha) {
+        source_format.bits = layout.bits;
+        source_format.linear = linear;
+        source_format.byte_eligible = !lab;
         status = tiff_publish_integer_alpha(result, &layout.pixels,
             &layout.alpha, layout.output_width, layout.output_height,
-            layout.bits, photometric, layout.associated, all_opaque,
+            &source_format, photometric, layout.associated, all_opaque,
             profile, profile_length, ppixelformat, pnegotiate_target,
-            pmask, bgcolor, linear, !lab);
+            pmask, bgcolor);
         if (SIXEL_FAILED(status)) { goto cleanup; }
     } else {
         if (profile != NULL && profile_length > 0u) {
