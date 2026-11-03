@@ -3,6 +3,7 @@
 #include "config.h"
 #endif
 
+#include <stdint.h>
 #include <string.h>
 #include "retained-plane-workers.h"
 #include "threading.h"
