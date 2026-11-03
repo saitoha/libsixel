@@ -143,6 +143,7 @@ jobs:
         location: ${{ runner.temp }}\msys64-nightly-mingw-attempt-1
         install: >-
           make
+          diffutils
           zip
         pacboy: >-
           cc:p
@@ -169,6 +170,7 @@ jobs:
         location: ${{ runner.temp }}\msys64-nightly-mingw-attempt-2
         install: >-
           make
+          diffutils
           zip
         pacboy: >-
           cc:p
@@ -195,6 +197,7 @@ jobs:
         location: ${{ runner.temp }}\msys64-nightly-mingw-attempt-3
         install: >-
           make
+          diffutils
           zip
         pacboy: >-
           cc:p
@@ -211,6 +214,7 @@ jobs:
         location: ${{ runner.temp }}\msys64-nightly-msvc-attempt-1
         install: >-
           make
+          diffutils
           zip
 
     - name: Wait before MSYS2 retry (MSVC attempt 2)
@@ -235,6 +239,7 @@ jobs:
         location: ${{ runner.temp }}\msys64-nightly-msvc-attempt-2
         install: >-
           make
+          diffutils
           zip
 
     - name: Wait before MSYS2 retry (MSVC attempt 3)
@@ -259,6 +264,7 @@ jobs:
         location: ${{ runner.temp }}\msys64-nightly-msvc-attempt-3
         install: >-
           make
+          diffutils
           zip
 
     - name: Setup MSVC developer env (vcvars)
