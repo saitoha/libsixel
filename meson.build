@@ -2614,6 +2614,7 @@ endif
 
 # Register the build-side executor before any Meson test producers.
 subdir('tools/child-time')
+subdir('tools/compare')
 
 lsqa_bin = disabler()
 wic_installcheck_command = []

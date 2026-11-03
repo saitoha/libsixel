@@ -52,6 +52,10 @@ See [`build.md`](../build.md) for build commands and the complete option list.
 
 See [Build System Architecture](build/README.md) for the maintained build descriptions, generated files, custom test execution, and the distinction between Meson implementation gaps and unverified platform paths.
 
+External commands are part of the portability contract, including commands in Make recipes, Meson definitions, shell helpers, and `.t` tests. Before adding a command or a CI package, identify the required operation, check whether a shell builtin, an existing baseline tool, or a small build-machine helper already provides it, and check availability and option semantics on the supported platforms. A command being present on the developer machine, POSIX-specified, or easy to install in one CI image does not establish availability on every supported environment. Record any unavoidable new requirement here, detect it in both applicable build systems, and pass the detected path to its consumers; optional features must retain a tested fallback or an explicit feature-specific configuration error. Installing an extra CI package must not conceal an undeclared build or test dependency.
+
+Comparison does not require diffutils, base64, or a hashing tool. The [test harness](build/test-harness.md) supplies exact byte comparison with native and source-only implementations; checksum equality must not replace a byte-equality assertion. Cross-build helpers must execute on the build machine. Ordinary Autotools staticcheck remains source-only and does not require Python or a C helper build; explicitly optional parser and image audits retain their own dependencies. The [comparison dependency check](../tests/_static/sh/staticcheck-comparison-dependencies.sh) checks the maintained CI package lists and fallback registration, while actual absence-of-tool runs validate behavior. Review new dependencies for process-launch cost and measure each added or changed check rather than using total suite duration as its cost.
+
 ### Optional dependencies
 
 The core library does not require every optional image or network library.

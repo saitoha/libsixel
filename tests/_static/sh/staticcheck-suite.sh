@@ -19,6 +19,8 @@ test -n "$src_root" || {
 }
 
 test -n "$build_root" || build_root="$src_root"
+PATH="$PATH:$build_root/tools/compare:$src_root/build-aux/compare"
+export PATH
 
 # Workers share only immutable inventory and uniquely numbered result paths.
 # The parent alone owns cleanup, after Make has reaped every worker.
@@ -734,6 +736,50 @@ run_case_tap "staticcheck-test-runner-link" \
 
 run_case_tap "staticcheck-installcheck-launch" \
     "$src_root/tests/_static/sh/staticcheck-installcheck-launch.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-binary-equal" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0001_binary_equal.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-binary-different" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0002_binary_different.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-final-newline" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0003_final_newline.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-empty-equal" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0004_empty_equal.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-empty-different" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0005_empty_different.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-missing-file" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0006_missing_file.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-unreadable-file" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0007_unreadable_file.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-stdin-right" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0008_stdin_right.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-multiblock-equal" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0009_multiblock_equal.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-compare-multiblock-different" \
+    env SIXEL_TEST_COMPARE="$src_root/build-aux/compare/cmp" \
+    sh "$src_root/tests/tools/compare/0010_multiblock_different.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-comparison-dependencies" \
+    "$src_root/tests/_static/sh/staticcheck-comparison-dependencies.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-command-dependencies" \

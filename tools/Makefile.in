@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -106,7 +107,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
 	$(top_srcdir)/m4/ax_ruby_ext.m4 $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/sixel_compare.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -225,6 +227,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+DATA = $(noinst_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -265,7 +268,9 @@ AWK = @AWK@
 BASH = @BASH@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
+CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
+CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 CKSUM = @CKSUM@
 CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
 CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
@@ -400,6 +405,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SHELLCHECK = @SHELLCHECK@
 SIXEL_ANALYZER_MODE = @SIXEL_ANALYZER_MODE@
+SIXEL_COMPARE_EXEEXT = @SIXEL_COMPARE_EXEEXT@
 SIXEL_EMSCRIPTEN_CC = @SIXEL_EMSCRIPTEN_CC@
 SIXEL_EMSCRIPTEN_STDIO = @SIXEL_EMSCRIPTEN_STDIO@
 SIXEL_LIBTOOL_BUILD_LIBS = @SIXEL_LIBTOOL_BUILD_LIBS@
@@ -505,7 +511,13 @@ EXTRA_jpegref_DEPENDENCIES = $(SIXEL_EMSCRIPTEN_STDIO)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 bin_SCRIPTS = libsixel-config $(am__append_1)
+# Build with the build-machine compiler, not the cross-target compiler.
+@BUILD_TEST_COMPARE_TRUE@noinst_DATA = compare/cmp$(SIXEL_COMPARE_EXEEXT)
+CLEANFILES = compare/cmp compare/cmp.exe compare.obj \
+    compare/cmp.pdb compare/cmp.ilk compare/cmp.exe.manifest
+
 EXTRA_DIST = libsixel-config.in \
+             compare.c compare/meson.build \
              gen_completion_embed.py \
              check_test_times.py \
              reproduce_progressive_study.py \
@@ -942,7 +954,7 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS) $(SCRIPTS)
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -969,6 +981,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-$(am__rm_f) $(CLEANFILES)
 
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
@@ -1075,6 +1088,9 @@ uninstall-am: uninstall-binSCRIPTS
 
 .PRECIOUS: Makefile
 
+compare/cmp$(SIXEL_COMPARE_EXEEXT): $(srcdir)/compare.c Makefile
+	$(AM_V_at)$(MKDIR_P) compare
+	$(AM_V_CC)$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) -o $@ $(srcdir)/compare.c
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 install-data-hook:

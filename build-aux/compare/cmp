@@ -1,0 +1,33 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Bootstrap equality before the native comparator has been built. od is
+# already part of the build/test baseline; do not add a hashing dependency.
+set -u
+quiet=no
+case ${1-} in -s) quiet=yes; shift ;; esac
+case ${1-} in --) shift ;; esac
+if test "$#" -ne 2; then
+    echo 'usage: cmp [-s] [--] FILE FILE' >&2
+    exit 2
+fi
+if test "$1" = - && test "$2" = -; then
+    exit 0
+fi
+# Some od implementations accept a directory and print nothing with status 0.
+# Such an input is not an empty file and must never compare successfully.
+test ! -d "$1" && test ! -d "$2" || exit 2
+# Never place raw binary data in a shell variable. -v preserves repeated
+# blocks, and octets preserve NUL, high bytes and a missing final newline.
+if test "$1" = -; then
+    left=$(LC_ALL=C od -A n -v -t x1) || exit 2
+else
+    left=$(LC_ALL=C od -A n -v -t x1 < "$1") || exit 2
+fi
+if test "$2" = -; then
+    right=$(LC_ALL=C od -A n -v -t x1) || exit 2
+else
+    right=$(LC_ALL=C od -A n -v -t x1 < "$2") || exit 2
+fi
+test "$left" = "$right" && exit 0
+test "$quiet" = yes || echo 'cmp: files differ' >&2
+exit 1

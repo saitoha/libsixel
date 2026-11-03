@@ -655,6 +655,11 @@ ac_header_c_list=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+BUILD_TEST_COMPARE_FALSE
+BUILD_TEST_COMPARE_TRUE
+SIXEL_COMPARE_EXEEXT
+CFLAGS_FOR_BUILD
+CC_FOR_BUILD
 HAVE_PYTHON_FALSE
 HAVE_PYTHON_TRUE
 HAVE_WICCODEC_FALSE
@@ -1203,7 +1208,9 @@ RUBY_EXT_DLEXT
 BASH
 SIXEL_TEST_GZIP
 CKSUM
-SIXEL_TEST_SHELL'
+SIXEL_TEST_SHELL
+CC_FOR_BUILD
+CFLAGS_FOR_BUILD'
 
 
 # Initialize some variables set by options.
@@ -2071,6 +2078,10 @@ Some influential environment variables:
   SIXEL_TEST_SHELL
               Shell path used to run TAP test scripts (default: detect dash,
               sh, then fallback /bin/sh)
+  CC_FOR_BUILD
+              C compiler for build-machine check tools
+  CFLAGS_FOR_BUILD
+              C flags for build-machine check tools
 
 Use these variables to override the choices made by 'configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -7136,6 +7147,20 @@ else
   USING_CL_FALSE=
 fi
 
+
+
+  if ! command -v cmp >/dev/null 2>&1 &&
+         ! command -v od >/dev/null 2>&1
+then :
+
+    as_fn_error $? "exact file comparison requires cmp or the baseline od utility" "$LINENO" 5
+
+fi
+  # Keep native system tools first. Configure/Libtool can use the source-only
+  # fallback before make builds the faster, bounded-memory comparator.
+  sixel_compare_root=`cd "$srcdir" && pwd`
+  PATH="$PATH:$sixel_compare_root/build-aux/compare"
+  export PATH
 
 case `pwd` in
   *\ * | *\	*)
@@ -34386,6 +34411,106 @@ else
 fi
 
 
+
+
+
+  if test -z "$CC_FOR_BUILD"
+then :
+
+    for ac_prog in cc gcc clang
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_prog_CC_FOR_BUILD+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) if test -n "$CC_FOR_BUILD"; then
+  ac_cv_prog_CC_FOR_BUILD="$CC_FOR_BUILD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_prog_CC_FOR_BUILD="$ac_prog"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi ;;
+esac
+fi
+CC_FOR_BUILD=$ac_cv_prog_CC_FOR_BUILD
+if test -n "$CC_FOR_BUILD"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $CC_FOR_BUILD" >&5
+printf "%s\n" "$CC_FOR_BUILD" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$CC_FOR_BUILD" && break
+done
+
+    # A compiler such as emcc may run its configure probes through a runtime
+    # yet still not produce a build-machine utility. Prefer a host compiler.
+    if test -z "$CC_FOR_BUILD" && test "$cross_compiling" = no
+then :
+  CC_FOR_BUILD=$CC
+fi
+
+fi
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether a native file comparator can run" >&5
+printf %s "checking whether a native file comparator can run... " >&6; }
+  sixel_have_compare=no
+  SIXEL_COMPARE_EXEEXT=
+  # MSVC leaves an object beside the build invocation. Use a conftest source
+  # name so the capability probe owns every compiler/linker byproduct.
+  if test -n "$CC_FOR_BUILD" &&
+      cat "$srcdir/tools/compare.c" > conftest-compare.c &&
+      $CC_FOR_BUILD $CFLAGS_FOR_BUILD -o conftest-compare \
+        conftest-compare.c >&5 2>&1
+then :
+
+    test ! -f conftest-compare.exe || SIXEL_COMPARE_EXEEXT=.exe
+    if ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
+        "$srcdir/tools/compare.c" "$srcdir/tools/compare.c" &&
+        { ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
+            "$srcdir/tools/compare.c" conftest-compare.c/missing; \
+          test "$?" = 2; }
+then :
+  sixel_have_compare=yes
+fi
+
+fi
+  rm -f conftest-compare conftest-compare.exe conftest-compare.c \
+    conftest-compare.obj conftest-compare.pdb conftest-compare.ilk \
+    conftest-compare.exe.manifest
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_have_compare" >&5
+printf "%s\n" "$sixel_have_compare" >&6; }
+
+   if test "$sixel_have_compare" = yes; then
+  BUILD_TEST_COMPARE_TRUE=
+  BUILD_TEST_COMPARE_FALSE='#'
+else
+  BUILD_TEST_COMPARE_TRUE='#'
+  BUILD_TEST_COMPARE_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile converters/img2sixel-node-launcher:converters/img2sixel-node-launcher.in converters/sixel2png-node-launcher:converters/sixel2png-node-launcher.in assessment/Makefile tools/Makefile tools/libsixel-config build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in build-aux/resolve-test-tool-paths.sh:build-aux/resolve-test-tool-paths.sh.in examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile fuzz/Makefile tests/Makefile tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in python/Makefile ruby/Makefile php/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
 
 
@@ -34749,6 +34874,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${BUILD_TEST_COMPARE_TRUE}" && test -z "${BUILD_TEST_COMPARE_FALSE}"; then
+  as_fn_error $? "conditional \"BUILD_TEST_COMPARE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

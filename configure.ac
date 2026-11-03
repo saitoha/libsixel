@@ -834,6 +834,7 @@ AS_IF([test "x$using_cl" = "xyes"], [
 ])
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
+SIXEL_COMPARE_SETUP
 LT_INIT
 
 # Passing thousands of ordinary objects through Libtool's shell argument
@@ -5856,6 +5857,7 @@ AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
 
+SIXEL_COMPARE_BUILD
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
                  package.json.in

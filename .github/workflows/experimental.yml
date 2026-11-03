@@ -109,7 +109,7 @@ jobs:
                 if apt-get -o Acquire::Retries=3 update &&
                    apt-get -o Acquire::Retries=3 install -y \
                      --no-install-recommends \
-                     autoconf automake build-essential diffutils file \
+                     autoconf automake build-essential \
                      libtool make meson ninja-build pkg-config python3; then
                   break
                 fi
@@ -122,7 +122,6 @@ jobs:
               dpkg --print-architecture
               getconf LONG_BIT
               cc -dumpmachine
-              file /bin/sh
 
               # The generic runners own the complete suite and its large
               # aggregate test binary. These emulated guests run existing

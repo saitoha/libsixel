@@ -16,12 +16,23 @@ bin_SCRIPTS += sixel-thumbnailer
 endif
 
 noinst_PROGRAMS = lso-timer progressive-study
+# Build with the build-machine compiler, not the cross-target compiler.
+if BUILD_TEST_COMPARE
+noinst_DATA = compare/cmp$(SIXEL_COMPARE_EXEEXT)
+endif
+CLEANFILES = compare/cmp compare/cmp.exe compare.obj \
+    compare/cmp.pdb compare/cmp.ilk compare/cmp.exe.manifest
+compare/cmp$(SIXEL_COMPARE_EXEEXT): $(srcdir)/compare.c Makefile
+	$(AM_V_at)$(MKDIR_P) compare
+	$(AM_V_CC)$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) -o $@ $(srcdir)/compare.c
+
 EXTRA_PROGRAMS =
 if BUILD_LSO_TIMEOUT
 noinst_PROGRAMS += lso-timeout
 endif
 
 EXTRA_DIST = libsixel-config.in \
+             compare.c compare/meson.build \
              gen_completion_embed.py \
              check_test_times.py \
              reproduce_progressive_study.py \

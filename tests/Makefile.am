@@ -11295,6 +11295,7 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/sh/staticcheck-ci-configure-make.sh \
     _static/sh/staticcheck-ci-checkout-eol.sh \
     _static/sh/staticcheck-nightly-msvc-archiver.sh \
+    _static/sh/staticcheck-comparison-dependencies.sh \
     _static/sh/staticcheck-gperf-source-location.sh
 EXTRA_DIST += _static/sh/staticcheck-cli-discard-output.sh \
     _static/awk/cli-discard-output.awk \

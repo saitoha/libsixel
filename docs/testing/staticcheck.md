@@ -24,6 +24,8 @@ The target deliberately spans more than conventional lint:
 
 IDL-based verification and tests about how tests are written are both first-class `staticcheck` work. The category is intentionally broad because a growing repository accumulates quality risks between files and systems, while ordinary language linters usually see only one representation at a time.
 
+The [comparison dependency check](../../tests/_static/sh/staticcheck-comparison-dependencies.sh) prevents CI from requiring diffutils and verifies the native and source-only fallback registrations. Separate comparison cases run against the source-only implementation without compiling C, checking binary equality, differences, final newlines, empty inputs, input errors, stdin and multi-buffer input. The same files exercise the selected native comparator during `check`; [test harness](../build/test-harness.md) owns its behavior and [platform requirements](../platform-support.md#build-requirements) owns admission of external dependencies. These source checks do not prove availability of every command on every OS; absence-of-tool builds and runtime checks remain necessary.
+
 ## Relationship to behavioral tests
 
 `make staticcheck` and `make check` answer different questions. `staticcheck` asks whether the repository is internally well-formed and whether duplicated or generated representations agree. `make check` asks whether built software behaves correctly for concrete inputs, platforms, and feature configurations. Neither subsumes the other.
@@ -195,6 +197,17 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-35 | gperf recipes and generated headers retain valid coverage source locations. | [tests/_static/sh/staticcheck-gperf-source-location.sh](../../tests/_static/sh/staticcheck-gperf-source-location.sh) |
 | SC-36 | Nightly configures LF-preserving checkout before the first checkout step; missing, inverted and late settings fail. | [tests/_static/sh/staticcheck-ci-checkout-eol.sh](../../tests/_static/sh/staticcheck-ci-checkout-eol.sh) |
 | SC-37 | The Nightly MSVC step retains a configure invocation and excludes AR/ARFLAGS overrides, with missing-invocation and explicit-override controls. | [tests/_static/sh/staticcheck-nightly-msvc-archiver.sh](../../tests/_static/sh/staticcheck-nightly-msvc-archiver.sh) |
+| SC-38 | Comparison support is registered without making diffutils a CI prerequisite. | [tests/_static/sh/staticcheck-comparison-dependencies.sh](../../tests/_static/sh/staticcheck-comparison-dependencies.sh) |
+| SC-39 | Source-only comparison: binary equal. | [tests/tools/compare/0001_binary_equal.t](../../tests/tools/compare/0001_binary_equal.t) |
+| SC-40 | Source-only comparison: binary different. | [tests/tools/compare/0002_binary_different.t](../../tests/tools/compare/0002_binary_different.t) |
+| SC-41 | Source-only comparison: final newline. | [tests/tools/compare/0003_final_newline.t](../../tests/tools/compare/0003_final_newline.t) |
+| SC-42 | Source-only comparison: empty equal. | [tests/tools/compare/0004_empty_equal.t](../../tests/tools/compare/0004_empty_equal.t) |
+| SC-43 | Source-only comparison: empty different. | [tests/tools/compare/0005_empty_different.t](../../tests/tools/compare/0005_empty_different.t) |
+| SC-44 | Source-only comparison: missing file. | [tests/tools/compare/0006_missing_file.t](../../tests/tools/compare/0006_missing_file.t) |
+| SC-45 | Source-only comparison: unreadable file. | [tests/tools/compare/0007_unreadable_file.t](../../tests/tools/compare/0007_unreadable_file.t) |
+| SC-46 | Source-only comparison: stdin right. | [tests/tools/compare/0008_stdin_right.t](../../tests/tools/compare/0008_stdin_right.t) |
+| SC-47 | Source-only comparison: multiblock equal. | [tests/tools/compare/0009_multiblock_equal.t](../../tests/tools/compare/0009_multiblock_equal.t) |
+| SC-48 | Source-only comparison detects a difference beyond several buffers. | [tests/tools/compare/0010_multiblock_different.t](../../tests/tools/compare/0010_multiblock_different.t) |
 
 ### Coverage boundary
 

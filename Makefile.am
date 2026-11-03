@@ -70,6 +70,8 @@ EXTRA_DIST = tools/ci-vm-result.sh tools/quicklook-user.sh tools/quicklook-ci.py
     tests/data/color-numeric/icc-output.h \
     LICENSE build.md build-aux/depcomp \
     build-aux/dependency-bootstrap.am \
+    build-aux/compare/cmp build-aux/compare/diff \
+    m4/sixel_compare.m4 \
     build-aux/test-dist.am \
     build-aux/copy-test-dist.sh \
     build-aux/test-runner-link.am \

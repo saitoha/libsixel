@@ -199,6 +199,13 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 endif
 
 env = environment()
+env.append('PATH', meson.project_build_root() / 'tools/compare',
+  meson.project_source_root() / 'build-aux/compare')
+if have_test_compare
+  env.set('SIXEL_TEST_COMPARE', test_compare.full_path())
+else
+  env.set('SIXEL_TEST_COMPARE', meson.project_source_root() / 'build-aux/compare/cmp')
+endif
 foreach setting : base_env_settings
   env.set(setting[0], setting[1])
 endforeach
@@ -288,6 +295,9 @@ test_runner_exe = executable('test_runner',
   install: false)
 
 test_deps = [test_runner_exe, lsqa_bin] + img2sixel_deps + sixel2png_deps
+if have_test_compare
+  test_deps += [test_compare]
+endif
 if have_quicklook_extension
   test_deps += [quicklook_bundles, register_tool, quicklook_package]
 endif

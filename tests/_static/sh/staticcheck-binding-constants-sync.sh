@@ -87,10 +87,13 @@ check_one() {
             "$label" "$header_root/include/sixel.h" >> "$report"
         return 1
     fi
-    if ! diff -u "$committed" "$generated" > "$delta" 2>&1; then
+    if ! cmp -s "$committed" "$generated"; then
         printf '%s constants are stale; regenerate with %s\n' \
             "$label" "$generator" >> "$report"
-        head -n 40 "$delta" >> "$report"
+        if command -v diff >/dev/null 2>&1; then
+            diff -u "$committed" "$generated" > "$delta" 2>&1 || :
+            head -n 40 "$delta" >> "$report"
+        fi
         return 1
     fi
 
