@@ -1,6 +1,8 @@
 #!/bin/sh
 # Policy: docs/build/test-harness.md
 # Policy: docs/testing/staticcheck.md
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-25
 set -eux
 echo '1..1'
 set -v

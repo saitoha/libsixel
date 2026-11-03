@@ -3,7 +3,9 @@
 # Bodies are skipped, including calls inside static inline definitions. This
 # is a declaration scanner, not a C preprocessor; conditional declarations
 # are checked conservatively in every branch.
-function start_header(name) {
+function start_header(name,    key) {
+    # Clear aliases before scanning even the first declaration of a new file.
+    for (key in declaration_alias) delete declaration_alias[key]
     declaration = ""
     declaration_line = 0
     header = name
@@ -41,6 +43,9 @@ function emit_declaration(    text, prefix, name, offset, location, exported,
     offset = RSTART
     name = substr(text, RSTART, RLENGTH)
     sub(/[[:space:]]*\($/, "", name)
+    # Test implementation copies use literal aliases for owned functions.
+    # The companion call scanner keeps this map scoped to active defines.
+    if (name in declaration_alias) name = declaration_alias[name]
     prefix = substr(text, 1, offset - 1)
     # Only storage class before the declarator counts: an array parameter
     # such as int values[static 3] does not give the function local linkage.

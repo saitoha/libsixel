@@ -32,7 +32,14 @@ AC_DEFUN([SIXEL_COMPARE_BUILD], [
         conftest-compare.c >&AS_MESSAGE_LOG_FD 2>&1], [
     test ! -f conftest-compare.exe || SIXEL_COMPARE_EXEEXT=.exe
     AS_IF([./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
-        "$srcdir/tools/compare.c" "$srcdir/tools/compare.c" &&
+        "$srcdir/tools/compare.c" conftest-compare.c &&
+        printf '\n' >> conftest-compare.c &&
+        { ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
+            "$srcdir/tools/compare.c" conftest-compare.c; \
+          test "$?" = 1; } &&
+        { ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
+            "$srcdir/tools" "$srcdir/tools/compare.c"; \
+          test "$?" = 2; } &&
         { ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
             "$srcdir/tools/compare.c" conftest-compare.c/missing; \
           test "$?" = 2; }], [sixel_have_compare=yes])

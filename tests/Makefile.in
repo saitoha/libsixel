@@ -23292,6 +23292,7 @@ TEST_DATA_DIRS = data
 # These native Python cases use the ordinary discovered TAP/log path.
 # Their interpreter does not depend on optional Python bindings.
 EXTRA_DIST = tools/compare/data/octet.bin tools/compare/data/empty \
+	tools/compare/data/octet-different.bin \
 	tools/compare/data/newline.txt \
 	tools/compare/data/no-newline.txt writer/png/uniform.six \
 	writer/png/colors.six writer/png/redefine.six \

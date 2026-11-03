@@ -156,30 +156,30 @@ SIXELSTATUS
 pau_parse_order(
     char const *order,
     sixel_option_argument_list_resolution_t *resolution);
-void
+SIXEL_INTERNAL_API void
 pau_init_suboptions(
     sixel_loader_suboptions_t *suboptions);
 void
 pau_resolve_suboptions(
     sixel_option_argument_list_resolution_t const *resolution,
     sixel_loader_suboptions_t *suboptions);
-size_t
+SIXEL_INTERNAL_API size_t
 pau_029(
     sixel_option_argument_list_resolution_t const *resolution,
     sixel_loader_entry_t const *entries,
     size_t entry_count,
     sixel_loader_entry_t const **plan,
     size_t plan_capacity);
-size_t
+SIXEL_INTERNAL_API size_t
 pau_032(sixel_loader_entry_t const **entries);
-int
+SIXEL_INTERNAL_API int
 pau_030(char const *name);
-int
+SIXEL_INTERNAL_API int
 pau_038(SIXELSTATUS status);
 SIXEL_INTERNAL_API void
 pau_084(sixel_loader_manager_t *manager,
                                         int prefer_float32);
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 pau_new_manager(sixel_allocator_t *allocator,
                          void **manager);
 #undef LIBPNG_DEBUG_LOG

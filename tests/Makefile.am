@@ -11102,6 +11102,7 @@ check-php: prepare-binding-artifacts
 TEST_DATA_DIRS = data
 
 EXTRA_DIST = tools/compare/data/octet.bin tools/compare/data/empty \
+    tools/compare/data/octet-different.bin \
     tools/compare/data/newline.txt tools/compare/data/no-newline.txt \
     writer/png/uniform.six writer/png/colors.six writer/png/redefine.six \
     _support/loader/libpng/chrm_trace_control.sh \

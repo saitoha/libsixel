@@ -52,19 +52,26 @@ cat > "$calls_scanner" <<'AWK'
 # runs in the same process. In particular, its directive flag is a boolean.
 function reset_calls(    key) {
     for (key in renamed) delete renamed[key]
+    for (key in declaration_alias) delete declaration_alias[key]
 }
 function scan_calls(line, number,    token, name, count, parts) {
     if (line ~ /^[[:space:]]*#/) {
         if (line ~ /^[[:space:]]*#[[:space:]]*define[[:space:]]/) {
             sub(/^[[:space:]]*#[[:space:]]*define[[:space:]]+/, "", line)
             count = split(line, parts, /[[:space:]]+/)
+            delete declaration_alias[renamed[parts[1]]]
+            delete renamed[parts[1]]
             if (count == 2 && parts[1] ~ /^[A-Za-z_][A-Za-z0-9_]*$/ &&
-                parts[2] ~ /^[A-Za-z_][A-Za-z0-9_]*$/) renamed[parts[1]] = 1
+                parts[2] ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
+                renamed[parts[1]] = parts[2]
+                declaration_alias[parts[2]] = parts[1]
+            }
             return
         }
         if (line ~ /^[[:space:]]*#[[:space:]]*undef[[:space:]]/) {
             sub(/^[[:space:]]*#[[:space:]]*undef[[:space:]]+/, "", line)
             split(line, parts, /[[:space:]]+/)
+            delete declaration_alias[renamed[parts[1]]]
             delete renamed[parts[1]]
             return
         }
@@ -93,9 +100,20 @@ BEGIN {
     scan_calls("#undef sixel_hidden", 4)
     scan_calls("sixel_hidden();", 5)
     scan_calls("#define sixel_hidden test_private", 6)
+    scan_line("int test_private(void);", 7)
+    scan_calls("#define sixel_marked test_marked", 8)
+    scan_line("SIXEL_INTERNAL_API int test_marked(void);", 9)
+    scan_calls("#undef sixel_marked", 10)
+    scan_line("int test_marked(void);", 11)
+    start_header("next file")
+    scan_line("SIXEL_INTERNAL_API int test_private(void);", 1)
     reset_calls()
-    scan_calls("sixel_hidden();", 1)
+    scan_calls("sixel_hidden();", 2)
     if (observed["sixel_visible"] != 1 ||
+        !("sixel_hidden" in observed) || observed["sixel_hidden"] != 0 ||
+        observed["sixel_marked"] != 1 ||
+        !("test_marked" in observed) || observed["test_marked"] != 0 ||
+        observed["test_private"] != 1 ||
         call_observed["sixel_visible"] != 1 ||
         call_observed["sixel_hidden"] != 2) {
         print "combined DLL scanner controls failed" > "/dev/stderr"
