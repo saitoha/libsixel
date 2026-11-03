@@ -236,6 +236,52 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_RETAINED_COMPONENT_COMMON \
+    -DBUILD_RETAINED_ROWS_COMMON \
+    -DBUILD_RETAINED_WORKERS_COMMON \
+    -DBUILD_TEST_0085_RETAINED_NEON_PALETTE_256_RGB \
+    -DBUILD_TEST_0086_RETAINED_NEON_MIXED_RGB \
+    -DBUILD_TEST_0087_RETAINED_NEON_MIXED_VALID \
+    -DBUILD_TEST_0088_RETAINED_NEON_MIXED_PAINT \
+    -DBUILD_TEST_0089_RETAINED_NEON_MIXED_COUNT \
+    -DBUILD_TEST_0090_RETAINED_NEON_MIXED_REFINEMENT \
+    -DBUILD_TEST_0091_RETAINED_NEON_EXACT_KEEP_REFINEMENT \
+    -DBUILD_TEST_0092_RETAINED_NEON_ALL_APPROXIMATE_REFINEMENT \
+    -DBUILD_TEST_0093_RETAINED_NEON_ALL_KEEP_RGB \
+    -DBUILD_TEST_0094_RETAINED_NEON_WITHOUT_SKIP_RGB \
+    -DBUILD_TEST_0095_RETAINED_NEON_SHORT_PALETTE_SENTINEL \
+    -DBUILD_TEST_0096_RETAINED_NEON_TAIL_RGB \
+    -DBUILD_TEST_0097_RETAINED_SUBVECTOR_SCALAR_BACKEND \
+    -DBUILD_TEST_0098_RETAINED_NEON_FULLPAINT_RGB \
+    -DBUILD_TEST_0099_RETAINED_NEON_PARTIAL_ROWS_RGB \
+    -DBUILD_TEST_0100_RETAINED_SCALAR_MIXED_RGB \
+    -DBUILD_TEST_0101_RETAINED_SCALAR_MIXED_COUNT \
+    -DBUILD_TEST_0102_RETAINED_SCALAR_MIXED_REFINEMENT \
+    -DBUILD_TEST_0103_RETAINED_NEON_ALL_KEEP_VALID \
+    -DBUILD_TEST_0104_RETAINED_NEON_ALL_KEEP_PAINT \
+    -DBUILD_TEST_0105_RETAINED_WORKERS_TWO_RGB \
+    -DBUILD_TEST_0106_RETAINED_WORKERS_FOUR_RGB \
+    -DBUILD_TEST_0107_RETAINED_WORKERS_VALID \
+    -DBUILD_TEST_0108_RETAINED_WORKERS_PAINT \
+    -DBUILD_TEST_0109_RETAINED_WORKERS_COUNT \
+    -DBUILD_TEST_0110_RETAINED_WORKERS_REFINEMENT \
+    -DBUILD_TEST_0111_RETAINED_WORKERS_CURRENT_POLICY \
+    -DBUILD_TEST_0112_RETAINED_WORKERS_NO_ALLOCATION \
+    -DBUILD_TEST_0113_RETAINED_WORKERS_REUSE_SMALLER \
+    -DBUILD_TEST_0114_RETAINED_DEFAULT_SERIAL \
+    -DBUILD_TEST_0115_RETAINED_EXPLICIT_SERIAL \
+    -DBUILD_TEST_0116_RETAINED_SMALL_SERIAL \
+    -DBUILD_TEST_0117_RETAINED_BUDGET_TWO \
+    -DBUILD_TEST_0118_RETAINED_BUDGET_FOUR \
+    -DBUILD_TEST_0119_RETAINED_BUDGET_SHRINK \
+    -DBUILD_TEST_0120_RETAINED_BUDGET_GROW \
+    -DBUILD_TEST_0121_RETAINED_ADMISSION_FALLBACK \
+    -DBUILD_TEST_0122_RETAINED_COMMIT_NO_ALLOCATION \
+    -DBUILD_TEST_0123_RETAINED_NEGATIVE_BUDGET \
+    -DBUILD_TEST_0124_RETAINED_ABORT_PREPARED \
+    -DBUILD_TEST_0125_RETAINED_WRONG_RECEIPT_PARALLEL \
+    -DBUILD_TEST_0126_RETAINED_WORKERS_BALANCED \
+    -DBUILD_TEST_0127_RETAINED_THREADS_DISABLED \
     -DBUILD_CERTLUT_COMMON \
     -DBUILD_TEST_0038_GPU_PALETTE_SNAPSHOT \
     -DBUILD_TEST_0039_GPU_CACHE_REUSE \
@@ -6935,6 +6981,52 @@ test_runner_SOURCES = test_runner.c \
     encoder/indexed/0042_core_early_finish.c \
     encoder/indexed/0043_core_normal_factory.c \
     encoder/indexed/0044_core_ormode_factory.c \
+    encoder/indexed/0126_retained_workers_balanced.c \
+    encoder/indexed/0127_retained_threads_disabled.c \
+    _support/codec/retained_workers_common.c \
+    _support/codec/retained_component_common.c \
+    encoder/indexed/0105_retained_workers_two_rgb.c \
+    encoder/indexed/0106_retained_workers_four_rgb.c \
+    encoder/indexed/0107_retained_workers_valid.c \
+    encoder/indexed/0108_retained_workers_paint.c \
+    encoder/indexed/0109_retained_workers_count.c \
+    encoder/indexed/0110_retained_workers_refinement.c \
+    encoder/indexed/0111_retained_workers_current_policy.c \
+    encoder/indexed/0112_retained_workers_no_allocation.c \
+    encoder/indexed/0113_retained_workers_reuse_smaller.c \
+    encoder/indexed/0114_retained_default_serial.c \
+    encoder/indexed/0115_retained_explicit_serial.c \
+    encoder/indexed/0116_retained_small_serial.c \
+    encoder/indexed/0117_retained_budget_two.c \
+    encoder/indexed/0118_retained_budget_four.c \
+    encoder/indexed/0119_retained_budget_shrink.c \
+    encoder/indexed/0120_retained_budget_grow.c \
+    encoder/indexed/0121_retained_admission_fallback.c \
+    encoder/indexed/0122_retained_commit_no_allocation.c \
+    encoder/indexed/0123_retained_negative_budget.c \
+    encoder/indexed/0124_retained_abort_prepared.c \
+    encoder/indexed/0125_retained_wrong_receipt_parallel.c \
+    _support/codec/retained_rows_common.c \
+    encoder/indexed/0085_retained_neon_palette_256_rgb.c \
+    encoder/indexed/0086_retained_neon_mixed_rgb.c \
+    encoder/indexed/0087_retained_neon_mixed_valid.c \
+    encoder/indexed/0088_retained_neon_mixed_paint.c \
+    encoder/indexed/0089_retained_neon_mixed_count.c \
+    encoder/indexed/0090_retained_neon_mixed_refinement.c \
+    encoder/indexed/0091_retained_neon_exact_keep_refinement.c \
+    encoder/indexed/0092_retained_neon_all_approximate_refinement.c \
+    encoder/indexed/0093_retained_neon_all_keep_rgb.c \
+    encoder/indexed/0094_retained_neon_without_skip_rgb.c \
+    encoder/indexed/0095_retained_neon_short_palette_sentinel.c \
+    encoder/indexed/0096_retained_neon_tail_rgb.c \
+    encoder/indexed/0097_retained_subvector_scalar_backend.c \
+    encoder/indexed/0098_retained_neon_fullpaint_rgb.c \
+    encoder/indexed/0099_retained_neon_partial_rows_rgb.c \
+    encoder/indexed/0100_retained_scalar_mixed_rgb.c \
+    encoder/indexed/0101_retained_scalar_mixed_count.c \
+    encoder/indexed/0102_retained_scalar_mixed_refinement.c \
+    encoder/indexed/0103_retained_neon_all_keep_valid.c \
+    encoder/indexed/0104_retained_neon_all_keep_paint.c \
     _support/codec/indexed_component_common.c \
     encoder/indexed/0001_retained_origin.c \
     encoder/indexed/0002_retained_approximate.c \
@@ -11522,3 +11614,8 @@ EXTRA_DIST += _static/sh/staticcheck-cli-discard-output.sh \
     _static/sh/staticcheck-emscripten-coverage.sh
 
 EXTRA_DIST += _static/sh/staticcheck-c-test-stdio.sh _static/awk/c-test-stdio.awk
+
+EXTRA_DIST += _support/codec/retained_rows_common.h
+
+EXTRA_DIST += _support/codec/retained_workers_common.h \
+    _support/codec/retained_component_common.h

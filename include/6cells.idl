@@ -413,18 +413,22 @@ struct retained_read_view {
     uint64_t sequence;
 };
 
+/* worker_threads: Inclusive of the caller; 0 or 1 requests serial execution. */
 struct retained_update_request {
     retained_read *baseline;
     indexed_frame *image;
     uint64_t sequence;
     int record_paint;
+    int worker_threads;
 };
 
+/* worker_threads: Actual commit participants, including the calling thread. */
 struct retained_update_stats {
     size_t painted_pixels;
     int refinement_needed;
     unsigned char const *paint;
     size_t paint_size;
+    int worker_threads;
 };
 
 enum retained_invalidation {
@@ -461,6 +465,12 @@ SIXELAPI void sixel_stream_receipt_unref(in stream_receipt *receipt);
  *
  * begin_update validates geometry, output interpretation and baseline identity,
  * reserves all commit storage, retains the image and stamps its identity.
+ * worker_threads is a nonnegative per-update ceiling including the caller;
+ * 0 and 1 use the calling thread only. The component may use fewer threads
+ * for small rectangles, unavailable thread support or worker-admission
+ * failure. Worker resources are prepared here, before output, and may be
+ * reused by later updates. Each commit uses the current execution policy;
+ * idle workers do not retain a previous frame's accounting context.
  * It neither expands indexes nor changes committed RGB. Only one update can
  * be active per plane. A COMPLETE imported image must already carry the same
  * identity derived from this baseline and requested sequence; no published
@@ -468,8 +478,11 @@ SIXELAPI void sixel_stream_receipt_unref(in stream_receipt *receipt);
  *
  * commit requires a COMPLETE image, its matching receipt, drained consumers
  * and no read leases. It checks all preconditions before writing, then performs
- * one allocation-free traversal: skip keeps, expand painted indexes directly
- * into retained RGB, and collect statistics. Partial-band padding is excluded.
+ * one allocation-free traversal, optionally partitioned into disjoint rows:
+ * skip keeps, expand painted indexes directly into retained RGB, and collect
+ * statistics. Partial-band padding is excluded. All participants finish
+ * before publishing sequence or stats; stats.worker_threads reports their
+ * actual count including the caller. No worker creation occurs in commit.
  * Success advances sequence even for an all-keep image. Repeated/stale commits
  * fail without mutation. It never waits for physical terminal writes.
  *

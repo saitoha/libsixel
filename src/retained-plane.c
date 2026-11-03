@@ -7,6 +7,8 @@
 #include <string.h>
 #include "encode-result.h"
 #include "threading.h"
+#include "retained-plane-rows.h"
+#include "retained-plane-workers.h"
 
 typedef struct sixel_retained_plane_storage {
     sixel_retained_plane_interface_t iface;
@@ -22,6 +24,7 @@ typedef struct sixel_retained_plane_storage {
     uint64_t sequence;
     unsigned int readers;
     sixel_retained_update_t *update;
+    sixel_retained_workers_t *workers;
 } sixel_retained_plane_storage_t;
 
 struct sixel_retained_read {
@@ -36,6 +39,8 @@ struct sixel_retained_update {
     sixel_indexed_frame_t *image;
     sixel_encode_identity_t identity;
     unsigned char *paint;
+    sixel_retained_rows_t rows;
+    int worker_threads;
 };
 
 /* A ticket gate is used only when a plane is constructed. The 64-bit stream
@@ -90,6 +95,7 @@ sixel_retained_plane_unref(sixel_retained_plane_interface_t *self)
         return;
     }
     allocator = plane->allocator;
+    sixel_retained_workers_free(plane->workers);
     sixel_mutex_destroy(&plane->gate);
     sixel_allocator_free(allocator, plane->rgb);
     sixel_allocator_free(allocator, plane->valid);
@@ -230,6 +236,45 @@ sixel_retained_read_get_view(sixel_retained_read_t const *read,
     return SIXEL_OK;
 }
 
+/* Bound work by both the caller's current budget and rectangle geometry.
+ * The row grain amortizes wakeup/reduction cost without making a fixed worker
+ * count the policy. A changed budget never creates workers in commit. */
+static int
+sixel_retained_plane_prepare_workers(sixel_retained_plane_storage_t *plane,
+    sixel_indexed_frame_t const *image, int limit)
+{
+#if SIXEL_ENABLE_THREADS
+    sixel_retained_workers_t *replacement;
+    size_t chunks;
+    int capacity;
+    int hardware;
+
+    if (limit < 2) return 1;
+    chunks = 1 + (image->pixels - 1) / 524288;
+    if (chunks < (size_t)limit) limit = (int)chunks;
+    if (limit > image->description.height) limit = image->description.height;
+    hardware = sixel_get_hw_threads();
+    if (hardware > 0 && limit > hardware) limit = hardware;
+    if (limit < 2) return 1;
+    capacity = sixel_retained_workers_capacity(plane->workers);
+    if (capacity < limit) {
+        replacement = sixel_retained_workers_new(plane->allocator, limit);
+        if (replacement == NULL) return 1;
+        sixel_retained_workers_free(plane->workers);
+        plane->workers = replacement;
+        capacity = limit;
+    }
+    /* Parallelism is optional. Failed admission leaves the existing executor
+     * and committed image intact, and cannot turn commit into a retry. */
+    return capacity < limit ? capacity : limit;
+#else
+    (void)plane;
+    (void)image;
+    (void)limit;
+    return 1;
+#endif
+}
+
 static SIXELSTATUS
 sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
     sixel_retained_update_request_t const *request,
@@ -246,7 +291,7 @@ sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
 
     if (self == NULL || request == NULL || result == NULL ||
             *result != NULL || request->baseline == NULL ||
-            request->image == NULL) {
+            request->image == NULL || request->worker_threads < 0) {
         return SIXEL_BAD_ARGUMENT;
     }
     plane = (sixel_retained_plane_storage_t *)self;
@@ -296,6 +341,20 @@ sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
             goto end;
         }
     }
+    update->rows.width = description->width;
+    update->rows.stride = (size_t)plane->description.width;
+    update->rows.indexes = image->indexes;
+    update->rows.skip = image->skip;
+    update->rows.paint = update->paint;
+    update->rows.rgb = plane->rgb + 3 *
+        ((size_t)description->origin_y * update->rows.stride +
+         (size_t)description->origin_x);
+    update->rows.valid = plane->valid +
+        (size_t)description->origin_y * update->rows.stride +
+        (size_t)description->origin_x;
+    sixel_retained_rows_prepare(&update->rows, &palette);
+    update->worker_threads = sixel_retained_plane_prepare_workers(plane,
+        image, request->worker_threads);
     update->ref = 1;
     update->plane = plane;
     update->image = image;
@@ -368,14 +427,7 @@ sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
 {
     sixel_retained_plane_storage_t *plane;
     sixel_indexed_frame_t *image;
-    sixel_indexed_frame_description_t const *description;
-    sixel_wire_palette_view_t palette;
     sixel_retained_update_stats_t result;
-    size_t index;
-    size_t target;
-    int x;
-    int y;
-    unsigned int skip;
     SIXELSTATUS status;
 
     if (self == NULL || update == NULL || receipt == NULL || stats == NULL ||
@@ -398,34 +450,14 @@ sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
                 &image->identity)) {
         goto end;
     }
-    description = &image->description;
-    sixel_wire_palette_get_view(description->palette, &palette);
     memset(&result, 0, sizeof(result));
     result.paint = update->paint;
     result.paint_size = update->paint != NULL ? image->pixels : 0;
     /* Validation and storage reservation precede this loop. Nothing below
      * can fail or allocate: expand only painted indexes into their final
      * destination, preserving holes and unrelated pixels outside the frame. */
-    index = 0;
-    for (y = 0; y < description->height; ++y) {
-        target = (size_t)(description->origin_y + y) *
-            (size_t)plane->description.width + (size_t)description->origin_x;
-        for (x = 0; x < description->width; ++x, ++index, ++target) {
-            skip = image->skip != NULL ? image->skip[index] : 0;
-            if (skip != 0) {
-                result.refinement_needed |=
-                    skip == SIXEL_INDEXED_KEEP_APPROXIMATE;
-                continue;
-            }
-            memcpy(plane->rgb + target * 3,
-                palette.colors[image->indexes[index]].emitted_rgb, 3);
-            plane->valid[target] = 1;
-            if (update->paint != NULL) {
-                update->paint[index] = 1;
-            }
-            ++result.painted_pixels;
-        }
-    }
+    sixel_retained_workers_run(plane->workers, &update->rows,
+        image->description.height, update->worker_threads, &result);
     plane->sequence = update->identity.sequence;
     plane->update = NULL;
     image->update = NULL;

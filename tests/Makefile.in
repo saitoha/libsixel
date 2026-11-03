@@ -2365,6 +2365,52 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/indexed/0042_core_early_finish.c \
 	encoder/indexed/0043_core_normal_factory.c \
 	encoder/indexed/0044_core_ormode_factory.c \
+	encoder/indexed/0126_retained_workers_balanced.c \
+	encoder/indexed/0127_retained_threads_disabled.c \
+	_support/codec/retained_workers_common.c \
+	_support/codec/retained_component_common.c \
+	encoder/indexed/0105_retained_workers_two_rgb.c \
+	encoder/indexed/0106_retained_workers_four_rgb.c \
+	encoder/indexed/0107_retained_workers_valid.c \
+	encoder/indexed/0108_retained_workers_paint.c \
+	encoder/indexed/0109_retained_workers_count.c \
+	encoder/indexed/0110_retained_workers_refinement.c \
+	encoder/indexed/0111_retained_workers_current_policy.c \
+	encoder/indexed/0112_retained_workers_no_allocation.c \
+	encoder/indexed/0113_retained_workers_reuse_smaller.c \
+	encoder/indexed/0114_retained_default_serial.c \
+	encoder/indexed/0115_retained_explicit_serial.c \
+	encoder/indexed/0116_retained_small_serial.c \
+	encoder/indexed/0117_retained_budget_two.c \
+	encoder/indexed/0118_retained_budget_four.c \
+	encoder/indexed/0119_retained_budget_shrink.c \
+	encoder/indexed/0120_retained_budget_grow.c \
+	encoder/indexed/0121_retained_admission_fallback.c \
+	encoder/indexed/0122_retained_commit_no_allocation.c \
+	encoder/indexed/0123_retained_negative_budget.c \
+	encoder/indexed/0124_retained_abort_prepared.c \
+	encoder/indexed/0125_retained_wrong_receipt_parallel.c \
+	_support/codec/retained_rows_common.c \
+	encoder/indexed/0085_retained_neon_palette_256_rgb.c \
+	encoder/indexed/0086_retained_neon_mixed_rgb.c \
+	encoder/indexed/0087_retained_neon_mixed_valid.c \
+	encoder/indexed/0088_retained_neon_mixed_paint.c \
+	encoder/indexed/0089_retained_neon_mixed_count.c \
+	encoder/indexed/0090_retained_neon_mixed_refinement.c \
+	encoder/indexed/0091_retained_neon_exact_keep_refinement.c \
+	encoder/indexed/0092_retained_neon_all_approximate_refinement.c \
+	encoder/indexed/0093_retained_neon_all_keep_rgb.c \
+	encoder/indexed/0094_retained_neon_without_skip_rgb.c \
+	encoder/indexed/0095_retained_neon_short_palette_sentinel.c \
+	encoder/indexed/0096_retained_neon_tail_rgb.c \
+	encoder/indexed/0097_retained_subvector_scalar_backend.c \
+	encoder/indexed/0098_retained_neon_fullpaint_rgb.c \
+	encoder/indexed/0099_retained_neon_partial_rows_rgb.c \
+	encoder/indexed/0100_retained_scalar_mixed_rgb.c \
+	encoder/indexed/0101_retained_scalar_mixed_count.c \
+	encoder/indexed/0102_retained_scalar_mixed_refinement.c \
+	encoder/indexed/0103_retained_neon_all_keep_valid.c \
+	encoder/indexed/0104_retained_neon_all_keep_paint.c \
 	_support/codec/indexed_component_common.c \
 	encoder/indexed/0001_retained_origin.c \
 	encoder/indexed/0002_retained_approximate.c \
@@ -6821,6 +6867,52 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0042_core_early_finish.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0043_core_normal_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0044_core_ormode_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0126_retained_workers_balanced.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0127_retained_threads_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-retained_workers_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-retained_component_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0105_retained_workers_two_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0106_retained_workers_four_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0107_retained_workers_valid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0108_retained_workers_paint.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0109_retained_workers_count.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0110_retained_workers_refinement.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0111_retained_workers_current_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0112_retained_workers_no_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0114_retained_default_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0115_retained_explicit_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0116_retained_small_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0117_retained_budget_two.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0118_retained_budget_four.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0119_retained_budget_shrink.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0120_retained_budget_grow.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0121_retained_admission_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0122_retained_commit_no_allocation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0123_retained_negative_budget.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0124_retained_abort_prepared.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-retained_rows_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0087_retained_neon_mixed_valid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0088_retained_neon_mixed_paint.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0089_retained_neon_mixed_count.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0096_retained_neon_tail_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0101_retained_scalar_mixed_count.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-indexed_component_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0001_retained_origin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0002_retained_approximate.$(OBJEXT) \
@@ -9161,6 +9253,9 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/codec/$(DEPDIR)/test_runner-indexed_component_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-indexed_equivalence_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-png_delta_common.Po \
+	_support/codec/$(DEPDIR)/test_runner-retained_component_common.Po \
+	_support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po \
+	_support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po \
 	_support/codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po \
 	_support/codec/drcs/$(DEPDIR)/test_runner-highcolor_drcs_common.Po \
 	_support/codec/hls/$(DEPDIR)/test_runner-hls_native_test_common.Po \
@@ -10746,6 +10841,49 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po \
@@ -14218,6 +14356,52 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_COMPONENT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_ROWS_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_WORKERS_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_RETAINED_NEON_PALETTE_256_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_RETAINED_NEON_MIXED_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0087_RETAINED_NEON_MIXED_VALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0088_RETAINED_NEON_MIXED_PAINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0089_RETAINED_NEON_MIXED_COUNT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0090_RETAINED_NEON_MIXED_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0091_RETAINED_NEON_EXACT_KEEP_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0092_RETAINED_NEON_ALL_APPROXIMATE_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0093_RETAINED_NEON_ALL_KEEP_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0094_RETAINED_NEON_WITHOUT_SKIP_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_RETAINED_NEON_SHORT_PALETTE_SENTINEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_RETAINED_NEON_TAIL_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_RETAINED_SUBVECTOR_SCALAR_BACKEND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_RETAINED_NEON_FULLPAINT_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_RETAINED_NEON_PARTIAL_ROWS_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_RETAINED_SCALAR_MIXED_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0101_RETAINED_SCALAR_MIXED_COUNT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_RETAINED_SCALAR_MIXED_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0103_RETAINED_NEON_ALL_KEEP_VALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0104_RETAINED_NEON_ALL_KEEP_PAINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0105_RETAINED_WORKERS_TWO_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_RETAINED_WORKERS_FOUR_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_RETAINED_WORKERS_VALID \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0108_RETAINED_WORKERS_PAINT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0109_RETAINED_WORKERS_COUNT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0110_RETAINED_WORKERS_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0111_RETAINED_WORKERS_CURRENT_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0112_RETAINED_WORKERS_NO_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0113_RETAINED_WORKERS_REUSE_SMALLER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0114_RETAINED_DEFAULT_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0115_RETAINED_EXPLICIT_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0116_RETAINED_SMALL_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0117_RETAINED_BUDGET_TWO \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0118_RETAINED_BUDGET_FOUR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0119_RETAINED_BUDGET_SHRINK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0120_RETAINED_BUDGET_GROW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0121_RETAINED_ADMISSION_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0122_RETAINED_COMMIT_NO_ALLOCATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0123_RETAINED_NEGATIVE_BUDGET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0124_RETAINED_ABORT_PREPARED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0125_RETAINED_WRONG_RECEIPT_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0126_RETAINED_WORKERS_BALANCED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0127_RETAINED_THREADS_DISABLED \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CERTLUT_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0038_GPU_PALETTE_SNAPSHOT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0039_GPU_CACHE_REUSE \
@@ -20949,6 +21133,52 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0042_core_early_finish.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0043_core_normal_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0044_core_ormode_factory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0126_retained_workers_balanced.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0127_retained_threads_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/retained_workers_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/retained_component_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0105_retained_workers_two_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0106_retained_workers_four_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0107_retained_workers_valid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0108_retained_workers_paint.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0109_retained_workers_count.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0110_retained_workers_refinement.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0111_retained_workers_current_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0112_retained_workers_no_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0113_retained_workers_reuse_smaller.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0114_retained_default_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0115_retained_explicit_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0116_retained_small_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0117_retained_budget_two.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0118_retained_budget_four.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0119_retained_budget_shrink.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0120_retained_budget_grow.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0121_retained_admission_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0122_retained_commit_no_allocation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0123_retained_negative_budget.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0124_retained_abort_prepared.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0125_retained_wrong_receipt_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/retained_rows_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0085_retained_neon_palette_256_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0086_retained_neon_mixed_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0087_retained_neon_mixed_valid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0088_retained_neon_mixed_paint.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0089_retained_neon_mixed_count.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0090_retained_neon_mixed_refinement.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0091_retained_neon_exact_keep_refinement.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0092_retained_neon_all_approximate_refinement.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0093_retained_neon_all_keep_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0094_retained_neon_without_skip_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0095_retained_neon_short_palette_sentinel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0096_retained_neon_tail_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0097_retained_subvector_scalar_backend.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0098_retained_neon_fullpaint_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0099_retained_neon_partial_rows_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0100_retained_scalar_mixed_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0101_retained_scalar_mixed_count.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0102_retained_scalar_mixed_refinement.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0103_retained_neon_all_keep_valid.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0104_retained_neon_all_keep_paint.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/indexed_component_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0001_retained_origin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0002_retained_approximate.c \
@@ -23572,7 +23802,10 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/awk/cli-discard-output.awk \
 	_static/sh/staticcheck-emscripten-coverage.sh \
 	_static/sh/staticcheck-c-test-stdio.sh \
-	_static/awk/c-test-stdio.awk
+	_static/awk/c-test-stdio.awk \
+	_support/codec/retained_rows_common.h \
+	_support/codec/retained_workers_common.h \
+	_support/codec/retained_component_common.h
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -30718,6 +30951,144 @@ encoder/indexed/test_runner-0043_core_normal_factory.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
 encoder/indexed/test_runner-0044_core_ormode_factory.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0126_retained_workers_balanced.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0127_retained_threads_disabled.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+_support/codec/test_runner-retained_workers_common.$(OBJEXT):  \
+	_support/codec/$(am__dirstamp) \
+	_support/codec/$(DEPDIR)/$(am__dirstamp)
+_support/codec/test_runner-retained_component_common.$(OBJEXT):  \
+	_support/codec/$(am__dirstamp) \
+	_support/codec/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0105_retained_workers_two_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0106_retained_workers_four_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0107_retained_workers_valid.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0108_retained_workers_paint.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0109_retained_workers_count.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0110_retained_workers_refinement.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0111_retained_workers_current_policy.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0112_retained_workers_no_allocation.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0114_retained_default_serial.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0115_retained_explicit_serial.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0116_retained_small_serial.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0117_retained_budget_two.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0118_retained_budget_four.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0119_retained_budget_shrink.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0120_retained_budget_grow.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0121_retained_admission_fallback.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0122_retained_commit_no_allocation.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0123_retained_negative_budget.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0124_retained_abort_prepared.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+_support/codec/test_runner-retained_rows_common.$(OBJEXT):  \
+	_support/codec/$(am__dirstamp) \
+	_support/codec/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0087_retained_neon_mixed_valid.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0088_retained_neon_mixed_paint.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0089_retained_neon_mixed_count.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0096_retained_neon_tail_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0101_retained_scalar_mixed_count.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
 _support/codec/test_runner-indexed_component_common.$(OBJEXT):  \
@@ -38195,6 +38566,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-indexed_component_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-indexed_equivalence_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-png_delta_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_component_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/drcs/$(DEPDIR)/test_runner-highcolor_drcs_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/hls/$(DEPDIR)/test_runner-hls_native_test_common.Po@am__quote@ # am--include-marker
@@ -39780,6 +40154,49 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po@am__quote@ # am--include-marker
@@ -73253,6 +73670,650 @@ encoder/indexed/test_runner-0044_core_ormode_factory.obj: encoder/indexed/0044_c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0044_core_ormode_factory.c' object='encoder/indexed/test_runner-0044_core_ormode_factory.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0044_core_ormode_factory.obj `if test -f 'encoder/indexed/0044_core_ormode_factory.c'; then $(CYGPATH_W) 'encoder/indexed/0044_core_ormode_factory.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0044_core_ormode_factory.c'; fi`
+
+encoder/indexed/test_runner-0126_retained_workers_balanced.o: encoder/indexed/0126_retained_workers_balanced.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0126_retained_workers_balanced.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Tpo -c -o encoder/indexed/test_runner-0126_retained_workers_balanced.o `test -f 'encoder/indexed/0126_retained_workers_balanced.c' || echo '$(srcdir)/'`encoder/indexed/0126_retained_workers_balanced.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Tpo encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0126_retained_workers_balanced.c' object='encoder/indexed/test_runner-0126_retained_workers_balanced.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0126_retained_workers_balanced.o `test -f 'encoder/indexed/0126_retained_workers_balanced.c' || echo '$(srcdir)/'`encoder/indexed/0126_retained_workers_balanced.c
+
+encoder/indexed/test_runner-0126_retained_workers_balanced.obj: encoder/indexed/0126_retained_workers_balanced.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0126_retained_workers_balanced.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Tpo -c -o encoder/indexed/test_runner-0126_retained_workers_balanced.obj `if test -f 'encoder/indexed/0126_retained_workers_balanced.c'; then $(CYGPATH_W) 'encoder/indexed/0126_retained_workers_balanced.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0126_retained_workers_balanced.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Tpo encoder/indexed/$(DEPDIR)/test_runner-0126_retained_workers_balanced.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0126_retained_workers_balanced.c' object='encoder/indexed/test_runner-0126_retained_workers_balanced.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0126_retained_workers_balanced.obj `if test -f 'encoder/indexed/0126_retained_workers_balanced.c'; then $(CYGPATH_W) 'encoder/indexed/0126_retained_workers_balanced.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0126_retained_workers_balanced.c'; fi`
+
+encoder/indexed/test_runner-0127_retained_threads_disabled.o: encoder/indexed/0127_retained_threads_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0127_retained_threads_disabled.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Tpo -c -o encoder/indexed/test_runner-0127_retained_threads_disabled.o `test -f 'encoder/indexed/0127_retained_threads_disabled.c' || echo '$(srcdir)/'`encoder/indexed/0127_retained_threads_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Tpo encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0127_retained_threads_disabled.c' object='encoder/indexed/test_runner-0127_retained_threads_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0127_retained_threads_disabled.o `test -f 'encoder/indexed/0127_retained_threads_disabled.c' || echo '$(srcdir)/'`encoder/indexed/0127_retained_threads_disabled.c
+
+encoder/indexed/test_runner-0127_retained_threads_disabled.obj: encoder/indexed/0127_retained_threads_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0127_retained_threads_disabled.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Tpo -c -o encoder/indexed/test_runner-0127_retained_threads_disabled.obj `if test -f 'encoder/indexed/0127_retained_threads_disabled.c'; then $(CYGPATH_W) 'encoder/indexed/0127_retained_threads_disabled.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0127_retained_threads_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Tpo encoder/indexed/$(DEPDIR)/test_runner-0127_retained_threads_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0127_retained_threads_disabled.c' object='encoder/indexed/test_runner-0127_retained_threads_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0127_retained_threads_disabled.obj `if test -f 'encoder/indexed/0127_retained_threads_disabled.c'; then $(CYGPATH_W) 'encoder/indexed/0127_retained_threads_disabled.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0127_retained_threads_disabled.c'; fi`
+
+_support/codec/test_runner-retained_workers_common.o: _support/codec/retained_workers_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_workers_common.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_workers_common.Tpo -c -o _support/codec/test_runner-retained_workers_common.o `test -f '_support/codec/retained_workers_common.c' || echo '$(srcdir)/'`_support/codec/retained_workers_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_workers_common.Tpo _support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_workers_common.c' object='_support/codec/test_runner-retained_workers_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_workers_common.o `test -f '_support/codec/retained_workers_common.c' || echo '$(srcdir)/'`_support/codec/retained_workers_common.c
+
+_support/codec/test_runner-retained_workers_common.obj: _support/codec/retained_workers_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_workers_common.obj -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_workers_common.Tpo -c -o _support/codec/test_runner-retained_workers_common.obj `if test -f '_support/codec/retained_workers_common.c'; then $(CYGPATH_W) '_support/codec/retained_workers_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_workers_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_workers_common.Tpo _support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_workers_common.c' object='_support/codec/test_runner-retained_workers_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_workers_common.obj `if test -f '_support/codec/retained_workers_common.c'; then $(CYGPATH_W) '_support/codec/retained_workers_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_workers_common.c'; fi`
+
+_support/codec/test_runner-retained_component_common.o: _support/codec/retained_component_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_component_common.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_component_common.Tpo -c -o _support/codec/test_runner-retained_component_common.o `test -f '_support/codec/retained_component_common.c' || echo '$(srcdir)/'`_support/codec/retained_component_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_component_common.Tpo _support/codec/$(DEPDIR)/test_runner-retained_component_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_component_common.c' object='_support/codec/test_runner-retained_component_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_component_common.o `test -f '_support/codec/retained_component_common.c' || echo '$(srcdir)/'`_support/codec/retained_component_common.c
+
+_support/codec/test_runner-retained_component_common.obj: _support/codec/retained_component_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_component_common.obj -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_component_common.Tpo -c -o _support/codec/test_runner-retained_component_common.obj `if test -f '_support/codec/retained_component_common.c'; then $(CYGPATH_W) '_support/codec/retained_component_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_component_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_component_common.Tpo _support/codec/$(DEPDIR)/test_runner-retained_component_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_component_common.c' object='_support/codec/test_runner-retained_component_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_component_common.obj `if test -f '_support/codec/retained_component_common.c'; then $(CYGPATH_W) '_support/codec/retained_component_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_component_common.c'; fi`
+
+encoder/indexed/test_runner-0105_retained_workers_two_rgb.o: encoder/indexed/0105_retained_workers_two_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0105_retained_workers_two_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Tpo -c -o encoder/indexed/test_runner-0105_retained_workers_two_rgb.o `test -f 'encoder/indexed/0105_retained_workers_two_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0105_retained_workers_two_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0105_retained_workers_two_rgb.c' object='encoder/indexed/test_runner-0105_retained_workers_two_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0105_retained_workers_two_rgb.o `test -f 'encoder/indexed/0105_retained_workers_two_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0105_retained_workers_two_rgb.c
+
+encoder/indexed/test_runner-0105_retained_workers_two_rgb.obj: encoder/indexed/0105_retained_workers_two_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0105_retained_workers_two_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Tpo -c -o encoder/indexed/test_runner-0105_retained_workers_two_rgb.obj `if test -f 'encoder/indexed/0105_retained_workers_two_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0105_retained_workers_two_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0105_retained_workers_two_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0105_retained_workers_two_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0105_retained_workers_two_rgb.c' object='encoder/indexed/test_runner-0105_retained_workers_two_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0105_retained_workers_two_rgb.obj `if test -f 'encoder/indexed/0105_retained_workers_two_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0105_retained_workers_two_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0105_retained_workers_two_rgb.c'; fi`
+
+encoder/indexed/test_runner-0106_retained_workers_four_rgb.o: encoder/indexed/0106_retained_workers_four_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0106_retained_workers_four_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Tpo -c -o encoder/indexed/test_runner-0106_retained_workers_four_rgb.o `test -f 'encoder/indexed/0106_retained_workers_four_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0106_retained_workers_four_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0106_retained_workers_four_rgb.c' object='encoder/indexed/test_runner-0106_retained_workers_four_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0106_retained_workers_four_rgb.o `test -f 'encoder/indexed/0106_retained_workers_four_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0106_retained_workers_four_rgb.c
+
+encoder/indexed/test_runner-0106_retained_workers_four_rgb.obj: encoder/indexed/0106_retained_workers_four_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0106_retained_workers_four_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Tpo -c -o encoder/indexed/test_runner-0106_retained_workers_four_rgb.obj `if test -f 'encoder/indexed/0106_retained_workers_four_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0106_retained_workers_four_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0106_retained_workers_four_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0106_retained_workers_four_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0106_retained_workers_four_rgb.c' object='encoder/indexed/test_runner-0106_retained_workers_four_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0106_retained_workers_four_rgb.obj `if test -f 'encoder/indexed/0106_retained_workers_four_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0106_retained_workers_four_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0106_retained_workers_four_rgb.c'; fi`
+
+encoder/indexed/test_runner-0107_retained_workers_valid.o: encoder/indexed/0107_retained_workers_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0107_retained_workers_valid.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Tpo -c -o encoder/indexed/test_runner-0107_retained_workers_valid.o `test -f 'encoder/indexed/0107_retained_workers_valid.c' || echo '$(srcdir)/'`encoder/indexed/0107_retained_workers_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Tpo encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0107_retained_workers_valid.c' object='encoder/indexed/test_runner-0107_retained_workers_valid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0107_retained_workers_valid.o `test -f 'encoder/indexed/0107_retained_workers_valid.c' || echo '$(srcdir)/'`encoder/indexed/0107_retained_workers_valid.c
+
+encoder/indexed/test_runner-0107_retained_workers_valid.obj: encoder/indexed/0107_retained_workers_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0107_retained_workers_valid.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Tpo -c -o encoder/indexed/test_runner-0107_retained_workers_valid.obj `if test -f 'encoder/indexed/0107_retained_workers_valid.c'; then $(CYGPATH_W) 'encoder/indexed/0107_retained_workers_valid.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0107_retained_workers_valid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Tpo encoder/indexed/$(DEPDIR)/test_runner-0107_retained_workers_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0107_retained_workers_valid.c' object='encoder/indexed/test_runner-0107_retained_workers_valid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0107_retained_workers_valid.obj `if test -f 'encoder/indexed/0107_retained_workers_valid.c'; then $(CYGPATH_W) 'encoder/indexed/0107_retained_workers_valid.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0107_retained_workers_valid.c'; fi`
+
+encoder/indexed/test_runner-0108_retained_workers_paint.o: encoder/indexed/0108_retained_workers_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0108_retained_workers_paint.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Tpo -c -o encoder/indexed/test_runner-0108_retained_workers_paint.o `test -f 'encoder/indexed/0108_retained_workers_paint.c' || echo '$(srcdir)/'`encoder/indexed/0108_retained_workers_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Tpo encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0108_retained_workers_paint.c' object='encoder/indexed/test_runner-0108_retained_workers_paint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0108_retained_workers_paint.o `test -f 'encoder/indexed/0108_retained_workers_paint.c' || echo '$(srcdir)/'`encoder/indexed/0108_retained_workers_paint.c
+
+encoder/indexed/test_runner-0108_retained_workers_paint.obj: encoder/indexed/0108_retained_workers_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0108_retained_workers_paint.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Tpo -c -o encoder/indexed/test_runner-0108_retained_workers_paint.obj `if test -f 'encoder/indexed/0108_retained_workers_paint.c'; then $(CYGPATH_W) 'encoder/indexed/0108_retained_workers_paint.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0108_retained_workers_paint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Tpo encoder/indexed/$(DEPDIR)/test_runner-0108_retained_workers_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0108_retained_workers_paint.c' object='encoder/indexed/test_runner-0108_retained_workers_paint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0108_retained_workers_paint.obj `if test -f 'encoder/indexed/0108_retained_workers_paint.c'; then $(CYGPATH_W) 'encoder/indexed/0108_retained_workers_paint.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0108_retained_workers_paint.c'; fi`
+
+encoder/indexed/test_runner-0109_retained_workers_count.o: encoder/indexed/0109_retained_workers_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0109_retained_workers_count.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Tpo -c -o encoder/indexed/test_runner-0109_retained_workers_count.o `test -f 'encoder/indexed/0109_retained_workers_count.c' || echo '$(srcdir)/'`encoder/indexed/0109_retained_workers_count.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Tpo encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0109_retained_workers_count.c' object='encoder/indexed/test_runner-0109_retained_workers_count.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0109_retained_workers_count.o `test -f 'encoder/indexed/0109_retained_workers_count.c' || echo '$(srcdir)/'`encoder/indexed/0109_retained_workers_count.c
+
+encoder/indexed/test_runner-0109_retained_workers_count.obj: encoder/indexed/0109_retained_workers_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0109_retained_workers_count.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Tpo -c -o encoder/indexed/test_runner-0109_retained_workers_count.obj `if test -f 'encoder/indexed/0109_retained_workers_count.c'; then $(CYGPATH_W) 'encoder/indexed/0109_retained_workers_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0109_retained_workers_count.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Tpo encoder/indexed/$(DEPDIR)/test_runner-0109_retained_workers_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0109_retained_workers_count.c' object='encoder/indexed/test_runner-0109_retained_workers_count.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0109_retained_workers_count.obj `if test -f 'encoder/indexed/0109_retained_workers_count.c'; then $(CYGPATH_W) 'encoder/indexed/0109_retained_workers_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0109_retained_workers_count.c'; fi`
+
+encoder/indexed/test_runner-0110_retained_workers_refinement.o: encoder/indexed/0110_retained_workers_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0110_retained_workers_refinement.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Tpo -c -o encoder/indexed/test_runner-0110_retained_workers_refinement.o `test -f 'encoder/indexed/0110_retained_workers_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0110_retained_workers_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0110_retained_workers_refinement.c' object='encoder/indexed/test_runner-0110_retained_workers_refinement.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0110_retained_workers_refinement.o `test -f 'encoder/indexed/0110_retained_workers_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0110_retained_workers_refinement.c
+
+encoder/indexed/test_runner-0110_retained_workers_refinement.obj: encoder/indexed/0110_retained_workers_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0110_retained_workers_refinement.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Tpo -c -o encoder/indexed/test_runner-0110_retained_workers_refinement.obj `if test -f 'encoder/indexed/0110_retained_workers_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0110_retained_workers_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0110_retained_workers_refinement.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0110_retained_workers_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0110_retained_workers_refinement.c' object='encoder/indexed/test_runner-0110_retained_workers_refinement.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0110_retained_workers_refinement.obj `if test -f 'encoder/indexed/0110_retained_workers_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0110_retained_workers_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0110_retained_workers_refinement.c'; fi`
+
+encoder/indexed/test_runner-0111_retained_workers_current_policy.o: encoder/indexed/0111_retained_workers_current_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0111_retained_workers_current_policy.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Tpo -c -o encoder/indexed/test_runner-0111_retained_workers_current_policy.o `test -f 'encoder/indexed/0111_retained_workers_current_policy.c' || echo '$(srcdir)/'`encoder/indexed/0111_retained_workers_current_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Tpo encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0111_retained_workers_current_policy.c' object='encoder/indexed/test_runner-0111_retained_workers_current_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0111_retained_workers_current_policy.o `test -f 'encoder/indexed/0111_retained_workers_current_policy.c' || echo '$(srcdir)/'`encoder/indexed/0111_retained_workers_current_policy.c
+
+encoder/indexed/test_runner-0111_retained_workers_current_policy.obj: encoder/indexed/0111_retained_workers_current_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0111_retained_workers_current_policy.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Tpo -c -o encoder/indexed/test_runner-0111_retained_workers_current_policy.obj `if test -f 'encoder/indexed/0111_retained_workers_current_policy.c'; then $(CYGPATH_W) 'encoder/indexed/0111_retained_workers_current_policy.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0111_retained_workers_current_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Tpo encoder/indexed/$(DEPDIR)/test_runner-0111_retained_workers_current_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0111_retained_workers_current_policy.c' object='encoder/indexed/test_runner-0111_retained_workers_current_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0111_retained_workers_current_policy.obj `if test -f 'encoder/indexed/0111_retained_workers_current_policy.c'; then $(CYGPATH_W) 'encoder/indexed/0111_retained_workers_current_policy.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0111_retained_workers_current_policy.c'; fi`
+
+encoder/indexed/test_runner-0112_retained_workers_no_allocation.o: encoder/indexed/0112_retained_workers_no_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0112_retained_workers_no_allocation.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Tpo -c -o encoder/indexed/test_runner-0112_retained_workers_no_allocation.o `test -f 'encoder/indexed/0112_retained_workers_no_allocation.c' || echo '$(srcdir)/'`encoder/indexed/0112_retained_workers_no_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0112_retained_workers_no_allocation.c' object='encoder/indexed/test_runner-0112_retained_workers_no_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0112_retained_workers_no_allocation.o `test -f 'encoder/indexed/0112_retained_workers_no_allocation.c' || echo '$(srcdir)/'`encoder/indexed/0112_retained_workers_no_allocation.c
+
+encoder/indexed/test_runner-0112_retained_workers_no_allocation.obj: encoder/indexed/0112_retained_workers_no_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0112_retained_workers_no_allocation.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Tpo -c -o encoder/indexed/test_runner-0112_retained_workers_no_allocation.obj `if test -f 'encoder/indexed/0112_retained_workers_no_allocation.c'; then $(CYGPATH_W) 'encoder/indexed/0112_retained_workers_no_allocation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0112_retained_workers_no_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0112_retained_workers_no_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0112_retained_workers_no_allocation.c' object='encoder/indexed/test_runner-0112_retained_workers_no_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0112_retained_workers_no_allocation.obj `if test -f 'encoder/indexed/0112_retained_workers_no_allocation.c'; then $(CYGPATH_W) 'encoder/indexed/0112_retained_workers_no_allocation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0112_retained_workers_no_allocation.c'; fi`
+
+encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.o: encoder/indexed/0113_retained_workers_reuse_smaller.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Tpo -c -o encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.o `test -f 'encoder/indexed/0113_retained_workers_reuse_smaller.c' || echo '$(srcdir)/'`encoder/indexed/0113_retained_workers_reuse_smaller.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Tpo encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0113_retained_workers_reuse_smaller.c' object='encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.o `test -f 'encoder/indexed/0113_retained_workers_reuse_smaller.c' || echo '$(srcdir)/'`encoder/indexed/0113_retained_workers_reuse_smaller.c
+
+encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.obj: encoder/indexed/0113_retained_workers_reuse_smaller.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Tpo -c -o encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.obj `if test -f 'encoder/indexed/0113_retained_workers_reuse_smaller.c'; then $(CYGPATH_W) 'encoder/indexed/0113_retained_workers_reuse_smaller.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0113_retained_workers_reuse_smaller.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Tpo encoder/indexed/$(DEPDIR)/test_runner-0113_retained_workers_reuse_smaller.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0113_retained_workers_reuse_smaller.c' object='encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0113_retained_workers_reuse_smaller.obj `if test -f 'encoder/indexed/0113_retained_workers_reuse_smaller.c'; then $(CYGPATH_W) 'encoder/indexed/0113_retained_workers_reuse_smaller.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0113_retained_workers_reuse_smaller.c'; fi`
+
+encoder/indexed/test_runner-0114_retained_default_serial.o: encoder/indexed/0114_retained_default_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0114_retained_default_serial.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Tpo -c -o encoder/indexed/test_runner-0114_retained_default_serial.o `test -f 'encoder/indexed/0114_retained_default_serial.c' || echo '$(srcdir)/'`encoder/indexed/0114_retained_default_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Tpo encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0114_retained_default_serial.c' object='encoder/indexed/test_runner-0114_retained_default_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0114_retained_default_serial.o `test -f 'encoder/indexed/0114_retained_default_serial.c' || echo '$(srcdir)/'`encoder/indexed/0114_retained_default_serial.c
+
+encoder/indexed/test_runner-0114_retained_default_serial.obj: encoder/indexed/0114_retained_default_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0114_retained_default_serial.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Tpo -c -o encoder/indexed/test_runner-0114_retained_default_serial.obj `if test -f 'encoder/indexed/0114_retained_default_serial.c'; then $(CYGPATH_W) 'encoder/indexed/0114_retained_default_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0114_retained_default_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Tpo encoder/indexed/$(DEPDIR)/test_runner-0114_retained_default_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0114_retained_default_serial.c' object='encoder/indexed/test_runner-0114_retained_default_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0114_retained_default_serial.obj `if test -f 'encoder/indexed/0114_retained_default_serial.c'; then $(CYGPATH_W) 'encoder/indexed/0114_retained_default_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0114_retained_default_serial.c'; fi`
+
+encoder/indexed/test_runner-0115_retained_explicit_serial.o: encoder/indexed/0115_retained_explicit_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0115_retained_explicit_serial.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Tpo -c -o encoder/indexed/test_runner-0115_retained_explicit_serial.o `test -f 'encoder/indexed/0115_retained_explicit_serial.c' || echo '$(srcdir)/'`encoder/indexed/0115_retained_explicit_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Tpo encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0115_retained_explicit_serial.c' object='encoder/indexed/test_runner-0115_retained_explicit_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0115_retained_explicit_serial.o `test -f 'encoder/indexed/0115_retained_explicit_serial.c' || echo '$(srcdir)/'`encoder/indexed/0115_retained_explicit_serial.c
+
+encoder/indexed/test_runner-0115_retained_explicit_serial.obj: encoder/indexed/0115_retained_explicit_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0115_retained_explicit_serial.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Tpo -c -o encoder/indexed/test_runner-0115_retained_explicit_serial.obj `if test -f 'encoder/indexed/0115_retained_explicit_serial.c'; then $(CYGPATH_W) 'encoder/indexed/0115_retained_explicit_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0115_retained_explicit_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Tpo encoder/indexed/$(DEPDIR)/test_runner-0115_retained_explicit_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0115_retained_explicit_serial.c' object='encoder/indexed/test_runner-0115_retained_explicit_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0115_retained_explicit_serial.obj `if test -f 'encoder/indexed/0115_retained_explicit_serial.c'; then $(CYGPATH_W) 'encoder/indexed/0115_retained_explicit_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0115_retained_explicit_serial.c'; fi`
+
+encoder/indexed/test_runner-0116_retained_small_serial.o: encoder/indexed/0116_retained_small_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0116_retained_small_serial.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Tpo -c -o encoder/indexed/test_runner-0116_retained_small_serial.o `test -f 'encoder/indexed/0116_retained_small_serial.c' || echo '$(srcdir)/'`encoder/indexed/0116_retained_small_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Tpo encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0116_retained_small_serial.c' object='encoder/indexed/test_runner-0116_retained_small_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0116_retained_small_serial.o `test -f 'encoder/indexed/0116_retained_small_serial.c' || echo '$(srcdir)/'`encoder/indexed/0116_retained_small_serial.c
+
+encoder/indexed/test_runner-0116_retained_small_serial.obj: encoder/indexed/0116_retained_small_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0116_retained_small_serial.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Tpo -c -o encoder/indexed/test_runner-0116_retained_small_serial.obj `if test -f 'encoder/indexed/0116_retained_small_serial.c'; then $(CYGPATH_W) 'encoder/indexed/0116_retained_small_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0116_retained_small_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Tpo encoder/indexed/$(DEPDIR)/test_runner-0116_retained_small_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0116_retained_small_serial.c' object='encoder/indexed/test_runner-0116_retained_small_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0116_retained_small_serial.obj `if test -f 'encoder/indexed/0116_retained_small_serial.c'; then $(CYGPATH_W) 'encoder/indexed/0116_retained_small_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0116_retained_small_serial.c'; fi`
+
+encoder/indexed/test_runner-0117_retained_budget_two.o: encoder/indexed/0117_retained_budget_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0117_retained_budget_two.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Tpo -c -o encoder/indexed/test_runner-0117_retained_budget_two.o `test -f 'encoder/indexed/0117_retained_budget_two.c' || echo '$(srcdir)/'`encoder/indexed/0117_retained_budget_two.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Tpo encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0117_retained_budget_two.c' object='encoder/indexed/test_runner-0117_retained_budget_two.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0117_retained_budget_two.o `test -f 'encoder/indexed/0117_retained_budget_two.c' || echo '$(srcdir)/'`encoder/indexed/0117_retained_budget_two.c
+
+encoder/indexed/test_runner-0117_retained_budget_two.obj: encoder/indexed/0117_retained_budget_two.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0117_retained_budget_two.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Tpo -c -o encoder/indexed/test_runner-0117_retained_budget_two.obj `if test -f 'encoder/indexed/0117_retained_budget_two.c'; then $(CYGPATH_W) 'encoder/indexed/0117_retained_budget_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0117_retained_budget_two.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Tpo encoder/indexed/$(DEPDIR)/test_runner-0117_retained_budget_two.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0117_retained_budget_two.c' object='encoder/indexed/test_runner-0117_retained_budget_two.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0117_retained_budget_two.obj `if test -f 'encoder/indexed/0117_retained_budget_two.c'; then $(CYGPATH_W) 'encoder/indexed/0117_retained_budget_two.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0117_retained_budget_two.c'; fi`
+
+encoder/indexed/test_runner-0118_retained_budget_four.o: encoder/indexed/0118_retained_budget_four.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0118_retained_budget_four.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Tpo -c -o encoder/indexed/test_runner-0118_retained_budget_four.o `test -f 'encoder/indexed/0118_retained_budget_four.c' || echo '$(srcdir)/'`encoder/indexed/0118_retained_budget_four.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Tpo encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0118_retained_budget_four.c' object='encoder/indexed/test_runner-0118_retained_budget_four.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0118_retained_budget_four.o `test -f 'encoder/indexed/0118_retained_budget_four.c' || echo '$(srcdir)/'`encoder/indexed/0118_retained_budget_four.c
+
+encoder/indexed/test_runner-0118_retained_budget_four.obj: encoder/indexed/0118_retained_budget_four.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0118_retained_budget_four.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Tpo -c -o encoder/indexed/test_runner-0118_retained_budget_four.obj `if test -f 'encoder/indexed/0118_retained_budget_four.c'; then $(CYGPATH_W) 'encoder/indexed/0118_retained_budget_four.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0118_retained_budget_four.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Tpo encoder/indexed/$(DEPDIR)/test_runner-0118_retained_budget_four.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0118_retained_budget_four.c' object='encoder/indexed/test_runner-0118_retained_budget_four.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0118_retained_budget_four.obj `if test -f 'encoder/indexed/0118_retained_budget_four.c'; then $(CYGPATH_W) 'encoder/indexed/0118_retained_budget_four.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0118_retained_budget_four.c'; fi`
+
+encoder/indexed/test_runner-0119_retained_budget_shrink.o: encoder/indexed/0119_retained_budget_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0119_retained_budget_shrink.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Tpo -c -o encoder/indexed/test_runner-0119_retained_budget_shrink.o `test -f 'encoder/indexed/0119_retained_budget_shrink.c' || echo '$(srcdir)/'`encoder/indexed/0119_retained_budget_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Tpo encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0119_retained_budget_shrink.c' object='encoder/indexed/test_runner-0119_retained_budget_shrink.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0119_retained_budget_shrink.o `test -f 'encoder/indexed/0119_retained_budget_shrink.c' || echo '$(srcdir)/'`encoder/indexed/0119_retained_budget_shrink.c
+
+encoder/indexed/test_runner-0119_retained_budget_shrink.obj: encoder/indexed/0119_retained_budget_shrink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0119_retained_budget_shrink.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Tpo -c -o encoder/indexed/test_runner-0119_retained_budget_shrink.obj `if test -f 'encoder/indexed/0119_retained_budget_shrink.c'; then $(CYGPATH_W) 'encoder/indexed/0119_retained_budget_shrink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0119_retained_budget_shrink.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Tpo encoder/indexed/$(DEPDIR)/test_runner-0119_retained_budget_shrink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0119_retained_budget_shrink.c' object='encoder/indexed/test_runner-0119_retained_budget_shrink.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0119_retained_budget_shrink.obj `if test -f 'encoder/indexed/0119_retained_budget_shrink.c'; then $(CYGPATH_W) 'encoder/indexed/0119_retained_budget_shrink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0119_retained_budget_shrink.c'; fi`
+
+encoder/indexed/test_runner-0120_retained_budget_grow.o: encoder/indexed/0120_retained_budget_grow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0120_retained_budget_grow.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Tpo -c -o encoder/indexed/test_runner-0120_retained_budget_grow.o `test -f 'encoder/indexed/0120_retained_budget_grow.c' || echo '$(srcdir)/'`encoder/indexed/0120_retained_budget_grow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Tpo encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0120_retained_budget_grow.c' object='encoder/indexed/test_runner-0120_retained_budget_grow.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0120_retained_budget_grow.o `test -f 'encoder/indexed/0120_retained_budget_grow.c' || echo '$(srcdir)/'`encoder/indexed/0120_retained_budget_grow.c
+
+encoder/indexed/test_runner-0120_retained_budget_grow.obj: encoder/indexed/0120_retained_budget_grow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0120_retained_budget_grow.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Tpo -c -o encoder/indexed/test_runner-0120_retained_budget_grow.obj `if test -f 'encoder/indexed/0120_retained_budget_grow.c'; then $(CYGPATH_W) 'encoder/indexed/0120_retained_budget_grow.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0120_retained_budget_grow.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Tpo encoder/indexed/$(DEPDIR)/test_runner-0120_retained_budget_grow.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0120_retained_budget_grow.c' object='encoder/indexed/test_runner-0120_retained_budget_grow.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0120_retained_budget_grow.obj `if test -f 'encoder/indexed/0120_retained_budget_grow.c'; then $(CYGPATH_W) 'encoder/indexed/0120_retained_budget_grow.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0120_retained_budget_grow.c'; fi`
+
+encoder/indexed/test_runner-0121_retained_admission_fallback.o: encoder/indexed/0121_retained_admission_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0121_retained_admission_fallback.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Tpo -c -o encoder/indexed/test_runner-0121_retained_admission_fallback.o `test -f 'encoder/indexed/0121_retained_admission_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0121_retained_admission_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0121_retained_admission_fallback.c' object='encoder/indexed/test_runner-0121_retained_admission_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0121_retained_admission_fallback.o `test -f 'encoder/indexed/0121_retained_admission_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0121_retained_admission_fallback.c
+
+encoder/indexed/test_runner-0121_retained_admission_fallback.obj: encoder/indexed/0121_retained_admission_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0121_retained_admission_fallback.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Tpo -c -o encoder/indexed/test_runner-0121_retained_admission_fallback.obj `if test -f 'encoder/indexed/0121_retained_admission_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0121_retained_admission_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0121_retained_admission_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0121_retained_admission_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0121_retained_admission_fallback.c' object='encoder/indexed/test_runner-0121_retained_admission_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0121_retained_admission_fallback.obj `if test -f 'encoder/indexed/0121_retained_admission_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0121_retained_admission_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0121_retained_admission_fallback.c'; fi`
+
+encoder/indexed/test_runner-0122_retained_commit_no_allocation.o: encoder/indexed/0122_retained_commit_no_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0122_retained_commit_no_allocation.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Tpo -c -o encoder/indexed/test_runner-0122_retained_commit_no_allocation.o `test -f 'encoder/indexed/0122_retained_commit_no_allocation.c' || echo '$(srcdir)/'`encoder/indexed/0122_retained_commit_no_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0122_retained_commit_no_allocation.c' object='encoder/indexed/test_runner-0122_retained_commit_no_allocation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0122_retained_commit_no_allocation.o `test -f 'encoder/indexed/0122_retained_commit_no_allocation.c' || echo '$(srcdir)/'`encoder/indexed/0122_retained_commit_no_allocation.c
+
+encoder/indexed/test_runner-0122_retained_commit_no_allocation.obj: encoder/indexed/0122_retained_commit_no_allocation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0122_retained_commit_no_allocation.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Tpo -c -o encoder/indexed/test_runner-0122_retained_commit_no_allocation.obj `if test -f 'encoder/indexed/0122_retained_commit_no_allocation.c'; then $(CYGPATH_W) 'encoder/indexed/0122_retained_commit_no_allocation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0122_retained_commit_no_allocation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0122_retained_commit_no_allocation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0122_retained_commit_no_allocation.c' object='encoder/indexed/test_runner-0122_retained_commit_no_allocation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0122_retained_commit_no_allocation.obj `if test -f 'encoder/indexed/0122_retained_commit_no_allocation.c'; then $(CYGPATH_W) 'encoder/indexed/0122_retained_commit_no_allocation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0122_retained_commit_no_allocation.c'; fi`
+
+encoder/indexed/test_runner-0123_retained_negative_budget.o: encoder/indexed/0123_retained_negative_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0123_retained_negative_budget.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Tpo -c -o encoder/indexed/test_runner-0123_retained_negative_budget.o `test -f 'encoder/indexed/0123_retained_negative_budget.c' || echo '$(srcdir)/'`encoder/indexed/0123_retained_negative_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Tpo encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0123_retained_negative_budget.c' object='encoder/indexed/test_runner-0123_retained_negative_budget.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0123_retained_negative_budget.o `test -f 'encoder/indexed/0123_retained_negative_budget.c' || echo '$(srcdir)/'`encoder/indexed/0123_retained_negative_budget.c
+
+encoder/indexed/test_runner-0123_retained_negative_budget.obj: encoder/indexed/0123_retained_negative_budget.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0123_retained_negative_budget.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Tpo -c -o encoder/indexed/test_runner-0123_retained_negative_budget.obj `if test -f 'encoder/indexed/0123_retained_negative_budget.c'; then $(CYGPATH_W) 'encoder/indexed/0123_retained_negative_budget.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0123_retained_negative_budget.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Tpo encoder/indexed/$(DEPDIR)/test_runner-0123_retained_negative_budget.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0123_retained_negative_budget.c' object='encoder/indexed/test_runner-0123_retained_negative_budget.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0123_retained_negative_budget.obj `if test -f 'encoder/indexed/0123_retained_negative_budget.c'; then $(CYGPATH_W) 'encoder/indexed/0123_retained_negative_budget.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0123_retained_negative_budget.c'; fi`
+
+encoder/indexed/test_runner-0124_retained_abort_prepared.o: encoder/indexed/0124_retained_abort_prepared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0124_retained_abort_prepared.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Tpo -c -o encoder/indexed/test_runner-0124_retained_abort_prepared.o `test -f 'encoder/indexed/0124_retained_abort_prepared.c' || echo '$(srcdir)/'`encoder/indexed/0124_retained_abort_prepared.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Tpo encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0124_retained_abort_prepared.c' object='encoder/indexed/test_runner-0124_retained_abort_prepared.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0124_retained_abort_prepared.o `test -f 'encoder/indexed/0124_retained_abort_prepared.c' || echo '$(srcdir)/'`encoder/indexed/0124_retained_abort_prepared.c
+
+encoder/indexed/test_runner-0124_retained_abort_prepared.obj: encoder/indexed/0124_retained_abort_prepared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0124_retained_abort_prepared.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Tpo -c -o encoder/indexed/test_runner-0124_retained_abort_prepared.obj `if test -f 'encoder/indexed/0124_retained_abort_prepared.c'; then $(CYGPATH_W) 'encoder/indexed/0124_retained_abort_prepared.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0124_retained_abort_prepared.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Tpo encoder/indexed/$(DEPDIR)/test_runner-0124_retained_abort_prepared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0124_retained_abort_prepared.c' object='encoder/indexed/test_runner-0124_retained_abort_prepared.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0124_retained_abort_prepared.obj `if test -f 'encoder/indexed/0124_retained_abort_prepared.c'; then $(CYGPATH_W) 'encoder/indexed/0124_retained_abort_prepared.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0124_retained_abort_prepared.c'; fi`
+
+encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.o: encoder/indexed/0125_retained_wrong_receipt_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Tpo -c -o encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.o `test -f 'encoder/indexed/0125_retained_wrong_receipt_parallel.c' || echo '$(srcdir)/'`encoder/indexed/0125_retained_wrong_receipt_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Tpo encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0125_retained_wrong_receipt_parallel.c' object='encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.o `test -f 'encoder/indexed/0125_retained_wrong_receipt_parallel.c' || echo '$(srcdir)/'`encoder/indexed/0125_retained_wrong_receipt_parallel.c
+
+encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.obj: encoder/indexed/0125_retained_wrong_receipt_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Tpo -c -o encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.obj `if test -f 'encoder/indexed/0125_retained_wrong_receipt_parallel.c'; then $(CYGPATH_W) 'encoder/indexed/0125_retained_wrong_receipt_parallel.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0125_retained_wrong_receipt_parallel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Tpo encoder/indexed/$(DEPDIR)/test_runner-0125_retained_wrong_receipt_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0125_retained_wrong_receipt_parallel.c' object='encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0125_retained_wrong_receipt_parallel.obj `if test -f 'encoder/indexed/0125_retained_wrong_receipt_parallel.c'; then $(CYGPATH_W) 'encoder/indexed/0125_retained_wrong_receipt_parallel.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0125_retained_wrong_receipt_parallel.c'; fi`
+
+_support/codec/test_runner-retained_rows_common.o: _support/codec/retained_rows_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_rows_common.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_rows_common.Tpo -c -o _support/codec/test_runner-retained_rows_common.o `test -f '_support/codec/retained_rows_common.c' || echo '$(srcdir)/'`_support/codec/retained_rows_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_rows_common.Tpo _support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_rows_common.c' object='_support/codec/test_runner-retained_rows_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_rows_common.o `test -f '_support/codec/retained_rows_common.c' || echo '$(srcdir)/'`_support/codec/retained_rows_common.c
+
+_support/codec/test_runner-retained_rows_common.obj: _support/codec/retained_rows_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_rows_common.obj -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_rows_common.Tpo -c -o _support/codec/test_runner-retained_rows_common.obj `if test -f '_support/codec/retained_rows_common.c'; then $(CYGPATH_W) '_support/codec/retained_rows_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_rows_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_rows_common.Tpo _support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_rows_common.c' object='_support/codec/test_runner-retained_rows_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_rows_common.obj `if test -f '_support/codec/retained_rows_common.c'; then $(CYGPATH_W) '_support/codec/retained_rows_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_rows_common.c'; fi`
+
+encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.o: encoder/indexed/0085_retained_neon_palette_256_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Tpo -c -o encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.o `test -f 'encoder/indexed/0085_retained_neon_palette_256_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0085_retained_neon_palette_256_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0085_retained_neon_palette_256_rgb.c' object='encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.o `test -f 'encoder/indexed/0085_retained_neon_palette_256_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0085_retained_neon_palette_256_rgb.c
+
+encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.obj: encoder/indexed/0085_retained_neon_palette_256_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Tpo -c -o encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.obj `if test -f 'encoder/indexed/0085_retained_neon_palette_256_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0085_retained_neon_palette_256_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0085_retained_neon_palette_256_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0085_retained_neon_palette_256_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0085_retained_neon_palette_256_rgb.c' object='encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0085_retained_neon_palette_256_rgb.obj `if test -f 'encoder/indexed/0085_retained_neon_palette_256_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0085_retained_neon_palette_256_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0085_retained_neon_palette_256_rgb.c'; fi`
+
+encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.o: encoder/indexed/0086_retained_neon_mixed_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Tpo -c -o encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.o `test -f 'encoder/indexed/0086_retained_neon_mixed_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0086_retained_neon_mixed_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0086_retained_neon_mixed_rgb.c' object='encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.o `test -f 'encoder/indexed/0086_retained_neon_mixed_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0086_retained_neon_mixed_rgb.c
+
+encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.obj: encoder/indexed/0086_retained_neon_mixed_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Tpo -c -o encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.obj `if test -f 'encoder/indexed/0086_retained_neon_mixed_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0086_retained_neon_mixed_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0086_retained_neon_mixed_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0086_retained_neon_mixed_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0086_retained_neon_mixed_rgb.c' object='encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0086_retained_neon_mixed_rgb.obj `if test -f 'encoder/indexed/0086_retained_neon_mixed_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0086_retained_neon_mixed_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0086_retained_neon_mixed_rgb.c'; fi`
+
+encoder/indexed/test_runner-0087_retained_neon_mixed_valid.o: encoder/indexed/0087_retained_neon_mixed_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0087_retained_neon_mixed_valid.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Tpo -c -o encoder/indexed/test_runner-0087_retained_neon_mixed_valid.o `test -f 'encoder/indexed/0087_retained_neon_mixed_valid.c' || echo '$(srcdir)/'`encoder/indexed/0087_retained_neon_mixed_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Tpo encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0087_retained_neon_mixed_valid.c' object='encoder/indexed/test_runner-0087_retained_neon_mixed_valid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0087_retained_neon_mixed_valid.o `test -f 'encoder/indexed/0087_retained_neon_mixed_valid.c' || echo '$(srcdir)/'`encoder/indexed/0087_retained_neon_mixed_valid.c
+
+encoder/indexed/test_runner-0087_retained_neon_mixed_valid.obj: encoder/indexed/0087_retained_neon_mixed_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0087_retained_neon_mixed_valid.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Tpo -c -o encoder/indexed/test_runner-0087_retained_neon_mixed_valid.obj `if test -f 'encoder/indexed/0087_retained_neon_mixed_valid.c'; then $(CYGPATH_W) 'encoder/indexed/0087_retained_neon_mixed_valid.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0087_retained_neon_mixed_valid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Tpo encoder/indexed/$(DEPDIR)/test_runner-0087_retained_neon_mixed_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0087_retained_neon_mixed_valid.c' object='encoder/indexed/test_runner-0087_retained_neon_mixed_valid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0087_retained_neon_mixed_valid.obj `if test -f 'encoder/indexed/0087_retained_neon_mixed_valid.c'; then $(CYGPATH_W) 'encoder/indexed/0087_retained_neon_mixed_valid.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0087_retained_neon_mixed_valid.c'; fi`
+
+encoder/indexed/test_runner-0088_retained_neon_mixed_paint.o: encoder/indexed/0088_retained_neon_mixed_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0088_retained_neon_mixed_paint.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Tpo -c -o encoder/indexed/test_runner-0088_retained_neon_mixed_paint.o `test -f 'encoder/indexed/0088_retained_neon_mixed_paint.c' || echo '$(srcdir)/'`encoder/indexed/0088_retained_neon_mixed_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Tpo encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0088_retained_neon_mixed_paint.c' object='encoder/indexed/test_runner-0088_retained_neon_mixed_paint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0088_retained_neon_mixed_paint.o `test -f 'encoder/indexed/0088_retained_neon_mixed_paint.c' || echo '$(srcdir)/'`encoder/indexed/0088_retained_neon_mixed_paint.c
+
+encoder/indexed/test_runner-0088_retained_neon_mixed_paint.obj: encoder/indexed/0088_retained_neon_mixed_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0088_retained_neon_mixed_paint.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Tpo -c -o encoder/indexed/test_runner-0088_retained_neon_mixed_paint.obj `if test -f 'encoder/indexed/0088_retained_neon_mixed_paint.c'; then $(CYGPATH_W) 'encoder/indexed/0088_retained_neon_mixed_paint.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0088_retained_neon_mixed_paint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Tpo encoder/indexed/$(DEPDIR)/test_runner-0088_retained_neon_mixed_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0088_retained_neon_mixed_paint.c' object='encoder/indexed/test_runner-0088_retained_neon_mixed_paint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0088_retained_neon_mixed_paint.obj `if test -f 'encoder/indexed/0088_retained_neon_mixed_paint.c'; then $(CYGPATH_W) 'encoder/indexed/0088_retained_neon_mixed_paint.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0088_retained_neon_mixed_paint.c'; fi`
+
+encoder/indexed/test_runner-0089_retained_neon_mixed_count.o: encoder/indexed/0089_retained_neon_mixed_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0089_retained_neon_mixed_count.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Tpo -c -o encoder/indexed/test_runner-0089_retained_neon_mixed_count.o `test -f 'encoder/indexed/0089_retained_neon_mixed_count.c' || echo '$(srcdir)/'`encoder/indexed/0089_retained_neon_mixed_count.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Tpo encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0089_retained_neon_mixed_count.c' object='encoder/indexed/test_runner-0089_retained_neon_mixed_count.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0089_retained_neon_mixed_count.o `test -f 'encoder/indexed/0089_retained_neon_mixed_count.c' || echo '$(srcdir)/'`encoder/indexed/0089_retained_neon_mixed_count.c
+
+encoder/indexed/test_runner-0089_retained_neon_mixed_count.obj: encoder/indexed/0089_retained_neon_mixed_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0089_retained_neon_mixed_count.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Tpo -c -o encoder/indexed/test_runner-0089_retained_neon_mixed_count.obj `if test -f 'encoder/indexed/0089_retained_neon_mixed_count.c'; then $(CYGPATH_W) 'encoder/indexed/0089_retained_neon_mixed_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0089_retained_neon_mixed_count.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Tpo encoder/indexed/$(DEPDIR)/test_runner-0089_retained_neon_mixed_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0089_retained_neon_mixed_count.c' object='encoder/indexed/test_runner-0089_retained_neon_mixed_count.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0089_retained_neon_mixed_count.obj `if test -f 'encoder/indexed/0089_retained_neon_mixed_count.c'; then $(CYGPATH_W) 'encoder/indexed/0089_retained_neon_mixed_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0089_retained_neon_mixed_count.c'; fi`
+
+encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.o: encoder/indexed/0090_retained_neon_mixed_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Tpo -c -o encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.o `test -f 'encoder/indexed/0090_retained_neon_mixed_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0090_retained_neon_mixed_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0090_retained_neon_mixed_refinement.c' object='encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.o `test -f 'encoder/indexed/0090_retained_neon_mixed_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0090_retained_neon_mixed_refinement.c
+
+encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.obj: encoder/indexed/0090_retained_neon_mixed_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Tpo -c -o encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.obj `if test -f 'encoder/indexed/0090_retained_neon_mixed_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0090_retained_neon_mixed_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0090_retained_neon_mixed_refinement.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0090_retained_neon_mixed_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0090_retained_neon_mixed_refinement.c' object='encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0090_retained_neon_mixed_refinement.obj `if test -f 'encoder/indexed/0090_retained_neon_mixed_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0090_retained_neon_mixed_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0090_retained_neon_mixed_refinement.c'; fi`
+
+encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.o: encoder/indexed/0091_retained_neon_exact_keep_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Tpo -c -o encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.o `test -f 'encoder/indexed/0091_retained_neon_exact_keep_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0091_retained_neon_exact_keep_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0091_retained_neon_exact_keep_refinement.c' object='encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.o `test -f 'encoder/indexed/0091_retained_neon_exact_keep_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0091_retained_neon_exact_keep_refinement.c
+
+encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.obj: encoder/indexed/0091_retained_neon_exact_keep_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Tpo -c -o encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.obj `if test -f 'encoder/indexed/0091_retained_neon_exact_keep_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0091_retained_neon_exact_keep_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0091_retained_neon_exact_keep_refinement.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0091_retained_neon_exact_keep_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0091_retained_neon_exact_keep_refinement.c' object='encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0091_retained_neon_exact_keep_refinement.obj `if test -f 'encoder/indexed/0091_retained_neon_exact_keep_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0091_retained_neon_exact_keep_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0091_retained_neon_exact_keep_refinement.c'; fi`
+
+encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.o: encoder/indexed/0092_retained_neon_all_approximate_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Tpo -c -o encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.o `test -f 'encoder/indexed/0092_retained_neon_all_approximate_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0092_retained_neon_all_approximate_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0092_retained_neon_all_approximate_refinement.c' object='encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.o `test -f 'encoder/indexed/0092_retained_neon_all_approximate_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0092_retained_neon_all_approximate_refinement.c
+
+encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.obj: encoder/indexed/0092_retained_neon_all_approximate_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Tpo -c -o encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.obj `if test -f 'encoder/indexed/0092_retained_neon_all_approximate_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0092_retained_neon_all_approximate_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0092_retained_neon_all_approximate_refinement.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0092_retained_neon_all_approximate_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0092_retained_neon_all_approximate_refinement.c' object='encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0092_retained_neon_all_approximate_refinement.obj `if test -f 'encoder/indexed/0092_retained_neon_all_approximate_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0092_retained_neon_all_approximate_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0092_retained_neon_all_approximate_refinement.c'; fi`
+
+encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.o: encoder/indexed/0093_retained_neon_all_keep_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Tpo -c -o encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.o `test -f 'encoder/indexed/0093_retained_neon_all_keep_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0093_retained_neon_all_keep_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0093_retained_neon_all_keep_rgb.c' object='encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.o `test -f 'encoder/indexed/0093_retained_neon_all_keep_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0093_retained_neon_all_keep_rgb.c
+
+encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.obj: encoder/indexed/0093_retained_neon_all_keep_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Tpo -c -o encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.obj `if test -f 'encoder/indexed/0093_retained_neon_all_keep_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0093_retained_neon_all_keep_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0093_retained_neon_all_keep_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0093_retained_neon_all_keep_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0093_retained_neon_all_keep_rgb.c' object='encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0093_retained_neon_all_keep_rgb.obj `if test -f 'encoder/indexed/0093_retained_neon_all_keep_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0093_retained_neon_all_keep_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0093_retained_neon_all_keep_rgb.c'; fi`
+
+encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.o: encoder/indexed/0094_retained_neon_without_skip_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Tpo -c -o encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.o `test -f 'encoder/indexed/0094_retained_neon_without_skip_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0094_retained_neon_without_skip_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0094_retained_neon_without_skip_rgb.c' object='encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.o `test -f 'encoder/indexed/0094_retained_neon_without_skip_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0094_retained_neon_without_skip_rgb.c
+
+encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.obj: encoder/indexed/0094_retained_neon_without_skip_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Tpo -c -o encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.obj `if test -f 'encoder/indexed/0094_retained_neon_without_skip_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0094_retained_neon_without_skip_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0094_retained_neon_without_skip_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0094_retained_neon_without_skip_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0094_retained_neon_without_skip_rgb.c' object='encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0094_retained_neon_without_skip_rgb.obj `if test -f 'encoder/indexed/0094_retained_neon_without_skip_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0094_retained_neon_without_skip_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0094_retained_neon_without_skip_rgb.c'; fi`
+
+encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.o: encoder/indexed/0095_retained_neon_short_palette_sentinel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Tpo -c -o encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.o `test -f 'encoder/indexed/0095_retained_neon_short_palette_sentinel.c' || echo '$(srcdir)/'`encoder/indexed/0095_retained_neon_short_palette_sentinel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Tpo encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0095_retained_neon_short_palette_sentinel.c' object='encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.o `test -f 'encoder/indexed/0095_retained_neon_short_palette_sentinel.c' || echo '$(srcdir)/'`encoder/indexed/0095_retained_neon_short_palette_sentinel.c
+
+encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.obj: encoder/indexed/0095_retained_neon_short_palette_sentinel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Tpo -c -o encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.obj `if test -f 'encoder/indexed/0095_retained_neon_short_palette_sentinel.c'; then $(CYGPATH_W) 'encoder/indexed/0095_retained_neon_short_palette_sentinel.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0095_retained_neon_short_palette_sentinel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Tpo encoder/indexed/$(DEPDIR)/test_runner-0095_retained_neon_short_palette_sentinel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0095_retained_neon_short_palette_sentinel.c' object='encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0095_retained_neon_short_palette_sentinel.obj `if test -f 'encoder/indexed/0095_retained_neon_short_palette_sentinel.c'; then $(CYGPATH_W) 'encoder/indexed/0095_retained_neon_short_palette_sentinel.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0095_retained_neon_short_palette_sentinel.c'; fi`
+
+encoder/indexed/test_runner-0096_retained_neon_tail_rgb.o: encoder/indexed/0096_retained_neon_tail_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0096_retained_neon_tail_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Tpo -c -o encoder/indexed/test_runner-0096_retained_neon_tail_rgb.o `test -f 'encoder/indexed/0096_retained_neon_tail_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0096_retained_neon_tail_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0096_retained_neon_tail_rgb.c' object='encoder/indexed/test_runner-0096_retained_neon_tail_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0096_retained_neon_tail_rgb.o `test -f 'encoder/indexed/0096_retained_neon_tail_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0096_retained_neon_tail_rgb.c
+
+encoder/indexed/test_runner-0096_retained_neon_tail_rgb.obj: encoder/indexed/0096_retained_neon_tail_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0096_retained_neon_tail_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Tpo -c -o encoder/indexed/test_runner-0096_retained_neon_tail_rgb.obj `if test -f 'encoder/indexed/0096_retained_neon_tail_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0096_retained_neon_tail_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0096_retained_neon_tail_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0096_retained_neon_tail_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0096_retained_neon_tail_rgb.c' object='encoder/indexed/test_runner-0096_retained_neon_tail_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0096_retained_neon_tail_rgb.obj `if test -f 'encoder/indexed/0096_retained_neon_tail_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0096_retained_neon_tail_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0096_retained_neon_tail_rgb.c'; fi`
+
+encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.o: encoder/indexed/0097_retained_subvector_scalar_backend.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Tpo -c -o encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.o `test -f 'encoder/indexed/0097_retained_subvector_scalar_backend.c' || echo '$(srcdir)/'`encoder/indexed/0097_retained_subvector_scalar_backend.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Tpo encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0097_retained_subvector_scalar_backend.c' object='encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.o `test -f 'encoder/indexed/0097_retained_subvector_scalar_backend.c' || echo '$(srcdir)/'`encoder/indexed/0097_retained_subvector_scalar_backend.c
+
+encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.obj: encoder/indexed/0097_retained_subvector_scalar_backend.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Tpo -c -o encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.obj `if test -f 'encoder/indexed/0097_retained_subvector_scalar_backend.c'; then $(CYGPATH_W) 'encoder/indexed/0097_retained_subvector_scalar_backend.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0097_retained_subvector_scalar_backend.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Tpo encoder/indexed/$(DEPDIR)/test_runner-0097_retained_subvector_scalar_backend.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0097_retained_subvector_scalar_backend.c' object='encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0097_retained_subvector_scalar_backend.obj `if test -f 'encoder/indexed/0097_retained_subvector_scalar_backend.c'; then $(CYGPATH_W) 'encoder/indexed/0097_retained_subvector_scalar_backend.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0097_retained_subvector_scalar_backend.c'; fi`
+
+encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.o: encoder/indexed/0098_retained_neon_fullpaint_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Tpo -c -o encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.o `test -f 'encoder/indexed/0098_retained_neon_fullpaint_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0098_retained_neon_fullpaint_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0098_retained_neon_fullpaint_rgb.c' object='encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.o `test -f 'encoder/indexed/0098_retained_neon_fullpaint_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0098_retained_neon_fullpaint_rgb.c
+
+encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.obj: encoder/indexed/0098_retained_neon_fullpaint_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Tpo -c -o encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.obj `if test -f 'encoder/indexed/0098_retained_neon_fullpaint_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0098_retained_neon_fullpaint_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0098_retained_neon_fullpaint_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0098_retained_neon_fullpaint_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0098_retained_neon_fullpaint_rgb.c' object='encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0098_retained_neon_fullpaint_rgb.obj `if test -f 'encoder/indexed/0098_retained_neon_fullpaint_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0098_retained_neon_fullpaint_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0098_retained_neon_fullpaint_rgb.c'; fi`
+
+encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.o: encoder/indexed/0099_retained_neon_partial_rows_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Tpo -c -o encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.o `test -f 'encoder/indexed/0099_retained_neon_partial_rows_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0099_retained_neon_partial_rows_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0099_retained_neon_partial_rows_rgb.c' object='encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.o `test -f 'encoder/indexed/0099_retained_neon_partial_rows_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0099_retained_neon_partial_rows_rgb.c
+
+encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.obj: encoder/indexed/0099_retained_neon_partial_rows_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Tpo -c -o encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.obj `if test -f 'encoder/indexed/0099_retained_neon_partial_rows_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0099_retained_neon_partial_rows_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0099_retained_neon_partial_rows_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0099_retained_neon_partial_rows_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0099_retained_neon_partial_rows_rgb.c' object='encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0099_retained_neon_partial_rows_rgb.obj `if test -f 'encoder/indexed/0099_retained_neon_partial_rows_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0099_retained_neon_partial_rows_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0099_retained_neon_partial_rows_rgb.c'; fi`
+
+encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.o: encoder/indexed/0100_retained_scalar_mixed_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Tpo -c -o encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.o `test -f 'encoder/indexed/0100_retained_scalar_mixed_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0100_retained_scalar_mixed_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0100_retained_scalar_mixed_rgb.c' object='encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.o `test -f 'encoder/indexed/0100_retained_scalar_mixed_rgb.c' || echo '$(srcdir)/'`encoder/indexed/0100_retained_scalar_mixed_rgb.c
+
+encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.obj: encoder/indexed/0100_retained_scalar_mixed_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Tpo -c -o encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.obj `if test -f 'encoder/indexed/0100_retained_scalar_mixed_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0100_retained_scalar_mixed_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0100_retained_scalar_mixed_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Tpo encoder/indexed/$(DEPDIR)/test_runner-0100_retained_scalar_mixed_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0100_retained_scalar_mixed_rgb.c' object='encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0100_retained_scalar_mixed_rgb.obj `if test -f 'encoder/indexed/0100_retained_scalar_mixed_rgb.c'; then $(CYGPATH_W) 'encoder/indexed/0100_retained_scalar_mixed_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0100_retained_scalar_mixed_rgb.c'; fi`
+
+encoder/indexed/test_runner-0101_retained_scalar_mixed_count.o: encoder/indexed/0101_retained_scalar_mixed_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0101_retained_scalar_mixed_count.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Tpo -c -o encoder/indexed/test_runner-0101_retained_scalar_mixed_count.o `test -f 'encoder/indexed/0101_retained_scalar_mixed_count.c' || echo '$(srcdir)/'`encoder/indexed/0101_retained_scalar_mixed_count.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Tpo encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0101_retained_scalar_mixed_count.c' object='encoder/indexed/test_runner-0101_retained_scalar_mixed_count.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0101_retained_scalar_mixed_count.o `test -f 'encoder/indexed/0101_retained_scalar_mixed_count.c' || echo '$(srcdir)/'`encoder/indexed/0101_retained_scalar_mixed_count.c
+
+encoder/indexed/test_runner-0101_retained_scalar_mixed_count.obj: encoder/indexed/0101_retained_scalar_mixed_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0101_retained_scalar_mixed_count.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Tpo -c -o encoder/indexed/test_runner-0101_retained_scalar_mixed_count.obj `if test -f 'encoder/indexed/0101_retained_scalar_mixed_count.c'; then $(CYGPATH_W) 'encoder/indexed/0101_retained_scalar_mixed_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0101_retained_scalar_mixed_count.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Tpo encoder/indexed/$(DEPDIR)/test_runner-0101_retained_scalar_mixed_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0101_retained_scalar_mixed_count.c' object='encoder/indexed/test_runner-0101_retained_scalar_mixed_count.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0101_retained_scalar_mixed_count.obj `if test -f 'encoder/indexed/0101_retained_scalar_mixed_count.c'; then $(CYGPATH_W) 'encoder/indexed/0101_retained_scalar_mixed_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0101_retained_scalar_mixed_count.c'; fi`
+
+encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.o: encoder/indexed/0102_retained_scalar_mixed_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Tpo -c -o encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.o `test -f 'encoder/indexed/0102_retained_scalar_mixed_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0102_retained_scalar_mixed_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0102_retained_scalar_mixed_refinement.c' object='encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.o `test -f 'encoder/indexed/0102_retained_scalar_mixed_refinement.c' || echo '$(srcdir)/'`encoder/indexed/0102_retained_scalar_mixed_refinement.c
+
+encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.obj: encoder/indexed/0102_retained_scalar_mixed_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Tpo -c -o encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.obj `if test -f 'encoder/indexed/0102_retained_scalar_mixed_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0102_retained_scalar_mixed_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0102_retained_scalar_mixed_refinement.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Tpo encoder/indexed/$(DEPDIR)/test_runner-0102_retained_scalar_mixed_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0102_retained_scalar_mixed_refinement.c' object='encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0102_retained_scalar_mixed_refinement.obj `if test -f 'encoder/indexed/0102_retained_scalar_mixed_refinement.c'; then $(CYGPATH_W) 'encoder/indexed/0102_retained_scalar_mixed_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0102_retained_scalar_mixed_refinement.c'; fi`
+
+encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.o: encoder/indexed/0103_retained_neon_all_keep_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Tpo -c -o encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.o `test -f 'encoder/indexed/0103_retained_neon_all_keep_valid.c' || echo '$(srcdir)/'`encoder/indexed/0103_retained_neon_all_keep_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Tpo encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0103_retained_neon_all_keep_valid.c' object='encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.o `test -f 'encoder/indexed/0103_retained_neon_all_keep_valid.c' || echo '$(srcdir)/'`encoder/indexed/0103_retained_neon_all_keep_valid.c
+
+encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.obj: encoder/indexed/0103_retained_neon_all_keep_valid.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Tpo -c -o encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.obj `if test -f 'encoder/indexed/0103_retained_neon_all_keep_valid.c'; then $(CYGPATH_W) 'encoder/indexed/0103_retained_neon_all_keep_valid.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0103_retained_neon_all_keep_valid.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Tpo encoder/indexed/$(DEPDIR)/test_runner-0103_retained_neon_all_keep_valid.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0103_retained_neon_all_keep_valid.c' object='encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0103_retained_neon_all_keep_valid.obj `if test -f 'encoder/indexed/0103_retained_neon_all_keep_valid.c'; then $(CYGPATH_W) 'encoder/indexed/0103_retained_neon_all_keep_valid.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0103_retained_neon_all_keep_valid.c'; fi`
+
+encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.o: encoder/indexed/0104_retained_neon_all_keep_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Tpo -c -o encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.o `test -f 'encoder/indexed/0104_retained_neon_all_keep_paint.c' || echo '$(srcdir)/'`encoder/indexed/0104_retained_neon_all_keep_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Tpo encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0104_retained_neon_all_keep_paint.c' object='encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.o `test -f 'encoder/indexed/0104_retained_neon_all_keep_paint.c' || echo '$(srcdir)/'`encoder/indexed/0104_retained_neon_all_keep_paint.c
+
+encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.obj: encoder/indexed/0104_retained_neon_all_keep_paint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Tpo -c -o encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.obj `if test -f 'encoder/indexed/0104_retained_neon_all_keep_paint.c'; then $(CYGPATH_W) 'encoder/indexed/0104_retained_neon_all_keep_paint.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0104_retained_neon_all_keep_paint.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Tpo encoder/indexed/$(DEPDIR)/test_runner-0104_retained_neon_all_keep_paint.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0104_retained_neon_all_keep_paint.c' object='encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0104_retained_neon_all_keep_paint.obj `if test -f 'encoder/indexed/0104_retained_neon_all_keep_paint.c'; then $(CYGPATH_W) 'encoder/indexed/0104_retained_neon_all_keep_paint.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0104_retained_neon_all_keep_paint.c'; fi`
 
 _support/codec/test_runner-indexed_component_common.o: _support/codec/indexed_component_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-indexed_component_common.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-indexed_component_common.Tpo -c -o _support/codec/test_runner-indexed_component_common.o `test -f '_support/codec/indexed_component_common.c' || echo '$(srcdir)/'`_support/codec/indexed_component_common.c

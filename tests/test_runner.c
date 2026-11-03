@@ -1869,6 +1869,49 @@ int test_decoder_0025_decoder_paint_create_failure_clean(int argc,
 int test_decoder_0026_parallel_converging_bands(int argc,
                                                            char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
+int test_retained_neon_palette_256_rgb(int argc, char **argv);
+int test_retained_neon_mixed_rgb(int argc, char **argv);
+int test_retained_neon_mixed_valid(int argc, char **argv);
+int test_retained_neon_mixed_paint(int argc, char **argv);
+int test_retained_neon_mixed_count(int argc, char **argv);
+int test_retained_neon_mixed_refinement(int argc, char **argv);
+int test_retained_neon_exact_keep_refinement(int argc, char **argv);
+int test_retained_neon_all_approximate_refinement(int argc, char **argv);
+int test_retained_neon_all_keep_rgb(int argc, char **argv);
+int test_retained_neon_without_skip_rgb(int argc, char **argv);
+int test_retained_neon_short_palette_sentinel(int argc, char **argv);
+int test_retained_neon_tail_rgb(int argc, char **argv);
+int test_retained_subvector_scalar_backend(int argc, char **argv);
+int test_retained_neon_fullpaint_rgb(int argc, char **argv);
+int test_retained_neon_partial_rows_rgb(int argc, char **argv);
+int test_retained_scalar_mixed_rgb(int argc, char **argv);
+int test_retained_scalar_mixed_count(int argc, char **argv);
+int test_retained_scalar_mixed_refinement(int argc, char **argv);
+int test_retained_neon_all_keep_valid(int argc, char **argv);
+int test_retained_neon_all_keep_paint(int argc, char **argv);
+int test_retained_workers_two_rgb(int argc, char **argv);
+int test_retained_workers_four_rgb(int argc, char **argv);
+int test_retained_workers_valid(int argc, char **argv);
+int test_retained_workers_paint(int argc, char **argv);
+int test_retained_workers_count(int argc, char **argv);
+int test_retained_workers_refinement(int argc, char **argv);
+int test_retained_workers_current_policy(int argc, char **argv);
+int test_retained_workers_no_allocation(int argc, char **argv);
+int test_retained_workers_reuse_smaller(int argc, char **argv);
+int test_retained_default_serial(int argc, char **argv);
+int test_retained_explicit_serial(int argc, char **argv);
+int test_retained_small_serial(int argc, char **argv);
+int test_retained_budget_two(int argc, char **argv);
+int test_retained_budget_four(int argc, char **argv);
+int test_retained_budget_shrink(int argc, char **argv);
+int test_retained_budget_grow(int argc, char **argv);
+int test_retained_admission_fallback(int argc, char **argv);
+int test_retained_commit_no_allocation(int argc, char **argv);
+int test_retained_negative_budget(int argc, char **argv);
+int test_retained_abort_prepared(int argc, char **argv);
+int test_retained_wrong_receipt_parallel(int argc, char **argv);
+int test_retained_workers_balanced(int argc, char **argv);
+int test_retained_threads_disabled(int argc, char **argv);
 int test_indexed_retained_origin(int argc, char **argv);
 int test_indexed_retained_approximate(int argc, char **argv);
 int test_indexed_retained_paint_count(int argc, char **argv);
@@ -7599,6 +7642,92 @@ static test_entry_t const test_entries[] = {
     { "decoder/0026_parallel_converging_bands",
       test_decoder_0026_parallel_converging_bands },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
+    { "encoder/indexed/0085_retained_neon_palette_256_rgb",
+      test_retained_neon_palette_256_rgb },
+    { "encoder/indexed/0086_retained_neon_mixed_rgb",
+      test_retained_neon_mixed_rgb },
+    { "encoder/indexed/0087_retained_neon_mixed_valid",
+      test_retained_neon_mixed_valid },
+    { "encoder/indexed/0088_retained_neon_mixed_paint",
+      test_retained_neon_mixed_paint },
+    { "encoder/indexed/0089_retained_neon_mixed_count",
+      test_retained_neon_mixed_count },
+    { "encoder/indexed/0090_retained_neon_mixed_refinement",
+      test_retained_neon_mixed_refinement },
+    { "encoder/indexed/0091_retained_neon_exact_keep_refinement",
+      test_retained_neon_exact_keep_refinement },
+    { "encoder/indexed/0092_retained_neon_all_approximate_refinement",
+      test_retained_neon_all_approximate_refinement },
+    { "encoder/indexed/0093_retained_neon_all_keep_rgb",
+      test_retained_neon_all_keep_rgb },
+    { "encoder/indexed/0094_retained_neon_without_skip_rgb",
+      test_retained_neon_without_skip_rgb },
+    { "encoder/indexed/0095_retained_neon_short_palette_sentinel",
+      test_retained_neon_short_palette_sentinel },
+    { "encoder/indexed/0096_retained_neon_tail_rgb",
+      test_retained_neon_tail_rgb },
+    { "encoder/indexed/0097_retained_subvector_scalar_backend",
+      test_retained_subvector_scalar_backend },
+    { "encoder/indexed/0098_retained_neon_fullpaint_rgb",
+      test_retained_neon_fullpaint_rgb },
+    { "encoder/indexed/0099_retained_neon_partial_rows_rgb",
+      test_retained_neon_partial_rows_rgb },
+    { "encoder/indexed/0100_retained_scalar_mixed_rgb",
+      test_retained_scalar_mixed_rgb },
+    { "encoder/indexed/0101_retained_scalar_mixed_count",
+      test_retained_scalar_mixed_count },
+    { "encoder/indexed/0102_retained_scalar_mixed_refinement",
+      test_retained_scalar_mixed_refinement },
+    { "encoder/indexed/0103_retained_neon_all_keep_valid",
+      test_retained_neon_all_keep_valid },
+    { "encoder/indexed/0104_retained_neon_all_keep_paint",
+      test_retained_neon_all_keep_paint },
+    { "encoder/indexed/0105_retained_workers_two_rgb",
+      test_retained_workers_two_rgb },
+    { "encoder/indexed/0106_retained_workers_four_rgb",
+      test_retained_workers_four_rgb },
+    { "encoder/indexed/0107_retained_workers_valid",
+      test_retained_workers_valid },
+    { "encoder/indexed/0108_retained_workers_paint",
+      test_retained_workers_paint },
+    { "encoder/indexed/0109_retained_workers_count",
+      test_retained_workers_count },
+    { "encoder/indexed/0110_retained_workers_refinement",
+      test_retained_workers_refinement },
+    { "encoder/indexed/0111_retained_workers_current_policy",
+      test_retained_workers_current_policy },
+    { "encoder/indexed/0112_retained_workers_no_allocation",
+      test_retained_workers_no_allocation },
+    { "encoder/indexed/0113_retained_workers_reuse_smaller",
+      test_retained_workers_reuse_smaller },
+    { "encoder/indexed/0114_retained_default_serial",
+      test_retained_default_serial },
+    { "encoder/indexed/0115_retained_explicit_serial",
+      test_retained_explicit_serial },
+    { "encoder/indexed/0116_retained_small_serial",
+      test_retained_small_serial },
+    { "encoder/indexed/0117_retained_budget_two",
+      test_retained_budget_two },
+    { "encoder/indexed/0118_retained_budget_four",
+      test_retained_budget_four },
+    { "encoder/indexed/0119_retained_budget_shrink",
+      test_retained_budget_shrink },
+    { "encoder/indexed/0120_retained_budget_grow",
+      test_retained_budget_grow },
+    { "encoder/indexed/0121_retained_admission_fallback",
+      test_retained_admission_fallback },
+    { "encoder/indexed/0122_retained_commit_no_allocation",
+      test_retained_commit_no_allocation },
+    { "encoder/indexed/0123_retained_negative_budget",
+      test_retained_negative_budget },
+    { "encoder/indexed/0124_retained_abort_prepared",
+      test_retained_abort_prepared },
+    { "encoder/indexed/0125_retained_wrong_receipt_parallel",
+      test_retained_wrong_receipt_parallel },
+    { "encoder/indexed/0126_retained_workers_balanced",
+      test_retained_workers_balanced },
+    { "encoder/indexed/0127_retained_threads_disabled",
+      test_retained_threads_disabled },
     { "encoder/indexed/0001_retained_origin",
       test_indexed_retained_origin },
     { "encoder/indexed/0002_retained_approximate",

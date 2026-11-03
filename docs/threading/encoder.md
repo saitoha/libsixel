@@ -146,6 +146,10 @@ The stream filter retains the image through producer completion and body-worker 
 
 The parallel indexed writer exclusively owns `body_status` until its thread is joined. Producer-side submission uses the queue-synchronized status; it must not inspect the writer field while the writer is active. The serial path may read it directly. Existing parallel sampling output cases exercise this boundary under ThreadSanitizer; ordinary successful execution alone cannot establish absence of a race.
 
+RetainedPlane admits its caller-inclusive `worker_threads` ceiling in `begin_update`: zero and one mean serial execution, and negative values are rejected. The session passes the current frame's encode allocation. Small rectangles, hardware limits or optional worker-admission failure can reduce participation. Preparation freezes the row kernel and grows a component-owned persistent executor before output; commit neither allocates storage nor creates threads. The actual participation count is returned in commit statistics and the `retained_commit/workers` timeline event.
+
+Each commit captures the current execution policy, partitions disjoint complete rows and joins all participants before publishing the new sequence. Reused workers enter and leave that batch's policy and CPU-work callbacks, retaining no old frame callback context while idle. The caller releases its CPU loan while waiting. Lower later budgets use fewer cached workers; teardown joins the idle executor. A build without thread support keeps the same serial transaction semantics. See [retained-state transactions](../encoder/output/delta-encoding.md#indexed-retained-state-transactions) for byte and receipt semantics.
+
 ## Timeline interpretation
 
 The `loader:builtin` spans in these figures decode the 900 by 675 source PNG;
@@ -398,6 +402,30 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-35 | A blocked writer times out drain then drains after release. | [tests/encoder/planning/0108_playback_drain_timeout.t](../../tests/encoder/planning/0108_playback_drain_timeout.t) |
 | TE-36 | B1 reservations remain bounded without a worker. | [tests/encoder/planning/0109_playback_serial_reservation.t](../../tests/encoder/planning/0109_playback_serial_reservation.t) |
 | TE-37 | Parallel sampling retains exact serial-equivalent output; running this case under ThreadSanitizer also observes indexed writer status ownership. | [tests/encoder/sampling/0004_rgb888_plain_auto_t8_output.t](../../tests/encoder/sampling/0004_rgb888_plain_auto_t8_output.t) |
+
+| TE-38 | Two participants produce the exact retained RGB for an offset rectangle with unequal row partitions. | [tests/encoder/indexed/0105_retained_workers_two_rgb.t](../../tests/encoder/indexed/0105_retained_workers_two_rgb.t) |
+| TE-39 | Four participants produce the exact retained RGB for an offset rectangle with unequal row partitions. | [tests/encoder/indexed/0106_retained_workers_four_rgb.t](../../tests/encoder/indexed/0106_retained_workers_four_rgb.t) |
+| TE-40 | Four participants preserve kept validity and mark only painted pixels valid. | [tests/encoder/indexed/0107_retained_workers_valid.t](../../tests/encoder/indexed/0107_retained_workers_valid.t) |
+| TE-41 | Four participants preserve frame-local presentation marks outside painted lanes. | [tests/encoder/indexed/0108_retained_workers_paint.t](../../tests/encoder/indexed/0108_retained_workers_paint.t) |
+| TE-42 | Four participants reduce paint counts exactly. | [tests/encoder/indexed/0109_retained_workers_count.t](../../tests/encoder/indexed/0109_retained_workers_count.t) |
+| TE-43 | Four participants propagate approximate-keep refinement. | [tests/encoder/indexed/0110_retained_workers_refinement.t](../../tests/encoder/indexed/0110_retained_workers_refinement.t) |
+| TE-44 | A reused executor applies the second batch callback context without reusing the first context. | [tests/encoder/indexed/0111_retained_workers_current_policy.t](../../tests/encoder/indexed/0111_retained_workers_current_policy.t) |
+| TE-45 | An admitted executor runs with malloc, calloc and realloc rejected and makes no allocator calls. | [tests/encoder/indexed/0112_retained_workers_no_allocation.t](../../tests/encoder/indexed/0112_retained_workers_no_allocation.t) |
+| TE-46 | A four-participant executor reuses only two participants when the next batch requests two. | [tests/encoder/indexed/0113_retained_workers_reuse_smaller.t](../../tests/encoder/indexed/0113_retained_workers_reuse_smaller.t) |
+| TE-47 | A zero update budget commits with one participant. | [tests/encoder/indexed/0114_retained_default_serial.t](../../tests/encoder/indexed/0114_retained_default_serial.t) |
+| TE-48 | An explicit one-participant update commits serially. | [tests/encoder/indexed/0115_retained_explicit_serial.t](../../tests/encoder/indexed/0115_retained_explicit_serial.t) |
+| TE-49 | A small rectangle stays serial despite a larger requested ceiling. | [tests/encoder/indexed/0116_retained_small_serial.t](../../tests/encoder/indexed/0116_retained_small_serial.t) |
+| TE-50 | A large update uses its two-participant ceiling. | [tests/encoder/indexed/0117_retained_budget_two.t](../../tests/encoder/indexed/0117_retained_budget_two.t) |
+| TE-51 | A large update uses its four-participant ceiling. | [tests/encoder/indexed/0118_retained_budget_four.t](../../tests/encoder/indexed/0118_retained_budget_four.t) |
+| TE-52 | The next update obeys a budget reduced from four to one. | [tests/encoder/indexed/0119_retained_budget_shrink.t](../../tests/encoder/indexed/0119_retained_budget_shrink.t) |
+| TE-53 | The next update admits a budget increased from two to four. | [tests/encoder/indexed/0120_retained_budget_grow.t](../../tests/encoder/indexed/0120_retained_budget_grow.t) |
+| TE-54 | Failure to allocate optional worker storage preserves successful serial commit. | [tests/encoder/indexed/0121_retained_admission_fallback.t](../../tests/encoder/indexed/0121_retained_admission_fallback.t) |
+| TE-55 | An admitted component commit makes no malloc, calloc or realloc calls. | [tests/encoder/indexed/0122_retained_commit_no_allocation.t](../../tests/encoder/indexed/0122_retained_commit_no_allocation.t) |
+| TE-56 | A negative update budget is rejected without creating an update. | [tests/encoder/indexed/0123_retained_negative_budget.t](../../tests/encoder/indexed/0123_retained_negative_budget.t) |
+| TE-57 | Aborting an update with prepared workers preserves committed RGB. | [tests/encoder/indexed/0124_retained_abort_prepared.t](../../tests/encoder/indexed/0124_retained_abort_prepared.t) |
+| TE-58 | A foreign receipt is rejected before prepared workers can change committed RGB. | [tests/encoder/indexed/0125_retained_wrong_receipt_parallel.t](../../tests/encoder/indexed/0125_retained_wrong_receipt_parallel.t) |
+| TE-59 | Each participating background worker balances its CPU-work begin and end callbacks. | [tests/encoder/indexed/0126_retained_workers_balanced.t](../../tests/encoder/indexed/0126_retained_workers_balanced.t) |
+| TE-60 | A thread-disabled build commits a large rectangle serially despite a larger ceiling. | [tests/encoder/indexed/0127_retained_threads_disabled.t](../../tests/encoder/indexed/0127_retained_threads_disabled.t) |
 
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/color/space/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.
 

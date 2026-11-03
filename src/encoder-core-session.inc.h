@@ -131,6 +131,8 @@ sixel_indexed_commit_filter(sixel_filter_t *filter,
     sixel_timeline_logger_logf(logger, "controller", "retained_commit",
         "finish", -1);
     if (status == SIXEL_OK) {
+        sixel_timeline_logger_logf(logger, "controller", "retained_commit",
+            "workers", graph->session->stats.worker_threads);
         graph->session->committed = 1;
         graph->session->partial_output = 0;
     }
@@ -324,6 +326,9 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
         update_request.image = image;
         update_request.sequence = baseline.sequence + 1;
         update_request.record_paint = session->record_paint;
+        /* Commit follows body drain, so its workers reuse the encode-stage
+         * budget. Resolve this every frame to follow adaptive host budgets. */
+        update_request.worker_threads = allocation.encode_threads;
         status = session->plane->vtbl->begin_update(session->plane,
             &update_request, &update);
         if (SIXEL_FAILED(status)) goto end;
