@@ -181,6 +181,8 @@ VM Autotools jobs export the matrix-selected `MAKE` before running configure, th
 
 Windows jobs disable Git CRLF conversion before checkout, including Nightly jobs that build a separately selected branch. TAP shell sources must retain LF endings: dash can reject `set -eux` followed by a carriage return before any TAP plan is emitted. The checkout-order check protects this setup; a real Windows run remains necessary to validate the complete test-launch environment.
 
+The Nightly MSVC job builds develop and leaves `AR` and `ARFLAGS` unset. Its configure already detects MSVC, selects `ar-lib` from the configured auxiliary directory, and supplies archive flags. An explicit CI override suppresses those defaults and can retain a stale path after auxiliary files move. The workflow therefore exercises the existing [MSVC toolchain contract](../misc/platforms/msvc.md#toolchain-and-crt-contract) instead of maintaining a second archiver selection.
+
 ## Artifact policy
 
 Preserve artifacts needed to reproduce or understand a failure:
@@ -269,3 +271,4 @@ change and directly required source, test, or generated-file updates.
 | CI-04 | DragonFly BSD build failures return through attempt-specific records after artifact copyback, propagate to the host, and do not trigger VM retries. | [tests/_static/sh/staticcheck-ci-vm-result.sh](../../tests/_static/sh/staticcheck-ci-vm-result.sh) |
 | CI-05 | VM Autotools configure receives the same matrix-selected make as the subsequent build. | [tests/_static/sh/staticcheck-ci-configure-make.sh](../../tests/_static/sh/staticcheck-ci-configure-make.sh) |
 | CI-06 | Nightly disables checkout line-ending conversion before materializing shell tests. | [tests/_static/sh/staticcheck-ci-checkout-eol.sh](../../tests/_static/sh/staticcheck-ci-checkout-eol.sh) |
+| CI-07 | Nightly MSVC invokes configure without overriding its archiver or archive flags. | [tests/_static/sh/staticcheck-nightly-msvc-archiver.sh](../../tests/_static/sh/staticcheck-nightly-msvc-archiver.sh) |

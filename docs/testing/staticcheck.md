@@ -193,8 +193,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-33 | Shared C test sources and headers use the CRT compatibility scanning functions. | [tests/_static/sh/staticcheck-c-test-scanf.sh](../../tests/_static/sh/staticcheck-c-test-scanf.sh) |
 | SC-34 | VM configure uses the matrix-selected make before dependency bootstrap. | [tests/_static/sh/staticcheck-ci-configure-make.sh](../../tests/_static/sh/staticcheck-ci-configure-make.sh) |
 | SC-35 | gperf recipes and generated headers retain valid coverage source locations. | [tests/_static/sh/staticcheck-gperf-source-location.sh](../../tests/_static/sh/staticcheck-gperf-source-location.sh) |
-
 | SC-36 | Nightly configures LF-preserving checkout before the first checkout step; missing, inverted and late settings fail. | [tests/_static/sh/staticcheck-ci-checkout-eol.sh](../../tests/_static/sh/staticcheck-ci-checkout-eol.sh) |
+| SC-37 | The Nightly MSVC step retains a configure invocation and excludes AR/ARFLAGS overrides, with missing-invocation and explicit-override controls. | [tests/_static/sh/staticcheck-nightly-msvc-archiver.sh](../../tests/_static/sh/staticcheck-nightly-msvc-archiver.sh) |
 
 ### Coverage boundary
 
