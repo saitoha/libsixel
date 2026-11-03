@@ -15,14 +15,12 @@ test "${HAVE_WEBP-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
-out_file="${ARTIFACT_LOCAL_DIR}/webp-static-start-frame-env-outside-range.six"
 
 msg=$(set +xv; SIXEL_LOADER_ANIMATION_START_FRAME_NO=2 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${image_webp}" \
-    2>&1 >"${out_file}") && {
+    2>&1 -o/dev/null) && {
     echo "not ok" 1 - "out-of-frame-range env was unexpectedly accepted in static mode"
     exit 0
 }

@@ -8,8 +8,8 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/sampling_threads/0001_palette_invariance" full-frame 0 0 || {
-    echo "not ok 1 - full-frame default plain palette thread invariance"
+    echo "not ok" 1 - "full-frame default plain palette thread invariance"
     exit 0
 }
-echo "ok 1 - full-frame default plain palette thread invariance"
+echo "ok" 1 - "full-frame default plain palette thread invariance"
 exit 0

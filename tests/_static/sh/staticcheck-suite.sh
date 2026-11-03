@@ -977,6 +977,18 @@ run_case_tap "staticcheck-ci-vm-result" \
     "$src_root/tests/_static/sh/staticcheck-ci-vm-result.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-amalgamation-generated-inputs" \
+    sh "$src_root/tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-cli-discard-output" \
+    sh "$src_root/tests/_static/sh/staticcheck-cli-discard-output.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-emscripten-coverage" \
+    sh "$src_root/tests/_static/sh/staticcheck-emscripten-coverage.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-emscripten-node-stdio" \
     "$src_root/tests/_static/sh/staticcheck-emscripten-node-stdio.sh" \
     "$src_root" || fail_and_exit $?

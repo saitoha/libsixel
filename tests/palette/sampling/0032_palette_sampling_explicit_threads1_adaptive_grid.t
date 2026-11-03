@@ -17,19 +17,19 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     -4adaptive-grid \
     -Qheckbert -d none -p 16 "-~none" --cms-engine=none -L builtin -ldisable \
     "${TOP_SRCDIR}/images/snake.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - explicit single-thread adaptive sampling failed"
+    echo "not ok" 1 - "explicit single-thread adaptive sampling failed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=executed\|reason=explicit\|threads=1\|heavy=0\|budget_async=0\|job_ready=0**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit sampling plan changed in single-thread mode"
+    echo "not ok" 1 - "explicit sampling plan changed in single-thread mode"
     exit 0
 }
 
 case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit adaptive sampling did not execute"
+    echo "not ok" 1 - "explicit adaptive sampling did not execute"
     exit 0
 }
 
-echo "ok 1 - explicit adaptive sampling uses loaded-frame input synchronously"
+echo "ok" 1 - "explicit adaptive sampling uses loaded-frame input synchronously"
 exit 0

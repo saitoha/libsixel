@@ -80,6 +80,9 @@ struct sixel_encoder_palette_test_hooks {
         double *interval);
     void (*auto_result)(void *context, uint64_t sequence, int latest,
         int probe, double interval, double wait, char const *decision);
+    /* Observe the frame-local async job without holding its result lock. */
+    void (*async_launched)(void *context);
+    void (*async_finished)(void *context);
 };
 
 /* Test-only notification before a playback condition wait. The callback

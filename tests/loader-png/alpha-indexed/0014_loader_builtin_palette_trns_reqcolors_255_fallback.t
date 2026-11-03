@@ -15,12 +15,11 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-pal8-trns-multi0-semi-icc.png"
-out_lo="${ARTIFACT_LOCAL_DIR}/builtin-req255-cms0.six"
 log_lo="${ARTIFACT_LOCAL_DIR}/builtin-req255-cms0.log"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms_engine=none! \
               -B#ffffff -d none -p255 \
-              "${input_png}" >"${out_lo}" 2>"${log_lo}" || {
+              "${input_png}" -o/dev/null 2>"${log_lo}" || {
     echo "not ok 1 - builtin reqcolors=255 render failed"
     exit 0
 }

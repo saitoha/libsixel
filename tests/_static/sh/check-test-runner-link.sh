@@ -83,17 +83,18 @@ done
 # Run the OpenVMS config.status repair verbatim, with a lost dependency list.
 : > "$work/runner.o"
 {
-    awk '/^check_LTLIBRARIES = / { print; found = 1 }
+    awk '/^EXTRA_LTLIBRARIES = libfloatlookuptests.la$/ { print; found = 1 }
         END { if (!found) exit 1 }' "$src_root/tests/Makefile.am"
     cat <<'MAKE'
 am_test_runner_OBJECTS = runner.o
+libfloatlookuptests_la_OBJECTS = first-lookup.lo second-lookup.lo
 test_runner_DEPENDENCIES =
 test_runner:
 	@test "$(FAIL_LINK)" != yes
-	@for archive in $(check_LTLIBRARIES); do test -f $$archive || exit 1; done
+	@for object in $(libfloatlookuptests_la_OBJECTS); do test -f $$object || exit 1; done
 	@touch $@
-$(check_LTLIBRARIES):
-	@test "$(FAIL_ARCHIVE)" != yes
+$(libfloatlookuptests_la_OBJECTS):
+	@test "$(FAIL_PREREQUISITE)" != yes
 	@touch $@
 MAKE
     awk '/^SIXEL_OPENVMS_TEST_OBJECTS$/ { active = 0 }
@@ -105,7 +106,7 @@ MAKE
 run -n >/dev/null
 test ! -e "$work/test_runner"
 status=0
-run FAIL_ARCHIVE=yes >/dev/null 2>&1 || status=$?
+run FAIL_PREREQUISITE=yes >/dev/null 2>&1 || status=$?
 test "$status" -ne 0 && test ! -e "$work/test_runner"
 run >/dev/null
 run FAIL_LINK=yes >/dev/null

@@ -16,22 +16,22 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/sampling_float/0001_sampling_contract \
     worker 0 0 8bit 2>&1) || {
-    echo "not ok 1 - worker 8bit preserves float"
+    echo "not ok" 1 - "worker 8bit preserves float"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"job_ready=1"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - worker 8bit preserves float dispatch"
+    echo "not ok" 1 - "worker 8bit preserves float dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"points=2|quantizer_retries=0"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - worker 8bit preserves float dispatch"
+    echo "not ok" 1 - "worker 8bit preserves float dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-echo "ok 1 - worker 8bit preserves float"
+echo "ok" 1 - "worker 8bit preserves float"
 exit 0

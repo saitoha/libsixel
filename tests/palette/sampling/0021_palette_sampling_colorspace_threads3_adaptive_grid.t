@@ -21,18 +21,18 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract \
     -Wlinear -Qheckbert -d none -p 16 "-~none" \
     -L builtin -ldisable "${TOP_SRCDIR}/images/snake.png" \
     2>&1 >/dev/null) || {
-    echo "not ok 1 - three-thread linear palette encode failed"
+    echo "not ok" 1 - "three-thread linear palette encode failed"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=auto\|effective=adaptive-grid\|source=loaded-frame\|origin=auto\|phase=executed\|reason=sampling-default\|threads=3\|heavy=1\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - linear three-thread sampling plan changed"
+    echo "not ok" 1 - "linear three-thread sampling plan changed"
     exit 0
 }
 case "${trace}" in *LSXSMP1\|**) true ;; *) false ;; esac || {
-    echo "not ok 1 - linear three-thread path skipped adaptive sampling"
+    echo "not ok" 1 - "linear three-thread path skipped adaptive sampling"
     exit 0
 }
 
-echo "ok 1 - three threads admit sampling beside colorspace work"
+echo "ok" 1 - "three threads admit sampling beside colorspace work"
 exit 0

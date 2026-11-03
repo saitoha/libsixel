@@ -15,14 +15,12 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 palette_png="${TOP_SRCDIR}/images/pngsuite/basic/basn0g04.png"
 input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-target_sixel="${ARTIFACT_LOCAL_DIR}/mapfile-g4.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${palette_png}" "${input_png}" \
-        >"${target_sixel}" || {
+        -o/dev/null || {
     echo "not ok" 1 - "G4 PNG palette mapfile rejected"
     exit 0
 }

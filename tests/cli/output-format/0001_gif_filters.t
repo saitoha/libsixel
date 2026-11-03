@@ -11,12 +11,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
-target_sixel="${ARTIFACT_LOCAL_DIR}/snake-gif.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -Lbuiltin! -w105% -h100 -B"#000000000" -rne <"${snake_gif}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -g -Lbuiltin! -w105% -h100 -B"#000000000" -rne <"${snake_gif}" -o/dev/null || {
     echo "not ok" 1 - "GIF conversion with filters failed"
     exit 0
 }

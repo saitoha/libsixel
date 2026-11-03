@@ -16,6 +16,7 @@
 
 #include "src/compat_stub.h"
 
+#if SIXEL_ENABLE_THREADS
 #define TIMELINE_0008_LOG_PATH "0008_timeline_parallel_sample.jsonl"
 #define TIMELINE_0008_WIDTH 641
 #define TIMELINE_0008_HEIGHT 481
@@ -205,9 +206,16 @@ timeline_0008_session(char const *text)
     return !active && controllers >= 2 && distinct;
 }
 
+#endif
+
 int
 test_timeline_0008_timeline_parallel_sample(int argc, char **argv)
 {
+#if !SIXEL_ENABLE_THREADS
+    (void)argc;
+    (void)argv;
+    return 77;
+#else
     char *text;
     int success;
 
@@ -215,9 +223,6 @@ test_timeline_0008_timeline_parallel_sample(int argc, char **argv)
     (void)argv;
     text = NULL;
     success = 0;
-#if !SIXEL_ENABLE_THREADS
-    return EXIT_SUCCESS;
-#endif
     (void)sixel_compat_setenv("SIXEL_SAMPLE_PARALLEL_MIN_PIXELS", "1");
     (void)remove(TIMELINE_0008_LOG_PATH);
     if (sixel_compat_setenv("SIXEL_LOG_PATH", TIMELINE_0008_LOG_PATH) != 0) {
@@ -241,6 +246,7 @@ end:
     free(text);
     (void)remove(TIMELINE_0008_LOG_PATH);
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
+#endif
 }
 
 /* emacs Local Variables:      */

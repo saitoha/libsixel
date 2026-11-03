@@ -10,12 +10,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
-target_txt="${ARTIFACT_LOCAL_DIR}/gray-png-inspection.txt"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I "${snake_gray_png}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I "${snake_gray_png}" -o/dev/null || {
     echo "not ok" 1 - "grayscale PNG inspection fails"
     exit 0
 }

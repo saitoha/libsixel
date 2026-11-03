@@ -9,9 +9,9 @@ set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0026_sampling_auto_resolution" || {
-    echo "not ok 1 - automatic sampling resolution"
+    echo "not ok" 1 - "automatic sampling resolution"
     exit 0
 }
 
-echo "ok 1 - automatic sampling resolution"
+echo "ok" 1 - "automatic sampling resolution"
 exit 0

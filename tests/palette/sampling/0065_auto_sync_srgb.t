@@ -11,29 +11,29 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/sampling_float/0001_sampling_contract \
     auto-sync 0 0 auto 2>&1) || {
-    echo "not ok 1 - auto sync srgb"
+    echo "not ok" 1 - "auto sync srgb"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"effective=adaptive-grid|source=loaded-frame"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - auto sync srgb dispatch"
+    echo "not ok" 1 - "auto sync srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 # The explicit target selects two float observations before preprocessing.
 case "${trace}" in *"points=2|quantizer_retries=0"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - auto sync srgb dispatch"
+    echo "not ok" 1 - "auto sync srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"reason=sampling-default|threads=1"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - auto sync srgb dispatch"
+    echo "not ok" 1 - "auto sync srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-echo "ok 1 - auto sync srgb"
+echo "ok" 1 - "auto sync srgb"
 exit 0

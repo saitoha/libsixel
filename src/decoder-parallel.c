@@ -2301,8 +2301,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].undither = undither_prepared ? undither : NULL;
         /* Initialize every owner before any worker can allocate columns. */
         contexts[i].columns = NULL;
+        contexts_ready = i + 1;
     }
-    contexts_ready = threads;
 
     created = 0;
     for (i = 0; i < threads; ++i) {

@@ -21,14 +21,14 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=encode_handoff \
     -b xterm16 -d none "-~none" -L builtin -ldisable -g \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
     -o/dev/null 2>&1) || {
-    echo "not ok 1 - built-in palette handoff encode failed"
+    echo "not ok" 1 - "built-in palette handoff encode failed"
     exit 0
 }
 
 case "${trace}" in *event=callback_handoff_decide\ handoff=pipeline**) true ;; *) false ;; esac || {
-    echo "not ok 1 - bypassed sampling reserved a palette worker"
+    echo "not ok" 1 - "bypassed sampling reserved a palette worker"
     exit 0
 }
 
-echo "ok 1 - bypassed sampling leaves two threads for handoff"
+echo "ok" 1 - "bypassed sampling leaves two threads for handoff"
 exit 0

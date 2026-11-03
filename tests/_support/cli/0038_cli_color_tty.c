@@ -650,7 +650,10 @@ color_tty_script(char const *name, int master, int command, int report,
                 }
             }
         }
-        return count == -1 && (errno == EAGAIN || errno == EWOULDBLOCK);
+        /* Completion was reported before the drain. BSD may revoke the
+         * slave at child exit, producing EOF instead of an empty queue. */
+        return count == 0 || (count == -1 &&
+            (errno == EAGAIN || errno == EWOULDBLOCK || errno == EIO));
     }
     if (strcmp(name, "non-tty") == 0 || strcmp(name, "unrelated") == 0 ||
         strcmp(name, "identity") == 0 || strcmp(name, "foreground") == 0 ||

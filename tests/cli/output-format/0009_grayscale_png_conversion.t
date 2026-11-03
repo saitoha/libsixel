@@ -10,12 +10,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 snake_gray_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray.png"
-target_sixel="${ARTIFACT_LOCAL_DIR}/gray-png.sixel"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${snake_gray_png}" >"${target_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${snake_gray_png}" -o/dev/null || {
     echo "not ok" 1 - "grayscale PNG conversion fails"
     exit 0
 }

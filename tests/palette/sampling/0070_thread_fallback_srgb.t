@@ -17,22 +17,22 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/sampling_float/0001_sampling_contract \
     worker 0 0 auto 2>&1) || {
-    echo "not ok 1 - thread fallback srgb"
+    echo "not ok" 1 - "thread fallback srgb"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"LSXPFB1|stage=thread-create|action=same-sample-sync|"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - thread fallback srgb dispatch"
+    echo "not ok" 1 - "thread fallback srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"points=2|quantizer_retries=0"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - thread fallback srgb dispatch"
+    echo "not ok" 1 - "thread fallback srgb dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-echo "ok 1 - thread fallback srgb"
+echo "ok" 1 - "thread fallback srgb"
 exit 0

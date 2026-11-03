@@ -13,17 +13,17 @@ trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" --loaders=builtin! --precision-policy=8bit \
     -Q kmeans -W gamma -X gamma -5 auto \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - palette colors conversion failed"
+    echo "not ok" 1 - "palette colors conversion failed"
     exit 0
 }
 case "${trace}" in *'LSXBIN1|requested=auto|'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - binning request trace is missing"
+    echo "not ok" 1 - "binning request trace is missing"
     exit 0
 }
 case "${trace}" in *'LSXPCS1|convert=0|statistics=1|'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - auto identity omitted axis statistics"
+    echo "not ok" 1 - "auto identity omitted axis statistics"
     exit 0
 }
 
-echo "ok 1 - palette colors identity statistics"
+echo "ok" 1 - "palette colors identity statistics"
 exit 0

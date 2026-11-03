@@ -29,19 +29,19 @@ status=$?
 set -e
 
 test "${status}" -ne 0 || {
-    echo "not ok 1 - explicit sampling ignored worker failure"
+    echo "not ok" 1 - "explicit sampling ignored worker failure"
     exit 0
 }
 
 case "${trace}" in *LSXPFB1\|stage=init\|action=propagate-explicit\|cause=4352\|rc=4352**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit sampling replaced the worker failure status"
+    echo "not ok" 1 - "explicit sampling replaced the worker failure status"
     exit 0
 }
 
 case "${trace}" in *LSXSPL1\|requested=adaptive-grid\|effective=adaptive-grid\|source=loaded-frame\|origin=explicit\|phase=resolved\|reason=explicit\|threads=4\|heavy=0\|budget_async=1\|job_ready=1**) true ;; *) false ;; esac || {
-    echo "not ok 1 - explicit sampling failure changed policy state"
+    echo "not ok" 1 - "explicit sampling failure changed policy state"
     exit 0
 }
 
-echo "ok 1 - explicit sampling preserves worker failure status"
+echo "ok" 1 - "explicit sampling preserves worker failure status"
 exit 0

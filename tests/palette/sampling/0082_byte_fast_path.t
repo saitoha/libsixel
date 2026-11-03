@@ -16,16 +16,16 @@ trace=$(set +xv; SIXEL_TRACE_TOPIC=palette_contract,dither_contract \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     palette/sampling_float/0001_sampling_contract \
     byte 0 0 auto 2>&1) || {
-    echo "not ok 1 - byte fast path"
+    echo "not ok" 1 - "byte fast path"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
 case "${trace}" in *"points=2|quantizer_retries=0"*) true ;; *) false ;; esac || {
-    echo "not ok 1 - byte fast path dispatch"
+    echo "not ok" 1 - "byte fast path dispatch"
     printf "# %s\n" "${trace}"
     exit 0
 }
 
-echo "ok 1 - byte fast path"
+echo "ok" 1 - "byte fast path"
 exit 0

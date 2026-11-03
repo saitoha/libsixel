@@ -13,17 +13,17 @@ set -v
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \
     "${IMG2SIXEL_PATH}" -W auto -Q kmeans -X auto -5 hard \
     "${TOP_SRCDIR}/tests/data/inputs/snake_16.png" 2>&1 >/dev/null) || {
-    echo "not ok 1 - palette colors conversion failed"
+    echo "not ok" 1 - "palette colors conversion failed"
     exit 0
 }
 case "${trace}" in *'LSXBIN1|requested=hard|'*) true ;; *) false ;; esac || {
-    echo "not ok 1 - binning request trace is missing"
+    echo "not ok" 1 - "binning request trace is missing"
     exit 0
 }
 case "${trace}" in *'LSXPCS1|'*) false ;; *) true ;; esac || {
-    echo "not ok 1 - hard identity inserted an unnecessary filter"
+    echo "not ok" 1 - "hard identity inserted an unnecessary filter"
     exit 0
 }
 
-echo "ok 1 - palette colors hard skips statistics"
+echo "ok" 1 - "palette colors hard skips statistics"
 exit 0

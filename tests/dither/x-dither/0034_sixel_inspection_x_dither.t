@@ -9,15 +9,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 status=0
 
 
 snake_six="${TOP_SRCDIR}/images/map8.six"
-target_txt="${ARTIFACT_LOCAL_DIR}/sixel-inspection-x-dither.txt"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -dx_dither -h100 "${snake_six}" >"${target_txt}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -I -dx_dither -h100 "${snake_six}" -o/dev/null || {
     echo "not ok" 1 - "X ordered dither inspection fails"
     exit "${status}"
 }

@@ -6,11 +6,20 @@
 #include <sixel.h>
 #include "src/dither.h"
 #include "src/palette.h"
+#if !defined(__PCC__) && !defined(__TINYC__)
 #include "tests/data/color-numeric/clamp-bands.h"
+#endif
 
 int
 test_clamp_0040(int argc, char **argv)
 {
+#if defined(__PCC__) || defined(__TINYC__)
+    /* Match the deliberate compiler exclusion in dither.c. */
+    (void)argc;
+    (void)argv;
+    fputs("clamp: compiler disables parallel apply\n", stderr);
+    return EXIT_SUCCESS;
+#else
     static int const heights[4] = { 6, 6, 2, 7 };
     static int const overlaps[4] = { 2, 1, 2, 99 };
     unsigned char bytes[9] = { 0, 32, 223, 128, 128, 128, 255, 223, 32 };
@@ -27,11 +36,6 @@ test_clamp_0040(int argc, char **argv)
     int n;
     int ok;
 
-#if defined(__PCC__) || defined(__TINYC__)
-    /* Match the deliberate compiler exclusion in dither.c. */
-    fputs("clamp: compiler disables parallel apply\n", stderr);
-    return EXIT_SUCCESS;
-#endif
     scenario = argc > 1 ? atoi(argv[1]) : 0;
     if (scenario < 0 || scenario > 3) {
         return EXIT_FAILURE;
@@ -117,4 +121,5 @@ end:
     }
     sixel_dither_unref(parallel);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+#endif
 }

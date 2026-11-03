@@ -826,6 +826,7 @@ struct sixel_palette_snapshot {
 };
 
 typedef struct sixel_palette_async_job {
+    struct sixel_encoder_palette_test_hooks const *test_hooks;
     sixel_threading_snapshot_t policy;
     sixel_thread_t thread;
     sixel_mutex_t mutex;
@@ -6478,6 +6479,9 @@ sixel_encoder_palette_job_thread(void *priv)
     if (logger != NULL) {
         sixel_timeline_logger_clear_frame_context(logger);
     }
+    if (job->test_hooks != NULL && job->test_hooks->async_finished != NULL) {
+        job->test_hooks->async_finished(job->test_hooks->context);
+    }
 
     return 0;
 }
@@ -6720,6 +6724,7 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    job->test_hooks = encoder->palette_test_hooks;
     job->logger = encoder->logger;
     job->target_pixelformat = target_pixelformat;
     job->frame_no = sixel_frame_get_frame_no(frame);
@@ -6781,6 +6786,9 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
     }
 
     job->started = 1;
+    if (job->test_hooks != NULL && job->test_hooks->async_launched != NULL) {
+        job->test_hooks->async_launched(job->test_hooks->context);
+    }
 
     return SIXEL_OK;
 }
