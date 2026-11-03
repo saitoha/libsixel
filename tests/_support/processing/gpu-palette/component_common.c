@@ -81,7 +81,7 @@ gpu_component_set_palette(gpu_component_fixture_t *fixture, unsigned char r)
 }
 
 int
-gpu_component_open(gpu_component_fixture_t *fixture, int ordered)
+gpu_component_open(gpu_component_fixture_t *fixture, int kind)
 {
     void *object;
     SIXELSTATUS status;
@@ -96,9 +96,28 @@ gpu_component_open(gpu_component_fixture_t *fixture, int ordered)
     }
     fixture->palette = object;
     if (!gpu_component_set_palette(fixture, 17)) return 0;
-    status = ordered ? sixel_gpu_lookup_ordered_create(fixture->allocator,
-        &fixture->provider) : sixel_gpu_lookup_vptree_create(fixture->allocator,
-        &fixture->provider);
+    switch (kind) {
+    case 0:
+        status = sixel_gpu_lookup_vptree_create(fixture->allocator,
+            &fixture->provider);
+        break;
+    case 1:
+        status = sixel_gpu_lookup_ordered_create(fixture->allocator,
+            &fixture->provider);
+        break;
+    case 2:
+        status = sixel_gpu_lookup_rbc_create(fixture->allocator,
+            &fixture->provider);
+        break;
+    case 3:
+        status = sixel_gpu_lookup_mahalanobis_create(fixture->allocator,
+            &fixture->provider);
+        break;
+    default:
+        status = sixel_gpu_lookup_certlut_create(fixture->allocator,
+            &fixture->provider);
+        break;
+    }
     if (status != SIXEL_OK) return 0;
     fixture->request.working_palette = fixture->palette;
     fixture->request.ncolors = 2;

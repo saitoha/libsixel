@@ -1300,8 +1300,11 @@ sixel_certlut_is_cell_safe(sixel_certlut_t const *lut, int best_idx,
 
     /*
      * The certification bound compares the squared distance gap against the
-     * palette separation scaled by the cube diameter.  If the gap wins the
-     * entire cube maps to the current best palette entry.
+     * palette separation scaled by the cube diameter. This only proves
+     * dominance over the center's runner-up, not over every competitor.
+     * Another color can win inside an accepted cube; the CPU byte policy
+     * therefore remains approximate. The GPU provider checks all competitors
+     * independently and does not reuse this pair-only certificate.
      */
     delta_sq = second_dist - best_dist;
     weight_term = 0U;

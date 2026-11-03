@@ -3,6 +3,9 @@
 #define TEST_GPU_COMPONENT_COMMON_H
 #include "src/gpu-lookup-ordered.h"
 #include "src/gpu-lookup-vptree.h"
+#include "src/gpu-lookup-rbc.h"
+#include "src/gpu-lookup-mahalanobis.h"
+#include "src/gpu-lookup-certlut.h"
 #include "src/palette.h"
 
 typedef struct gpu_component_fixture {

@@ -5,6 +5,9 @@
 #include "gpu-lookup.h"
 #include "gpu-lookup-ordered.h"
 #include "gpu-lookup-vptree.h"
+#include "gpu-lookup-rbc.h"
+#include "gpu-lookup-mahalanobis.h"
+#include "gpu-lookup-certlut.h"
 #include "gpu-lookup-legacy.h"
 
 /* Composition is the only layer that knows concrete lookup constructors.
@@ -15,7 +18,10 @@ static struct {
         sixel_gpu_lookup_preparer_interface_t **);
 } const gpu_lookup_registrations[] = {
     { SIXEL_LUT_POLICY_ORDERED, sixel_gpu_lookup_ordered_create },
-    { SIXEL_LUT_POLICY_VPTREE, sixel_gpu_lookup_vptree_create }
+    { SIXEL_LUT_POLICY_VPTREE, sixel_gpu_lookup_vptree_create },
+    { SIXEL_LUT_POLICY_RBC, sixel_gpu_lookup_rbc_create },
+    { SIXEL_LUT_POLICY_MAHALANOBIS, sixel_gpu_lookup_mahalanobis_create },
+    { SIXEL_LUT_POLICY_CERTLUT, sixel_gpu_lookup_certlut_create }
 };
 
 int

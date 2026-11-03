@@ -256,15 +256,24 @@ libsixel_la_SOURCES = \
                 $(srcdir)/gpu-palette.c \
                 $(srcdir)/gpu-lookup-ordered.c \
                 $(srcdir)/gpu-lookup-vptree.c \
+                $(srcdir)/gpu-lookup-rbc.c \
+                $(srcdir)/gpu-lookup-mahalanobis.c \
+                $(srcdir)/gpu-lookup-certlut.c \
                 $(srcdir)/gpu-lookup-legacy.c \
                 $(srcdir)/gpu-lookup-registry.c \
                 $(srcdir)/gpu-lookup.h \
                 $(srcdir)/gpu-lookup-ordered.h \
                 $(srcdir)/gpu-lookup-vptree.h \
+                $(srcdir)/gpu-lookup-rbc.h \
+                $(srcdir)/gpu-lookup-mahalanobis.h \
+                $(srcdir)/gpu-lookup-certlut.h \
                 $(srcdir)/gpu-lookup-legacy.h \
                 $(srcdir)/gpu-program.h \
                 $(srcdir)/gpu-lookup-ordered-shader.inc.h \
                 $(srcdir)/gpu-lookup-vptree-shader.inc.h \
+                $(srcdir)/gpu-lookup-rbc-shader.inc.h \
+                $(srcdir)/gpu-lookup-mahalanobis-shader.inc.h \
+                $(srcdir)/gpu-lookup-certlut-shader.inc.h \
                 $(srcdir)/gpu-palette-program.inc.h \
                 $(srcdir)/gpu-palette-fused-prefix.inc.h \
                 $(srcdir)/gpu-palette-fused-suffix.inc.h \

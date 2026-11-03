@@ -369,6 +369,9 @@ BEGIN {
     inline_once["dither-lookup-preparer.inc.h"] = 1;
     inline_once["gpu-lookup-ordered-shader.inc.h"] = 1;
     inline_once["gpu-lookup-vptree-shader.inc.h"] = 1;
+    inline_once["gpu-lookup-rbc-shader.inc.h"] = 1;
+    inline_once["gpu-lookup-mahalanobis-shader.inc.h"] = 1;
+    inline_once["gpu-lookup-certlut-shader.inc.h"] = 1;
     inline_once["gpu-palette-fused-prefix.inc.h"] = 1;
     inline_once["gpu-palette-fused-suffix.inc.h"] = 1;
     inline_once["gpu-palette-program.inc.h"] = 1;

@@ -2,6 +2,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "src/dither.h"
@@ -39,6 +40,7 @@ indexed_gpu_lookup_preparation_test(int mode, int lookup)
     unsigned char palette[33 * 3];
     unsigned char pixels[16 * 16 * 3];
     int i, pass, ok;
+    SIXELSTATUS status;
 
     if (mode < 0 || mode > 5) return 1;
     if (mode <= 1 && !sixel_gpu_palette_plan_available()) return 77;
@@ -58,7 +60,11 @@ indexed_gpu_lookup_preparation_test(int mode, int lookup)
                     &streams[pass], NULL) != SIXEL_OK) goto end;
         sixel_dither_set_palette(dither[pass], palette);
         sixel_dither_set_pixelformat(dither[pass], SIXEL_PIXELFORMAT_RGB888);
-        sixel_dither_set_lut_policy(dither[pass], lookup);
+        /* GPU certlut uses exact certificates, unlike CPU pair-only cells.
+         * An explicit palette keeps this comparison at lookup application. */
+        sixel_dither_set_lut_policy(dither[pass], pass == 1 && mode <= 1 &&
+            lookup == SIXEL_LUT_POLICY_CERTLUT
+                ? SIXEL_LUT_POLICY_NONE : lookup);
         if (lookup == SIXEL_LUT_POLICY_FHEDT) {
             dither[pass]->lut_policy_fhedt_use_cache_override = 1;
             dither[pass]->lut_policy_fhedt_use_cache = mode == 5;
@@ -70,12 +76,23 @@ indexed_gpu_lookup_preparation_test(int mode, int lookup)
             ? SIXEL_GPU_POLICY_OFF : mode == 0
             ? SIXEL_GPU_POLICY_FORCE : SIXEL_GPU_POLICY_AUTO;
         dither[pass]->gpu_palette_threshold = mode == 2 ? 1000000U : 0U;
-        if (sixel_encode(pixels, 16, 16, 3, dither[pass], output[pass]) !=
-                SIXEL_OK || output[pass]->indexed_count != 1) goto end;
+        status = sixel_encode(pixels, 16, 16, 3, dither[pass], output[pass]);
+        /* CPU certlut defaults to per-worker mutable instances, so its
+         * parallel fallback deliberately keeps the legacy adapter. */
+        if (status != SIXEL_OK || (output[pass]->indexed_count != 1 &&
+                !(lookup == SIXEL_LUT_POLICY_CERTLUT && mode > 1))) {
+            fprintf(stderr, "encode pass %d: status %x, indexed %u\n",
+                pass, (unsigned int)status,
+                (unsigned int)output[pass]->indexed_count);
+            goto end;
+        }
     }
     if ((dither[0]->lookup_policy == NULL) != (mode <= 1) ||
             streams[0].size == 0 || streams[0].size != streams[1].size ||
             memcmp(streams[0].data, streams[1].data, streams[0].size)) {
+        fprintf(stderr, "lookup presence %d, stream sizes %zu/%zu\n",
+            dither[0]->lookup_policy != NULL,
+            streams[0].size, streams[1].size);
         goto end;
     }
     ok = 1;
