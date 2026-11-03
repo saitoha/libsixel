@@ -15,6 +15,7 @@ AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AM_MAINTAINER_MODE([disable])
+SIXEL_COMPARE_SETUP
 LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
@@ -656,6 +657,7 @@ AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
 
+SIXEL_COMPARE_BUILD
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
                  package.json.in

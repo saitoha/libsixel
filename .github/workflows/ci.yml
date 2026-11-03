@@ -28,6 +28,11 @@ jobs:
             sys: CLANG64
 
     steps:
+    - name: Configure git EOL
+      if: runner.os == 'Windows'
+      shell: bash
+      run: git config --global core.autocrlf false
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -83,6 +88,19 @@ jobs:
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: make check
+
+    - name: Upload failure diagnostics
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: diagnostics-${{ matrix.os }}-${{ matrix.sys || 'native' }}
+        path: |
+          config.log
+          **/test-suite.log
+          tests/**/*.log
+          tests/**/*.trs
+        if-no-files-found: warn
+        retention-days: 7
 
 # emacs Local Variables:
 # emacs mode: c

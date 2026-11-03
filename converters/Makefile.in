@@ -105,7 +105,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/sixel_compare.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am \
@@ -301,7 +302,9 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
+CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
+CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CSCOPE = @CSCOPE@
@@ -378,6 +381,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_COMPARE_EXEEXT = @SIXEL_COMPARE_EXEEXT@
 STRIP = @STRIP@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
@@ -1286,9 +1290,9 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
 @WANT_IMG2SIXEL_TRUE@	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt
 @WANT_IMG2SIXEL_TRUE@	grep '{-' $(srcdir)/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > $(builddir)/tmp/options4.txt
-@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt; fi
-@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt; fi
-@WANT_IMG2SIXEL_TRUE@	if which diff; then diff $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt; fi
+@WANT_IMG2SIXEL_TRUE@	PATH="$$PATH:$(abs_top_builddir)/tools/compare:$(abs_top_srcdir)/build-aux/compare" cmp $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt
+@WANT_IMG2SIXEL_TRUE@	PATH="$$PATH:$(abs_top_builddir)/tools/compare:$(abs_top_srcdir)/build-aux/compare" cmp $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt
+@WANT_IMG2SIXEL_TRUE@	PATH="$$PATH:$(abs_top_builddir)/tools/compare:$(abs_top_srcdir)/build-aux/compare" cmp $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt
 
 	@echo '[succeeded]'
 

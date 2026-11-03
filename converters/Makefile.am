@@ -301,9 +301,9 @@ endif
 	grep ^\.B $(srcdir)/img2sixel.1  | cut -f2 -d " " | grep "^\\\\" | tr -d '\\' | tr -d , > $(builddir)/tmp/options2.txt
 	grep ' --' $(srcdir)/shell-completion/bash/img2sixel| grep -v "' "| sed 's/.* \(-.\) .*/\1/' > $(builddir)/tmp/options3.txt
 	grep '{-' $(srcdir)/shell-completion/zsh/_img2sixel|cut -f1 -d,|cut -f2 -d'{' > $(builddir)/tmp/options4.txt
-	if which diff; then diff $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt; fi
-	if which diff; then diff $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt; fi
-	if which diff; then diff $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt; fi
+	PATH="$$PATH:$(abs_top_builddir)/tools/compare:$(abs_top_srcdir)/build-aux/compare" cmp $(builddir)/tmp/options1.txt $(builddir)/tmp/options2.txt
+	PATH="$$PATH:$(abs_top_builddir)/tools/compare:$(abs_top_srcdir)/build-aux/compare" cmp $(builddir)/tmp/options2.txt $(builddir)/tmp/options3.txt
+	PATH="$$PATH:$(abs_top_builddir)/tools/compare:$(abs_top_srcdir)/build-aux/compare" cmp $(builddir)/tmp/options3.txt $(builddir)/tmp/options4.txt
 endif
 
 	@echo '[succeeded]'

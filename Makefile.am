@@ -23,7 +23,8 @@ DIST_TEST_FIXTURES = \
 	tests/issue/GHSA-wpx3-h5g8-qr3w/decode-raw-null-palette.c \
 	tests/issue/GHSA-wpx3-h5g8-qr3w/decode-null-palette.c
 
-EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
+EXTRA_DIST = build-aux/compare/cmp build-aux/compare/diff m4/sixel_compare.m4 \
+    LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
 	$(DIST_IMAGE_FILES) \
 	$(DIST_TEST_FIXTURES)

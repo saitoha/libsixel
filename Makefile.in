@@ -96,7 +96,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/sixel_compare.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -251,7 +252,9 @@ AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
+CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
+CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CSCOPE = @CSCOPE@
@@ -328,6 +331,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_COMPARE_EXEEXT = @SIXEL_COMPARE_EXEEXT@
 STRIP = @STRIP@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
@@ -422,7 +426,8 @@ DIST_TEST_FIXTURES = \
 	tests/issue/GHSA-wpx3-h5g8-qr3w/decode-raw-null-palette.c \
 	tests/issue/GHSA-wpx3-h5g8-qr3w/decode-null-palette.c
 
-EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
+EXTRA_DIST = build-aux/compare/cmp build-aux/compare/diff m4/sixel_compare.m4 \
+    LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
 	$(DIST_IMAGE_FILES) \
 	$(DIST_TEST_FIXTURES)

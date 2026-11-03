@@ -1,0 +1,11 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Libtool only needs equality. Optional human-readable diagnostics may ask
+# for -u; report inequality explicitly, without claiming to produce a patch.
+case ${1-} in -u) shift ;; esac
+if test "$#" -ne 2; then
+    echo 'diff fallback: only equality of two files is supported' >&2
+    exit 2
+fi
+cmp "$@"
+exit $?
