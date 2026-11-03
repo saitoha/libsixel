@@ -154,7 +154,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     }
     gpu = request->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
         options.bluenoise_gradient_factor == 0 &&
-        (kind == SIXEL_LUT_POLICY_NONE || kind == SIXEL_LUT_POLICY_EYTZINGER ||
+        (kind == SIXEL_LUT_POLICY_5BIT || kind == SIXEL_LUT_POLICY_6BIT ||
+         kind == SIXEL_LUT_POLICY_NONE || kind == SIXEL_LUT_POLICY_EYTZINGER ||
          kind == SIXEL_LUT_POLICY_BLOCKCULL ||
          kind == SIXEL_LUT_POLICY_GRIDLUT ||
          kind == SIXEL_LUT_POLICY_ORDERED ||

@@ -45,7 +45,8 @@ typedef struct sixel_gpu_palette_test_hooks {
     int fault;
     int entered;
     int matrix_supported;
-    /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order, 6 graph, 7 FHEDT. */
+    /* 1 direct, 2 gemm, 3 block, 4 grid, 5 order, 6 graph,
+     * 7 FHEDT, 8 bit LUT. */
     int kernel;
     int rebuild;
     int published;
@@ -53,6 +54,7 @@ typedef struct sixel_gpu_palette_test_hooks {
     size_t retained_valid_upload_bytes;
     /* Physical FHEDT table format, independent of requested refinement. */
     size_t fhedt_table_entry_bytes;
+    size_t bitlut_table_bytes;
 } sixel_gpu_palette_test_hooks_t;
 
 /*
@@ -66,7 +68,7 @@ typedef struct sixel_gpu_palette_test_hooks {
  * scan; GRIDLUT reuses fixed RGB-cell candidates; ORDERED reuses
  * distance-sorted rows and seed colors; DELAUNAY walks conservative
  * closed-cell adjacency; FHEDT constructs a quantized RGB grid and optional
- * corner refinement; EYTZINGER
+ * corner refinement; 5BIT/6BIT build immutable cell-center tables; EYTZINGER
  * uses the one-dimensional projected lookup. Unsupported shapes
  * return SIXEL_FALSE for policy=auto so the caller can continue through the
  * CPU path.

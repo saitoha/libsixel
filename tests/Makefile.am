@@ -3011,6 +3011,61 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0051_FLOAT_REFERENCE_R128 \
     -DBUILD_TEST_0052_FLOAT_REFERENCE_R256 \
     -DBUILD_FHEDT_SPARSE_TEST_COMMON \
+    -DBUILD_BITLUT_COMMON \
+    -DBUILD_TEST_0034_5BIT_GPU_CENTERS \
+    -DBUILD_TEST_0035_5BIT_GPU_TIE \
+    -DBUILD_TEST_0036_5BIT_GPU_INDEX255 \
+    -DBUILD_TEST_0037_5BIT_GPU_TABLE_BYTES \
+    -DBUILD_TEST_0038_5BIT_GPU_REUSE \
+    -DBUILD_TEST_0039_5BIT_GPU_PALETTE_REBUILD \
+    -DBUILD_TEST_0040_5BIT_GPU_COUNT_REBUILD \
+    -DBUILD_TEST_0041_5BIT_GPU_BITS_REBUILD \
+    -DBUILD_TEST_0042_5BIT_GPU_ALLOCATION_RECOVERY \
+    -DBUILD_TEST_0043_5BIT_GPU_ENCODER_RECOVERY \
+    -DBUILD_TEST_0044_5BIT_GPU_COMPLETION_RECOVERY \
+    -DBUILD_TEST_0045_5BIT_GPU_TRAVERSAL \
+    -DBUILD_TEST_0046_5BIT_GPU_BLUENOISE \
+    -DBUILD_TEST_0047_5BIT_GPU_ARITHMETIC_A \
+    -DBUILD_TEST_0048_5BIT_GPU_ARITHMETIC_X \
+    -DBUILD_TEST_0049_5BIT_GPU_DELTA_INDEXES \
+    -DBUILD_TEST_0050_5BIT_GPU_DELTA_MASK \
+    -DBUILD_TEST_0051_5BIT_GPU_DELTA_BLUE_INDEXES \
+    -DBUILD_TEST_0052_5BIT_GPU_DELTA_BLUE_MASK \
+    -DBUILD_TEST_0053_5BIT_GPU_TRANSPARENT \
+    -DBUILD_TEST_0054_5BIT_GPU_AUTO \
+    -DBUILD_TEST_0055_5BIT_GPU_THRESHOLD \
+    -DBUILD_TEST_0056_5BIT_GPU_FORCE_NO_CPU \
+    -DBUILD_TEST_0057_5BIT_GPU_AUTO_NO_CPU \
+    -DBUILD_TEST_0058_5BIT_GPU_SHARED_OVERRIDE \
+    -DBUILD_TEST_0059_5BIT_GPU_PACKING_OVERRIDE \
+    -DBUILD_TEST_0060_5BIT_GPU_CPU_FALLBACK \
+    -DBUILD_TEST_0034_6BIT_GPU_CENTERS \
+    -DBUILD_TEST_0035_6BIT_GPU_TIE \
+    -DBUILD_TEST_0036_6BIT_GPU_INDEX255 \
+    -DBUILD_TEST_0037_6BIT_GPU_TABLE_BYTES \
+    -DBUILD_TEST_0038_6BIT_GPU_REUSE \
+    -DBUILD_TEST_0039_6BIT_GPU_PALETTE_REBUILD \
+    -DBUILD_TEST_0040_6BIT_GPU_COUNT_REBUILD \
+    -DBUILD_TEST_0041_6BIT_GPU_BITS_REBUILD \
+    -DBUILD_TEST_0042_6BIT_GPU_ALLOCATION_RECOVERY \
+    -DBUILD_TEST_0043_6BIT_GPU_ENCODER_RECOVERY \
+    -DBUILD_TEST_0044_6BIT_GPU_COMPLETION_RECOVERY \
+    -DBUILD_TEST_0045_6BIT_GPU_TRAVERSAL \
+    -DBUILD_TEST_0046_6BIT_GPU_BLUENOISE \
+    -DBUILD_TEST_0047_6BIT_GPU_ARITHMETIC_A \
+    -DBUILD_TEST_0048_6BIT_GPU_ARITHMETIC_X \
+    -DBUILD_TEST_0049_6BIT_GPU_DELTA_INDEXES \
+    -DBUILD_TEST_0050_6BIT_GPU_DELTA_MASK \
+    -DBUILD_TEST_0051_6BIT_GPU_DELTA_BLUE_INDEXES \
+    -DBUILD_TEST_0052_6BIT_GPU_DELTA_BLUE_MASK \
+    -DBUILD_TEST_0053_6BIT_GPU_TRANSPARENT \
+    -DBUILD_TEST_0054_6BIT_GPU_AUTO \
+    -DBUILD_TEST_0055_6BIT_GPU_THRESHOLD \
+    -DBUILD_TEST_0056_6BIT_GPU_FORCE_NO_CPU \
+    -DBUILD_TEST_0057_6BIT_GPU_AUTO_NO_CPU \
+    -DBUILD_TEST_0058_6BIT_GPU_SHARED_OVERRIDE \
+    -DBUILD_TEST_0059_6BIT_GPU_PACKING_OVERRIDE \
+    -DBUILD_TEST_0060_6BIT_GPU_CPU_FALLBACK \
     -DBUILD_TEST_0147_GPU_R256_COMPACT_TABLE \
     -DBUILD_TEST_0148_GPU_SPARSE_R64 \
     -DBUILD_TEST_0149_GPU_SPARSE_R128 \
@@ -6265,6 +6320,61 @@ test_runner_SOURCES = test_runner.c \
     lookup/blockcull/0001_blockcull_exact.c \
     lookup/gridlut/0001_gridlut_exact.c \
     lookup/ordered/0001_ordered_exact.c \
+    lookup/5bit/0034_5bit_gpu_centers.c \
+    lookup/5bit/0035_5bit_gpu_tie.c \
+    lookup/5bit/0036_5bit_gpu_index255.c \
+    lookup/5bit/0037_5bit_gpu_table_bytes.c \
+    lookup/5bit/0038_5bit_gpu_reuse.c \
+    lookup/5bit/0039_5bit_gpu_palette_rebuild.c \
+    lookup/5bit/0040_5bit_gpu_count_rebuild.c \
+    lookup/5bit/0041_5bit_gpu_bits_rebuild.c \
+    lookup/5bit/0042_5bit_gpu_allocation_recovery.c \
+    lookup/5bit/0043_5bit_gpu_encoder_recovery.c \
+    lookup/5bit/0044_5bit_gpu_completion_recovery.c \
+    lookup/5bit/0045_5bit_gpu_traversal.c \
+    lookup/5bit/0046_5bit_gpu_bluenoise.c \
+    lookup/5bit/0047_5bit_gpu_arithmetic_a.c \
+    lookup/5bit/0048_5bit_gpu_arithmetic_x.c \
+    lookup/5bit/0049_5bit_gpu_delta_indexes.c \
+    lookup/5bit/0050_5bit_gpu_delta_mask.c \
+    lookup/5bit/0051_5bit_gpu_delta_blue_indexes.c \
+    lookup/5bit/0052_5bit_gpu_delta_blue_mask.c \
+    lookup/5bit/0053_5bit_gpu_transparent.c \
+    lookup/5bit/0054_5bit_gpu_auto.c \
+    lookup/5bit/0055_5bit_gpu_threshold.c \
+    lookup/5bit/0056_5bit_gpu_force_no_cpu.c \
+    lookup/5bit/0057_5bit_gpu_auto_no_cpu.c \
+    lookup/5bit/0058_5bit_gpu_shared_override.c \
+    lookup/5bit/0059_5bit_gpu_packing_override.c \
+    lookup/5bit/0060_5bit_gpu_cpu_fallback.c \
+    lookup/6bit/0034_6bit_gpu_centers.c \
+    lookup/6bit/0035_6bit_gpu_tie.c \
+    lookup/6bit/0036_6bit_gpu_index255.c \
+    lookup/6bit/0037_6bit_gpu_table_bytes.c \
+    lookup/6bit/0038_6bit_gpu_reuse.c \
+    lookup/6bit/0039_6bit_gpu_palette_rebuild.c \
+    lookup/6bit/0040_6bit_gpu_count_rebuild.c \
+    lookup/6bit/0041_6bit_gpu_bits_rebuild.c \
+    lookup/6bit/0042_6bit_gpu_allocation_recovery.c \
+    lookup/6bit/0043_6bit_gpu_encoder_recovery.c \
+    lookup/6bit/0044_6bit_gpu_completion_recovery.c \
+    lookup/6bit/0045_6bit_gpu_traversal.c \
+    lookup/6bit/0046_6bit_gpu_bluenoise.c \
+    lookup/6bit/0047_6bit_gpu_arithmetic_a.c \
+    lookup/6bit/0048_6bit_gpu_arithmetic_x.c \
+    lookup/6bit/0049_6bit_gpu_delta_indexes.c \
+    lookup/6bit/0050_6bit_gpu_delta_mask.c \
+    lookup/6bit/0051_6bit_gpu_delta_blue_indexes.c \
+    lookup/6bit/0052_6bit_gpu_delta_blue_mask.c \
+    lookup/6bit/0053_6bit_gpu_transparent.c \
+    lookup/6bit/0054_6bit_gpu_auto.c \
+    lookup/6bit/0055_6bit_gpu_threshold.c \
+    lookup/6bit/0056_6bit_gpu_force_no_cpu.c \
+    lookup/6bit/0057_6bit_gpu_auto_no_cpu.c \
+    lookup/6bit/0058_6bit_gpu_shared_override.c \
+    lookup/6bit/0059_6bit_gpu_packing_override.c \
+    lookup/6bit/0060_6bit_gpu_cpu_fallback.c \
+    _support/processing/gpu-palette/bitlut_common.c \
     lookup/fhedt/0147_gpu_r256_compact_table.c \
     lookup/fhedt/0148_gpu_sparse_r64.c \
     lookup/fhedt/0149_gpu_sparse_r128.c \

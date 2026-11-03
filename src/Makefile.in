@@ -100,6 +100,7 @@ host_triplet = @host@
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_3 = \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal-fhedt.inc.h \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal-bitlut.inc.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/palette-kmeans-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/progressive-gpu-metal.m
 
@@ -408,6 +409,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/quicklook_thumbnailing.m \
 	$(srcdir)/gpu-palette-metal.m \
 	$(srcdir)/gpu-palette-metal-fhedt.inc.h \
+	$(srcdir)/gpu-palette-metal-bitlut.inc.h \
 	$(srcdir)/palette-kmeans-metal.m \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c

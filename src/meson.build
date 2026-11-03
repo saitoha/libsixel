@@ -35,6 +35,7 @@ srcs = [
   'encoder-core-indexed.inc.h',
   'encoder-core-session.inc.h',
   'gpu-palette-metal-fhedt.inc.h',
+  'gpu-palette-metal-bitlut.inc.h',
   'fromsixel.c',
   'encoder-core-encode.c',
   'encoder-core-highcolor.c',

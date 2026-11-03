@@ -53,7 +53,8 @@ The labels apply to one already-adjusted color candidate. They do not imply that
 | Policy and representation | Default guarantee | Important qualification |
 | --- | --- | --- |
 | `none` | Scan-index exact on its direct path | Canonical two-entry black/white palettes select an internal threshold policy first |
-| `5bit` / `6bit`, 8-bit | Approximate after a bucket is cached | The first completed query is exact; shared parallel writers can choose different valid representatives, so repeated runs need not be byte-reproducible |
+| `5bit` / `6bit`, CPU 8-bit | Approximate after a bucket is cached | The first completed query is exact; shared parallel writers can choose different valid representatives, so repeated runs need not be byte-reproducible |
+| `5bit` / `6bit`, Metal RGB888 | Approximate cell-center lookup | Eager shared table, independent of query traversal; differs from CPU memoization |
 | `5bit` / `6bit`, float32 | Scan-index exact | Exhaustive scan in the normalized policy metric |
 | `certlut`, 8-bit | Approximate | The current cube test checks only the center's second-nearest competitor, not every possible boundary competitor |
 | `certlut`, float32 | Nearest-distance exact | kd-tree pruning preserves the normalized policy minimum |
@@ -72,7 +73,7 @@ The labels apply to one already-adjusted color candidate. They do not imply that
 | `mahalanobis`, float32 | Nearest-distance exact | The current query still compares every cluster member in the normalized metric |
 | `mahalanobis`, 8-bit | Scan-index exact | The current implementation is a direct scan |
 
-`auto` inherits the concrete backend's guarantee. Configuration can matter as much as the base policy name. For example, an optional FHEDT cache remembers a voxel result, while the dense-bucket policies remember the result of the first actual color that entered a bucket.
+`auto` inherits the concrete backend's guarantee. Configuration can matter as much as the base policy name. For example, an optional FHEDT cache remembers a voxel result, while the CPU dense-bucket policies remember the result of the first actual color that entered a bucket.
 
 ### Extended float coordinates
 
@@ -120,7 +121,7 @@ This comparison is mainly about applying an already-built palette. A data struct
 | Implementation | Palette-application strategy | Relation to libsixel |
 | --- | --- | --- |
 | `a-sixel` | Lab kd-tree for every builder except `PaletteBuilder::Bit`; that builder uses a bit-dilation LUT | Closest to tree-based exact lookup, with a dedicated fast path coupled to one palette builder |
-| `go-sixel` | Eager RGB555 table built by scanning the palette at each cell center | Similar address space to `5bit`, but eager and center-representative rather than lazy and first-query-representative |
+| `go-sixel` | Eager RGB555 table built by scanning the palette at each cell center | Related to Metal `5bit` center precomputation; CPU `5bit` instead memoizes the first actual query, and address rounding differs |
 | `libsixel/libsixel` fork | Lazy RGB555 hash/LUT in its current `quant.c` | Shares the historical 5-bit bucket design lineage |
 | `libimagequant` / pngquant | VP-tree palette remapping with a previous-result hint | Not a SIXEL encoder, but a direct influence on libsixel's VP-tree safe cache |
 | Netpbm `pnmquant` / `pnmremap` | Exact-tuple hash memoization; each cache miss exhaustively scans all `K` palette entries with squared Cartesian distance | Like `none` on a cold 8-bit RGB tuple, but repeated identical tuples are cached without merging neighboring colors |
@@ -159,7 +160,7 @@ For an ordinary 8-bit RGB image, `maxval = 255`, `D = 3`, and `q = 1`, so the fu
 
 The current `a-sixel` source constructs a [`KdTreeBucketer` for all non-`Bit` palette builders](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/lib.rs#L285-L296) and performs [squared-Euclidean nearest-neighbor queries in Lab](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/dither.rs#L76-L108). Its [`BitPaletteBucketer`](https://github.com/Jesterhearts/a-sixel/blob/e2ffc9aa674aeb00779d2b8d5a5bd7ddb4615022/src/bit.rs#L116-L190) is the exception. `a-sixel` also uses kd-trees inside some palette builders; that does not change which structure applies the completed palette.
 
-`go-sixel` builds all `2^15` RGB555 entries eagerly. Each entry represents the center of an 8-by-8-by-8 byte cube, while source pixels select a cell by their top five bits; see [`newPaletteLUT` and `lutIndex`](https://github.com/mattn/go-sixel/blob/ceaaab1e2b5973d9ebc28b0a615760b921e90681/sixel.go#L676-L712). libsixel's `5bit` policy instead scans the actual first query color in a bucket and memoizes that result, making its approximation dependent on traversal history.
+`go-sixel` builds all `2^15` RGB555 entries eagerly. Each entry represents the center of an 8-by-8-by-8 byte cube, while source pixels select a cell by their top five bits; see [`newPaletteLUT` and `lutIndex`](https://github.com/mattn/go-sixel/blob/ceaaab1e2b5973d9ebc28b0a615760b921e90681/sixel.go#L676-L712). The libsixel CPU `5bit` policy instead scans the actual first query color in a bucket and memoizes that result, making its approximation dependent on traversal history.
 
 The `libsixel/libsixel` fork likewise computes an [RGB555 hash from the top five channel bits](https://github.com/libsixel/libsixel/blob/ee77c2f979dbccc86651a482e748fe7bf80bc89c/src/quant.c#L667-L675) and [fills an empty entry from the first palette scan that reaches it](https://github.com/libsixel/libsixel/blob/ee77c2f979dbccc86651a482e748fe7bf80bc89c/src/quant.c#L1091-L1139). Unlike that truncating hash, the current libsixel `5bit` policy rounds before packing its bucket coordinates.
 
@@ -173,8 +174,8 @@ Each policy has its own page because the algorithms, correctness arguments, and 
 | --- | --- |
 | [`auto`](auto.md) | Selector behavior and fallbacks |
 | [`none`](none.md) | Exhaustive palette scan |
-| [`5bit`](5bit.md) | Lazy RGB555 bucket memoization |
-| [`6bit`](6bit.md) | Lazy RGB666 bucket memoization |
+| [`5bit`](5bit.md) | CPU lazy RGB555 memoization; Metal prebuilt shared cell-center table |
+| [`6bit`](6bit.md) | CPU lazy RGB666 memoization; Metal prebuilt shared cell-center table |
 | [`certlut`](certlut.md) | Intended cube certification and the float32 kd-tree |
 | [`eytzinger`](eytzinger.md) | One-dimensional projection in an Eytzinger array layout |
 | [`fhedt`](fhedt.md) | Separable EDT grids, byte/float CPU and uniform RGB8 Metal construction |
@@ -204,7 +205,8 @@ The fixed three color dimensions are omitted. Preparation cost, one-query cost, 
 | Policy | Preparation | One query | Extra space |
 | --- | --- | --- | --- |
 | `none` | `O(1)` | `Theta(K)` | `O(1)` |
-| `5bit` / `6bit`, 8-bit | `Theta(G)` initialization | hit `Theta(1)`; first-bucket miss `Theta(K)` | `Theta(G)` |
+| `5bit` / `6bit`, CPU 8-bit | `Theta(G)` initialization | hit `Theta(1)`; first-bucket miss `Theta(K)` | `Theta(G)` |
+| `5bit` / `6bit`, Metal RGB888 | cold `Theta(G K)`; reuse `Theta(K)` identity check | `Theta(1)` | `G` bytes |
 | `certlut`, 8-bit | `O(64^3 + K^2)` in the current builder | warm fixed-depth lookup `Theta(1)`; cold refinement worst `O(K)` | initial `Theta(64^3 + K)`; fully refined worst `O(256^3 + K)` |
 | `certlut`, float32 | current kd-tree build conservatively `O(K^2)` | typical `O(log K)`; worst `Theta(K)` | `Theta(K)` |
 | `eytzinger` | `Theta(K log K)` | 8-bit `Theta(log K)`; float32 `O(log K + V)`, worst `Theta(K)` | `Theta(K)` |
@@ -216,7 +218,7 @@ The fixed three color dimensions are omitted. Preparation cost, one-query cost, 
 | `rbc`, float32 | `Theta(K J)` | `O(J + V)`; worst `Theta(K)` | `Theta(K + J)` |
 | `mahalanobis`, float32 | `Theta(K J)` | `Theta(K)` currently | `Theta(K + J)` |
 
-Direct lookup over an image is `Theta(P K)`. Ignoring concurrent duplicate misses, the 8-bit `5bit` and `6bit` implementations instead have whole-image work:
+Direct lookup over an image is `Theta(P K)`. Ignoring concurrent duplicate misses, the CPU 8-bit `5bit` and `6bit` implementations instead have whole-image work:
 
 ```text
 Theta(G + P + U K)

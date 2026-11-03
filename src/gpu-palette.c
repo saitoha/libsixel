@@ -104,11 +104,15 @@ sixel_gpu_palette_lut_policy_is_supported(
      * direct scan, while EYTZINGER uses the one-dimensional projected search.
      * BLOCKCULL culls each pixel block's candidates before the same exact
      * scan; GRIDLUT reuses fixed-cell candidates and ORDERED scans
-     * distance-sorted rows. DELAUNAY walks closed-cell adjacency.
+     * distance-sorted rows. DELAUNAY walks closed-cell adjacency. The byte
+     * 5bit/6bit GPU contract uses immutable cell-center tables, deliberately
+     * independent of the CPU first-query memo's traversal history.
      * Keep AUTO conservative for other policies because
      * the GPU path does not reproduce their output semantics.
      */
-    if (request->lut_policy == SIXEL_LUT_POLICY_NONE ||
+    if (request->lut_policy == SIXEL_LUT_POLICY_5BIT ||
+            request->lut_policy == SIXEL_LUT_POLICY_6BIT ||
+            request->lut_policy == SIXEL_LUT_POLICY_NONE ||
             request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER ||
             request->lut_policy == SIXEL_LUT_POLICY_BLOCKCULL ||
             request->lut_policy == SIXEL_LUT_POLICY_GRIDLUT ||
@@ -529,7 +533,9 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
     if (sixel_gpu_palette_policy_is_force(gpu_policy)) {
         return 1;
     }
-    if (lut_policy != SIXEL_LUT_POLICY_NONE &&
+    if (lut_policy != SIXEL_LUT_POLICY_5BIT &&
+            lut_policy != SIXEL_LUT_POLICY_6BIT &&
+            lut_policy != SIXEL_LUT_POLICY_NONE &&
             lut_policy != SIXEL_LUT_POLICY_EYTZINGER &&
             lut_policy != SIXEL_LUT_POLICY_BLOCKCULL &&
             lut_policy != SIXEL_LUT_POLICY_GRIDLUT &&

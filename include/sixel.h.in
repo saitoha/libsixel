@@ -160,6 +160,9 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_GRIDLUT   0xd /* exact RGB cell candidates */
 #define SIXEL_LUT_POLICY_ORDERED   0xe /* exact distance-ordered candidates */
 
+/* GPU 5bit/6bit use deterministic, shared, prebuilt cell-center tables. */
+#define SIXEL_HAVE_GPU_PREBUILT_BIT_LOOKUP 1
+
 /* Upper-level GPU policy for selected accelerator stages */
 #define SIXEL_GPU_POLICY_OFF     0x0  /* keep all stages on CPU */
 #define SIXEL_GPU_POLICY_AUTO    0x1  /* try eligible GPU stages, allow CPU */
