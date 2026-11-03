@@ -1,4 +1,6 @@
 #!/bin/sh
+# Policy: docs/misc/platforms/cosmopolitan.md
+# Coverage: COSMO-03
 # TAP test verifying -d sierra defaults to variant=1.
 
 set -eux

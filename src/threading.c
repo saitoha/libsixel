@@ -394,7 +394,7 @@ SIXELAPI int
 sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
 {
     int rc;
-#if defined(__VMS)
+#if defined(__VMS) || defined(__COSMOPOLITAN__)
     pthread_attr_t attributes;
     size_t stack_size;
 #endif
@@ -410,9 +410,9 @@ sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
     thread->arg = arg;
     thread->result = SIXEL_OK;
     thread->started = 0;
-#if defined(__VMS)
-    /* OpenVMS worker stacks cannot grow. Its roughly 40 KiB default is
-     * insufficient for palette construction and nested conversion calls.
+#if defined(__VMS) || defined(__COSMOPOLITAN__)
+    /* The OpenVMS (about 40 KiB) and Cosmopolitan (80 KiB) defaults
+     * cannot hold palette construction and nested conversion frames.
      * Preserve a larger system default while reserving at least 1 MiB. */
     rc = pthread_attr_init(&attributes);
     if (rc == 0) {

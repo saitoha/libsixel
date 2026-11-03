@@ -16,6 +16,7 @@ The fat-binary checks are part of release confidence because a successful build 
 
 - Use Cosmopolitan runtime predicates for OS behavior; reserve `__COSMOPOLITAN__` for API availability and compilation.
 - Keep library and converter path adapters in lockstep.
+- Worker creation requests at least 1 MiB of stack, preserving a larger configured default. Cosmopolitan's 80 KiB default cannot hold nested palette construction and conversion frames; even a small image can overflow it. This uses the shared thread adapter in both build systems. Existing successful CLI conversion tests exercise the palette worker on Cosmopolitan; they do not establish a bound on every possible call stack.
 - Autotools links the individually compiled float-lookup objects directly into the library and test runner. Their per-object arithmetic flags remain isolated. A convenience archive would require Libtool to list and extract it, but `cosmoar` lists both architectures and extracts them into the same directory; the resulting duplicates and misplaced companion objects do not satisfy Libtool or `cosmocc`.
 
 - Lookup intrinsics require both a configured header and the active compiler target. `cosmocc` reuses one `config.h` across its CPU builds, so an x86 configure result alone cannot enable `<emmintrin.h>` in the AArch64 compilation. Keep target-qualified aliases shared by the header and SIMD branches; the [source check](../../../tests/_static/sh/staticcheck-lookup-intrinsics-target.sh) audits the SSE2 include boundary without a compiler.
@@ -30,6 +31,7 @@ The fat-binary checks are part of release confidence because a successful build 
 | --- | --- | --- |
 | COSMO-01 | Both path adapters compile under `__COSMOPOLITAN__`, retain `IsWindows()` runtime dispatch, and agree on their target-runtime conversion result. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh), [tests/platform/path/0001_path_to_libc_runtime.t](../../../tests/platform/path/0001_path_to_libc_runtime.t) |
 | COSMO-02 | Lookup SSE2 headers remain behind active compiler-target guards, directly or through guarded aliases, independently of shared configure results. | [tests/_static/sh/staticcheck-lookup-intrinsics-target.sh](../../../tests/_static/sh/staticcheck-lookup-intrinsics-target.sh) |
+| COSMO-03 | A default threaded palette conversion completes with the worker stack reservation. | [tests/cli/dither-options/0004_option_matching_diffusion_sierra_default_variant_success.t](../../../tests/cli/dither-options/0004_option_matching_diffusion_sierra_default_variant_success.t) |
 
 ### Coverage boundary
 
