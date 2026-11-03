@@ -1,5 +1,6 @@
 #!/bin/sh
 # Policy: docs/encoder/output/delta-encoding.md
+# Policy: docs/build/test-harness.md
 # Verify still capture history.
 set -eux
 

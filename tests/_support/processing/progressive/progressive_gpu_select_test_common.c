@@ -184,7 +184,7 @@ test_progressive_gpu_selection_case(int mode)
         value = source[i * 3];
         errors[i] = value * value;
         domain[i] = i % 7 != 0;
-        priority[i] = i % 5 == 0 ? 0 : i % 3 + 1;
+        priority[i] = i % 5 == 0 ? 0 : (double)(i % 3 + 1);
         if (domain[i] && (mode != 187 || priority[i] > 0)) {
             positions[population++] = i;
         }

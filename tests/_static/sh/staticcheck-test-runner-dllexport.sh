@@ -54,13 +54,21 @@ function reset_calls(    key) {
     for (key in renamed) delete renamed[key]
     for (key in declaration_alias) delete declaration_alias[key]
 }
+# Gawk 5.2 misclassifies nested array subscripts in delete expressions.
+# Test membership first and resolve the previous alias to a scalar.
+function forget_alias(name,    previous) {
+    if (name in renamed) {
+        previous = renamed[name]
+        delete declaration_alias[previous]
+        delete renamed[name]
+    }
+}
 function scan_calls(line, number,    token, name, count, parts) {
     if (line ~ /^[[:space:]]*#/) {
         if (line ~ /^[[:space:]]*#[[:space:]]*define[[:space:]]/) {
             sub(/^[[:space:]]*#[[:space:]]*define[[:space:]]+/, "", line)
             count = split(line, parts, /[[:space:]]+/)
-            delete declaration_alias[renamed[parts[1]]]
-            delete renamed[parts[1]]
+            forget_alias(parts[1])
             if (count == 2 && parts[1] ~ /^[A-Za-z_][A-Za-z0-9_]*$/ &&
                 parts[2] ~ /^[A-Za-z_][A-Za-z0-9_]*$/) {
                 renamed[parts[1]] = parts[2]
@@ -71,8 +79,7 @@ function scan_calls(line, number,    token, name, count, parts) {
         if (line ~ /^[[:space:]]*#[[:space:]]*undef[[:space:]]/) {
             sub(/^[[:space:]]*#[[:space:]]*undef[[:space:]]+/, "", line)
             split(line, parts, /[[:space:]]+/)
-            delete declaration_alias[renamed[parts[1]]]
-            delete renamed[parts[1]]
+            forget_alias(parts[1])
             return
         }
     }
@@ -92,6 +99,7 @@ BEGIN {
     # declarations after directives must retain their DLL attribute.
     self_test = 1
     start_header("combined scanners")
+    scan_calls("#undef never_defined", 0)
     scan_line("#define sixel_hidden test_private", 1)
     scan_calls("#define sixel_hidden test_private", 1)
     scan_line("SIXEL_INTERNAL_API int sixel_visible(void);", 2)
@@ -105,6 +113,10 @@ BEGIN {
     scan_line("SIXEL_INTERNAL_API int test_marked(void);", 9)
     scan_calls("#undef sixel_marked", 10)
     scan_line("int test_marked(void);", 11)
+    scan_calls("#define sixel_redefined first_name", 12)
+    scan_calls("#define sixel_redefined second_name", 13)
+    scan_line("int first_name(void);", 14)
+    scan_line("SIXEL_INTERNAL_API int second_name(void);", 15)
     start_header("next file")
     scan_line("SIXEL_INTERNAL_API int test_private(void);", 1)
     reset_calls()
@@ -114,6 +126,8 @@ BEGIN {
         observed["sixel_marked"] != 1 ||
         !("test_marked" in observed) || observed["test_marked"] != 0 ||
         observed["test_private"] != 1 ||
+        !("first_name" in observed) || observed["first_name"] != 0 ||
+        observed["sixel_redefined"] != 1 ||
         call_observed["sixel_visible"] != 1 ||
         call_observed["sixel_hidden"] != 2) {
         print "combined DLL scanner controls failed" > "/dev/stderr"

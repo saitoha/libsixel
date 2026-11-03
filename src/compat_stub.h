@@ -205,6 +205,8 @@ SIXEL_COMPAT_API char *sixel_compat_strerror(int error_number,
 SIXEL_COMPAT_API FILE *sixel_compat_fopen(const char *filename,
                                           const char *mode);
 
+SIXEL_COMPAT_API FILE *sixel_compat_tmpfile(void);
+
 SIXEL_COMPAT_API const char *sixel_compat_getenv(const char *name);
 
 SIXEL_COMPAT_API int sixel_compat_setenv(const char *name,

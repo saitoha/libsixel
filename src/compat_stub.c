@@ -809,6 +809,39 @@ sixel_compat_fopen(const char *filename, const char *mode)
 }
 
 
+SIXEL_COMPAT_API FILE *
+sixel_compat_tmpfile(void)
+{
+#if defined(_MSC_VER)
+    wchar_t directory[MAX_PATH + 1];
+    wchar_t path[MAX_PATH + 1];
+    DWORD length;
+    FILE *stream;
+
+    /* tmpfile_s uses the drive root, which can require administrator
+     * privileges. Reserve a name in the user's temporary directory and
+     * keep binary update mode and automatic deletion on the final close. */
+    length = GetTempPathW(MAX_PATH + 1, directory);
+    if (length == 0 || length > MAX_PATH - 14) {
+        errno = EIO;
+        return NULL;
+    }
+    if (GetTempFileNameW(directory, L"lsx", 0, path) == 0) {
+        errno = EIO;
+        return NULL;
+    }
+    stream = NULL;
+    if (_wfopen_s(&stream, path, L"w+bD") != 0) {
+        (void)DeleteFileW(path);
+        return NULL;
+    }
+    return stream;
+#else
+    return tmpfile();
+#endif
+}
+
+
 SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {

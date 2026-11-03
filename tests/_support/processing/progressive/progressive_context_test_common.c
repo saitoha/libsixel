@@ -1,8 +1,4 @@
 /* SPDX-License-Identifier: MIT */
-/* Expose fileno when the test helper is compiled in strict C99 mode. */
-#if !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE 200809L
-#endif
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -15,6 +11,8 @@
 #include "src/encoder.h"
 #include "src/progressive.h"
 #include "src/sixel_decode_pixels.h"
+#include "src/compat_stub.h"
+#include "src/stdio_stub.h"
 
 static size_t context_test_live;
 static size_t context_test_fail;
@@ -1303,10 +1301,10 @@ test_progressive_public_case(int mode)
     if (mode == 96) {
         /* Inspect the selected default destination, not stdout. This stream
          * is required evidence for the NULL-output branch's byte contract. */
-        file = tmpfile();
+        file = sixel_compat_tmpfile();
         CONTEXT_REQUIRE(file != NULL);
         saved_fd = encoder->outfd;
-        encoder->outfd = fileno(file);
+        encoder->outfd = sixel_fileno(file);
         CONTEXT_REQUIRE(encoder->outfd >= 0);
     } else if (mode == 97) {
         memset(&future, 0xa5, sizeof(future));

@@ -13,6 +13,24 @@
 #include <io.h>
 #endif
 
+static FILE *
+compare_open(char const *path)
+{
+    FILE *stream;
+
+    /* This build-machine helper must not link the target library's CRT
+     * adapters, but still needs the native compiler's declared interface. */
+#if defined(_MSC_VER)
+    stream = NULL;
+    if (fopen_s(&stream, path, "rb") != 0) {
+        return NULL;
+    }
+#else
+    stream = fopen(path, "rb");
+#endif
+    return stream;
+}
+
 static int
 compare_directory(FILE *stream)
 {
@@ -79,14 +97,14 @@ compare_main(int argc, char **argv)
         }
     }
 #endif
-    left = strcmp(argv[0], "-") == 0 ? stdin : fopen(argv[0], "rb");
+    left = strcmp(argv[0], "-") == 0 ? stdin : compare_open(argv[0]);
     if (left == NULL) {
         if (!quiet) {
             perror(argv[0]);
         }
         return 2;
     }
-    right = strcmp(argv[1], "-") == 0 ? stdin : fopen(argv[1], "rb");
+    right = strcmp(argv[1], "-") == 0 ? stdin : compare_open(argv[1]);
     if (right == NULL) {
         if (!quiet) {
             perror(argv[1]);

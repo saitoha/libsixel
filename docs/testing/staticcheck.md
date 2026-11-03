@@ -150,6 +150,10 @@ The Emscripten coverage check requires every coverage matrix entry to enable gco
 
 Independent checks protect separate portability boundaries: Libtool object resolution exercises the native-link wrapper with a substituted DCL command; C test scanning rejects raw `sscanf`/`vsscanf` calls in shared test C sources and headers; VM configure inspection verifies early selection of the build make; generated-header inspection rejects gperf source directives and missing recipe filters. The C scanner ignores comments and literals and excludes standalone extension probes, which do not link the shared CRT compatibility layer. Each check has positive and negative controls and uses shell/awk, without requiring Python or a target compiler. These checks protect source contracts, not native compiler or OS execution.
 
+The independent C stream check rejects direct `tmpfile` and `fileno` calls in shared test C sources and headers. It ignores comments and literals, joins continued call expressions, and excludes fixture data and standalone extension probes. Literal controls distinguish raw calls from the [test harness adapters](../build/test-harness.md#shared-discovery-and-c-test-dispatch). Only candidate files need a second lexical scan; no compilation, Python, or runtime test is added. Macro expansion and indirect function calls remain outside its scope.
+
+The CI installer check rejects literal bare command names assigned to `INSTALL` in the build workflow and setup action. Autoconf treats such values as relative paths when generating subdirectory Makefiles. Controls accept explicit paths and command lookup while rejecting quoted and unquoted bare names. The [Cosmopolitan reference](../misc/platforms/cosmopolitan.md#maintenance-checklist) owns the toolchain setting; the staged-install test remains the runtime evidence. This source check does not evaluate arbitrary shell expressions.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -218,10 +222,14 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-50 | Differing function-like test macros reused across source units are rejected when a definition leaks; identical reuse and complete cleanup pass the scanner controls. | [tests/_static/sh/staticcheck-test-macro-isolation.sh](../../tests/_static/sh/staticcheck-test-macro-isolation.sh) |
 | SC-51 | Source fixtures under test data directories are distributed; exact-file and ancestor-directory controls reject missing siblings. | [tests/_static/sh/staticcheck-test-fixture-distribution.sh](../../tests/_static/sh/staticcheck-test-fixture-distribution.sh) |
 | SC-52 | Serializer storage declares two packets and allocates the complete object; controls reject a one-element or one-packet array and mismatched allocation expressions. | [tests/_static/sh/staticcheck-output-buffer-storage.sh](../../tests/_static/sh/staticcheck-output-buffer-storage.sh) |
+| SC-53 | Shared C tests use portable stream adapters; controls reject direct and continued `tmpfile`/`fileno` calls while accepting adapters and inert comments or literals. | [tests/_static/sh/staticcheck-c-test-stdio.sh](../../tests/_static/sh/staticcheck-c-test-stdio.sh) |
+| SC-54 | CI `INSTALL` assignments do not use bare command names that Autoconf rebases as build-relative paths. | [tests/_static/sh/staticcheck-ci-install-path.sh](../../tests/_static/sh/staticcheck-ci-install-path.sh) |
 
 ### Coverage boundary
 
 The DLL declaration check covers source-visible `sixel_`, `loader_` and `stbi_` references and their canonical export declarations. It scans test support headers as well as C files, so the declaration inventory is independent of direct `#include "src/..."` spellings. Literal object-like aliases suppress external references and map renamed prototypes back to their canonical DLL declarations only until `#undef` or the next file. This is not a C preprocessor or linker: references introduced inside included production implementations and configuration-specific expansions still require shared-library build validation, as described in the [test harness](../build/test-harness.md).
+
+Alias removal checks membership and resolves the previous alias into a scalar before deleting its declaration mapping. GNU awk 5.2 can abort on nested array subscripts in a delete expression, so compatibility requires executing the scanner with that interpreter as well as BSD awk and mawk. In-memory controls exercise undefined names and redefinition without preserving a stale alias; they extend the existing alias-lifetime observation.
 
 The suite-registration check covers shell implementations named `staticcheck-*.sh`; inline compile probes remain explicit runner code and are not projected into a second generated inventory. The reciprocal policy-link check proves the behavioral documentation relationship, and the test-plan check proves exhaustive suite membership, but neither proves the completeness or accuracy of prose. Whether a new invariant belongs in staticcheck, whether normalization preserves the right distinctions, and whether a passing static contract has sufficient behavioral coverage remain review decisions.
 

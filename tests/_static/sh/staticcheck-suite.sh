@@ -1067,6 +1067,10 @@ run_case_tap "staticcheck-c-test-scanf" \
     sh "$src_root/tests/_static/sh/staticcheck-c-test-scanf.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-c-test-stdio" \
+    sh "$src_root/tests/_static/sh/staticcheck-c-test-stdio.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-nightly-msvc-archiver" \
     sh "$src_root/tests/_static/sh/staticcheck-nightly-msvc-archiver.sh" \
     "$src_root" || fail_and_exit $?
@@ -1077,6 +1081,10 @@ run_case_tap "staticcheck-ci-checkout-eol" \
 
 run_case_tap "staticcheck-ci-configure-make" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-configure-make.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-install-path" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-install-path.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-gperf-source-location" \

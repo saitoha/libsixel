@@ -1,8 +1,4 @@
 /* SPDX-License-Identifier: MIT */
-/* Expose fileno when the test helper is compiled in strict C99 mode. */
-#if !defined(_POSIX_C_SOURCE)
-#define _POSIX_C_SOURCE 200809L
-#endif
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
@@ -13,6 +9,7 @@
 #include "src/presentation.h"
 #include "src/sixel_decode_pixels.h"
 #include "src/compat_stub.h"
+#include "src/stdio_stub.h"
 
 #define PRESENT_REQUIRE(value) do { \
     if (!(value)) { \
@@ -106,9 +103,9 @@ test_progressive_presentation_case(int mode)
     }
     PRESENT_REQUIRE(sixel_compat_snprintf(path, sizeof(path), "%s%s", root,
         fixture) > 0);
-    capture = tmpfile();
+    capture = sixel_compat_tmpfile();
     PRESENT_REQUIRE(capture != NULL);
-    encoder->outfd = fileno(capture);
+    encoder->outfd = sixel_fileno(capture);
     status = sixel_encoder_encode(encoder, path);
     /* Retain tmpfile ownership instead of letting encoder destruction close
      * its borrowed descriptor. No output may escape to stdout. */

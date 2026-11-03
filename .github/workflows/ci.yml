@@ -4568,7 +4568,7 @@ jobs:
               LD=cosmocc
               AR=cosmoar
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               --disable-shared
               --without-png
@@ -4588,7 +4588,7 @@ jobs:
               LD=cosmocc-meson
               AR=cosmoar-meson
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               -Ddefault_library=static
               -Dpng=disabled
@@ -4612,7 +4612,7 @@ jobs:
               LD=cosmocc
               AR=cosmoar
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               --disable-shared
               --without-png
@@ -4632,7 +4632,7 @@ jobs:
               LD=cosmocc-meson
               AR=cosmoar-meson
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               -Ddefault_library=static
               -Dpng=disabled
@@ -4656,7 +4656,7 @@ jobs:
               LD=cosmocc
               AR=cosmoar
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               --disable-shared
               --without-png
@@ -4681,7 +4681,7 @@ jobs:
               LD=cosmocc-meson
               AR=cosmoar-meson
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               -Ddefault_library=static
               -Dpng=disabled
@@ -4710,7 +4710,7 @@ jobs:
               LD=cosmocc
               AR=cosmoar
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               --disable-shared
               --without-png
@@ -4735,7 +4735,7 @@ jobs:
               LD=cosmocc-meson
               AR=cosmoar-meson
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               -Ddefault_library=static
               -Dpng=disabled
@@ -4765,7 +4765,7 @@ jobs:
               LD=cosmocc
               AR=cosmoar
               RANLIB=cosmoranlib
-              INSTALL=cosmoinstall
+              INSTALL="$(command -v cosmoinstall)"
             setup_options: >-
               --disable-shared
               --without-png

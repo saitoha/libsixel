@@ -2,7 +2,7 @@
 """Compile against the headers selected by the staged install's pkg-config."""
 # Policy: docs/build/test-harness.md
 # Policy: docs/misc/platforms/cosmopolitan.md
-# Coverage: COSMO-05
+# Coverage: COSMO-05 COSMO-06
 import argparse
 import os
 from pathlib import Path

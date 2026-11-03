@@ -23563,13 +23563,16 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-c-test-scanf.sh \
 	_static/awk/c-test-scanf.awk \
 	_static/sh/staticcheck-ci-configure-make.sh \
+	_static/sh/staticcheck-ci-install-path.sh \
 	_static/sh/staticcheck-ci-checkout-eol.sh \
 	_static/sh/staticcheck-nightly-msvc-archiver.sh \
 	_static/sh/staticcheck-comparison-dependencies.sh \
 	_static/sh/staticcheck-gperf-source-location.sh \
 	_static/sh/staticcheck-cli-discard-output.sh \
 	_static/awk/cli-discard-output.awk \
-	_static/sh/staticcheck-emscripten-coverage.sh
+	_static/sh/staticcheck-emscripten-coverage.sh \
+	_static/sh/staticcheck-c-test-stdio.sh \
+	_static/awk/c-test-stdio.awk
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it

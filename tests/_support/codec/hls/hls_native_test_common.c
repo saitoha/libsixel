@@ -147,6 +147,8 @@ hls_native_run(int scenario, int snapshot)
     frame = NULL;
     output = NULL;
     mask = NULL;
+    /* Byte palettes do not request a float view. */
+    memset(&view, 0, sizeof(view));
     ok = 0;
     centroid = scenario < 2 || scenario == 7 || scenario == 10;
     colorful = scenario == 4 || scenario == 8 || scenario == 9 ||

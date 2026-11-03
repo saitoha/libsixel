@@ -1,5 +1,8 @@
 #!/bin/sh
 # Policy: docs/encoder/output/delta-encoding.md
+# Policy: docs/build/test-harness.md
+# Policy: docs/misc/platforms/msvc.md
+# Coverage: MSVC-03
 # Verify public default destination.
 set -eux
 
