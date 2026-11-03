@@ -236,6 +236,54 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0082_VPTREE_FORCE_NO_CPU \
+    -DBUILD_TEST_0083_VPTREE_AUTO_NO_CPU \
+    -DBUILD_TEST_0084_CPU_PALETTE_SNAPSHOT \
+    -DBUILD_TEST_0081_INVALID_GPU_INDEX \
+    -DBUILD_INJECTED_PROGRAM_COMMON \
+    -DBUILD_TEST_0080_INJECTED_GPU_PROGRAM \
+    -DBUILD_TEST_0050_VPTREE_PALETTE_SNAPSHOT \
+    -DBUILD_TEST_0051_VPTREE_CACHE_REUSE \
+    -DBUILD_TEST_0052_VPTREE_DEVICE_IDENTITY \
+    -DBUILD_TEST_0053_VPTREE_LIVE_PLAN_ISOLATION \
+    -DBUILD_TEST_0054_VPTREE_BUSY_LEASE \
+    -DBUILD_TEST_0055_VPTREE_COMPLETED_REUSE \
+    -DBUILD_TEST_0056_VPTREE_ABORTED_REBUILD \
+    -DBUILD_TEST_0057_VPTREE_DOUBLE_FINISH \
+    -DBUILD_TEST_0058_VPTREE_FINISHED_VIEW \
+    -DBUILD_TEST_0059_VPTREE_PROVIDER_LIFETIME \
+    -DBUILD_TEST_0060_VPTREE_BINDING_LIFETIME \
+    -DBUILD_TEST_0061_VPTREE_FLOAT_DECLINE \
+    -DBUILD_TEST_0062_ORDERED_PALETTE_SNAPSHOT \
+    -DBUILD_TEST_0063_ORDERED_CACHE_REUSE \
+    -DBUILD_TEST_0064_ORDERED_DEVICE_IDENTITY \
+    -DBUILD_TEST_0065_ORDERED_LIVE_PLAN_ISOLATION \
+    -DBUILD_TEST_0066_ORDERED_BUSY_LEASE \
+    -DBUILD_TEST_0067_ORDERED_COMPLETED_REUSE \
+    -DBUILD_TEST_0068_ORDERED_ABORTED_REBUILD \
+    -DBUILD_TEST_0069_ORDERED_DOUBLE_FINISH \
+    -DBUILD_TEST_0070_ORDERED_FINISHED_VIEW \
+    -DBUILD_TEST_0071_ORDERED_PROVIDER_LIFETIME \
+    -DBUILD_TEST_0072_ORDERED_BINDING_LIFETIME \
+    -DBUILD_TEST_0073_ORDERED_FLOAT_DECLINE \
+    -DBUILD_TEST_0045_GPU_EXACT_0_0_1 \
+    -DBUILD_TEST_0046_GPU_EXACT_0_0_2 \
+    -DBUILD_TEST_0047_GPU_EXACT_0_0_7 \
+    -DBUILD_TEST_0048_GPU_EXACT_0_0_33 \
+    -DBUILD_TEST_0049_GPU_EXACT_0_0_256 \
+    -DBUILD_TEST_0050_GPU_EXACT_1_0_64 \
+    -DBUILD_TEST_0051_GPU_EXACT_2_0_33 \
+    -DBUILD_TEST_0052_GPU_EXACT_4_0_33 \
+    -DBUILD_TEST_0053_GPU_EXACT_0_1_33 \
+    -DBUILD_TEST_0054_GPU_EXACT_1_1_33 \
+    -DBUILD_TEST_0074_AUTO_UNSUPPORTED_FALLBACK \
+    -DBUILD_TEST_0075_FORCE_UNSUPPORTED_NO_FALLBACK \
+    -DBUILD_TEST_0076_RUNTIME_NO_FALLBACK \
+    -DBUILD_TEST_0077_ALLOCATION_NO_FALLBACK \
+    -DBUILD_TEST_0078_OFF_CPU_ONLY \
+    -DBUILD_TEST_0079_CUTOFF_CPU_ONLY \
+    -DBUILD_COMPONENT_COMMON \
+    -DBUILD_ADMISSION_COMMON \
     -DBUILD_TEST_0105_PLAYBACK_WAIT_RELEASE \
     -DBUILD_TEST_0106_PLAYBACK_WAIT_COMPLETION \
     -DBUILD_TEST_0107_PLAYBACK_WAIT_FAILURE \
@@ -6320,6 +6368,55 @@ test_runner_SOURCES = test_runner.c \
     lookup/blockcull/0001_blockcull_exact.c \
     lookup/gridlut/0001_gridlut_exact.c \
     lookup/ordered/0001_ordered_exact.c \
+    encoder/indexed/0080_injected_gpu_program.c \
+    encoder/indexed/0082_vptree_force_no_cpu.c \
+    encoder/indexed/0083_vptree_auto_no_cpu.c \
+    encoder/indexed/0084_cpu_palette_snapshot.c \
+    encoder/indexed/0081_invalid_gpu_index.c \
+    _support/processing/gpu-palette/injected_program_common.c \
+    encoder/indexed/0074_auto_unsupported_fallback.c \
+    encoder/indexed/0075_force_unsupported_no_fallback.c \
+    encoder/indexed/0076_runtime_no_fallback.c \
+    encoder/indexed/0077_allocation_no_fallback.c \
+    encoder/indexed/0078_off_cpu_only.c \
+    encoder/indexed/0079_cutoff_cpu_only.c \
+    _support/processing/gpu-palette/admission_common.c \
+    encoder/indexed/0050_vptree_palette_snapshot.c \
+    encoder/indexed/0051_vptree_cache_reuse.c \
+    encoder/indexed/0052_vptree_device_identity.c \
+    encoder/indexed/0053_vptree_live_plan_isolation.c \
+    encoder/indexed/0054_vptree_busy_lease.c \
+    encoder/indexed/0055_vptree_completed_reuse.c \
+    encoder/indexed/0056_vptree_aborted_rebuild.c \
+    encoder/indexed/0057_vptree_double_finish.c \
+    encoder/indexed/0058_vptree_finished_view.c \
+    encoder/indexed/0059_vptree_provider_lifetime.c \
+    encoder/indexed/0060_vptree_binding_lifetime.c \
+    encoder/indexed/0061_vptree_float_decline.c \
+    encoder/indexed/0062_ordered_palette_snapshot.c \
+    encoder/indexed/0063_ordered_cache_reuse.c \
+    encoder/indexed/0064_ordered_device_identity.c \
+    encoder/indexed/0065_ordered_live_plan_isolation.c \
+    encoder/indexed/0066_ordered_busy_lease.c \
+    encoder/indexed/0067_ordered_completed_reuse.c \
+    encoder/indexed/0068_ordered_aborted_rebuild.c \
+    encoder/indexed/0069_ordered_double_finish.c \
+    encoder/indexed/0070_ordered_finished_view.c \
+    encoder/indexed/0071_ordered_provider_lifetime.c \
+    encoder/indexed/0072_ordered_binding_lifetime.c \
+    encoder/indexed/0073_ordered_float_decline.c \
+    lookup/vptree/0045_gpu_exact_0_0_1.c \
+    lookup/vptree/0046_gpu_exact_0_0_2.c \
+    lookup/vptree/0047_gpu_exact_0_0_7.c \
+    lookup/vptree/0048_gpu_exact_0_0_33.c \
+    lookup/vptree/0049_gpu_exact_0_0_256.c \
+    lookup/vptree/0050_gpu_exact_1_0_64.c \
+    lookup/vptree/0051_gpu_exact_2_0_33.c \
+    lookup/vptree/0052_gpu_exact_4_0_33.c \
+    lookup/vptree/0053_gpu_exact_0_1_33.c \
+    lookup/vptree/0054_gpu_exact_1_1_33.c \
+    _support/processing/gpu-palette/component_common.c \
+    _support/processing/gpu-palette/component_common.h \
     lookup/5bit/0034_5bit_gpu_centers.c \
     lookup/5bit/0035_5bit_gpu_tie.c \
     lookup/5bit/0036_5bit_gpu_index255.c \

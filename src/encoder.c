@@ -143,6 +143,7 @@
 #include "filter-final-merge.h"
 #include "filter-factory.h"
 #include "gpu-palette.h"
+#include "gpu-lookup.h"
 #include "filter-palette.h"
 #include "filter-fhedt.h"
 #include "filter-vptree.h"
@@ -10189,7 +10190,8 @@ sixel_encoder_apply_lut_filter(sixel_dither_t *dither,
     policy = dither->lut_policy;
     /* GPU admission resolves settings without constructing a CPU grid.
      * Unsupported plans prepare that grid later, before publishing output. */
-    if (policy == SIXEL_LUT_POLICY_FHEDT &&
+    if ((policy == SIXEL_LUT_POLICY_FHEDT ||
+         sixel_gpu_lookup_registered(policy)) &&
             dither->gpu_policy != SIXEL_GPU_POLICY_OFF) {
         return SIXEL_OK;
     }

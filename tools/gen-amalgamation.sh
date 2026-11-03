@@ -364,6 +364,16 @@ BEGIN {
     inline_once["stb_image_write.h"] = 1;
     inline_once["encoder-core-indexed.inc.h"] = 1;
     inline_once["encoder-core-session.inc.h"] = 1;
+    # These private fragments must stay inside their owning component unit.
+    # Hoisting them would expose shader state or precede required definitions.
+    inline_once["dither-lookup-preparer.inc.h"] = 1;
+    inline_once["gpu-lookup-ordered-shader.inc.h"] = 1;
+    inline_once["gpu-lookup-vptree-shader.inc.h"] = 1;
+    inline_once["gpu-palette-fused-prefix.inc.h"] = 1;
+    inline_once["gpu-palette-fused-suffix.inc.h"] = 1;
+    inline_once["gpu-palette-program.inc.h"] = 1;
+    inline_once["gpu-palette-metal-fhedt.inc.h"] = 1;
+    inline_once["gpu-palette-metal-bitlut.inc.h"] = 1;
 }
 {
     if ($0 ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {

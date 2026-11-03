@@ -31,19 +31,15 @@ lookup_preparation_write(char *bytes, int size, void *context)
  * A separately configured CPU encoder checks the resulting complete stream;
  * an empty or accidentally skipped application cannot satisfy this probe. */
 int
-test_indexed_gpu_lookup_preparation(int argc, char **argv)
+indexed_gpu_lookup_preparation_test(int mode, int lookup)
 {
     sixel_dither_t *dither[2];
     sixel_output_t *output[2];
     lookup_preparation_stream_t streams[2];
     unsigned char palette[33 * 3];
     unsigned char pixels[16 * 16 * 3];
-    int mode, i, pass, ok, lookup;
+    int i, pass, ok;
 
-    if (argc != 2 && argc != 3) return 1;
-    lookup = argc == 3 ? SIXEL_LUT_POLICY_FHEDT
-        : SIXEL_LUT_POLICY_DELAUNAY;
-    mode = atoi(argv[1]);
     if (mode < 0 || mode > 5) return 1;
     if (mode <= 1 && !sixel_gpu_palette_plan_available()) return 77;
     memset(dither, 0, sizeof(dither));
@@ -89,6 +85,14 @@ end:
         sixel_dither_unref(dither[pass]);
     }
     return ok ? 0 : 1;
+}
+
+int
+test_indexed_gpu_lookup_preparation(int argc, char **argv)
+{
+    if (argc != 2 && argc != 3) return 1;
+    return indexed_gpu_lookup_preparation_test(atoi(argv[1]), argc == 3
+        ? SIXEL_LUT_POLICY_FHEDT : SIXEL_LUT_POLICY_DELAUNAY);
 }
 
 /* emacs Local Variables:      */

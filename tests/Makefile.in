@@ -1883,6 +1883,55 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/blockcull/0001_blockcull_exact.c \
 	lookup/gridlut/0001_gridlut_exact.c \
 	lookup/ordered/0001_ordered_exact.c \
+	encoder/indexed/0080_injected_gpu_program.c \
+	encoder/indexed/0082_vptree_force_no_cpu.c \
+	encoder/indexed/0083_vptree_auto_no_cpu.c \
+	encoder/indexed/0084_cpu_palette_snapshot.c \
+	encoder/indexed/0081_invalid_gpu_index.c \
+	_support/processing/gpu-palette/injected_program_common.c \
+	encoder/indexed/0074_auto_unsupported_fallback.c \
+	encoder/indexed/0075_force_unsupported_no_fallback.c \
+	encoder/indexed/0076_runtime_no_fallback.c \
+	encoder/indexed/0077_allocation_no_fallback.c \
+	encoder/indexed/0078_off_cpu_only.c \
+	encoder/indexed/0079_cutoff_cpu_only.c \
+	_support/processing/gpu-palette/admission_common.c \
+	encoder/indexed/0050_vptree_palette_snapshot.c \
+	encoder/indexed/0051_vptree_cache_reuse.c \
+	encoder/indexed/0052_vptree_device_identity.c \
+	encoder/indexed/0053_vptree_live_plan_isolation.c \
+	encoder/indexed/0054_vptree_busy_lease.c \
+	encoder/indexed/0055_vptree_completed_reuse.c \
+	encoder/indexed/0056_vptree_aborted_rebuild.c \
+	encoder/indexed/0057_vptree_double_finish.c \
+	encoder/indexed/0058_vptree_finished_view.c \
+	encoder/indexed/0059_vptree_provider_lifetime.c \
+	encoder/indexed/0060_vptree_binding_lifetime.c \
+	encoder/indexed/0061_vptree_float_decline.c \
+	encoder/indexed/0062_ordered_palette_snapshot.c \
+	encoder/indexed/0063_ordered_cache_reuse.c \
+	encoder/indexed/0064_ordered_device_identity.c \
+	encoder/indexed/0065_ordered_live_plan_isolation.c \
+	encoder/indexed/0066_ordered_busy_lease.c \
+	encoder/indexed/0067_ordered_completed_reuse.c \
+	encoder/indexed/0068_ordered_aborted_rebuild.c \
+	encoder/indexed/0069_ordered_double_finish.c \
+	encoder/indexed/0070_ordered_finished_view.c \
+	encoder/indexed/0071_ordered_provider_lifetime.c \
+	encoder/indexed/0072_ordered_binding_lifetime.c \
+	encoder/indexed/0073_ordered_float_decline.c \
+	lookup/vptree/0045_gpu_exact_0_0_1.c \
+	lookup/vptree/0046_gpu_exact_0_0_2.c \
+	lookup/vptree/0047_gpu_exact_0_0_7.c \
+	lookup/vptree/0048_gpu_exact_0_0_33.c \
+	lookup/vptree/0049_gpu_exact_0_0_256.c \
+	lookup/vptree/0050_gpu_exact_1_0_64.c \
+	lookup/vptree/0051_gpu_exact_2_0_33.c \
+	lookup/vptree/0052_gpu_exact_4_0_33.c \
+	lookup/vptree/0053_gpu_exact_0_1_33.c \
+	lookup/vptree/0054_gpu_exact_1_1_33.c \
+	_support/processing/gpu-palette/component_common.c \
+	_support/processing/gpu-palette/component_common.h \
 	lookup/5bit/0034_5bit_gpu_centers.c \
 	lookup/5bit/0035_5bit_gpu_tie.c \
 	lookup/5bit/0036_5bit_gpu_index255.c \
@@ -6176,6 +6225,54 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/blockcull/test_runner-0001_blockcull_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0080_injected_gpu_program.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0082_vptree_force_no_cpu.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0083_vptree_auto_no_cpu.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0084_cpu_palette_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0081_invalid_gpu_index.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-injected_program_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0074_auto_unsupported_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0075_force_unsupported_no_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0076_runtime_no_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0077_allocation_no_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0078_off_cpu_only.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0079_cutoff_cpu_only.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-admission_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0050_vptree_palette_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0051_vptree_cache_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0052_vptree_device_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0053_vptree_live_plan_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0054_vptree_busy_lease.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0055_vptree_completed_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0056_vptree_aborted_rebuild.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0057_vptree_double_finish.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0058_vptree_finished_view.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0059_vptree_provider_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0060_vptree_binding_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0061_vptree_float_decline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0062_ordered_palette_snapshot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0063_ordered_cache_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0064_ordered_device_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0065_ordered_live_plan_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0066_ordered_busy_lease.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0067_ordered_completed_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0068_ordered_aborted_rebuild.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0069_ordered_double_finish.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0070_ordered_finished_view.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0071_ordered_provider_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0072_ordered_binding_lifetime.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0073_ordered_float_decline.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0045_gpu_exact_0_0_1.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0046_gpu_exact_0_0_2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0047_gpu_exact_0_0_7.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0048_gpu_exact_0_0_33.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0049_gpu_exact_0_0_256.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0050_gpu_exact_1_0_64.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0051_gpu_exact_2_0_33.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0052_gpu_exact_4_0_33.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0053_gpu_exact_0_1_33.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	lookup/vptree/test_runner-0054_gpu_exact_1_1_33.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-component_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0034_5bit_gpu_centers.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0035_5bit_gpu_tie.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/5bit/test_runner-0036_5bit_gpu_index255.$(OBJEXT) \
@@ -9152,9 +9249,12 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po \
 	_support/processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po \
 	_support/processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po \
+	_support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Po \
+	_support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po \
+	_support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po \
 	_support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po \
@@ -10364,6 +10464,41 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/indexed/$(DEPDIR)/test_runner-0043_core_normal_factory.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0044_core_ormode_factory.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po \
@@ -12336,6 +12471,16 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	lookup/ordered/$(DEPDIR)/test_runner-0040_ord_cielab_metric.Po \
 	lookup/ordered/$(DEPDIR)/test_runner-0041_ord_din99d_metric.Po \
 	lookup/ordered/$(DEPDIR)/test_runner-0042_ord_instance_isolation.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Po \
+	lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Po \
 	palette/alpha/$(DEPDIR)/test_runner-0001_srgb_gamma.Po \
 	palette/alpha/$(DEPDIR)/test_runner-0002_srgb_linear.Po \
 	palette/alpha/$(DEPDIR)/test_runner-0003_srgb_oklab.Po \
@@ -13703,6 +13848,54 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_VPTREE_FORCE_NO_CPU \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_VPTREE_AUTO_NO_CPU \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_CPU_PALETTE_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0081_INVALID_GPU_INDEX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_INJECTED_PROGRAM_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_INJECTED_GPU_PROGRAM \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_VPTREE_PALETTE_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_VPTREE_CACHE_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_VPTREE_DEVICE_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_VPTREE_LIVE_PLAN_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_VPTREE_BUSY_LEASE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0055_VPTREE_COMPLETED_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0056_VPTREE_ABORTED_REBUILD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_VPTREE_DOUBLE_FINISH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_VPTREE_FINISHED_VIEW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_VPTREE_PROVIDER_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_VPTREE_BINDING_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0061_VPTREE_FLOAT_DECLINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0062_ORDERED_PALETTE_SNAPSHOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0063_ORDERED_CACHE_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0064_ORDERED_DEVICE_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0065_ORDERED_LIVE_PLAN_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0066_ORDERED_BUSY_LEASE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0067_ORDERED_COMPLETED_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0068_ORDERED_ABORTED_REBUILD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_ORDERED_DOUBLE_FINISH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_ORDERED_FINISHED_VIEW \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_ORDERED_PROVIDER_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0072_ORDERED_BINDING_LIFETIME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0073_ORDERED_FLOAT_DECLINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0045_GPU_EXACT_0_0_1 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0046_GPU_EXACT_0_0_2 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0047_GPU_EXACT_0_0_7 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0048_GPU_EXACT_0_0_33 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0049_GPU_EXACT_0_0_256 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0050_GPU_EXACT_1_0_64 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0051_GPU_EXACT_2_0_33 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0052_GPU_EXACT_4_0_33 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0053_GPU_EXACT_0_1_33 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0054_GPU_EXACT_1_1_33 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0074_AUTO_UNSUPPORTED_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0075_FORCE_UNSUPPORTED_NO_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0076_RUNTIME_NO_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_ALLOCATION_NO_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_OFF_CPU_ONLY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_CUTOFF_CPU_ONLY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_COMPONENT_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ADMISSION_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0105_PLAYBACK_WAIT_RELEASE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_PLAYBACK_WAIT_COMPLETION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_PLAYBACK_WAIT_FAILURE \
@@ -19819,6 +20012,55 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/blockcull/0001_blockcull_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/gridlut/0001_gridlut_exact.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/ordered/0001_ordered_exact.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0080_injected_gpu_program.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0082_vptree_force_no_cpu.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0083_vptree_auto_no_cpu.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0084_cpu_palette_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0081_invalid_gpu_index.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/injected_program_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0074_auto_unsupported_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0075_force_unsupported_no_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0076_runtime_no_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0077_allocation_no_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0078_off_cpu_only.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0079_cutoff_cpu_only.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/admission_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0050_vptree_palette_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0051_vptree_cache_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0052_vptree_device_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0053_vptree_live_plan_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0054_vptree_busy_lease.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0055_vptree_completed_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0056_vptree_aborted_rebuild.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0057_vptree_double_finish.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0058_vptree_finished_view.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0059_vptree_provider_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0060_vptree_binding_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0061_vptree_float_decline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0062_ordered_palette_snapshot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0063_ordered_cache_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0064_ordered_device_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0065_ordered_live_plan_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0066_ordered_busy_lease.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0067_ordered_completed_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0068_ordered_aborted_rebuild.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0069_ordered_double_finish.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0070_ordered_finished_view.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0071_ordered_provider_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0072_ordered_binding_lifetime.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0073_ordered_float_decline.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0045_gpu_exact_0_0_1.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0046_gpu_exact_0_0_2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0047_gpu_exact_0_0_7.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0048_gpu_exact_0_0_33.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0049_gpu_exact_0_0_256.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0050_gpu_exact_1_0_64.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0051_gpu_exact_2_0_33.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0052_gpu_exact_4_0_33.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0053_gpu_exact_0_1_33.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    lookup/vptree/0054_gpu_exact_1_1_33.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/component_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/component_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0034_5bit_gpu_centers.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0035_5bit_gpu_tie.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/5bit/0036_5bit_gpu_index255.c \
@@ -28316,6 +28558,162 @@ lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT):  \
 lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT):  \
 	lookup/ordered/$(am__dirstamp) \
 	lookup/ordered/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/$(am__dirstamp):
+	@$(MKDIR_P) encoder/indexed
+	@: >>encoder/indexed/$(am__dirstamp)
+encoder/indexed/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) encoder/indexed/$(DEPDIR)
+	@: >>encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0080_injected_gpu_program.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0082_vptree_force_no_cpu.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0083_vptree_auto_no_cpu.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0084_cpu_palette_snapshot.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0081_invalid_gpu_index.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+_support/processing/gpu-palette/test_runner-injected_program_common.$(OBJEXT):  \
+	_support/processing/gpu-palette/$(am__dirstamp) \
+	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0074_auto_unsupported_fallback.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0075_force_unsupported_no_fallback.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0076_runtime_no_fallback.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0077_allocation_no_fallback.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0078_off_cpu_only.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0079_cutoff_cpu_only.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+_support/processing/gpu-palette/test_runner-admission_common.$(OBJEXT):  \
+	_support/processing/gpu-palette/$(am__dirstamp) \
+	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0050_vptree_palette_snapshot.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0051_vptree_cache_reuse.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0052_vptree_device_identity.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0053_vptree_live_plan_isolation.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0054_vptree_busy_lease.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0055_vptree_completed_reuse.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0056_vptree_aborted_rebuild.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0057_vptree_double_finish.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0058_vptree_finished_view.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0059_vptree_provider_lifetime.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0060_vptree_binding_lifetime.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0061_vptree_float_decline.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0062_ordered_palette_snapshot.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0063_ordered_cache_reuse.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0064_ordered_device_identity.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0065_ordered_live_plan_isolation.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0066_ordered_busy_lease.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0067_ordered_completed_reuse.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0068_ordered_aborted_rebuild.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0069_ordered_double_finish.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0070_ordered_finished_view.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0071_ordered_provider_lifetime.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0072_ordered_binding_lifetime.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0073_ordered_float_decline.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/$(am__dirstamp):
+	@$(MKDIR_P) lookup/vptree
+	@: >>lookup/vptree/$(am__dirstamp)
+lookup/vptree/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) lookup/vptree/$(DEPDIR)
+	@: >>lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0045_gpu_exact_0_0_1.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0046_gpu_exact_0_0_2.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0047_gpu_exact_0_0_7.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0048_gpu_exact_0_0_33.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0049_gpu_exact_0_0_256.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0050_gpu_exact_1_0_64.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0051_gpu_exact_2_0_33.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0052_gpu_exact_4_0_33.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0053_gpu_exact_0_1_33.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+lookup/vptree/test_runner-0054_gpu_exact_1_1_33.$(OBJEXT):  \
+	lookup/vptree/$(am__dirstamp) \
+	lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+_support/processing/gpu-palette/test_runner-component_common.$(OBJEXT):  \
+	_support/processing/gpu-palette/$(am__dirstamp) \
+	_support/processing/gpu-palette/$(DEPDIR)/$(am__dirstamp)
 lookup/5bit/test_runner-0034_5bit_gpu_centers.$(OBJEXT):  \
 	lookup/5bit/$(am__dirstamp) \
 	lookup/5bit/$(DEPDIR)/$(am__dirstamp)
@@ -28532,12 +28930,6 @@ lookup/fhedt/test_runner-0111_gpu_apply.$(OBJEXT):  \
 lookup/delaunay/test_runner-0050_gpu_exact.$(OBJEXT):  \
 	lookup/delaunay/$(am__dirstamp) \
 	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
-encoder/indexed/$(am__dirstamp):
-	@$(MKDIR_P) encoder/indexed
-	@: >>encoder/indexed/$(am__dirstamp)
-encoder/indexed/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) encoder/indexed/$(DEPDIR)
-	@: >>encoder/indexed/$(DEPDIR)/$(am__dirstamp)
 encoder/indexed/test_runner-0045_gpu_lookup_preparation.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
@@ -36764,6 +37156,7 @@ mostlyclean-compile:
 	-rm -f lookup/monochrome/*.$(OBJEXT)
 	-rm -f lookup/none/*.$(OBJEXT)
 	-rm -f lookup/ordered/*.$(OBJEXT)
+	-rm -f lookup/vptree/*.$(OBJEXT)
 	-rm -f palette/alpha/*.$(OBJEXT)
 	-rm -f palette/animation/*.$(OBJEXT)
 	-rm -f palette/binning/*.$(OBJEXT)
@@ -37156,9 +37549,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/frame/$(DEPDIR)/test_runner-frame_transparent_mask_resize_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/geometry/$(DEPDIR)/test_runner-resampling_exact_test_driver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/geometry/$(DEPDIR)/test_runner-resampling_measurement_test_driver.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-arithmetic_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-bitlut_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-gpu_failure_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-lookup_exact_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-ordered_state_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/gpu-palette/$(DEPDIR)/test_runner-rectangle_common.Po@am__quote@ # am--include-marker
@@ -38368,6 +38764,41 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0043_core_normal_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0044_core_ormode_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0045_gpu_lookup_preparation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po@am__quote@ # am--include-marker
@@ -40340,6 +40771,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/ordered/$(DEPDIR)/test_runner-0040_ord_cielab_metric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/ordered/$(DEPDIR)/test_runner-0041_ord_din99d_metric.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@lookup/ordered/$(DEPDIR)/test_runner-0042_ord_instance_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/alpha/$(DEPDIR)/test_runner-0001_srgb_gamma.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/alpha/$(DEPDIR)/test_runner-0002_srgb_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/alpha/$(DEPDIR)/test_runner-0003_srgb_oklab.Po@am__quote@ # am--include-marker
@@ -65089,6 +65530,678 @@ lookup/ordered/test_runner-0001_ordered_exact.obj: lookup/ordered/0001_ordered_e
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/ordered/0001_ordered_exact.c' object='lookup/ordered/test_runner-0001_ordered_exact.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/ordered/test_runner-0001_ordered_exact.obj `if test -f 'lookup/ordered/0001_ordered_exact.c'; then $(CYGPATH_W) 'lookup/ordered/0001_ordered_exact.c'; else $(CYGPATH_W) '$(srcdir)/lookup/ordered/0001_ordered_exact.c'; fi`
+
+encoder/indexed/test_runner-0080_injected_gpu_program.o: encoder/indexed/0080_injected_gpu_program.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0080_injected_gpu_program.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Tpo -c -o encoder/indexed/test_runner-0080_injected_gpu_program.o `test -f 'encoder/indexed/0080_injected_gpu_program.c' || echo '$(srcdir)/'`encoder/indexed/0080_injected_gpu_program.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Tpo encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0080_injected_gpu_program.c' object='encoder/indexed/test_runner-0080_injected_gpu_program.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0080_injected_gpu_program.o `test -f 'encoder/indexed/0080_injected_gpu_program.c' || echo '$(srcdir)/'`encoder/indexed/0080_injected_gpu_program.c
+
+encoder/indexed/test_runner-0080_injected_gpu_program.obj: encoder/indexed/0080_injected_gpu_program.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0080_injected_gpu_program.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Tpo -c -o encoder/indexed/test_runner-0080_injected_gpu_program.obj `if test -f 'encoder/indexed/0080_injected_gpu_program.c'; then $(CYGPATH_W) 'encoder/indexed/0080_injected_gpu_program.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0080_injected_gpu_program.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Tpo encoder/indexed/$(DEPDIR)/test_runner-0080_injected_gpu_program.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0080_injected_gpu_program.c' object='encoder/indexed/test_runner-0080_injected_gpu_program.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0080_injected_gpu_program.obj `if test -f 'encoder/indexed/0080_injected_gpu_program.c'; then $(CYGPATH_W) 'encoder/indexed/0080_injected_gpu_program.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0080_injected_gpu_program.c'; fi`
+
+encoder/indexed/test_runner-0082_vptree_force_no_cpu.o: encoder/indexed/0082_vptree_force_no_cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0082_vptree_force_no_cpu.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Tpo -c -o encoder/indexed/test_runner-0082_vptree_force_no_cpu.o `test -f 'encoder/indexed/0082_vptree_force_no_cpu.c' || echo '$(srcdir)/'`encoder/indexed/0082_vptree_force_no_cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Tpo encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0082_vptree_force_no_cpu.c' object='encoder/indexed/test_runner-0082_vptree_force_no_cpu.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0082_vptree_force_no_cpu.o `test -f 'encoder/indexed/0082_vptree_force_no_cpu.c' || echo '$(srcdir)/'`encoder/indexed/0082_vptree_force_no_cpu.c
+
+encoder/indexed/test_runner-0082_vptree_force_no_cpu.obj: encoder/indexed/0082_vptree_force_no_cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0082_vptree_force_no_cpu.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Tpo -c -o encoder/indexed/test_runner-0082_vptree_force_no_cpu.obj `if test -f 'encoder/indexed/0082_vptree_force_no_cpu.c'; then $(CYGPATH_W) 'encoder/indexed/0082_vptree_force_no_cpu.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0082_vptree_force_no_cpu.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Tpo encoder/indexed/$(DEPDIR)/test_runner-0082_vptree_force_no_cpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0082_vptree_force_no_cpu.c' object='encoder/indexed/test_runner-0082_vptree_force_no_cpu.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0082_vptree_force_no_cpu.obj `if test -f 'encoder/indexed/0082_vptree_force_no_cpu.c'; then $(CYGPATH_W) 'encoder/indexed/0082_vptree_force_no_cpu.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0082_vptree_force_no_cpu.c'; fi`
+
+encoder/indexed/test_runner-0083_vptree_auto_no_cpu.o: encoder/indexed/0083_vptree_auto_no_cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0083_vptree_auto_no_cpu.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Tpo -c -o encoder/indexed/test_runner-0083_vptree_auto_no_cpu.o `test -f 'encoder/indexed/0083_vptree_auto_no_cpu.c' || echo '$(srcdir)/'`encoder/indexed/0083_vptree_auto_no_cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Tpo encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0083_vptree_auto_no_cpu.c' object='encoder/indexed/test_runner-0083_vptree_auto_no_cpu.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0083_vptree_auto_no_cpu.o `test -f 'encoder/indexed/0083_vptree_auto_no_cpu.c' || echo '$(srcdir)/'`encoder/indexed/0083_vptree_auto_no_cpu.c
+
+encoder/indexed/test_runner-0083_vptree_auto_no_cpu.obj: encoder/indexed/0083_vptree_auto_no_cpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0083_vptree_auto_no_cpu.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Tpo -c -o encoder/indexed/test_runner-0083_vptree_auto_no_cpu.obj `if test -f 'encoder/indexed/0083_vptree_auto_no_cpu.c'; then $(CYGPATH_W) 'encoder/indexed/0083_vptree_auto_no_cpu.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0083_vptree_auto_no_cpu.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Tpo encoder/indexed/$(DEPDIR)/test_runner-0083_vptree_auto_no_cpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0083_vptree_auto_no_cpu.c' object='encoder/indexed/test_runner-0083_vptree_auto_no_cpu.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0083_vptree_auto_no_cpu.obj `if test -f 'encoder/indexed/0083_vptree_auto_no_cpu.c'; then $(CYGPATH_W) 'encoder/indexed/0083_vptree_auto_no_cpu.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0083_vptree_auto_no_cpu.c'; fi`
+
+encoder/indexed/test_runner-0084_cpu_palette_snapshot.o: encoder/indexed/0084_cpu_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0084_cpu_palette_snapshot.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Tpo -c -o encoder/indexed/test_runner-0084_cpu_palette_snapshot.o `test -f 'encoder/indexed/0084_cpu_palette_snapshot.c' || echo '$(srcdir)/'`encoder/indexed/0084_cpu_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Tpo encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0084_cpu_palette_snapshot.c' object='encoder/indexed/test_runner-0084_cpu_palette_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0084_cpu_palette_snapshot.o `test -f 'encoder/indexed/0084_cpu_palette_snapshot.c' || echo '$(srcdir)/'`encoder/indexed/0084_cpu_palette_snapshot.c
+
+encoder/indexed/test_runner-0084_cpu_palette_snapshot.obj: encoder/indexed/0084_cpu_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0084_cpu_palette_snapshot.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Tpo -c -o encoder/indexed/test_runner-0084_cpu_palette_snapshot.obj `if test -f 'encoder/indexed/0084_cpu_palette_snapshot.c'; then $(CYGPATH_W) 'encoder/indexed/0084_cpu_palette_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0084_cpu_palette_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Tpo encoder/indexed/$(DEPDIR)/test_runner-0084_cpu_palette_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0084_cpu_palette_snapshot.c' object='encoder/indexed/test_runner-0084_cpu_palette_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0084_cpu_palette_snapshot.obj `if test -f 'encoder/indexed/0084_cpu_palette_snapshot.c'; then $(CYGPATH_W) 'encoder/indexed/0084_cpu_palette_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0084_cpu_palette_snapshot.c'; fi`
+
+encoder/indexed/test_runner-0081_invalid_gpu_index.o: encoder/indexed/0081_invalid_gpu_index.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0081_invalid_gpu_index.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Tpo -c -o encoder/indexed/test_runner-0081_invalid_gpu_index.o `test -f 'encoder/indexed/0081_invalid_gpu_index.c' || echo '$(srcdir)/'`encoder/indexed/0081_invalid_gpu_index.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Tpo encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0081_invalid_gpu_index.c' object='encoder/indexed/test_runner-0081_invalid_gpu_index.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0081_invalid_gpu_index.o `test -f 'encoder/indexed/0081_invalid_gpu_index.c' || echo '$(srcdir)/'`encoder/indexed/0081_invalid_gpu_index.c
+
+encoder/indexed/test_runner-0081_invalid_gpu_index.obj: encoder/indexed/0081_invalid_gpu_index.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0081_invalid_gpu_index.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Tpo -c -o encoder/indexed/test_runner-0081_invalid_gpu_index.obj `if test -f 'encoder/indexed/0081_invalid_gpu_index.c'; then $(CYGPATH_W) 'encoder/indexed/0081_invalid_gpu_index.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0081_invalid_gpu_index.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Tpo encoder/indexed/$(DEPDIR)/test_runner-0081_invalid_gpu_index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0081_invalid_gpu_index.c' object='encoder/indexed/test_runner-0081_invalid_gpu_index.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0081_invalid_gpu_index.obj `if test -f 'encoder/indexed/0081_invalid_gpu_index.c'; then $(CYGPATH_W) 'encoder/indexed/0081_invalid_gpu_index.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0081_invalid_gpu_index.c'; fi`
+
+_support/processing/gpu-palette/test_runner-injected_program_common.o: _support/processing/gpu-palette/injected_program_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-injected_program_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Tpo -c -o _support/processing/gpu-palette/test_runner-injected_program_common.o `test -f '_support/processing/gpu-palette/injected_program_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/injected_program_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/injected_program_common.c' object='_support/processing/gpu-palette/test_runner-injected_program_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-injected_program_common.o `test -f '_support/processing/gpu-palette/injected_program_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/injected_program_common.c
+
+_support/processing/gpu-palette/test_runner-injected_program_common.obj: _support/processing/gpu-palette/injected_program_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-injected_program_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Tpo -c -o _support/processing/gpu-palette/test_runner-injected_program_common.obj `if test -f '_support/processing/gpu-palette/injected_program_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/injected_program_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/injected_program_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-injected_program_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/injected_program_common.c' object='_support/processing/gpu-palette/test_runner-injected_program_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-injected_program_common.obj `if test -f '_support/processing/gpu-palette/injected_program_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/injected_program_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/injected_program_common.c'; fi`
+
+encoder/indexed/test_runner-0074_auto_unsupported_fallback.o: encoder/indexed/0074_auto_unsupported_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0074_auto_unsupported_fallback.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Tpo -c -o encoder/indexed/test_runner-0074_auto_unsupported_fallback.o `test -f 'encoder/indexed/0074_auto_unsupported_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0074_auto_unsupported_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0074_auto_unsupported_fallback.c' object='encoder/indexed/test_runner-0074_auto_unsupported_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0074_auto_unsupported_fallback.o `test -f 'encoder/indexed/0074_auto_unsupported_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0074_auto_unsupported_fallback.c
+
+encoder/indexed/test_runner-0074_auto_unsupported_fallback.obj: encoder/indexed/0074_auto_unsupported_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0074_auto_unsupported_fallback.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Tpo -c -o encoder/indexed/test_runner-0074_auto_unsupported_fallback.obj `if test -f 'encoder/indexed/0074_auto_unsupported_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0074_auto_unsupported_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0074_auto_unsupported_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0074_auto_unsupported_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0074_auto_unsupported_fallback.c' object='encoder/indexed/test_runner-0074_auto_unsupported_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0074_auto_unsupported_fallback.obj `if test -f 'encoder/indexed/0074_auto_unsupported_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0074_auto_unsupported_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0074_auto_unsupported_fallback.c'; fi`
+
+encoder/indexed/test_runner-0075_force_unsupported_no_fallback.o: encoder/indexed/0075_force_unsupported_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0075_force_unsupported_no_fallback.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Tpo -c -o encoder/indexed/test_runner-0075_force_unsupported_no_fallback.o `test -f 'encoder/indexed/0075_force_unsupported_no_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0075_force_unsupported_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0075_force_unsupported_no_fallback.c' object='encoder/indexed/test_runner-0075_force_unsupported_no_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0075_force_unsupported_no_fallback.o `test -f 'encoder/indexed/0075_force_unsupported_no_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0075_force_unsupported_no_fallback.c
+
+encoder/indexed/test_runner-0075_force_unsupported_no_fallback.obj: encoder/indexed/0075_force_unsupported_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0075_force_unsupported_no_fallback.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Tpo -c -o encoder/indexed/test_runner-0075_force_unsupported_no_fallback.obj `if test -f 'encoder/indexed/0075_force_unsupported_no_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0075_force_unsupported_no_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0075_force_unsupported_no_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0075_force_unsupported_no_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0075_force_unsupported_no_fallback.c' object='encoder/indexed/test_runner-0075_force_unsupported_no_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0075_force_unsupported_no_fallback.obj `if test -f 'encoder/indexed/0075_force_unsupported_no_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0075_force_unsupported_no_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0075_force_unsupported_no_fallback.c'; fi`
+
+encoder/indexed/test_runner-0076_runtime_no_fallback.o: encoder/indexed/0076_runtime_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0076_runtime_no_fallback.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Tpo -c -o encoder/indexed/test_runner-0076_runtime_no_fallback.o `test -f 'encoder/indexed/0076_runtime_no_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0076_runtime_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0076_runtime_no_fallback.c' object='encoder/indexed/test_runner-0076_runtime_no_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0076_runtime_no_fallback.o `test -f 'encoder/indexed/0076_runtime_no_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0076_runtime_no_fallback.c
+
+encoder/indexed/test_runner-0076_runtime_no_fallback.obj: encoder/indexed/0076_runtime_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0076_runtime_no_fallback.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Tpo -c -o encoder/indexed/test_runner-0076_runtime_no_fallback.obj `if test -f 'encoder/indexed/0076_runtime_no_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0076_runtime_no_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0076_runtime_no_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0076_runtime_no_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0076_runtime_no_fallback.c' object='encoder/indexed/test_runner-0076_runtime_no_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0076_runtime_no_fallback.obj `if test -f 'encoder/indexed/0076_runtime_no_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0076_runtime_no_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0076_runtime_no_fallback.c'; fi`
+
+encoder/indexed/test_runner-0077_allocation_no_fallback.o: encoder/indexed/0077_allocation_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0077_allocation_no_fallback.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Tpo -c -o encoder/indexed/test_runner-0077_allocation_no_fallback.o `test -f 'encoder/indexed/0077_allocation_no_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0077_allocation_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0077_allocation_no_fallback.c' object='encoder/indexed/test_runner-0077_allocation_no_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0077_allocation_no_fallback.o `test -f 'encoder/indexed/0077_allocation_no_fallback.c' || echo '$(srcdir)/'`encoder/indexed/0077_allocation_no_fallback.c
+
+encoder/indexed/test_runner-0077_allocation_no_fallback.obj: encoder/indexed/0077_allocation_no_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0077_allocation_no_fallback.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Tpo -c -o encoder/indexed/test_runner-0077_allocation_no_fallback.obj `if test -f 'encoder/indexed/0077_allocation_no_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0077_allocation_no_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0077_allocation_no_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Tpo encoder/indexed/$(DEPDIR)/test_runner-0077_allocation_no_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0077_allocation_no_fallback.c' object='encoder/indexed/test_runner-0077_allocation_no_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0077_allocation_no_fallback.obj `if test -f 'encoder/indexed/0077_allocation_no_fallback.c'; then $(CYGPATH_W) 'encoder/indexed/0077_allocation_no_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0077_allocation_no_fallback.c'; fi`
+
+encoder/indexed/test_runner-0078_off_cpu_only.o: encoder/indexed/0078_off_cpu_only.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0078_off_cpu_only.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Tpo -c -o encoder/indexed/test_runner-0078_off_cpu_only.o `test -f 'encoder/indexed/0078_off_cpu_only.c' || echo '$(srcdir)/'`encoder/indexed/0078_off_cpu_only.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Tpo encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0078_off_cpu_only.c' object='encoder/indexed/test_runner-0078_off_cpu_only.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0078_off_cpu_only.o `test -f 'encoder/indexed/0078_off_cpu_only.c' || echo '$(srcdir)/'`encoder/indexed/0078_off_cpu_only.c
+
+encoder/indexed/test_runner-0078_off_cpu_only.obj: encoder/indexed/0078_off_cpu_only.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0078_off_cpu_only.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Tpo -c -o encoder/indexed/test_runner-0078_off_cpu_only.obj `if test -f 'encoder/indexed/0078_off_cpu_only.c'; then $(CYGPATH_W) 'encoder/indexed/0078_off_cpu_only.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0078_off_cpu_only.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Tpo encoder/indexed/$(DEPDIR)/test_runner-0078_off_cpu_only.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0078_off_cpu_only.c' object='encoder/indexed/test_runner-0078_off_cpu_only.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0078_off_cpu_only.obj `if test -f 'encoder/indexed/0078_off_cpu_only.c'; then $(CYGPATH_W) 'encoder/indexed/0078_off_cpu_only.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0078_off_cpu_only.c'; fi`
+
+encoder/indexed/test_runner-0079_cutoff_cpu_only.o: encoder/indexed/0079_cutoff_cpu_only.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0079_cutoff_cpu_only.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Tpo -c -o encoder/indexed/test_runner-0079_cutoff_cpu_only.o `test -f 'encoder/indexed/0079_cutoff_cpu_only.c' || echo '$(srcdir)/'`encoder/indexed/0079_cutoff_cpu_only.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Tpo encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0079_cutoff_cpu_only.c' object='encoder/indexed/test_runner-0079_cutoff_cpu_only.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0079_cutoff_cpu_only.o `test -f 'encoder/indexed/0079_cutoff_cpu_only.c' || echo '$(srcdir)/'`encoder/indexed/0079_cutoff_cpu_only.c
+
+encoder/indexed/test_runner-0079_cutoff_cpu_only.obj: encoder/indexed/0079_cutoff_cpu_only.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0079_cutoff_cpu_only.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Tpo -c -o encoder/indexed/test_runner-0079_cutoff_cpu_only.obj `if test -f 'encoder/indexed/0079_cutoff_cpu_only.c'; then $(CYGPATH_W) 'encoder/indexed/0079_cutoff_cpu_only.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0079_cutoff_cpu_only.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Tpo encoder/indexed/$(DEPDIR)/test_runner-0079_cutoff_cpu_only.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0079_cutoff_cpu_only.c' object='encoder/indexed/test_runner-0079_cutoff_cpu_only.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0079_cutoff_cpu_only.obj `if test -f 'encoder/indexed/0079_cutoff_cpu_only.c'; then $(CYGPATH_W) 'encoder/indexed/0079_cutoff_cpu_only.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0079_cutoff_cpu_only.c'; fi`
+
+_support/processing/gpu-palette/test_runner-admission_common.o: _support/processing/gpu-palette/admission_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-admission_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Tpo -c -o _support/processing/gpu-palette/test_runner-admission_common.o `test -f '_support/processing/gpu-palette/admission_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/admission_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/admission_common.c' object='_support/processing/gpu-palette/test_runner-admission_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-admission_common.o `test -f '_support/processing/gpu-palette/admission_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/admission_common.c
+
+_support/processing/gpu-palette/test_runner-admission_common.obj: _support/processing/gpu-palette/admission_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-admission_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Tpo -c -o _support/processing/gpu-palette/test_runner-admission_common.obj `if test -f '_support/processing/gpu-palette/admission_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/admission_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/admission_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-admission_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/admission_common.c' object='_support/processing/gpu-palette/test_runner-admission_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-admission_common.obj `if test -f '_support/processing/gpu-palette/admission_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/admission_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/admission_common.c'; fi`
+
+encoder/indexed/test_runner-0050_vptree_palette_snapshot.o: encoder/indexed/0050_vptree_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0050_vptree_palette_snapshot.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Tpo -c -o encoder/indexed/test_runner-0050_vptree_palette_snapshot.o `test -f 'encoder/indexed/0050_vptree_palette_snapshot.c' || echo '$(srcdir)/'`encoder/indexed/0050_vptree_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Tpo encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0050_vptree_palette_snapshot.c' object='encoder/indexed/test_runner-0050_vptree_palette_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0050_vptree_palette_snapshot.o `test -f 'encoder/indexed/0050_vptree_palette_snapshot.c' || echo '$(srcdir)/'`encoder/indexed/0050_vptree_palette_snapshot.c
+
+encoder/indexed/test_runner-0050_vptree_palette_snapshot.obj: encoder/indexed/0050_vptree_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0050_vptree_palette_snapshot.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Tpo -c -o encoder/indexed/test_runner-0050_vptree_palette_snapshot.obj `if test -f 'encoder/indexed/0050_vptree_palette_snapshot.c'; then $(CYGPATH_W) 'encoder/indexed/0050_vptree_palette_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0050_vptree_palette_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Tpo encoder/indexed/$(DEPDIR)/test_runner-0050_vptree_palette_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0050_vptree_palette_snapshot.c' object='encoder/indexed/test_runner-0050_vptree_palette_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0050_vptree_palette_snapshot.obj `if test -f 'encoder/indexed/0050_vptree_palette_snapshot.c'; then $(CYGPATH_W) 'encoder/indexed/0050_vptree_palette_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0050_vptree_palette_snapshot.c'; fi`
+
+encoder/indexed/test_runner-0051_vptree_cache_reuse.o: encoder/indexed/0051_vptree_cache_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0051_vptree_cache_reuse.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Tpo -c -o encoder/indexed/test_runner-0051_vptree_cache_reuse.o `test -f 'encoder/indexed/0051_vptree_cache_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0051_vptree_cache_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0051_vptree_cache_reuse.c' object='encoder/indexed/test_runner-0051_vptree_cache_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0051_vptree_cache_reuse.o `test -f 'encoder/indexed/0051_vptree_cache_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0051_vptree_cache_reuse.c
+
+encoder/indexed/test_runner-0051_vptree_cache_reuse.obj: encoder/indexed/0051_vptree_cache_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0051_vptree_cache_reuse.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Tpo -c -o encoder/indexed/test_runner-0051_vptree_cache_reuse.obj `if test -f 'encoder/indexed/0051_vptree_cache_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0051_vptree_cache_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0051_vptree_cache_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0051_vptree_cache_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0051_vptree_cache_reuse.c' object='encoder/indexed/test_runner-0051_vptree_cache_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0051_vptree_cache_reuse.obj `if test -f 'encoder/indexed/0051_vptree_cache_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0051_vptree_cache_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0051_vptree_cache_reuse.c'; fi`
+
+encoder/indexed/test_runner-0052_vptree_device_identity.o: encoder/indexed/0052_vptree_device_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0052_vptree_device_identity.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Tpo -c -o encoder/indexed/test_runner-0052_vptree_device_identity.o `test -f 'encoder/indexed/0052_vptree_device_identity.c' || echo '$(srcdir)/'`encoder/indexed/0052_vptree_device_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Tpo encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0052_vptree_device_identity.c' object='encoder/indexed/test_runner-0052_vptree_device_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0052_vptree_device_identity.o `test -f 'encoder/indexed/0052_vptree_device_identity.c' || echo '$(srcdir)/'`encoder/indexed/0052_vptree_device_identity.c
+
+encoder/indexed/test_runner-0052_vptree_device_identity.obj: encoder/indexed/0052_vptree_device_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0052_vptree_device_identity.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Tpo -c -o encoder/indexed/test_runner-0052_vptree_device_identity.obj `if test -f 'encoder/indexed/0052_vptree_device_identity.c'; then $(CYGPATH_W) 'encoder/indexed/0052_vptree_device_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0052_vptree_device_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Tpo encoder/indexed/$(DEPDIR)/test_runner-0052_vptree_device_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0052_vptree_device_identity.c' object='encoder/indexed/test_runner-0052_vptree_device_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0052_vptree_device_identity.obj `if test -f 'encoder/indexed/0052_vptree_device_identity.c'; then $(CYGPATH_W) 'encoder/indexed/0052_vptree_device_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0052_vptree_device_identity.c'; fi`
+
+encoder/indexed/test_runner-0053_vptree_live_plan_isolation.o: encoder/indexed/0053_vptree_live_plan_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0053_vptree_live_plan_isolation.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Tpo -c -o encoder/indexed/test_runner-0053_vptree_live_plan_isolation.o `test -f 'encoder/indexed/0053_vptree_live_plan_isolation.c' || echo '$(srcdir)/'`encoder/indexed/0053_vptree_live_plan_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0053_vptree_live_plan_isolation.c' object='encoder/indexed/test_runner-0053_vptree_live_plan_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0053_vptree_live_plan_isolation.o `test -f 'encoder/indexed/0053_vptree_live_plan_isolation.c' || echo '$(srcdir)/'`encoder/indexed/0053_vptree_live_plan_isolation.c
+
+encoder/indexed/test_runner-0053_vptree_live_plan_isolation.obj: encoder/indexed/0053_vptree_live_plan_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0053_vptree_live_plan_isolation.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Tpo -c -o encoder/indexed/test_runner-0053_vptree_live_plan_isolation.obj `if test -f 'encoder/indexed/0053_vptree_live_plan_isolation.c'; then $(CYGPATH_W) 'encoder/indexed/0053_vptree_live_plan_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0053_vptree_live_plan_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0053_vptree_live_plan_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0053_vptree_live_plan_isolation.c' object='encoder/indexed/test_runner-0053_vptree_live_plan_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0053_vptree_live_plan_isolation.obj `if test -f 'encoder/indexed/0053_vptree_live_plan_isolation.c'; then $(CYGPATH_W) 'encoder/indexed/0053_vptree_live_plan_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0053_vptree_live_plan_isolation.c'; fi`
+
+encoder/indexed/test_runner-0054_vptree_busy_lease.o: encoder/indexed/0054_vptree_busy_lease.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0054_vptree_busy_lease.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Tpo -c -o encoder/indexed/test_runner-0054_vptree_busy_lease.o `test -f 'encoder/indexed/0054_vptree_busy_lease.c' || echo '$(srcdir)/'`encoder/indexed/0054_vptree_busy_lease.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Tpo encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0054_vptree_busy_lease.c' object='encoder/indexed/test_runner-0054_vptree_busy_lease.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0054_vptree_busy_lease.o `test -f 'encoder/indexed/0054_vptree_busy_lease.c' || echo '$(srcdir)/'`encoder/indexed/0054_vptree_busy_lease.c
+
+encoder/indexed/test_runner-0054_vptree_busy_lease.obj: encoder/indexed/0054_vptree_busy_lease.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0054_vptree_busy_lease.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Tpo -c -o encoder/indexed/test_runner-0054_vptree_busy_lease.obj `if test -f 'encoder/indexed/0054_vptree_busy_lease.c'; then $(CYGPATH_W) 'encoder/indexed/0054_vptree_busy_lease.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0054_vptree_busy_lease.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Tpo encoder/indexed/$(DEPDIR)/test_runner-0054_vptree_busy_lease.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0054_vptree_busy_lease.c' object='encoder/indexed/test_runner-0054_vptree_busy_lease.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0054_vptree_busy_lease.obj `if test -f 'encoder/indexed/0054_vptree_busy_lease.c'; then $(CYGPATH_W) 'encoder/indexed/0054_vptree_busy_lease.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0054_vptree_busy_lease.c'; fi`
+
+encoder/indexed/test_runner-0055_vptree_completed_reuse.o: encoder/indexed/0055_vptree_completed_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0055_vptree_completed_reuse.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Tpo -c -o encoder/indexed/test_runner-0055_vptree_completed_reuse.o `test -f 'encoder/indexed/0055_vptree_completed_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0055_vptree_completed_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0055_vptree_completed_reuse.c' object='encoder/indexed/test_runner-0055_vptree_completed_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0055_vptree_completed_reuse.o `test -f 'encoder/indexed/0055_vptree_completed_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0055_vptree_completed_reuse.c
+
+encoder/indexed/test_runner-0055_vptree_completed_reuse.obj: encoder/indexed/0055_vptree_completed_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0055_vptree_completed_reuse.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Tpo -c -o encoder/indexed/test_runner-0055_vptree_completed_reuse.obj `if test -f 'encoder/indexed/0055_vptree_completed_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0055_vptree_completed_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0055_vptree_completed_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0055_vptree_completed_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0055_vptree_completed_reuse.c' object='encoder/indexed/test_runner-0055_vptree_completed_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0055_vptree_completed_reuse.obj `if test -f 'encoder/indexed/0055_vptree_completed_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0055_vptree_completed_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0055_vptree_completed_reuse.c'; fi`
+
+encoder/indexed/test_runner-0056_vptree_aborted_rebuild.o: encoder/indexed/0056_vptree_aborted_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0056_vptree_aborted_rebuild.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Tpo -c -o encoder/indexed/test_runner-0056_vptree_aborted_rebuild.o `test -f 'encoder/indexed/0056_vptree_aborted_rebuild.c' || echo '$(srcdir)/'`encoder/indexed/0056_vptree_aborted_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Tpo encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0056_vptree_aborted_rebuild.c' object='encoder/indexed/test_runner-0056_vptree_aborted_rebuild.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0056_vptree_aborted_rebuild.o `test -f 'encoder/indexed/0056_vptree_aborted_rebuild.c' || echo '$(srcdir)/'`encoder/indexed/0056_vptree_aborted_rebuild.c
+
+encoder/indexed/test_runner-0056_vptree_aborted_rebuild.obj: encoder/indexed/0056_vptree_aborted_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0056_vptree_aborted_rebuild.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Tpo -c -o encoder/indexed/test_runner-0056_vptree_aborted_rebuild.obj `if test -f 'encoder/indexed/0056_vptree_aborted_rebuild.c'; then $(CYGPATH_W) 'encoder/indexed/0056_vptree_aborted_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0056_vptree_aborted_rebuild.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Tpo encoder/indexed/$(DEPDIR)/test_runner-0056_vptree_aborted_rebuild.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0056_vptree_aborted_rebuild.c' object='encoder/indexed/test_runner-0056_vptree_aborted_rebuild.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0056_vptree_aborted_rebuild.obj `if test -f 'encoder/indexed/0056_vptree_aborted_rebuild.c'; then $(CYGPATH_W) 'encoder/indexed/0056_vptree_aborted_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0056_vptree_aborted_rebuild.c'; fi`
+
+encoder/indexed/test_runner-0057_vptree_double_finish.o: encoder/indexed/0057_vptree_double_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0057_vptree_double_finish.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Tpo -c -o encoder/indexed/test_runner-0057_vptree_double_finish.o `test -f 'encoder/indexed/0057_vptree_double_finish.c' || echo '$(srcdir)/'`encoder/indexed/0057_vptree_double_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Tpo encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0057_vptree_double_finish.c' object='encoder/indexed/test_runner-0057_vptree_double_finish.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0057_vptree_double_finish.o `test -f 'encoder/indexed/0057_vptree_double_finish.c' || echo '$(srcdir)/'`encoder/indexed/0057_vptree_double_finish.c
+
+encoder/indexed/test_runner-0057_vptree_double_finish.obj: encoder/indexed/0057_vptree_double_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0057_vptree_double_finish.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Tpo -c -o encoder/indexed/test_runner-0057_vptree_double_finish.obj `if test -f 'encoder/indexed/0057_vptree_double_finish.c'; then $(CYGPATH_W) 'encoder/indexed/0057_vptree_double_finish.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0057_vptree_double_finish.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Tpo encoder/indexed/$(DEPDIR)/test_runner-0057_vptree_double_finish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0057_vptree_double_finish.c' object='encoder/indexed/test_runner-0057_vptree_double_finish.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0057_vptree_double_finish.obj `if test -f 'encoder/indexed/0057_vptree_double_finish.c'; then $(CYGPATH_W) 'encoder/indexed/0057_vptree_double_finish.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0057_vptree_double_finish.c'; fi`
+
+encoder/indexed/test_runner-0058_vptree_finished_view.o: encoder/indexed/0058_vptree_finished_view.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0058_vptree_finished_view.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Tpo -c -o encoder/indexed/test_runner-0058_vptree_finished_view.o `test -f 'encoder/indexed/0058_vptree_finished_view.c' || echo '$(srcdir)/'`encoder/indexed/0058_vptree_finished_view.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Tpo encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0058_vptree_finished_view.c' object='encoder/indexed/test_runner-0058_vptree_finished_view.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0058_vptree_finished_view.o `test -f 'encoder/indexed/0058_vptree_finished_view.c' || echo '$(srcdir)/'`encoder/indexed/0058_vptree_finished_view.c
+
+encoder/indexed/test_runner-0058_vptree_finished_view.obj: encoder/indexed/0058_vptree_finished_view.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0058_vptree_finished_view.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Tpo -c -o encoder/indexed/test_runner-0058_vptree_finished_view.obj `if test -f 'encoder/indexed/0058_vptree_finished_view.c'; then $(CYGPATH_W) 'encoder/indexed/0058_vptree_finished_view.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0058_vptree_finished_view.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Tpo encoder/indexed/$(DEPDIR)/test_runner-0058_vptree_finished_view.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0058_vptree_finished_view.c' object='encoder/indexed/test_runner-0058_vptree_finished_view.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0058_vptree_finished_view.obj `if test -f 'encoder/indexed/0058_vptree_finished_view.c'; then $(CYGPATH_W) 'encoder/indexed/0058_vptree_finished_view.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0058_vptree_finished_view.c'; fi`
+
+encoder/indexed/test_runner-0059_vptree_provider_lifetime.o: encoder/indexed/0059_vptree_provider_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0059_vptree_provider_lifetime.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Tpo -c -o encoder/indexed/test_runner-0059_vptree_provider_lifetime.o `test -f 'encoder/indexed/0059_vptree_provider_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0059_vptree_provider_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0059_vptree_provider_lifetime.c' object='encoder/indexed/test_runner-0059_vptree_provider_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0059_vptree_provider_lifetime.o `test -f 'encoder/indexed/0059_vptree_provider_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0059_vptree_provider_lifetime.c
+
+encoder/indexed/test_runner-0059_vptree_provider_lifetime.obj: encoder/indexed/0059_vptree_provider_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0059_vptree_provider_lifetime.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Tpo -c -o encoder/indexed/test_runner-0059_vptree_provider_lifetime.obj `if test -f 'encoder/indexed/0059_vptree_provider_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0059_vptree_provider_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0059_vptree_provider_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0059_vptree_provider_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0059_vptree_provider_lifetime.c' object='encoder/indexed/test_runner-0059_vptree_provider_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0059_vptree_provider_lifetime.obj `if test -f 'encoder/indexed/0059_vptree_provider_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0059_vptree_provider_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0059_vptree_provider_lifetime.c'; fi`
+
+encoder/indexed/test_runner-0060_vptree_binding_lifetime.o: encoder/indexed/0060_vptree_binding_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0060_vptree_binding_lifetime.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Tpo -c -o encoder/indexed/test_runner-0060_vptree_binding_lifetime.o `test -f 'encoder/indexed/0060_vptree_binding_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0060_vptree_binding_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0060_vptree_binding_lifetime.c' object='encoder/indexed/test_runner-0060_vptree_binding_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0060_vptree_binding_lifetime.o `test -f 'encoder/indexed/0060_vptree_binding_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0060_vptree_binding_lifetime.c
+
+encoder/indexed/test_runner-0060_vptree_binding_lifetime.obj: encoder/indexed/0060_vptree_binding_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0060_vptree_binding_lifetime.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Tpo -c -o encoder/indexed/test_runner-0060_vptree_binding_lifetime.obj `if test -f 'encoder/indexed/0060_vptree_binding_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0060_vptree_binding_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0060_vptree_binding_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0060_vptree_binding_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0060_vptree_binding_lifetime.c' object='encoder/indexed/test_runner-0060_vptree_binding_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0060_vptree_binding_lifetime.obj `if test -f 'encoder/indexed/0060_vptree_binding_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0060_vptree_binding_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0060_vptree_binding_lifetime.c'; fi`
+
+encoder/indexed/test_runner-0061_vptree_float_decline.o: encoder/indexed/0061_vptree_float_decline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0061_vptree_float_decline.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Tpo -c -o encoder/indexed/test_runner-0061_vptree_float_decline.o `test -f 'encoder/indexed/0061_vptree_float_decline.c' || echo '$(srcdir)/'`encoder/indexed/0061_vptree_float_decline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Tpo encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0061_vptree_float_decline.c' object='encoder/indexed/test_runner-0061_vptree_float_decline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0061_vptree_float_decline.o `test -f 'encoder/indexed/0061_vptree_float_decline.c' || echo '$(srcdir)/'`encoder/indexed/0061_vptree_float_decline.c
+
+encoder/indexed/test_runner-0061_vptree_float_decline.obj: encoder/indexed/0061_vptree_float_decline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0061_vptree_float_decline.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Tpo -c -o encoder/indexed/test_runner-0061_vptree_float_decline.obj `if test -f 'encoder/indexed/0061_vptree_float_decline.c'; then $(CYGPATH_W) 'encoder/indexed/0061_vptree_float_decline.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0061_vptree_float_decline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Tpo encoder/indexed/$(DEPDIR)/test_runner-0061_vptree_float_decline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0061_vptree_float_decline.c' object='encoder/indexed/test_runner-0061_vptree_float_decline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0061_vptree_float_decline.obj `if test -f 'encoder/indexed/0061_vptree_float_decline.c'; then $(CYGPATH_W) 'encoder/indexed/0061_vptree_float_decline.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0061_vptree_float_decline.c'; fi`
+
+encoder/indexed/test_runner-0062_ordered_palette_snapshot.o: encoder/indexed/0062_ordered_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0062_ordered_palette_snapshot.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Tpo -c -o encoder/indexed/test_runner-0062_ordered_palette_snapshot.o `test -f 'encoder/indexed/0062_ordered_palette_snapshot.c' || echo '$(srcdir)/'`encoder/indexed/0062_ordered_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Tpo encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0062_ordered_palette_snapshot.c' object='encoder/indexed/test_runner-0062_ordered_palette_snapshot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0062_ordered_palette_snapshot.o `test -f 'encoder/indexed/0062_ordered_palette_snapshot.c' || echo '$(srcdir)/'`encoder/indexed/0062_ordered_palette_snapshot.c
+
+encoder/indexed/test_runner-0062_ordered_palette_snapshot.obj: encoder/indexed/0062_ordered_palette_snapshot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0062_ordered_palette_snapshot.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Tpo -c -o encoder/indexed/test_runner-0062_ordered_palette_snapshot.obj `if test -f 'encoder/indexed/0062_ordered_palette_snapshot.c'; then $(CYGPATH_W) 'encoder/indexed/0062_ordered_palette_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0062_ordered_palette_snapshot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Tpo encoder/indexed/$(DEPDIR)/test_runner-0062_ordered_palette_snapshot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0062_ordered_palette_snapshot.c' object='encoder/indexed/test_runner-0062_ordered_palette_snapshot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0062_ordered_palette_snapshot.obj `if test -f 'encoder/indexed/0062_ordered_palette_snapshot.c'; then $(CYGPATH_W) 'encoder/indexed/0062_ordered_palette_snapshot.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0062_ordered_palette_snapshot.c'; fi`
+
+encoder/indexed/test_runner-0063_ordered_cache_reuse.o: encoder/indexed/0063_ordered_cache_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0063_ordered_cache_reuse.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Tpo -c -o encoder/indexed/test_runner-0063_ordered_cache_reuse.o `test -f 'encoder/indexed/0063_ordered_cache_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0063_ordered_cache_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0063_ordered_cache_reuse.c' object='encoder/indexed/test_runner-0063_ordered_cache_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0063_ordered_cache_reuse.o `test -f 'encoder/indexed/0063_ordered_cache_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0063_ordered_cache_reuse.c
+
+encoder/indexed/test_runner-0063_ordered_cache_reuse.obj: encoder/indexed/0063_ordered_cache_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0063_ordered_cache_reuse.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Tpo -c -o encoder/indexed/test_runner-0063_ordered_cache_reuse.obj `if test -f 'encoder/indexed/0063_ordered_cache_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0063_ordered_cache_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0063_ordered_cache_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0063_ordered_cache_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0063_ordered_cache_reuse.c' object='encoder/indexed/test_runner-0063_ordered_cache_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0063_ordered_cache_reuse.obj `if test -f 'encoder/indexed/0063_ordered_cache_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0063_ordered_cache_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0063_ordered_cache_reuse.c'; fi`
+
+encoder/indexed/test_runner-0064_ordered_device_identity.o: encoder/indexed/0064_ordered_device_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0064_ordered_device_identity.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Tpo -c -o encoder/indexed/test_runner-0064_ordered_device_identity.o `test -f 'encoder/indexed/0064_ordered_device_identity.c' || echo '$(srcdir)/'`encoder/indexed/0064_ordered_device_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Tpo encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0064_ordered_device_identity.c' object='encoder/indexed/test_runner-0064_ordered_device_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0064_ordered_device_identity.o `test -f 'encoder/indexed/0064_ordered_device_identity.c' || echo '$(srcdir)/'`encoder/indexed/0064_ordered_device_identity.c
+
+encoder/indexed/test_runner-0064_ordered_device_identity.obj: encoder/indexed/0064_ordered_device_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0064_ordered_device_identity.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Tpo -c -o encoder/indexed/test_runner-0064_ordered_device_identity.obj `if test -f 'encoder/indexed/0064_ordered_device_identity.c'; then $(CYGPATH_W) 'encoder/indexed/0064_ordered_device_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0064_ordered_device_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Tpo encoder/indexed/$(DEPDIR)/test_runner-0064_ordered_device_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0064_ordered_device_identity.c' object='encoder/indexed/test_runner-0064_ordered_device_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0064_ordered_device_identity.obj `if test -f 'encoder/indexed/0064_ordered_device_identity.c'; then $(CYGPATH_W) 'encoder/indexed/0064_ordered_device_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0064_ordered_device_identity.c'; fi`
+
+encoder/indexed/test_runner-0065_ordered_live_plan_isolation.o: encoder/indexed/0065_ordered_live_plan_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0065_ordered_live_plan_isolation.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Tpo -c -o encoder/indexed/test_runner-0065_ordered_live_plan_isolation.o `test -f 'encoder/indexed/0065_ordered_live_plan_isolation.c' || echo '$(srcdir)/'`encoder/indexed/0065_ordered_live_plan_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0065_ordered_live_plan_isolation.c' object='encoder/indexed/test_runner-0065_ordered_live_plan_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0065_ordered_live_plan_isolation.o `test -f 'encoder/indexed/0065_ordered_live_plan_isolation.c' || echo '$(srcdir)/'`encoder/indexed/0065_ordered_live_plan_isolation.c
+
+encoder/indexed/test_runner-0065_ordered_live_plan_isolation.obj: encoder/indexed/0065_ordered_live_plan_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0065_ordered_live_plan_isolation.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Tpo -c -o encoder/indexed/test_runner-0065_ordered_live_plan_isolation.obj `if test -f 'encoder/indexed/0065_ordered_live_plan_isolation.c'; then $(CYGPATH_W) 'encoder/indexed/0065_ordered_live_plan_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0065_ordered_live_plan_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Tpo encoder/indexed/$(DEPDIR)/test_runner-0065_ordered_live_plan_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0065_ordered_live_plan_isolation.c' object='encoder/indexed/test_runner-0065_ordered_live_plan_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0065_ordered_live_plan_isolation.obj `if test -f 'encoder/indexed/0065_ordered_live_plan_isolation.c'; then $(CYGPATH_W) 'encoder/indexed/0065_ordered_live_plan_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0065_ordered_live_plan_isolation.c'; fi`
+
+encoder/indexed/test_runner-0066_ordered_busy_lease.o: encoder/indexed/0066_ordered_busy_lease.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0066_ordered_busy_lease.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Tpo -c -o encoder/indexed/test_runner-0066_ordered_busy_lease.o `test -f 'encoder/indexed/0066_ordered_busy_lease.c' || echo '$(srcdir)/'`encoder/indexed/0066_ordered_busy_lease.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Tpo encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0066_ordered_busy_lease.c' object='encoder/indexed/test_runner-0066_ordered_busy_lease.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0066_ordered_busy_lease.o `test -f 'encoder/indexed/0066_ordered_busy_lease.c' || echo '$(srcdir)/'`encoder/indexed/0066_ordered_busy_lease.c
+
+encoder/indexed/test_runner-0066_ordered_busy_lease.obj: encoder/indexed/0066_ordered_busy_lease.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0066_ordered_busy_lease.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Tpo -c -o encoder/indexed/test_runner-0066_ordered_busy_lease.obj `if test -f 'encoder/indexed/0066_ordered_busy_lease.c'; then $(CYGPATH_W) 'encoder/indexed/0066_ordered_busy_lease.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0066_ordered_busy_lease.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Tpo encoder/indexed/$(DEPDIR)/test_runner-0066_ordered_busy_lease.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0066_ordered_busy_lease.c' object='encoder/indexed/test_runner-0066_ordered_busy_lease.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0066_ordered_busy_lease.obj `if test -f 'encoder/indexed/0066_ordered_busy_lease.c'; then $(CYGPATH_W) 'encoder/indexed/0066_ordered_busy_lease.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0066_ordered_busy_lease.c'; fi`
+
+encoder/indexed/test_runner-0067_ordered_completed_reuse.o: encoder/indexed/0067_ordered_completed_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0067_ordered_completed_reuse.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Tpo -c -o encoder/indexed/test_runner-0067_ordered_completed_reuse.o `test -f 'encoder/indexed/0067_ordered_completed_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0067_ordered_completed_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0067_ordered_completed_reuse.c' object='encoder/indexed/test_runner-0067_ordered_completed_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0067_ordered_completed_reuse.o `test -f 'encoder/indexed/0067_ordered_completed_reuse.c' || echo '$(srcdir)/'`encoder/indexed/0067_ordered_completed_reuse.c
+
+encoder/indexed/test_runner-0067_ordered_completed_reuse.obj: encoder/indexed/0067_ordered_completed_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0067_ordered_completed_reuse.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Tpo -c -o encoder/indexed/test_runner-0067_ordered_completed_reuse.obj `if test -f 'encoder/indexed/0067_ordered_completed_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0067_ordered_completed_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0067_ordered_completed_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Tpo encoder/indexed/$(DEPDIR)/test_runner-0067_ordered_completed_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0067_ordered_completed_reuse.c' object='encoder/indexed/test_runner-0067_ordered_completed_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0067_ordered_completed_reuse.obj `if test -f 'encoder/indexed/0067_ordered_completed_reuse.c'; then $(CYGPATH_W) 'encoder/indexed/0067_ordered_completed_reuse.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0067_ordered_completed_reuse.c'; fi`
+
+encoder/indexed/test_runner-0068_ordered_aborted_rebuild.o: encoder/indexed/0068_ordered_aborted_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0068_ordered_aborted_rebuild.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Tpo -c -o encoder/indexed/test_runner-0068_ordered_aborted_rebuild.o `test -f 'encoder/indexed/0068_ordered_aborted_rebuild.c' || echo '$(srcdir)/'`encoder/indexed/0068_ordered_aborted_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Tpo encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0068_ordered_aborted_rebuild.c' object='encoder/indexed/test_runner-0068_ordered_aborted_rebuild.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0068_ordered_aborted_rebuild.o `test -f 'encoder/indexed/0068_ordered_aborted_rebuild.c' || echo '$(srcdir)/'`encoder/indexed/0068_ordered_aborted_rebuild.c
+
+encoder/indexed/test_runner-0068_ordered_aborted_rebuild.obj: encoder/indexed/0068_ordered_aborted_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0068_ordered_aborted_rebuild.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Tpo -c -o encoder/indexed/test_runner-0068_ordered_aborted_rebuild.obj `if test -f 'encoder/indexed/0068_ordered_aborted_rebuild.c'; then $(CYGPATH_W) 'encoder/indexed/0068_ordered_aborted_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0068_ordered_aborted_rebuild.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Tpo encoder/indexed/$(DEPDIR)/test_runner-0068_ordered_aborted_rebuild.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0068_ordered_aborted_rebuild.c' object='encoder/indexed/test_runner-0068_ordered_aborted_rebuild.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0068_ordered_aborted_rebuild.obj `if test -f 'encoder/indexed/0068_ordered_aborted_rebuild.c'; then $(CYGPATH_W) 'encoder/indexed/0068_ordered_aborted_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0068_ordered_aborted_rebuild.c'; fi`
+
+encoder/indexed/test_runner-0069_ordered_double_finish.o: encoder/indexed/0069_ordered_double_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0069_ordered_double_finish.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Tpo -c -o encoder/indexed/test_runner-0069_ordered_double_finish.o `test -f 'encoder/indexed/0069_ordered_double_finish.c' || echo '$(srcdir)/'`encoder/indexed/0069_ordered_double_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Tpo encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0069_ordered_double_finish.c' object='encoder/indexed/test_runner-0069_ordered_double_finish.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0069_ordered_double_finish.o `test -f 'encoder/indexed/0069_ordered_double_finish.c' || echo '$(srcdir)/'`encoder/indexed/0069_ordered_double_finish.c
+
+encoder/indexed/test_runner-0069_ordered_double_finish.obj: encoder/indexed/0069_ordered_double_finish.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0069_ordered_double_finish.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Tpo -c -o encoder/indexed/test_runner-0069_ordered_double_finish.obj `if test -f 'encoder/indexed/0069_ordered_double_finish.c'; then $(CYGPATH_W) 'encoder/indexed/0069_ordered_double_finish.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0069_ordered_double_finish.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Tpo encoder/indexed/$(DEPDIR)/test_runner-0069_ordered_double_finish.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0069_ordered_double_finish.c' object='encoder/indexed/test_runner-0069_ordered_double_finish.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0069_ordered_double_finish.obj `if test -f 'encoder/indexed/0069_ordered_double_finish.c'; then $(CYGPATH_W) 'encoder/indexed/0069_ordered_double_finish.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0069_ordered_double_finish.c'; fi`
+
+encoder/indexed/test_runner-0070_ordered_finished_view.o: encoder/indexed/0070_ordered_finished_view.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0070_ordered_finished_view.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Tpo -c -o encoder/indexed/test_runner-0070_ordered_finished_view.o `test -f 'encoder/indexed/0070_ordered_finished_view.c' || echo '$(srcdir)/'`encoder/indexed/0070_ordered_finished_view.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Tpo encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0070_ordered_finished_view.c' object='encoder/indexed/test_runner-0070_ordered_finished_view.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0070_ordered_finished_view.o `test -f 'encoder/indexed/0070_ordered_finished_view.c' || echo '$(srcdir)/'`encoder/indexed/0070_ordered_finished_view.c
+
+encoder/indexed/test_runner-0070_ordered_finished_view.obj: encoder/indexed/0070_ordered_finished_view.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0070_ordered_finished_view.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Tpo -c -o encoder/indexed/test_runner-0070_ordered_finished_view.obj `if test -f 'encoder/indexed/0070_ordered_finished_view.c'; then $(CYGPATH_W) 'encoder/indexed/0070_ordered_finished_view.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0070_ordered_finished_view.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Tpo encoder/indexed/$(DEPDIR)/test_runner-0070_ordered_finished_view.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0070_ordered_finished_view.c' object='encoder/indexed/test_runner-0070_ordered_finished_view.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0070_ordered_finished_view.obj `if test -f 'encoder/indexed/0070_ordered_finished_view.c'; then $(CYGPATH_W) 'encoder/indexed/0070_ordered_finished_view.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0070_ordered_finished_view.c'; fi`
+
+encoder/indexed/test_runner-0071_ordered_provider_lifetime.o: encoder/indexed/0071_ordered_provider_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0071_ordered_provider_lifetime.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Tpo -c -o encoder/indexed/test_runner-0071_ordered_provider_lifetime.o `test -f 'encoder/indexed/0071_ordered_provider_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0071_ordered_provider_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0071_ordered_provider_lifetime.c' object='encoder/indexed/test_runner-0071_ordered_provider_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0071_ordered_provider_lifetime.o `test -f 'encoder/indexed/0071_ordered_provider_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0071_ordered_provider_lifetime.c
+
+encoder/indexed/test_runner-0071_ordered_provider_lifetime.obj: encoder/indexed/0071_ordered_provider_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0071_ordered_provider_lifetime.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Tpo -c -o encoder/indexed/test_runner-0071_ordered_provider_lifetime.obj `if test -f 'encoder/indexed/0071_ordered_provider_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0071_ordered_provider_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0071_ordered_provider_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0071_ordered_provider_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0071_ordered_provider_lifetime.c' object='encoder/indexed/test_runner-0071_ordered_provider_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0071_ordered_provider_lifetime.obj `if test -f 'encoder/indexed/0071_ordered_provider_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0071_ordered_provider_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0071_ordered_provider_lifetime.c'; fi`
+
+encoder/indexed/test_runner-0072_ordered_binding_lifetime.o: encoder/indexed/0072_ordered_binding_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0072_ordered_binding_lifetime.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Tpo -c -o encoder/indexed/test_runner-0072_ordered_binding_lifetime.o `test -f 'encoder/indexed/0072_ordered_binding_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0072_ordered_binding_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0072_ordered_binding_lifetime.c' object='encoder/indexed/test_runner-0072_ordered_binding_lifetime.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0072_ordered_binding_lifetime.o `test -f 'encoder/indexed/0072_ordered_binding_lifetime.c' || echo '$(srcdir)/'`encoder/indexed/0072_ordered_binding_lifetime.c
+
+encoder/indexed/test_runner-0072_ordered_binding_lifetime.obj: encoder/indexed/0072_ordered_binding_lifetime.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0072_ordered_binding_lifetime.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Tpo -c -o encoder/indexed/test_runner-0072_ordered_binding_lifetime.obj `if test -f 'encoder/indexed/0072_ordered_binding_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0072_ordered_binding_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0072_ordered_binding_lifetime.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Tpo encoder/indexed/$(DEPDIR)/test_runner-0072_ordered_binding_lifetime.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0072_ordered_binding_lifetime.c' object='encoder/indexed/test_runner-0072_ordered_binding_lifetime.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0072_ordered_binding_lifetime.obj `if test -f 'encoder/indexed/0072_ordered_binding_lifetime.c'; then $(CYGPATH_W) 'encoder/indexed/0072_ordered_binding_lifetime.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0072_ordered_binding_lifetime.c'; fi`
+
+encoder/indexed/test_runner-0073_ordered_float_decline.o: encoder/indexed/0073_ordered_float_decline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0073_ordered_float_decline.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Tpo -c -o encoder/indexed/test_runner-0073_ordered_float_decline.o `test -f 'encoder/indexed/0073_ordered_float_decline.c' || echo '$(srcdir)/'`encoder/indexed/0073_ordered_float_decline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Tpo encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0073_ordered_float_decline.c' object='encoder/indexed/test_runner-0073_ordered_float_decline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0073_ordered_float_decline.o `test -f 'encoder/indexed/0073_ordered_float_decline.c' || echo '$(srcdir)/'`encoder/indexed/0073_ordered_float_decline.c
+
+encoder/indexed/test_runner-0073_ordered_float_decline.obj: encoder/indexed/0073_ordered_float_decline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0073_ordered_float_decline.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Tpo -c -o encoder/indexed/test_runner-0073_ordered_float_decline.obj `if test -f 'encoder/indexed/0073_ordered_float_decline.c'; then $(CYGPATH_W) 'encoder/indexed/0073_ordered_float_decline.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0073_ordered_float_decline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Tpo encoder/indexed/$(DEPDIR)/test_runner-0073_ordered_float_decline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0073_ordered_float_decline.c' object='encoder/indexed/test_runner-0073_ordered_float_decline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0073_ordered_float_decline.obj `if test -f 'encoder/indexed/0073_ordered_float_decline.c'; then $(CYGPATH_W) 'encoder/indexed/0073_ordered_float_decline.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0073_ordered_float_decline.c'; fi`
+
+lookup/vptree/test_runner-0045_gpu_exact_0_0_1.o: lookup/vptree/0045_gpu_exact_0_0_1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0045_gpu_exact_0_0_1.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Tpo -c -o lookup/vptree/test_runner-0045_gpu_exact_0_0_1.o `test -f 'lookup/vptree/0045_gpu_exact_0_0_1.c' || echo '$(srcdir)/'`lookup/vptree/0045_gpu_exact_0_0_1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Tpo lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0045_gpu_exact_0_0_1.c' object='lookup/vptree/test_runner-0045_gpu_exact_0_0_1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0045_gpu_exact_0_0_1.o `test -f 'lookup/vptree/0045_gpu_exact_0_0_1.c' || echo '$(srcdir)/'`lookup/vptree/0045_gpu_exact_0_0_1.c
+
+lookup/vptree/test_runner-0045_gpu_exact_0_0_1.obj: lookup/vptree/0045_gpu_exact_0_0_1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0045_gpu_exact_0_0_1.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Tpo -c -o lookup/vptree/test_runner-0045_gpu_exact_0_0_1.obj `if test -f 'lookup/vptree/0045_gpu_exact_0_0_1.c'; then $(CYGPATH_W) 'lookup/vptree/0045_gpu_exact_0_0_1.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0045_gpu_exact_0_0_1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Tpo lookup/vptree/$(DEPDIR)/test_runner-0045_gpu_exact_0_0_1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0045_gpu_exact_0_0_1.c' object='lookup/vptree/test_runner-0045_gpu_exact_0_0_1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0045_gpu_exact_0_0_1.obj `if test -f 'lookup/vptree/0045_gpu_exact_0_0_1.c'; then $(CYGPATH_W) 'lookup/vptree/0045_gpu_exact_0_0_1.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0045_gpu_exact_0_0_1.c'; fi`
+
+lookup/vptree/test_runner-0046_gpu_exact_0_0_2.o: lookup/vptree/0046_gpu_exact_0_0_2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0046_gpu_exact_0_0_2.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Tpo -c -o lookup/vptree/test_runner-0046_gpu_exact_0_0_2.o `test -f 'lookup/vptree/0046_gpu_exact_0_0_2.c' || echo '$(srcdir)/'`lookup/vptree/0046_gpu_exact_0_0_2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Tpo lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0046_gpu_exact_0_0_2.c' object='lookup/vptree/test_runner-0046_gpu_exact_0_0_2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0046_gpu_exact_0_0_2.o `test -f 'lookup/vptree/0046_gpu_exact_0_0_2.c' || echo '$(srcdir)/'`lookup/vptree/0046_gpu_exact_0_0_2.c
+
+lookup/vptree/test_runner-0046_gpu_exact_0_0_2.obj: lookup/vptree/0046_gpu_exact_0_0_2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0046_gpu_exact_0_0_2.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Tpo -c -o lookup/vptree/test_runner-0046_gpu_exact_0_0_2.obj `if test -f 'lookup/vptree/0046_gpu_exact_0_0_2.c'; then $(CYGPATH_W) 'lookup/vptree/0046_gpu_exact_0_0_2.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0046_gpu_exact_0_0_2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Tpo lookup/vptree/$(DEPDIR)/test_runner-0046_gpu_exact_0_0_2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0046_gpu_exact_0_0_2.c' object='lookup/vptree/test_runner-0046_gpu_exact_0_0_2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0046_gpu_exact_0_0_2.obj `if test -f 'lookup/vptree/0046_gpu_exact_0_0_2.c'; then $(CYGPATH_W) 'lookup/vptree/0046_gpu_exact_0_0_2.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0046_gpu_exact_0_0_2.c'; fi`
+
+lookup/vptree/test_runner-0047_gpu_exact_0_0_7.o: lookup/vptree/0047_gpu_exact_0_0_7.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0047_gpu_exact_0_0_7.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Tpo -c -o lookup/vptree/test_runner-0047_gpu_exact_0_0_7.o `test -f 'lookup/vptree/0047_gpu_exact_0_0_7.c' || echo '$(srcdir)/'`lookup/vptree/0047_gpu_exact_0_0_7.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Tpo lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0047_gpu_exact_0_0_7.c' object='lookup/vptree/test_runner-0047_gpu_exact_0_0_7.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0047_gpu_exact_0_0_7.o `test -f 'lookup/vptree/0047_gpu_exact_0_0_7.c' || echo '$(srcdir)/'`lookup/vptree/0047_gpu_exact_0_0_7.c
+
+lookup/vptree/test_runner-0047_gpu_exact_0_0_7.obj: lookup/vptree/0047_gpu_exact_0_0_7.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0047_gpu_exact_0_0_7.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Tpo -c -o lookup/vptree/test_runner-0047_gpu_exact_0_0_7.obj `if test -f 'lookup/vptree/0047_gpu_exact_0_0_7.c'; then $(CYGPATH_W) 'lookup/vptree/0047_gpu_exact_0_0_7.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0047_gpu_exact_0_0_7.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Tpo lookup/vptree/$(DEPDIR)/test_runner-0047_gpu_exact_0_0_7.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0047_gpu_exact_0_0_7.c' object='lookup/vptree/test_runner-0047_gpu_exact_0_0_7.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0047_gpu_exact_0_0_7.obj `if test -f 'lookup/vptree/0047_gpu_exact_0_0_7.c'; then $(CYGPATH_W) 'lookup/vptree/0047_gpu_exact_0_0_7.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0047_gpu_exact_0_0_7.c'; fi`
+
+lookup/vptree/test_runner-0048_gpu_exact_0_0_33.o: lookup/vptree/0048_gpu_exact_0_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0048_gpu_exact_0_0_33.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Tpo -c -o lookup/vptree/test_runner-0048_gpu_exact_0_0_33.o `test -f 'lookup/vptree/0048_gpu_exact_0_0_33.c' || echo '$(srcdir)/'`lookup/vptree/0048_gpu_exact_0_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0048_gpu_exact_0_0_33.c' object='lookup/vptree/test_runner-0048_gpu_exact_0_0_33.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0048_gpu_exact_0_0_33.o `test -f 'lookup/vptree/0048_gpu_exact_0_0_33.c' || echo '$(srcdir)/'`lookup/vptree/0048_gpu_exact_0_0_33.c
+
+lookup/vptree/test_runner-0048_gpu_exact_0_0_33.obj: lookup/vptree/0048_gpu_exact_0_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0048_gpu_exact_0_0_33.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Tpo -c -o lookup/vptree/test_runner-0048_gpu_exact_0_0_33.obj `if test -f 'lookup/vptree/0048_gpu_exact_0_0_33.c'; then $(CYGPATH_W) 'lookup/vptree/0048_gpu_exact_0_0_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0048_gpu_exact_0_0_33.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0048_gpu_exact_0_0_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0048_gpu_exact_0_0_33.c' object='lookup/vptree/test_runner-0048_gpu_exact_0_0_33.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0048_gpu_exact_0_0_33.obj `if test -f 'lookup/vptree/0048_gpu_exact_0_0_33.c'; then $(CYGPATH_W) 'lookup/vptree/0048_gpu_exact_0_0_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0048_gpu_exact_0_0_33.c'; fi`
+
+lookup/vptree/test_runner-0049_gpu_exact_0_0_256.o: lookup/vptree/0049_gpu_exact_0_0_256.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0049_gpu_exact_0_0_256.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Tpo -c -o lookup/vptree/test_runner-0049_gpu_exact_0_0_256.o `test -f 'lookup/vptree/0049_gpu_exact_0_0_256.c' || echo '$(srcdir)/'`lookup/vptree/0049_gpu_exact_0_0_256.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Tpo lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0049_gpu_exact_0_0_256.c' object='lookup/vptree/test_runner-0049_gpu_exact_0_0_256.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0049_gpu_exact_0_0_256.o `test -f 'lookup/vptree/0049_gpu_exact_0_0_256.c' || echo '$(srcdir)/'`lookup/vptree/0049_gpu_exact_0_0_256.c
+
+lookup/vptree/test_runner-0049_gpu_exact_0_0_256.obj: lookup/vptree/0049_gpu_exact_0_0_256.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0049_gpu_exact_0_0_256.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Tpo -c -o lookup/vptree/test_runner-0049_gpu_exact_0_0_256.obj `if test -f 'lookup/vptree/0049_gpu_exact_0_0_256.c'; then $(CYGPATH_W) 'lookup/vptree/0049_gpu_exact_0_0_256.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0049_gpu_exact_0_0_256.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Tpo lookup/vptree/$(DEPDIR)/test_runner-0049_gpu_exact_0_0_256.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0049_gpu_exact_0_0_256.c' object='lookup/vptree/test_runner-0049_gpu_exact_0_0_256.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0049_gpu_exact_0_0_256.obj `if test -f 'lookup/vptree/0049_gpu_exact_0_0_256.c'; then $(CYGPATH_W) 'lookup/vptree/0049_gpu_exact_0_0_256.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0049_gpu_exact_0_0_256.c'; fi`
+
+lookup/vptree/test_runner-0050_gpu_exact_1_0_64.o: lookup/vptree/0050_gpu_exact_1_0_64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0050_gpu_exact_1_0_64.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Tpo -c -o lookup/vptree/test_runner-0050_gpu_exact_1_0_64.o `test -f 'lookup/vptree/0050_gpu_exact_1_0_64.c' || echo '$(srcdir)/'`lookup/vptree/0050_gpu_exact_1_0_64.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Tpo lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0050_gpu_exact_1_0_64.c' object='lookup/vptree/test_runner-0050_gpu_exact_1_0_64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0050_gpu_exact_1_0_64.o `test -f 'lookup/vptree/0050_gpu_exact_1_0_64.c' || echo '$(srcdir)/'`lookup/vptree/0050_gpu_exact_1_0_64.c
+
+lookup/vptree/test_runner-0050_gpu_exact_1_0_64.obj: lookup/vptree/0050_gpu_exact_1_0_64.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0050_gpu_exact_1_0_64.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Tpo -c -o lookup/vptree/test_runner-0050_gpu_exact_1_0_64.obj `if test -f 'lookup/vptree/0050_gpu_exact_1_0_64.c'; then $(CYGPATH_W) 'lookup/vptree/0050_gpu_exact_1_0_64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0050_gpu_exact_1_0_64.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Tpo lookup/vptree/$(DEPDIR)/test_runner-0050_gpu_exact_1_0_64.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0050_gpu_exact_1_0_64.c' object='lookup/vptree/test_runner-0050_gpu_exact_1_0_64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0050_gpu_exact_1_0_64.obj `if test -f 'lookup/vptree/0050_gpu_exact_1_0_64.c'; then $(CYGPATH_W) 'lookup/vptree/0050_gpu_exact_1_0_64.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0050_gpu_exact_1_0_64.c'; fi`
+
+lookup/vptree/test_runner-0051_gpu_exact_2_0_33.o: lookup/vptree/0051_gpu_exact_2_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0051_gpu_exact_2_0_33.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Tpo -c -o lookup/vptree/test_runner-0051_gpu_exact_2_0_33.o `test -f 'lookup/vptree/0051_gpu_exact_2_0_33.c' || echo '$(srcdir)/'`lookup/vptree/0051_gpu_exact_2_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0051_gpu_exact_2_0_33.c' object='lookup/vptree/test_runner-0051_gpu_exact_2_0_33.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0051_gpu_exact_2_0_33.o `test -f 'lookup/vptree/0051_gpu_exact_2_0_33.c' || echo '$(srcdir)/'`lookup/vptree/0051_gpu_exact_2_0_33.c
+
+lookup/vptree/test_runner-0051_gpu_exact_2_0_33.obj: lookup/vptree/0051_gpu_exact_2_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0051_gpu_exact_2_0_33.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Tpo -c -o lookup/vptree/test_runner-0051_gpu_exact_2_0_33.obj `if test -f 'lookup/vptree/0051_gpu_exact_2_0_33.c'; then $(CYGPATH_W) 'lookup/vptree/0051_gpu_exact_2_0_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0051_gpu_exact_2_0_33.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0051_gpu_exact_2_0_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0051_gpu_exact_2_0_33.c' object='lookup/vptree/test_runner-0051_gpu_exact_2_0_33.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0051_gpu_exact_2_0_33.obj `if test -f 'lookup/vptree/0051_gpu_exact_2_0_33.c'; then $(CYGPATH_W) 'lookup/vptree/0051_gpu_exact_2_0_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0051_gpu_exact_2_0_33.c'; fi`
+
+lookup/vptree/test_runner-0052_gpu_exact_4_0_33.o: lookup/vptree/0052_gpu_exact_4_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0052_gpu_exact_4_0_33.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Tpo -c -o lookup/vptree/test_runner-0052_gpu_exact_4_0_33.o `test -f 'lookup/vptree/0052_gpu_exact_4_0_33.c' || echo '$(srcdir)/'`lookup/vptree/0052_gpu_exact_4_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0052_gpu_exact_4_0_33.c' object='lookup/vptree/test_runner-0052_gpu_exact_4_0_33.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0052_gpu_exact_4_0_33.o `test -f 'lookup/vptree/0052_gpu_exact_4_0_33.c' || echo '$(srcdir)/'`lookup/vptree/0052_gpu_exact_4_0_33.c
+
+lookup/vptree/test_runner-0052_gpu_exact_4_0_33.obj: lookup/vptree/0052_gpu_exact_4_0_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0052_gpu_exact_4_0_33.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Tpo -c -o lookup/vptree/test_runner-0052_gpu_exact_4_0_33.obj `if test -f 'lookup/vptree/0052_gpu_exact_4_0_33.c'; then $(CYGPATH_W) 'lookup/vptree/0052_gpu_exact_4_0_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0052_gpu_exact_4_0_33.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0052_gpu_exact_4_0_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0052_gpu_exact_4_0_33.c' object='lookup/vptree/test_runner-0052_gpu_exact_4_0_33.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0052_gpu_exact_4_0_33.obj `if test -f 'lookup/vptree/0052_gpu_exact_4_0_33.c'; then $(CYGPATH_W) 'lookup/vptree/0052_gpu_exact_4_0_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0052_gpu_exact_4_0_33.c'; fi`
+
+lookup/vptree/test_runner-0053_gpu_exact_0_1_33.o: lookup/vptree/0053_gpu_exact_0_1_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0053_gpu_exact_0_1_33.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Tpo -c -o lookup/vptree/test_runner-0053_gpu_exact_0_1_33.o `test -f 'lookup/vptree/0053_gpu_exact_0_1_33.c' || echo '$(srcdir)/'`lookup/vptree/0053_gpu_exact_0_1_33.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0053_gpu_exact_0_1_33.c' object='lookup/vptree/test_runner-0053_gpu_exact_0_1_33.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0053_gpu_exact_0_1_33.o `test -f 'lookup/vptree/0053_gpu_exact_0_1_33.c' || echo '$(srcdir)/'`lookup/vptree/0053_gpu_exact_0_1_33.c
+
+lookup/vptree/test_runner-0053_gpu_exact_0_1_33.obj: lookup/vptree/0053_gpu_exact_0_1_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0053_gpu_exact_0_1_33.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Tpo -c -o lookup/vptree/test_runner-0053_gpu_exact_0_1_33.obj `if test -f 'lookup/vptree/0053_gpu_exact_0_1_33.c'; then $(CYGPATH_W) 'lookup/vptree/0053_gpu_exact_0_1_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0053_gpu_exact_0_1_33.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0053_gpu_exact_0_1_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0053_gpu_exact_0_1_33.c' object='lookup/vptree/test_runner-0053_gpu_exact_0_1_33.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0053_gpu_exact_0_1_33.obj `if test -f 'lookup/vptree/0053_gpu_exact_0_1_33.c'; then $(CYGPATH_W) 'lookup/vptree/0053_gpu_exact_0_1_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0053_gpu_exact_0_1_33.c'; fi`
+
+lookup/vptree/test_runner-0054_gpu_exact_1_1_33.o: lookup/vptree/0054_gpu_exact_1_1_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0054_gpu_exact_1_1_33.o -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Tpo -c -o lookup/vptree/test_runner-0054_gpu_exact_1_1_33.o `test -f 'lookup/vptree/0054_gpu_exact_1_1_33.c' || echo '$(srcdir)/'`lookup/vptree/0054_gpu_exact_1_1_33.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0054_gpu_exact_1_1_33.c' object='lookup/vptree/test_runner-0054_gpu_exact_1_1_33.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0054_gpu_exact_1_1_33.o `test -f 'lookup/vptree/0054_gpu_exact_1_1_33.c' || echo '$(srcdir)/'`lookup/vptree/0054_gpu_exact_1_1_33.c
+
+lookup/vptree/test_runner-0054_gpu_exact_1_1_33.obj: lookup/vptree/0054_gpu_exact_1_1_33.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/vptree/test_runner-0054_gpu_exact_1_1_33.obj -MD -MP -MF lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Tpo -c -o lookup/vptree/test_runner-0054_gpu_exact_1_1_33.obj `if test -f 'lookup/vptree/0054_gpu_exact_1_1_33.c'; then $(CYGPATH_W) 'lookup/vptree/0054_gpu_exact_1_1_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0054_gpu_exact_1_1_33.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Tpo lookup/vptree/$(DEPDIR)/test_runner-0054_gpu_exact_1_1_33.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup/vptree/0054_gpu_exact_1_1_33.c' object='lookup/vptree/test_runner-0054_gpu_exact_1_1_33.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o lookup/vptree/test_runner-0054_gpu_exact_1_1_33.obj `if test -f 'lookup/vptree/0054_gpu_exact_1_1_33.c'; then $(CYGPATH_W) 'lookup/vptree/0054_gpu_exact_1_1_33.c'; else $(CYGPATH_W) '$(srcdir)/lookup/vptree/0054_gpu_exact_1_1_33.c'; fi`
+
+_support/processing/gpu-palette/test_runner-component_common.o: _support/processing/gpu-palette/component_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-component_common.o -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Tpo -c -o _support/processing/gpu-palette/test_runner-component_common.o `test -f '_support/processing/gpu-palette/component_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/component_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/component_common.c' object='_support/processing/gpu-palette/test_runner-component_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-component_common.o `test -f '_support/processing/gpu-palette/component_common.c' || echo '$(srcdir)/'`_support/processing/gpu-palette/component_common.c
+
+_support/processing/gpu-palette/test_runner-component_common.obj: _support/processing/gpu-palette/component_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/gpu-palette/test_runner-component_common.obj -MD -MP -MF _support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Tpo -c -o _support/processing/gpu-palette/test_runner-component_common.obj `if test -f '_support/processing/gpu-palette/component_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/component_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/component_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Tpo _support/processing/gpu-palette/$(DEPDIR)/test_runner-component_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/gpu-palette/component_common.c' object='_support/processing/gpu-palette/test_runner-component_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/gpu-palette/test_runner-component_common.obj `if test -f '_support/processing/gpu-palette/component_common.c'; then $(CYGPATH_W) '_support/processing/gpu-palette/component_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/gpu-palette/component_common.c'; fi`
 
 lookup/5bit/test_runner-0034_5bit_gpu_centers.o: lookup/5bit/0034_5bit_gpu_centers.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT lookup/5bit/test_runner-0034_5bit_gpu_centers.o -MD -MP -MF lookup/5bit/$(DEPDIR)/test_runner-0034_5bit_gpu_centers.Tpo -c -o lookup/5bit/test_runner-0034_5bit_gpu_centers.o `test -f 'lookup/5bit/0034_5bit_gpu_centers.c' || echo '$(srcdir)/'`lookup/5bit/0034_5bit_gpu_centers.c
@@ -101412,6 +102525,8 @@ distclean-generic:
 	-$(am__rm_f) lookup/none/$(am__dirstamp)
 	-$(am__rm_f) lookup/ordered/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) lookup/ordered/$(am__dirstamp)
+	-$(am__rm_f) lookup/vptree/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) lookup/vptree/$(am__dirstamp)
 	-$(am__rm_f) palette/alpha/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) palette/alpha/$(am__dirstamp)
 	-$(am__rm_f) palette/animation/$(DEPDIR)/$(am__dirstamp)

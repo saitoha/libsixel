@@ -131,6 +131,33 @@ With `K = 256` the neighbor lists occupy 512 KiB per prepared instance. The 8-bi
 
 The memo is initialized while the new table is private, before configuration returns and readers can use it. [`sixel_atomic_init_i32()`](../../../../src/sixel_atomic.h) initializes each word without a synchronization operation; the C11 backend uses `atomic_init`. This avoids 262,144 mutex operations per palette on compilers using the atomic fallback. Published memo reads and writes still use relaxed atomic operations. The [OpenVMS compatibility coverage](../../../misc/platforms/openvms.md#test-coverage) guards this construction boundary and exercises complete playback histories with the default lookup.
 
+## Metal RGB8 execution
+
+The GPU implementation uses VP-tree's exact neighbor-list bound rather than traversing a divergent tree per pixel. It constructs distance-sorted palette rows and a 32x32x32 seed grid on the GPU. The grid supplies a starting palette index, not a quantized answer. Every candidate that improves or ties that seed lies within twice the seed distance; one complete bounded row scan with integer distances therefore returns the same lowest-index minimum as exhaustive byte lookup. Four-lane tails repeat valid entries, including short palettes and duplicate coordinates.
+
+[`gpu-lookup-vptree.c`](../../../../src/gpu-lookup-vptree.c) and its [private shader](../../../../src/gpu-lookup-vptree-shader.inc.h) own preparation, row layout, query and cache lifetime together. They do not call or include `ordered` implementation code. The two algorithms currently use similar integer geometry, but each can change independently. Each retained plan uses 640 KiB of GPU workspace. A preparer reuses its last unchanged palette on the same device; separately live plans pin separate storage. Completion, unsupported-capability fallback and fused execution follow the [injected lookup contract](../../execution-map/README.md#lookup-preparation-is-policy-specific).
+
+GPU support is limited to gamma RGB888, 1–256 searchable colors, and independent NONE, A, X or blue-noise dithering. Transparency and delta keeps precede lookup; emitted-color comparison follows it. Native float coordinates and causal diffusion remain CPU operations and are never narrowed to bytes to obtain GPU eligibility. `SIXEL_TRACE_TOPIC=gpu_contract` reports `kernel=vptree` and `lookup=vptree|table=rebuild` or `lookup=vptree|table=reuse`.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+Each case selects one fixed palette size, diffusion and retention configuration. The reference performs independent exhaustive integer selection on the resulting byte query. These tests establish indexes and delta behavior, not video throughput or perceptual quality.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| VPG-01 | NONE, 1 color produces exact indexes. | [tests/lookup/vptree/0045_gpu_exact_0_0_1.t](../../../../tests/lookup/vptree/0045_gpu_exact_0_0_1.t), [tests/lookup/vptree/0045_gpu_exact_0_0_1.c](../../../../tests/lookup/vptree/0045_gpu_exact_0_0_1.c) |
+| VPG-02 | NONE, 2 colors produces exact indexes. | [tests/lookup/vptree/0046_gpu_exact_0_0_2.t](../../../../tests/lookup/vptree/0046_gpu_exact_0_0_2.t), [tests/lookup/vptree/0046_gpu_exact_0_0_2.c](../../../../tests/lookup/vptree/0046_gpu_exact_0_0_2.c) |
+| VPG-03 | NONE, 7 colors produces exact indexes. | [tests/lookup/vptree/0047_gpu_exact_0_0_7.t](../../../../tests/lookup/vptree/0047_gpu_exact_0_0_7.t), [tests/lookup/vptree/0047_gpu_exact_0_0_7.c](../../../../tests/lookup/vptree/0047_gpu_exact_0_0_7.c) |
+| VPG-04 | NONE, 33 colors produces exact indexes. | [tests/lookup/vptree/0048_gpu_exact_0_0_33.t](../../../../tests/lookup/vptree/0048_gpu_exact_0_0_33.t), [tests/lookup/vptree/0048_gpu_exact_0_0_33.c](../../../../tests/lookup/vptree/0048_gpu_exact_0_0_33.c) |
+| VPG-05 | NONE, 256 colors produces exact indexes. | [tests/lookup/vptree/0049_gpu_exact_0_0_256.t](../../../../tests/lookup/vptree/0049_gpu_exact_0_0_256.t), [tests/lookup/vptree/0049_gpu_exact_0_0_256.c](../../../../tests/lookup/vptree/0049_gpu_exact_0_0_256.c) |
+| VPG-06 | Blue noise, 64 colors produces exact indexes. | [tests/lookup/vptree/0050_gpu_exact_1_0_64.t](../../../../tests/lookup/vptree/0050_gpu_exact_1_0_64.t), [tests/lookup/vptree/0050_gpu_exact_1_0_64.c](../../../../tests/lookup/vptree/0050_gpu_exact_1_0_64.c) |
+| VPG-07 | X dither, 33 colors produces exact indexes. | [tests/lookup/vptree/0051_gpu_exact_2_0_33.t](../../../../tests/lookup/vptree/0051_gpu_exact_2_0_33.t), [tests/lookup/vptree/0051_gpu_exact_2_0_33.c](../../../../tests/lookup/vptree/0051_gpu_exact_2_0_33.c) |
+| VPG-08 | A dither, 33 colors produces exact indexes. | [tests/lookup/vptree/0052_gpu_exact_4_0_33.t](../../../../tests/lookup/vptree/0052_gpu_exact_4_0_33.t), [tests/lookup/vptree/0052_gpu_exact_4_0_33.c](../../../../tests/lookup/vptree/0052_gpu_exact_4_0_33.c) |
+| VPG-09 | NONE with delta retention, 33 colors produces exact indexes. | [tests/lookup/vptree/0053_gpu_exact_0_1_33.t](../../../../tests/lookup/vptree/0053_gpu_exact_0_1_33.t), [tests/lookup/vptree/0053_gpu_exact_0_1_33.c](../../../../tests/lookup/vptree/0053_gpu_exact_0_1_33.c) |
+| VPG-10 | Blue noise with delta retention, 33 colors produces exact indexes. | [tests/lookup/vptree/0054_gpu_exact_1_1_33.t](../../../../tests/lookup/vptree/0054_gpu_exact_1_1_33.t), [tests/lookup/vptree/0054_gpu_exact_1_1_33.c](../../../../tests/lookup/vptree/0054_gpu_exact_1_1_33.c) |
+
 ## Name and sources
 
 `vptree` means vantage-point tree. Peter N. Yianilos introduced the name and algorithms in [“Data Structures and Algorithms for Nearest Neighbor Search in General Metric Spaces”](https://citeseerx.ist.psu.edu/document?doi=ef5f36cb8ed5a1bdd2f564d65b87ce88e0536c1a&repid=rep1&type=pdf).

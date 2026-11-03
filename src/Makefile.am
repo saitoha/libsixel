@@ -254,6 +254,21 @@ libsixel_la_SOURCES = \
                 $(srcdir)/delta-residual.c \
                 $(srcdir)/delta-residual.h \
                 $(srcdir)/gpu-palette.c \
+                $(srcdir)/gpu-lookup-ordered.c \
+                $(srcdir)/gpu-lookup-vptree.c \
+                $(srcdir)/gpu-lookup-legacy.c \
+                $(srcdir)/gpu-lookup-registry.c \
+                $(srcdir)/gpu-lookup.h \
+                $(srcdir)/gpu-lookup-ordered.h \
+                $(srcdir)/gpu-lookup-vptree.h \
+                $(srcdir)/gpu-lookup-legacy.h \
+                $(srcdir)/gpu-program.h \
+                $(srcdir)/gpu-lookup-ordered-shader.inc.h \
+                $(srcdir)/gpu-lookup-vptree-shader.inc.h \
+                $(srcdir)/gpu-palette-program.inc.h \
+                $(srcdir)/gpu-palette-fused-prefix.inc.h \
+                $(srcdir)/gpu-palette-fused-suffix.inc.h \
+                $(srcdir)/dither-lookup-preparer.inc.h \
                 $(srcdir)/progressive-gpu.c \
                 $(srcdir)/progressive-gpu.h \
                 $(srcdir)/gpu-palette.h \
@@ -462,6 +477,7 @@ endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-palette-metal.m \
+$(srcdir)/gpu-lookup-compat.m \
 $(srcdir)/gpu-palette-metal-fhedt.inc.h \
 $(srcdir)/gpu-palette-metal-bitlut.inc.h \
 $(srcdir)/palette-kmeans-metal.m \

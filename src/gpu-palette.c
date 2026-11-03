@@ -33,6 +33,7 @@
 
 #include "compat_stub.h"
 #include "gpu-palette.h"
+#include "gpu-lookup.h"
 #include "bluenoise_64x64.h"
 #include "options.h"
 #include "dither-common-pipeline.h"
@@ -48,7 +49,7 @@ typedef struct sixel_gpu_bluenoise_conf {
 
 #if defined(HAVE_METAL)
 SIXELSTATUS
-sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request);
+sixel_gpu_lookup_compat_apply(sixel_gpu_palette_request_t const *request);
 
 int
 sixel_gpu_palette_metal_is_available(void);
@@ -110,7 +111,8 @@ sixel_gpu_palette_lut_policy_is_supported(
      * Keep AUTO conservative for other policies because
      * the GPU path does not reproduce their output semantics.
      */
-    if (request->lut_policy == SIXEL_LUT_POLICY_5BIT ||
+    if (sixel_gpu_lookup_registered(request->lut_policy) ||
+            request->lut_policy == SIXEL_LUT_POLICY_5BIT ||
             request->lut_policy == SIXEL_LUT_POLICY_6BIT ||
             request->lut_policy == SIXEL_LUT_POLICY_NONE ||
             request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER ||
@@ -404,7 +406,8 @@ sixel_gpu_palette_request_is_supported(
             request->palette_depth != 3) {
         return 0;
     }
-    if (!sixel_gpu_palette_lut_policy_is_supported(request)) {
+    if (request->program == NULL &&
+            !sixel_gpu_palette_lut_policy_is_supported(request)) {
         return 0;
     }
     required_palette_size =
@@ -533,7 +536,8 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
     if (sixel_gpu_palette_policy_is_force(gpu_policy)) {
         return 1;
     }
-    if (lut_policy != SIXEL_LUT_POLICY_5BIT &&
+    if (!sixel_gpu_lookup_registered(lut_policy) &&
+            lut_policy != SIXEL_LUT_POLICY_5BIT &&
             lut_policy != SIXEL_LUT_POLICY_6BIT &&
             lut_policy != SIXEL_LUT_POLICY_NONE &&
             lut_policy != SIXEL_LUT_POLICY_EYTZINGER &&
@@ -615,7 +619,7 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
     }
 
 #if defined(HAVE_METAL)
-    status = sixel_gpu_palette_metal_apply(&effective);
+    status = sixel_gpu_lookup_compat_apply(&effective);
     if (status == SIXEL_OK) {
         return SIXEL_OK;
     }
@@ -630,14 +634,7 @@ sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
     return SIXEL_FALSE;
 }
 
-/* emacs Local Variables:      */
-/* emacs mode: c               */
-/* emacs tab-width: 4          */
-/* emacs indent-tabs-mode: nil */
-/* emacs c-basic-offset: 4     */
-/* emacs End:                  */
-/* vim: set expandtab ts=4 sts=4 sw=4 : */
-/* EOF */
+
 
 SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void)
@@ -652,8 +649,44 @@ sixel_gpu_palette_apply_prepared(sixel_gpu_palette_request_t const *request)
         return SIXEL_BAD_ARGUMENT;
     }
 #if defined(HAVE_METAL)
-    return sixel_gpu_palette_metal_apply(request);
+    return sixel_gpu_lookup_compat_apply(request);
 #else
     return SIXEL_FEATURE_ERROR;
 #endif
 }
+
+#if !defined(HAVE_METAL)
+SIXELSTATUS
+sixel_gpu_device_acquire(sixel_gpu_device_interface_t **device)
+{
+    if (device == NULL) return SIXEL_BAD_ARGUMENT;
+    *device = NULL;
+    return SIXEL_FEATURE_ERROR;
+}
+
+SIXELSTATUS
+sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
+    sixel_gpu_lookup_plan_interface_t *plan, sixel_gpu_program_t **program)
+{
+    (void)device;
+    (void)plan;
+    if (program == NULL) return SIXEL_BAD_ARGUMENT;
+    *program = NULL;
+    return SIXEL_FEATURE_ERROR;
+}
+
+void
+sixel_gpu_program_destroy(sixel_gpu_program_t *program)
+{
+    (void)program;
+}
+#endif
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

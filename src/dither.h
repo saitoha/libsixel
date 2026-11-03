@@ -96,6 +96,9 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     int parallel, int prepare_lookup);
 
+SIXEL_INTERNAL_API SIXELSTATUS sixel_dither_lookup_preparers(
+    sixel_dither_t *, sixel_palette_apply_prepare_request_t *);
+
 /* dither context object */
 struct sixel_dither {
     int clamp_policy;
@@ -189,6 +192,8 @@ struct sixel_dither {
     int gpu_policy;                 /* upper-level GPU accelerator policy */
     struct sixel_gpu_palette_test_hooks *gpu_test_hooks;
     size_t gpu_palette_threshold;   /* AUTO policy pixel threshold */
+    sixel_gpu_lookup_preparer_interface_t *gpu_lookup;
+    sixel_lookup_policy_configuration_t gpu_lookup_configuration;
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
     struct sixel_dither_policy_interface *dither_policy; /* apply strategy */
     char const *dither_policy_class_name; /* selected class id cache */
