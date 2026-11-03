@@ -1508,6 +1508,81 @@ int test_delaunay_gpu_failure(int argc, char **argv);
 int test_gpupal_0023_ordered_exact(int argc, char **argv);
 int test_injected_gpu_program(int, char **);
 int test_vptree_force_no_cpu(int, char **);
+int test_mahalanobis_gpu_cell_boundaries(int, char **);
+int test_mahalanobis_gpu_first_index_tie(int, char **);
+int test_mahalanobis_gpu_index255(int, char **);
+int test_mahalanobis_gpu_failed_build_recovery(int, char **);
+int test_mahalanobis_gpu_count_rebuild(int, char **);
+int test_mahalanobis_gpu_palette_rebuild(int, char **);
+int test_mahalanobis_gpu_table_reuse(int, char **);
+int test_rbc_gpu_cell_boundaries(int, char **);
+int test_rbc_gpu_first_index_tie(int, char **);
+int test_rbc_gpu_index255(int, char **);
+int test_rbc_gpu_failed_build_recovery(int, char **);
+int test_rbc_gpu_count_rebuild(int, char **);
+int test_rbc_gpu_palette_rebuild(int, char **);
+int test_rbc_gpu_table_reuse(int, char **);
+int test_component_rbc_palette_snapshot(int, char **);
+int test_component_rbc_cache_reuse(int, char **);
+int test_component_rbc_device_identity(int, char **);
+int test_component_rbc_live_plan_isolation(int, char **);
+int test_component_rbc_busy_lease(int, char **);
+int test_component_rbc_completed_reuse(int, char **);
+int test_component_rbc_aborted_rebuild(int, char **);
+int test_component_rbc_double_finish(int, char **);
+int test_component_rbc_finished_view(int, char **);
+int test_component_rbc_provider_lifetime(int, char **);
+int test_component_rbc_binding_lifetime(int, char **);
+int test_component_rbc_float_decline(int, char **);
+int test_rbc_gpu_exact_0_0_1(int, char **);
+int test_rbc_gpu_exact_0_0_2(int, char **);
+int test_rbc_gpu_exact_0_0_7(int, char **);
+int test_rbc_gpu_exact_0_0_16(int, char **);
+int test_rbc_gpu_exact_0_0_17(int, char **);
+int test_rbc_gpu_exact_0_0_33(int, char **);
+int test_rbc_gpu_exact_0_0_64(int, char **);
+int test_rbc_gpu_exact_0_0_129(int, char **);
+int test_rbc_gpu_exact_0_0_256(int, char **);
+int test_rbc_gpu_exact_1_0_64(int, char **);
+int test_rbc_gpu_exact_2_0_33(int, char **);
+int test_rbc_gpu_exact_4_0_33(int, char **);
+int test_rbc_gpu_force_no_cpu(int, char **);
+int test_rbc_gpu_auto_no_cpu(int, char **);
+int test_rbc_gpu_rectangle_indices(int, char **);
+int test_rbc_gpu_rectangle_mask(int, char **);
+int test_rbc_gpu_blue_rectangle_indices(int, char **);
+int test_rbc_gpu_blue_rectangle_mask(int, char **);
+int test_component_mahalanobis_palette_snapshot(int, char **);
+int test_component_mahalanobis_cache_reuse(int, char **);
+int test_component_mahalanobis_device_identity(int, char **);
+int test_component_mahalanobis_live_plan_isolation(int, char **);
+int test_component_mahalanobis_busy_lease(int, char **);
+int test_component_mahalanobis_completed_reuse(int, char **);
+int test_component_mahalanobis_aborted_rebuild(int, char **);
+int test_component_mahalanobis_double_finish(int, char **);
+int test_component_mahalanobis_finished_view(int, char **);
+int test_component_mahalanobis_provider_lifetime(int, char **);
+int test_component_mahalanobis_binding_lifetime(int, char **);
+int test_component_mahalanobis_float_decline(int, char **);
+int test_mahalanobis_gpu_exact_0_0_1(int, char **);
+int test_mahalanobis_gpu_exact_0_0_2(int, char **);
+int test_mahalanobis_gpu_exact_0_0_7(int, char **);
+int test_mahalanobis_gpu_exact_0_0_16(int, char **);
+int test_mahalanobis_gpu_exact_0_0_17(int, char **);
+int test_mahalanobis_gpu_exact_0_0_33(int, char **);
+int test_mahalanobis_gpu_exact_0_0_64(int, char **);
+int test_mahalanobis_gpu_exact_0_0_129(int, char **);
+int test_mahalanobis_gpu_exact_0_0_256(int, char **);
+int test_mahalanobis_gpu_exact_1_0_64(int, char **);
+int test_mahalanobis_gpu_exact_2_0_33(int, char **);
+int test_mahalanobis_gpu_exact_4_0_33(int, char **);
+int test_mahalanobis_gpu_force_no_cpu(int, char **);
+int test_mahalanobis_gpu_auto_no_cpu(int, char **);
+int test_mahalanobis_gpu_rectangle_indices(int, char **);
+int test_mahalanobis_gpu_rectangle_mask(int, char **);
+int test_mahalanobis_gpu_blue_rectangle_indices(int, char **);
+int test_mahalanobis_gpu_blue_rectangle_mask(int, char **);
+
 int test_vptree_auto_no_cpu(int, char **);
 int test_cpu_palette_snapshot(int, char **);
 int test_invalid_gpu_index(int, char **);
@@ -5871,6 +5946,155 @@ static test_entry_t const test_entries[] = {
     { "component/cutoff_cpu_only", test_lookup_cutoff_cpu_only },
     { "component/injected_gpu_program", test_injected_gpu_program },
     { "component/vptree_force_no_cpu", test_vptree_force_no_cpu },
+    { "mahalanobis/gpu_cell_boundaries",
+      test_mahalanobis_gpu_cell_boundaries },
+    { "mahalanobis/gpu_first_index_tie",
+      test_mahalanobis_gpu_first_index_tie },
+    { "mahalanobis/gpu_index255",
+      test_mahalanobis_gpu_index255 },
+    { "mahalanobis/gpu_failed_build_recovery",
+      test_mahalanobis_gpu_failed_build_recovery },
+    { "mahalanobis/gpu_count_rebuild",
+      test_mahalanobis_gpu_count_rebuild },
+    { "mahalanobis/gpu_palette_rebuild",
+      test_mahalanobis_gpu_palette_rebuild },
+    { "mahalanobis/gpu_table_reuse",
+      test_mahalanobis_gpu_table_reuse },
+    { "rbc/gpu_cell_boundaries",
+      test_rbc_gpu_cell_boundaries },
+    { "rbc/gpu_first_index_tie",
+      test_rbc_gpu_first_index_tie },
+    { "rbc/gpu_index255",
+      test_rbc_gpu_index255 },
+    { "rbc/gpu_failed_build_recovery",
+      test_rbc_gpu_failed_build_recovery },
+    { "rbc/gpu_count_rebuild",
+      test_rbc_gpu_count_rebuild },
+    { "rbc/gpu_palette_rebuild",
+      test_rbc_gpu_palette_rebuild },
+    { "rbc/gpu_table_reuse",
+      test_rbc_gpu_table_reuse },
+    { "rbc/gpu_palette_snapshot",
+      test_component_rbc_palette_snapshot },
+    { "rbc/gpu_cache_reuse",
+      test_component_rbc_cache_reuse },
+    { "rbc/gpu_device_identity",
+      test_component_rbc_device_identity },
+    { "rbc/gpu_live_plan_isolation",
+      test_component_rbc_live_plan_isolation },
+    { "rbc/gpu_busy_lease",
+      test_component_rbc_busy_lease },
+    { "rbc/gpu_completed_reuse",
+      test_component_rbc_completed_reuse },
+    { "rbc/gpu_aborted_rebuild",
+      test_component_rbc_aborted_rebuild },
+    { "rbc/gpu_double_finish",
+      test_component_rbc_double_finish },
+    { "rbc/gpu_finished_view",
+      test_component_rbc_finished_view },
+    { "rbc/gpu_provider_lifetime",
+      test_component_rbc_provider_lifetime },
+    { "rbc/gpu_binding_lifetime",
+      test_component_rbc_binding_lifetime },
+    { "rbc/gpu_float_decline",
+      test_component_rbc_float_decline },
+    { "rbc/gpu_exact_0_0_1",
+      test_rbc_gpu_exact_0_0_1 },
+    { "rbc/gpu_exact_0_0_2",
+      test_rbc_gpu_exact_0_0_2 },
+    { "rbc/gpu_exact_0_0_7",
+      test_rbc_gpu_exact_0_0_7 },
+    { "rbc/gpu_exact_0_0_16",
+      test_rbc_gpu_exact_0_0_16 },
+    { "rbc/gpu_exact_0_0_17",
+      test_rbc_gpu_exact_0_0_17 },
+    { "rbc/gpu_exact_0_0_33",
+      test_rbc_gpu_exact_0_0_33 },
+    { "rbc/gpu_exact_0_0_64",
+      test_rbc_gpu_exact_0_0_64 },
+    { "rbc/gpu_exact_0_0_129",
+      test_rbc_gpu_exact_0_0_129 },
+    { "rbc/gpu_exact_0_0_256",
+      test_rbc_gpu_exact_0_0_256 },
+    { "rbc/gpu_exact_1_0_64",
+      test_rbc_gpu_exact_1_0_64 },
+    { "rbc/gpu_exact_2_0_33",
+      test_rbc_gpu_exact_2_0_33 },
+    { "rbc/gpu_exact_4_0_33",
+      test_rbc_gpu_exact_4_0_33 },
+    { "rbc/gpu_force_no_cpu",
+      test_rbc_gpu_force_no_cpu },
+    { "rbc/gpu_auto_no_cpu",
+      test_rbc_gpu_auto_no_cpu },
+    { "rbc/gpu_rectangle_indices",
+      test_rbc_gpu_rectangle_indices },
+    { "rbc/gpu_rectangle_mask",
+      test_rbc_gpu_rectangle_mask },
+    { "rbc/gpu_blue_rectangle_indices",
+      test_rbc_gpu_blue_rectangle_indices },
+    { "rbc/gpu_blue_rectangle_mask",
+      test_rbc_gpu_blue_rectangle_mask },
+    { "mahalanobis/gpu_palette_snapshot",
+      test_component_mahalanobis_palette_snapshot },
+    { "mahalanobis/gpu_cache_reuse",
+      test_component_mahalanobis_cache_reuse },
+    { "mahalanobis/gpu_device_identity",
+      test_component_mahalanobis_device_identity },
+    { "mahalanobis/gpu_live_plan_isolation",
+      test_component_mahalanobis_live_plan_isolation },
+    { "mahalanobis/gpu_busy_lease",
+      test_component_mahalanobis_busy_lease },
+    { "mahalanobis/gpu_completed_reuse",
+      test_component_mahalanobis_completed_reuse },
+    { "mahalanobis/gpu_aborted_rebuild",
+      test_component_mahalanobis_aborted_rebuild },
+    { "mahalanobis/gpu_double_finish",
+      test_component_mahalanobis_double_finish },
+    { "mahalanobis/gpu_finished_view",
+      test_component_mahalanobis_finished_view },
+    { "mahalanobis/gpu_provider_lifetime",
+      test_component_mahalanobis_provider_lifetime },
+    { "mahalanobis/gpu_binding_lifetime",
+      test_component_mahalanobis_binding_lifetime },
+    { "mahalanobis/gpu_float_decline",
+      test_component_mahalanobis_float_decline },
+    { "mahalanobis/gpu_exact_0_0_1",
+      test_mahalanobis_gpu_exact_0_0_1 },
+    { "mahalanobis/gpu_exact_0_0_2",
+      test_mahalanobis_gpu_exact_0_0_2 },
+    { "mahalanobis/gpu_exact_0_0_7",
+      test_mahalanobis_gpu_exact_0_0_7 },
+    { "mahalanobis/gpu_exact_0_0_16",
+      test_mahalanobis_gpu_exact_0_0_16 },
+    { "mahalanobis/gpu_exact_0_0_17",
+      test_mahalanobis_gpu_exact_0_0_17 },
+    { "mahalanobis/gpu_exact_0_0_33",
+      test_mahalanobis_gpu_exact_0_0_33 },
+    { "mahalanobis/gpu_exact_0_0_64",
+      test_mahalanobis_gpu_exact_0_0_64 },
+    { "mahalanobis/gpu_exact_0_0_129",
+      test_mahalanobis_gpu_exact_0_0_129 },
+    { "mahalanobis/gpu_exact_0_0_256",
+      test_mahalanobis_gpu_exact_0_0_256 },
+    { "mahalanobis/gpu_exact_1_0_64",
+      test_mahalanobis_gpu_exact_1_0_64 },
+    { "mahalanobis/gpu_exact_2_0_33",
+      test_mahalanobis_gpu_exact_2_0_33 },
+    { "mahalanobis/gpu_exact_4_0_33",
+      test_mahalanobis_gpu_exact_4_0_33 },
+    { "mahalanobis/gpu_force_no_cpu",
+      test_mahalanobis_gpu_force_no_cpu },
+    { "mahalanobis/gpu_auto_no_cpu",
+      test_mahalanobis_gpu_auto_no_cpu },
+    { "mahalanobis/gpu_rectangle_indices",
+      test_mahalanobis_gpu_rectangle_indices },
+    { "mahalanobis/gpu_rectangle_mask",
+      test_mahalanobis_gpu_rectangle_mask },
+    { "mahalanobis/gpu_blue_rectangle_indices",
+      test_mahalanobis_gpu_blue_rectangle_indices },
+    { "mahalanobis/gpu_blue_rectangle_mask",
+      test_mahalanobis_gpu_blue_rectangle_mask },
+
     { "component/vptree_auto_no_cpu", test_vptree_auto_no_cpu },
     { "component/cpu_palette_snapshot", test_cpu_palette_snapshot },
     { "component/invalid_gpu_index", test_invalid_gpu_index },

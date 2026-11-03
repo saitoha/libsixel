@@ -69,9 +69,9 @@ The labels apply to one already-adjusted color candidate. They do not imply that
 | `blockcull` | Scan-index exact | Colors that cannot be nearest anywhere in a run or pixel block are skipped before a palette-order scan |
 | `vptree` | Nearest-distance exact | Tree pruning and the default safe cache preserve the policy minimum |
 | `rbc`, float32 | Nearest-distance exact | Ball-radius lower bounds use the same normalized metric as final comparisons |
-| `rbc`, 8-bit | Scan-index exact | The current implementation is a direct scan |
+| `rbc`, 8-bit | Scan-index exact | CPU direct scan; Metal conservative cell/cluster-box pruning |
 | `mahalanobis`, float32 | Nearest-distance exact | The current query still compares every cluster member in the normalized metric |
-| `mahalanobis`, 8-bit | Scan-index exact | The current implementation is a direct scan |
+| `mahalanobis`, 8-bit | Scan-index exact | Independent CPU and Metal exhaustive scans |
 
 `auto` inherits the concrete backend's guarantee. Configuration can matter as much as the base policy name. For example, an optional FHEDT cache remembers a voxel result, while the CPU dense-bucket policies remember the result of the first actual color that entered a bucket.
 
@@ -184,8 +184,8 @@ Each policy has its own page because the algorithms, correctness arguments, and 
 | [`ordered`](ordered.md) | Exact distance-sorted candidates, seed grids and CPU/Metal construction |
 | [`blockcull`](blockcull.md) | Per-block candidate culling before an exact scan, with a Metal matrix-product kernel |
 | [`vptree`](vptree.md) | CPU metric VP-tree and neighbor refinement; independent Metal RGB8 neighbor-row construction and exact lookup |
-| [`rbc`](rbc.md) | Random Ball Cover cluster pruning |
-| [`mahalanobis`](mahalanobis.md) | Exhaustive normalized lookup in deterministic RBC cluster order |
+| [`rbc`](rbc.md) | CPU float ball pruning; independent Metal RGB8 cell masks and cluster-box bounds |
+| [`mahalanobis`](mahalanobis.md) | CPU normalized cluster-order scan; independent Metal RGB8 exhaustive lookup |
 
 ## Cost
 
