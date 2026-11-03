@@ -11,7 +11,8 @@
 /* Every wrapper chooses one rectangle/time transition and checks the entire
  * retained canvas against independent wire RGB values, including untouched
  * pixels outside the damage. No perceptual score can hide a misplaced keep. */
-#define REQUIRE(x) do { if (!(x)) { \
+/* Keep assertions local when test support units are amalgamated. */
+#define PR_REQUIRE(x) do { if (!(x)) { \
     fprintf(stderr, "partial refresh %d line %d: %s (%s)\n", \
         mode, __LINE__, #x, sixel_helper_get_additional_message()); \
     goto end; } } while (0)
@@ -61,31 +62,34 @@ test_partial_refresh(int mode, int gpu)
     playback = NULL;
     memset(&out, 0, sizeof(out));
     ok = 0;
-    REQUIRE(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL)
+    PR_REQUIRE(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL)
         == SIXEL_OK);
-    REQUIRE(sixel_encoder_new(&encoder, allocator) == SIXEL_OK);
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
+    PR_REQUIRE(sixel_encoder_new(&encoder, allocator) == SIXEL_OK);
+    PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
         "none") == SIXEL_OK);
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_LUT_POLICY,
+    PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_LUT_POLICY,
         "ordered") == SIXEL_OK);
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
+    PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         gpu ? "force" : "off") == SIXEL_OK);
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+    PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
         "delta:T8:J64") == SIXEL_OK);
-    REQUIRE(sixel_encoder_set_6delta_plane_size(encoder, 96, 72) == SIXEL_OK);
-    REQUIRE(sixel_output_new(&output, partial_write, &out, NULL) == SIXEL_OK);
-    REQUIRE(sixel_frame_new(&frame, allocator) == SIXEL_OK);
-    REQUIRE(sixel_playback_options_init(&options, sizeof(options)) == SIXEL_OK);
+    PR_REQUIRE(sixel_encoder_set_6delta_plane_size(encoder, 96, 72)
+        == SIXEL_OK);
+    PR_REQUIRE(sixel_output_new(&output, partial_write, &out, NULL)
+        == SIXEL_OK);
+    PR_REQUIRE(sixel_frame_new(&frame, allocator) == SIXEL_OK);
+    PR_REQUIRE(sixel_playback_options_init(&options, sizeof(options))
+        == SIXEL_OK);
     options.flags = SIXEL_PLAYBACK_OPTION_ORIGIN |
         SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
     if (mode == 2 || mode == 3) {
-        REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
+        PR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_THREADING_POLICY,
             "balanced:global_budget=2:prepare=ahead") == SIXEL_OK);
-        REQUIRE(sixel_playback_config_init(&config, sizeof(config))
+        PR_REQUIRE(sixel_playback_config_init(&config, sizeof(config))
             == SIXEL_OK);
         config.palette_mode = mode == 3 ? SIXEL_PLAYBACK_PALETTE_LATEST
             : SIXEL_PLAYBACK_PALETTE_PER_FRAME;
-        REQUIRE(sixel_playback_new(&playback, encoder, output, &config, NULL)
+        PR_REQUIRE(sixel_playback_new(&playback, encoder, output, &config, NULL)
             == SIXEL_OK);
     }
     ox = 7;
@@ -105,7 +109,7 @@ test_partial_refresh(int mode, int gpu)
             if (mode == 14) height = 23;
         }
         if (step == 3) ox = 7;
-        REQUIRE(sixel_frame_init_borrowed(frame, pixels,
+        PR_REQUIRE(sixel_frame_init_borrowed(frame, pixels,
             step ? width : 96, step ? height : 72,
             SIXEL_PIXELFORMAT_RGB888, NULL, 0) == SIXEL_OK);
         options.origin_x = step ? ox : 0;
@@ -116,7 +120,7 @@ test_partial_refresh(int mode, int gpu)
         if (step == 2 && mode == 9) out.fail = 1;
         if (step == 2 && mode == 11) {
             mask = sixel_allocator_malloc(allocator, 32U * 24U);
-            REQUIRE(mask != NULL);
+            PR_REQUIRE(mask != NULL);
             memset(mask, 0, 32U * 24U);
             mask[0] = 1;
             memset(&transparency, 0, sizeof(transparency));
@@ -124,7 +128,7 @@ test_partial_refresh(int mode, int gpu)
             transparency.transparent_mask = mask;
             transparency.transparent_mask_size = 32U * 24U;
             frame_if = sixel_frame_as_interface(frame);
-            REQUIRE(frame_if->vtbl->set_transparency(frame_if, &transparency)
+            PR_REQUIRE(frame_if->vtbl->set_transparency(frame_if, &transparency)
                 == SIXEL_OK);
             mask = NULL;
         }
@@ -135,20 +139,20 @@ test_partial_refresh(int mode, int gpu)
             if (status == SIXEL_OK)
                 status = sixel_playback_drain(playback, -1);
         } else {
-            REQUIRE(sixel_encoder_set_6delta_plane_origin(encoder,
+            PR_REQUIRE(sixel_encoder_set_6delta_plane_origin(encoder,
                 options.origin_x, options.origin_y) == SIXEL_OK);
             encoder->refresh_time_override = 1;
             encoder->refresh_time_us = options.refresh_time_us;
             status = sixel_encoder_encode_frame(encoder, frame, output);
         }
         if (step == 2 && mode >= 9 && mode <= 11) {
-            REQUIRE(SIXEL_FAILED(status));
-            if (mode == 9) REQUIRE(!encoder->residual_state.refresh_valid);
-            else REQUIRE(out.size == 0);
+            PR_REQUIRE(SIXEL_FAILED(status));
+            if (mode == 9) PR_REQUIRE(!encoder->residual_state.refresh_valid);
+            else PR_REQUIRE(out.size == 0);
             ok = 1;
             goto end;
         }
-        REQUIRE(status == SIXEL_OK);
+        PR_REQUIRE(status == SIXEL_OK);
     }
     for (y = 0; y < 72; ++y) {
         for (x = 0; x < 96; ++x) {
@@ -162,7 +166,7 @@ test_partial_refresh(int mode, int gpu)
                 /* Latest may still carry the earlier all-102 palette. The
                  * contract here is deadline selection, not guaranteed paint
                  * when the available palette has no improving candidate. */
-                REQUIRE(sixel_delta_mask_threshold(
+                PR_REQUIRE(sixel_delta_mask_threshold(
                     &encoder->residual_state.mask, x - ox, y - oy, 8) ==
                     (rank < 64U ? 0U : 8U));
             }
@@ -196,3 +200,5 @@ end:
     sixel_allocator_unref(allocator);
     return ok ? 0 : 1;
 }
+
+#undef PR_REQUIRE

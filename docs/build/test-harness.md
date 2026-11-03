@@ -90,6 +90,8 @@ Meson binding workers use `MESON_TEST_RUN_ID`, falling back to their parent PID,
 
 The test runner's support translation units use the configured thread compiler flags in both ordinary and amalgamated builds. A link flag alone cannot supply compile-time ABI features such as WebAssembly atomics. Distribution also writes Automake's complete C/support inventory in bounded batches before copying it, so a large `DISTFILES` value never becomes one shell command string. Directory copies are made owner-writable in the distribution tree so overlapping entries can merge when `distcheck` makes the source tree read-only. The original source permissions are preserved. [Static coverage](#test-coverage) checks these two build boundaries separately.
 
+Every source fixture under a test `data/` directory must be covered by `tests/Makefile.am` `EXTRA_DIST`, either individually or through an ancestor directory. Discovery of a `.t` script does not distribute its neighboring data automatically. The fixture registration check audits this boundary independently of the copying check.
+
 Compatibility tests intentionally call deprecated public interfaces. When scoped diagnostic pragmas are unavailable, configure and Meson compile an actual deprecated call with `-Werror -Wno-deprecated-declarations` to detect a test-only fallback. A successful probe applies that flag to runner support objects, including the separate float-lookup archive; installed library and program targets retain their warning settings. This preserves legacy API coverage on PCC without treating support for a command-line flag as support for GCC diagnostic pragmas.
 
 ## Inside the custom TAP driver
@@ -276,5 +278,6 @@ Configure places the fallback on its command search path before Libtool checks. 
 | TH-29 | Exact comparison: stdin right; runtime uses the selected helper and staticcheck uses the source-only fallback. | [tests/tools/compare/0008_stdin_right.t](../../tests/tools/compare/0008_stdin_right.t) |
 | TH-30 | Exact comparison: multiblock equal; runtime uses the selected helper and staticcheck uses the source-only fallback. | [tests/tools/compare/0009_multiblock_equal.t](../../tests/tools/compare/0009_multiblock_equal.t) |
 | TH-31 | Exact comparison detects a difference beyond several buffers. | [tests/tools/compare/0010_multiblock_different.t](../../tests/tools/compare/0010_multiblock_different.t) |
+| TH-32 | Every source fixture under a test data directory is covered by the distribution manifest, including nested directories outside the top-level data tree. | [tests/_static/sh/staticcheck-test-fixture-distribution.sh](../../tests/_static/sh/staticcheck-test-fixture-distribution.sh) |
 
 The discovery checks execute production make assignments and the OpenVMS list recipe with tiny source trees in separate build directories. Each file owns one observation. They do not invoke configure, compile the C dispatcher, or reproduce GNV/RMS behavior; native OpenVMS execution remains a platform validation boundary.

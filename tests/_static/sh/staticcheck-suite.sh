@@ -447,6 +447,10 @@ run_case_tap "staticcheck-metal-source-literal-length" \
     "$src_root/tests/_static/sh/staticcheck-metal-source-literal-length.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-macro-isolation" \
+    sh "$src_root/tests/_static/sh/staticcheck-test-macro-isolation.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-amalgamation-static-symbols" \
     "$src_root/tests/_static/sh/staticcheck-amalgamation-static-symbols.sh" \
     "$src_root" || fail_and_exit $?
@@ -1089,6 +1093,10 @@ run_case_tap "staticcheck-emscripten-thread-runtime" \
 
 run_case_tap "staticcheck-test-thread-flags" \
     "$src_root/tests/_static/sh/staticcheck-test-thread-flags.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-fixture-distribution" \
+    "$src_root/tests/_static/sh/staticcheck-test-fixture-distribution.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-test-distribution" \

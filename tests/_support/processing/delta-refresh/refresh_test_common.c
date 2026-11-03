@@ -10,7 +10,8 @@
 #include "src/delta-residual.h"
 #include "src/bluenoise_64x64.h"
 
-#define REQUIRE(x) do { if (!(x)) { \
+/* Keep assertions local when test support units are amalgamated. */
+#define DR_REQUIRE(x) do { if (!(x)) { \
     fprintf(stderr, "refresh %d line %d: %s (%s)\n", mode, __LINE__, #x, \
         sixel_helper_get_additional_message()); goto end; } } while (0)
 
@@ -84,98 +85,103 @@ test_delta_refresh(int mode)
     memset(seen, 0, sizeof(seen));
     if (mode >= 2 && mode <= 5) {
         sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1000000U, 0);
-        REQUIRE(state.selected_pixels == 0U);
+        DR_REQUIRE(state.selected_pixels == 0U);
         refresh_commit(&state);
         if (mode == 2) {
             for (tick = 1U; tick <= 4U; ++tick) {
                 sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64,
                     1000000U + tick * 16000U, 1);
-                REQUIRE(state.selected_pixels == 4096U);
+                DR_REQUIRE(state.selected_pixels == 4096U);
                 for (i = 0; i < 128U; ++i) {
-                    REQUIRE((seen[i] & state.mask.cells[i]) == 0U);
+                    DR_REQUIRE((seen[i] & state.mask.cells[i]) == 0U);
                     seen[i] |= state.mask.cells[i];
                 }
                 refresh_commit(&state);
             }
-            for (i = 0; i < 128U; ++i) REQUIRE(seen[i] == UINT32_MAX);
+            for (i = 0; i < 128U; ++i) DR_REQUIRE(seen[i] == UINT32_MAX);
         } else if (mode == 3) {
-            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1090000U, 1);
-            REQUIRE(state.selected_pixels == 16384U);
+            sixel_delta_refresh_prepare(&state, 128, 128,
+                0, 0, 64, 1090000U, 1);
+            DR_REQUIRE(state.selected_pixels == 16384U);
         } else if (mode == 4) {
-            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1016000U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128,
+                0, 0, 64, 1016000U, 1);
             refresh_commit(&state);
-            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1016000U, 1);
-            REQUIRE(state.selected_pixels == 0U);
+            sixel_delta_refresh_prepare(&state, 128, 128,
+                0, 0, 64, 1016000U, 1);
+            DR_REQUIRE(state.selected_pixels == 0U);
         } else {
             sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 999999U, 1);
-            REQUIRE(state.selected_pixels == 16384U);
+            DR_REQUIRE(state.selected_pixels == 16384U);
             refresh_commit(&state);
-            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1015999U, 1);
-            REQUIRE(state.selected_pixels == 4096U);
+            sixel_delta_refresh_prepare(&state, 128, 128,
+                0, 0, 64, 1015999U, 1);
+            DR_REQUIRE(state.selected_pixels == 4096U);
         }
         ok = 1;
         goto end;
     }
-    REQUIRE(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
+    DR_REQUIRE(sixel_encoder_new(&encoder, NULL) == SIXEL_OK);
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
         "bluenoise") == SIXEL_OK);
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_LUT_POLICY,
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_LUT_POLICY,
         "none") == SIXEL_OK);
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_GPU_POLICY,
         mode == 7 ? "force" : "off") == SIXEL_OK);
     if (mode == 1) {
-        REQUIRE(encoder->refresh_ms == 0U);
-        REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        DR_REQUIRE(encoder->refresh_ms == 0U);
+        DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
             "delta:T8:refresh_ms=64") == SIXEL_OK);
-        REQUIRE(encoder->refresh_ms == 64U);
-        REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        DR_REQUIRE(encoder->refresh_ms == 64U);
+        DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
             "delta:T8:J64") == SIXEL_OK);
-        REQUIRE(encoder->refresh_ms == 64U);
-        REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        DR_REQUIRE(encoder->refresh_ms == 64U);
+        DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
             "delta:T8:J10001") != SIXEL_OK);
-        REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
             "delta:T8:J64:R1") != SIXEL_OK);
-        REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
+        DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION,
             "fs") != SIXEL_OK);
-        REQUIRE(encoder->refresh_ms == 64U);
-        REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+        DR_REQUIRE(encoder->refresh_ms == 64U);
+        DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
             "delta") == SIXEL_OK);
-        REQUIRE(encoder->refresh_ms == 0U);
+        DR_REQUIRE(encoder->refresh_ms == 0U);
         ok = 1;
         goto end;
     }
-    REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
+    DR_REQUIRE(sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_UPDATE_POLICY,
         "delta:T8:J64") == SIXEL_OK);
-    REQUIRE(sixel_output_new(&output, refresh_write, &out, NULL) == SIXEL_OK);
-    REQUIRE(sixel_playback_config_init(&config, sizeof(config)) == SIXEL_OK);
+    DR_REQUIRE(sixel_output_new(&output, refresh_write, &out, NULL)
+        == SIXEL_OK);
+    DR_REQUIRE(sixel_playback_config_init(&config, sizeof(config)) == SIXEL_OK);
     config.capacity = 2;
     config.done = refresh_done;
     config.done_context = &out;
     if (mode == 10) config.palette_mode = SIXEL_PLAYBACK_PALETTE_LATEST;
-    REQUIRE(sixel_playback_new(&playback, encoder, output, &config, NULL)
+    DR_REQUIRE(sixel_playback_new(&playback, encoder, output, &config, NULL)
         == SIXEL_OK);
-    REQUIRE(sixel_frame_new(&frame, NULL) == SIXEL_OK);
+    DR_REQUIRE(sixel_frame_new(&frame, NULL) == SIXEL_OK);
     memset(pixels, 102, sizeof(pixels));
-    REQUIRE(sixel_frame_init_borrowed(frame, pixels, 130, 77,
+    DR_REQUIRE(sixel_frame_init_borrowed(frame, pixels, 130, 77,
         SIXEL_PIXELFORMAT_RGB888, NULL, 0) == SIXEL_OK);
     if (mode == 8) {
         legacy_size = offsetof(sixel_playback_options_t, refresh_time_us);
         memset(&options, 0xa5, sizeof(options));
-        REQUIRE(sixel_playback_options_init(&options, legacy_size)
+        DR_REQUIRE(sixel_playback_options_init(&options, legacy_size)
             == SIXEL_OK);
-        REQUIRE(options.refresh_time_us == UINT64_C(0xa5a5a5a5a5a5a5a5));
+        DR_REQUIRE(options.refresh_time_us == UINT64_C(0xa5a5a5a5a5a5a5a5));
         options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
-        REQUIRE(sixel_playback_submit(playback, frame,
+        DR_REQUIRE(sixel_playback_submit(playback, frame,
             SIXEL_PLAYBACK_WAIT, -1, &options)
             == SIXEL_BAD_ARGUMENT);
         options.flags = 0;
-        REQUIRE(sixel_playback_submit(playback, frame,
+        DR_REQUIRE(sixel_playback_submit(playback, frame,
             SIXEL_PLAYBACK_WAIT, -1, &options) == SIXEL_OK);
-        REQUIRE(sixel_playback_drain(playback, -1) == SIXEL_OK);
+        DR_REQUIRE(sixel_playback_drain(playback, -1) == SIXEL_OK);
         ok = 1;
         goto end;
     }
-    REQUIRE(sixel_playback_options_init(&options, sizeof(options))
+    DR_REQUIRE(sixel_playback_options_init(&options, sizeof(options))
         == SIXEL_OK);
     options.flags = SIXEL_PLAYBACK_OPTION_REFRESH_TIME;
     for (tick = 0U; tick <= 4U; ++tick) {
@@ -188,18 +194,18 @@ test_delta_refresh(int mode)
             SIXEL_PLAYBACK_WAIT, -1, &options);
         if (status == SIXEL_OK) status = sixel_playback_drain(playback, -1);
         if (mode == 9 && tick == 1U) {
-            REQUIRE(status != SIXEL_OK);
-            REQUIRE(!encoder->accumulation_valid);
-            REQUIRE(!encoder->residual_state.refresh_valid);
+            DR_REQUIRE(status != SIXEL_OK);
+            DR_REQUIRE(!encoder->accumulation_valid);
+            DR_REQUIRE(!encoder->residual_state.refresh_valid);
             ok = 1;
             goto end;
         }
-        REQUIRE(status == SIXEL_OK);
+        DR_REQUIRE(status == SIXEL_OK);
         expected = paint_counts[tick];
-        REQUIRE(out.painted == expected);
-        REQUIRE(encoder->residual_state.selected_pixels ==
+        DR_REQUIRE(out.painted == expected);
+        DR_REQUIRE(encoder->residual_state.selected_pixels ==
             (tick ? expected : 0U));
-        REQUIRE(encoder->residual_state.refresh_last_us == timestamp);
+        DR_REQUIRE(encoder->residual_state.refresh_last_us == timestamp);
         changed = 0U;
         for (i = 0; i < 10010U; ++i) {
             /* Check positions as well as counts: a scaled tile has the same
@@ -207,15 +213,15 @@ test_delta_refresh(int mode)
             rank = sixel_bn64[(((i / 130U) + 17U) & 63U) * 64U +
                               (((i % 130U) + 37U) & 63U)];
             expected = rank < tick * 64U ? 107U : 102U;
-            REQUIRE(encoder->accumulation_pixels[i * 3U] == expected);
+            DR_REQUIRE(encoder->accumulation_pixels[i * 3U] == expected);
             if (encoder->accumulation_pixels[i * 3U] != 102) {
-                REQUIRE(encoder->accumulation_pixels[i * 3U] == 107);
+                DR_REQUIRE(encoder->accumulation_pixels[i * 3U] == 107);
                 ++changed;
             }
         }
         expected = 0U;
         for (i = 1U; i <= tick; ++i) expected += paint_counts[i];
-        REQUIRE(changed == expected);
+        DR_REQUIRE(changed == expected);
     }
     ok = 1;
 end:
@@ -225,3 +231,5 @@ end:
     sixel_encoder_unref(encoder);
     return ok ? 0 : 1;
 }
+
+#undef DR_REQUIRE

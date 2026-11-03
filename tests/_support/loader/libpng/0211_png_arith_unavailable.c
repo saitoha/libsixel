@@ -47,6 +47,8 @@ pau_unavailable_build(sixel_png_chrm_matrix_t *out,
 #define SIXEL_PNG_TRANSFER_SRGB pau_transfer_srgb
 #define SIXEL_PNG_TRANSFER_GAMA pau_transfer_gama
 #define SIXEL_PNG_TRANSFER_MEMO_SIZE pau_transfer_memo_size
+#define sixel_png_color_options pau_color_options
+#define sixel_png_color_options_t pau_color_options_t
 #define sixel_png_transfer_memo pau_transfer_memo
 #define sixel_png_transfer_memo_t pau_transfer_memo_t
 #define png_transfer_memo_init pau_transfer_memo_init
@@ -186,6 +188,8 @@ pau_new_manager(sixel_allocator_t *allocator,
 #undef SIXEL_PNG_TRANSFER_SRGB
 #undef SIXEL_PNG_TRANSFER_GAMA
 #undef SIXEL_PNG_TRANSFER_MEMO_SIZE
+#undef sixel_png_color_options
+#undef sixel_png_color_options_t
 #undef sixel_png_transfer_memo
 #undef sixel_png_transfer_memo_t
 #undef png_transfer_memo_init

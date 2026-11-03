@@ -23291,8 +23291,10 @@ TEST_DATA_DIRS = data
 
 # These native Python cases use the ordinary discovered TAP/log path.
 # Their interpreter does not depend on optional Python bindings.
-EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
-	writer/png/redefine.six \
+EXTRA_DIST = tools/compare/data/octet.bin tools/compare/data/empty \
+	tools/compare/data/newline.txt \
+	tools/compare/data/no-newline.txt writer/png/uniform.six \
+	writer/png/colors.six writer/png/redefine.six \
 	_support/loader/libpng/chrm_trace_control.sh meson.build \
 	meson-python-tap-wrapper.sh meson-tap-exitcode-wrapper.sh \
 	build/documentation/0002_envvars_vs_help.sh \
@@ -23371,6 +23373,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/check-test-runner-link.sh \
 	_static/awk/c-preprocessor-portability.awk \
 	_static/sh/staticcheck-c-preprocessor-portability.sh \
+	_static/awk/test-macro-isolation.awk \
+	_static/sh/staticcheck-test-macro-isolation.sh \
 	_static/awk/c-octal-escape-boundary.awk \
 	_static/sh/staticcheck-c-octal-escape-boundary.sh \
 	_static/awk/c-test-skip-branches.awk \
@@ -23526,6 +23530,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six \
 	_static/sh/staticcheck-test-thread-flags.sh \
 	_static/awk/test-thread-flags.awk \
 	_static/sh/staticcheck-test-distribution.sh \
+	_static/sh/staticcheck-test-fixture-distribution.sh \
+	_static/awk/test-fixture-distribution.awk \
 	_static/sh/staticcheck-shell-field-delimiters.sh \
 	_static/awk/shell-field-delimiters.awk \
 	_static/awk/source-inventory-select.awk \
