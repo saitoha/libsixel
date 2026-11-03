@@ -165,6 +165,7 @@
 #undef sixel_palette_heckbert_max_channels
 #undef sixel_palette_heckbert_axis_bins
 
+/* Exact comparisons use binary64 constants, not excess x87 precision. */
 int
 heckbert_policy_check(int scenario)
 {
@@ -268,8 +269,8 @@ heckbert_policy_check(int scenario)
         policy_sixel_heckbert_axis_weights(format, SIXEL_LARGE_LUM,
             &options, weights);
         if (scenario == 9) {
-            ok = ok && weights[0] == .2989 && weights[1] == .5866 &&
-                weights[2] == .1145;
+            ok = ok && weights[0] == (double).2989 &&
+                weights[1] == (double).5866 && weights[2] == (double).1145;
         } else {
             expected = scenario == 10 ? .75 : .5;
             ok = ok && weights[0] == 1.0 && weights[1] == expected &&

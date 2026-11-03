@@ -61,7 +61,8 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     expected_geometry = "band_height=78 overlap=0";
 #endif
     field = strstr(plan, "threads: dither=");
-    if (field == NULL || sscanf(field, "threads: dither=%d encode=%d",
+    if (field == NULL ||
+            sixel_compat_sscanf(field, "threads: dither=%d encode=%d",
             &planned_dither, &planned_encode) != 2 ||
             planned_dither != expected_dither || planned_encode != 2 ||
             strstr(plan, "bands=75 queue=6 mode=pipeline") == NULL ||
@@ -81,13 +82,13 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
     ok = 1;
     while (fgets(line, sizeof(line), file) != NULL) {
         field = strstr(line, "\"thread\":");
-        if (field == NULL || sscanf(field, "\"thread\":%llu",
+        if (field == NULL || sixel_compat_sscanf(field, "\"thread\":%llu",
                 &thread) != 1) {
             ok = 0;
             break;
         }
         field = strstr(line, "\"session_id\":");
-        if (field == NULL || sscanf(field, "\"session_id\":%u",
+        if (field == NULL || sixel_compat_sscanf(field, "\"session_id\":%u",
                 &session) != 1) {
             ok = 0;
             break;
@@ -103,7 +104,8 @@ pipeline_worker_counts(char const *path, char const *plan, int automatic)
         if (strstr(line, "\"worker\":\"dither\"") != NULL &&
                 strstr(line, "\"role\":\"worker\"") != NULL) {
             field = strstr(line, "\"job\":");
-            if (field == NULL || sscanf(field, "\"job\":%d", &job) != 1 ||
+            if (field == NULL ||
+                    sixel_compat_sscanf(field, "\"job\":%d", &job) != 1 ||
                     job < 0 || job >= planned_dither) {
                 ok = 0;
                 break;

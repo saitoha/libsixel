@@ -16,6 +16,7 @@
     } \
 } while (0)
 
+/* Exact comparisons use binary64 constants, not excess x87 precision. */
 int
 test_progressive_predict_case(int mode)
 {
@@ -75,7 +76,7 @@ test_progressive_predict_case(int mode)
         sixel_repair_predict_add(model, 3, target, 0.499);
         PREDICT_CHECK(sixel_repair_predict(model, palette, 1, 0.5, 256,
             &result) == SIXEL_OK && result.selected == 1 &&
-            result.gain == 0.25 && result.maximum_upper == 0.499);
+            result.gain == 0.25 && result.maximum_upper == (double)0.499);
         PREDICT_CHECK(sixel_repair_predict(model, palette, 1, 0, 256,
             &result) == SIXEL_OK && result.painted == 2 &&
             result.resolved == 0 && result.selected == 3);

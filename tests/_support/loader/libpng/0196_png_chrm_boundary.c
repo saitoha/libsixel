@@ -27,9 +27,11 @@ test_loader_0196_png_chrm_boundary(int argc, char **argv)
     }
     ix = coordinates[point][0];
     iy = coordinates[point][1] - inside;
+    /* The API stores binary64 values even when x87 evaluates in extended
+     * precision. Round the independent quotients to that storage type. */
     if (!png_chrm_xy_to_xyz(ix / 100000.0, iy / 100000.0, xyz) ||
-        xyz[0] != (double)ix / (double)iy || xyz[1] != 1.0 ||
-        xyz[2] != (double)inside / (double)iy) {
+        xyz[0] != (double)((double)ix / (double)iy) || xyz[1] != 1.0 ||
+        xyz[2] != (double)((double)inside / (double)iy)) {
         fprintf(stderr, "PNG grid boundary point=%d inside=%d differs\n",
             point, inside);
         return 1;

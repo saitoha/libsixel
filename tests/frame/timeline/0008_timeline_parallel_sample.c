@@ -134,7 +134,7 @@ timeline_0008_thread_of(char const *text, char const *position,
     }
     field = strstr(line, "\"thread\":");
     return field != NULL && field < strchr(position, '\n') &&
-        sscanf(field, "\"thread\":%llu", thread) == 1;
+        sixel_compat_sscanf(field, "\"thread\":%llu", thread) == 1;
 }
 
 /* Require nested intervals and two real thread identities, never elapsed

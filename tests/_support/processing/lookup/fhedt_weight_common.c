@@ -1,9 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Independent metric witnesses exercise the policy, not backend weights. */
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/compat_stub.h"
 #include "src/factory.h"
 
 static int
@@ -29,7 +33,8 @@ fh_weight_prepare(sixel_lookup_policy_interface_t *policy,
     request.allocator = allocator;
     request.fhedt_weights_override = strcmp(ratios, "default") != 0;
     if (strcmp(ratios, "auto") != 0 && strcmp(ratios, "default") != 0 &&
-            sscanf(ratios, "%lf/%lf/%lf", &request.fhedt_weights[0],
+            sixel_compat_sscanf(ratios, "%lf/%lf/%lf",
+                &request.fhedt_weights[0],
                 &request.fhedt_weights[1], &request.fhedt_weights[2]) != 3) {
         return 0;
     }

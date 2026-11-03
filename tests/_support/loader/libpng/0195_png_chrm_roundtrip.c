@@ -22,8 +22,9 @@ test_loader_0195_png_chrm_roundtrip(int argc, char **argv)
             iy = 100000L - ix;
             x = mode ? ix * 0.00001 : ix / 100000.0;
             y = mode ? iy * 0.00001 : iy / 100000.0;
+            /* Compare stored doubles, not an x87 extended quotient. */
             if (!png_chrm_xy_to_xyz(x, y, xyz) ||
-                xyz[0] != (double)ix / (double)iy) {
+                xyz[0] != (double)((double)ix / (double)iy)) {
                 fprintf(stderr, "PNG grid recovery mode=%d x=%ld y=%ld\n",
                     mode, ix, iy);
                 return 1;

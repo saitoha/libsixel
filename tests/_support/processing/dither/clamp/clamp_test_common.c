@@ -282,6 +282,7 @@ end:
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+/* Exact comparisons use binary64 constants, not excess x87 precision. */
 int
 clamp_test_api(int scenario)
 {
@@ -341,10 +342,10 @@ clamp_test_api(int scenario)
             sixel_dither_set_clamp_policy(a, SIXEL_DITHER_CLAMP_HARD,
                  16.1) == SIXEL_BAD_ARGUMENT &&
             a->clamp_policy == SIXEL_DITHER_CLAMP_SOFT &&
-            a->clamp_threshold == 1.2;
+            a->clamp_threshold == (double)1.2;
     } else {
         if (b->clamp_policy != SIXEL_DITHER_CLAMP_AUTO ||
-                b->clamp_threshold != 1.01 ||
+                b->clamp_threshold != (double)1.01 ||
                 SIXEL_FAILED(sixel_dither_set_clamp_policy(b,
                     SIXEL_DITHER_CLAMP_HARD, 16.0)) ||
                 SIXEL_FAILED(sixel_dither_set_clamp_policy(a,
@@ -443,14 +444,14 @@ clamp_test_options(int scenario)
     switch (scenario) {
     case 0:
         ok = encoder->clamp_policy == SIXEL_DITHER_CLAMP_AUTO &&
-            encoder->clamp_threshold == 1.01;
+            encoder->clamp_threshold == (double)1.01;
         break;
     case 1:
         status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_CLAMP_POLICY,
                                       "soft:T1.2");
         ok = SIXEL_SUCCEEDED(status) &&
             encoder->clamp_policy == SIXEL_DITHER_CLAMP_SOFT &&
-            encoder->clamp_threshold == 1.2;
+            encoder->clamp_threshold == (double)1.2;
         break;
     case 2:
         status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_CLAMP_POLICY,
@@ -460,14 +461,14 @@ clamp_test_options(int scenario)
                                       "hard");
         ok = ok && SIXEL_SUCCEEDED(status) &&
             encoder->clamp_policy == SIXEL_DITHER_CLAMP_HARD &&
-            encoder->clamp_threshold == 1.01;
+            encoder->clamp_threshold == (double)1.01;
         break;
     case 3:
         status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_CLAMP_POLICY,
                                       "soft:threshold=nan");
         ok = SIXEL_FAILED(status) &&
             encoder->clamp_policy == SIXEL_DITHER_CLAMP_AUTO &&
-            encoder->clamp_threshold == 1.01;
+            encoder->clamp_threshold == (double)1.01;
         break;
     case 4:
         status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_CLAMP_POLICY,

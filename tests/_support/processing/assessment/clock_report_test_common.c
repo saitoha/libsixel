@@ -183,8 +183,10 @@ test_clock_report_check(int argc, char **argv)
             if (mode == 1) {
                 ok = ok && clock_report_number(line, "S-CIELAB") > 10;
             } else if (mode == 2) {
+                /* Compare the parsed double with a binary64 constant,
+                 * rather than x87's excess-precision decimal literal. */
                 ok = ok && clock_report_number(line, "initial_blank_duration")
-                    == 0.02;
+                    == (double)0.02;
             } else if (mode == 3) {
                 ok = ok && clock_report_number(line, "late_updates") == 1
                     && clock_report_number(line, "late_bytes") == 3768

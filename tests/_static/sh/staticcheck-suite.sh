@@ -1001,6 +1001,26 @@ run_case_tap "staticcheck-cosmoar-failure" \
     sh "$src_root/tests/_static/sh/staticcheck-cosmoar-failure.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-openvms-libtool-object" \
+    sh "$src_root/tests/_static/sh/staticcheck-openvms-libtool-object.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-c-test-scanf" \
+    sh "$src_root/tests/_static/sh/staticcheck-c-test-scanf.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-checkout-eol" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-checkout-eol.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-configure-make" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-configure-make.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-gperf-source-location" \
+    sh "$src_root/tests/_static/sh/staticcheck-gperf-source-location.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-emscripten-node-stdio" \
     "$src_root/tests/_static/sh/staticcheck-emscripten-node-stdio.sh" \
     "$src_root" || fail_and_exit $?

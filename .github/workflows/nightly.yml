@@ -115,6 +115,11 @@ jobs:
             sys: x86_64-msvc
 
     steps:
+    - name: Configure git EOL
+      if: runner.os == 'Windows'
+      shell: bash
+      run: git config --global core.autocrlf false
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -328,7 +333,12 @@ jobs:
             done
         )
 
-        ./configure CC=cl LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" \
+        # master uses the legacy root layout; develop keeps auxiliary scripts
+        # in build-aux. Resolve against the branch checked out by this job.
+        ar_lib=ar-lib
+        test ! -f build-aux/ar-lib || ar_lib=build-aux/ar-lib
+        test -f "$ar_lib"
+        ./configure CC=cl LD=link AR="${SHELL} $(pwd)/${ar_lib} lib" \
             ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
             --without-png \

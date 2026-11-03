@@ -169,7 +169,8 @@ allocation_runtime_log(allocation_runtime_expected_t const *expected,
             } else if (strstr(line, "\"event\":\"start\"") != NULL ||
                     strstr(line, "\"event\":\"finish\"") != NULL) {
                 field = strstr(line, "\"job\":");
-                if (field == NULL || sscanf(field, "\"job\":%d", &job)
+                if (field == NULL ||
+                        sixel_compat_sscanf(field, "\"job\":%d", &job)
                         != 1 || job < 0 || job >= current->band_jobs) {
                     ok = 0;
                     break;
@@ -203,7 +204,8 @@ allocation_runtime_log(allocation_runtime_expected_t const *expected,
                     "\"event\":\"worker_start\"") != NULL ||
                     strstr(line, "\"event\":\"worker_done\"") != NULL) {
                 field = strstr(line, "\"job\":");
-                if (field == NULL || sscanf(field, "\"job\":%d", &job)
+                if (field == NULL ||
+                        sixel_compat_sscanf(field, "\"job\":%d", &job)
                         != 1 || job < 0 || job >= ALLOCATION_HEIGHT / 6) {
                     ok = 0;
                     break;

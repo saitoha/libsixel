@@ -1,6 +1,7 @@
 #!/bin/sh
 # rgb888 plain auto t8 output equals serial extraction.
 # Policy: docs/encoder/palette-construction/pipeline/README.md
+# Policy: docs/threading/encoder.md
 set -eux
 
 echo "1..1"

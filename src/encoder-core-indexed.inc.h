@@ -306,7 +306,17 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
         }
         ++core->band;
     }
-    core->status = SIXEL_FAILED(status) ? status : core->body->body_status;
+    /* The parallel writer owns body_status until finish joins it. Submission
+     * observes its failure through the queue lock, never through the sink's
+     * unsynchronized status field. Serial emission owns that field here. */
+#if SIXEL_ENABLE_THREADS
+    if (core->parallel_active) {
+        core->status = status;
+    } else
+#endif
+    {
+        core->status = SIXEL_FAILED(status) ? status : core->body->body_status;
+    }
     return core->status;
 }
 

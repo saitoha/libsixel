@@ -135,7 +135,7 @@ timeline_0009_thread_of(char const *text, char const *position,
     }
     field = strstr(line, "\"thread\":");
     return field != NULL && field < strchr(position, '\n') &&
-        sscanf(field, "\"thread\":%llu", thread) == 1;
+        sixel_compat_sscanf(field, "\"thread\":%llu", thread) == 1;
 }
 
 /* Check one encode session that starts at or after cursor. */

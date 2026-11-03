@@ -71,7 +71,10 @@ fh_refine_reference(struct fh_refine_fixture *f,
 
     for (axis = 0; axis < 3; ++axis) {
         if (f->floating) {
-            scaled = ((double)floats[axis] + .25) * (1.0 / 1.5)
+            /* The grid stores a binary64 reciprocal and normalized value;
+             * excess x87 precision must not move a half-cell boundary. */
+            scaled = (double)(((double)floats[axis] + .25)
+                   * (double)(1.0 / 1.5))
                    * (f->resolution - 1);
             lower[axis] = (int)scaled;
             site[axis] = (int)(scaled + .5);
@@ -194,8 +197,8 @@ fh_refine_setup(struct fh_refine_fixture *f, int weighted)
                     f->floats[(index - 1) * 3 + axis];
             }
             f->seeds[index][axis] = f->floating ?
-                (int)(((double)f->floats[index * 3 + axis] + .25) *
-                      (1.0 / 1.5) * (f->resolution - 1) + .5) :
+                (int)((double)((f->floats[index * 3 + axis] + .25) *
+                      (double)(1.0 / 1.5)) * (f->resolution - 1) + .5) :
                 f->bytes[index * 3 + axis] / (256 / f->resolution);
         }
         f->next[index] = -1;

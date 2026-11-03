@@ -147,6 +147,8 @@ This experience is part of the project's reason for retaining Autotools + Libtoo
 
 The lesson includes both sides: the standard machinery did not automatically handle this scale, and its customization mechanisms made the repairs practical. Preserving small, independently reported tests remained possible while changing how the infrastructure carried their names between processes.
 
+The OpenVMS test-runner link passes Libtool `.lo` inputs through the native wrapper, which resolves metadata to actual objects before writing linker options. This preserves the file-based argument boundary without feeding text metadata to the native linker. The [OpenVMS link contract](../misc/platforms/openvms.md) owns path resolution and native validation limits.
+
 ## Command-length and record-length boundaries
 
 The inventory has grown to thousands of individually named tests, often with descriptive paths. Its flattened size can exceed a platform's command or argument limits before a launch, cleanup, distribution, or aggregation step can execute. There are several separate boundaries:
@@ -259,5 +261,6 @@ This is a declaration audit, not a complete shell interpreter or proof of option
 | TH-18 | Only Cosmopolitan Meson CI jobs select the response-file archive adapter. | [tests/_static/sh/staticcheck-cosmoar-selection.sh](../../tests/_static/sh/staticcheck-cosmoar-selection.sh) |
 | TH-19 | Large object inventories and quoted paths reach both CPU archivers through response files in order, with one bounded invocation per CPU. | [tests/_static/sh/staticcheck-cosmoar-response.sh](../../tests/_static/sh/staticcheck-cosmoar-response.sh) |
 | TH-20 | Response parsing and either CPU archiver failures propagate without publishing an incomplete output pair. | [tests/_static/sh/staticcheck-cosmoar-failure.sh](../../tests/_static/sh/staticcheck-cosmoar-failure.sh) |
+| TH-21 | The native link options contain real objects resolved from Libtool metadata, including relative PIC fallback paths. | [tests/_static/sh/staticcheck-openvms-libtool-object.sh](../../tests/_static/sh/staticcheck-openvms-libtool-object.sh) |
 
 The discovery checks execute production make assignments and the OpenVMS list recipe with tiny source trees in separate build directories. Each file owns one observation. They do not invoke configure, compile the C dispatcher, or reproduce GNV/RMS behavior; native OpenVMS execution remains a platform validation boundary.

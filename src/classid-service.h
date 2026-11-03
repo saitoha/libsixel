@@ -28,7 +28,6 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
-#line 6 "../../src/classid-service.gperf"
 
 #if defined(HAVE_STRING_H) && HAVE_STRING_H
 #include <string.h>
@@ -55,7 +54,6 @@ typedef SIXELSTATUS (*sixel_components_service_get_fn)(
 #else
 # define SIXEL_COMPONENTS_SERVICEID_GET_3 0
 #endif
-#line 33 "../../src/classid-service.gperf"
 struct sixel_components_serviceid_entry {
     char const *name;
     sixel_components_service_get_fn get_default;
@@ -114,13 +112,10 @@ static const struct sixel_components_serviceid_entry sixel_components_serviceid_
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 38 "../../src/classid-service.gperf"
     {"services/factory", SIXEL_COMPONENTS_SERVICEID_GET_1},
     {"", 0}, {"", 0},
-#line 40 "../../src/classid-service.gperf"
     {"services/threadpool", SIXEL_COMPONENTS_SERVICEID_GET_3},
     {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 39 "../../src/classid-service.gperf"
     {"services/timeline-writer", SIXEL_COMPONENTS_SERVICEID_GET_2}
   };
 
@@ -141,7 +136,6 @@ sixel_components_serviceid_lookup (register const char *str, register unsigned i
     }
   return 0;
 }
-#line 41 "../../src/classid-service.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

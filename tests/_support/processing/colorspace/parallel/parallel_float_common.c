@@ -169,11 +169,12 @@ parallel_trace(char const *path, int clustering)
     controller_session = 0;
     while (fgets(line, sizeof(line), file) != NULL) {
         field = strstr(line, "\"thread\":");
-        if (field == NULL || sscanf(field, "\"thread\":%llu", &thread) != 1) {
+        if (field == NULL ||
+                sixel_compat_sscanf(field, "\"thread\":%llu", &thread) != 1) {
             continue;
         }
         field = strstr(line, "\"session_id\":");
-        if (field == NULL || sscanf(field, "\"session_id\":%u",
+        if (field == NULL || sixel_compat_sscanf(field, "\"session_id\":%u",
                 &session) != 1) {
             continue;
         }

@@ -23,6 +23,10 @@
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
 # define _DARWIN_C_SOURCE 1
 #endif
+/* NetBSD exposes the kernel-maintained PENDIN state with this feature set. */
+#if defined(__NetBSD__) && !defined(_NETBSD_SOURCE)
+# define _NETBSD_SOURCE 1
+#endif
 #if defined(HAVE_CONFIG_H)
 # include "config.h"
 #endif
@@ -184,15 +188,15 @@ color_tty_mode_equal(struct termios const *a, struct termios const *b,
     tcflag_t expected_lflag;
 
     expected_lflag = a->c_lflag;
-#if defined(PENDIN) && (defined(__DragonFly__) || \
+#if defined(PENDIN) && (defined(__DragonFly__) || defined(__NetBSD__) || \
     (defined(__APPLE__) && defined(__MACH__)))
-    /* Darwin and DragonFly set kernel-maintained PENDIN when ICANON
+    /* Darwin, DragonFly and NetBSD set kernel-maintained PENDIN when ICANON
      * returns, even with an empty input queue. Their tty.c TIOCSETA paths
      * OR that state with the requested flags. Do not flush/read input just
      * to clear it: pending bytes belong to the caller. Only the canonical
      * transition changes this expectation; all other flags remain exact. */
     if (canonical_restored && (a->c_lflag & ICANON) != 0) {
-# if defined(__DragonFly__)
+# if defined(__DragonFly__) || defined(__NetBSD__)
         /* ttyinput() can reprocess pending input before tcgetattr(), even
          * without a user read. Accept either state of this kernel bit. */
         expected_lflag = (expected_lflag & ~(tcflag_t)PENDIN) |

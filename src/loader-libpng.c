@@ -843,6 +843,14 @@ png_expand_float_palette(unsigned char **result, unsigned char **rows,
     return SIXEL_OK;
 }
 
+/* Keep related source-color settings together. PCC's -g path retains a
+ * temporary argument table after a definition exceeds sixteen parameters;
+ * later definitions can then read overwritten symbols from that table. */
+typedef struct sixel_png_color_options {
+    int enable_cms;
+    int chrm_arithmetic;
+} sixel_png_color_options_t;
+
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
          unsigned char const /* in */ *buffer,
@@ -857,13 +865,14 @@ load_png(unsigned char      /* out */ **result,
          int                /* out */ *transparent,
          int                /* out */ *alpha_zero_is_transparent,
          int                /* out */ *cms_applied,
-         int                /* in */  enable_cms,
-         int                /* in */  chrm_arithmetic,
+         sixel_png_color_options_t const *color_options,
          sixel_png_alpha_t          *alpha_state,
          sixel_allocator_t  /* in */  *allocator)
 {
     /* Cleanup reads this result from both normal and longjmp paths. */
     SIXELSTATUS volatile status;
+    int enable_cms;
+    int chrm_arithmetic;
     sixel_png_read_chunk_t read_chunk;
     png_structp png_ptr;
     png_infop volatile info_ptr;
@@ -921,6 +930,8 @@ load_png(unsigned char      /* out */ **result,
     int channel;
     double value;
 
+    enable_cms = color_options->enable_cms;
+    chrm_arithmetic = color_options->chrm_arithmetic;
     status = SIXEL_FALSE;
     *result = NULL;
     *transparent = -1;
@@ -2094,7 +2105,8 @@ decode_png_rgba(unsigned char **result, int *width, int *height,
     alpha_state->defer_composition = 1;
     return load_png(result, buffer, size, width, height, NULL, &ncolors, 0,
                     &format, bgcolor, &transparent, &alpha_zero, cms_applied,
-                    enable_cms, chrm_arithmetic, alpha_state, allocator);
+                    &(sixel_png_color_options_t){enable_cms, chrm_arithmetic},
+                    alpha_state, allocator);
 }
 
 static void
@@ -2269,6 +2281,7 @@ apng_replay_cache_store_frame(sixel_apng_replay_cache_t *cache,
     return 1;
 }
 
+/* Palette hints belong to static indexed loading, not the float canvas. */
 static SIXELSTATUS
 emit_apng_frame(
     sixel_apng_state_t const      *state,
@@ -2281,8 +2294,6 @@ emit_apng_frame(
     int                            enable_cms,
     int                            chrm_arithmetic,
     int                            exif_orientation,
-    int                            reqcolors,
-    int                            fuse_palette,
     sixel_apng_canvas_t           *canvas,
     sixel_apng_replay_cache_t     *replay_cache,
     sixel_load_image_function      fn_load,
@@ -2330,8 +2341,6 @@ emit_apng_frame(
     cicp_name = NULL;
     canvas_bytes = 0u;
     cache_frame = 0;
-    (void)reqcolors;
-    (void)fuse_palette;
 
     if (replay_cache != NULL &&
         replay_cache->enabled != 0 &&
@@ -2574,8 +2583,6 @@ load_apng_frames(
     sixel_chunk_t const       *pchunk,
     sixel_allocator_t         *allocator,
     int                        fstatic,
-    int                        fuse_palette,
-    int                        reqcolors,
     unsigned char             *bgcolor,
     int                        exif_orientation,
     int                        enable_cms,
@@ -2906,8 +2913,6 @@ load_apng_frames(
                                          enable_cms,
                                          chrm_arithmetic,
                                          exif_orientation,
-                                         reqcolors,
-                                         fuse_palette,
                                          &canvas,
                                          &replay_cache,
                                          fn_load,
@@ -3047,8 +3052,6 @@ load_apng_frames(
                                   enable_cms,
                                   chrm_arithmetic,
                                   exif_orientation,
-                                  reqcolors,
-                                  fuse_palette,
                                   &canvas,
                                   &replay_cache,
                                  fn_load,
@@ -3361,8 +3364,6 @@ load_with_libpng(
         status = load_apng_frames(pchunk,
                                   allocator,
                                   fstatic,
-                                  fuse_palette,
-                                  reqcolors,
                                   bgcolor,
                                   exif_orientation,
                                   enable_cms,
@@ -3394,8 +3395,9 @@ load_with_libpng(
                       &frame->transparent,
                       &alpha_zero_is_transparent,
                       &cms_applied,
-                      enable_cms,
-                      chrm_arithmetic,
+                      &(sixel_png_color_options_t){
+                          enable_cms, chrm_arithmetic
+                      },
                       &alpha_state,
                       allocator);
     if (SIXEL_FAILED(status)) {

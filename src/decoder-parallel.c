@@ -2497,6 +2497,13 @@ cleanup:
 
     if (contexts != NULL) {
         for (i = 0; i < contexts_ready; ++i) {
+#if defined(_MSC_VER)
+            /* Each owner is initialized before contexts_ready advances;
+             * reserve_columns only replaces it after successful realloc,
+             * and all started workers have been joined. MSVC analysis loses
+             * this per-element state across the worker calls. */
+# pragma warning(suppress: 6001)
+#endif
             free(contexts[i].columns);
         }
     }

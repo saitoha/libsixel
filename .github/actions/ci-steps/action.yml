@@ -1109,6 +1109,7 @@ runs:
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -xv
+          export MAKE="${{ fromJSON(inputs.matrix_json).make || 'make' }}"
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
           ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
@@ -1475,7 +1476,13 @@ runs:
           fi
           # Coverage is part of this matrix contract, including actual
           # counters. Do not replace a failed read with an initial-only map.
-          gcovr -r . --lcov -o coverage.info \
+          # Distribution gcovr can predate LLVM's $$$$$ block-count records.
+          # Isolate the known-compatible reader from the runner's packages.
+          coverage_env="$RUNNER_TEMP/libsixel-gcovr"
+          python3 -m venv "$coverage_env"
+          "$coverage_env/bin/python" -m pip install \
+            --disable-pip-version-check 'gcovr==8.8'
+          "$coverage_env/bin/gcovr" -r . --lcov -o coverage.info \
             --exclude '.*\.gperf$' \
             --gcov-executable "$GCOV_TOOL" \
             --gcov-ignore-errors=no_working_dir_found

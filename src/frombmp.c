@@ -211,9 +211,10 @@ sixel_bmp_xyz_to_xy(double x,
 
     *x_out = x / sum;
     *y_out = y / sum;
+    /* Test the source Z sign, not a sum of separately rounded xy values.
+     * At Z=0 that sum can exceed one in x87's extended precision. */
     if (*x_out <= 0.0 || *x_out >= 1.0 ||
-        *y_out <= 0.0 || *y_out >= 1.0 ||
-        *x_out + *y_out > 1.0) {
+        *y_out <= 0.0 || *y_out >= 1.0 || z < 0.0) {
         return 0;
     }
     return 1;

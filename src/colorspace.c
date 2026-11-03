@@ -801,7 +801,8 @@ sixel_cielab_f_inv(double t)
         return t * t * t;
     }
 
-    return 3.0 * delta * delta * (t - (4.0 / 29.0));
+    /* Match the stored double coordinate at the exact black origin. */
+    return 3.0 * delta * delta * (t - (double)(4.0 / 29.0));
 }
 
 static inline unsigned char

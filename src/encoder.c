@@ -12219,6 +12219,9 @@ sixel_encoder_new(
     (*ppencoder)->option_invalidate_history = 0;
     (*ppencoder)->operation_playback = 0;
     (*ppencoder)->playback_attached = 0;
+    /* Ordinary encodes use the local clock until playback supplies a time. */
+    (*ppencoder)->refresh_time_override = 0;
+    (*ppencoder)->refresh_time_us = 0U;
     (*ppencoder)->palette_test_hooks = NULL;
     (*ppencoder)->playback_test_hooks = NULL;
     (*ppencoder)->active_callbacks = NULL;

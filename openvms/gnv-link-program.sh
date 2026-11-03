@@ -309,6 +309,47 @@ read_la_value()
     sed -n "s/^$key='\\(.*\\)'/\\1/p" "$la_file" | sed 1q
 }
 
+add_libtool_object()
+{
+    lo_file=$1
+    realpath_cmd=$2
+    pic_object=
+    non_pic_object=
+
+    # A .lo is metadata, not an ELF object. Read the two quoted filenames
+    # without sourcing shell code or forking for each member of a large
+    # object list. Libtool records paths relative to the .lo directory.
+    test -f "$lo_file" || die "link input does not exist: $lo_file"
+    while IFS= read -r lo_line || test -n "$lo_line"; do
+        case "$lo_line" in
+          pic_object=\'*\')
+            pic_object=${lo_line#pic_object=\'}
+            pic_object=${pic_object%\'}
+            ;;
+          non_pic_object=\'*\')
+            non_pic_object=${lo_line#non_pic_object=\'}
+            non_pic_object=${non_pic_object%\'}
+            ;;
+        esac
+    done < "$lo_file"
+    case "$non_pic_object" in
+      ''|none) object=$pic_object ;;
+      *) object=$non_pic_object ;;
+    esac
+    case "$object" in
+      ''|none) die "libtool object has no real object: $lo_file" ;;
+    esac
+    case "$lo_file" in
+      */*) lo_dir=${lo_file%/*} ;;
+      *) lo_dir=. ;;
+    esac
+    case "$object" in
+      /*) ;;
+      *) object=$lo_dir/$object ;;
+    esac
+    add_link_input "$object" "" "$realpath_cmd"
+}
+
 add_libtool_archive()
 {
     la_file=$1
@@ -361,6 +402,9 @@ while test "$#" -gt 0; do
         ;;
       *.la)
         add_libtool_archive "$arg" "$realpath_cmd"
+        ;;
+      *.lo)
+        add_libtool_object "$arg" "$realpath_cmd"
         ;;
       *.a|*.olb)
         add_link_input "$arg" "/LIBRARY" "$realpath_cmd"
@@ -422,7 +466,7 @@ printf '%s\n' \
     '$ EXIT $STATUS' > "$link_command_file"
 
 set +e
-/bin/dcl.exe "@$vms_command"
+"${GNV_DCL:-/bin/dcl.exe}" "@$vms_command"
 link_status=$?
 set -e
 

@@ -556,7 +556,9 @@ sixel_icc_lab_inverse_f(double t)
     if (t > delta) {
         return t * t * t;
     }
-    return 3.0 * delta * delta * (t - 4.0 / 29.0);
+    /* t is stored as double. Match that precision for the origin so x87
+     * does not turn exact Lab black into a small negative XYZ value. */
+    return 3.0 * delta * delta * (t - (double)(4.0 / 29.0));
 }
 
 static void

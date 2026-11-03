@@ -1,10 +1,14 @@
 /* SPDX-License-Identifier: MIT */
 /* Independent byte-coordinate and wire contracts for packed alpha. */
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/compat_stub.h"
 #include "src/frame-normalize.h"
 #include "src/encoder.h"
 #include "src/dither.h"
@@ -265,7 +269,7 @@ pa_decode(char const *stream, int width, int result[8], int rgb[256][3])
             }
             if (*p == ';') {
                 count = 0;
-                if (sscanf(p, ";2;%d;%d;%d%n", &rgb[color][0],
+                if (sixel_compat_sscanf(p, ";2;%d;%d;%d%n", &rgb[color][0],
                         &rgb[color][1], &rgb[color][2], &count) != 3 ||
                         count <= 0) {
                     return 0;

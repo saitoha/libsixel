@@ -1,9 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /* Compare emitted RGB register definitions, not thread-dependent dither. */
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sixel.h>
+#include "src/compat_stub.h"
 
 #include "src/frame.h"
 
@@ -117,7 +121,8 @@ sampling_threads_encode(char const *policy, int quality, int geometry,
     cursor = capture.bytes;
     while ((cursor = strchr(cursor, '#')) != NULL) {
         consumed = 0;
-        if (sscanf(cursor, "#%d;2;%d;%d;%d%n", &index, &red, &green,
+        if (sixel_compat_sscanf(cursor, "#%d;2;%d;%d;%d%n", &index,
+            &red, &green,
                 &blue, &consumed) == 4 && consumed > 0) {
             if (index < 0 || index >= 256 || red < 0 || red > 100 ||
                     green < 0 || green > 100 || blue < 0 || blue > 100) {

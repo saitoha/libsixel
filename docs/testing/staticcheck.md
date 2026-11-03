@@ -140,6 +140,8 @@ The converter-discard check scans shell TAP sources for an `IMG2SIXEL_PATH` comm
 
 The Emscripten coverage check requires every coverage matrix entry to enable gcov instrumentation and install its report reader without also enabling LLVM source-profile instrumentation. In-memory controls exercise both accepted build-system spellings and rejected missing/mixed instrumentation. Runtime counter generation and SDK-reader compatibility remain CI observations, described in the [Emscripten reference](../misc/platforms/emscripten.md).
 
+Independent checks protect separate portability boundaries: Libtool object resolution exercises the native-link wrapper with a substituted DCL command; C test scanning rejects raw `sscanf`/`vsscanf` calls in shared test C sources and headers; VM configure inspection verifies early selection of the build make; generated-header inspection rejects gperf source directives and missing recipe filters. The C scanner ignores comments and literals and excludes standalone extension probes, which do not link the shared CRT compatibility layer. Each check has positive and negative controls and uses shell/awk, without requiring Python or a target compiler. These checks protect source contracts, not native compiler or OS execution.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -187,6 +189,12 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-29 | Generated test-runner inputs cannot alter a subsequent common amalgamation. | [tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh](../../tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh) |
 | SC-30 | A named converter stdout capture has another source-visible consumer; unobserved output uses the converter discard destination. | [tests/_static/sh/staticcheck-cli-discard-output.sh](../../tests/_static/sh/staticcheck-cli-discard-output.sh) |
 | SC-31 | Emscripten coverage entries use gcov instrumentation without mixing source-profile instrumentation. | [tests/_static/sh/staticcheck-emscripten-coverage.sh](../../tests/_static/sh/staticcheck-emscripten-coverage.sh) |
+| SC-32 | Libtool metadata is resolved before native linking without executing it. | [tests/_static/sh/staticcheck-openvms-libtool-object.sh](../../tests/_static/sh/staticcheck-openvms-libtool-object.sh) |
+| SC-33 | Shared C test sources and headers use the CRT compatibility scanning functions. | [tests/_static/sh/staticcheck-c-test-scanf.sh](../../tests/_static/sh/staticcheck-c-test-scanf.sh) |
+| SC-34 | VM configure uses the matrix-selected make before dependency bootstrap. | [tests/_static/sh/staticcheck-ci-configure-make.sh](../../tests/_static/sh/staticcheck-ci-configure-make.sh) |
+| SC-35 | gperf recipes and generated headers retain valid coverage source locations. | [tests/_static/sh/staticcheck-gperf-source-location.sh](../../tests/_static/sh/staticcheck-gperf-source-location.sh) |
+
+| SC-36 | Nightly configures LF-preserving checkout before the first checkout step; missing, inverted and late settings fail. | [tests/_static/sh/staticcheck-ci-checkout-eol.sh](../../tests/_static/sh/staticcheck-ci-checkout-eol.sh) |
 
 ### Coverage boundary
 

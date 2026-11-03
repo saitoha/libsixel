@@ -137,6 +137,8 @@ The tools-only amalgamation mode prepares shared generated inputs before paralle
 
 Before changing this layer, inspect the root orchestration and the owning subdirectory together. Keep normal sources, distributed sources, optional feature branches, and amalgamated defines synchronized. Existing static checks cover selected invariants, including generated Makefile pairs, library source distribution, Meson palette source lists, and test-runner amalgamation defines. They do not prove complete semantic equivalence of the two build systems.
 
+The three gperf recipes remove generated `#line` directives before publishing their headers. Generator-relative `.gperf` names do not identify source files from an out-of-tree coverage directory. Coverage therefore attributes these functions to the maintained generated headers. The source-location check verifies both the recipes and their checked-in outputs; actual coverage extraction still requires an instrumented build.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -146,5 +148,6 @@ Before changing this layer, inspect the root orchestration and the owning subdir
 | AT-01 | Private lifecycle injection bodies retain fragment names and remain absent from the generated common preamble, while ordinary public headers are still emitted. | [tests/_static/sh/staticcheck-amalgamation-test-fragments.sh](../../tests/_static/sh/staticcheck-amalgamation-test-fragments.sh) |
 | AT-02 | The amalgamated runner consumes the complete macro inventory through a generated header, with explicit object dependencies and no full-list command expansion. | [tests/_static/sh/staticcheck-amalgamation-define-header.sh](../../tests/_static/sh/staticcheck-amalgamation-define-header.sh) |
 | AT-03 | Initial and incremental amalgamation output is identical when generated runner inputs appear in the source tree. | [tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh](../../tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh) |
+| AT-04 | Generated gperf headers and all three regeneration recipes exclude generator-relative source directives. | [tests/_static/sh/staticcheck-gperf-source-location.sh](../../tests/_static/sh/staticcheck-gperf-source-location.sh) |
 
 These checks verify the generator boundary without compiling the generated C or the native Objective-C driver. Platform compilation and lifecycle behavior require their respective build and test jobs.

@@ -645,10 +645,12 @@ SERVICEID_CLASSID_INPUTS = \
     $(srcdir)/timeline-writer.h \
     $(srcdir)/threadpool.h
 
+# Attribute diagnostics and coverage to the distributed C headers. gperf's
+# input #line paths depend on the generator's working directory.
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
-	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
+	sed -e '/^#line /d' -e 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
 	printf '%s\n' '#undef TOTAL_KEYWORDS'    \
 	              '#undef MIN_WORD_LENGTH'   \
@@ -663,7 +665,7 @@ gen-classid: $(FACTORY_CLASSID_INPUTS) $(SERVICEID_CLASSID_INPUTS)
 	        $(FACTORY_CLASSID_INPUTS) > $(srcdir)/classid-factory.gperf
 	gperf -C -N sixel_factory_classid_lookup $(GPERF_FACTORY_CLASSID_OPT) \
 	        $(srcdir)/classid-factory.gperf                              |\
-	sed 's/{""}/\{"", 0\}/g'                                             \
+	sed -e '/^#line /d' -e 's/{""}/\{"", 0\}/g'                   \
 	        > $(srcdir)/classid-factory.h
 	printf '%s\n' '#undef TOTAL_KEYWORDS'                                \
 	              '#undef MIN_WORD_LENGTH'                               \
@@ -675,7 +677,7 @@ gen-classid: $(FACTORY_CLASSID_INPUTS) $(SERVICEID_CLASSID_INPUTS)
 	        $(SERVICEID_CLASSID_INPUTS) > $(srcdir)/classid-service.gperf
 	gperf -C -N sixel_components_serviceid_lookup $(GPERF_SERVICEID_OPT) \
 	        $(srcdir)/classid-service.gperf                              |\
-	sed 's/{""}/\{"", 0\}/g'                                             \
+	sed -e '/^#line /d' -e 's/{""}/\{"", 0\}/g'                   \
 	        > $(srcdir)/classid-service.h
 	printf '%s\n' '#undef TOTAL_KEYWORDS'                                \
 	              '#undef MIN_WORD_LENGTH'                               \

@@ -19,6 +19,7 @@
     } \
 } while (0)
 
+/* Exact comparisons use binary64 constants, not excess x87 precision. */
 int
 test_progressive_limits_options(int mode)
 {
@@ -40,7 +41,7 @@ test_progressive_limits_options(int mode)
     LIMIT_REQUIRE(sixel_encoder_setopt(encoder, 'Z',
         "progressive:stop_threshold=0.01:max_passes=3:max_seconds=0.25")
         == SIXEL_OK);
-    LIMIT_REQUIRE(encoder->progressive_stop_threshold == 0.01 &&
+    LIMIT_REQUIRE(encoder->progressive_stop_threshold == (double)0.01 &&
         encoder->progressive_max_passes == 3 &&
         encoder->progressive_max_seconds == 0.25);
     if (mode == 141) {
@@ -48,7 +49,7 @@ test_progressive_limits_options(int mode)
         for (i = 0; i < sizeof(invalid) / sizeof(invalid[0]); ++i) {
             LIMIT_REQUIRE(sixel_encoder_setopt(encoder, 'Z', invalid[i])
                 == SIXEL_BAD_ARGUMENT);
-            LIMIT_REQUIRE(encoder->progressive_stop_threshold == .01 &&
+            LIMIT_REQUIRE(encoder->progressive_stop_threshold == (double).01 &&
                 encoder->progressive_max_passes == 3 &&
                 encoder->progressive_max_seconds == .25 &&
                 encoder->configuration_revision == revision &&

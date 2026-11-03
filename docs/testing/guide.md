@@ -20,6 +20,8 @@ When implementation selection is part of the observation, verify the path that a
 
 Fixture size and execution cost follow [organization and naming](#organization-and-naming) and [process and file cost](#process-and-file-cost). Subject documents supply their own numeric contracts, reference values, tolerances and supported execution paths, and link here for these general assertion rules.
 
+For exact storage contracts, compare at the documented storage precision. For example, a stored double containing `1.01` must be compared with `(double)1.01` when excess evaluation precision is possible; an unrounded x87 literal can differ from the stored value. Likewise, an independent integer-quantization oracle must retain the specified float32 noise and strength boundaries before truncation. These explicit boundaries preserve the contract rather than relaxing its tolerance.
+
 ### Intermediate floating-point error
 
 An independent reference establishes what is being computed; it does not require bit-identical floating-point results. Unless the contract explicitly requires exact arithmetic or representation preservation, allow justified differences caused by intermediate rounding, excess evaluation precision, fused multiply-add, and math-library approximations across supported builds. Float32 storage does not imply float32 intermediate arithmetic, nor does a double intermediate make the whole calculation exact. Do not disable otherwise supported arithmetic merely to reproduce one host's output bits.

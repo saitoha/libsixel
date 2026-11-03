@@ -11191,6 +11191,13 @@ EXTRA_DIST += _static/sh/staticcheck-amalgamation-generated-inputs.sh
 EXTRA_DIST += _static/sh/staticcheck-cosmoar-selection.sh \
     _static/sh/staticcheck-cosmoar-response.sh \
     _static/sh/staticcheck-cosmoar-failure.sh
+
+EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
+    _static/sh/staticcheck-c-test-scanf.sh \
+    _static/awk/c-test-scanf.awk \
+    _static/sh/staticcheck-ci-configure-make.sh \
+    _static/sh/staticcheck-ci-checkout-eol.sh \
+    _static/sh/staticcheck-gperf-source-location.sh
 EXTRA_DIST += _static/sh/staticcheck-cli-discard-output.sh \
     _static/awk/cli-discard-output.awk \
     _static/sh/staticcheck-emscripten-coverage.sh

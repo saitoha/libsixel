@@ -81,8 +81,10 @@ positional_observe(sixel_lookup_policy_interface_t const *base,
         }
         if ((observer->mode == 2 || observer->mode == 7 ||
                 observer->mode == 9)) {
+            /* The byte kernel truncates a binary32 noise amplitude. Round
+             * the independent oracle before integer conversion on x87. */
             byte_value = observer->bytes[pos + d] +
-                (int)(noise * observer->strength * 32.0);
+                (int)(float)(noise * (float)observer->strength * 32.0);
             expected = byte_value < 0 ? 0
                 : byte_value > 255 ? 255 : byte_value;
             actual = pixel[d];

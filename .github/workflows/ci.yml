@@ -4374,6 +4374,7 @@ jobs:
               nodejs
               lcov
               gcovr
+              python3-venv
               llvm
             exec_type: bash
 
@@ -4392,6 +4393,7 @@ jobs:
               nodejs
               lcov
               gcovr
+              python3-venv
               llvm
             exec_type: bash
 
@@ -4412,6 +4414,7 @@ jobs:
               nodejs
               lcov
               gcovr
+              python3-venv
               llvm
             exec_type: bash
 
@@ -4432,6 +4435,7 @@ jobs:
               nodejs
               lcov
               gcovr
+              python3-venv
               llvm
             exec_type: bash
 
@@ -4451,6 +4455,7 @@ jobs:
               nodejs
               lcov
               gcovr
+              python3-venv
               llvm
             exec_type: bash
 
@@ -4470,6 +4475,7 @@ jobs:
               nodejs
               lcov
               gcovr
+              python3-venv
               llvm
             exec_type: bash
 
