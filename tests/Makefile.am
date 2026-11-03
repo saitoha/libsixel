@@ -236,6 +236,53 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_CERTLUT_COMMON \
+    -DBUILD_TEST_0038_GPU_PALETTE_SNAPSHOT \
+    -DBUILD_TEST_0039_GPU_CACHE_REUSE \
+    -DBUILD_TEST_0040_GPU_DEVICE_IDENTITY \
+    -DBUILD_TEST_0041_GPU_LIVE_PLAN_ISOLATION \
+    -DBUILD_TEST_0042_GPU_BUSY_LEASE \
+    -DBUILD_TEST_0043_GPU_COMPLETED_REUSE \
+    -DBUILD_TEST_0044_GPU_ABORTED_REBUILD \
+    -DBUILD_TEST_0045_GPU_DOUBLE_FINISH \
+    -DBUILD_TEST_0046_GPU_FINISHED_VIEW \
+    -DBUILD_TEST_0047_GPU_PROVIDER_LIFETIME \
+    -DBUILD_TEST_0048_GPU_BINDING_LIFETIME \
+    -DBUILD_TEST_0049_GPU_FLOAT_DECLINE \
+    -DBUILD_TEST_0050_GPU_EXACT_0_0_1 \
+    -DBUILD_TEST_0051_GPU_EXACT_0_0_2 \
+    -DBUILD_TEST_0052_GPU_EXACT_0_0_7 \
+    -DBUILD_TEST_0053_GPU_EXACT_0_0_16 \
+    -DBUILD_TEST_0054_GPU_EXACT_0_0_17 \
+    -DBUILD_TEST_0055_GPU_EXACT_0_0_33 \
+    -DBUILD_TEST_0056_GPU_EXACT_0_0_64 \
+    -DBUILD_TEST_0057_GPU_EXACT_0_0_129 \
+    -DBUILD_TEST_0058_GPU_EXACT_0_0_256 \
+    -DBUILD_TEST_0059_GPU_EXACT_1_0_64 \
+    -DBUILD_TEST_0060_GPU_EXACT_2_0_33 \
+    -DBUILD_TEST_0061_GPU_EXACT_4_0_33 \
+    -DBUILD_TEST_0062_GPU_FORCE_NO_CPU \
+    -DBUILD_TEST_0063_GPU_AUTO_NO_CPU \
+    -DBUILD_TEST_0064_GPU_RECTANGLE_INDICES \
+    -DBUILD_TEST_0065_GPU_RECTANGLE_MASK \
+    -DBUILD_TEST_0066_GPU_BLUE_RECTANGLE_INDICES \
+    -DBUILD_TEST_0067_GPU_BLUE_RECTANGLE_MASK \
+    -DBUILD_TEST_0068_GPU_TABLE_REUSE \
+    -DBUILD_TEST_0069_GPU_PALETTE_REBUILD \
+    -DBUILD_TEST_0070_GPU_COUNT_REBUILD \
+    -DBUILD_TEST_0071_GPU_FAILED_BUILD_RECOVERY \
+    -DBUILD_TEST_0072_GPU_INDEX255 \
+    -DBUILD_TEST_0073_GPU_FIRST_INDEX_TIE \
+    -DBUILD_TEST_0074_GPU_CELL_BOUNDARIES \
+    -DBUILD_TEST_0075_GPU_COUNTEREXAMPLE \
+    -DBUILD_TEST_0076_GPU_CANDIDATE_OVERFLOW \
+    -DBUILD_TEST_0077_GPU_BOUNDARY_LOWER_TIE \
+    -DBUILD_TEST_0078_GPU_CORNER_LOWER_TIE \
+    -DBUILD_TEST_0079_GPU_ALLOCATION_RECOVERY \
+    -DBUILD_TEST_0080_GPU_ENCODER_RECOVERY \
+    -DBUILD_TEST_0081_GPU_AUTO_FAILURE_CPU_LOOKUP \
+    -DBUILD_TEST_0082_GPU_OFF_CPU_LOOKUP \
+    -DBUILD_TEST_0083_GPU_DIFFUSION_CPU_LOOKUP \
     -DBUILD_BYTE_STATE_COMMON \
     -DBUILD_TEST_0045_GPU_PALETTE_SNAPSHOT \
     -DBUILD_TEST_0046_GPU_CACHE_REUSE \
@@ -4651,6 +4698,53 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    lookup/certlut/0038_gpu_palette_snapshot.c \
+    lookup/certlut/0039_gpu_cache_reuse.c \
+    lookup/certlut/0040_gpu_device_identity.c \
+    lookup/certlut/0041_gpu_live_plan_isolation.c \
+    lookup/certlut/0042_gpu_busy_lease.c \
+    lookup/certlut/0043_gpu_completed_reuse.c \
+    lookup/certlut/0044_gpu_aborted_rebuild.c \
+    lookup/certlut/0045_gpu_double_finish.c \
+    lookup/certlut/0046_gpu_finished_view.c \
+    lookup/certlut/0047_gpu_provider_lifetime.c \
+    lookup/certlut/0048_gpu_binding_lifetime.c \
+    lookup/certlut/0049_gpu_float_decline.c \
+    lookup/certlut/0050_gpu_exact_0_0_1.c \
+    lookup/certlut/0051_gpu_exact_0_0_2.c \
+    lookup/certlut/0052_gpu_exact_0_0_7.c \
+    lookup/certlut/0053_gpu_exact_0_0_16.c \
+    lookup/certlut/0054_gpu_exact_0_0_17.c \
+    lookup/certlut/0055_gpu_exact_0_0_33.c \
+    lookup/certlut/0056_gpu_exact_0_0_64.c \
+    lookup/certlut/0057_gpu_exact_0_0_129.c \
+    lookup/certlut/0058_gpu_exact_0_0_256.c \
+    lookup/certlut/0059_gpu_exact_1_0_64.c \
+    lookup/certlut/0060_gpu_exact_2_0_33.c \
+    lookup/certlut/0061_gpu_exact_4_0_33.c \
+    lookup/certlut/0062_gpu_force_no_cpu.c \
+    lookup/certlut/0063_gpu_auto_no_cpu.c \
+    lookup/certlut/0064_gpu_rectangle_indices.c \
+    lookup/certlut/0065_gpu_rectangle_mask.c \
+    lookup/certlut/0066_gpu_blue_rectangle_indices.c \
+    lookup/certlut/0067_gpu_blue_rectangle_mask.c \
+    lookup/certlut/0068_gpu_table_reuse.c \
+    lookup/certlut/0069_gpu_palette_rebuild.c \
+    lookup/certlut/0070_gpu_count_rebuild.c \
+    lookup/certlut/0071_gpu_failed_build_recovery.c \
+    lookup/certlut/0072_gpu_index255.c \
+    lookup/certlut/0073_gpu_first_index_tie.c \
+    lookup/certlut/0074_gpu_cell_boundaries.c \
+    lookup/certlut/0075_gpu_counterexample.c \
+    lookup/certlut/0076_gpu_candidate_overflow.c \
+    lookup/certlut/0077_gpu_boundary_lower_tie.c \
+    lookup/certlut/0078_gpu_corner_lower_tie.c \
+    lookup/certlut/0079_gpu_allocation_recovery.c \
+    lookup/certlut/0080_gpu_encoder_recovery.c \
+    lookup/certlut/0081_gpu_auto_failure_cpu_lookup.c \
+    lookup/certlut/0082_gpu_off_cpu_lookup.c \
+    lookup/certlut/0083_gpu_diffusion_cpu_lookup.c \
+    _support/processing/gpu-palette/certlut_common.c \
     lookup/mahalanobis/0081_gpu_cell_boundaries.c \
     lookup/mahalanobis/0080_gpu_first_index_tie.c \
     lookup/mahalanobis/0079_gpu_index255.c \
@@ -11157,6 +11251,8 @@ EXTRA_DIST = writer/png/uniform.six writer/png/colors.six writer/png/redefine.si
 # EXTRA_DIST.
 include $(top_srcdir)/build-aux/test-dist.am
 
+# Automake may already copy a script listed in EXTRA_DIST. During distcheck
+# that copy is read-only; replace it while retaining the source file mode.
 dist-hook:
 	@set -eu; \
 	$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
@@ -11165,7 +11261,7 @@ dist-hook:
 	    test -n "$$test_path" || continue; \
 	    dst="$(distdir)/$$test_path"; \
 	    $(MKDIR_P) "`dirname "$$dst"`"; \
-	    cp -p "$(srcdir)/$$test_path" "$$dst"; \
+	    cp -pf "$(srcdir)/$$test_path" "$$dst"; \
 	done
 
 # Avoid deleting the in-tree timeout wrapper when building in the source

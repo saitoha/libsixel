@@ -56,7 +56,8 @@ The labels apply to one already-adjusted color candidate. They do not imply that
 | `5bit` / `6bit`, CPU 8-bit | Approximate after a bucket is cached | The first completed query is exact; shared parallel writers can choose different valid representatives, so repeated runs need not be byte-reproducible |
 | `5bit` / `6bit`, Metal RGB888 | Approximate cell-center lookup | Eager shared table, independent of query traversal; differs from CPU memoization |
 | `5bit` / `6bit`, float32 | Scan-index exact | Exhaustive scan in the normalized policy metric |
-| `certlut`, 8-bit | Approximate | The current cube test checks only the center's second-nearest competitor, not every possible boundary competitor |
+| `certlut`, CPU 8-bit | Approximate | The current cube test checks only the center's second-nearest competitor, not every possible boundary competitor |
+| `certlut`, Metal RGB888 | Scan-index exact | Full-competitor affine cell certificates; differs from CPU heuristic |
 | `certlut`, float32 | Nearest-distance exact | kd-tree pruning preserves the normalized policy minimum |
 | `eytzinger`, 8-bit | Approximate | A fixed projected-neighbor window can omit the true nearest entry |
 | `eytzinger`, float32 | Nearest-distance exact | Dual-metric projection bound with conservative rounding allowance |
@@ -176,7 +177,7 @@ Each policy has its own page because the algorithms, correctness arguments, and 
 | [`none`](none.md) | Exhaustive palette scan |
 | [`5bit`](5bit.md) | CPU lazy RGB555 memoization; Metal prebuilt shared cell-center table |
 | [`6bit`](6bit.md) | CPU lazy RGB666 memoization; Metal prebuilt shared cell-center table |
-| [`certlut`](certlut.md) | Intended cube certification and the float32 kd-tree |
+| [`certlut`](certlut.md) | CPU pair-only cells, exact Metal affine certificates and the float32 kd-tree |
 | [`eytzinger`](eytzinger.md) | One-dimensional projection in an Eytzinger array layout |
 | [`fhedt`](fhedt.md) | Separable EDT grids, byte/float CPU and uniform RGB8 Metal construction |
 | [`delaunay`](delaunay.md) | Exact closed Voronoi graph walks; CPU scalar/SIMD and Metal byte construction |
@@ -197,7 +198,7 @@ The policy chapters use these variables:
 - `G = R^3`: grid cells;
 - `U`: distinct lazy buckets or cells first encountered;
 - `J = min(K, 16)`: the current RBC pivot count;
-- `C = 4096`: fixed byte RGB cells used by gridlut;
+- `C = 4096`: fixed byte RGB cells used by gridlut and Metal certlut;
 - `V`: candidates that survive a query's bounds.
 
 The fixed three color dimensions are omitted. Preparation cost, one-query cost, and whole-image cost must be kept separate.
@@ -207,7 +208,8 @@ The fixed three color dimensions are omitted. Preparation cost, one-query cost, 
 | `none` | `O(1)` | `Theta(K)` | `O(1)` |
 | `5bit` / `6bit`, CPU 8-bit | `Theta(G)` initialization | hit `Theta(1)`; first-bucket miss `Theta(K)` | `Theta(G)` |
 | `5bit` / `6bit`, Metal RGB888 | cold `Theta(G K)`; reuse `Theta(K)` identity check | `Theta(1)` | `G` bytes |
-| `certlut`, 8-bit | `O(64^3 + K^2)` in the current builder | warm fixed-depth lookup `Theta(1)`; cold refinement worst `O(K)` | initial `Theta(64^3 + K)`; fully refined worst `O(256^3 + K)` |
+| `certlut`, CPU 8-bit | `O(64^3 + K^2)` in the current builder | warm fixed-depth lookup `Theta(1)`; cold refinement worst `O(K)` | initial `Theta(64^3 + K)`; fully refined worst `O(256^3 + K)` |
+| `certlut`, Metal RGB888 | `Theta(C K)`; unchanged palette `Theta(K)` | `Theta(V)`; overflow `Theta(K)` | 1,065,984 bytes |
 | `certlut`, float32 | current kd-tree build conservatively `O(K^2)` | typical `O(log K)`; worst `Theta(K)` | `Theta(K)` |
 | `eytzinger` | `Theta(K log K)` | 8-bit `Theta(log K)`; float32 `O(log K + V)`, worst `Theta(K)` | `Theta(K)` |
 | `fhedt` | `Theta(R^3 + K)` | `Theta(1)` | `Theta(R^3 + K)` |

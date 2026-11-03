@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sixel.h>
 #include "src/dither.h"
+#include "src/gpu-palette.h"
 
 enum {
     GPUPAL_LOOKUP_WIDTH = 19,
@@ -139,12 +140,14 @@ gpupal_lookup_apply(sixel_allocator_t *allocator,
                   unsigned char *mask_copy)
 {
     sixel_dither_t *dither;
+    sixel_gpu_palette_test_hooks_t hooks;
     sixel_index_t *indexes;
     unsigned char const *mask;
     size_t mask_size;
     SIXELSTATUS status;
 
     dither = NULL;
+    memset(&hooks, 0, sizeof(hooks));
     indexes = NULL;
     mask = NULL;
     mask_size = 0U;
@@ -161,6 +164,7 @@ gpupal_lookup_apply(sixel_allocator_t *allocator,
         lookup != SIXEL_LUT_POLICY_FHEDT ? SIXEL_LUT_POLICY_NONE : lookup);
     sixel_dither_set_optimize_palette(dither, 0);
     dither->gpu_policy = gpu_policy;
+    if (lookup == SIXEL_LUT_POLICY_CERTLUT) dither->gpu_test_hooks = &hooks;
     if (keep) {
         sixel_dither_set_transparent(dither, ncolors);
         dither->keycolor_reserved = 1;
@@ -175,6 +179,14 @@ gpupal_lookup_apply(sixel_allocator_t *allocator,
     indexes = sixel_dither_apply_palette(dither, pixels,
                                          GPUPAL_LOOKUP_WIDTH,
                                          GPUPAL_LOOKUP_HEIGHT);
+    /* Exact output must come from the injected certlut program, rather
+     * than an unintended legacy GPU full scan with the same answers. */
+    if (indexes != NULL && lookup == SIXEL_LUT_POLICY_CERTLUT &&
+            gpu_policy == SIXEL_GPU_POLICY_FORCE &&
+            (hooks.kernel != 9 || !hooks.published)) {
+        sixel_allocator_free(allocator, indexes);
+        indexes = NULL;
+    }
     if (indexes != NULL && keep) {
         mask = sixel_dither_get_pipeline_accumulation_result_mask(
             dither, &mask_size);

@@ -1522,6 +1522,52 @@ int test_rbc_gpu_failed_build_recovery(int, char **);
 int test_rbc_gpu_count_rebuild(int, char **);
 int test_rbc_gpu_palette_rebuild(int, char **);
 int test_rbc_gpu_table_reuse(int, char **);
+int test_component_certlut_palette_snapshot(int, char **);
+int test_component_certlut_cache_reuse(int, char **);
+int test_component_certlut_device_identity(int, char **);
+int test_component_certlut_live_plan_isolation(int, char **);
+int test_component_certlut_busy_lease(int, char **);
+int test_component_certlut_completed_reuse(int, char **);
+int test_component_certlut_aborted_rebuild(int, char **);
+int test_component_certlut_double_finish(int, char **);
+int test_component_certlut_finished_view(int, char **);
+int test_component_certlut_provider_lifetime(int, char **);
+int test_component_certlut_binding_lifetime(int, char **);
+int test_component_certlut_float_decline(int, char **);
+int test_certlut_gpu_exact_0_0_1(int, char **);
+int test_certlut_gpu_exact_0_0_2(int, char **);
+int test_certlut_gpu_exact_0_0_7(int, char **);
+int test_certlut_gpu_exact_0_0_16(int, char **);
+int test_certlut_gpu_exact_0_0_17(int, char **);
+int test_certlut_gpu_exact_0_0_33(int, char **);
+int test_certlut_gpu_exact_0_0_64(int, char **);
+int test_certlut_gpu_exact_0_0_129(int, char **);
+int test_certlut_gpu_exact_0_0_256(int, char **);
+int test_certlut_gpu_exact_1_0_64(int, char **);
+int test_certlut_gpu_exact_2_0_33(int, char **);
+int test_certlut_gpu_exact_4_0_33(int, char **);
+int test_certlut_gpu_force_no_cpu(int, char **);
+int test_certlut_gpu_auto_no_cpu(int, char **);
+int test_certlut_gpu_rectangle_indices(int, char **);
+int test_certlut_gpu_rectangle_mask(int, char **);
+int test_certlut_gpu_blue_rectangle_indices(int, char **);
+int test_certlut_gpu_blue_rectangle_mask(int, char **);
+int test_certlut_gpu_table_reuse(int, char **);
+int test_certlut_gpu_palette_rebuild(int, char **);
+int test_certlut_gpu_count_rebuild(int, char **);
+int test_certlut_gpu_failed_build_recovery(int, char **);
+int test_certlut_gpu_index255(int, char **);
+int test_certlut_gpu_first_index_tie(int, char **);
+int test_certlut_gpu_cell_boundaries(int, char **);
+int test_certlut_gpu_counterexample(int, char **);
+int test_certlut_gpu_candidate_overflow(int, char **);
+int test_certlut_gpu_boundary_lower_tie(int, char **);
+int test_certlut_gpu_corner_lower_tie(int, char **);
+int test_certlut_gpu_allocation_recovery(int, char **);
+int test_certlut_gpu_encoder_recovery(int, char **);
+int test_certlut_gpu_auto_failure_cpu_lookup(int, char **);
+int test_certlut_gpu_off_cpu_lookup(int, char **);
+int test_certlut_gpu_diffusion_cpu_lookup(int, char **);
 int test_component_rbc_palette_snapshot(int, char **);
 int test_component_rbc_cache_reuse(int, char **);
 int test_component_rbc_device_identity(int, char **);
@@ -5974,6 +6020,98 @@ static test_entry_t const test_entries[] = {
       test_rbc_gpu_palette_rebuild },
     { "rbc/gpu_table_reuse",
       test_rbc_gpu_table_reuse },
+    { "certlut/gpu_palette_snapshot",
+      test_component_certlut_palette_snapshot },
+    { "certlut/gpu_cache_reuse",
+      test_component_certlut_cache_reuse },
+    { "certlut/gpu_device_identity",
+      test_component_certlut_device_identity },
+    { "certlut/gpu_live_plan_isolation",
+      test_component_certlut_live_plan_isolation },
+    { "certlut/gpu_busy_lease",
+      test_component_certlut_busy_lease },
+    { "certlut/gpu_completed_reuse",
+      test_component_certlut_completed_reuse },
+    { "certlut/gpu_aborted_rebuild",
+      test_component_certlut_aborted_rebuild },
+    { "certlut/gpu_double_finish",
+      test_component_certlut_double_finish },
+    { "certlut/gpu_finished_view",
+      test_component_certlut_finished_view },
+    { "certlut/gpu_provider_lifetime",
+      test_component_certlut_provider_lifetime },
+    { "certlut/gpu_binding_lifetime",
+      test_component_certlut_binding_lifetime },
+    { "certlut/gpu_float_decline",
+      test_component_certlut_float_decline },
+    { "certlut/gpu_exact_0_0_1",
+      test_certlut_gpu_exact_0_0_1 },
+    { "certlut/gpu_exact_0_0_2",
+      test_certlut_gpu_exact_0_0_2 },
+    { "certlut/gpu_exact_0_0_7",
+      test_certlut_gpu_exact_0_0_7 },
+    { "certlut/gpu_exact_0_0_16",
+      test_certlut_gpu_exact_0_0_16 },
+    { "certlut/gpu_exact_0_0_17",
+      test_certlut_gpu_exact_0_0_17 },
+    { "certlut/gpu_exact_0_0_33",
+      test_certlut_gpu_exact_0_0_33 },
+    { "certlut/gpu_exact_0_0_64",
+      test_certlut_gpu_exact_0_0_64 },
+    { "certlut/gpu_exact_0_0_129",
+      test_certlut_gpu_exact_0_0_129 },
+    { "certlut/gpu_exact_0_0_256",
+      test_certlut_gpu_exact_0_0_256 },
+    { "certlut/gpu_exact_1_0_64",
+      test_certlut_gpu_exact_1_0_64 },
+    { "certlut/gpu_exact_2_0_33",
+      test_certlut_gpu_exact_2_0_33 },
+    { "certlut/gpu_exact_4_0_33",
+      test_certlut_gpu_exact_4_0_33 },
+    { "certlut/gpu_force_no_cpu",
+      test_certlut_gpu_force_no_cpu },
+    { "certlut/gpu_auto_no_cpu",
+      test_certlut_gpu_auto_no_cpu },
+    { "certlut/gpu_rectangle_indices",
+      test_certlut_gpu_rectangle_indices },
+    { "certlut/gpu_rectangle_mask",
+      test_certlut_gpu_rectangle_mask },
+    { "certlut/gpu_blue_rectangle_indices",
+      test_certlut_gpu_blue_rectangle_indices },
+    { "certlut/gpu_blue_rectangle_mask",
+      test_certlut_gpu_blue_rectangle_mask },
+    { "certlut/gpu_table_reuse",
+      test_certlut_gpu_table_reuse },
+    { "certlut/gpu_palette_rebuild",
+      test_certlut_gpu_palette_rebuild },
+    { "certlut/gpu_count_rebuild",
+      test_certlut_gpu_count_rebuild },
+    { "certlut/gpu_failed_build_recovery",
+      test_certlut_gpu_failed_build_recovery },
+    { "certlut/gpu_index255",
+      test_certlut_gpu_index255 },
+    { "certlut/gpu_first_index_tie",
+      test_certlut_gpu_first_index_tie },
+    { "certlut/gpu_cell_boundaries",
+      test_certlut_gpu_cell_boundaries },
+    { "certlut/gpu_counterexample",
+      test_certlut_gpu_counterexample },
+    { "certlut/gpu_candidate_overflow",
+      test_certlut_gpu_candidate_overflow },
+    { "certlut/gpu_boundary_lower_tie",
+      test_certlut_gpu_boundary_lower_tie },
+    { "certlut/gpu_corner_lower_tie",
+      test_certlut_gpu_corner_lower_tie },
+    { "certlut/gpu_allocation_recovery",
+      test_certlut_gpu_allocation_recovery },
+    { "certlut/gpu_encoder_recovery",
+      test_certlut_gpu_encoder_recovery },
+    { "certlut/gpu_auto_failure_cpu_lookup",
+      test_certlut_gpu_auto_failure_cpu_lookup },
+    { "certlut/gpu_off_cpu_lookup",
+      test_certlut_gpu_off_cpu_lookup },
+    { "certlut/gpu_diffusion_cpu_lookup",
+      test_certlut_gpu_diffusion_cpu_lookup },
     { "rbc/gpu_palette_snapshot",
       test_component_rbc_palette_snapshot },
     { "rbc/gpu_cache_reuse",

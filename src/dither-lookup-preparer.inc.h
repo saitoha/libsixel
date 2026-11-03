@@ -196,6 +196,13 @@ dither_lookup_prepare(sixel_lookup_preparer_interface_t const *self,
     }
     preparer = (dither_lookup_preparer_t const *)self;
     snapshot = &preparer->snapshot;
+    shared = sixel_dither_lookup_shared_instance_enabled(snapshot,
+        snapshot->lut_policy);
+    /* CPU fallback must preserve the legacy per-worker instance contract.
+     * Reject this physical plan before allocating or publishing a lookup. */
+    if (request->parallel_dither_active && !shared) {
+        return SIXEL_FEATURE_ERROR;
+    }
     lookup = sixel_allocator_calloc(snapshot->allocator, 1, sizeof(*lookup));
     if (lookup == NULL) return SIXEL_BAD_ALLOCATION;
     lookup->iface.vtbl = &frozen_lookup_vtbl;
@@ -203,8 +210,6 @@ dither_lookup_prepare(sixel_lookup_preparer_interface_t const *self,
     lookup->allocator = snapshot->allocator;
     sixel_allocator_ref(lookup->allocator);
     memcpy(lookup->palette, entries.entries, request->ncolors * 3U);
-    shared = sixel_dither_lookup_shared_instance_enabled(snapshot,
-        snapshot->lut_policy);
     /* FHEDT's legacy reuse operation retains an immutable grid. Other old
      * policies can transfer ownership destructively, so this compatibility
      * adapter must not offer them a plan that may still have readers. */

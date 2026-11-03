@@ -109,8 +109,12 @@ gpu_component_open(gpu_component_fixture_t *fixture, int kind)
         status = sixel_gpu_lookup_rbc_create(fixture->allocator,
             &fixture->provider);
         break;
-    default:
+    case 3:
         status = sixel_gpu_lookup_mahalanobis_create(fixture->allocator,
+            &fixture->provider);
+        break;
+    default:
+        status = sixel_gpu_lookup_certlut_create(fixture->allocator,
             &fixture->provider);
         break;
     }

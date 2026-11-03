@@ -113,6 +113,7 @@ test_gpu_rectangle(int policy, int method, int observation)
         return status == SIXEL_BAD_ARGUMENT && !hooks.entered ? 0 : 1;
     }
     if (status != SIXEL_OK || !hooks.entered || !hooks.published) goto end;
+    if (policy == SIXEL_LUT_POLICY_CERTLUT && hooks.kernel != 9) goto end;
     if (observation == 2) {
         ok = hooks.retained_rgb_upload_bytes == sizeof(source);
         goto end;

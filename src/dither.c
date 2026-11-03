@@ -4124,7 +4124,10 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     }
     shared = sixel_dither_lookup_shared_instance_enabled(dither,
         dither->lut_policy);
-    if (parallel && !shared) return SIXEL_FALSE;
+    /* CPU-local mutable lookup cannot be shared by parallel workers.
+     * Defer this CPU constraint with CPU construction: a GPU plan owns an
+     * independent immutable table and does not consume that setting. */
+    if (prepare_lookup && parallel && !shared) return SIXEL_FALSE;
     scan = dither->method_for_scan;
     if (scan == SIXEL_SCAN_AUTO) {
         scan = dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2
