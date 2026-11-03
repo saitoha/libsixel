@@ -11605,6 +11605,7 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/awk/c-test-scanf.awk \
     _static/sh/staticcheck-ci-configure-make.sh \
     _static/sh/staticcheck-ci-install-path.sh \
+    _static/sh/staticcheck-ci-msvc-complete-build.sh \
     _static/sh/staticcheck-ci-checkout-eol.sh \
     _static/sh/staticcheck-nightly-msvc-archiver.sh \
     _static/sh/staticcheck-comparison-dependencies.sh \

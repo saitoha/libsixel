@@ -150,6 +150,10 @@ does not hide a supported configuration.
 Keep `fail-fast` disabled for diagnostic matrices. One early failure should not
 hide an unrelated compiler, platform, or sanitizer failure.
 
+The Command Prompt Meson jobs explicitly compile `test_runner` together with Ninja's `all` target, using `--ninja-args="['-k', '0', 'all']"` in both the normal and PGO-use stages. The C case archive is not a default target; compiling only `all` leaves its diagnostics to the test command's automatic rebuild, which stops after the first failing compilation. One combined build attempts every independent compilation, retains warnings as errors, and returns failure before testing if any command failed. This collects remaining diagnostics in one run without adding a second compilation pass to successful jobs. Dependencies blocked by a failed generator or missing header still cannot compile.
+
+The `dist` job omits the explicit runner in its outer build because distribution validation compiles it in the extracted source tree. This avoids compiling the C inventory twice; ordinary MSVC jobs provide the complete diagnostic pass. Meson's internal distribution rebuild remains a separate execution boundary.
+
 Job labels should expose the build system, platform, compiler or ABI, and the
 policy that distinguishes the job. Logs should show the exact configure, build,
 and test commands needed for local reproduction.
@@ -272,3 +276,4 @@ change and directly required source, test, or generated-file updates.
 | CI-05 | VM Autotools configure receives the same matrix-selected make as the subsequent build. | [tests/_static/sh/staticcheck-ci-configure-make.sh](../../tests/_static/sh/staticcheck-ci-configure-make.sh) |
 | CI-06 | Nightly disables checkout line-ending conversion before materializing shell tests. | [tests/_static/sh/staticcheck-ci-checkout-eol.sh](../../tests/_static/sh/staticcheck-ci-checkout-eol.sh) |
 | CI-07 | Nightly MSVC invokes configure without overriding its archiver or archive flags. | [tests/_static/sh/staticcheck-nightly-msvc-archiver.sh](../../tests/_static/sh/staticcheck-nightly-msvc-archiver.sh) |
+| CI-08 | Normal and PGO-use Command Prompt test builds include the C runner and default targets, continue independent compilations after errors, and immediately propagate failure; dist leaves the runner to its extracted-tree build. | [tests/_static/sh/staticcheck-ci-msvc-complete-build.sh](../../tests/_static/sh/staticcheck-ci-msvc-complete-build.sh) |

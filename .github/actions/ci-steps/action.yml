@@ -959,7 +959,9 @@ runs:
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain compile -C builddir
+        rem Build the non-default C tests too; collect independent failures.
+        rem Dist builds its own test runner inside the extracted source tree.
+        python -m mesonbuild.mesonmain compile -C builddir ${{ fromJSON(inputs.matrix_json).check_target != 'dist' && 'test_runner' || '' }} --ninja-args="['-k', '0', 'all']"
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
         if errorlevel 1 exit /b !errorlevel!
@@ -1059,7 +1061,8 @@ runs:
         setlocal ENABLEDELAYEDEXPANSION
         python -m mesonbuild.mesonmain setup builddir --reconfigure ${{ fromJSON(inputs.matrix_json).pgo_use_options || '' }}
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain compile -C builddir
+        rem PGO use must collect the same complete set of compiler failures.
+        python -m mesonbuild.mesonmain compile -C builddir test_runner --ninja-args="['-k', '0', 'all']"
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
         if errorlevel 1 exit /b !errorlevel!

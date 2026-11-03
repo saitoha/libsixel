@@ -154,6 +154,8 @@ The independent C stream check rejects direct `tmpfile` and `fileno` calls in sh
 
 The CI installer check rejects literal bare command names assigned to `INSTALL` in the build workflow and setup action. Autoconf treats such values as relative paths when generating subdirectory Makefiles. Controls accept explicit paths and command lookup while rejecting quoted and unquoted bare names. The [Cosmopolitan reference](../misc/platforms/cosmopolitan.md#maintenance-checklist) owns the toolchain setting; the staged-install test remains the runtime evidence. This source check does not evaluate arbitrary shell expressions.
 
+The MSVC complete-build check protects the [CI diagnostic policy](../ci/design.md#diagnostic-independence) in the normal and PGO-use Command Prompt stages. Its shell/awk controls reject an omitted C runner, missing default targets, a finite Ninja failure limit, and a missing or delayed exit-status guard. It validates the owned command form without invoking Python, Meson or a compiler. Uninitialized-value and numeric-conversion warnings remain compiler observations; this check prevents their collection from being cut short, rather than attempting C data-flow analysis.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -224,6 +226,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-52 | Serializer storage declares two packets and allocates the complete object; controls reject a one-element or one-packet array and mismatched allocation expressions. | [tests/_static/sh/staticcheck-output-buffer-storage.sh](../../tests/_static/sh/staticcheck-output-buffer-storage.sh) |
 | SC-53 | Shared C tests use portable stream adapters; controls reject direct and continued `tmpfile`/`fileno` calls while accepting adapters and inert comments or literals. | [tests/_static/sh/staticcheck-c-test-stdio.sh](../../tests/_static/sh/staticcheck-c-test-stdio.sh) |
 | SC-54 | CI `INSTALL` assignments do not use bare command names that Autoconf rebases as build-relative paths. | [tests/_static/sh/staticcheck-ci-install-path.sh](../../tests/_static/sh/staticcheck-ci-install-path.sh) |
+| SC-55 | MSVC CI builds retain the complete diagnostic target set, unlimited independent failure collection, and immediate failure propagation in both stages. | [tests/_static/sh/staticcheck-ci-msvc-complete-build.sh](../../tests/_static/sh/staticcheck-ci-msvc-complete-build.sh) |
 
 ### Coverage boundary
 

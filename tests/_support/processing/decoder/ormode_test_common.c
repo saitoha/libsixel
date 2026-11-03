@@ -232,6 +232,8 @@ test_or_planar(char const *stream, unsigned short const *expected,
             goto end;
         }
         for (mode = 0; mode < 3; ++mode) {
+            /* Direct RGBA has no palette; do not retain prior mode outputs. */
+            w = h = colors = 0;
             if (mode == 0) {
                 status = sixel_decode_direct((unsigned char *)stream,
                     (int)strlen(stream), &pixels, &w, &h, NULL);

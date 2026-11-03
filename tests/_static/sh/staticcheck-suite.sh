@@ -1087,6 +1087,10 @@ run_case_tap "staticcheck-ci-install-path" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-install-path.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-ci-msvc-complete-build" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-msvc-complete-build.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-gperf-source-location" \
     sh "$src_root/tests/_static/sh/staticcheck-gperf-source-location.sh" \
     "$src_root" || fail_and_exit $?
