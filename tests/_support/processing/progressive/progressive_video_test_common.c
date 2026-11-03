@@ -67,7 +67,7 @@ int
 test_progressive_video_case(int mode)
 {
     static char const baseline[] =
-        "\0337\033P0;1q\"1;1;6;4#0;2;100;0;0#1;2;0;0;0"
+        "\033" "7\033P0;1q\"1;1;6;4#0;2;100;0;0#1;2;0;0;0"
         "#1!6N$#0@\033\\";
     sixel_encoder_t *encoder;
     sixel_allocator_t *allocator;

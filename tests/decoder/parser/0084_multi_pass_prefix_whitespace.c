@@ -5,7 +5,7 @@
 int test_sequence_0074(int argc, char **argv)
 {
     static char const stream[] =
-        "\0337 \033P0;1q\"1;1;3;1#0;2;100;0;0@@@\033\\";
+        "\033" "7 \033P0;1q\"1;1;3;1#0;2;100;0;0@@@\033\\";
 
     (void)argc;
     (void)argv;

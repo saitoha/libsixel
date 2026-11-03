@@ -1,5 +1,7 @@
 #!/bin/sh
 # Verify CLI terminal color transport foreground.
+# Policy: docs/misc/platforms/cosmopolitan.md
+# Coverage: COSMO-04
 set -eux
 
 result=0

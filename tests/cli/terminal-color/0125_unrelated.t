@@ -1,5 +1,7 @@
 #!/bin/sh
 # Verify CLI terminal color transport unrelated.
+# Policy: docs/misc/platforms/cosmopolitan.md
+# Coverage: COSMO-04
 set -eux
 
 result=0

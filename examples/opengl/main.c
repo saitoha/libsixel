@@ -396,7 +396,7 @@ scroll_on_demand(int pixelheight)
 #if HAVE_SYS_IOCTL_H
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
     if (size.ws_ypixel <= 0) {
-        printf("\033[H\0337");
+        printf("\033[H\033" "7");
         return;
     }
 # if HAVE_TERMIOS_H
@@ -415,18 +415,18 @@ scroll_on_demand(int pixelheight)
             cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
             scroll = cellheight + row - size.ws_row + 1;
             printf("\033[%dS\033[%dA", scroll, scroll);
-            printf("\0337");
+            printf("\033" "7");
         } else {
-            printf("\033[H\0337");
+            printf("\033[H\033" "7");
         }
     }
 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &old_termios);
 # else
-    printf("\033[H\0337");
+    printf("\033[H\033" "7");
 # endif  /* HAVE_TERMIOS_H */
 #else
-    printf("\033[H\0337");
+    printf("\033[H\033" "7");
 #endif  /* HAVE_SYS_IOCTL_H */
 }
 

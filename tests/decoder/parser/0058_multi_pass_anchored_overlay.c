@@ -4,9 +4,9 @@
 
 int test_sequence_0055(int argc, char **argv)
 {
-    /* Separate DECRC from ESC to avoid MSVC C4125 without changing bytes. */
+    /* Separate cursor commands from ESC without changing bytes (MSVC C4125). */
     static char const stream[] =
-        "\0337\033P0;1q\"1;1;3;1#0;2;100;0;0@@@\033\\\033" "8\033P0;1"
+        "\033" "7\033P0;1q\"1;1;3;1#0;2;100;0;0@@@\033\\\033" "8\033P0;1"
         "q\"1;1;3;1#0;2;0;0;100?@\033\\";
     static unsigned char const expected[] = {
         255, 0, 0, 255, 0, 0, 255, 255, 255, 0, 0, 255

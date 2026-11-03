@@ -232,7 +232,7 @@ test_progressive_transport_case(int mode)
         SCHEDULE_REQUIRE(sixel_output_write_bytes(presentation.output,
             "second", 6) == SIXEL_OK);
         SCHEDULE_REQUIRE(sink.bytes == 15 &&
-            memcmp(sink.data, "\0337first\033" "8second", 15) == 0);
+            memcmp(sink.data, "\033" "7first\033" "8second", 15) == 0);
     }
     ok = 1;
 end:

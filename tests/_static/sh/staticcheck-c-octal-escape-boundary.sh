@@ -1,5 +1,5 @@
 #!/bin/sh
-# MSVC diagnoses 8/9 immediately following an octal escape, even at three digits.
+# MSVC diagnoses any decimal digit immediately following an octal escape.
 # Policy: docs/testing/staticcheck.md
 set -eux
 echo '1..1'

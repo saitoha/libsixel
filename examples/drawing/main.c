@@ -107,12 +107,12 @@ scroll_on_demand(int pixelheight)
     cellheight = pixelheight * size.ws_row / size.ws_ypixel + 1;
     scroll = cellheight + row - size.ws_row;
     printf("\033[%dS\033[%dA", scroll, scroll);
-    printf("\0337");
+    printf("\033" "7");
 
     return size.ws_ypixel / size.ws_row * (row - (scroll < 0 ? 0: scroll) - 1);
 
 err:
-    printf("\033[H\0337");
+    printf("\033[H\033" "7");
     return 0;
 }
 

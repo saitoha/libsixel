@@ -222,16 +222,16 @@ static cli_color_case_t const cli_color_cases[] = {
         CLI_COLOR_DCS "1$r1;3./p" CLI_COLOR_ST,
         IMG2SIXEL_COLOR_SAVED_POLICY, 0ul, 0ul, 0ul, 3ul },
     { "c1", IMG2SIXEL_COLOR_CAPABILITY,
-        "\233?1./r\2201;1;1;1;4./r\234",
+        "\233?1./r\220" "1;1;1;1;4./r\234",
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "c1", IMG2SIXEL_COLOR_CAPABILITY,
-        "\033[?1./r\2201;1;1;1;4./r" CLI_COLOR_ST,
+        "\033[?1./r\220" "1;1;1;1;4./r" CLI_COLOR_ST,
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "c1", IMG2SIXEL_COLOR_CAPABILITY,
         CLI_COLOR_DCS "1;1;1;1;4./r\234",
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "c1", IMG2SIXEL_COLOR_POLICY,
-        "\2201$r1;0./p\234",
+        "\220" "1$r1;0./p\234",
         IMG2SIXEL_COLOR_SAVED_POLICY, 0ul, 0ul, 0ul, 0ul },
     { "cancel", IMG2SIXEL_COLOR_CAPABILITY,
         CLI_COLOR_DCS "1;1;1;1;3./r\030" CLI_COLOR_ST
@@ -458,7 +458,7 @@ static cli_color_case_t const cli_color_cases[] = {
         CLI_COLOR_P3,
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "unrelated", IMG2SIXEL_COLOR_CAPABILITY,
-        "\2350;1;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
+        "\235" "0;1;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
         CLI_COLOR_P3,
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "unrelated", IMG2SIXEL_COLOR_CAPABILITY,
@@ -474,15 +474,15 @@ static cli_color_case_t const cli_color_cases[] = {
         CLI_COLOR_P3,
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "unrelated", IMG2SIXEL_COLOR_CAPABILITY,
-        "\2371;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
+        "\237" "1;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
         CLI_COLOR_P3,
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "unrelated", IMG2SIXEL_COLOR_CAPABILITY,
-        "\2361;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
+        "\236" "1;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
         CLI_COLOR_P3,
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "unrelated", IMG2SIXEL_COLOR_CAPABILITY,
-        "\2301;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
+        "\230" "1;1;1;1;4./r 1$r1;2./p 1;1;1;0;3./r\234"
         CLI_COLOR_P3,
         IMG2SIXEL_COLOR_AVAILABLE, 1ul, 1ul, 4ul, 0ul },
     { "unrelated", IMG2SIXEL_COLOR_CAPABILITY,

@@ -2,6 +2,8 @@
 # Verify CLI terminal color transport roundtrip.
 # Policy: docs/misc/platforms/openvms.md
 # Coverage: OV-11
+# Policy: docs/misc/platforms/cosmopolitan.md
+# Coverage: COSMO-04
 set -eux
 
 result=0

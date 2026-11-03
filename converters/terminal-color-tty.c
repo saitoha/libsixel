@@ -21,6 +21,7 @@
 # include <errno.h>
 # include <fcntl.h>
 # include <signal.h>
+# include <string.h>
 # include <sys/types.h>
 # include <sys/select.h>
 # include <sys/stat.h>
@@ -41,6 +42,7 @@
 struct img2sixel_color_tty {
     int fd;
     int output_fd;
+    int controlling_alias;
     struct stat identity;
     struct termios saved_termios;
     sigset_t saved_mask;
@@ -60,6 +62,27 @@ img2sixel_color_tty_same(struct stat const *a, struct stat const *b)
 }
 
 static int
+img2sixel_color_tty_session(int output_fd, int fd)
+{
+#if defined(__COSMOPOLITAN__)
+    pid_t session;
+
+    /* Cosmopolitan ttyname can return /dev/tty on Darwin. Its device node
+     * differs from the slave's node, but a session owns at most one
+     * controlling terminal. Check both descriptors against our session;
+     * accepting only the alias's foreground group could select a terminal
+     * unrelated to stdout. Repeat this check before I/O after any detach. */
+    session = getsid(0);
+    return session > 0 && tcgetsid(output_fd) == session &&
+        tcgetsid(fd) == session;
+#else
+    (void)output_fd;
+    (void)fd;
+    return 0;
+#endif
+}
+
+static int
 img2sixel_color_tty_current(img2sixel_color_tty_t *tty)
 {
     struct stat current;
@@ -67,6 +90,8 @@ img2sixel_color_tty_current(img2sixel_color_tty_t *tty)
     return tty != NULL && tty->fd >= 0 &&
         fstat(tty->output_fd, &current) == 0 &&
         img2sixel_color_tty_same(&tty->identity, &current) &&
+        (!tty->controlling_alias ||
+         img2sixel_color_tty_session(tty->output_fd, tty->fd)) &&
         isatty(tty->output_fd) && tcgetpgrp(tty->fd) == getpgrp();
 }
 
@@ -218,6 +243,7 @@ img2sixel_color_tty_open(img2sixel_color_tty_t **tty, int output_fd,
     struct timespec now;
     char const *path;
     int fd;
+    int controlling_alias;
 
     if (tty == NULL) {
         return IMG2SIXEL_COLOR_IO_ERROR;
@@ -235,8 +261,14 @@ img2sixel_color_tty_open(img2sixel_color_tty_t **tty, int output_fd,
     if (fd < 0) {
         return IMG2SIXEL_COLOR_IO_UNAVAILABLE;
     }
-    if (fd >= FD_SETSIZE || fstat(fd, &opened) != 0 ||
-        !img2sixel_color_tty_same(&identity, &opened) ||
+    if (fd >= FD_SETSIZE || fstat(fd, &opened) != 0) {
+        close(fd);
+        return IMG2SIXEL_COLOR_IO_UNAVAILABLE;
+    }
+    controlling_alias = !img2sixel_color_tty_same(&identity, &opened);
+    if ((controlling_alias &&
+         (strcmp(path, "/dev/tty") != 0 ||
+          !img2sixel_color_tty_session(output_fd, fd))) ||
         tcgetpgrp(fd) != getpgrp() ||
         fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
         close(fd);
@@ -249,6 +281,7 @@ img2sixel_color_tty_open(img2sixel_color_tty_t **tty, int output_fd,
     }
     created->fd = fd;
     created->output_fd = output_fd;
+    created->controlling_alias = controlling_alias;
     created->identity = identity;
     created->cancel = cancel;
     created->cancel_context = context;

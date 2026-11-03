@@ -47,6 +47,9 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#if defined(__COSMOPOLITAN__)
+# include <cosmo.h>
+#endif
 
 #define COLOR_TTY_QUERY "\033[?1./r"
 #define COLOR_TTY_POLICY "\033P$q1./p\033\\"
@@ -188,7 +191,8 @@ color_tty_mode_equal(struct termios const *a, struct termios const *b,
     tcflag_t expected_lflag;
 
     expected_lflag = a->c_lflag;
-#if defined(PENDIN) && (defined(__DragonFly__) || defined(__NetBSD__) || \
+#if defined(PENDIN) && (defined(__COSMOPOLITAN__) || \
+    defined(__DragonFly__) || defined(__NetBSD__) || \
     (defined(__APPLE__) && defined(__MACH__)))
     /* Darwin, DragonFly and NetBSD set kernel-maintained PENDIN when ICANON
      * returns, even with an empty input queue. Their tty.c TIOCSETA paths
@@ -196,7 +200,12 @@ color_tty_mode_equal(struct termios const *a, struct termios const *b,
      * to clear it: pending bytes belong to the caller. Only the canonical
      * transition changes this expectation; all other flags remain exact. */
     if (canonical_restored && (a->c_lflag & ICANON) != 0) {
-# if defined(__DragonFly__) || defined(__NetBSD__)
+# if defined(__COSMOPOLITAN__)
+        /* APE uses the runtime kernel's termios state, not the build host. */
+        if (IsXnu()) {
+            expected_lflag |= PENDIN;
+        }
+# elif defined(__DragonFly__) || defined(__NetBSD__)
         /* ttyinput() can reprocess pending input before tcgetattr(), even
          * without a user read. Accept either state of this kernel bit. */
         expected_lflag = (expected_lflag & ~(tcflag_t)PENDIN) |
@@ -768,7 +777,7 @@ color_tty_script(char const *name, int master, int command, int report,
         }
         if (strcmp(name, "roundtrip") == 0) {
             if (!color_tty_expect(master, COLOR_TTY_POLICY) ||
-                !color_tty_send(master, "\2201$r1;0./p\234", 11u)) {
+                !color_tty_send(master, "\220" "1$r1;0./p\234", 11u)) {
                 return 0;
             }
         }
@@ -785,6 +794,8 @@ test_cli_0038_color_tty(int argc, char **argv)
 #if HAVE_CLI_COLOR_PTY && HAVE_CLI_COLOR_TTY
     int master;
     int slave;
+    int controlling_master;
+    int controlling_slave;
     int command[2];
     int report[2];
     int result;
@@ -833,10 +844,26 @@ test_cli_0038_color_tty(int argc, char **argv)
         close(master);
         close(command[1]);
         close(report[0]);
-        if (setsid() < 0 ||
-            (strcmp(argv[1], "unrelated") != 0 &&
-             (ioctl(slave, TIOCSCTTY, 0) != 0 ||
-              tcsetpgrp(slave, getpgrp()) != 0)) ||
+        if (setsid() < 0) {
+            _exit(1);
+        }
+        controlling_slave = slave;
+        if (strcmp(argv[1], "unrelated") == 0) {
+            /* Give /dev/tty a valid foreground terminal distinct from
+             * stdout. Absence of a controlling terminal only tests open
+             * failure, not rejection of an unrelated alias. */
+            controlling_master = posix_openpt(O_RDWR | O_NOCTTY);
+            if (controlling_master < 0 || grantpt(controlling_master) != 0 ||
+                unlockpt(controlling_master) != 0) {
+                _exit(1);
+            }
+            path = ptsname(controlling_master);
+            controlling_slave = path == NULL ? -1 :
+                open(path, O_RDWR | O_NOCTTY);
+        }
+        if (controlling_slave < 0 ||
+            ioctl(controlling_slave, TIOCSCTTY, 0) != 0 ||
+            tcsetpgrp(controlling_slave, getpgrp()) != 0 ||
             dup2(slave, STDOUT_FILENO) < 0) {
             _exit(1);
         }

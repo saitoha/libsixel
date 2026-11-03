@@ -2315,7 +2315,7 @@ sixel_tty_place_image(
     }
 
     /* emit DECSC sequence */
-    nwrite = f_write("\0337", 2, priv);
+    nwrite = f_write("\033" "7", 2, priv);
     if (nwrite < 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message(

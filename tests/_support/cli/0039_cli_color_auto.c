@@ -593,8 +593,9 @@ color_auto_finish(color_auto_peer_t *peer, int valid, int expected_exit)
     struct timeval wait;
 
     if (valid) {
-        /* The parent's open slave prevents PTY EOF. Wait for either process
-         * exit or unexpected bytes, without sleeps or an unbounded waitpid. */
+        /* PTY EOF does not establish the guard's exit status. Wait for
+         * process exit while rejecting unexpected bytes; the guard checks
+         * termios before its exit can revoke the slave on BSD kernels. */
         for (;;) {
             if (!color_auto_empty(peer->master) ||
                 (peer->data != peer->master &&
@@ -689,7 +690,6 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
     int iteration;
     int images;
     char const *capability;
-    struct termios mode;
 
     saved = strncmp(name, "save-", 5u) == 0 ? name[5] - '0' : 0;
     selected = color_auto_is(name, "srgb") ||
@@ -735,10 +735,9 @@ color_auto_script(color_auto_peer_t *peer, char const *name,
         if (!color_auto_frame(peer)) {
             return 0;
         }
-        if (tcgetattr(peer->slave, &mode) != 0 ||
-            !(mode.c_lflag & ICANON)) {
-            return color_auto_error("terminal mode not restored");
-        }
+        /* The session guard checks all termios fields before exiting.
+         * Rechecking here races BSD slave revocation and can see ENOTTY
+         * after successful restoration. color_auto_finish checks the guard. */
         return 1;
     }
     if (color_auto_is(name, "silent") ||

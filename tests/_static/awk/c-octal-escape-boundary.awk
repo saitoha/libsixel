@@ -10,7 +10,7 @@ function literal(token,    i, digit, count) {
                 ++i
                 ++count
             }
-            if (substr(token, i, 1) ~ /^[89]$/) return 1
+            if (substr(token, i, 1) ~ /^[0-9]$/) return 1
         } else ++i
         token = substr(token, i)
     }
@@ -19,7 +19,7 @@ function literal(token,    i, digit, count) {
 function inspect(line,    token, errors) {
     # Most source lines have neither a comment opener nor a candidate escape.
     # Avoid tokenizing large generated numeric tables and ordinary strings.
-    if (!comment && line !~ /\/\*|\\[0-7]+[89]/) return 0
+    if (!comment && line !~ /\/\*|\\[0-7]+[0-9]/) return 0
     while (line != "") {
         if (comment) {
             if (!match(line, /\*\//)) break
@@ -36,12 +36,19 @@ function inspect(line,    token, errors) {
     return errors
 }
 BEGIN {
-    # Controls cover all escape widths, both decimal digits, escaped slashes,
+    # Controls cover all escape widths, decimal digits, escaped slashes,
     # adjacent literals, character constants, comments and a fourth octal digit.
+    for (digit = 0; digit <= 9; ++digit) {
+        if (!inspect("\"\\033" digit "\"") ||
+            inspect("\"\\033\" \"" digit "\"")) {
+            print "octal escape digit controls failed"
+            exit 1
+        }
+    }
     if (!inspect("\"\\08\"") || !inspect("\"\\079\"") ||
         !inspect("\"\\0338\"") || !inspect("\"\\0339\"") ||
         !inspect("'\\078'") || inspect("\"\\033\" \"8\"") ||
-        inspect("\"\\0337\"") || inspect("\"\\03308\"") ||
+        !inspect("\"\\0337\"") || !inspect("\"\\03308\"") ||
         inspect("\"\\\\0338\"") || inspect("// \"\\0338\"") ||
         inspect("/* \"\\0338\" */") ||
         !inspect("\"\\\"\\0338\"")) {
@@ -59,7 +66,7 @@ FNR == 1 { comment = 0; pending = "" }
     }
     pending = ""
     if (inspect(line)) {
-        print FILENAME ":" FNR ": split the literal after an octal escape before 8/9 (MSVC C4125)"
+        print FILENAME ":" FNR ": split the literal after an octal escape before a decimal digit (MSVC C4125)"
         failed = 1
     }
 }

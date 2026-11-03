@@ -137,7 +137,7 @@ test_progressive_limits_case(int mode)
     limits_test_sink_t sink;
     unsigned char black[192] = {0};
     char const baseline[] =
-        "\0337\033P0;1q\"1;1;64;1#0;2;0;0;0#0!64@\033\\";
+        "\033" "7\033P0;1q\"1;1;64;1#0;2;0;0;0#0!64@\033\\";
     float *pixels;
     unsigned char *decoded;
     unsigned int flags;

@@ -123,7 +123,7 @@ test_progressive_presentation_case(int mode)
         goto end;
     }
     PRESENT_REQUIRE(status == SIXEL_OK && size > 2 &&
-        memcmp(bytes, "\0337", 2) == 0 &&
+        memcmp(bytes, "\033" "7", 2) == 0 &&
         encoder->progressive_context == NULL && !encoder->fstatic);
     PRESENT_REQUIRE(sixel_decode_sequence_mapped(bytes, size, NULL, &pixels,
         &width, &height, &flags, &passes, allocator) == SIXEL_OK);

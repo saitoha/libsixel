@@ -5,7 +5,7 @@
 int test_sequence_0060(int argc, char **argv)
 {
     static char const stream[] =
-        "\0337\033P0;1q\"1;1;1;1\033\\";
+        "\033" "7\033P0;1q\"1;1;1;1\033\\";
     static unsigned char const expected[] = {
         0, 0, 0, 0
     };

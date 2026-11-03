@@ -685,8 +685,9 @@ test_loader_libpng_contract(int argc, char **argv)
         if (strcmp(argv[3], "lcms2") == 0) {
 #if !HAVE_LCMS2
             return SIXEL_TEST_SKIP;
-#endif
+#else
             cms = SIXEL_CMS_ENGINE_LCMS2;
+#endif
         } else if (strcmp(argv[3], "none") == 0) {
             cms = SIXEL_CMS_ENGINE_NONE;
         } else {

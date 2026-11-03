@@ -36,8 +36,8 @@ function inspect(    i, code, level, braces, pending, errors, scratch, previous)
                 start[level] = braces
                 # A runtime if/loop outside the preprocessor branch can
                 # still control its return. Require a completed statement
-                # or the function's opening brace before this directive.
-                simple[level] = braces == 1 &&
+                # or the current block's opening brace before this directive.
+                simple[level] = braces >= 1 &&
                     previous ~ /[;{][[:space:]]*$/
                 skipped[level] = 0
             } else if (code ~ /^[[:space:]]*#[[:space:]]*(else|elif)([[:space:]]|$)/) {
@@ -59,7 +59,7 @@ function inspect(    i, code, level, braces, pending, errors, scratch, previous)
             pending = 0
         }
         if (level > 0 && simple[level]) {
-            if (code ~ /^[[:space:]]*return[[:space:]]+(77|0|EXIT_SUCCESS)[[:space:]]*;[[:space:]]*$/)
+            if (code ~ /^[[:space:]]*return[[:space:]]+(77|0|EXIT_SUCCESS|SIXEL_TEST_SKIP)[[:space:]]*;[[:space:]]*$/)
                 skipped[level] = i
             else if (code ~ /^[[:space:]]*(fputs|puts|fprintf)[[:space:]]*\(.*\)[[:space:]]*;[[:space:]]*$/) {
                 # A complete diagnostic call cannot make the return conditional.
@@ -79,7 +79,11 @@ function specimen(text) {
 BEGIN {
     control = 1
     prefix = "int test(void)\n{\n#if DISABLED\n"
-    if (!specimen(prefix "return 77;\n#endif\nrun();\n}") ||
+    nested = "int test(void)\n{\nif (option) {\n#if DISABLED\n"
+    if (!specimen(nested "return SIXEL_TEST_SKIP;\n#endif\nrun();\n}\n}") ||
+        specimen(nested "return SIXEL_TEST_SKIP;\n#else\nrun();\n#endif\n}\n}") ||
+        specimen(nested "return SIXEL_TEST_SKIP;\n#endif\n}\nrun();\n}") ||
+        !specimen(prefix "return 77;\n#endif\nrun();\n}") ||
         !specimen(prefix "/* skip */\n(void)argv;\nreturn 77;\n#endif\nrun();\n}") ||
         !specimen(prefix "fputs(\"disabled\", stderr);\nreturn EXIT_SUCCESS;\n#endif\nrun();\n}") ||
         !specimen(prefix "return 0;\n#endif\nrun();\n}") ||
@@ -102,7 +106,7 @@ FNR == 1 {
 }
 {
     lines[++count] = $0
-    if ($0 ~ /return[[:space:]]+(77|0|EXIT_SUCCESS)[[:space:]]*;/) candidate = 1
+    if ($0 ~ /return[[:space:]]+(77|0|EXIT_SUCCESS|SIXEL_TEST_SKIP)[[:space:]]*;/) candidate = 1
 }
 END {
     if (!control && candidate && inspect()) failed = 1
