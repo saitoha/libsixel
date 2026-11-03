@@ -34,8 +34,8 @@ srcs = [
   'encoder-core-packet.h',
   'encoder-core-indexed.inc.h',
   'encoder-core-session.inc.h',
-  'gpu-palette-metal-fhedt.inc.h',
-  'gpu-palette-metal-bitlut.inc.h',
+  'lookup-policy-fhedt-gpu.inc.h',
+  'lookup-policy-bitlut-gpu.inc.h',
   'fromsixel.c',
   'encoder-core-encode.c',
   'encoder-core-highcolor.c',
@@ -154,26 +154,21 @@ srcs = [
   'delta-residual.c',
   'delta-residual.h',
   'gpu-palette.c',
-  'gpu-lookup-ordered.c',
-  'gpu-lookup-vptree.c',
-  'gpu-lookup-rbc.c',
-  'gpu-lookup-mahalanobis.c',
-  'gpu-lookup-certlut.c',
-  'gpu-lookup-legacy.c',
-  'gpu-lookup-registry.c',
-  'gpu-lookup.h',
-  'gpu-lookup-ordered.h',
-  'gpu-lookup-vptree.h',
-  'gpu-lookup-rbc.h',
-  'gpu-lookup-mahalanobis.h',
-  'gpu-lookup-certlut.h',
-  'gpu-lookup-legacy.h',
+  'lookup-policy-ordered-gpu.c',
+  'lookup-policy-vptree-gpu.c',
+  'lookup-policy-rbc-gpu.c',
+  'lookup-policy-mahalanobis-gpu.c',
+  'lookup-policy-certlut-gpu.c',
+  'lookup-policy-gpu-legacy.c',
+  'lookup-policy-gpu-registry.c',
+  'lookup-policy-gpu.h',
+  'lookup-policy-ordered-gpu.h',
+  'lookup-policy-vptree-gpu.h',
+  'lookup-policy-rbc-gpu.h',
+  'lookup-policy-mahalanobis-gpu.h',
+  'lookup-policy-certlut-gpu.h',
+  'lookup-policy-gpu-legacy.h',
   'gpu-program.h',
-  'gpu-lookup-ordered-shader.inc.h',
-  'gpu-lookup-vptree-shader.inc.h',
-  'gpu-lookup-rbc-shader.inc.h',
-  'gpu-lookup-mahalanobis-shader.inc.h',
-  'gpu-lookup-certlut-shader.inc.h',
   'gpu-palette-program.inc.h',
   'gpu-palette-fused-prefix.inc.h',
   'gpu-palette-fused-suffix.inc.h',
@@ -385,7 +380,7 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['gpu-lookup-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
+  srcs += ['lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
            'progressive-gpu-metal.m']
 endif
 
@@ -423,7 +418,7 @@ else
   libsixel_sources = srcs
   libsixel_c_args = libsixel_posix_defs
 endif
-libsixel_sources += [sixcells_h]
+libsixel_sources += [sixcells_h] + metal_headers
 libsixel_build_deps = deps + msvc_pgo_post_wic_deps
 
 libsixel = library('sixel',

@@ -152,7 +152,7 @@ Palette count, RGB bytes and device identity determine reuse. Each plan snapshot
 
 The injected provider owns its shader, construction, search and cache without depending on another lookup implementation. Shared [PaletteApply execution](../../execution-map/README.md#4-lookup-per-pixel-application-and-output) owns dither admission, transparency, delta and output publication. GPU-only preparation builds no CPU lookup and remains eligible when CPU instance sharing is disabled. Parallel CPU fallback with worker-local lookup uses the legacy adapter. When the caller selects or falls back to CPU, the existing CPU certlut guarantee applies; exact GPU results are not a promise that both backends produce identical indexes. The legacy direct application fallback and indexed execution failure rules remain those of their callers.
 
-The implementation is [`gpu-lookup-certlut.c`](../../../../src/gpu-lookup-certlut.c), with private kernels in [`gpu-lookup-certlut-shader.inc.h`](../../../../src/gpu-lookup-certlut-shader.inc.h).
+The implementation is [`lookup-policy-certlut-gpu.c`](../../../../src/lookup-policy-certlut-gpu.c), with private kernels in [`lookup-policy-certlut-gpu-shader.inc.h`](../../../../src/lookup-policy-certlut-gpu-shader.inc.h).
 
 ## Name and sources
 

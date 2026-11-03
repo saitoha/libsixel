@@ -39,6 +39,15 @@ The table covers the tracked files in `build-aux/`. A configured checkout also c
 
 The [CI step implementation](../../.github/actions/ci-steps/action.yml) adds the source tree's `build-aux` to `PATH` for relevant jobs. The [CI matrix](../../.github/workflows/ci.yml) selects the compiler wrappers, cross files, and test wrapper. A wrapper's presence in the repository does not cause Meson to discover or enable it automatically. Local invocations must also make the selected wrapper discoverable while keeping the project-local tools first, for example `PATH="$PWD/.local/bin:$PWD/build-aux:$PATH"` from the source root.
 
+## Embedded Metal sources
+
+Metal programs are maintained as readable `src/*.metal` files. [embed-metal.sh](../../tools/embed-metal.sh) runs the POSIX [awk encoder](../../tools/embed-metal.awk) to produce C string-array fragments under the build tree's `src/generated-metal/`. It publishes each complete header by rename. The library embeds those bytes at C compilation; runtime Metal compilation reads memory, with no shader-file lookup or installed `.metal` dependency. The [execution map](../encoder/execution-map/README.md) maps policy source ownership.
+
+Autotools and Meson express the source and generator dependencies before compiling their consumers. Amalgamation depends on the generated headers and embeds them at their owning arrays, including legacy host fragments. Direct `gen-amalgamation.sh` invocation also prepares missing or outdated fragments. Generated headers are neither maintained source nor installed resources; source distributions carry the `.metal` inputs and both generator files.
+
+The encoder preserves quotes, backslashes and trigraph spelling and divides text into literals of at most 1024 bytes, below the C99 minimum supported limit. Source files end with a newline. The focused tests below exercise one fixed input each; existing GPU execution tests validate the resulting programs on supported devices.
+
+
 ## Meson compiler adapters
 
 ### Cosmopolitan: bypass one setup probe, then use the real compiler
@@ -142,3 +151,15 @@ The [test preparation and driver sections](test-harness.md#support-scripts-befor
 Identify whether a change affects setup detection, actual compilation, test-command execution, or installation. A successful bypassed sanity check cannot validate a real compiler output, and a passing build-tree test cannot validate sidecar installation. Keep the wrapper, its selected CI command, and the owning build rules in view together.
 
 For upstream-derived files, inspect the header and the tracked diff before replacing them with a tool-installed copy. For configured project helpers, edit the `.in` source and regenerate the local output through configuration. Update the appropriate distribution list when adding support files; the existence of a tracked file alone does not establish that an Autotools source archive contains it.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+This coverage concerns Metal source embedding. The existing platform adapters require the toolchain and installed-product validation described in their owning references.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| METAL-01 | C escaping preserves Metal spelling. | [tests/tools/metal/0001_literal_escaping.t](../../tests/tools/metal/0001_literal_escaping.t) |
+| METAL-02 | A source newline beyond the chunk boundary starts a second literal. | [tests/tools/metal/0002_literal_chunk_boundary.t](../../tests/tools/metal/0002_literal_chunk_boundary.t) |
+| METAL-03 | A real shader larger than the C99 minimum compiles as embedded literals. | [tests/_static/sh/staticcheck-metal-source-literal-length.sh](../../tests/_static/sh/staticcheck-metal-source-literal-length.sh) |

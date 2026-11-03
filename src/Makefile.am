@@ -10,6 +10,47 @@ builddir = @builddir@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 
+# Metal text is translated into build-tree C literals, not runtime files.
+SIXEL_METAL_INPUTS = \
+    $(srcdir)/lookup-policy-ordered-gpu.metal \
+    $(srcdir)/lookup-policy-vptree-gpu.metal \
+    $(srcdir)/lookup-policy-rbc-gpu.metal \
+    $(srcdir)/lookup-policy-mahalanobis-gpu.metal \
+    $(srcdir)/lookup-policy-certlut-gpu.metal \
+    $(srcdir)/gpu-palette-legacy-types.metal \
+    $(srcdir)/gpu-palette-legacy-query.metal \
+    $(srcdir)/lookup-policy-gridlut-gpu.metal \
+    $(srcdir)/lookup-policy-delaunay-gpu.metal \
+    $(srcdir)/lookup-policy-eytzinger-gpu.metal \
+    $(srcdir)/lookup-policy-fhedt-gpu-query.metal \
+    $(srcdir)/gpu-palette-legacy-pixel.metal \
+    $(srcdir)/gpu-palette-legacy-apply.metal \
+    $(srcdir)/gpu-dequant-fast4.metal \
+    $(srcdir)/lookup-policy-none-gpu.metal \
+    $(srcdir)/lookup-policy-blockcull-gpu.metal \
+    $(srcdir)/lookup-policy-fhedt-gpu.metal \
+    $(srcdir)/lookup-policy-bitlut-gpu.metal \
+    $(srcdir)/gpu-palette-fused-prefix.metal \
+    $(srcdir)/gpu-palette-fused-suffix.metal
+SIXEL_METAL_FRAGMENTS = $(patsubst $(srcdir)/%.metal,generated-metal/%-shader.inc.h,$(SIXEL_METAL_INPUTS))
+BUILT_SOURCES = $(SIXEL_METAL_FRAGMENTS)
+nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS)
+
+generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
+        $(top_srcdir)/tools/embed-metal.sh $(top_srcdir)/tools/embed-metal.awk
+	$(AM_V_GEN)AWK="$(AWK)" $(SHELL) $(top_srcdir)/tools/embed-metal.sh "$<" "$@"
+
+# The phased top-level build requests objects directly, bypassing all and
+# BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
+SIXEL_METAL_CONSUMERS = \
+    libsixel_la-lookup-policy-ordered-gpu.lo \
+    libsixel_la-lookup-policy-vptree-gpu.lo \
+    libsixel_la-lookup-policy-rbc-gpu.lo \
+    libsixel_la-lookup-policy-mahalanobis-gpu.lo \
+    libsixel_la-lookup-policy-certlut-gpu.lo \
+    libsixel_la-gpu-palette-metal.lo
+$(SIXEL_METAL_CONSUMERS): $(SIXEL_METAL_FRAGMENTS)
+
 if WANT_AMALGAMATED_LIB
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 AMALGAMATION_TARGET = sixel.c
@@ -24,8 +65,8 @@ endif
 # libsixel amalgamation to avoid compiler ICEs on very large sources.
 AMALGAMATION_CPPFLAGS += \
         -DSIXEL_AMALGAMATION_SPLIT_DITHER=1
-BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
+BUILT_SOURCES += $(AMALGAMATION_SIXEL)
+nodist_libsixel_la_SOURCES += $(AMALGAMATION_SIXEL)
 endif
 
 if COND_GCOV
@@ -44,7 +85,7 @@ if USING_CL
 MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
+CLEANFILES = $(SIXEL_METAL_FRAGMENTS) *.gcno *.gcda *.gcov *.log test-output.*
 DISTCLEANFILES = \
                 $(DEPDIR)/libsixel_la-gpu-palette.Plo \
                 $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
@@ -59,7 +100,7 @@ libsixel_la_SOURCES += \
                 $(srcdir)/oklch-lattice256.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+$(AMALGAMATION_SIXEL): $(SIXEL_METAL_FRAGMENTS) $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation $(AMALGAMATION_TARGET)
 
@@ -254,26 +295,21 @@ libsixel_la_SOURCES = \
                 $(srcdir)/delta-residual.c \
                 $(srcdir)/delta-residual.h \
                 $(srcdir)/gpu-palette.c \
-                $(srcdir)/gpu-lookup-ordered.c \
-                $(srcdir)/gpu-lookup-vptree.c \
-                $(srcdir)/gpu-lookup-rbc.c \
-                $(srcdir)/gpu-lookup-mahalanobis.c \
-                $(srcdir)/gpu-lookup-certlut.c \
-                $(srcdir)/gpu-lookup-legacy.c \
-                $(srcdir)/gpu-lookup-registry.c \
-                $(srcdir)/gpu-lookup.h \
-                $(srcdir)/gpu-lookup-ordered.h \
-                $(srcdir)/gpu-lookup-vptree.h \
-                $(srcdir)/gpu-lookup-rbc.h \
-                $(srcdir)/gpu-lookup-mahalanobis.h \
-                $(srcdir)/gpu-lookup-certlut.h \
-                $(srcdir)/gpu-lookup-legacy.h \
+                $(srcdir)/lookup-policy-ordered-gpu.c \
+                $(srcdir)/lookup-policy-vptree-gpu.c \
+                $(srcdir)/lookup-policy-rbc-gpu.c \
+                $(srcdir)/lookup-policy-mahalanobis-gpu.c \
+                $(srcdir)/lookup-policy-certlut-gpu.c \
+                $(srcdir)/lookup-policy-gpu-legacy.c \
+                $(srcdir)/lookup-policy-gpu-registry.c \
+                $(srcdir)/lookup-policy-gpu.h \
+                $(srcdir)/lookup-policy-ordered-gpu.h \
+                $(srcdir)/lookup-policy-vptree-gpu.h \
+                $(srcdir)/lookup-policy-rbc-gpu.h \
+                $(srcdir)/lookup-policy-mahalanobis-gpu.h \
+                $(srcdir)/lookup-policy-certlut-gpu.h \
+                $(srcdir)/lookup-policy-gpu-legacy.h \
                 $(srcdir)/gpu-program.h \
-                $(srcdir)/gpu-lookup-ordered-shader.inc.h \
-                $(srcdir)/gpu-lookup-vptree-shader.inc.h \
-                $(srcdir)/gpu-lookup-rbc-shader.inc.h \
-                $(srcdir)/gpu-lookup-mahalanobis-shader.inc.h \
-                $(srcdir)/gpu-lookup-certlut-shader.inc.h \
                 $(srcdir)/gpu-palette-program.inc.h \
                 $(srcdir)/gpu-palette-fused-prefix.inc.h \
                 $(srcdir)/gpu-palette-fused-suffix.inc.h \
@@ -486,9 +522,9 @@ endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-palette-metal.m \
-$(srcdir)/gpu-lookup-compat.m \
-$(srcdir)/gpu-palette-metal-fhedt.inc.h \
-$(srcdir)/gpu-palette-metal-bitlut.inc.h \
+$(srcdir)/lookup-policy-gpu-compat.m \
+$(srcdir)/lookup-policy-fhedt-gpu.inc.h \
+$(srcdir)/lookup-policy-bitlut-gpu.inc.h \
 $(srcdir)/palette-kmeans-metal.m \
 $(srcdir)/progressive-gpu-metal.m
 endif
@@ -731,3 +767,5 @@ CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif
 
 include $(top_srcdir)/build-aux/dependency-bootstrap.am
+
+EXTRA_DIST += $(SIXEL_METAL_INPUTS) generated-metal/meson.build

@@ -3,14 +3,15 @@
 #include "config.h"
 #endif
 #include <string.h>
-#include "gpu-lookup-ordered.h"
+#include "lookup-policy-gpu-legacy.h"
 #include "threading.h"
 #include "sixel_atomic.h"
-#include "gpu-lookup-ordered-shader.inc.h"
+#include "gpu-palette.h"
 
-/* The policy owns its representation, cache key and completion protocol.
- * No other lookup can borrow this cache or depend on its table layout. */
-typedef struct ordered_plan {
+/* Explicit migration adapter for the pre-component GPU implementations.
+ * It freezes old settings outside PaletteApply. New lookup components never
+ * enter this adapter or extend the legacy shader's policy switches. */
+typedef struct legacy_plan {
     sixel_gpu_lookup_plan_interface_t iface;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
@@ -21,41 +22,42 @@ typedef struct ordered_plan {
     unsigned int count;
     int busy;
     int valid;
-    sixel_gpu_lookup_build_pass_t passes[2];
-} ordered_plan_t;
+    sixel_lookup_policy_configuration_t configuration;
+} legacy_plan_t;
 
-typedef struct ordered_binding {
+typedef struct legacy_binding {
     sixel_gpu_lookup_binding_interface_t iface;
     sixel_atomic_u32_t ref;
-    ordered_plan_t *plan;
+    legacy_plan_t *plan;
     int finished;
     int rebuild;
-} ordered_binding_t;
+} legacy_binding_t;
 
-typedef struct ordered_preparer {
+typedef struct legacy_preparer {
     sixel_gpu_lookup_preparer_interface_t iface;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
     sixel_mutex_t gate;
-    ordered_plan_t *cached;
-} ordered_preparer_t;
+    legacy_plan_t *cached;
+    sixel_lookup_policy_configuration_t configuration;
+} legacy_preparer_t;
 
 static void
-ordered_plan_ref(sixel_gpu_lookup_plan_interface_t *self)
+legacy_plan_ref(sixel_gpu_lookup_plan_interface_t *self)
 {
-    ordered_plan_t *plan;
+    legacy_plan_t *plan;
 
-    plan = (ordered_plan_t *)self;
+    plan = (legacy_plan_t *)self;
     (void)sixel_atomic_fetch_add_u32(&plan->ref, 1);
 }
 
 static void
-ordered_plan_unref(sixel_gpu_lookup_plan_interface_t *self)
+legacy_plan_unref(sixel_gpu_lookup_plan_interface_t *self)
 {
-    ordered_plan_t *plan;
+    legacy_plan_t *plan;
     sixel_allocator_t *allocator;
 
-    plan = (ordered_plan_t *)self;
+    plan = (legacy_plan_t *)self;
     if (sixel_atomic_fetch_sub_u32(&plan->ref, 1) != 1) return;
     allocator = plan->allocator;
     if (plan->workspace != NULL) plan->workspace->vtbl->unref(plan->workspace);
@@ -66,59 +68,57 @@ ordered_plan_unref(sixel_gpu_lookup_plan_interface_t *self)
 }
 
 static SIXELSTATUS
-ordered_describe(sixel_gpu_lookup_plan_interface_t const *self,
+legacy_describe(sixel_gpu_lookup_plan_interface_t const *self,
     sixel_gpu_lookup_program_view_t *view)
 {
-    ordered_plan_t const *plan;
+    legacy_plan_t const *plan;
 
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
-    plan = (ordered_plan_t const *)self;
+    plan = (legacy_plan_t const *)self;
     memset(view, 0, sizeof(*view));
-    view->program_format = "metal.lookup-rgb8.v1";
-    view->logical_name = "ordered";
-    view->chunks = ordered_chunks;
-    view->chunk_count = sizeof(ordered_chunks) / sizeof(ordered_chunks[0]);
+    view->program_format = "libsixel.legacy-palette.v1";
+    view->logical_name = "legacy-adapter";
     view->palette = plan->palette;
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
-    view->workspace_size = 163840U * sizeof(uint32_t);
-    view->build_passes = plan->passes;
-    view->build_pass_count = 2;
+    view->constants = &plan->configuration;
+    view->constants_size = sizeof(plan->configuration);
+    view->workspace_size = 1;
     return SIXEL_OK;
 }
 
 static void
-ordered_binding_ref(sixel_gpu_lookup_binding_interface_t *self)
+legacy_binding_ref(sixel_gpu_lookup_binding_interface_t *self)
 {
-    ordered_binding_t *binding;
+    legacy_binding_t *binding;
 
-    binding = (ordered_binding_t *)self;
+    binding = (legacy_binding_t *)self;
     (void)sixel_atomic_fetch_add_u32(&binding->ref, 1);
 }
 
 static void
-ordered_binding_unref(sixel_gpu_lookup_binding_interface_t *self)
+legacy_binding_unref(sixel_gpu_lookup_binding_interface_t *self)
 {
-    ordered_binding_t *binding;
-    ordered_plan_t *plan;
+    legacy_binding_t *binding;
+    legacy_plan_t *plan;
 
-    binding = (ordered_binding_t *)self;
+    binding = (legacy_binding_t *)self;
     if (sixel_atomic_fetch_sub_u32(&binding->ref, 1) != 1) return;
     plan = binding->plan;
     /* An unfinished lease intentionally remains busy; unref cannot certify
      * GPU completion or allow another invocation to overwrite its storage. */
     sixel_allocator_free(plan->allocator, binding);
-    ordered_plan_unref(&plan->iface);
+    legacy_plan_unref(&plan->iface);
 }
 
 static SIXELSTATUS
-ordered_binding_view(sixel_gpu_lookup_binding_interface_t const *self,
+legacy_binding_view(sixel_gpu_lookup_binding_interface_t const *self,
     sixel_gpu_lookup_binding_view_t *view)
 {
-    ordered_binding_t const *binding;
+    legacy_binding_t const *binding;
 
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
-    binding = (ordered_binding_t const *)self;
+    binding = (legacy_binding_t const *)self;
     sixel_mutex_lock(&binding->plan->gate);
     if (binding->finished) {
         sixel_mutex_unlock(&binding->plan->gate);
@@ -131,12 +131,12 @@ ordered_binding_view(sixel_gpu_lookup_binding_interface_t const *self,
 }
 
 static SIXELSTATUS
-ordered_finish(sixel_gpu_lookup_binding_interface_t *self, SIXELSTATUS outcome)
+legacy_finish(sixel_gpu_lookup_binding_interface_t *self, SIXELSTATUS outcome)
 {
-    ordered_binding_t *binding;
-    ordered_plan_t *plan;
+    legacy_binding_t *binding;
+    legacy_plan_t *plan;
 
-    binding = (ordered_binding_t *)self;
+    binding = (legacy_binding_t *)self;
     plan = binding->plan;
     sixel_mutex_lock(&plan->gate);
     if (binding->finished) {
@@ -150,22 +150,21 @@ ordered_finish(sixel_gpu_lookup_binding_interface_t *self, SIXELSTATUS outcome)
     return SIXEL_OK;
 }
 
-static sixel_gpu_lookup_binding_vtbl_t const ordered_binding_vtbl = {
-    ordered_binding_ref, ordered_binding_unref,
-    ordered_binding_view, ordered_finish
+static sixel_gpu_lookup_binding_vtbl_t const legacy_binding_vtbl = {
+    legacy_binding_ref, legacy_binding_unref, legacy_binding_view, legacy_finish
 };
 
 static SIXELSTATUS
-ordered_begin(sixel_gpu_lookup_plan_interface_t *self,
+legacy_begin(sixel_gpu_lookup_plan_interface_t *self,
     sixel_gpu_lookup_binding_interface_t **result)
 {
-    ordered_plan_t *plan;
-    ordered_binding_t *binding;
+    legacy_plan_t *plan;
+    legacy_binding_t *binding;
     SIXELSTATUS status;
 
     if (result == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
-    plan = (ordered_plan_t *)self;
+    plan = (legacy_plan_t *)self;
     sixel_mutex_lock(&plan->gate);
     if (plan->busy) {
         sixel_mutex_unlock(&plan->gate);
@@ -174,7 +173,7 @@ ordered_begin(sixel_gpu_lookup_plan_interface_t *self,
     status = SIXEL_OK;
     if (plan->workspace == NULL) {
         status = plan->device->vtbl->create_buffer(plan->device,
-            163840U * sizeof(uint32_t), &plan->workspace);
+            1, &plan->workspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_mutex_unlock(&plan->gate);
@@ -185,55 +184,55 @@ ordered_begin(sixel_gpu_lookup_plan_interface_t *self,
         sixel_mutex_unlock(&plan->gate);
         return SIXEL_BAD_ALLOCATION;
     }
-    binding->iface.vtbl = &ordered_binding_vtbl;
+    binding->iface.vtbl = &legacy_binding_vtbl;
     binding->ref = 1U;
     binding->plan = plan;
     binding->rebuild = !plan->valid;
-    ordered_plan_ref(self);
+    legacy_plan_ref(self);
     plan->busy = 1;
     sixel_mutex_unlock(&plan->gate);
     *result = &binding->iface;
     return SIXEL_OK;
 }
 
-static sixel_gpu_lookup_plan_vtbl_t const ordered_plan_vtbl = {
-    ordered_plan_ref, ordered_plan_unref, ordered_describe, ordered_begin
+static sixel_gpu_lookup_plan_vtbl_t const legacy_plan_vtbl = {
+    legacy_plan_ref, legacy_plan_unref, legacy_describe, legacy_begin
 };
 
 static void
-ordered_ref(sixel_gpu_lookup_preparer_interface_t *self)
+legacy_ref(sixel_gpu_lookup_preparer_interface_t *self)
 {
-    ordered_preparer_t *preparer;
+    legacy_preparer_t *preparer;
 
-    preparer = (ordered_preparer_t *)self;
+    preparer = (legacy_preparer_t *)self;
     (void)sixel_atomic_fetch_add_u32(&preparer->ref, 1);
 }
 
 static void
-ordered_unref(sixel_gpu_lookup_preparer_interface_t *self)
+legacy_unref(sixel_gpu_lookup_preparer_interface_t *self)
 {
-    ordered_preparer_t *preparer;
+    legacy_preparer_t *preparer;
     sixel_allocator_t *allocator;
 
-    preparer = (ordered_preparer_t *)self;
+    preparer = (legacy_preparer_t *)self;
     if (sixel_atomic_fetch_sub_u32(&preparer->ref, 1) != 1) return;
     allocator = preparer->allocator;
-    if (preparer->cached != NULL) ordered_plan_unref(&preparer->cached->iface);
+    if (preparer->cached != NULL) legacy_plan_unref(&preparer->cached->iface);
     sixel_mutex_destroy(&preparer->gate);
     sixel_allocator_free(allocator, preparer);
     sixel_allocator_unref(allocator);
 }
 
 static SIXELSTATUS
-ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
+legacy_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_lookup_execution_request_t const *request,
     sixel_gpu_device_interface_t *device,
     sixel_gpu_lookup_plan_interface_t **result)
 {
-    ordered_preparer_t *preparer;
-    ordered_plan_t *plan;
+    legacy_preparer_t *preparer;
+    legacy_plan_t *plan;
     sixel_palette_entries_view_t entries;
-    unsigned int width;
+    sixel_gpu_palette_request_t admission;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -254,7 +253,14 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             entries.entries_size < request->ncolors * 3U) {
         return SIXEL_BAD_ARGUMENT;
     }
-    preparer = (ordered_preparer_t *)self;
+    preparer = (legacy_preparer_t *)self;
+    memset(&admission, 0, sizeof(admission));
+    sixel_gpu_palette_set_lookup_configuration(&admission,
+        &preparer->configuration);
+    if (preparer->configuration.kind == SIXEL_LUT_POLICY_FHEDT &&
+            !sixel_gpu_palette_fhedt_is_supported(&admission)) {
+        return SIXEL_FEATURE_ERROR;
+    }
     sixel_mutex_lock(&preparer->gate);
     plan = preparer->cached;
     if (plan == NULL || plan->device != device ||
@@ -273,7 +279,7 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             return status;
         }
 #endif
-        plan->iface.vtbl = &ordered_plan_vtbl;
+        plan->iface.vtbl = &legacy_plan_vtbl;
         plan->ref = 1U;
         plan->allocator = preparer->allocator;
         sixel_allocator_ref(plan->allocator);
@@ -281,38 +287,28 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
-        width = 32;
-        while (width < plan->count) width *= 2;
-        plan->passes[0].entry_point = "ordered_build_rows";
-        plan->passes[0].groups[0] = plan->count;
-        plan->passes[0].threads[0] = width;
-        plan->passes[1].entry_point = "ordered_build_seeds";
-        plan->passes[1].groups[0] = 256;
-        plan->passes[1].threads[0] = 128;
-        plan->passes[0].groups[1] = plan->passes[0].groups[2] = 1;
-        plan->passes[0].threads[1] = plan->passes[0].threads[2] = 1;
-        plan->passes[1].groups[1] = plan->passes[1].groups[2] = 1;
-        plan->passes[1].threads[1] = plan->passes[1].threads[2] = 1;
+        plan->configuration = preparer->configuration;
         if (preparer->cached != NULL) {
-            ordered_plan_unref(&preparer->cached->iface);
+            legacy_plan_unref(&preparer->cached->iface);
         }
         preparer->cached = plan;
     }
-    ordered_plan_ref(&plan->iface);
+    legacy_plan_ref(&plan->iface);
     *result = &plan->iface;
     sixel_mutex_unlock(&preparer->gate);
     return SIXEL_OK;
 }
 
-static sixel_gpu_lookup_preparer_vtbl_t const ordered_vtbl = {
-    ordered_ref, ordered_unref, ordered_prepare
+static sixel_gpu_lookup_preparer_vtbl_t const legacy_vtbl = {
+    legacy_ref, legacy_unref, legacy_prepare
 };
 
 SIXELSTATUS
-sixel_gpu_lookup_ordered_create(sixel_allocator_t *allocator,
+sixel_gpu_lookup_legacy_create(sixel_allocator_t *allocator,
+    sixel_lookup_policy_configuration_t const *configuration,
     sixel_gpu_lookup_preparer_interface_t **result)
 {
-    ordered_preparer_t *preparer;
+    legacy_preparer_t *preparer;
 #if SIXEL_ENABLE_THREADS
     SIXELSTATUS status;
 #endif
@@ -328,9 +324,10 @@ sixel_gpu_lookup_ordered_create(sixel_allocator_t *allocator,
         return status;
     }
 #endif
-    preparer->iface.vtbl = &ordered_vtbl;
+    preparer->iface.vtbl = &legacy_vtbl;
     preparer->ref = 1U;
     preparer->allocator = allocator;
+    preparer->configuration = *configuration;
     sixel_allocator_ref(allocator);
     *result = &preparer->iface;
     return SIXEL_OK;

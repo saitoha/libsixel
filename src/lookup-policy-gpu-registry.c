@@ -2,13 +2,13 @@
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
-#include "gpu-lookup.h"
-#include "gpu-lookup-ordered.h"
-#include "gpu-lookup-vptree.h"
-#include "gpu-lookup-rbc.h"
-#include "gpu-lookup-mahalanobis.h"
-#include "gpu-lookup-certlut.h"
-#include "gpu-lookup-legacy.h"
+#include "lookup-policy-gpu.h"
+#include "lookup-policy-ordered-gpu.h"
+#include "lookup-policy-vptree-gpu.h"
+#include "lookup-policy-rbc-gpu.h"
+#include "lookup-policy-mahalanobis-gpu.h"
+#include "lookup-policy-certlut-gpu.h"
+#include "lookup-policy-gpu-legacy.h"
 
 /* Composition is the only layer that knows concrete lookup constructors.
  * Independent providers extend this table; execution does not change. */

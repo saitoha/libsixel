@@ -154,6 +154,17 @@ The initial program ABI, `metal.lookup-rgb8.v1`, admits independent byte RGB loo
 
 `ordered`, `vptree`, [RBC](../palette-application/lookup-policy/rbc.md#metal-rgb8-execution), [Mahalanobis](../palette-application/lookup-policy/mahalanobis.md#metal-rgb8-execution) and [certlut](../palette-application/lookup-policy/certlut.md#metal-rgb8-execution) have separate construction, query and cache implementations. Each owns its search arithmetic and tables, avoiding a shared search service with unrelated reasons to change. Only the composition registry knows concrete constructors. The explicitly named legacy adapter preserves the existing GPU implementations of the other policies; those implementations have not yet been migrated to independent program providers. The legacy adapter is not an extension point for new policies.
 
+Concrete policy files share the `lookup-policy-<name>` stem. The following certlut paths show where to read each responsibility; the GPU source is embedded at build time and is never opened by the running library. [Metal embedding](../../build/support-scripts.md#embedded-metal-sources) owns generation and build dependencies.
+
+| Responsibility | Source or build product |
+| --- | --- |
+| CPU policy | [lookup-policy-certlut.c](../../../src/lookup-policy-certlut.c) |
+| GPU preparation, cache and workspace lifetime | [lookup-policy-certlut-gpu.c](../../../src/lookup-policy-certlut-gpu.c) and its private header |
+| GPU construction and search arithmetic | [lookup-policy-certlut-gpu.metal](../../../src/lookup-policy-certlut-gpu.metal) |
+| Embedded literal fragments | Build-tree `src/generated-metal/lookup-policy-certlut-gpu-shader.inc.h` |
+
+Legacy shader extraction follows the same policy-first naming without changing component ownership. Its build-only includes remain in the legacy runtime: [FHEDT](../../../src/lookup-policy-fhedt-gpu.inc.h) and the [5bit/6bit table](../../../src/lookup-policy-bitlut-gpu.inc.h) are host fragments, while their `.metal` files contain GPU code. Palette query preparation, retained-pixel handling and fused application stay in `gpu-palette-*.metal`; they do not become shared lookup algorithms.
+
 ### The per-pixel loop belongs to the dither policy
 
 `sixel_dither_apply_palette()` resolves precision, transparency fences, GPU eligibility, scan order, the dither policy, and the lookup policy. The selected `IDitherPolicy.apply()` implementation then owns the serial or per-band pixel loop. Its conceptual contract is:

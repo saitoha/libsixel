@@ -117,3 +117,6 @@ site/
 
 # Transient staticcheck workspaces, including child-tool temporary files.
 .staticcheck-tmp/
+
+# Embedded Metal source fragments are generated in the build tree.
+/src/generated-metal/*-shader.inc.h
