@@ -1,0 +1,58 @@
+#!/bin/sh
+# Meson's archive adapter: keep both CPU inventories out of process arguments.
+# The SDK cosmoar rejects @file and does not expose help through -h. Its two
+# GNU archivers accept response files, so pass each its own translated list.
+set -eu
+
+case ${1:-} in
+    -h|--help)
+        printf '%s\n' 'Usage: cosmoar-meson csr[D] archive objects... | @file' \
+            '  [D] deterministic archive' '  @<file> read quoted object paths'
+        exit 0
+        ;;
+esac
+sdk_ar=$(command -v cosmoar)
+sdk_bin=${sdk_ar%/*}
+case ${1:-} in
+    --version) exec "$sdk_ar" --version ;;
+    csr|csrD|rcs|rcsD) mode=$1 ;;
+    *) echo 'cosmoar-meson: expected a Meson create/archive operation' >&2
+       exit 1 ;;
+esac
+test "$#" -ge 3 || {
+    echo 'cosmoar-meson: missing archive or object inputs' >&2
+    exit 1
+}
+archive=$2
+shift 2
+case $archive in
+    */*) archive_dir=${archive%/*}; archive_name=${archive##*/} ;;
+    *) archive_dir=.; archive_name=$archive ;;
+esac
+arm_archive=$archive_dir/.aarch64/$archive_name
+work=$(mktemp -d "${TMPDIR:-/tmp}/cosmoar-meson-XXXXXX")
+# Only remove incomplete outputs after parsing has succeeded. Invalid input
+# must not delete an existing pair of archives.
+started=no
+finished=no
+trap 'rm -rf "$work"; if test "$started" = yes && test "$finished" = no; then
+    rm -f "$archive" "$arm_archive"; fi' 0
+trap 'exit 1' 1 2 3 15
+for input do
+    case $input in
+        *'
+'*) echo 'cosmoar-meson: newline in an input path' >&2; exit 1 ;;
+        @*) printf 'R%s\n' "${input#@}" ;;
+        *) printf 'D%s\n' "$input" ;;
+    esac
+done > "$work/inputs"
+# Parse GCC response quoting without eval, word splitting or shell expansion.
+awk -v x86="$work/x86.rsp" -v arm="$work/arm.rsp" \
+    -f "${0%/*}/cosmoar-response.awk" "$work/inputs" >&2
+mkdir -p "$archive_dir/.aarch64"
+started=yes
+rm -f "$archive" "$arm_archive"
+# Exactly one bounded invocation per CPU, including symbol-index creation.
+"$sdk_bin/x86_64-linux-cosmo-ar" "$mode" "$archive" "@$work/x86.rsp"
+"$sdk_bin/aarch64-linux-cosmo-ar" "$mode" "$arm_archive" "@$work/arm.rsp"
+finished=yes

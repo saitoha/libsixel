@@ -73,6 +73,7 @@ EXTRA_DIST = tools/ci-vm-result.sh tools/quicklook-user.sh tools/quicklook-ci.py
     build-aux/test-dist.am \
     build-aux/copy-test-dist.sh \
     build-aux/test-runner-link.am \
+    build-aux/cosmoar-meson build-aux/cosmoar-response.awk \
     build-aux/emscripten-node-stdio.js \
     build-aux/test-runner-amalgamation-defines.awk \
     build-aux/clean-test-logs.sh \
