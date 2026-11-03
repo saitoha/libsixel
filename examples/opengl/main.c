@@ -490,7 +490,7 @@ main(int argc, char** argv)
         if (signaled)
             break;
 
-        printf("\0338");
+        printf("\033" "8");
         fflush(stdout);
 #if USE_OSMESA
         pixbuf = pbuffer;

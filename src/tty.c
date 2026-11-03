@@ -1153,7 +1153,7 @@ sixel_tty_restore_animation_cursor_to_bottom(int outfd, int height)
         }
         nwrite = sixel_compat_snprintf(sequence,
                                        sizeof(sequence),
-                                       "\0338\033[%dB\r",
+                                       "\033" "8\033[%dB\r",
                                        cellheight);
         if (nwrite <= 0 || nwrite >= (int)sizeof(sequence)) {
             return SIXEL_FALSE;
@@ -1166,7 +1166,7 @@ sixel_tty_restore_animation_cursor_to_bottom(int outfd, int height)
     }
 #endif
 
-    written = sixel_compat_write(outfd, "\0338\r", 3u);
+    written = sixel_compat_write(outfd, "\033" "8\r", 3u);
     if (written != 3) {
         return SIXEL_FALSE;
     }
@@ -2247,7 +2247,7 @@ sixel_tty_place_image(
     /* Restore an existing animation anchor with DECRC. Mode 2 reserves
      * space only; the presentation sink will save its own initial anchor. */
     if (placement == 1) {
-        nwrite = f_write("\0338", 2, priv);
+        nwrite = f_write("\033" "8", 2, priv);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(

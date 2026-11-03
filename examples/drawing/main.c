@@ -66,7 +66,7 @@ canvas_sync(struct canvas *c)
 
 static int
 canvas_redraw(struct canvas *c, sixel_dither_t *dither, sixel_output_t *output) {
-    printf("\0338");
+    printf("\033" "8");
     if (SIXEL_FAILED(sixel_encode(c->buf, c->width, c->height, 0, dither, output)))
         return 1;
     return 0;
@@ -373,7 +373,7 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    printf("\033[?25l" "\0338");
+    printf("\033[?25l" "\033" "8");
     printf("\033[?1;3;256S" "\033[?80;8452h");
 
     if (canvas_init(&c, 640, 480) != 0)
