@@ -212,14 +212,13 @@ jobs:
             done
         )
 
-        if test -f "${SHELL} $(pwd)/tools/ar-msvc.sh"; then
-            export AR="$(pwd)/tools/ar-msvc.sh"
-            export ARFLAGS=
-        else
-            export AR="${SHELL} $(pwd)/ar-lib lib"
-            export ARFLAGS=cr
-        fi
-        ./configure CC=cl LD=link NM="dumpbin -symbols" STRIP=: RANLIB=: \
+        # master uses the legacy root layout; develop keeps auxiliary scripts
+        # in build-aux. Resolve against the branch checked out by this job.
+        ar_lib=ar-lib
+        test ! -f build-aux/ar-lib || ar_lib=build-aux/ar-lib
+        test -f "$ar_lib"
+        ./configure CC=cl LD=link AR="${SHELL} $(pwd)/${ar_lib} lib" \
+            ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
             --without-png \
             --without-jpeg \
