@@ -2608,6 +2608,8 @@ completion_embed = custom_target('completion_embed.h',
   install: false,
 )
 
+subdir('src/generated-metal')
+
 if amalgamated_sources_enabled
   subdir('amalgamation')
 endif

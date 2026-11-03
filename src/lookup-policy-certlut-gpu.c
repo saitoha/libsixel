@@ -3,15 +3,29 @@
 #include "config.h"
 #endif
 #include <string.h>
-#include "gpu-lookup-legacy.h"
+#include "lookup-policy-certlut-gpu.h"
 #include "threading.h"
 #include "sixel_atomic.h"
-#include "gpu-palette.h"
+/* The readable source is lookup-policy-certlut-gpu.metal. */
+static char const * const certlut_chunks[] = {
+#include <generated-metal/lookup-policy-certlut-gpu-shader.inc.h>
+};
 
-/* Explicit migration adapter for the pre-component GPU implementations.
- * It freezes old settings outside PaletteApply. New lookup components never
- * enter this adapter or extend the legacy shader's policy switches. */
-typedef struct legacy_plan {
+/* RGB8 certlut owns a fixed cell grid and its boundary candidates. The
+ * immutable table is built on the GPU, independently of the CPU's lazy
+ * pair-only certificates. Its full-competitor affine bounds preserve the
+ * exhaustive RGB minimum and the first palette index at a tie.
+ *
+ * This component owns its shader, cache identity, exclusive workspace lease
+ * and completion state. No other lookup depends on its private layout. */
+enum {
+    CERTLUT_PALETTE_WORDS = 256,
+    CERTLUT_CELLS = 4096,
+    CERTLUT_CELL_COLORS = 64,
+    CERTLUT_WORDS = CERTLUT_PALETTE_WORDS
+        + CERTLUT_CELLS * (CERTLUT_CELL_COLORS + 1)
+};
+typedef struct certlut_plan {
     sixel_gpu_lookup_plan_interface_t iface;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
@@ -22,42 +36,41 @@ typedef struct legacy_plan {
     unsigned int count;
     int busy;
     int valid;
-    sixel_lookup_policy_configuration_t configuration;
-} legacy_plan_t;
+    sixel_gpu_lookup_build_pass_t passes[2];
+} certlut_plan_t;
 
-typedef struct legacy_binding {
+typedef struct certlut_binding {
     sixel_gpu_lookup_binding_interface_t iface;
     sixel_atomic_u32_t ref;
-    legacy_plan_t *plan;
+    certlut_plan_t *plan;
     int finished;
     int rebuild;
-} legacy_binding_t;
+} certlut_binding_t;
 
-typedef struct legacy_preparer {
+typedef struct certlut_preparer {
     sixel_gpu_lookup_preparer_interface_t iface;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
     sixel_mutex_t gate;
-    legacy_plan_t *cached;
-    sixel_lookup_policy_configuration_t configuration;
-} legacy_preparer_t;
+    certlut_plan_t *cached;
+} certlut_preparer_t;
 
 static void
-legacy_plan_ref(sixel_gpu_lookup_plan_interface_t *self)
+certlut_plan_ref(sixel_gpu_lookup_plan_interface_t *self)
 {
-    legacy_plan_t *plan;
+    certlut_plan_t *plan;
 
-    plan = (legacy_plan_t *)self;
+    plan = (certlut_plan_t *)self;
     (void)sixel_atomic_fetch_add_u32(&plan->ref, 1);
 }
 
 static void
-legacy_plan_unref(sixel_gpu_lookup_plan_interface_t *self)
+certlut_plan_unref(sixel_gpu_lookup_plan_interface_t *self)
 {
-    legacy_plan_t *plan;
+    certlut_plan_t *plan;
     sixel_allocator_t *allocator;
 
-    plan = (legacy_plan_t *)self;
+    plan = (certlut_plan_t *)self;
     if (sixel_atomic_fetch_sub_u32(&plan->ref, 1) != 1) return;
     allocator = plan->allocator;
     if (plan->workspace != NULL) plan->workspace->vtbl->unref(plan->workspace);
@@ -68,57 +81,60 @@ legacy_plan_unref(sixel_gpu_lookup_plan_interface_t *self)
 }
 
 static SIXELSTATUS
-legacy_describe(sixel_gpu_lookup_plan_interface_t const *self,
+certlut_describe(sixel_gpu_lookup_plan_interface_t const *self,
     sixel_gpu_lookup_program_view_t *view)
 {
-    legacy_plan_t const *plan;
+    certlut_plan_t const *plan;
 
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
-    plan = (legacy_plan_t const *)self;
+    plan = (certlut_plan_t const *)self;
     memset(view, 0, sizeof(*view));
-    view->program_format = "libsixel.legacy-palette.v1";
-    view->logical_name = "legacy-adapter";
+    view->program_format = "metal.lookup-rgb8.v1";
+    view->logical_name = "certlut";
+    view->chunks = certlut_chunks;
+    view->chunk_count = sizeof(certlut_chunks) /
+        sizeof(certlut_chunks[0]);
     view->palette = plan->palette;
     view->palette_size = plan->count * 3U;
     view->ncolors = plan->count;
-    view->constants = &plan->configuration;
-    view->constants_size = sizeof(plan->configuration);
-    view->workspace_size = 1;
+    view->workspace_size = CERTLUT_WORDS * sizeof(uint32_t);
+    view->build_passes = plan->passes;
+    view->build_pass_count = 2;
     return SIXEL_OK;
 }
 
 static void
-legacy_binding_ref(sixel_gpu_lookup_binding_interface_t *self)
+certlut_binding_ref(sixel_gpu_lookup_binding_interface_t *self)
 {
-    legacy_binding_t *binding;
+    certlut_binding_t *binding;
 
-    binding = (legacy_binding_t *)self;
+    binding = (certlut_binding_t *)self;
     (void)sixel_atomic_fetch_add_u32(&binding->ref, 1);
 }
 
 static void
-legacy_binding_unref(sixel_gpu_lookup_binding_interface_t *self)
+certlut_binding_unref(sixel_gpu_lookup_binding_interface_t *self)
 {
-    legacy_binding_t *binding;
-    legacy_plan_t *plan;
+    certlut_binding_t *binding;
+    certlut_plan_t *plan;
 
-    binding = (legacy_binding_t *)self;
+    binding = (certlut_binding_t *)self;
     if (sixel_atomic_fetch_sub_u32(&binding->ref, 1) != 1) return;
     plan = binding->plan;
     /* An unfinished lease intentionally remains busy; unref cannot certify
      * GPU completion or allow another invocation to overwrite its storage. */
     sixel_allocator_free(plan->allocator, binding);
-    legacy_plan_unref(&plan->iface);
+    certlut_plan_unref(&plan->iface);
 }
 
 static SIXELSTATUS
-legacy_binding_view(sixel_gpu_lookup_binding_interface_t const *self,
+certlut_binding_view(sixel_gpu_lookup_binding_interface_t const *self,
     sixel_gpu_lookup_binding_view_t *view)
 {
-    legacy_binding_t const *binding;
+    certlut_binding_t const *binding;
 
     if (view == NULL) return SIXEL_BAD_ARGUMENT;
-    binding = (legacy_binding_t const *)self;
+    binding = (certlut_binding_t const *)self;
     sixel_mutex_lock(&binding->plan->gate);
     if (binding->finished) {
         sixel_mutex_unlock(&binding->plan->gate);
@@ -131,12 +147,13 @@ legacy_binding_view(sixel_gpu_lookup_binding_interface_t const *self,
 }
 
 static SIXELSTATUS
-legacy_finish(sixel_gpu_lookup_binding_interface_t *self, SIXELSTATUS outcome)
+certlut_finish(sixel_gpu_lookup_binding_interface_t *self,
+    SIXELSTATUS outcome)
 {
-    legacy_binding_t *binding;
-    legacy_plan_t *plan;
+    certlut_binding_t *binding;
+    certlut_plan_t *plan;
 
-    binding = (legacy_binding_t *)self;
+    binding = (certlut_binding_t *)self;
     plan = binding->plan;
     sixel_mutex_lock(&plan->gate);
     if (binding->finished) {
@@ -150,21 +167,22 @@ legacy_finish(sixel_gpu_lookup_binding_interface_t *self, SIXELSTATUS outcome)
     return SIXEL_OK;
 }
 
-static sixel_gpu_lookup_binding_vtbl_t const legacy_binding_vtbl = {
-    legacy_binding_ref, legacy_binding_unref, legacy_binding_view, legacy_finish
+static sixel_gpu_lookup_binding_vtbl_t const certlut_binding_vtbl = {
+    certlut_binding_ref, certlut_binding_unref, certlut_binding_view,
+    certlut_finish
 };
 
 static SIXELSTATUS
-legacy_begin(sixel_gpu_lookup_plan_interface_t *self,
+certlut_begin(sixel_gpu_lookup_plan_interface_t *self,
     sixel_gpu_lookup_binding_interface_t **result)
 {
-    legacy_plan_t *plan;
-    legacy_binding_t *binding;
+    certlut_plan_t *plan;
+    certlut_binding_t *binding;
     SIXELSTATUS status;
 
     if (result == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
-    plan = (legacy_plan_t *)self;
+    plan = (certlut_plan_t *)self;
     sixel_mutex_lock(&plan->gate);
     if (plan->busy) {
         sixel_mutex_unlock(&plan->gate);
@@ -173,7 +191,7 @@ legacy_begin(sixel_gpu_lookup_plan_interface_t *self,
     status = SIXEL_OK;
     if (plan->workspace == NULL) {
         status = plan->device->vtbl->create_buffer(plan->device,
-            1, &plan->workspace);
+            CERTLUT_WORDS * sizeof(uint32_t), &plan->workspace);
     }
     if (SIXEL_FAILED(status)) {
         sixel_mutex_unlock(&plan->gate);
@@ -184,55 +202,56 @@ legacy_begin(sixel_gpu_lookup_plan_interface_t *self,
         sixel_mutex_unlock(&plan->gate);
         return SIXEL_BAD_ALLOCATION;
     }
-    binding->iface.vtbl = &legacy_binding_vtbl;
+    binding->iface.vtbl = &certlut_binding_vtbl;
     binding->ref = 1U;
     binding->plan = plan;
     binding->rebuild = !plan->valid;
-    legacy_plan_ref(self);
+    certlut_plan_ref(self);
     plan->busy = 1;
     sixel_mutex_unlock(&plan->gate);
     *result = &binding->iface;
     return SIXEL_OK;
 }
 
-static sixel_gpu_lookup_plan_vtbl_t const legacy_plan_vtbl = {
-    legacy_plan_ref, legacy_plan_unref, legacy_describe, legacy_begin
+static sixel_gpu_lookup_plan_vtbl_t const certlut_plan_vtbl = {
+    certlut_plan_ref, certlut_plan_unref, certlut_describe,
+    certlut_begin
 };
 
 static void
-legacy_ref(sixel_gpu_lookup_preparer_interface_t *self)
+certlut_ref(sixel_gpu_lookup_preparer_interface_t *self)
 {
-    legacy_preparer_t *preparer;
+    certlut_preparer_t *preparer;
 
-    preparer = (legacy_preparer_t *)self;
+    preparer = (certlut_preparer_t *)self;
     (void)sixel_atomic_fetch_add_u32(&preparer->ref, 1);
 }
 
 static void
-legacy_unref(sixel_gpu_lookup_preparer_interface_t *self)
+certlut_unref(sixel_gpu_lookup_preparer_interface_t *self)
 {
-    legacy_preparer_t *preparer;
+    certlut_preparer_t *preparer;
     sixel_allocator_t *allocator;
 
-    preparer = (legacy_preparer_t *)self;
+    preparer = (certlut_preparer_t *)self;
     if (sixel_atomic_fetch_sub_u32(&preparer->ref, 1) != 1) return;
     allocator = preparer->allocator;
-    if (preparer->cached != NULL) legacy_plan_unref(&preparer->cached->iface);
+    if (preparer->cached != NULL)
+        certlut_plan_unref(&preparer->cached->iface);
     sixel_mutex_destroy(&preparer->gate);
     sixel_allocator_free(allocator, preparer);
     sixel_allocator_unref(allocator);
 }
 
 static SIXELSTATUS
-legacy_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
+certlut_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     sixel_lookup_execution_request_t const *request,
     sixel_gpu_device_interface_t *device,
     sixel_gpu_lookup_plan_interface_t **result)
 {
-    legacy_preparer_t *preparer;
-    legacy_plan_t *plan;
+    certlut_preparer_t *preparer;
+    certlut_plan_t *plan;
     sixel_palette_entries_view_t entries;
-    sixel_gpu_palette_request_t admission;
     SIXELSTATUS status;
 
     if (request == NULL || device == NULL || result == NULL ||
@@ -253,14 +272,7 @@ legacy_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             entries.entries_size < request->ncolors * 3U) {
         return SIXEL_BAD_ARGUMENT;
     }
-    preparer = (legacy_preparer_t *)self;
-    memset(&admission, 0, sizeof(admission));
-    sixel_gpu_palette_set_lookup_configuration(&admission,
-        &preparer->configuration);
-    if (preparer->configuration.kind == SIXEL_LUT_POLICY_FHEDT &&
-            !sixel_gpu_palette_fhedt_is_supported(&admission)) {
-        return SIXEL_FEATURE_ERROR;
-    }
+    preparer = (certlut_preparer_t *)self;
     sixel_mutex_lock(&preparer->gate);
     plan = preparer->cached;
     if (plan == NULL || plan->device != device ||
@@ -279,7 +291,7 @@ legacy_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             return status;
         }
 #endif
-        plan->iface.vtbl = &legacy_plan_vtbl;
+        plan->iface.vtbl = &certlut_plan_vtbl;
         plan->ref = 1U;
         plan->allocator = preparer->allocator;
         sixel_allocator_ref(plan->allocator);
@@ -287,28 +299,36 @@ legacy_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         device->vtbl->ref(device);
         plan->count = request->ncolors;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
-        plan->configuration = preparer->configuration;
+        plan->passes[0].entry_point = "certlut_pack";
+        plan->passes[0].groups[0] = 8;
+        plan->passes[0].threads[0] = 32;
+        plan->passes[0].groups[1] = plan->passes[0].groups[2] = 1;
+        plan->passes[0].threads[1] = plan->passes[0].threads[2] = 1;
+        plan->passes[1].entry_point = "certlut_build";
+        plan->passes[1].groups[0] = CERTLUT_CELLS / 32;
+        plan->passes[1].threads[0] = 32;
+        plan->passes[1].groups[1] = plan->passes[1].groups[2] = 1;
+        plan->passes[1].threads[1] = plan->passes[1].threads[2] = 1;
         if (preparer->cached != NULL) {
-            legacy_plan_unref(&preparer->cached->iface);
+            certlut_plan_unref(&preparer->cached->iface);
         }
         preparer->cached = plan;
     }
-    legacy_plan_ref(&plan->iface);
+    certlut_plan_ref(&plan->iface);
     *result = &plan->iface;
     sixel_mutex_unlock(&preparer->gate);
     return SIXEL_OK;
 }
 
-static sixel_gpu_lookup_preparer_vtbl_t const legacy_vtbl = {
-    legacy_ref, legacy_unref, legacy_prepare
+static sixel_gpu_lookup_preparer_vtbl_t const certlut_vtbl = {
+    certlut_ref, certlut_unref, certlut_prepare
 };
 
 SIXELSTATUS
-sixel_gpu_lookup_legacy_create(sixel_allocator_t *allocator,
-    sixel_lookup_policy_configuration_t const *configuration,
+sixel_gpu_lookup_certlut_create(sixel_allocator_t *allocator,
     sixel_gpu_lookup_preparer_interface_t **result)
 {
-    legacy_preparer_t *preparer;
+    certlut_preparer_t *preparer;
 #if SIXEL_ENABLE_THREADS
     SIXELSTATUS status;
 #endif
@@ -324,10 +344,9 @@ sixel_gpu_lookup_legacy_create(sixel_allocator_t *allocator,
         return status;
     }
 #endif
-    preparer->iface.vtbl = &legacy_vtbl;
+    preparer->iface.vtbl = &certlut_vtbl;
     preparer->ref = 1U;
     preparer->allocator = allocator;
-    preparer->configuration = *configuration;
     sixel_allocator_ref(allocator);
     *result = &preparer->iface;
     return SIXEL_OK;

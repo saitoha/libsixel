@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
-#include "gpu-lookup.h"
+#include "lookup-policy-gpu.h"
 #include "gpu-palette.h"
 #include "palette.h"
 

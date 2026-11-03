@@ -143,7 +143,7 @@
 #include "filter-final-merge.h"
 #include "filter-factory.h"
 #include "gpu-palette.h"
-#include "gpu-lookup.h"
+#include "lookup-policy-gpu.h"
 #include "filter-palette.h"
 #include "filter-fhedt.h"
 #include "filter-vptree.h"

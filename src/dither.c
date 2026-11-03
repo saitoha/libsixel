@@ -55,7 +55,7 @@
 
 #include "factory.h"
 #include "gpu-palette.h"
-#include "gpu-lookup.h"
+#include "lookup-policy-gpu.h"
 #include "loader-common.h"
 #include "lookup-policy.h"
 #include "lookup-policy-fhedt.h"

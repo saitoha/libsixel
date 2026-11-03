@@ -64,8 +64,9 @@ trap 'exit 1' HUP INT TERM
 
 cd "$src_root"
 
+# Check readable Metal originals, not words split across generated literals.
 # Keep codespell focused on production sources to avoid long runtimes.
-sh "$source_files_helper" src --exclude-path 'src/stb_image.h' --exclude-path 'src/stb_image_write.h' --name '*.[ch]' --name '*.md' --name '*.1' --name '*.in' --name '*.am' --name '*.build' --name '*.t' --name 'LICENSE' --name '*.py' --name '*.rb' --name '*.pl' --name '*.thumbnailer' --name '*.sh'| LC_ALL=C sort > "$tmpfile"
+sh "$source_files_helper" src --exclude-path 'src/generated-metal/*-shader.inc.h' --name '*.metal' --exclude-path 'src/stb_image.h' --exclude-path 'src/stb_image_write.h' --name '*.[ch]' --name '*.md' --name '*.1' --name '*.in' --name '*.am' --name '*.build' --name '*.t' --name 'LICENSE' --name '*.py' --name '*.rb' --name '*.pl' --name '*.thumbnailer' --name '*.sh'| LC_ALL=C sort > "$tmpfile"
 
 total=$(wc -l < "$tmpfile" | awk '{print $1}')
 progress_is_tty=0

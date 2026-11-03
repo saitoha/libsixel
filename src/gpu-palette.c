@@ -33,7 +33,7 @@
 
 #include "compat_stub.h"
 #include "gpu-palette.h"
-#include "gpu-lookup.h"
+#include "lookup-policy-gpu.h"
 #include "bluenoise_64x64.h"
 #include "options.h"
 #include "dither-common-pipeline.h"

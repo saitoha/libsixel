@@ -47,7 +47,8 @@ DIST_SUBDIRS = \
 export CKSUM
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = tools/ci-vm-result.sh tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
+EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
+    tools/ci-vm-result.sh tools/quicklook-user.sh tools/quicklook-ci.py tools/generate_output_icc_fixtures.py \
     assessment/meson.build \
     converters/meson.build \
     examples/meson.build \

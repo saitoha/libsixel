@@ -66,7 +66,7 @@ Construction and application use the same command buffer with an encoder boundar
 
 RGB888 application supports `none`, arithmetic `a`/`x`, and `bluenoise` dithering, transparency, and eligible partial-rectangle delta comparison. Native float lookup remains CPU-only. The public feature macro `SIXEL_HAVE_GPU_PREBUILT_BIT_LOOKUP` lets clients admit this policy without relying on older libraries that could reinterpret forced unsupported lookup as direct scanning. GPU-only preparation needs the existing lookup kind and builds no CPU memo table; an automatic GPU rejection can still prepare the CPU policy before output.
 
-The Metal implementation is [gpu-palette-metal-bitlut.inc.h](../../../../src/gpu-palette-metal-bitlut.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
+The Metal implementation is [lookup-policy-bitlut-gpu.inc.h](../../../../src/lookup-policy-bitlut-gpu.inc.h). The [execution map](../../execution-map/README.md) describes component ownership.
 
 ## Cost
 

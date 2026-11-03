@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
-#ifndef LIBSIXEL_GPU_LOOKUP_VPTREE_H
-#define LIBSIXEL_GPU_LOOKUP_VPTREE_H
+#ifndef LIBSIXEL_LOOKUP_POLICY_VPTREE_GPU_H
+#define LIBSIXEL_LOOKUP_POLICY_VPTREE_GPU_H
 #include <sixel.h>
 #include <6cells.h>
 SIXEL_INTERNAL_API SIXELSTATUS sixel_gpu_lookup_vptree_create(

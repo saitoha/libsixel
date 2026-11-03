@@ -25,6 +25,19 @@ shift 2 || true
 
 mkdir -p "$(dirname "${output}")"
 
+# Standalone invocations also materialize shader fragments. Make and Meson
+# normally provide them first; do not rewrite an up-to-date build product.
+for metal in "${src_root}"/src/*.metal; do
+    test -f "$metal" || continue
+    metal_name=${metal##*/}
+    metal_header=${build_root}/src/generated-metal/${metal_name%.metal}-shader.inc.h
+    if test ! -f "$metal_header" || test "$metal" -nt "$metal_header" ||
+            test "${default_root}/tools/embed-metal.awk" -nt "$metal_header" ||
+            test "${default_root}/tools/embed-metal.sh" -nt "$metal_header"; then
+        sh "${default_root}/tools/embed-metal.sh" "$metal" "$metal_header"
+    fi
+done
+
 collect_units_from_dirs() {
     search_dirs=$1
     shift
@@ -341,8 +354,34 @@ filter_local_includes() {
     inline_state=$4
 
     awk -v header_file="${header_file}" -v src_root="${src_root}" \
+        -v build_root="${build_root}" \
         -v keep_local_includes="${keep_local_includes}" \
         -v inline_state="${inline_state}" -v unit_path="${unit_path}" '
+# Generated fragments stay inside their owning array, including arrays
+# nested in legacy include fragments. Their bytes come from the build tree.
+function emit_metal_include(text,    name, path, value, result) {
+    if (text !~ /^[ \t]*#[ \t]*include[ \t]+["<]generated-metal\/[^"> ]+[">]/)
+        return 0;
+    if (keep_local_includes == "1") {
+        print text;
+        return 1;
+    }
+    name = text;
+    sub(/^[^"<]*["<]/, "", name);
+    sub(/[">].*/, "", name);
+    path = build_root "/src/" name;
+    result = getline value < path;
+    if (result < 0) {
+        print "Missing Metal fragment: " path > "/dev/stderr";
+        exit 1;
+    }
+    while (result > 0) {
+        print value;
+        result = getline value < path;
+    }
+    close(path);
+    return 1;
+}
 BEGIN {
     while ((getline line < header_file) > 0) {
         gsub(/^[ \t]+|[ \t]+$/, "", line);
@@ -367,18 +406,14 @@ BEGIN {
     # These private fragments must stay inside their owning component unit.
     # Hoisting them would expose shader state or precede required definitions.
     inline_once["dither-lookup-preparer.inc.h"] = 1;
-    inline_once["gpu-lookup-ordered-shader.inc.h"] = 1;
-    inline_once["gpu-lookup-vptree-shader.inc.h"] = 1;
-    inline_once["gpu-lookup-rbc-shader.inc.h"] = 1;
-    inline_once["gpu-lookup-mahalanobis-shader.inc.h"] = 1;
-    inline_once["gpu-lookup-certlut-shader.inc.h"] = 1;
     inline_once["gpu-palette-fused-prefix.inc.h"] = 1;
     inline_once["gpu-palette-fused-suffix.inc.h"] = 1;
     inline_once["gpu-palette-program.inc.h"] = 1;
-    inline_once["gpu-palette-metal-fhedt.inc.h"] = 1;
-    inline_once["gpu-palette-metal-bitlut.inc.h"] = 1;
+    inline_once["lookup-policy-fhedt-gpu.inc.h"] = 1;
+    inline_once["lookup-policy-bitlut-gpu.inc.h"] = 1;
 }
 {
+    if (emit_metal_include($0)) next;
     if ($0 ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
         print "/* #pragma once */";
         next;
@@ -410,6 +445,7 @@ BEGIN {
                         print line;
                     }
                     while ((getline line < path) > 0) {
+                        if (emit_metal_include(line)) continue;
                         if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
                             print "/* #pragma once */";
                             continue;

@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: MIT */
 #ifndef TEST_GPU_COMPONENT_COMMON_H
 #define TEST_GPU_COMPONENT_COMMON_H
-#include "src/gpu-lookup-ordered.h"
-#include "src/gpu-lookup-vptree.h"
-#include "src/gpu-lookup-rbc.h"
-#include "src/gpu-lookup-mahalanobis.h"
-#include "src/gpu-lookup-certlut.h"
+#include "src/lookup-policy-ordered-gpu.h"
+#include "src/lookup-policy-vptree-gpu.h"
+#include "src/lookup-policy-rbc-gpu.h"
+#include "src/lookup-policy-mahalanobis-gpu.h"
+#include "src/lookup-policy-certlut-gpu.h"
 #include "src/palette.h"
 
 typedef struct gpu_component_fixture {
