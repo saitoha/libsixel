@@ -133,6 +133,7 @@ jobs:
         update: true
         install: >-
           make
+          diffutils
           zip
         pacboy: >-
           cc:p
@@ -145,6 +146,7 @@ jobs:
         update: true
         install: >-
           make
+          diffutils
           zip
 
     - name: Setup MSVC developer env (vcvars)
