@@ -1,0 +1,21 @@
+/* SPDX-License-Identifier: MIT */
+/* Verify gpu dense column collision and tie labels. */
+int test_fh_sparse(int gpu, int resolution, int refine,
+    int weighted, int dense);
+
+int
+test_fh_gpu_dense_column_r64(int argc, char **argv)
+{
+    (void)argc;
+    (void)argv;
+    return test_fh_sparse(1, 64, 0, 0, 1);
+}
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

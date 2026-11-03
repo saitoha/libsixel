@@ -1063,6 +1063,7 @@ sixel_lookup_fhedt_edt1d_resolve_8bit(void)
 }
 
 typedef struct sixel_lookup_fhedt_pass_x_plan_8bit {
+    unsigned char const *seeded_columns;
     sixel_lookup_fhedt_shared_8bit_t *shared;
     double *distances;
     int *sources;
@@ -1137,6 +1138,7 @@ sixel_lookup_fhedt_pass_x_worker_8bit(sixel_thread_pool_job_t job,
     int x;
     size_t offset;
     size_t next_offset;
+    size_t column;
     char message[32];
 
     (void)workspace;
@@ -1170,27 +1172,33 @@ sixel_lookup_fhedt_pass_x_worker_8bit(sixel_thread_pool_job_t job,
                                                y,
                                                message);
             }
-            if (y + 1 < plan->res) {
-                next_offset = offset + plan->stride_y;
-                sixel_lookup_fhedt_prefetch_line_8bit(plan->distances,
-                                                plan->sources,
-                                                next_offset,
-                                                plan->timeline,
-                                                "fhedt-x",
-                                                z,
-                                                y + 1);
-            }
-            for (x = 0; x < plan->res; ++x) {
-                line_buffer->dist[x] = plan->distances[offset + (size_t)x];
-                line_buffer->src[x] = plan->sources[offset + (size_t)x];
-            }
-            plan->edt1d(line_buffer->dist,
-                        line_buffer->src,
-                        plan->res,
-                        plan->weight);
-            for (x = 0; x < plan->res; ++x) {
-                plan->distances[offset + (size_t)x] = line_buffer->dist[x];
-                plan->sources[offset + (size_t)x] = line_buffer->src[x];
+            column = (size_t)z * (size_t)plan->res + (size_t)y;
+            /* Empty seed columns remain empty after the X transform.
+             * Their initialized sentinels are already the exact output. */
+            if ((plan->seeded_columns[column / 8U]
+                    & (1U << (column % 8U))) != 0U) {
+                if (y + 1 < plan->res) {
+                    next_offset = offset + plan->stride_y;
+                    sixel_lookup_fhedt_prefetch_line_8bit(plan->distances,
+                                                    plan->sources,
+                                                    next_offset,
+                                                    plan->timeline,
+                                                    "fhedt-x",
+                                                    z,
+                                                    y + 1);
+                }
+                for (x = 0; x < plan->res; ++x) {
+                    line_buffer->dist[x] = plan->distances[offset + (size_t)x];
+                    line_buffer->src[x] = plan->sources[offset + (size_t)x];
+                }
+                plan->edt1d(line_buffer->dist,
+                            line_buffer->src,
+                            plan->res,
+                            plan->weight);
+                for (x = 0; x < plan->res; ++x) {
+                    plan->distances[offset + (size_t)x] = line_buffer->dist[x];
+                    plan->sources[offset + (size_t)x] = line_buffer->src[x];
+                }
             }
             if (plan->log_lines != 0) {
                 sixel_lookup_fhedt_timeline_log_8bit(plan->timeline,
@@ -1595,6 +1603,8 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
     sixel_lookup_fhedt_pass_z_plan_8bit_t plan_z;
     int res;
     size_t plane;
+    size_t column;
+    unsigned char seeded_columns[256 * 256 / 8];
     size_t stride_y;
     size_t stride_z;
     int tiles_y;
@@ -1614,6 +1624,15 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
     tiles_y = (res + tile_xy - 1) / tile_xy;
     tiles_z = (res + tile_depth - 1) / tile_depth;
 
+    /* At most ncolors columns contain a seed. Keep this small bitmap
+     * alive through the synchronous worker dispatch; no worker mutates it. */
+    memset(seeded_columns, 0, sizeof(seeded_columns));
+    for (i = 0; i < shared->ncolors; ++i) {
+        column = (size_t)shared->palette[i * shared->depth + 1]
+            + (size_t)shared->palette[i * shared->depth + 2] * (size_t)res;
+        seeded_columns[column / 8U] |= (unsigned char)(1U << (column % 8U));
+    }
+    plan_x.seeded_columns = seeded_columns;
     plan_x.shared = shared;
     plan_x.distances = distances;
     plan_x.sources = sources;
@@ -1714,10 +1733,6 @@ sixel_lookup_fhedt_apply_edt_8bit(sixel_lookup_fhedt_shared_8bit_t *shared,
                                    -1,
                                    -1,
                                    "z-pass");
-
-    for (i = 0; i < shared->ncolors; ++i) {
-        (void)i;
-    }
 }
 
 static void
@@ -1853,10 +1868,16 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
     int threads;
     int tile_xy;
     int tile_depth;
+    int needs_refine;
     sixel_lookup_fhedt_timeline_8bit_t timeline;
     char timeline_message[128];
 
     timeline.initialized = 0;
+    /* At R256 each byte query is a lattice point. Its exact grid winner
+     * is the first refinement candidate; strict comparisons preserve it
+     * even for ties. Keep requested settings for sharing, but allocate no
+     * boundary or distance data that this representation cannot consume. */
+    needs_refine = refine != 0 && resolution != 256;
     shared = sixel_allocator_malloc(fhedt->allocator, sizeof(*shared));
     if (shared == NULL) {
         sixel_helper_set_additional_message(
@@ -1923,21 +1944,20 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
             fhedt->allocator,
             total * sizeof(uint16_t));
     }
-    if (use_dist2 != 0) {
+    if (use_dist2 != 0 && needs_refine) {
         shared->dist2 = (float *)sixel_allocator_malloc(fhedt->allocator,
                                                         total
                                                         * sizeof(float));
     }
-    /* Unrefined handles never consult boundary bits. Avoid a full-grid
-     * neighbor scan and allocation when that optional lookup is disabled. */
-    if (refine != 0) {
+    /* Only approximate refined grids consult boundaries and distances. */
+    if (needs_refine) {
         shared->boundary = (unsigned char *)sixel_allocator_malloc(
             fhedt->allocator, (total + 7U) / 8U);
     }
     if ((shared->use_u16 && shared->indices16 == NULL)
         || (!shared->use_u16 && shared->indices8 == NULL)
-        || (refine != 0 && shared->boundary == NULL)
-        || (use_dist2 != 0 && shared->dist2 == NULL)) {
+        || (needs_refine && shared->boundary == NULL)
+        || (use_dist2 != 0 && needs_refine && shared->dist2 == NULL)) {
         sixel_lookup_fhedt_shared_destroy_8bit(fhedt->allocator, shared);
         sixel_helper_set_additional_message(
             "sixel_lookup_fhedt_build_8bit: LUT allocation failed.");
@@ -2000,7 +2020,7 @@ sixel_lookup_fhedt_build_8bit(sixel_lookup_fhedt_8bit_t *fhedt,
                                 tile_xy,
                                 tile_depth);
     sixel_lookup_fhedt_fill_indices_8bit(shared, sources);
-    if (refine != 0) {
+    if (needs_refine) {
         sixel_lookup_fhedt_mark_boundaries_8bit(shared, sources);
     }
     if (shared->dist2 != NULL) {
@@ -2386,7 +2406,7 @@ sixel_lookup_fhedt_8bit_map(sixel_lookup_fhedt_8bit_t *fhedt,
     }
 
     index = sixel_lookup_fhedt_read_index_8bit(fhedt->shared, offset);
-    if (fhedt->shared->refine != 0
+    if (fhedt->shared->boundary != NULL
         && sixel_lookup_fhedt_boundary_bit_8bit(fhedt->shared, offset) != 0) {
         should_refine = sixel_lookup_fhedt_refine_needed_8bit(
                             fhedt->shared,

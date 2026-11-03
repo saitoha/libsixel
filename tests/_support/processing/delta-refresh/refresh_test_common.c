@@ -83,12 +83,12 @@ test_delta_refresh(int mode)
     memset(&out, 0, sizeof(out));
     memset(seen, 0, sizeof(seen));
     if (mode >= 2 && mode <= 5) {
-        sixel_delta_refresh_prepare(&state, 128, 128, 64, 1000000U, 0);
+        sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1000000U, 0);
         REQUIRE(state.selected_pixels == 0U);
         refresh_commit(&state);
         if (mode == 2) {
             for (tick = 1U; tick <= 4U; ++tick) {
-                sixel_delta_refresh_prepare(&state, 128, 128, 64,
+                sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64,
                     1000000U + tick * 16000U, 1);
                 REQUIRE(state.selected_pixels == 4096U);
                 for (i = 0; i < 128U; ++i) {
@@ -99,18 +99,18 @@ test_delta_refresh(int mode)
             }
             for (i = 0; i < 128U; ++i) REQUIRE(seen[i] == UINT32_MAX);
         } else if (mode == 3) {
-            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1090000U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1090000U, 1);
             REQUIRE(state.selected_pixels == 16384U);
         } else if (mode == 4) {
-            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1016000U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1016000U, 1);
             refresh_commit(&state);
-            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1016000U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1016000U, 1);
             REQUIRE(state.selected_pixels == 0U);
         } else {
-            sixel_delta_refresh_prepare(&state, 128, 128, 64, 999999U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 999999U, 1);
             REQUIRE(state.selected_pixels == 16384U);
             refresh_commit(&state);
-            sixel_delta_refresh_prepare(&state, 128, 128, 64, 1015999U, 1);
+            sixel_delta_refresh_prepare(&state, 128, 128, 0, 0, 64, 1015999U, 1);
             REQUIRE(state.selected_pixels == 4096U);
         }
         ok = 1;

@@ -44,6 +44,11 @@ sixel_lookup_policy_fhedt_float32_new(
     sixel_allocator_t *allocator,
     void **policy);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_lookup_policy_fhedt_resolve_configuration(
+    sixel_lookup_policy_prepare_request_t const *request,
+    sixel_lookup_policy_configuration_t *configuration);
+
 SIXEL_INTERNAL_API void
 sixel_lookup_policy_fhedt_resolve_timeline_lines(int *enabled, int *stride);
 

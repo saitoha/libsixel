@@ -956,6 +956,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_map_pixels_default,
     NULL,
     sixel_lookup_policy_rbc_get_kind,
+    NULL,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -968,6 +969,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_map_pixels_default,
     NULL,
     sixel_lookup_policy_rbc_get_kind,
+    NULL,
 };
 
 SIXELSTATUS

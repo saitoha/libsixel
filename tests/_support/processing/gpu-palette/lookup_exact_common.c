@@ -157,8 +157,8 @@ gpupal_lookup_apply(sixel_allocator_t *allocator,
     sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
     sixel_dither_set_diffusion_type(dither, diffusion);
     sixel_dither_set_diffusion_scan(dither, SIXEL_SCAN_RASTER);
-    sixel_dither_set_lut_policy(dither, gpu_policy == SIXEL_GPU_POLICY_OFF
-        ? SIXEL_LUT_POLICY_NONE : lookup);
+    sixel_dither_set_lut_policy(dither, gpu_policy == SIXEL_GPU_POLICY_OFF &&
+        lookup != SIXEL_LUT_POLICY_FHEDT ? SIXEL_LUT_POLICY_NONE : lookup);
     sixel_dither_set_optimize_palette(dither, 0);
     dither->gpu_policy = gpu_policy;
     if (keep) {
@@ -273,7 +273,7 @@ gpu_lookup_exact_test(int argc, char **argv, int lookup)
         for (pixel = 0; pixel < GPUPAL_LOOKUP_PIXELS; ++pixel) {
             if (cpu[pixel] != gpu[pixel] ||
                     (keep && cpu_mask[pixel] != gpu_mask[pixel]) ||
-                    (!keep && diffusion == 0
+                    (!keep && diffusion == 0 && lookup != SIXEL_LUT_POLICY_FHEDT
                         && (int)gpu[pixel] != gpupal_lookup_oracle(
                         palette, ncolors, pixels + pixel * 3))) {
                 fprintf(stderr,

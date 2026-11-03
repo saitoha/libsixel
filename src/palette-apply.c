@@ -20,6 +20,7 @@ typedef struct sixel_palette_apply_storage {
     sixel_mutex_t row_gate;
     unsigned char *ready;
     unsigned char comparison[SIXEL_PALETTE_MAX * 3];
+    sixel_lookup_policy_configuration_t lookup_configuration;
     int lookup_kind;
     int gpu;
     int prepared;
@@ -84,6 +85,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     sixel_dither_policy_options_t options;
     sixel_dither_policy_prepare_request_t configuration;
     sixel_wire_palette_view_t palette;
+    sixel_lookup_policy_configuration_t lookup_configuration;
+    sixel_gpu_palette_request_t admission;
     unsigned char *ready;
     size_t pixels;
     size_t i;
@@ -125,16 +128,39 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     kind = request->lookup == NULL ? request->lookup_kind
         : request->lookup->vtbl->get_kind != NULL
         ? request->lookup->vtbl->get_kind(request->lookup) : -1;
+    memset(&lookup_configuration, 0, sizeof(lookup_configuration));
+    memset(&admission, 0, sizeof(admission));
+    if (kind == SIXEL_LUT_POLICY_FHEDT) {
+        /* A prepared lookup is authoritative. Never replace its resolved
+         * semantics with a caller's stale or independently resolved values. */
+        if (request->lookup != NULL) {
+            if (request->lookup->vtbl->get_configuration == NULL) {
+                return SIXEL_FEATURE_ERROR;
+            }
+            status = request->lookup->vtbl->get_configuration(request->lookup,
+                &lookup_configuration);
+            if (SIXEL_FAILED(status)) return status;
+        } else if (request->lookup_configuration != NULL) {
+            lookup_configuration = *request->lookup_configuration;
+        } else {
+            return SIXEL_FEATURE_ERROR;
+        }
+        if (lookup_configuration.kind != kind ||
+                lookup_configuration.pixelformat != request->pixelformat) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        sixel_gpu_palette_set_lookup_configuration(&admission,
+            &lookup_configuration);
+    }
     gpu = request->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
-        request->output.origin_x == 0 && request->output.origin_y == 0 &&
-        request->output.plane_width == request->output.width &&
-        request->output.plane_height == request->output.height &&
         options.bluenoise_gradient_factor == 0 &&
         (kind == SIXEL_LUT_POLICY_NONE || kind == SIXEL_LUT_POLICY_EYTZINGER ||
          kind == SIXEL_LUT_POLICY_BLOCKCULL ||
          kind == SIXEL_LUT_POLICY_GRIDLUT ||
          kind == SIXEL_LUT_POLICY_ORDERED ||
-         kind == SIXEL_LUT_POLICY_DELAUNAY) &&
+         kind == SIXEL_LUT_POLICY_DELAUNAY ||
+         (kind == SIXEL_LUT_POLICY_FHEDT &&
+          sixel_gpu_palette_fhedt_is_supported(&admission))) &&
         (options.method_for_diffuse == SIXEL_DIFFUSE_NONE ||
          options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
          options.method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
@@ -170,6 +196,8 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     }
     sixel_palette_apply_clear_plan(apply);
     apply->plan = *request;
+    apply->lookup_configuration = lookup_configuration;
+    apply->plan.lookup_configuration = &apply->lookup_configuration;
     apply->options = options;
     apply->lookup_kind = kind;
     apply->gpu = gpu;
@@ -378,6 +406,8 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.ncolors = apply->options.ncolors -
         (apply->options.keycolor_reserved != 0);
     request.lut_policy = apply->lookup_kind;
+    sixel_gpu_palette_set_lookup_configuration(&request,
+        &apply->lookup_configuration);
     request.method_for_diffuse = apply->options.method_for_diffuse;
     request.method_for_scan = apply->plan.scan;
     request.transparent_mask = execution->transparent_mask;
@@ -387,6 +417,10 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.has_6delta_accumulation = execution->delta_enabled;
     request.accumulation_pixels = execution->retained_rgb;
     request.accumulation_pixels_size = execution->retained_rgb_size;
+    request.accumulation_width = execution->plane_width;
+    request.accumulation_height = execution->plane_height;
+    request.accumulation_origin_x = execution->origin_x;
+    request.accumulation_origin_y = execution->origin_y;
     request.accumulation_valid_mask = execution->retained_valid;
     request.accumulation_valid_mask_size = execution->retained_valid_size;
     request.accumulation_keycolor = execution->delta_keycolor;

@@ -763,6 +763,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_delaunay_map_pixels_8bit,
     NULL,
     sixel_lookup_policy_delaunay_get_kind,
+    NULL,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -775,6 +776,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_delaunay_map_pixels_float32,
     sixel_lookup_policy_delaunay_workspace_size_float32,
     sixel_lookup_policy_delaunay_get_kind,
+    NULL,
 };
 
 SIXELSTATUS

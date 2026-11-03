@@ -142,7 +142,8 @@ carry_test_hint(sixel_lookup_policy_interface_t const *self,
 static sixel_lookup_policy_vtbl_t const carry_test_lookup_vtbl = {
     NULL, NULL, NULL, carry_test_lookup, carry_test_hint,
     sixel_lookup_policy_map_pixels_default, NULL,
-    NULL
+    NULL,
+    NULL,
 };
 
 int
@@ -258,7 +259,8 @@ carry_capture_hint(sixel_lookup_policy_interface_t const *base,
 static sixel_lookup_policy_vtbl_t const carry_capture_vtbl = {
     NULL, NULL, NULL, carry_capture_pixel, carry_capture_hint,
     sixel_lookup_policy_map_pixels_default, NULL,
-    NULL
+    NULL,
+    NULL,
 };
 
 int

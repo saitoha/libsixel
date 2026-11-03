@@ -38,11 +38,13 @@ test_indexed_gpu_lookup_preparation(int argc, char **argv)
     lookup_preparation_stream_t streams[2];
     unsigned char palette[33 * 3];
     unsigned char pixels[16 * 16 * 3];
-    int mode, i, pass, ok;
+    int mode, i, pass, ok, lookup;
 
-    if (argc != 2) return 1;
+    if (argc != 2 && argc != 3) return 1;
+    lookup = argc == 3 ? SIXEL_LUT_POLICY_FHEDT
+        : SIXEL_LUT_POLICY_DELAUNAY;
     mode = atoi(argv[1]);
-    if (mode < 0 || mode > 4) return 1;
+    if (mode < 0 || mode > 5) return 1;
     if (mode <= 1 && !sixel_gpu_palette_plan_available()) return 77;
     memset(dither, 0, sizeof(dither));
     memset(output, 0, sizeof(output));
@@ -60,7 +62,11 @@ test_indexed_gpu_lookup_preparation(int argc, char **argv)
                     &streams[pass], NULL) != SIXEL_OK) goto end;
         sixel_dither_set_palette(dither[pass], palette);
         sixel_dither_set_pixelformat(dither[pass], SIXEL_PIXELFORMAT_RGB888);
-        sixel_dither_set_lut_policy(dither[pass], SIXEL_LUT_POLICY_DELAUNAY);
+        sixel_dither_set_lut_policy(dither[pass], lookup);
+        if (lookup == SIXEL_LUT_POLICY_FHEDT) {
+            dither[pass]->lut_policy_fhedt_use_cache_override = 1;
+            dither[pass]->lut_policy_fhedt_use_cache = mode == 5;
+        }
         sixel_dither_set_diffusion_type(dither[pass], mode == 4
             ? SIXEL_DIFFUSE_FS : SIXEL_DIFFUSE_BLUENOISE_DITHER);
         sixel_dither_set_optimize_palette(dither[pass], 0);

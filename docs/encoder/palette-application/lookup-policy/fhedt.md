@@ -71,7 +71,7 @@ Default CIELAB/DIN99d ratios preserve the former grid metric while retaining the
 
 A finite query outside this box takes a full native-palette distance scan and bypasses the voxel cache. This preserves diffusion overshoot instead of mapping all exterior colors onto a grid face. In-box queries retain the approximate grid algorithm, including seed collisions: when several palette entries round to the same seed coordinate, the last one supplies that seed label. With refinement enabled, a per-seed chain retains the other entries for native-distance comparison, even if that seed has no Voronoi boundary. The optional distance shortcut does not skip this collision refinement. Expanding the box can make cells coarser; retaining float coordinates does not remove this approximation. Nonfinite palette entries are rejected before indexing.
 
-The EDT skips seedless parabolas while retaining the distance expression and tie order for real sources. Y and Z passes gather and scatter up to eight neighboring X columns together, reducing repeated strided memory traffic without changing the independent one-dimensional transforms. Line-level timeline diagnostics retain scalar per-line event ordering. Boundary bits are allocated and constructed only when refinement is enabled; disabling refinement leaves the grid labels and optional retained distances unchanged.
+The EDT skips seedless parabolas while retaining the distance expression and tie order for real sources. Y and Z passes gather and scatter up to eight neighboring X columns together, reducing repeated strided memory traffic without changing the independent one-dimensional transforms. Line-level timeline diagnostics retain scalar per-line event ordering. The byte X pass uses a small immutable bitmap of seeded columns to bypass empty columns; their initialized distances and source sentinels are already the transform output. Its per-line timeline start/end markers remain available. Byte grids allocate boundary bits and retained distances only when refinement can use them, at resolutions below R256. Float boundary construction remains controlled by refinement; its distance-retention settings are independent.
 
 ### Query and boundary refinement
 
@@ -98,7 +98,7 @@ This improves a boundary answer but is not an exhaustive palette scan. A true ne
 
 ## Guarantee
 
-For 8-bit RGB at `R = 256`, each possible byte tuple has its own grid coordinate. The transformed label is therefore nearest-distance exact; duplicate or equidistant palette entries may still differ in tie index.
+For 8-bit RGB at `R = 256`, each possible byte tuple has its own grid coordinate. The transformed label is therefore nearest-distance exact; duplicate or equidistant palette entries may still differ from other lookup policies in tie index. Corner refinement visits this grid label first and replaces it only for a strictly smaller distance, so it cannot change an R256 byte result. CPU and GPU omit that redundant refinement and its auxiliary data while retaining the requested configuration and cache identity. Float queries remain continuous and do not use this shortcut.
 
 At `R = 64` or `128`, the query discretizes byte RGB and is approximate, even with boundary refinement. Float32 input remains continuous, so all supported finite resolutions are approximate.
 
@@ -121,11 +121,19 @@ Byte refinement performs at most eight distance comparisons without a growing du
 
 Float exterior scans and native entries colliding at a seed account for the `O(K)` query bound. Collision chains add one integer per palette entry; they do not add an image-sized buffer. The fixed grid-build cost is substantial: increasing `R` from 64 to 256 multiplies cell count by 64. Small images may not amortize construction, and memory bandwidth can dominate the transform.
 
-With `SIXEL_LOOKUP_FHEDT_SHARED=1` (the default), the encoder builds one immutable grid immediately after finalizing the working palette. An asynchronous palette job constructs it inside its existing thread-budget scope, independently of the full-frame working-colorspace conversion. Serial and parallel palette application retain references to that grid; preparing a consumer never consumes the source policy. Each handle owns one grid reference and its cache settings; cache entries remain thread-local, and the non-TLS parallel fallback disables the cache. Mapping needs no grid lock.
+On the CPU path, with `SIXEL_LOOKUP_FHEDT_SHARED=1` (the default), the encoder builds one immutable grid immediately after finalizing the working palette. An asynchronous palette job constructs it inside its existing thread-budget scope, independently of the full-frame working-colorspace conversion. Serial and parallel palette application retain references to that grid; preparing a consumer never consumes the source policy. Each handle owns one grid reference and its cache settings; cache entries remain thread-local, and the non-TLS parallel fallback disables the cache. Mapping needs no grid lock.
 
 Reuse requires the same representation, pixel format, allocator, palette signature, resolution, refinement, metric weights and retained-distance setting. A mismatch builds a new grid while existing consumers retain the original. Tiling, first-touch and pinning govern construction only. `SIXEL_LOOKUP_FHEDT_SHARED=0` deliberately disables reference reuse, retaining independent construction for diagnostics and memory/performance comparisons; it does not promise one build per encode. This opt-out preserves the ability to compare sharing against independent grids without changing lookup results.
 
 Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs change constants and NUMA behavior, not the asymptotic order. Their current names and defaults are in the [`img2sixel(1)` manual](../../../../converters/img2sixel.1).
+
+The Metal backend supports RGB888 with uniform positive weights, `R64`, `R128` or `R256`, either `refine` and `dist2` setting, and `cache=0`. It preserves byte FHEDT's quantized seed coordinates, last-index seed collisions, axis tie order and strict corner-refinement comparisons. This is CPU/GPU equivalence at identical settings; R64/R128 remain approximate even with refinement. Positional `none`, `a_dither`, `x_dither` and `bluenoise` application use the existing transparency and delta gates, including offset retained-plane rectangles.
+
+GPU construction uses separate tracked compute encoders within one command buffer. The initial stages clear R² column heads and link palette seeds by their (Y,Z) column. The X stage evaluates only the seeds in that column and writes consecutive X cells, including explicit sentinels for empty columns. Lower X wins an equal-distance tie; the last palette index wins a duplicate seed, independently of atomic list insertion order. The remaining Y/Z transforms use packed 32-bit distance/label scratch cells. Without effective refinement, including R256 with F1 requested, the final axis writes a one-byte LUT directly. Otherwise, a packing pass produces a two-byte LUT carrying the label, boundary flag and zero-distance flag; the last flag implements the uniform-metric `dist2` shortcut. Construction and application complete before index publication.
+
+GPU pipelines and buffers are process-wide under the backend's execution lock, with one reusable table slot. The key contains palette bytes, palette count, resolution, refinement and dist2. It is published only after successful command completion; a failed rebuild invalidates it. CPU-only `shared`, tiling, first-touch and pinning settings do not partition or disable GPU sharing. Uniform weight scaling does not change byte geometry. Scratch buffers and the LUT grow to the largest requested resolution and remain allocated for reuse: at R256 they occupy up to 128 MiB of scratch plus 16 MiB of LUT storage. The seed heads and links temporarily occupy the first scratch buffer and need no additional allocation.
+
+A GPU candidate resolves query settings without building a CPU grid. Unsupported settings, including the history-dependent voxel cache and nonuniform/float metrics, decline GPU admission before output; AUTO can prepare a compatible CPU plan, while FORCE reports an error rather than replacing FHEDT with direct lookup. This does not make otherwise invalid CPU settings valid. The component's copied configuration and fallback boundary are described in the [execution map](../../execution-map/README.md).
 
 ## Name and sources
 
@@ -134,3 +142,74 @@ Tiling, first-touch, thread pinning, retained distances, and shared-grid knobs c
 The libsixel option was originally named `vpte` and was renamed to `fhedt` in the [attribution-oriented rename commit](https://github.com/saitoha/libsixel/commit/ac25344a8d49e9f8c2545dfad1b1d00598e48343). The three-dimensional palette-label construction and bounded corner refinement are libsixel adaptations of the separable transform.
 
 The policy wrapper is [`lookup-policy-fhedt.c`](../../../../src/lookup-policy-fhedt.c). The representation backends are [`lookup-fhedt-8bit.c`](../../../../src/lookup-fhedt-8bit.c) and [`lookup-fhedt-float32.c`](../../../../src/lookup-fhedt-float32.c).
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+### Behavioral contract tests
+
+The finite GPU references scan palette sites only at queried voxels and refinement neighbors; they do not construct a second dense grid. Separate CPU/GPU application cases cover real dithering, omission indexes and keep masks. Finite sparse fixtures check seed collisions, tie order and propagation through empty columns against an integer palette-site scan. Allocation accounting bounds CPU auxiliary storage, and a GPU execution observation checks the effective R256 table format; output equality alone does not establish these work-elimination properties. Each parameter combination has its own TAP file. These tests do not establish perceptual equivalence between different FHEDT settings or end-to-end terminal throughput. GPU cases skip when Metal execution is unavailable.
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| FHG-01 | Gpu reference r64 f0 d0. | [tests/lookup/fhedt/0099_gpu_reference_r64_f0_d0.t](../../../../tests/lookup/fhedt/0099_gpu_reference_r64_f0_d0.t) |
+| FHG-02 | Gpu reference r64 f0 d1. | [tests/lookup/fhedt/0100_gpu_reference_r64_f0_d1.t](../../../../tests/lookup/fhedt/0100_gpu_reference_r64_f0_d1.t) |
+| FHG-03 | Gpu reference r64 f1 d0. | [tests/lookup/fhedt/0101_gpu_reference_r64_f1_d0.t](../../../../tests/lookup/fhedt/0101_gpu_reference_r64_f1_d0.t) |
+| FHG-04 | Gpu reference r64 f1 d1. | [tests/lookup/fhedt/0102_gpu_reference_r64_f1_d1.t](../../../../tests/lookup/fhedt/0102_gpu_reference_r64_f1_d1.t) |
+| FHG-05 | Gpu reference r128 f0 d0. | [tests/lookup/fhedt/0103_gpu_reference_r128_f0_d0.t](../../../../tests/lookup/fhedt/0103_gpu_reference_r128_f0_d0.t) |
+| FHG-06 | Gpu reference r128 f0 d1. | [tests/lookup/fhedt/0104_gpu_reference_r128_f0_d1.t](../../../../tests/lookup/fhedt/0104_gpu_reference_r128_f0_d1.t) |
+| FHG-07 | Gpu reference r128 f1 d0. | [tests/lookup/fhedt/0105_gpu_reference_r128_f1_d0.t](../../../../tests/lookup/fhedt/0105_gpu_reference_r128_f1_d0.t) |
+| FHG-08 | Gpu reference r128 f1 d1. | [tests/lookup/fhedt/0106_gpu_reference_r128_f1_d1.t](../../../../tests/lookup/fhedt/0106_gpu_reference_r128_f1_d1.t) |
+| FHG-09 | Gpu reference r256 f0 d0. | [tests/lookup/fhedt/0107_gpu_reference_r256_f0_d0.t](../../../../tests/lookup/fhedt/0107_gpu_reference_r256_f0_d0.t) |
+| FHG-10 | Gpu reference r256 f0 d1. | [tests/lookup/fhedt/0108_gpu_reference_r256_f0_d1.t](../../../../tests/lookup/fhedt/0108_gpu_reference_r256_f0_d1.t) |
+| FHG-11 | Gpu reference r256 f1 d0. | [tests/lookup/fhedt/0109_gpu_reference_r256_f1_d0.t](../../../../tests/lookup/fhedt/0109_gpu_reference_r256_f1_d0.t) |
+| FHG-12 | Gpu reference r256 f1 d1. | [tests/lookup/fhedt/0110_gpu_reference_r256_f1_d1.t](../../../../tests/lookup/fhedt/0110_gpu_reference_r256_f1_d1.t) |
+| FHG-13 | Gpu none keep0. | [tests/lookup/fhedt/0111_gpu_none_keep0.t](../../../../tests/lookup/fhedt/0111_gpu_none_keep0.t) |
+| FHG-14 | Gpu none keep1. | [tests/lookup/fhedt/0112_gpu_none_keep1.t](../../../../tests/lookup/fhedt/0112_gpu_none_keep1.t) |
+| FHG-15 | Gpu bluenoise keep0. | [tests/lookup/fhedt/0113_gpu_bluenoise_keep0.t](../../../../tests/lookup/fhedt/0113_gpu_bluenoise_keep0.t) |
+| FHG-16 | Gpu bluenoise keep1. | [tests/lookup/fhedt/0114_gpu_bluenoise_keep1.t](../../../../tests/lookup/fhedt/0114_gpu_bluenoise_keep1.t) |
+| FHG-17 | Gpu x keep0. | [tests/lookup/fhedt/0115_gpu_x_keep0.t](../../../../tests/lookup/fhedt/0115_gpu_x_keep0.t) |
+| FHG-18 | Gpu x keep1. | [tests/lookup/fhedt/0116_gpu_x_keep1.t](../../../../tests/lookup/fhedt/0116_gpu_x_keep1.t) |
+| FHG-19 | Gpu a keep0. | [tests/lookup/fhedt/0117_gpu_a_keep0.t](../../../../tests/lookup/fhedt/0117_gpu_a_keep0.t) |
+| FHG-20 | Gpu a keep1. | [tests/lookup/fhedt/0118_gpu_a_keep1.t](../../../../tests/lookup/fhedt/0118_gpu_a_keep1.t) |
+| FHG-21 | Gpu palette p1. | [tests/lookup/fhedt/0119_gpu_palette_p1.t](../../../../tests/lookup/fhedt/0119_gpu_palette_p1.t) |
+| FHG-22 | Gpu palette p2. | [tests/lookup/fhedt/0120_gpu_palette_p2.t](../../../../tests/lookup/fhedt/0120_gpu_palette_p2.t) |
+| FHG-23 | Gpu palette p129. | [tests/lookup/fhedt/0121_gpu_palette_p129.t](../../../../tests/lookup/fhedt/0121_gpu_palette_p129.t) |
+| FHG-24 | Gpu palette p256. | [tests/lookup/fhedt/0122_gpu_palette_p256.t](../../../../tests/lookup/fhedt/0122_gpu_palette_p256.t) |
+| FHG-25 | Gpu cache reuse. | [tests/lookup/fhedt/0123_gpu_cache_reuse.t](../../../../tests/lookup/fhedt/0123_gpu_cache_reuse.t) |
+| FHG-26 | Gpu cache palette. | [tests/lookup/fhedt/0124_gpu_cache_palette.t](../../../../tests/lookup/fhedt/0124_gpu_cache_palette.t) |
+| FHG-27 | Gpu cache count. | [tests/lookup/fhedt/0125_gpu_cache_count.t](../../../../tests/lookup/fhedt/0125_gpu_cache_count.t) |
+| FHG-28 | Gpu cache resolution. | [tests/lookup/fhedt/0126_gpu_cache_resolution.t](../../../../tests/lookup/fhedt/0126_gpu_cache_resolution.t) |
+| FHG-29 | Gpu cache refine. | [tests/lookup/fhedt/0127_gpu_cache_refine.t](../../../../tests/lookup/fhedt/0127_gpu_cache_refine.t) |
+| FHG-30 | Gpu cache dist2. | [tests/lookup/fhedt/0128_gpu_cache_dist2.t](../../../../tests/lookup/fhedt/0128_gpu_cache_dist2.t) |
+| FHG-31 | Gpu cache after ordered. | [tests/lookup/fhedt/0129_gpu_cache_after_ordered.t](../../../../tests/lookup/fhedt/0129_gpu_cache_after_ordered.t) |
+| FHG-32 | Gpu cache alternate. | [tests/lookup/fhedt/0130_gpu_cache_alternate.t](../../../../tests/lookup/fhedt/0130_gpu_cache_alternate.t) |
+| FHG-33 | Gpu cache allocation failure. | [tests/lookup/fhedt/0131_gpu_cache_allocation_failure.t](../../../../tests/lookup/fhedt/0131_gpu_cache_allocation_failure.t) |
+| FHG-34 | Gpu cache encoder failure. | [tests/lookup/fhedt/0132_gpu_cache_encoder_failure.t](../../../../tests/lookup/fhedt/0132_gpu_cache_encoder_failure.t) |
+| FHG-35 | Gpu cache completion failure. | [tests/lookup/fhedt/0133_gpu_cache_completion_failure.t](../../../../tests/lookup/fhedt/0133_gpu_cache_completion_failure.t) |
+| FHG-36 | Gpu force no cpu grid. | [tests/lookup/fhedt/0134_gpu_force_no_cpu_grid.t](../../../../tests/lookup/fhedt/0134_gpu_force_no_cpu_grid.t) |
+| FHG-37 | Gpu auto no cpu grid. | [tests/lookup/fhedt/0135_gpu_auto_no_cpu_grid.t](../../../../tests/lookup/fhedt/0135_gpu_auto_no_cpu_grid.t) |
+| FHG-38 | Gpu threshold cpu grid. | [tests/lookup/fhedt/0136_gpu_threshold_cpu_grid.t](../../../../tests/lookup/fhedt/0136_gpu_threshold_cpu_grid.t) |
+| FHG-39 | Gpu off cpu grid. | [tests/lookup/fhedt/0137_gpu_off_cpu_grid.t](../../../../tests/lookup/fhedt/0137_gpu_off_cpu_grid.t) |
+| FHG-40 | Gpu diffusion cpu grid. | [tests/lookup/fhedt/0138_gpu_diffusion_cpu_grid.t](../../../../tests/lookup/fhedt/0138_gpu_diffusion_cpu_grid.t) |
+| FHG-41 | Gpu cache cpu grid. | [tests/lookup/fhedt/0139_gpu_cache_cpu_grid.t](../../../../tests/lookup/fhedt/0139_gpu_cache_cpu_grid.t) |
+| FHG-42 | Snapshot f0. | [tests/lookup/fhedt/0140_snapshot_f0.t](../../../../tests/lookup/fhedt/0140_snapshot_f0.t) |
+| FHG-43 | Snapshot f1. | [tests/lookup/fhedt/0141_snapshot_f1.t](../../../../tests/lookup/fhedt/0141_snapshot_f1.t) |
+| FHG-44 | Unprepared configuration. | [tests/lookup/fhedt/0142_unprepared_configuration.t](../../../../tests/lookup/fhedt/0142_unprepared_configuration.t) |
+| FHG-45 | GPU rectangle none indexes. | [tests/lookup/fhedt/0143_gpu_rectangle_none_indexes.t](../../../../tests/lookup/fhedt/0143_gpu_rectangle_none_indexes.t) |
+| FHG-46 | GPU rectangle none mask. | [tests/lookup/fhedt/0144_gpu_rectangle_none_mask.t](../../../../tests/lookup/fhedt/0144_gpu_rectangle_none_mask.t) |
+| FHG-47 | GPU rectangle bluenoise indexes. | [tests/lookup/fhedt/0145_gpu_rectangle_bluenoise_indexes.t](../../../../tests/lookup/fhedt/0145_gpu_rectangle_bluenoise_indexes.t) |
+| FHG-48 | GPU rectangle bluenoise mask. | [tests/lookup/fhedt/0146_gpu_rectangle_bluenoise_mask.t](../../../../tests/lookup/fhedt/0146_gpu_rectangle_bluenoise_mask.t) |
+| FHO-01 | GPU R256 refinement uses a byte table. | [tests/lookup/fhedt/0147_gpu_r256_compact_table.t](../../../../tests/lookup/fhedt/0147_gpu_r256_compact_table.t) |
+| FHO-02 | GPU R64 sparse and colliding seed labels. | [tests/lookup/fhedt/0148_gpu_sparse_r64.t](../../../../tests/lookup/fhedt/0148_gpu_sparse_r64.t) |
+| FHO-03 | GPU R128 sparse and colliding seed labels. | [tests/lookup/fhedt/0149_gpu_sparse_r128.t](../../../../tests/lookup/fhedt/0149_gpu_sparse_r128.t) |
+| FHO-04 | GPU R256 sparse and colliding seed labels. | [tests/lookup/fhedt/0150_gpu_sparse_r256.t](../../../../tests/lookup/fhedt/0150_gpu_sparse_r256.t) |
+| FHO-05 | CPU R64 sparse and colliding seed labels. | [tests/lookup/fhedt/0151_cpu_sparse_r64.t](../../../../tests/lookup/fhedt/0151_cpu_sparse_r64.t) |
+| FHO-06 | CPU R128 sparse and colliding seed labels. | [tests/lookup/fhedt/0152_cpu_sparse_r128.t](../../../../tests/lookup/fhedt/0152_cpu_sparse_r128.t) |
+| FHO-07 | CPU R256 refined exact labels and tie order. | [tests/lookup/fhedt/0153_cpu_sparse_r256_refine.t](../../../../tests/lookup/fhedt/0153_cpu_sparse_r256_refine.t) |
+| FHO-08 | CPU R256 omits refinement auxiliary storage. | [tests/lookup/fhedt/0154_cpu_r256_aux_memory.t](../../../../tests/lookup/fhedt/0154_cpu_r256_aux_memory.t) |
+| FHO-09 | CPU unrefined grids omit auxiliary storage. | [tests/lookup/fhedt/0155_cpu_unrefined_aux_memory.t](../../../../tests/lookup/fhedt/0155_cpu_unrefined_aux_memory.t) |
+| FHO-10 | CPU weighted sparse seed labels. | [tests/lookup/fhedt/0156_cpu_weighted_sparse_r64.t](../../../../tests/lookup/fhedt/0156_cpu_weighted_sparse_r64.t) |
+| FHO-11 | GPU dense column collision and tie labels. | [tests/lookup/fhedt/0157_gpu_dense_column_r64.t](../../../../tests/lookup/fhedt/0157_gpu_dense_column_r64.t) |
+| FHO-12 | CPU weighted R256 refined exact labels. | [tests/lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.t](../../../../tests/lookup/fhedt/0158_cpu_weighted_sparse_r256_refine.t) |

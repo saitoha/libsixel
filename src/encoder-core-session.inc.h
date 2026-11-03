@@ -158,6 +158,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     sixel_wire_palette_request_t wire_request;
     sixel_indexed_frame_description_t description;
     sixel_dither_policy_prepare_request_t configuration;
+    sixel_lookup_policy_configuration_t lookup_configuration;
     sixel_palette_apply_prepare_request_t prepare;
     sixel_palette_apply_run_request_t run;
     sixel_encoder_core_prepare_request_t body;
@@ -292,6 +293,10 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     prepare.lookup = dither->gpu_policy == SIXEL_GPU_POLICY_OFF
         ? dither->lookup_policy : NULL;
     prepare.lookup_kind = dither->lut_policy;
+    status = sixel_dither_get_lookup_configuration(dither,
+        SIXEL_PIXELFORMAT_RGB888, &lookup_configuration);
+    if (SIXEL_FAILED(status)) goto end;
+    prepare.lookup_configuration = &lookup_configuration;
     prepare.dither = dither->dither_policy;
     prepare.output = description;
     prepare.pixelformat = SIXEL_PIXELFORMAT_RGB888;

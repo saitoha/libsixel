@@ -2098,6 +2098,7 @@ sixel_encoder_set_6delta_plane_size(
  * persists until changed, so a caller that always encodes the full plane never
  * has to call this.  A frame that does not fit inside the plane at this origin
  * is encoded without any 6delta keep, and discards the retained plane.
+ * Periodic refresh instead rejects an out-of-plane frame before output.
  */
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_6delta_plane_origin(
@@ -2120,6 +2121,8 @@ sixel_encoder_invalidate_6delta_plane(
 
 /* UPDATE_POLICY delta:R1 enables persistent residual threshold control. */
 #define SIXEL_HAVE_ENCODER_6DELTA_RESIDUAL 1
+/* Periodic refresh accepts opaque rectangles in a retained plane. */
+#define SIXEL_HAVE_ENCODER_6DELTA_REFRESH 1
 
 /* Limit the effective delta threshold without changing its configured maximum
  * or the retained plane. 0 requests exact-threshold refinement; 255 removes

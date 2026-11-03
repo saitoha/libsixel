@@ -57,6 +57,7 @@
 #include "gpu-palette.h"
 #include "loader-common.h"
 #include "lookup-policy.h"
+#include "lookup-policy-fhedt.h"
 #include "oklch-lattice256.h"
 #include "dither-policy.h"
 #include "timer.h"
@@ -4054,6 +4055,39 @@ sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
 
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_get_lookup_configuration(sixel_dither_t const *dither,
+    int pixelformat, sixel_lookup_policy_configuration_t *configuration)
+{
+    sixel_lookup_policy_prepare_request_t request;
+
+    if (dither == NULL || configuration == NULL) return SIXEL_BAD_ARGUMENT;
+    memset(configuration, 0, sizeof(*configuration));
+    configuration->kind = dither->lut_policy;
+    configuration->pixelformat = pixelformat;
+    if (dither->lut_policy != SIXEL_LUT_POLICY_FHEDT) return SIXEL_OK;
+    memset(&request, 0, sizeof(request));
+    request.pixelformat = pixelformat;
+    request.fhedt_resolution = dither->lut_policy_fhedt_resolution;
+    request.fhedt_resolution_override =
+        dither->lut_policy_fhedt_resolution_override;
+    request.fhedt_refine = dither->lut_policy_fhedt_refine;
+    request.fhedt_refine_override =
+        dither->lut_policy_fhedt_refine_override;
+    request.fhedt_use_dist2 = dither->lut_policy_fhedt_use_dist2;
+    request.fhedt_use_dist2_override =
+        dither->lut_policy_fhedt_use_dist2_override;
+    request.fhedt_use_cache = dither->lut_policy_fhedt_use_cache;
+    request.fhedt_use_cache_override =
+        dither->lut_policy_fhedt_use_cache_override;
+    memcpy(request.fhedt_weights, dither->lut_policy_fhedt_weights,
+        sizeof(request.fhedt_weights));
+    request.fhedt_weights_override =
+        dither->lut_policy_fhedt_weights_override;
+    return sixel_lookup_policy_fhedt_resolve_configuration(&request,
+        configuration);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     int parallel, int prepare_lookup)
 {
@@ -4163,6 +4197,7 @@ sixel_dither_apply_palette(
     sixel_palette_entries_view_t entries_view;
     sixel_palette_float32_entries_view_t float32_view;
     sixel_gpu_palette_request_t gpu_request;
+    sixel_lookup_policy_configuration_t gpu_configuration;
     unsigned char gpu_comparison_palette[SIXEL_PALETTE_MAX * 3];
     size_t gpu_palette_byte;
     SIXELSTATUS gpu_status;
@@ -4651,6 +4686,11 @@ sixel_dither_apply_palette(
                 (size_t)gpu_request.ncolors * 3U;
         }
         gpu_request.lut_policy = dither->lut_policy;
+        status = sixel_dither_get_lookup_configuration(dither,
+            pipeline_pixelformat, &gpu_configuration);
+        if (SIXEL_FAILED(status)) goto end;
+        sixel_gpu_palette_set_lookup_configuration(&gpu_request,
+            &gpu_configuration);
         gpu_request.test_hooks = dither->gpu_test_hooks;
         gpu_request.method_for_diffuse = dither->method_for_diffuse;
         gpu_request.method_for_scan = method_for_scan;
@@ -4667,11 +4707,9 @@ sixel_dither_apply_palette(
             apply_transparent_mask != 0 ? total_pixels : 0U;
         gpu_request.transparent_keycolor = keycolor_for_mask;
         gpu_request.sixdelta_enabled = dither->pipeline_6delta_enabled != 0;
-        /*
-         * Passing the frame extents here also requires the retained plane to
-         * be exactly this frame, which is what the GPU kernel assumes when it
-         * indexes the plane by frame pixel index.
-         */
+        /* The GPU request validates canvas bounds and packs only the damage
+         * rectangle. Preserve the canvas origin rather than treating its
+         * first pixel as this frame's first pixel. */
         gpu_request.has_6delta_accumulation =
             dither->pipeline_6delta_enabled != 0 &&
             (dither->method_for_diffuse == SIXEL_DIFFUSE_NONE ||
@@ -4679,11 +4717,16 @@ sixel_dither_apply_palette(
              dither->method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
              dither->method_for_diffuse ==
                 SIXEL_DIFFUSE_BLUENOISE_DITHER) &&
-            sixel_dither_has_compatible_accumulation_hint(dither,
-                                                          width,
-                                                          height,
-                                                          total_pixels);
+            dither->pipeline_accumulation_pixels != NULL;
         if (gpu_request.has_6delta_accumulation != 0) {
+            gpu_request.accumulation_width =
+                dither->pipeline_accumulation_width;
+            gpu_request.accumulation_height =
+                dither->pipeline_accumulation_height;
+            gpu_request.accumulation_origin_x =
+                dither->pipeline_accumulation_origin_x;
+            gpu_request.accumulation_origin_y =
+                dither->pipeline_accumulation_origin_y;
             gpu_request.accumulation_pixels =
                 dither->pipeline_accumulation_pixels;
             gpu_request.accumulation_pixels_size =

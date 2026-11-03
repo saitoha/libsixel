@@ -515,7 +515,8 @@ carry_speed_lookup(sixel_lookup_policy_interface_t const *base,
 static sixel_lookup_policy_vtbl_t const carry_speed_vtbl = {
     NULL, NULL, NULL, NULL, carry_speed_lookup,
     sixel_lookup_policy_map_pixels_default, NULL,
-    NULL
+    NULL,
+    NULL,
 };
 
 int

@@ -1317,6 +1317,20 @@ typedef struct sixel_lookup_policy_select_request {
     int pixelformat;
 } sixel_lookup_policy_select_request_t;
 
+/* Resolved lookup semantics, without palette ownership, environment flags,
+ * CPU construction controls or mutable query caches. GPU-only planning uses
+ * this snapshot without constructing a CPU table. FHEDT weights contain the
+ * resolved positive ratios; byte execution requires equal axis weights. */
+typedef struct sixel_lookup_policy_configuration {
+    int kind;
+    int pixelformat;
+    int fhedt_resolution;
+    int fhedt_refine;
+    int fhedt_use_dist2;
+    int fhedt_use_cache;
+    double fhedt_weights[3];
+} sixel_lookup_policy_configuration_t;
+
 typedef struct sixel_lookup_policy_prepare_request {
     unsigned char const *palette;
     float const *palette_float;
@@ -1357,6 +1371,9 @@ typedef int sixel_lookup_policy_result_t;
 
     /* SIXEL_LUT_POLICY_* algorithm identity; negative for custom policies.
      * Execution planners use this description without inspecting vtables. */
+    /* Optional for policies without configurable GPU semantics. FHEDT
+     * returns its successful preparation snapshot; an unprepared policy
+     * returns SIXEL_LOGIC_ERROR. The caller owns the returned value. */
 /*
  * IDL responsibility:
  * - map pixels to palette indexes
@@ -1394,6 +1411,8 @@ typedef int sixel_lookup_policy_result_t;
  *         inout void *workspace);
  *     [const] size_t workspace_size();
  *     [const] int get_kind();
+ *     [const] SIXELSTATUS get_configuration(
+ *         out lookup_policy_configuration *configuration);
  * };
  */
 
@@ -1420,6 +1439,9 @@ typedef struct sixel_lookup_policy_vtbl {
         void *workspace);
     size_t (*workspace_size)(sixel_lookup_policy_interface_t const *self);
     int (*get_kind)(sixel_lookup_policy_interface_t const *self);
+    SIXELSTATUS (*get_configuration)(
+        sixel_lookup_policy_interface_t const *self,
+        sixel_lookup_policy_configuration_t *configuration);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy_interface {
@@ -1611,10 +1633,13 @@ typedef struct sixel_palette_apply_delta {
     sixel_delta_threshold_map_t selection;
 } sixel_palette_apply_delta_t;
 
+/* lookup_configuration is borrowed through prepare and copied. It is used
+ * only for lookup=NULL and must match configurable GPU policy semantics. */
 typedef struct sixel_palette_apply_prepare_request {
     sixel_palette_t *working_palette;
     sixel_lookup_policy_interface_t *lookup;
     int lookup_kind; /* Used only when lookup is NULL. */
+    sixel_lookup_policy_configuration_t const *lookup_configuration;
     sixel_dither_policy_interface_t *dither;
     sixel_indexed_frame_description_t output;
     int pixelformat;
@@ -1650,8 +1675,10 @@ typedef struct sixel_palette_apply_run_request {
 
 /* prepare retains compatible prepared dither and palette objects.
  * A non-NULL lookup must be prepared and is retained unchanged. A NULL
- * lookup requests GPU-only planning with lookup_kind; an unsupported GPU
- * plan returns SIXEL_FEATURE_ERROR before output. The caller can then
+ * lookup requests GPU-only planning with lookup_kind and, for configurable
+ * lookup semantics, lookup_configuration. A prepared lookup supplies its own
+ * configuration; caller-provided snapshots cannot override it. An unsupported
+ * GPU plan returns SIXEL_FEATURE_ERROR before output. The caller can then
  * prepare a CPU lookup and retry prepare. No CPU table is built for an
  * admitted GPU-only plan. Runtime failure does not retry on CPU.
  * They stay unchanged from prepare through run completion. Reconfiguration
