@@ -37,6 +37,8 @@ amalgamation_units = files(
   '../src/output.c',
   '../src/encode-result.c',
   '../src/retained-plane.c',
+  '../src/retained-plane-rows.c',
+  '../src/retained-plane-workers.c',
   '../src/palette-apply.c',
   '../src/sixel-writer.c',
   '../src/encoder-core.c',

@@ -191,9 +191,13 @@ libsixel_la_DEPENDENCIES = $(FLOAT_LOOKUP_LIB) $(am__DEPENDENCIES_1) \
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/output-factory.h $(srcdir)/encode-result.c \
 	$(srcdir)/encode-result.h $(srcdir)/retained-plane.c \
-	$(srcdir)/palette-apply.c $(srcdir)/sixel-writer.c \
-	$(srcdir)/sixel-writer.h $(srcdir)/encoder-core.c \
-	$(srcdir)/encoder-core.h $(srcdir)/encoder-core-private.h \
+	$(srcdir)/retained-plane-rows.c \
+	$(srcdir)/retained-plane-rows.h \
+	$(srcdir)/retained-plane-workers.c \
+	$(srcdir)/retained-plane-workers.h $(srcdir)/palette-apply.c \
+	$(srcdir)/sixel-writer.c $(srcdir)/sixel-writer.h \
+	$(srcdir)/encoder-core.c $(srcdir)/encoder-core.h \
+	$(srcdir)/encoder-core-private.h \
 	$(srcdir)/encoder-core-packet.h \
 	$(srcdir)/encoder-core-indexed.inc.h \
 	$(srcdir)/encoder-core-session.inc.h $(srcdir)/timer.c \
@@ -447,6 +451,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encode-result.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-rows.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-workers.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-apply.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel-writer.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder-core.lo \
@@ -835,6 +841,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-progressive-video.Plo \
 	./$(DEPDIR)/libsixel_la-progressive.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
+	./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo \
+	./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane.Plo \
 	./$(DEPDIR)/libsixel_la-sample-statistics.Plo \
 	./$(DEPDIR)/libsixel_la-sample-stream.Plo \
@@ -1248,6 +1256,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encode-result.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encode-result.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-workers.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-workers.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-apply.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel-writer.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel-writer.h \
@@ -2053,6 +2065,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-video.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-statistics.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sample-stream.Plo@am__quote@ # am--include-marker
@@ -2141,6 +2155,20 @@ libsixel_la-retained-plane.lo: retained-plane.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='retained-plane.c' object='libsixel_la-retained-plane.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-retained-plane.lo `test -f 'retained-plane.c' || echo '$(srcdir)/'`retained-plane.c
+
+libsixel_la-retained-plane-rows.lo: retained-plane-rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-retained-plane-rows.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane-rows.Tpo -c -o libsixel_la-retained-plane-rows.lo `test -f 'retained-plane-rows.c' || echo '$(srcdir)/'`retained-plane-rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-retained-plane-rows.Tpo $(DEPDIR)/libsixel_la-retained-plane-rows.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='retained-plane-rows.c' object='libsixel_la-retained-plane-rows.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-retained-plane-rows.lo `test -f 'retained-plane-rows.c' || echo '$(srcdir)/'`retained-plane-rows.c
+
+libsixel_la-retained-plane-workers.lo: retained-plane-workers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-retained-plane-workers.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane-workers.Tpo -c -o libsixel_la-retained-plane-workers.lo `test -f 'retained-plane-workers.c' || echo '$(srcdir)/'`retained-plane-workers.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-retained-plane-workers.Tpo $(DEPDIR)/libsixel_la-retained-plane-workers.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='retained-plane-workers.c' object='libsixel_la-retained-plane-workers.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-retained-plane-workers.lo `test -f 'retained-plane-workers.c' || echo '$(srcdir)/'`retained-plane-workers.c
 
 libsixel_la-palette-apply.lo: palette-apply.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-apply.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-apply.Tpo -c -o libsixel_la-palette-apply.lo `test -f 'palette-apply.c' || echo '$(srcdir)/'`palette-apply.c
@@ -3848,6 +3876,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-statistics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo
@@ -4087,6 +4117,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-statistics.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sample-stream.Plo

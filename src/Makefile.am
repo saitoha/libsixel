@@ -126,6 +126,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encode-result.c \
                 $(srcdir)/encode-result.h \
                 $(srcdir)/retained-plane.c \
+                $(srcdir)/retained-plane-rows.c \
+                $(srcdir)/retained-plane-rows.h \
+                $(srcdir)/retained-plane-workers.c \
+                $(srcdir)/retained-plane-workers.h \
                 $(srcdir)/palette-apply.c \
                 $(srcdir)/sixel-writer.c \
                 $(srcdir)/sixel-writer.h \
