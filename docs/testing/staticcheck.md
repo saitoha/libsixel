@@ -106,6 +106,8 @@ Both targets run the [independent oracle auditor](../../tools/verify_color_oracl
 
 The preprocessor portability check scans maintained C sources and headers, including test helpers, for `near`, `far` and `interface` identifiers that collide with Windows macros. Comments and string literals are excluded. It also requires `<stdint.h>`, `<inttypes.h>`, or the public `<sixel.h>` (directly or through a maintained quoted header) before a `SIZE_MAX` fallback definition, because `<limits.h>` alone does not prevent later redefinition. This conservative source check inspects all conditional branches; it does not replace compilation on each platform.
 
+The independent [octal escape boundary check](../../tests/_static/sh/staticcheck-c-octal-escape-boundary.sh) rejects `8` or `9` immediately after an octal escape in maintained C literals, including tests and examples. MSVC diagnoses this spelling as C4125 even after three octal digits; write `"\033" "8"` to preserve the ESC and digit bytes without the warning. The shell/awk scanner joins continued lines, ignores comments and escaped backslashes, and checks valid and invalid literal controls without Python or compilation. It does not evaluate preprocessor conditions or replace native compiler validation.
+
 The VM-result handoff check inspects the DragonFly BSD workflow attempts and host validators, with in-memory removal controls for missing capture, validation, retry guards and distinct result paths. Small shell probes exercise stop-on-error, successful artifact handoff after guest failure, host status propagation and rejection of missing or malformed records. It requires neither Python nor a running VM; actual startup, connection and copyback remain CI observations. The [CI infrastructure and artifact policy](../ci/design.md#dependency-and-infrastructure-policy) owns this boundary.
 
 The Emscripten executable-runtime check protects the paired worker-proxy and runtime-exit flags, their platform/thread guards, and their consumption by converter, assessment and test-runner link targets in Autotools and Meson. It uses one awk process with in-memory removal controls and does not compile or launch Node.js. The [platform contract](../misc/platforms/emscripten.md#build-contract) owns the runtime rationale; actual worker reclamation remains an Emscripten CI observation.
@@ -208,6 +210,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-46 | Source-only comparison: stdin right. | [tests/tools/compare/0008_stdin_right.t](../../tests/tools/compare/0008_stdin_right.t) |
 | SC-47 | Source-only comparison: multiblock equal. | [tests/tools/compare/0009_multiblock_equal.t](../../tests/tools/compare/0009_multiblock_equal.t) |
 | SC-48 | Source-only comparison detects a difference beyond several buffers. | [tests/tools/compare/0010_multiblock_different.t](../../tests/tools/compare/0010_multiblock_different.t) |
+| SC-49 | C literals separate octal escapes from following 8/9 digits; controls distinguish real escapes from comments, escaped backslashes and adjacent literals. | [tests/_static/sh/staticcheck-c-octal-escape-boundary.sh](../../tests/_static/sh/staticcheck-c-octal-escape-boundary.sh) |
 
 ### Coverage boundary
 
