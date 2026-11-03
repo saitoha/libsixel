@@ -97,6 +97,8 @@ reserved_delta_render(int gpu, int latest, int threshold, int record,
         UI_CHECK(sixel_frame_init_borrowed(frame, pixels, UI_WIDTH,
             UI_HEIGHT, SIXEL_PIXELFORMAT_RGB888, NULL, 0) == SIXEL_OK);
         stream.size = 0;
+        /* A missing full frame must not reuse the previous palette count. */
+        colors = 0;
         options.refresh_time_us = (uint64_t)step * 16000U;
         UI_CHECK(sixel_playback_submit(playback, frame, SIXEL_PLAYBACK_WAIT,
             2000, &options) == SIXEL_OK);
@@ -119,7 +121,7 @@ reserved_delta_render(int gpu, int latest, int threshold, int record,
         if (record) {
             /* Inspect source sampling and reserved register placement
              * independently of the retained delta canvas comparison. */
-            UI_CHECK(colors >= 4);
+            UI_CHECK(palette != NULL && colors >= 4);
             for (i = 0; i < 12; ++i) {
                 c = i < 9 ? reserved[i] : 102;
                 UI_CHECK(abs((int)palette[i] - c) <= 3);

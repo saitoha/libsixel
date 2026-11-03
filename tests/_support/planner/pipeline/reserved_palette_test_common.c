@@ -87,6 +87,8 @@ reserved_done(sixel_playback_result_t const *result, void *context)
     state = context;
     ++state->completed;
     pixels = palette = NULL;
+    /* Invalid defaults keep an unset decoder result from passing geometry. */
+    width = height = count = 0;
     status = result->status;
     if (status == SIXEL_OK) {
         status = sixel_decode_raw(state->buffer.bytes,

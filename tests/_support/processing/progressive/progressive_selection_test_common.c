@@ -73,7 +73,8 @@ test_progressive_selection_case(int mode)
     memset(domain, 1, sizeof(domain));
     for (i = 0; i < count; ++i) {
         source[i * 3] = source[i * 3 + 1] = source[i * 3 + 2] = i / 10.0f;
-        errors[i] = 10 - i;
+        /* Fixture errors are integers from 1 to 10, exact in double. */
+        errors[i] = (double)(10 - i);
     }
     if (mode == 46 || mode == 47) {
         count = 4;

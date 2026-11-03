@@ -42,6 +42,8 @@ test_qa_0017(int argc, char **argv)
     qa = NULL;
     reference = NULL;
     target = NULL;
+    /* Keep diagnostics defined even if no metric iteration completes. */
+    actual = expected = 0.0;
     ok = 0;
     if (argc != 2) {
         return EXIT_FAILURE;
