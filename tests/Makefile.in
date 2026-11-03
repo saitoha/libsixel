@@ -23291,7 +23291,8 @@ TEST_DATA_DIRS = data
 
 # These native Python cases use the ordinary discovered TAP/log path.
 # Their interpreter does not depend on optional Python bindings.
-EXTRA_DIST = tools/compare/data/octet.bin tools/compare/data/empty \
+EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
+	tools/compare/data/empty \
 	tools/compare/data/octet-different.bin \
 	tools/compare/data/newline.txt \
 	tools/compare/data/no-newline.txt writer/png/uniform.six \
@@ -23535,6 +23536,7 @@ EXTRA_DIST = tools/compare/data/octet.bin tools/compare/data/empty \
 	_static/awk/test-fixture-distribution.awk \
 	_static/sh/staticcheck-shell-field-delimiters.sh \
 	_static/awk/shell-field-delimiters.awk \
+	_static/sh/staticcheck-output-buffer-storage.sh \
 	_static/awk/source-inventory-select.awk \
 	_static/sh/check-test-plan-inventory.sh \
 	_static/sh/staticcheck-source-inventory.sh \

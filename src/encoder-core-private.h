@@ -107,7 +107,9 @@ struct sixel_output {
     long long last_frame_time_usec;
 
     int pos;
-    unsigned char buffer[1];
+    /* A packet and its retained suffix share one fixed-size allocation.
+     * Declare the full extent so compiler bounds match serializer writes. */
+    unsigned char buffer[SIXEL_OUTPUT_PACKET_SIZE * 2];
 };
 
 /*

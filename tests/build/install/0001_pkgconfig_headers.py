@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """Compile against the headers selected by the staged install's pkg-config."""
+# Policy: docs/build/test-harness.md
+# Policy: docs/misc/platforms/cosmopolitan.md
+# Coverage: COSMO-05
 import argparse
 import os
 from pathlib import Path
@@ -7,11 +10,16 @@ import shlex
 import shutil
 import subprocess
 import tempfile
+import sys
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_support"))
+import native_process
 
 
 def run(command, **kwargs):
-    result = subprocess.run(command, text=True, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, **kwargs)
+    result = native_process.run(command, text=True, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, **kwargs)
     if result.returncode:
         raise RuntimeError(f'{command!r}:\n{result.stdout}')
     return result.stdout

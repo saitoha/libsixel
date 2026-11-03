@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """Sibling measured tests retain one binding environment preparation identity."""
+# Policy: docs/misc/platforms/cosmopolitan.md
+# Coverage: COSMO-05
 # Policy: docs/testing/guide.md
 # Policy: docs/build/test-harness.md
 import os
 from pathlib import Path
 import subprocess
 import sys
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_support"))
+import native_process
 
 
 def check(executor):
@@ -22,7 +28,7 @@ def check(executor):
     for expected in (str(os.getpid()), str(os.getpid()), 'explicit-run'):
         if expected == 'explicit-run':
             env['MESON_TEST_RUN_ID'] = expected
-        result = subprocess.run(command, env=env, stdin=subprocess.DEVNULL,
+        result = native_process.run(command, env=env, stdin=subprocess.DEVNULL,
                                 capture_output=True, text=True, timeout=5)
         if 'child-time unsupported' in result.stderr:
             return 'complete-command timing is unavailable'

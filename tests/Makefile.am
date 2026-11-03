@@ -11101,7 +11101,7 @@ check-php: prepare-binding-artifacts
 # distdir does not hit shell ARG_MAX limits on some platforms.
 TEST_DATA_DIRS = data
 
-EXTRA_DIST = tools/compare/data/octet.bin tools/compare/data/empty \
+EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin tools/compare/data/empty \
     tools/compare/data/octet-different.bin \
     tools/compare/data/newline.txt tools/compare/data/no-newline.txt \
     writer/png/uniform.six writer/png/colors.six writer/png/redefine.six \
@@ -11467,6 +11467,7 @@ EXTRA_DIST += _static/sh/staticcheck-test-distribution.sh \
     _static/sh/staticcheck-test-fixture-distribution.sh \
     _static/awk/test-fixture-distribution.awk
 EXTRA_DIST += _static/sh/staticcheck-shell-field-delimiters.sh _static/awk/shell-field-delimiters.awk
+EXTRA_DIST += _static/sh/staticcheck-output-buffer-storage.sh
 
 EXTRA_DIST += _static/awk/source-inventory-select.awk
 

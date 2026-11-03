@@ -385,6 +385,7 @@ png_color_profile(void)
     int ok;
 
     bytes = NULL;
+    length = 0u;
     definition = sixel_cdef_name("display-p3");
     allocator = NULL;
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);

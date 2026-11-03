@@ -442,7 +442,7 @@ sixel_output_storage_new(sixel_allocator_t *allocator,
     }
 
     *object = NULL;
-    size = sizeof(sixel_output_t) + SIXEL_OUTPUT_PACKET_SIZE * 2;
+    size = sizeof(sixel_output_t);
     output = (sixel_output_t *)sixel_allocator_malloc(allocator, size);
     if (output == NULL) {
         sixel_helper_set_additional_message(

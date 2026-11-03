@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """A delayed stderr reader must not discard successful child-time evidence."""
+# Policy: docs/misc/platforms/cosmopolitan.md
+# Coverage: COSMO-05
 # Policy: docs/testing/guide.md
 import os
 from pathlib import Path
@@ -8,6 +10,10 @@ import select
 import subprocess
 import sys
 import time
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "_support"))
+import native_process
 
 
 def check(executor):
@@ -19,7 +25,7 @@ def check(executor):
         return 'POSIX pipe supervision is unavailable'
     import fcntl
 
-    probe = subprocess.run(
+    probe = native_process.run(
         [executor, '--record-child-time', 'probe', '0', '--',
          sys.executable, '-c', 'pass'], stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5)
@@ -41,7 +47,7 @@ def check(executor):
                 filled += os.write(write_fd, b'x' * 4096)
             except BlockingIOError:
                 break
-        process = subprocess.Popen(
+        process = native_process.popen(
             [executor, '--record-child-time', 'marker-backpressure', '0', '--',
              sys.executable, '-c',
              'import os; os.write(1,b"ready\\n"); os._exit(0)'],

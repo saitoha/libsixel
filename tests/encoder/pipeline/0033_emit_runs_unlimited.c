@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: MIT */
+/*
+ * Policy: docs/encoder/output/encode-policy/README.md
+ */
 /* Verify frozen repeat-boundary bytes with unlimited DECGRI. */
 int test_emit_run_stream(int, int);
 

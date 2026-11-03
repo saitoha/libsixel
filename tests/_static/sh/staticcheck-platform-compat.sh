@@ -207,7 +207,7 @@ sh "$source_files_helper" "$src_root/docs/misc/platforms" --name '*.md' --exec a
     }
 '| LC_ALL=C sort -u > "$tmpdir/doc-coverage-pairs"
 
-sh "$source_files_helper" "$src_root/tests" --name '*.t' --name '*.c' --name '*.sh' --exec awk -v src_root="$src_root/" '
+sh "$source_files_helper" "$src_root/tests" --name '*.t' --name '*.c' --name '*.sh' --name '*.py' --exec awk -v src_root="$src_root/" '
     /^[[:space:]]*(#|\/\/|\*)[[:space:]]*Coverage:/ {
         line=$0
         sub(/^[[:space:]]*(#|\/\/|\*)[[:space:]]*Coverage:[[:space:]]*/, "", line)

@@ -124,7 +124,7 @@ test_emit_run_stream(int limited, int packet)
             goto end;
         }
         output->encode_policy = SIXEL_ENCODEPOLICY_FAST;
-        output->has_gri_arg_limit = limited;
+        output->has_gri_arg_limit = limited != 0;
         status = sixel_encode_body(pixels, width, 6, NULL, NULL, 2, 0, 1,
             output, NULL, allocator, 0, NULL);
         if (SIXEL_FAILED(status) || !sink.ok ||

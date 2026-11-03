@@ -118,3 +118,17 @@ The script rebuilds the selected tree, records commands and provenance, measures
 ## Implementation and existing coverage
 
 Policy parsing is in [`encoder.c`](../../../../src/encoder.c), the public constants are in [`sixel.h`](../../../../include/sixel.h), and mask serialization is in [`encoder-core-encode.c`](../../../../src/encoder-core-encode.c). Existing focused coverage includes transparent-offset fill clipping in [`0074_transparent_offset_encode_policy_size.t`](../../../../tests/palette/alpha/0074_transparent_offset_encode_policy_size.t) and size-policy handling of empty OR planes in [`0005_encoder_core_ormode_body_skips_empty_planes.c`](../../../../tests/encoder/ormode/0005_encoder_core_ormode_body_skips_empty_planes.c).
+
+The serializer keeps one output packet and its retained suffix in `sixel_output_t.buffer`. The C array declares two complete `SIXEL_OUTPUT_PACKET_SIZE` packets, and storage allocation uses `sizeof(sixel_output_t)` without an additional trailing allocation. The declared object bounds therefore match the writable storage seen by compiler bounds analysis. After a packet is flushed, the retained position is below one packet; the second packet accommodates bytes appended across that boundary.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| EP-01 | Unlimited DECGRI preserves the frozen bytes at repeat-count digit boundaries. | [tests/encoder/pipeline/0033_emit_runs_unlimited.c](../../../../tests/encoder/pipeline/0033_emit_runs_unlimited.c) |
+| EP-02 | Limited DECGRI preserves repeat splitting and its frozen bytes. | [tests/encoder/pipeline/0034_emit_runs_limited.c](../../../../tests/encoder/pipeline/0034_emit_runs_limited.c) |
+| EP-03 | Unlimited DECGRI preserves bytes when a run crosses an output packet boundary. | [tests/encoder/pipeline/0035_emit_packet_unlimited.c](../../../../tests/encoder/pipeline/0035_emit_packet_unlimited.c) |
+| EP-04 | Limited DECGRI preserves bytes when split runs cross an output packet boundary. | [tests/encoder/pipeline/0036_emit_packet_limited.c](../../../../tests/encoder/pipeline/0036_emit_packet_limited.c) |
+| EP-05 | The declared output array holds two packets and allocation follows the complete object size. | [tests/_static/sh/staticcheck-output-buffer-storage.sh](../../../../tests/_static/sh/staticcheck-output-buffer-storage.sh) |
