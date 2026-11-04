@@ -267,6 +267,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/planning/0107_playback_wait_failure.c \
 	encoder/planning/0108_playback_drain_timeout.c \
 	encoder/planning/0184_shared_timeline_ownership.c \
+	encoder/planning/0185_gpu_ahead_overlap.c \
+	encoder/planning/0186_gpu_ahead_t0_bytes.c \
+	encoder/planning/0187_gpu_ahead_t48_bytes.c \
+	encoder/planning/0188_gpu_ahead_cpu_fallback.c \
+	encoder/planning/0189_prepare_ahead_cancel_prepared.c \
+	encoder/planning/0190_prepare_ahead_cancel_new_admission.c \
+	encoder/planning/0191_prepare_ahead_write_failure_drain.c \
+	encoder/planning/0192_gpu_ahead_explicit_serial.c \
 	encoder/planning/0109_playback_serial_reservation.c \
 	encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
 	encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -358,6 +366,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	lookup/gridlut/0039_gridlut_instance_isolation.c \
 	_support/processing/assessment/vif_video_summary.c \
 	_support/planner/pipeline/playback_lifecycle_common.c \
+	_support/planner/pipeline/gpu_ahead_common.c \
+	_support/planner/pipeline/gpu_ahead_common.h \
 	_support/planner/pipeline/reserved_delta_common.c \
 	_support/processing/gpu-palette/gpu_failure_common.c \
 	palette/range/0027_range_model_budget.c \
@@ -4918,6 +4928,14 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0107_playback_wait_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0108_playback_drain_timeout.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0184_shared_timeline_ownership.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0185_gpu_ahead_overlap.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0109_playback_serial_reservation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0110_reserved_delta_cpu_per_frame_t0.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0111_reserved_delta_cpu_per_frame_t48.$(OBJEXT) \
@@ -5009,6 +5027,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lookup/gridlut/test_runner-0039_gridlut_instance_isolation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/assessment/test_runner-vif_video_summary.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/planner/pipeline/test_runner-playback_lifecycle_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/planner/pipeline/test_runner-gpu_ahead_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/planner/pipeline/test_runner-reserved_delta_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/gpu-palette/test_runner-gpu_failure_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/range/test_runner-0027_range_model_budget.$(OBJEXT) \
@@ -9738,6 +9757,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po \
 	_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po \
 	_support/planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po \
+	_support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po \
 	_support/planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po \
@@ -11414,6 +11434,14 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/planning/$(DEPDIR)/test_runner-0121_byte_precision_auto.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0122_explicit_working_auto_clustering.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0002_byte_request_linear_source.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po \
@@ -14902,6 +14930,15 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_PLAYBACK_WAIT_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0108_PLAYBACK_DRAIN_TIMEOUT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0184_SHARED_TIMELINE_OWNERSHIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0185_GPU_AHEAD_OVERLAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0186_GPU_AHEAD_T0_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0187_GPU_AHEAD_T48_BYTES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0188_GPU_AHEAD_CPU_FALLBACK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0189_PREPARE_AHEAD_CANCEL_PREPARED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0190_PREPARE_AHEAD_CANCEL_NEW_ADMISSION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0191_PREPARE_AHEAD_WRITE_FAILURE_DRAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0192_GPU_AHEAD_EXPLICIT_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_GPU_AHEAD_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0109_PLAYBACK_SERIAL_RESERVATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0110_RESERVED_DELTA_CPU_PER_FRAME_T0 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0111_RESERVED_DELTA_CPU_PER_FRAME_T48 \
@@ -19455,6 +19492,14 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0107_playback_wait_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0108_playback_drain_timeout.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0184_shared_timeline_ownership.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0185_gpu_ahead_overlap.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0186_gpu_ahead_t0_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0187_gpu_ahead_t48_bytes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0188_gpu_ahead_cpu_fallback.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0189_prepare_ahead_cancel_prepared.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0190_prepare_ahead_cancel_new_admission.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0191_prepare_ahead_write_failure_drain.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0192_gpu_ahead_explicit_serial.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0109_playback_serial_reservation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -19546,6 +19591,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    lookup/gridlut/0039_gridlut_instance_isolation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/assessment/vif_video_summary.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/planner/pipeline/playback_lifecycle_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/planner/pipeline/gpu_ahead_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/planner/pipeline/gpu_ahead_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/planner/pipeline/reserved_delta_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/gpu-palette/gpu_failure_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/range/0027_range_model_budget.c \
@@ -24857,6 +24904,30 @@ encoder/planning/test_runner-0108_playback_drain_timeout.$(OBJEXT):  \
 encoder/planning/test_runner-0184_shared_timeline_ownership.$(OBJEXT):  \
 	encoder/planning/$(am__dirstamp) \
 	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0185_gpu_ahead_overlap.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
 encoder/planning/test_runner-0109_playback_serial_reservation.$(OBJEXT):  \
 	encoder/planning/$(am__dirstamp) \
 	encoder/planning/$(DEPDIR)/$(am__dirstamp)
@@ -25170,6 +25241,9 @@ _support/planner/pipeline/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) _support/planner/pipeline/$(DEPDIR)
 	@: >>_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 _support/planner/pipeline/test_runner-playback_lifecycle_common.$(OBJEXT):  \
+	_support/planner/pipeline/$(am__dirstamp) \
+	_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
+_support/planner/pipeline/test_runner-gpu_ahead_common.$(OBJEXT):  \
 	_support/planner/pipeline/$(am__dirstamp) \
 	_support/planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 _support/planner/pipeline/test_runner-reserved_delta_common.$(OBJEXT):  \
@@ -39710,6 +39784,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0188_colorsync_linear.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/loader/unit/$(DEPDIR)/test_runner-0189_byte_storage.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/allocation/$(DEPDIR)/test_runner-allocation_runtime_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-palette_auto_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-palette_features_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/planner/pipeline/$(DEPDIR)/test_runner-palette_integration_common.Po@am__quote@ # am--include-marker
@@ -41386,6 +41461,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0121_byte_precision_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0122_explicit_working_auto_clustering.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0002_byte_request_linear_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po@am__quote@ # am--include-marker
@@ -45856,6 +45939,118 @@ encoder/planning/test_runner-0184_shared_timeline_ownership.obj: encoder/plannin
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0184_shared_timeline_ownership.obj `if test -f 'encoder/planning/0184_shared_timeline_ownership.c'; then $(CYGPATH_W) 'encoder/planning/0184_shared_timeline_ownership.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0184_shared_timeline_ownership.c'; fi`
 
+encoder/planning/test_runner-0185_gpu_ahead_overlap.o: encoder/planning/0185_gpu_ahead_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0185_gpu_ahead_overlap.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Tpo -c -o encoder/planning/test_runner-0185_gpu_ahead_overlap.o `test -f 'encoder/planning/0185_gpu_ahead_overlap.c' || echo '$(srcdir)/'`encoder/planning/0185_gpu_ahead_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Tpo encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0185_gpu_ahead_overlap.c' object='encoder/planning/test_runner-0185_gpu_ahead_overlap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0185_gpu_ahead_overlap.o `test -f 'encoder/planning/0185_gpu_ahead_overlap.c' || echo '$(srcdir)/'`encoder/planning/0185_gpu_ahead_overlap.c
+
+encoder/planning/test_runner-0185_gpu_ahead_overlap.obj: encoder/planning/0185_gpu_ahead_overlap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0185_gpu_ahead_overlap.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Tpo -c -o encoder/planning/test_runner-0185_gpu_ahead_overlap.obj `if test -f 'encoder/planning/0185_gpu_ahead_overlap.c'; then $(CYGPATH_W) 'encoder/planning/0185_gpu_ahead_overlap.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0185_gpu_ahead_overlap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Tpo encoder/planning/$(DEPDIR)/test_runner-0185_gpu_ahead_overlap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0185_gpu_ahead_overlap.c' object='encoder/planning/test_runner-0185_gpu_ahead_overlap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0185_gpu_ahead_overlap.obj `if test -f 'encoder/planning/0185_gpu_ahead_overlap.c'; then $(CYGPATH_W) 'encoder/planning/0185_gpu_ahead_overlap.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0185_gpu_ahead_overlap.c'; fi`
+
+encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.o: encoder/planning/0186_gpu_ahead_t0_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Tpo -c -o encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.o `test -f 'encoder/planning/0186_gpu_ahead_t0_bytes.c' || echo '$(srcdir)/'`encoder/planning/0186_gpu_ahead_t0_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Tpo encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0186_gpu_ahead_t0_bytes.c' object='encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.o `test -f 'encoder/planning/0186_gpu_ahead_t0_bytes.c' || echo '$(srcdir)/'`encoder/planning/0186_gpu_ahead_t0_bytes.c
+
+encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.obj: encoder/planning/0186_gpu_ahead_t0_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Tpo -c -o encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.obj `if test -f 'encoder/planning/0186_gpu_ahead_t0_bytes.c'; then $(CYGPATH_W) 'encoder/planning/0186_gpu_ahead_t0_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0186_gpu_ahead_t0_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Tpo encoder/planning/$(DEPDIR)/test_runner-0186_gpu_ahead_t0_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0186_gpu_ahead_t0_bytes.c' object='encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0186_gpu_ahead_t0_bytes.obj `if test -f 'encoder/planning/0186_gpu_ahead_t0_bytes.c'; then $(CYGPATH_W) 'encoder/planning/0186_gpu_ahead_t0_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0186_gpu_ahead_t0_bytes.c'; fi`
+
+encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.o: encoder/planning/0187_gpu_ahead_t48_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Tpo -c -o encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.o `test -f 'encoder/planning/0187_gpu_ahead_t48_bytes.c' || echo '$(srcdir)/'`encoder/planning/0187_gpu_ahead_t48_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Tpo encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0187_gpu_ahead_t48_bytes.c' object='encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.o `test -f 'encoder/planning/0187_gpu_ahead_t48_bytes.c' || echo '$(srcdir)/'`encoder/planning/0187_gpu_ahead_t48_bytes.c
+
+encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.obj: encoder/planning/0187_gpu_ahead_t48_bytes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Tpo -c -o encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.obj `if test -f 'encoder/planning/0187_gpu_ahead_t48_bytes.c'; then $(CYGPATH_W) 'encoder/planning/0187_gpu_ahead_t48_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0187_gpu_ahead_t48_bytes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Tpo encoder/planning/$(DEPDIR)/test_runner-0187_gpu_ahead_t48_bytes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0187_gpu_ahead_t48_bytes.c' object='encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0187_gpu_ahead_t48_bytes.obj `if test -f 'encoder/planning/0187_gpu_ahead_t48_bytes.c'; then $(CYGPATH_W) 'encoder/planning/0187_gpu_ahead_t48_bytes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0187_gpu_ahead_t48_bytes.c'; fi`
+
+encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.o: encoder/planning/0188_gpu_ahead_cpu_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Tpo -c -o encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.o `test -f 'encoder/planning/0188_gpu_ahead_cpu_fallback.c' || echo '$(srcdir)/'`encoder/planning/0188_gpu_ahead_cpu_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0188_gpu_ahead_cpu_fallback.c' object='encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.o `test -f 'encoder/planning/0188_gpu_ahead_cpu_fallback.c' || echo '$(srcdir)/'`encoder/planning/0188_gpu_ahead_cpu_fallback.c
+
+encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.obj: encoder/planning/0188_gpu_ahead_cpu_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Tpo -c -o encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.obj `if test -f 'encoder/planning/0188_gpu_ahead_cpu_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0188_gpu_ahead_cpu_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0188_gpu_ahead_cpu_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Tpo encoder/planning/$(DEPDIR)/test_runner-0188_gpu_ahead_cpu_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0188_gpu_ahead_cpu_fallback.c' object='encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0188_gpu_ahead_cpu_fallback.obj `if test -f 'encoder/planning/0188_gpu_ahead_cpu_fallback.c'; then $(CYGPATH_W) 'encoder/planning/0188_gpu_ahead_cpu_fallback.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0188_gpu_ahead_cpu_fallback.c'; fi`
+
+encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.o: encoder/planning/0189_prepare_ahead_cancel_prepared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Tpo -c -o encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.o `test -f 'encoder/planning/0189_prepare_ahead_cancel_prepared.c' || echo '$(srcdir)/'`encoder/planning/0189_prepare_ahead_cancel_prepared.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Tpo encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0189_prepare_ahead_cancel_prepared.c' object='encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.o `test -f 'encoder/planning/0189_prepare_ahead_cancel_prepared.c' || echo '$(srcdir)/'`encoder/planning/0189_prepare_ahead_cancel_prepared.c
+
+encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.obj: encoder/planning/0189_prepare_ahead_cancel_prepared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Tpo -c -o encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.obj `if test -f 'encoder/planning/0189_prepare_ahead_cancel_prepared.c'; then $(CYGPATH_W) 'encoder/planning/0189_prepare_ahead_cancel_prepared.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0189_prepare_ahead_cancel_prepared.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Tpo encoder/planning/$(DEPDIR)/test_runner-0189_prepare_ahead_cancel_prepared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0189_prepare_ahead_cancel_prepared.c' object='encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0189_prepare_ahead_cancel_prepared.obj `if test -f 'encoder/planning/0189_prepare_ahead_cancel_prepared.c'; then $(CYGPATH_W) 'encoder/planning/0189_prepare_ahead_cancel_prepared.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0189_prepare_ahead_cancel_prepared.c'; fi`
+
+encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.o: encoder/planning/0190_prepare_ahead_cancel_new_admission.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Tpo -c -o encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.o `test -f 'encoder/planning/0190_prepare_ahead_cancel_new_admission.c' || echo '$(srcdir)/'`encoder/planning/0190_prepare_ahead_cancel_new_admission.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Tpo encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0190_prepare_ahead_cancel_new_admission.c' object='encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.o `test -f 'encoder/planning/0190_prepare_ahead_cancel_new_admission.c' || echo '$(srcdir)/'`encoder/planning/0190_prepare_ahead_cancel_new_admission.c
+
+encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.obj: encoder/planning/0190_prepare_ahead_cancel_new_admission.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Tpo -c -o encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.obj `if test -f 'encoder/planning/0190_prepare_ahead_cancel_new_admission.c'; then $(CYGPATH_W) 'encoder/planning/0190_prepare_ahead_cancel_new_admission.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0190_prepare_ahead_cancel_new_admission.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Tpo encoder/planning/$(DEPDIR)/test_runner-0190_prepare_ahead_cancel_new_admission.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0190_prepare_ahead_cancel_new_admission.c' object='encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0190_prepare_ahead_cancel_new_admission.obj `if test -f 'encoder/planning/0190_prepare_ahead_cancel_new_admission.c'; then $(CYGPATH_W) 'encoder/planning/0190_prepare_ahead_cancel_new_admission.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0190_prepare_ahead_cancel_new_admission.c'; fi`
+
+encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.o: encoder/planning/0191_prepare_ahead_write_failure_drain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Tpo -c -o encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.o `test -f 'encoder/planning/0191_prepare_ahead_write_failure_drain.c' || echo '$(srcdir)/'`encoder/planning/0191_prepare_ahead_write_failure_drain.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Tpo encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0191_prepare_ahead_write_failure_drain.c' object='encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.o `test -f 'encoder/planning/0191_prepare_ahead_write_failure_drain.c' || echo '$(srcdir)/'`encoder/planning/0191_prepare_ahead_write_failure_drain.c
+
+encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.obj: encoder/planning/0191_prepare_ahead_write_failure_drain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Tpo -c -o encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.obj `if test -f 'encoder/planning/0191_prepare_ahead_write_failure_drain.c'; then $(CYGPATH_W) 'encoder/planning/0191_prepare_ahead_write_failure_drain.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0191_prepare_ahead_write_failure_drain.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Tpo encoder/planning/$(DEPDIR)/test_runner-0191_prepare_ahead_write_failure_drain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0191_prepare_ahead_write_failure_drain.c' object='encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0191_prepare_ahead_write_failure_drain.obj `if test -f 'encoder/planning/0191_prepare_ahead_write_failure_drain.c'; then $(CYGPATH_W) 'encoder/planning/0191_prepare_ahead_write_failure_drain.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0191_prepare_ahead_write_failure_drain.c'; fi`
+
+encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.o: encoder/planning/0192_gpu_ahead_explicit_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Tpo -c -o encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.o `test -f 'encoder/planning/0192_gpu_ahead_explicit_serial.c' || echo '$(srcdir)/'`encoder/planning/0192_gpu_ahead_explicit_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Tpo encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0192_gpu_ahead_explicit_serial.c' object='encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.o `test -f 'encoder/planning/0192_gpu_ahead_explicit_serial.c' || echo '$(srcdir)/'`encoder/planning/0192_gpu_ahead_explicit_serial.c
+
+encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj: encoder/planning/0192_gpu_ahead_explicit_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Tpo -c -o encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj `if test -f 'encoder/planning/0192_gpu_ahead_explicit_serial.c'; then $(CYGPATH_W) 'encoder/planning/0192_gpu_ahead_explicit_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0192_gpu_ahead_explicit_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Tpo encoder/planning/$(DEPDIR)/test_runner-0192_gpu_ahead_explicit_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0192_gpu_ahead_explicit_serial.c' object='encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0192_gpu_ahead_explicit_serial.obj `if test -f 'encoder/planning/0192_gpu_ahead_explicit_serial.c'; then $(CYGPATH_W) 'encoder/planning/0192_gpu_ahead_explicit_serial.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0192_gpu_ahead_explicit_serial.c'; fi`
+
 encoder/planning/test_runner-0109_playback_serial_reservation.o: encoder/planning/0109_playback_serial_reservation.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0109_playback_serial_reservation.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0109_playback_serial_reservation.Tpo -c -o encoder/planning/test_runner-0109_playback_serial_reservation.o `test -f 'encoder/planning/0109_playback_serial_reservation.c' || echo '$(srcdir)/'`encoder/planning/0109_playback_serial_reservation.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0109_playback_serial_reservation.Tpo encoder/planning/$(DEPDIR)/test_runner-0109_playback_serial_reservation.Po
@@ -47129,6 +47324,20 @@ _support/planner/pipeline/test_runner-playback_lifecycle_common.obj: _support/pl
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/planner/pipeline/playback_lifecycle_common.c' object='_support/planner/pipeline/test_runner-playback_lifecycle_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/planner/pipeline/test_runner-playback_lifecycle_common.obj `if test -f '_support/planner/pipeline/playback_lifecycle_common.c'; then $(CYGPATH_W) '_support/planner/pipeline/playback_lifecycle_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/planner/pipeline/playback_lifecycle_common.c'; fi`
+
+_support/planner/pipeline/test_runner-gpu_ahead_common.o: _support/planner/pipeline/gpu_ahead_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/planner/pipeline/test_runner-gpu_ahead_common.o -MD -MP -MF _support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Tpo -c -o _support/planner/pipeline/test_runner-gpu_ahead_common.o `test -f '_support/planner/pipeline/gpu_ahead_common.c' || echo '$(srcdir)/'`_support/planner/pipeline/gpu_ahead_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Tpo _support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/planner/pipeline/gpu_ahead_common.c' object='_support/planner/pipeline/test_runner-gpu_ahead_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/planner/pipeline/test_runner-gpu_ahead_common.o `test -f '_support/planner/pipeline/gpu_ahead_common.c' || echo '$(srcdir)/'`_support/planner/pipeline/gpu_ahead_common.c
+
+_support/planner/pipeline/test_runner-gpu_ahead_common.obj: _support/planner/pipeline/gpu_ahead_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/planner/pipeline/test_runner-gpu_ahead_common.obj -MD -MP -MF _support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Tpo -c -o _support/planner/pipeline/test_runner-gpu_ahead_common.obj `if test -f '_support/planner/pipeline/gpu_ahead_common.c'; then $(CYGPATH_W) '_support/planner/pipeline/gpu_ahead_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/planner/pipeline/gpu_ahead_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Tpo _support/planner/pipeline/$(DEPDIR)/test_runner-gpu_ahead_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/planner/pipeline/gpu_ahead_common.c' object='_support/planner/pipeline/test_runner-gpu_ahead_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/planner/pipeline/test_runner-gpu_ahead_common.obj `if test -f '_support/planner/pipeline/gpu_ahead_common.c'; then $(CYGPATH_W) '_support/planner/pipeline/gpu_ahead_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/planner/pipeline/gpu_ahead_common.c'; fi`
 
 _support/planner/pipeline/test_runner-reserved_delta_common.o: _support/planner/pipeline/reserved_delta_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/planner/pipeline/test_runner-reserved_delta_common.o -MD -MP -MF _support/planner/pipeline/$(DEPDIR)/test_runner-reserved_delta_common.Tpo -c -o _support/planner/pipeline/test_runner-reserved_delta_common.o `test -f '_support/planner/pipeline/reserved_delta_common.c' || echo '$(srcdir)/'`_support/planner/pipeline/reserved_delta_common.c

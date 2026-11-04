@@ -93,6 +93,14 @@ struct sixel_playback_test_hooks {
     void *context;
 };
 
+/* Helper-lane barriers for deterministic ownership tests. Install before
+ * playback and retain through detach. Production leaves this pointer NULL. */
+struct sixel_encoder_prepare_test_hooks {
+    void (*begin)(void *context, uint64_t sequence);
+    void (*complete)(void *context, uint64_t sequence, SIXELSTATUS status);
+    void *context;
+};
+
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
 #define SIXEL_COLOR_OPTION_MONOCHROME       1   /* use monochrome palette */
@@ -127,6 +135,7 @@ struct sixel_encoder {
     /* A sixel_playback_t owns the encoder; ordinary calls are refused. */
     int playback_attached;
     struct sixel_encoder_palette_test_hooks const *palette_test_hooks;
+    struct sixel_encoder_prepare_test_hooks const *prepare_test_hooks;
     struct sixel_playback_test_hooks const *playback_test_hooks;
     struct sixel_encoder_callback_scope *active_callbacks;
     /* A setting candidate borrows runtime state. Destructive cache/history

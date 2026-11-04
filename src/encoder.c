@@ -5983,11 +5983,6 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
 
-    if (sixel_trace_topic_is_enabled("dither_contract")) {
-        sixel_encoder_update_diagnostic_dither(context->encoder,
-                                               context->dither);
-    }
-
     return SIXEL_OK;
 }
 
@@ -11873,6 +11868,11 @@ sixel_encoder_frame_job_emit(sixel_encoder_frame_job_t *job)
         if (!context->latest) {
             context->palette_sequence = context->sequence;
         }
+        /* Diagnostics describe the emitting frame, never a helper's next
+         * palette. The retained diagnostic reference has one ordered owner. */
+        if (sixel_trace_topic_is_enabled("dither_contract")) {
+            sixel_encoder_update_diagnostic_dither(encoder, context->dither);
+        }
         job->nodes[SIXEL_DAG_NODE_DITHER_PLAN].deps = 0u;
         job->nodes[SIXEL_DAG_NODE_OUTPUT].deps = 1u;
         status = sixel_encode_dag_run_nodes(context,
@@ -12229,6 +12229,7 @@ sixel_encoder_new(
     (*ppencoder)->refresh_time_override = 0;
     (*ppencoder)->refresh_time_us = 0U;
     (*ppencoder)->palette_test_hooks = NULL;
+    (*ppencoder)->prepare_test_hooks = NULL;
     (*ppencoder)->playback_test_hooks = NULL;
     (*ppencoder)->active_callbacks = NULL;
     (*ppencoder)->operation_initialized = 0;
@@ -16115,12 +16116,31 @@ struct sixel_playback {
     uint64_t next_ticket;
     uint64_t next_sequence;
     uint64_t submitted;
+    uint64_t cancelled_through; /* includes the speculative preparation slot */
     uint64_t completed;
     uint64_t rejected;
     double last_processing_seconds;
     SIXELSTATUS failure;            /* first failure of synchronous playback */
     int threaded;
 };
+
+/* Claim an admitted frame for ordered encoding. A speculative helper may
+ * already have removed it from the queue when cancel records its watermark.
+ * This mutex is the start/cancel ordering point; an already claimed frame
+ * finishes normally, while later admissions exceed the cancellation mark. */
+static int
+sixel_encoder_playback_frame_cancelled(
+    sixel_encoder_frame_pipeline_t *pipeline,
+    sixel_encoder_frame_handoff_meta_t *meta)
+{
+    if (pipeline->playback != NULL && pipeline->playback->threaded) {
+        sixel_mutex_lock(&pipeline->mutex);
+        meta->cancelled |= meta->sequence <=
+            pipeline->playback->cancelled_through;
+        sixel_mutex_unlock(&pipeline->mutex);
+    }
+    return meta->cancelled;
+}
 
 /* Apply the submission-time 6delta controls of a playback frame. */
 static SIXELSTATUS
@@ -16458,7 +16478,10 @@ typedef struct sixel_encoder_prepare_ahead {
 
 /* Serial playback remains the reference for anything the helper could
  * observe out of order: fixed palettes and their stateful dither cache,
- * terminal queries, presentation pairs and GPU stages. */
+ * terminal queries, presentation pairs and palette capture. GPU execution
+ * is not a preparation dependency: each job owns its dither configuration,
+ * and PaletteApply acquires its lookup plan and backend lease on emission.
+ * No policy-specific lookup/cache state is shared by the two frame jobs. */
 static int
 sixel_encoder_pipeline_prepare_ahead_eligible(
     sixel_encoder_frame_pipeline_t const *pipeline)
@@ -16481,7 +16504,8 @@ sixel_encoder_pipeline_prepare_ahead_eligible(
             || encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT
             || encoder->dither_cache != NULL
             || encoder->fdrcs != 0
-            || encoder->gpu_policy != SIXEL_GPU_POLICY_OFF) {
+            || encoder->palette_output != NULL
+            || encoder->progressive_context != NULL) {
         return 0;
     }
 
@@ -16514,6 +16538,24 @@ sixel_encoder_pipeline_slot_clear(sixel_encoder_pipeline_slot_t *slot)
     slot->status = SIXEL_OK;
     slot->bind_status = SIXEL_OK;
     slot->prepared = 0;
+}
+
+/* Release preparation before reporting cancellation/failure. The done
+ * callback may recycle borrowed source pixels immediately; no job or palette
+ * worker may still read them after that callback. Emission never ran, so
+ * releasing this slot must not publish or invalidate retained history. */
+static void
+sixel_encoder_pipeline_slot_discard(sixel_encoder_frame_pipeline_t *pipeline,
+                                    sixel_encoder_pipeline_slot_t *slot,
+                                    SIXELSTATUS status)
+{
+    if (slot->job != NULL && slot->job->active) {
+        (void)sixel_encoder_frame_job_release(slot->job, status, 0);
+    }
+    if (slot->frame != NULL) {
+        sixel_encoder_playback_frame_done(pipeline, &slot->metadata, status, 0);
+    }
+    sixel_encoder_pipeline_slot_clear(slot);
 }
 
 /* Take the next queued frame. Returns 1 with a frame, 0 when playback
@@ -16665,6 +16707,12 @@ sixel_encoder_prepare_ahead_main(void *arg)
             sixel_thread_budget_leave(&clone_policy);
         }
         if (SIXEL_SUCCEEDED(status)) {
+            if (ahead->encoder->prepare_test_hooks != NULL &&
+                    ahead->encoder->prepare_test_hooks->begin != NULL) {
+                ahead->encoder->prepare_test_hooks->begin(
+                    ahead->encoder->prepare_test_hooks->context,
+                    slot->metadata.sequence);
+            }
             slot->job->delta_alpha_key = ahead->alpha_key;
             slot->status = sixel_encoder_pipeline_prepare_job(
                 ahead->pipeline, slot->job, slot->work_frame,
@@ -16674,6 +16722,12 @@ sixel_encoder_prepare_ahead_main(void *arg)
             }
             slot->prepared = slot->status != SIXEL_FALSE ||
                 slot->job->active != 0;
+            if (ahead->encoder->prepare_test_hooks != NULL &&
+                    ahead->encoder->prepare_test_hooks->complete != NULL) {
+                ahead->encoder->prepare_test_hooks->complete(
+                    ahead->encoder->prepare_test_hooks->context,
+                    slot->metadata.sequence, slot->status);
+            }
         } else if (slot->source != NULL) {
             sixel_frame_unref(slot->source);
             slot->source = NULL;
@@ -16809,17 +16863,15 @@ sixel_encoder_frame_pipeline_run_ahead(
             sixel_encoder_pipeline_slot_bind(pipeline, current);
         }
         have_current = 0;
-        if (current->metadata.cancelled != 0) {
-            sixel_encoder_playback_frame_done(pipeline, &current->metadata,
-                                              SIXEL_INTERRUPTED, 0);
-            sixel_encoder_pipeline_slot_clear(current);
+        if (sixel_encoder_playback_frame_cancelled(
+                pipeline, &current->metadata)) {
+            sixel_encoder_pipeline_slot_discard(pipeline, current,
+                SIXEL_INTERRUPTED);
             continue;
         }
         if (SIXEL_FAILED(current->bind_status)) {
             status = current->bind_status;
-            sixel_encoder_playback_frame_done(pipeline, &current->metadata,
-                                              status, 0);
-            sixel_encoder_pipeline_slot_clear(current);
+            sixel_encoder_pipeline_slot_discard(pipeline, current, status);
             sixel_encoder_frame_pipeline_request_stop(
                 pipeline,
                 status,
@@ -16836,9 +16888,7 @@ sixel_encoder_frame_pipeline_run_ahead(
             }
         }
         if (status != SIXEL_OK) {
-            sixel_encoder_playback_frame_done(pipeline, &current->metadata,
-                                              status, 0);
-            sixel_encoder_pipeline_slot_clear(current);
+            sixel_encoder_pipeline_slot_discard(pipeline, current, status);
             sixel_encoder_frame_pipeline_request_stop(pipeline, status,
                 SIXEL_ENCODER_HANDOFF_TRACE_REASON_WORKER_ERROR);
             break;
@@ -16957,13 +17007,9 @@ sixel_encoder_frame_pipeline_run_ahead(
 
     sixel_encoder_prepare_ahead_stop(&ahead);
     for (index = 0; index < 2; ++index) {
-        /* A frame taken but never started still owes its completion. */
-        if (slots[index].frame != NULL) {
-            sixel_encoder_playback_frame_done(pipeline,
-                                              &slots[index].metadata,
-                                              SIXEL_INTERRUPTED, 0);
-        }
-        sixel_encoder_pipeline_slot_clear(&slots[index]);
+        /* The helper has joined; retire preparation before the callback. */
+        sixel_encoder_pipeline_slot_discard(pipeline, &slots[index],
+            SIXEL_INTERRUPTED);
         sixel_allocator_free(encoder->allocator, slots[index].job);
     }
     sixel_encoder_handoff_trace_emit(
@@ -17067,7 +17113,7 @@ sixel_encoder_frame_pipeline_worker_body(void *priv)
             metadata.loop_no,
             SIXEL_OK,
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
-        if (metadata.cancelled != 0) {
+        if (sixel_encoder_playback_frame_cancelled(pipeline, &metadata)) {
             sixel_encoder_playback_frame_done(pipeline, &metadata,
                                               SIXEL_INTERRUPTED, 0);
             sixel_frame_unref(frame);
@@ -20702,6 +20748,7 @@ sixel_playback_cancel(sixel_playback_t *playback)
     /* The worker reports cancelled frames, keeping callbacks on one thread
      * and in submission order; a stopped worker leaves that to us. */
     sixel_mutex_lock(&playback->pipeline.mutex);
+    playback->cancelled_through = playback->next_sequence;
     for (index = 0; index < playback->pipeline.queue_count; ++index) {
         playback->pipeline.queue_meta[(playback->pipeline.queue_head + index)
             % SIXEL_ENCODER_FRAME_PIPELINE_SLOTS].cancelled = 1;

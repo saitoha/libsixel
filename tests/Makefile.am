@@ -458,6 +458,15 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0107_PLAYBACK_WAIT_FAILURE \
     -DBUILD_TEST_0108_PLAYBACK_DRAIN_TIMEOUT \
     -DBUILD_TEST_0184_SHARED_TIMELINE_OWNERSHIP \
+    -DBUILD_TEST_0185_GPU_AHEAD_OVERLAP \
+    -DBUILD_TEST_0186_GPU_AHEAD_T0_BYTES \
+    -DBUILD_TEST_0187_GPU_AHEAD_T48_BYTES \
+    -DBUILD_TEST_0188_GPU_AHEAD_CPU_FALLBACK \
+    -DBUILD_TEST_0189_PREPARE_AHEAD_CANCEL_PREPARED \
+    -DBUILD_TEST_0190_PREPARE_AHEAD_CANCEL_NEW_ADMISSION \
+    -DBUILD_TEST_0191_PREPARE_AHEAD_WRITE_FAILURE_DRAIN \
+    -DBUILD_TEST_0192_GPU_AHEAD_EXPLICIT_SERIAL \
+    -DBUILD_GPU_AHEAD_COMMON \
     -DBUILD_TEST_0109_PLAYBACK_SERIAL_RESERVATION \
     -DBUILD_TEST_0110_RESERVED_DELTA_CPU_PER_FRAME_T0 \
     -DBUILD_TEST_0111_RESERVED_DELTA_CPU_PER_FRAME_T48 \
@@ -4979,6 +4988,14 @@ test_runner_SOURCES = test_runner.c \
     encoder/planning/0107_playback_wait_failure.c \
     encoder/planning/0108_playback_drain_timeout.c \
     encoder/planning/0184_shared_timeline_ownership.c \
+    encoder/planning/0185_gpu_ahead_overlap.c \
+    encoder/planning/0186_gpu_ahead_t0_bytes.c \
+    encoder/planning/0187_gpu_ahead_t48_bytes.c \
+    encoder/planning/0188_gpu_ahead_cpu_fallback.c \
+    encoder/planning/0189_prepare_ahead_cancel_prepared.c \
+    encoder/planning/0190_prepare_ahead_cancel_new_admission.c \
+    encoder/planning/0191_prepare_ahead_write_failure_drain.c \
+    encoder/planning/0192_gpu_ahead_explicit_serial.c \
     encoder/planning/0109_playback_serial_reservation.c \
     encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
     encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -5070,6 +5087,8 @@ test_runner_SOURCES = test_runner.c \
     lookup/gridlut/0039_gridlut_instance_isolation.c \
     _support/processing/assessment/vif_video_summary.c \
     _support/planner/pipeline/playback_lifecycle_common.c \
+    _support/planner/pipeline/gpu_ahead_common.c \
+    _support/planner/pipeline/gpu_ahead_common.h \
     _support/planner/pipeline/reserved_delta_common.c \
     _support/processing/gpu-palette/gpu_failure_common.c \
     palette/range/0027_range_model_budget.c \

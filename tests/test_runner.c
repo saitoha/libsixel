@@ -133,6 +133,14 @@ int test_lifecycle_0106(int argc, char **argv);
 int test_lifecycle_0107(int argc, char **argv);
 int test_lifecycle_0108(int argc, char **argv);
 int test_shared_timeline_ownership(int argc, char **argv);
+int test_gpu_ahead_overlap(int argc, char **argv);
+int test_gpu_ahead_t0_bytes(int argc, char **argv);
+int test_gpu_ahead_t48_bytes(int argc, char **argv);
+int test_gpu_ahead_cpu_fallback(int argc, char **argv);
+int test_prepare_ahead_cancel_prepared(int argc, char **argv);
+int test_prepare_ahead_cancel_new_admission(int argc, char **argv);
+int test_prepare_ahead_write_failure_drain(int argc, char **argv);
+int test_gpu_ahead_explicit_serial(int argc, char **argv);
 int test_lifecycle_0109(int argc, char **argv);
 int test_reserved_delta_0110(int argc, char **argv);
 int test_reserved_delta_0111(int argc, char **argv);
@@ -4826,6 +4834,22 @@ static test_entry_t const test_entries[] = {
       test_lifecycle_0108 },
     { "encoder/planning/0184_shared_timeline_ownership",
       test_shared_timeline_ownership },
+    { "encoder/planning/0185_gpu_ahead_overlap",
+      test_gpu_ahead_overlap },
+    { "encoder/planning/0186_gpu_ahead_t0_bytes",
+      test_gpu_ahead_t0_bytes },
+    { "encoder/planning/0187_gpu_ahead_t48_bytes",
+      test_gpu_ahead_t48_bytes },
+    { "encoder/planning/0188_gpu_ahead_cpu_fallback",
+      test_gpu_ahead_cpu_fallback },
+    { "encoder/planning/0189_prepare_ahead_cancel_prepared",
+      test_prepare_ahead_cancel_prepared },
+    { "encoder/planning/0190_prepare_ahead_cancel_new_admission",
+      test_prepare_ahead_cancel_new_admission },
+    { "encoder/planning/0191_prepare_ahead_write_failure_drain",
+      test_prepare_ahead_write_failure_drain },
+    { "encoder/planning/0192_gpu_ahead_explicit_serial",
+      test_gpu_ahead_explicit_serial },
     { "planner/pipeline/0109_playback_serial_reservation",
       test_lifecycle_0109 },
     { "planner/pipeline/0110_reserved_delta_cpu_per_frame_t0",
