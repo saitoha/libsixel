@@ -127,6 +127,8 @@ The node plan stays in start-column buckets through emission. Each bucket orders
 
 The serializer keeps one output packet and its retained suffix in `sixel_output_t.buffer`. The C array declares two complete `SIXEL_OUTPUT_PACKET_SIZE` packets, and storage allocation uses `sizeof(sixel_output_t)` without an additional trailing allocation. The declared object bounds therefore match the writable storage seen by compiler bounds analysis. After a packet is flushed, the retained position is below one packet; the second packet accommodates bytes appended across that boundary.
 
+The serializer reserves a node’s uncompressed column span, including any leading empty gap, plus a conservative palette-selector bound when that entire upper bound fits in the current packet. It then keeps the output cursor local across runs. Repeat encoding never exceeds the uncompressed span; long decimal counts and limited `!255` chunks use a separate helper. Nodes that do not fit retain packet-aware writes. Speculative literal stores may touch the second packet, but only emitted bytes advance the cursor. This preserves the exact stream, packet callback sizes, monochrome selector rules, and mapped register spelling without persistent per-frame storage.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -177,7 +179,29 @@ The serializer keeps one output packet and its retained suffix in `sixel_output_
 | EP-42 | Palette register 65535 retains all five digits. | [tests/encoder/pipeline/0101_register_decimal_65535.t](../../../../tests/encoder/pipeline/0101_register_decimal_65535.t) |
 | EP-43 | A three-digit register selector survives a packet boundary. | [tests/encoder/pipeline/0102_register_decimal_100_packet.t](../../../../tests/encoder/pipeline/0102_register_decimal_100_packet.t) |
 | EP-44 | A four-digit register selector survives a packet boundary. | [tests/encoder/pipeline/0103_register_decimal_1000_packet.t](../../../../tests/encoder/pipeline/0103_register_decimal_1000_packet.t) |
+| EP-45 | An unlimited 1-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0104_run_count_1.t](../../../../tests/encoder/pipeline/0104_run_count_1.t) |
+| EP-46 | An unlimited 2-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0105_run_count_2.t](../../../../tests/encoder/pipeline/0105_run_count_2.t) |
+| EP-47 | An unlimited 3-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0106_run_count_3.t](../../../../tests/encoder/pipeline/0106_run_count_3.t) |
+| EP-48 | An unlimited 4-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0107_run_count_4.t](../../../../tests/encoder/pipeline/0107_run_count_4.t) |
+| EP-49 | An unlimited 9-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0108_run_count_9.t](../../../../tests/encoder/pipeline/0108_run_count_9.t) |
+| EP-50 | An unlimited 10-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0109_run_count_10.t](../../../../tests/encoder/pipeline/0109_run_count_10.t) |
+| EP-51 | An unlimited 99-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0110_run_count_99.t](../../../../tests/encoder/pipeline/0110_run_count_99.t) |
+| EP-52 | An unlimited 100-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0111_run_count_100.t](../../../../tests/encoder/pipeline/0111_run_count_100.t) |
+| EP-53 | An unlimited 999-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0112_run_count_999.t](../../../../tests/encoder/pipeline/0112_run_count_999.t) |
+| EP-54 | An unlimited 1000-column run preserves its exact wire spelling. | [tests/encoder/pipeline/0113_run_count_1000.t](../../../../tests/encoder/pipeline/0113_run_count_1000.t) |
+| EP-55 | A limited 255-column run preserves its split and remainder. | [tests/encoder/pipeline/0114_run_limited_255.t](../../../../tests/encoder/pipeline/0114_run_limited_255.t) |
+| EP-56 | A limited 256-column run preserves its split and remainder. | [tests/encoder/pipeline/0115_run_limited_256.t](../../../../tests/encoder/pipeline/0115_run_limited_256.t) |
+| EP-57 | A limited 258-column run preserves its split and remainder. | [tests/encoder/pipeline/0116_run_limited_258.t](../../../../tests/encoder/pipeline/0116_run_limited_258.t) |
+| EP-58 | A limited 259-column run preserves its split and remainder. | [tests/encoder/pipeline/0117_run_limited_259.t](../../../../tests/encoder/pipeline/0117_run_limited_259.t) |
+| EP-59 | A three-byte literal run survives a packet boundary. | [tests/encoder/pipeline/0118_run_literal_packet.t](../../../../tests/encoder/pipeline/0118_run_literal_packet.t) |
+| EP-60 | A repeat command survives a packet boundary. | [tests/encoder/pipeline/0119_run_repeat_packet.t](../../../../tests/encoder/pipeline/0119_run_repeat_packet.t) |
+| EP-61 | A limited repeat command and remainder survive a packet boundary. | [tests/encoder/pipeline/0120_run_limited_packet.t](../../../../tests/encoder/pipeline/0120_run_limited_packet.t) |
+| EP-62 | A node wider than one output packet preserves its repeat count. | [tests/encoder/pipeline/0121_run_large_node.t](../../../../tests/encoder/pipeline/0121_run_large_node.t) |
+| EP-63 | A long leading gap preserves its unlimited repeat spelling. | [tests/encoder/pipeline/0122_run_gap_unlimited.t](../../../../tests/encoder/pipeline/0122_run_gap_unlimited.t) |
+| EP-64 | A long leading gap preserves limited splitting before paint. | [tests/encoder/pipeline/0123_run_gap_limited.t](../../../../tests/encoder/pipeline/0123_run_gap_limited.t) |
 
 These small fixed rasters establish literal wire ordering, including transparency and size-policy interactions. They do not assert a content-independent speedup; allocator ownership and failure cleanup are covered by the [threading reference](../../../threading/encoder.md#test-coverage).
 
 The mask cases use fixed 15-, 16-, 17-, 32-, and 33-column rasters to exercise vector boundaries, scalar tails, sparse/dense transitions, invalid and transparent indices, mono output, partial-row underpaint, and parallel offsets. The map fixture independently derives all six-bit column masks from its source pixels. Decimal cases check literal selectors at digit boundaries and across packet flushes. These cases establish output behavior on the configured CPU path, not a speed guarantee or proof of which machine instructions executed.
+
+The individual run cases cover literal lengths, decimal digit transitions, limited-run remainders, leading gaps, packet-edge writes, and a node wider than one packet. Each case asserts one fixed wire stream; it does not require an optimized branch or a particular instruction sequence.

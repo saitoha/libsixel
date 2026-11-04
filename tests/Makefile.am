@@ -2367,6 +2367,27 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0101_REGISTER_DECIMAL_65535 \
     -DBUILD_TEST_0102_REGISTER_DECIMAL_100_PACKET \
     -DBUILD_TEST_0103_REGISTER_DECIMAL_1000_PACKET \
+    -DBUILD_RESERVED_RUN_COMMON \
+    -DBUILD_TEST_0104_RUN_COUNT_1 \
+    -DBUILD_TEST_0105_RUN_COUNT_2 \
+    -DBUILD_TEST_0106_RUN_COUNT_3 \
+    -DBUILD_TEST_0107_RUN_COUNT_4 \
+    -DBUILD_TEST_0108_RUN_COUNT_9 \
+    -DBUILD_TEST_0109_RUN_COUNT_10 \
+    -DBUILD_TEST_0110_RUN_COUNT_99 \
+    -DBUILD_TEST_0111_RUN_COUNT_100 \
+    -DBUILD_TEST_0112_RUN_COUNT_999 \
+    -DBUILD_TEST_0113_RUN_COUNT_1000 \
+    -DBUILD_TEST_0114_RUN_LIMITED_255 \
+    -DBUILD_TEST_0115_RUN_LIMITED_256 \
+    -DBUILD_TEST_0116_RUN_LIMITED_258 \
+    -DBUILD_TEST_0117_RUN_LIMITED_259 \
+    -DBUILD_TEST_0118_RUN_LITERAL_PACKET \
+    -DBUILD_TEST_0119_RUN_REPEAT_PACKET \
+    -DBUILD_TEST_0120_RUN_LIMITED_PACKET \
+    -DBUILD_TEST_0121_RUN_LARGE_NODE \
+    -DBUILD_TEST_0122_RUN_GAP_UNLIMITED \
+    -DBUILD_TEST_0123_RUN_GAP_LIMITED \
     -DBUILD_COMPOSE_TEST_COMMON \
     -DBUILD_TEST_0017_COMPOSE_GAP_NINE \
     -DBUILD_TEST_0018_COMPOSE_GAP_TEN \
@@ -9313,6 +9334,27 @@ test_runner_SOURCES = test_runner.c \
     encoder/pipeline/0101_register_decimal_65535.c \
     encoder/pipeline/0102_register_decimal_100_packet.c \
     encoder/pipeline/0103_register_decimal_1000_packet.c \
+    _support/processing/encoder-core/reserved_run_common.c \
+    encoder/pipeline/0104_run_count_1.c \
+    encoder/pipeline/0105_run_count_2.c \
+    encoder/pipeline/0106_run_count_3.c \
+    encoder/pipeline/0107_run_count_4.c \
+    encoder/pipeline/0108_run_count_9.c \
+    encoder/pipeline/0109_run_count_10.c \
+    encoder/pipeline/0110_run_count_99.c \
+    encoder/pipeline/0111_run_count_100.c \
+    encoder/pipeline/0112_run_count_999.c \
+    encoder/pipeline/0113_run_count_1000.c \
+    encoder/pipeline/0114_run_limited_255.c \
+    encoder/pipeline/0115_run_limited_256.c \
+    encoder/pipeline/0116_run_limited_258.c \
+    encoder/pipeline/0117_run_limited_259.c \
+    encoder/pipeline/0118_run_literal_packet.c \
+    encoder/pipeline/0119_run_repeat_packet.c \
+    encoder/pipeline/0120_run_limited_packet.c \
+    encoder/pipeline/0121_run_large_node.c \
+    encoder/pipeline/0122_run_gap_unlimited.c \
+    encoder/pipeline/0123_run_gap_limited.c \
     _support/processing/encoder-core/compose_test_common.c \
     encoder/pipeline/0017_compose_gap_nine.c \
     encoder/pipeline/0018_compose_gap_ten.c \

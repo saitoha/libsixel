@@ -941,6 +941,26 @@ int test_cpu_serialize_0100(int argc, char **argv);
 int test_cpu_serialize_0101(int argc, char **argv);
 int test_cpu_serialize_0102(int argc, char **argv);
 int test_cpu_serialize_0103(int argc, char **argv);
+int test_encode_run_0104(int argc, char **argv);
+int test_encode_run_0105(int argc, char **argv);
+int test_encode_run_0106(int argc, char **argv);
+int test_encode_run_0107(int argc, char **argv);
+int test_encode_run_0108(int argc, char **argv);
+int test_encode_run_0109(int argc, char **argv);
+int test_encode_run_0110(int argc, char **argv);
+int test_encode_run_0111(int argc, char **argv);
+int test_encode_run_0112(int argc, char **argv);
+int test_encode_run_0113(int argc, char **argv);
+int test_encode_run_0114(int argc, char **argv);
+int test_encode_run_0115(int argc, char **argv);
+int test_encode_run_0116(int argc, char **argv);
+int test_encode_run_0117(int argc, char **argv);
+int test_encode_run_0118(int argc, char **argv);
+int test_encode_run_0119(int argc, char **argv);
+int test_encode_run_0120(int argc, char **argv);
+int test_encode_run_0121(int argc, char **argv);
+int test_encode_run_0122(int argc, char **argv);
+int test_encode_run_0123(int argc, char **argv);
 int test_compose_0045(int argc, char **argv);
 int test_compose_0046(int argc, char **argv);
 int test_compose_0047(int argc, char **argv);
@@ -5178,6 +5198,46 @@ static test_entry_t const test_entries[] = {
       test_cpu_serialize_0102 },
     { "encoder/pipeline/0103_register_decimal_1000_packet",
       test_cpu_serialize_0103 },
+    { "encoder/pipeline/0104_run_count_1",
+      test_encode_run_0104 },
+    { "encoder/pipeline/0105_run_count_2",
+      test_encode_run_0105 },
+    { "encoder/pipeline/0106_run_count_3",
+      test_encode_run_0106 },
+    { "encoder/pipeline/0107_run_count_4",
+      test_encode_run_0107 },
+    { "encoder/pipeline/0108_run_count_9",
+      test_encode_run_0108 },
+    { "encoder/pipeline/0109_run_count_10",
+      test_encode_run_0109 },
+    { "encoder/pipeline/0110_run_count_99",
+      test_encode_run_0110 },
+    { "encoder/pipeline/0111_run_count_100",
+      test_encode_run_0111 },
+    { "encoder/pipeline/0112_run_count_999",
+      test_encode_run_0112 },
+    { "encoder/pipeline/0113_run_count_1000",
+      test_encode_run_0113 },
+    { "encoder/pipeline/0114_run_limited_255",
+      test_encode_run_0114 },
+    { "encoder/pipeline/0115_run_limited_256",
+      test_encode_run_0115 },
+    { "encoder/pipeline/0116_run_limited_258",
+      test_encode_run_0116 },
+    { "encoder/pipeline/0117_run_limited_259",
+      test_encode_run_0117 },
+    { "encoder/pipeline/0118_run_literal_packet",
+      test_encode_run_0118 },
+    { "encoder/pipeline/0119_run_repeat_packet",
+      test_encode_run_0119 },
+    { "encoder/pipeline/0120_run_limited_packet",
+      test_encode_run_0120 },
+    { "encoder/pipeline/0121_run_large_node",
+      test_encode_run_0121 },
+    { "encoder/pipeline/0122_run_gap_unlimited",
+      test_encode_run_0122 },
+    { "encoder/pipeline/0123_run_gap_limited",
+      test_encode_run_0123 },
     { "encoder-core/0045_compose_gap_nine",
       test_compose_0045 },
     { "encoder-core/0046_compose_gap_ten",
