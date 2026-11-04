@@ -436,6 +436,8 @@ struct sixel_encoder {
     int residual_override;
     int sixdelta_metric;
     int sixdelta_metric_override;
+    int sixdelta_compare;
+    int sixdelta_compare_override;
     double residual_threshold;
     int residual_threshold_override;
     unsigned int residual_keep_threshold;

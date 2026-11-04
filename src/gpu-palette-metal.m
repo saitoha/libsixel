@@ -74,6 +74,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t accumulation_keycolor;
     uint32_t sixdelta_threshold;
     uint32_t sixdelta_metric;
+    uint32_t sixdelta_compare;
     uint32_t residual_threshold;
     uint32_t residual_columns, residual_rows;
     uint32_t residual_tiled;
@@ -811,6 +812,7 @@ sixel_gpu_palette_metal_fill_params(
         params->sixdelta_threshold =
             (uint32_t)request->sixdelta_threshold;
         params->sixdelta_metric = (uint32_t)request->sixdelta_metric;
+        params->sixdelta_compare = (uint32_t)request->sixdelta_compare;
         if (request->residual_mask != NULL) {
             params->residual_columns = request->residual_mask->columns;
             params->residual_rows = request->residual_mask->rows;

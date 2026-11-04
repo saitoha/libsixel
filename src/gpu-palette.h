@@ -137,6 +137,7 @@ typedef struct sixel_gpu_palette_request {
     int accumulation_keycolor;
     unsigned int sixdelta_threshold;
     int sixdelta_metric;
+    int sixdelta_compare;
     sixel_delta_mask_t const *residual_mask;
     /* Optional emitted RGB888 candidates for post-lookup keep only.
      * NULL preserves standalone application of the supplied palette. */

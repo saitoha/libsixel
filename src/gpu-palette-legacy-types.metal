@@ -17,6 +17,7 @@ struct Params {
     uint accumulation_keycolor;
     uint sixdelta_threshold;
     uint sixdelta_metric;
+    uint sixdelta_compare;
     uint residual_threshold;
     uint residual_columns, residual_rows;
     uint residual_tiled;

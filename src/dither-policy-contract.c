@@ -122,6 +122,7 @@ sixel_dither_policy_capture_execution(sixel_dither_t const *dither,
     execution->delta_enabled = dither->pipeline_6delta_enabled;
     execution->delta_threshold = dither->pipeline_6delta_threshold;
     execution->delta_metric = dither->pipeline_6delta_metric;
+    execution->delta_compare = dither->pipeline_6delta_compare;
     execution->delta_error_mode = dither->pipeline_6delta_error_mode;
     execution->delta_keycolor = dither->pipeline_accumulation_keycolor;
     execution->delta_rgb101 = dither->pipeline_6delta_rgb101;
@@ -162,7 +163,9 @@ sixel_dither_policy_bind(sixel_dither_policy_object_t const *policy,
         return SIXEL_LOGIC_ERROR;
     }
     execution = request->execution;
-    if (execution->working_palette == NULL || execution->allocator == NULL) {
+    if (execution->working_palette == NULL || execution->allocator == NULL ||
+            (execution->delta_compare != SIXEL_DELTA_COMPARE_TARGET &&
+             execution->delta_compare != SIXEL_DELTA_COMPARE_QUERY)) {
         return SIXEL_BAD_ARGUMENT;
     }
     cells = (size_t)execution->selection.columns * execution->selection.rows;
@@ -211,6 +214,7 @@ sixel_dither_policy_bind(sixel_dither_policy_object_t const *policy,
     dither->pipeline_6delta_enabled = execution->delta_enabled;
     dither->pipeline_6delta_threshold = execution->delta_threshold;
     dither->pipeline_6delta_metric = execution->delta_metric;
+    dither->pipeline_6delta_compare = execution->delta_compare;
     dither->pipeline_6delta_error_mode = execution->delta_error_mode;
     dither->pipeline_6delta_rgb101 = execution->delta_rgb101;
     dither->pipeline_6delta_hls = execution->delta_hls;

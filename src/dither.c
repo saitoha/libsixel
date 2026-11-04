@@ -3464,6 +3464,7 @@ sixel_dither_clear_pipeline_accumulation_buffer_hint(
     dither->pipeline_6delta_enabled = 0;
     dither->pipeline_6delta_threshold = 0u;
     dither->pipeline_6delta_metric = SIXEL_DELTA_METRIC_MAX;
+    dither->pipeline_6delta_compare = SIXEL_DELTA_COMPARE_TARGET;
     memset(&dither->pipeline_residual_mask, 0,
            sizeof(dither->pipeline_residual_mask));
     dither->pipeline_6delta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
@@ -4752,6 +4753,7 @@ sixel_dither_apply_palette(
             gpu_request.sixdelta_threshold =
                 dither->pipeline_6delta_threshold;
             gpu_request.sixdelta_metric = dither->pipeline_6delta_metric;
+            gpu_request.sixdelta_compare = dither->pipeline_6delta_compare;
             gpu_request.residual_mask = &dither->pipeline_residual_mask;
             gpu_request.accumulation_result_mask =
                 dither->pipeline_accumulation_result_mask;

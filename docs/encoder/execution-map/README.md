@@ -191,6 +191,8 @@ When eligible, the CPU pipeline divides PaletteApply into overlapped row bands a
 
 `dither_policy.apply()` takes borrowed execution views: source and result rows, prepared lookup, working palette, transparency, retained RGB and validity, delta selection, optional gradient analysis, and row notifications. These views live through the completion of all consuming workers. The policy owns no source, output, retained plane or per-frame diffusion buffer between calls. Scan order and pixel format come from prepare; apply cannot override them.
 
+Delta comparison is invocation state: the encoder passes `palette_apply_delta.compare` to PaletteApply, which binds it into `dither_execution.delta_compare` for CPU workers and the equivalent GPU request. Zero selects the compatible target basis. The positional policy owns query construction; the retained plane continues to own only emitted RGB and validity. Changing this setting requires no lookup rebuild, source image copy or additional per-pixel buffer. The [delta comparison tests](../output/delta-encoding.md#test-coverage) cover both gates and their CPU/GPU propagation.
+
 The legacy `sixel_dither_t` adapter resolves option precedence at preparation and translates frame hints into these execution views. It is not part of the subordinate component interface. Existing CPU kernels use an invocation-local compatibility context populated only from the prepared values and borrowed views; it is not a second mutable settings owner. PaletteApply obtains the same prepared configuration for its GPU dispatch and rejects a mismatched source format or scan plan before output.
 
 ### Indexed encode components
