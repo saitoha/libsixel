@@ -179,6 +179,7 @@ header_filter_units_temp=$(mktemp \
 existing_headers_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-existing-headers.XXXXXX")
 missing_headers_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-missing-headers.XXXXXX")
 user_units_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-user-units.XXXXXX")
+header_guards_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-header-guards.XXXXXX")
 unit_guards_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-unit-guards.XXXXXX")
 license_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-licenses.XXXXXX")
 license_units_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-license-units.XXXXXX")
@@ -186,7 +187,8 @@ inline_state_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-inline-once.XXXXXX")
 trap 'rm -f "${header_temp}" "${header_units_temp}" \
     "${header_filter_units_temp}" "${existing_headers_temp}" \
     "${missing_headers_temp}" "${user_units_temp}" "${unit_guards_temp}" \
-    "${license_temp}" "${license_units_temp}" "${inline_state_temp}"' EXIT
+    "${license_temp}" "${license_units_temp}" "${inline_state_temp}" \
+    "${header_guards_temp}"' EXIT
 
 # Header discovery follows the same default scope as source discovery.  Keep
 # large path lists in temporary files because GNV shell variables can corrupt
@@ -220,10 +222,10 @@ awk '$0 != "src/stb_image.h" && $0 != "src/stb_image_write.h"' \
 
 # Use the dynamically collected header list to build a basename registry for
 # local-include filtering. The filter logic relies on filename matches rather
-# than paths, so we collapse each entry to its final component.
-awk -F/ 'NF { print $NF }' "${header_filter_units_temp}" | \
+# than paths; retain the full path for headers expanded at their include site.
+awk -F/ 'NF { print $NF "\t" $0 }' "${header_filter_units_temp}" | \
     {
-        printf "%s\n" "config.h"
+        printf "config.h\tconfig.h\n"
         cat
     } | LC_ALL=C sort -u >"${header_temp}"
 
@@ -382,11 +384,48 @@ function emit_metal_include(text,    name, path, value, result) {
     close(path);
     return 1;
 }
+# These bodies must retain their original conditional include scope. Do not
+# mark them emitted in the generator: an earlier include can be compiled out.
+# C guards select the first active include, independently of source ordering.
+function deferred(name) {
+    return name == "cms-curv.h" || name == "loader-libpng-chrm.h" ||
+        name == "loader-libpng-chrm-area.h";
+}
+function emit_deferred(name,    path, guard, line, included, number) {
+    path = src_root "/" header[name];
+    if (expanding[path]) return;
+    expanding[path] = 1;
+    guard = "SIXEL_AMALGAMATION_HEADER_" toupper(header[name]);
+    gsub(/[^A-Z0-9_]/, "_", guard);
+    print "#ifndef " guard "\n#define " guard " 1";
+    print "#line 1 \"" path "\"";
+    number = 0;
+    while ((getline line < path) > 0) {
+        number++;
+        if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) continue;
+        if (line ~ /^[ \t]*#[ \t]*include[ \t]*["<][^">]+[">]/) {
+            included = line;
+            sub(/^[^"<]*["<]/, "", included);
+            sub(/[">].*/, "", included);
+            sub(/^.*\//, "", included);
+            if (included in header) {
+                if (deferred(included)) emit_deferred(included);
+                print "#line " (number + 1) " \"" path "\"";
+                continue;
+            }
+        }
+        print line;
+    }
+    close(path);
+    print "#endif /* " guard " */";
+    delete expanding[path];
+}
 BEGIN {
     while ((getline line < header_file) > 0) {
         gsub(/^[ \t]+|[ \t]+$/, "", line);
         if (length(line) > 0) {
-            header[line] = 1;
+            split(line, entry, "\t");
+            header[entry[1]] = entry[2];
         }
     }
     close(header_file);
@@ -432,6 +471,11 @@ BEGIN {
                 next;
             }
             name = local_name;
+            if (deferred(name)) {
+                emit_deferred(name);
+                print "#line " (NR + 1) " \"" unit_path "\"";
+                next;
+            }
             if (name in inline_once && !(name in emitted)) {
                 emitted[name] = 1;
                 print name >> inline_state;
@@ -516,7 +560,7 @@ emit_header_unit() {
 }
 
 emit_all_headers() {
-    while IFS= read -r unit; do
+    while IFS= read -r unit && IFS= read -r header_guard <&3; do
         [ -z "${unit}" ] && continue
         case "${unit}" in
             tests/_support/bindings/perl-attach-gnu.h|tests/_support/bindings/perl-attach-declspec.h)
@@ -594,12 +638,15 @@ emit_all_headers() {
                 emit_header_unit "${unit}" \
                     "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
                 ;;
-            tests/_support/loader/builtin/loader_builtin_png_metadata_test_common.h)
-                # This header defines code that calls test-only helpers.
-                # Unoptimized native links must not materialize it in the
-                # production library without its owning tests.
-                emit_header_unit "${unit}" \
-                    "defined(BUILD_TEST_0174_LOADER_BUILTIN_PNG_CHRM_GAMA_FLOAT_NUMERIC) || defined(BUILD_TEST_0175_LOADER_BUILTIN_PNG_SINGULAR_CHRM_FALLBACK_NUMERIC) || defined(BUILD_TEST_0176_LOADER_BUILTIN_PNG_FILE_BACKGROUND_CHRM_NUMERIC) || defined(BUILD_TEST_0192_PNG_METADATA_SAMPLES)"
+            src/cms-curv.h|src/loader-libpng-chrm.h|src/loader-libpng-chrm-area.h)
+                # Implementation helpers belong inside their consuming unit,
+                # not in the unconditional production-library preamble.
+                continue
+                ;;
+            tests/*.h)
+                # Selection macros are derived from the actual include graph.
+                # Emit the body once even when many selected tests share it.
+                emit_header_unit "${unit}" "defined(${header_guard})"
                 ;;
             include/sixel.h)
                 public_header="${build_root}/include/sixel.h"
@@ -613,7 +660,7 @@ emit_all_headers() {
                 emit_header_unit "${unit}" ""
                 ;;
         esac
-    done <"${header_units_temp}"
+    done <"${header_units_temp}" 3<"${header_guards_temp}"
 }
 
 emit_all_units() {
@@ -682,6 +729,66 @@ emit_all_units() {
                 ;;
         esac
     done <"${user_units_temp}" 3<"${unit_guards_temp}"
+}
+
+# Resolve test-header consumers transitively. The C preprocessor, rather than
+# the generator, decides which selected tests are active. Keep bodies unique:
+# repeating a shared fixture for every test greatly inflates OpenVMS input.
+emit_test_header_selection() {
+    awk -v root="${src_root}" -v headers="${header_temp}" \
+        -v units="${user_units_temp}" -v guards="${unit_guards_temp}" \
+        -v header_guards="${header_guards_temp}" '
+function symbol(path) {
+    return "SIXEL_AMALGAMATION_USE_HEADER_" header_id[path];
+}
+function scan(path,    file, line, name) {
+    file = root "/" path;
+    while ((getline line < file) > 0) {
+        if (line !~ /^[ \t]*#[ \t]*include[ \t]*["<][^">]+[">]/)
+            continue;
+        name = line;
+        sub(/^[^"<]*["<]/, "", name);
+        sub(/[">].*/, "", name);
+        sub(/^.*\//, "", name);
+        if (name in paths) edge[path, ++count[path]] = paths[name];
+    }
+    close(file);
+}
+function select_header(path,    i) {
+    if (seen[path] == owner) return;
+    seen[path] = owner;
+    if (path ~ /^tests\// && path !~ /\.inc\.h$/)
+        print "#define " symbol(path) " 1 /* " path " */";
+    for (i = 1; i <= count[path]; i++) select_header(edge[path, i]);
+}
+BEGIN {
+    # Numeric identifiers avoid long common path prefixes exceeding the C99
+    # significant-identifier limit. Generated runner inputs do not shift IDs.
+    while ((getline line < ARGV[1]) > 0) {
+        if (line != "tests/test-runner-amalgamation-defines.h")
+            header_id[line] = ++header_count;
+    }
+    close(ARGV[1]);
+    while ((getline line < headers) > 0) {
+        split(line, fields, "\t");
+        paths[fields[1]] = fields[2];
+    }
+    close(headers);
+    for (name in paths) scan(paths[name]);
+    while ((getline unit < units) > 0 && (getline guard < guards) > 0) {
+        if (unit !~ /^tests\/.*\.[cm]$/ || unit ~ /\.inc\.c$/ ||
+            unit == "tests/test-runner-amalgamation.c") continue;
+        owner++;
+        scan(unit);
+        print "#if defined(BUILD_" guard ")";
+        for (i = 1; i <= count[unit]; i++) select_header(edge[unit, i]);
+        print "#endif";
+    }
+    close(units);
+    close(guards);
+}
+{ print symbol($0) > header_guards }
+' "${header_units_temp}" >>"${output}"
 }
 
 collect_license_blocks
@@ -753,9 +860,11 @@ cat >>"${output}" <<'EOF_MACROS'
 EOF_MACROS
 printf '\n' >>"${output}"
 emit_config_header
+emit_test_header_selection
 emit_all_headers
 emit_all_units
 rm -f "${header_temp}" "${header_units_temp}" \
     "${header_filter_units_temp}" "${existing_headers_temp}" \
     "${missing_headers_temp}" "${user_units_temp}" "${unit_guards_temp}" \
-    "${license_temp}" "${license_units_temp}" "${inline_state_temp}"
+    "${license_temp}" "${license_units_temp}" "${inline_state_temp}" \
+    "${header_guards_temp}"

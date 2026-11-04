@@ -5096,8 +5096,8 @@ if test x$with_wic != xno; then
     case "$host_os" in
     mingw* | cygwin* | msys* | msvc*)
         AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
-        CFLAGS_BACKUP="$CFLAGS"
-        LIBS_BACKUP="$LIBS"
+        sixel_wic_save_CFLAGS="$CFLAGS"
+        sixel_wic_save_LIBS="$LIBS"
         if test x$with_wic != xyes -a x$with_wic != xauto; then
             if test ! -d "$with_wic"; then
                 AC_MSG_ERROR(["${with_wic}" is not directory])
@@ -5199,13 +5199,15 @@ uuid.lib"
                AC_MSG_NOTICE([WIC cflags is ${WIC_CFLAGS}])
                AC_MSG_NOTICE([WIC libs is ${WIC_LIBS}])],
               [AC_MSG_NOTICE([WIC is not available])])
+        # Restore only in the branch that saved these values. Other hosts
+        # must retain their math libraries and compiler feature settings.
+        CFLAGS=$sixel_wic_save_CFLAGS
+        LIBS=$sixel_wic_save_LIBS
         ;;
     *)
         have_wic=no
         ;;
     esac
-    CFLAGS=$CFLAGS_BACKUP
-    LIBS=$LIBS_BACKUP
 fi
 AC_SUBST(WIC_CFLAGS)
 AC_SUBST(WIC_LIBS)

@@ -266,6 +266,13 @@ test_runner_inc = [
 
 test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
 
+# Unity reads system headers before later sources can select XSI declarations.
+# Set the namespace on every test compilation, preserving DragonFly defaults.
+test_feature_c_args = libsixel_posix_defs
+if host_system != 'dragonfly'
+  test_feature_c_args += cc.get_supported_arguments('-D_XOPEN_SOURCE=700')
+endif
+
 float_lookup_tests = static_library('sixel_float_lookup_tests',
   ['_support/processing/lookup/filtered/filtered_5bit_common.c',
    '_support/processing/lookup/filtered/filtered_6bit_common.c',
@@ -276,7 +283,7 @@ float_lookup_tests = static_library('sixel_float_lookup_tests',
    'lookup/delaunay/0012_delaunay_float_bulk.c', sixcells_h],
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,
-  c_args: libsixel_posix_defs + float_lookup_c_args + test_deprecated_c_args,
+  c_args: test_feature_c_args + float_lookup_c_args + test_deprecated_c_args,
   build_by_default: false,
   install: false)
 
@@ -285,7 +292,7 @@ float_lookup_tests = static_library('sixel_float_lookup_tests',
 test_runner_cases = static_library('test_runner_cases', test_runner_sources,
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,
-  c_args: libsixel_posix_defs + test_deprecated_c_args + ['-DGDK_PIXBUF_ENABLE_BACKEND',
+  c_args: test_feature_c_args + test_deprecated_c_args + ['-DGDK_PIXBUF_ENABLE_BACKEND',
                                  '-DSIXEL_PIXBUF_LOADER_TESTING',
                                  '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
   build_by_default: false,
@@ -300,7 +307,7 @@ test_runner_exe = executable('test_runner',
   dependencies: test_runner_deps,
   # Keep feature-test macros aligned with converter/library targets so
   # unity-included aborttrace.c sees sigaction declarations on Cygwin.
-  c_args: libsixel_posix_defs + test_deprecated_c_args + ['-DGDK_PIXBUF_ENABLE_BACKEND',
+  c_args: test_feature_c_args + test_deprecated_c_args + ['-DGDK_PIXBUF_ENABLE_BACKEND',
                                  '-DSIXEL_PIXBUF_LOADER_TESTING',
                                  '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
   # Tests build it through their dependencies, never as part of all.

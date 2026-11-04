@@ -1107,6 +1107,18 @@ run_case_tap "staticcheck-ci-haiku-test-deps" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-haiku-test-deps.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-configure-wic-scope" \
+    sh "$src_root/tests/_static/sh/staticcheck-configure-wic-scope.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-unity-feature-namespace" \
+    sh "$src_root/tests/_static/sh/staticcheck-test-unity-feature-namespace.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-amalgamation-header-scope" \
+    sh "$src_root/tests/_static/sh/staticcheck-amalgamation-header-scope.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-dragonfly-feature-namespace" \
     sh "$src_root/tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh" \
     "$src_root" || fail_and_exit $?

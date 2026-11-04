@@ -27,7 +27,6 @@
 #endif
 
 #include "cms.h"
-#include "cms-curv.h"
 #include "colorspace.h"
 
 #include <ctype.h>
@@ -72,6 +71,7 @@
 
 #if defined(__APPLE__) && HAVE_COREGRAPHICS
 # define SIXEL_CMS_HAVE_COLORSYNC 1
+# include "cms-curv.h"
 # include <CoreGraphics/CoreGraphics.h>
 # include <ColorSync/ColorSync.h>
 #else

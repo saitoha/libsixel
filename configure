@@ -28127,8 +28127,8 @@ if test x$with_wic != xno; then
     mingw* | cygwin* | msys* | msvc*)
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Windows Imaging Component (WIC)" >&5
 printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
-        CFLAGS_BACKUP="$CFLAGS"
-        LIBS_BACKUP="$LIBS"
+        sixel_wic_save_CFLAGS="$CFLAGS"
+        sixel_wic_save_LIBS="$LIBS"
         if test x$with_wic != xyes -a x$with_wic != xauto; then
             if test ! -d "$with_wic"; then
                 as_fn_error $? "\"${with_wic}\" is not directory" "$LINENO" 5
@@ -28471,13 +28471,15 @@ else case e in #(
 printf "%s\n" "$as_me: WIC is not available" >&6;} ;;
 esac
 fi
+        # Restore only in the branch that saved these values. Other hosts
+        # must retain their math libraries and compiler feature settings.
+        CFLAGS=$sixel_wic_save_CFLAGS
+        LIBS=$sixel_wic_save_LIBS
         ;;
     *)
         have_wic=no
         ;;
     esac
-    CFLAGS=$CFLAGS_BACKUP
-    LIBS=$LIBS_BACKUP
 fi
 
 
