@@ -2550,6 +2550,67 @@ sixel_put_run_fast(sixel_output_t *output, int symbol, int count)
 }
 
 
+/* Kept out of the small-run loop: large decimal counts and DECGRI splits
+ * are rare in noisy video. The caller reserves the entire node first. */
+#if defined(_MSC_VER)
+__declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
+static unsigned char *
+sixel_put_run_reserved_long(unsigned char *p, int symbol, int count,
+    int limited)
+{
+    char digits[sizeof(int) * CHAR_BIT];
+    int value;
+    int ndigits;
+
+    if (limited) {
+        while (count > 255) {
+            *p++ = '!';
+            *p++ = '2';
+            *p++ = '5';
+            *p++ = '5';
+            *p++ = (unsigned char)symbol;
+            count -= 255;
+        }
+    }
+    if (count <= 3) {
+        while (count-- > 0) *p++ = (unsigned char)symbol;
+        return p;
+    }
+    *p++ = '!';
+    ndigits = 0;
+    for (value = count; value > 0; value /= 10) {
+        digits[ndigits++] = (char)('0' + value % 10);
+    }
+    while (ndigits > 0) *p++ = (unsigned char)digits[--ndigits];
+    *p++ = (unsigned char)symbol;
+    return p;
+}
+
+static inline unsigned char *
+sixel_put_run_reserved(unsigned char *p, int symbol, int count, int limited)
+{
+    if (count <= 3) {
+        /* The second packet also covers these two speculative tail bytes. */
+        p[0] = (unsigned char)symbol;
+        p[1] = (unsigned char)symbol;
+        p[2] = (unsigned char)symbol;
+        return p + count;
+    }
+    if (count >= 1000 || (limited && count > 255)) {
+        return sixel_put_run_reserved_long(p, symbol, count, limited);
+    }
+    *p++ = '!';
+    if (count >= 100) *p++ = (unsigned char)('0' + count / 100);
+    if (count >= 10) *p++ = (unsigned char)('0' + count / 10 % 10);
+    *p++ = (unsigned char)('0' + count % 10);
+    *p++ = (unsigned char)symbol;
+    return p;
+}
+
+
 static SIXELSTATUS
 sixel_put_node(
     sixel_output_t /* in */     *output,  /* output context */
@@ -2564,6 +2625,52 @@ sixel_put_node(
     int mx;
     unsigned char const *row;
     unsigned char value;
+    unsigned char *p;
+
+    /* Literal runs emit one byte per column; DECGRI and !255 splits emit
+     * no more. Reserve the complete span, including its leading empty gap,
+     * plus a selector bound covering every int register and formatter NUL.
+     * Larger nodes and packet-edge nodes retain the path below. The second
+     * packet covers the small run helper's two speculative tail bytes, but
+     * only the actual cursor is committed. No run is split by reservation,
+     * so callback packet sizes and exact RLE spelling stay unchanged. */
+    if (np->mx >= *x && (size_t)(np->mx - *x) +
+            sizeof(int) * CHAR_BIT + 2 <=
+            (size_t)(SIXEL_OUTPUT_PACKET_SIZE - output->pos)) {
+        p = output->buffer + output->pos;
+        if (ncolors != 2 || keycolor == -1 || output->keycolor_reserved) {
+            if (output->active_palette != np->pal) {
+                *p++ = '#';
+                p += sixel_putnum((char *)p,
+                    output->wire_colors != NULL
+                        ? (int)output->wire_colors[np->pal].definition
+                            .register_index : np->pal);
+                output->active_palette = np->pal;
+            }
+        }
+        if (*x < np->sx) {
+            p = sixel_put_run_reserved(p, '?', np->sx - *x,
+                output->has_gri_arg_limit);
+            *x = np->sx;
+        }
+        row = (unsigned char const *)np->map;
+        mx = np->mx;
+        for (i = *x; i < mx; i = end) {
+            value = row[i];
+            /* These private maps contain only the six classified row bits,
+             * including size-policy underpaint. Zero is an empty cell. */
+            for (end = i + 1; end < mx && row[end] == value; end++) {
+            }
+            p = sixel_put_run_reserved(p, '?' + value, end - i,
+                output->has_gri_arg_limit);
+        }
+        output->pos = (int)(p - output->buffer);
+        if (output->pos == SIXEL_OUTPUT_PACKET_SIZE) {
+            sixel_advance(output, 0);
+        }
+        if (*x < mx) *x = mx;
+        return SIXEL_OK;
+    }
 
     /* Each node ends its runs locally, and workers reset save_count at
      * band entry. No deferred repeat can cross this node's color selector.
