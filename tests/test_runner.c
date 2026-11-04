@@ -894,6 +894,29 @@ int test_or_native_0041(int argc, char **argv);
 int test_node_unlink_0042(int argc, char **argv);
 int test_node_unlink_0043(int argc, char **argv);
 int test_node_unlink_0044(int argc, char **argv);
+int test_band_nodes_0057(int argc, char **argv);
+int test_band_nodes_0058(int argc, char **argv);
+int test_band_nodes_0059(int argc, char **argv);
+int test_band_nodes_0060(int argc, char **argv);
+int test_band_nodes_0061(int argc, char **argv);
+int test_band_nodes_0062(int argc, char **argv);
+int test_band_nodes_0063(int argc, char **argv);
+int test_band_nodes_0064(int argc, char **argv);
+int test_band_nodes_0065(int argc, char **argv);
+int test_band_nodes_0066(int argc, char **argv);
+int test_band_nodes_0067(int argc, char **argv);
+int test_band_nodes_0068(int argc, char **argv);
+int test_band_nodes_0069(int argc, char **argv);
+int test_band_nodes_0070(int argc, char **argv);
+int test_band_nodes_0071(int argc, char **argv);
+int test_band_nodes_0072(int argc, char **argv);
+int test_band_nodes_0073(int argc, char **argv);
+int test_band_nodes_0074(int argc, char **argv);
+int test_band_nodes_0075(int argc, char **argv);
+int test_band_nodes_0076(int argc, char **argv);
+int test_band_nodes_0077(int argc, char **argv);
+int test_band_nodes_0078(int argc, char **argv);
+int test_band_nodes_0079(int argc, char **argv);
 int test_compose_0045(int argc, char **argv);
 int test_compose_0046(int argc, char **argv);
 int test_compose_0047(int argc, char **argv);
@@ -5044,6 +5067,45 @@ static test_entry_t const test_entries[] = {
       test_node_unlink_0043 },
     { "encoder-core/0044_node_unlink_size_stream",
       test_node_unlink_0044 },
+    { "encoder/pipeline/0057_parallel_node_reuse_bound", test_band_nodes_0057 },
+    { "encoder/pipeline/0058_parallel_node_drain_release", test_band_nodes_0058 },
+    { "encoder/pipeline/0059_serial_node_failure_status", test_band_nodes_0059 },
+    { "encoder/pipeline/0060_serial_node_failure_release", test_band_nodes_0060 },
+    { "encoder/pipeline/0061_parallel_node_failure_release", test_band_nodes_0061 },
+    { "encoder/pipeline/0062_serial_node_failure_retry", test_band_nodes_0062 },
+    { "encoder/pipeline/0063_parallel_node_writer_release", test_band_nodes_0063 },
+    { "encoder/pipeline/0064_bucket_longest_first",
+      test_band_nodes_0064 },
+    { "encoder/pipeline/0065_bucket_equal_span_tie",
+      test_band_nodes_0065 },
+    { "encoder/pipeline/0066_bucket_first_seen_tie",
+      test_band_nodes_0066 },
+    { "encoder/pipeline/0067_bucket_greedy_successor",
+      test_band_nodes_0067 },
+    { "encoder/pipeline/0068_bucket_start_word_boundary",
+      test_band_nodes_0068 },
+    { "encoder/pipeline/0069_bucket_start_padding",
+      test_band_nodes_0069 },
+    { "encoder/pipeline/0070_bucket_empty_first_band",
+      test_band_nodes_0070 },
+    { "encoder/pipeline/0071_bucket_empty_middle_band",
+      test_band_nodes_0071 },
+    { "encoder/pipeline/0072_bucket_offset_band_boundary",
+      test_band_nodes_0072 },
+    { "encoder/pipeline/0073_bucket_size_first_sweep",
+      test_band_nodes_0073 },
+    { "encoder/pipeline/0074_bucket_size_partial_rows",
+      test_band_nodes_0074 },
+    { "encoder/pipeline/0075_bucket_size_masked_hole",
+      test_band_nodes_0075 },
+    { "encoder/pipeline/0076_bucket_mono_selector",
+      test_band_nodes_0076 },
+    { "encoder/pipeline/0077_bucket_parallel_final_band",
+      test_band_nodes_0077 },
+    { "encoder/pipeline/0078_bucket_serial_final_band",
+      test_band_nodes_0078 },
+    { "encoder/pipeline/0079_bucket_chain_failure_release",
+      test_band_nodes_0079 },
     { "encoder-core/0045_compose_gap_nine",
       test_compose_0045 },
     { "encoder-core/0046_compose_gap_ten",

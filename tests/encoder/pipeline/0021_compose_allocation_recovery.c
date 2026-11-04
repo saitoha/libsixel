@@ -32,8 +32,8 @@ compose_alloc_calloc(size_t count, size_t size)
 {
     void *p;
 
-    /* Three colors, each with three words for 130 encoded columns. */
-    if (compose_alloc_fail && count == 9 && size == sizeof(uint64_t)) {
+    /* Three color planes plus node starts, each with three words. */
+    if (compose_alloc_fail && count == 12 && size == sizeof(uint64_t)) {
         ++compose_alloc_failed;
         return NULL;
     }

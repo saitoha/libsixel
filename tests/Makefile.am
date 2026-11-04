@@ -2317,6 +2317,30 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0014_NODE_UNLINK_FAST_STREAM \
     -DBUILD_TEST_0015_NODE_UNLINK_AUTO_STREAM \
     -DBUILD_TEST_0016_NODE_UNLINK_SIZE_STREAM \
+    -DBUILD_BAND_NODES_COMMON \
+    -DBUILD_TEST_0057_PARALLEL_NODE_REUSE_BOUND \
+    -DBUILD_TEST_0058_PARALLEL_NODE_DRAIN_RELEASE \
+    -DBUILD_TEST_0059_SERIAL_NODE_FAILURE_STATUS \
+    -DBUILD_TEST_0060_SERIAL_NODE_FAILURE_RELEASE \
+    -DBUILD_TEST_0061_PARALLEL_NODE_FAILURE_RELEASE \
+    -DBUILD_TEST_0062_SERIAL_NODE_FAILURE_RETRY \
+    -DBUILD_TEST_0063_PARALLEL_NODE_WRITER_RELEASE \
+    -DBUILD_TEST_0064_BUCKET_LONGEST_FIRST \
+    -DBUILD_TEST_0065_BUCKET_EQUAL_SPAN_TIE \
+    -DBUILD_TEST_0066_BUCKET_FIRST_SEEN_TIE \
+    -DBUILD_TEST_0067_BUCKET_GREEDY_SUCCESSOR \
+    -DBUILD_TEST_0068_BUCKET_START_WORD_BOUNDARY \
+    -DBUILD_TEST_0069_BUCKET_START_PADDING \
+    -DBUILD_TEST_0070_BUCKET_EMPTY_FIRST_BAND \
+    -DBUILD_TEST_0071_BUCKET_EMPTY_MIDDLE_BAND \
+    -DBUILD_TEST_0072_BUCKET_OFFSET_BAND_BOUNDARY \
+    -DBUILD_TEST_0073_BUCKET_SIZE_FIRST_SWEEP \
+    -DBUILD_TEST_0074_BUCKET_SIZE_PARTIAL_ROWS \
+    -DBUILD_TEST_0075_BUCKET_SIZE_MASKED_HOLE \
+    -DBUILD_TEST_0076_BUCKET_MONO_SELECTOR \
+    -DBUILD_TEST_0077_BUCKET_PARALLEL_FINAL_BAND \
+    -DBUILD_TEST_0078_BUCKET_SERIAL_FINAL_BAND \
+    -DBUILD_TEST_0079_BUCKET_CHAIN_FAILURE_RELEASE \
     -DBUILD_COMPOSE_TEST_COMMON \
     -DBUILD_TEST_0017_COMPOSE_GAP_NINE \
     -DBUILD_TEST_0018_COMPOSE_GAP_TEN \
@@ -9214,6 +9238,30 @@ test_runner_SOURCES = test_runner.c \
     encoder/pipeline/0014_node_unlink_fast_stream.c \
     encoder/pipeline/0015_node_unlink_auto_stream.c \
     encoder/pipeline/0016_node_unlink_size_stream.c \
+    _support/processing/encoder-core/band_nodes_common.c \
+    encoder/pipeline/0057_parallel_node_reuse_bound.c \
+    encoder/pipeline/0058_parallel_node_drain_release.c \
+    encoder/pipeline/0059_serial_node_failure_status.c \
+    encoder/pipeline/0060_serial_node_failure_release.c \
+    encoder/pipeline/0061_parallel_node_failure_release.c \
+    encoder/pipeline/0062_serial_node_failure_retry.c \
+    encoder/pipeline/0063_parallel_node_writer_release.c \
+    encoder/pipeline/0064_bucket_longest_first.c \
+    encoder/pipeline/0065_bucket_equal_span_tie.c \
+    encoder/pipeline/0066_bucket_first_seen_tie.c \
+    encoder/pipeline/0067_bucket_greedy_successor.c \
+    encoder/pipeline/0068_bucket_start_word_boundary.c \
+    encoder/pipeline/0069_bucket_start_padding.c \
+    encoder/pipeline/0070_bucket_empty_first_band.c \
+    encoder/pipeline/0071_bucket_empty_middle_band.c \
+    encoder/pipeline/0072_bucket_offset_band_boundary.c \
+    encoder/pipeline/0073_bucket_size_first_sweep.c \
+    encoder/pipeline/0074_bucket_size_partial_rows.c \
+    encoder/pipeline/0075_bucket_size_masked_hole.c \
+    encoder/pipeline/0076_bucket_mono_selector.c \
+    encoder/pipeline/0077_bucket_parallel_final_band.c \
+    encoder/pipeline/0078_bucket_serial_final_band.c \
+    encoder/pipeline/0079_bucket_chain_failure_release.c \
     _support/processing/encoder-core/compose_test_common.c \
     encoder/pipeline/0017_compose_gap_nine.c \
     encoder/pipeline/0018_compose_gap_ten.c \
