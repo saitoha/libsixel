@@ -142,9 +142,11 @@ The writer and the thread performing palette application are not counted as
 encode workers. Therefore a two-worker encode can show a caller/controller,
 two encode workers, and one writer in the operating-system thread timeline.
 
-Each encode worker owns its drawing-node storage. Successfully emitted nodes move to that worker's reusable list and remain available until frame drain; no other worker borrows them. Capacity grows only to the largest node plan handled by that worker within the frame, rather than accumulating per band. A reused node has its color, span, map pointer and link overwritten before it is published into a bucket. The serial body retains the same within-frame reuse boundary.
+Each encode worker owns its maps, occupancy tables, column scratch and drawing-node storage. Successful indexed encoding drains worker callbacks and joins the ordered writer, then retains that capacity and the per-band byte buffers inside encoder_core. It releases image, palette, mask, sink and frame-policy references before returning. The next prepare can reuse storage only when encoded dimensions, color count, actual worker count, worker capacity, queue capacity, allocator and OR mode match. Changing source offsets, palette values, masks or output flags rebinds frame fields. Serial transitions, incompatible capacity, explicit abort, errors and final core destruction discard the retained resources. Pools without drain/resume methods retain terminal per-frame behavior. [Pool lifecycle](overview.md#worker-budget-is-not-a-process-thread-limit) owns admission and policy renewal.
 
-Unemitted nodes belong to their start-column buckets; completed nodes belong to the reusable list. Successful drain releases both owners. Failed composition discards the partial bucket chains, maps and reusable nodes before that worker can accept another job. Abort and typed sink rejection drain outstanding work before frame teardown releases worker storage. The [encoding policy](../encoder/output/encode-policy/README.md#implementation-and-existing-coverage) owns bucket ordering and fill semantics.
+Retained node capacity is the largest band plan handled by each worker; per-band byte capacity is the largest fragment for that band at compatible geometry. Maps remain sized to the current encoded width and color count. These are private high-water allocations, not a global cache. Idle native threads retain their stacks but consume no reserved work slots. Serial and legacy body paths retain their within-frame scratch lifetime. The ordered writer starts and joins for every frame.
+
+Unemitted nodes belong to their start-column buckets; completed nodes belong to the worker's reusable list. Reusing a node overwrites its color, span, map pointer and link before publication. Failed composition discards partial buckets, maps and reusable nodes before another job; terminal teardown joins callbacks before freeing their storage. The [encoding policy](../encoder/output/encode-policy/README.md#implementation-and-existing-coverage) owns bucket ordering and fill semantics.
 
 ### Typed row publication and drain
 
@@ -163,6 +165,8 @@ RetainedPlane admits its caller-inclusive `worker_threads` ceiling in `begin_upd
 Each commit captures the current execution policy, partitions disjoint complete rows and joins all participants before publishing the new sequence. Reused workers enter and leave that batch's policy and CPU-work callbacks, retaining no old frame callback context while idle. The caller releases its CPU loan while waiting. Lower later budgets use fewer cached workers; teardown joins the idle executor. A build without thread support keeps the same serial transaction semantics. See [retained-state transactions](../encoder/output/delta-encoding.md#indexed-retained-state-transactions) for byte and receipt semantics.
 
 ## Timeline interpretation
+
+The encode controller records `context_begin` for cold preparation and `context_reuse` for a compatible retained context. These events establish the selected allocation path; their duration is not a speed guarantee.
 
 The `loader:builtin` spans in these figures decode the 900 by 675 source PNG;
 they do not decode a Full HD PNG. The complete preprocessing sequence for the
@@ -487,6 +491,28 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-107 | GPU ahead and serial schedules emit identical bytes with T48 and a fixed refresh timeline. | [tests/encoder/planning/0187_gpu_ahead_t48_bytes.t](../../tests/encoder/planning/0187_gpu_ahead_t48_bytes.t) |
 | TE-108 | A GPU auto-policy cutoff retains preparation overlap through the CPU fallback. | [tests/encoder/planning/0188_gpu_ahead_cpu_fallback.t](../../tests/encoder/planning/0188_gpu_ahead_cpu_fallback.t) |
 
+| TE-109 | Changed indexes match a fresh core. | [tests/encoder/indexed/0163_reuse_pixels.t](../../tests/encoder/indexed/0163_reuse_pixels.t) |
+| TE-110 | Changed palette definitions match a fresh core. | [tests/encoder/indexed/0164_reuse_palette.t](../../tests/encoder/indexed/0164_reuse_palette.t) |
+| TE-111 | Changed keep masks match a fresh core. | [tests/encoder/indexed/0165_reuse_mask.t](../../tests/encoder/indexed/0165_reuse_mask.t) |
+| TE-112 | A new sink receives output without changing the prior sink. | [tests/encoder/indexed/0166_reuse_sink.t](../../tests/encoder/indexed/0166_reuse_sink.t) |
+| TE-113 | Changed encoded width matches a fresh core. | [tests/encoder/indexed/0167_reuse_width_change.t](../../tests/encoder/indexed/0167_reuse_width_change.t) |
+| TE-114 | A changed height with a partial final band matches a fresh core. | [tests/encoder/indexed/0168_reuse_height_change.t](../../tests/encoder/indexed/0168_reuse_height_change.t) |
+| TE-115 | Changed palette count matches a fresh core. | [tests/encoder/indexed/0169_reuse_colors_change.t](../../tests/encoder/indexed/0169_reuse_colors_change.t) |
+| TE-116 | A parallel-to-serial transition matches a fresh core. | [tests/encoder/indexed/0170_reuse_threads_change.t](../../tests/encoder/indexed/0170_reuse_threads_change.t) |
+| TE-117 | Changed queue depth matches a fresh core. | [tests/encoder/indexed/0171_reuse_queue_change.t](../../tests/encoder/indexed/0171_reuse_queue_change.t) |
+| TE-118 | An OR-mode transition matches a fresh core. | [tests/encoder/indexed/0172_reuse_ormode_change.t](../../tests/encoder/indexed/0172_reuse_ormode_change.t) |
+| TE-119 | Changed encode policy matches a fresh core. | [tests/encoder/indexed/0173_reuse_encode_policy.t](../../tests/encoder/indexed/0173_reuse_encode_policy.t) |
+| TE-120 | Changed source offset matches a fresh core. | [tests/encoder/indexed/0174_reuse_offset_change.t](../../tests/encoder/indexed/0174_reuse_offset_change.t) |
+| TE-121 | Encoding after abort matches a fresh core. | [tests/encoder/indexed/0175_reuse_abort_restart.t](../../tests/encoder/indexed/0175_reuse_abort_restart.t) |
+| TE-122 | Encoding after palette-sink rejection matches a fresh core. | [tests/encoder/indexed/0176_reuse_palette_failure.t](../../tests/encoder/indexed/0176_reuse_palette_failure.t) |
+| TE-123 | Encoding after body-sink rejection matches a fresh core. | [tests/encoder/indexed/0177_reuse_body_failure.t](../../tests/encoder/indexed/0177_reuse_body_failure.t) |
+| TE-124 | Compatible frames select one cold and one reuse preparation. | [tests/encoder/indexed/0178_reuse_path.t](../../tests/encoder/indexed/0178_reuse_path.t) |
+| TE-125 | Changed geometry selects cold preparation. | [tests/encoder/indexed/0179_reuse_geometry_rebuild.t](../../tests/encoder/indexed/0179_reuse_geometry_rebuild.t) |
+| TE-126 | Final core release frees retained allocator-owned storage. | [tests/encoder/indexed/0180_reuse_release_storage.t](../../tests/encoder/indexed/0180_reuse_release_storage.t) |
+| TE-127 | Explicit abort frees parked allocator-owned storage. | [tests/encoder/indexed/0181_reuse_abort_storage.t](../../tests/encoder/indexed/0181_reuse_abort_storage.t) |
+| TE-128 | Encoding after injected allocation failure matches a fresh core. | [tests/encoder/indexed/0182_reuse_allocation_failure.t](../../tests/encoder/indexed/0182_reuse_allocation_failure.t) |
+| TE-129 | Identical warm frames perform no allocator calls for worker scratch or nodes after both workspaces have executed. | [tests/encoder/indexed/0183_reuse_scratch_allocations.t](../../tests/encoder/indexed/0183_reuse_scratch_allocations.t) |
+
 The GPU ahead cases require an observed palette-apply kernel dispatch. Their small fixed-time streams compare scheduling consistency, not independent color accuracy.
 
 The Metal cases skip without a usable device. Injected command failures exercise host drain and lease reuse; they do not simulate a device reset. The small range fixtures establish byte and publication behavior, not GPU scheduling speed.
@@ -494,3 +520,5 @@ The Metal cases skip without a usable device. Injected command failures exercise
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/color/space/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.
 
 Cancellation and wait tests use synchronization gates: one writer is held while the queue and waiter state are observed. They require interrupted queued results, ordered single completion, source release and retained writer failure. The finite waits bound a hung test; they do not assert scheduling latency.
+
+The reuse byte comparisons isolate state rebinding against a fresh core; they do not independently validate pixel accuracy. The warm allocation case gates two workers to initialize both workspaces, then counts calls through the core allocator. It does not assert zero native-thread or per-band `realloc` activity. Resident memory, thread stacks, performance and OS-specific scheduling require separate measurement.

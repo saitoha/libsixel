@@ -237,6 +237,44 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0007_DRAIN_COMPLETES_JOBS \
+    -DBUILD_TEST_0008_RESUME_KEEPS_WORKSPACE \
+    -DBUILD_TEST_0009_RESUME_KEEPS_THREAD \
+    -DBUILD_TEST_0010_RESUME_REBINDS_POLICY \
+    -DBUILD_TEST_0011_RESUME_REBINDS_HOOKS \
+    -DBUILD_TEST_0012_DRAINED_REJECTS_PUSH \
+    -DBUILD_TEST_0013_OPEN_REJECTS_RESUME \
+    -DBUILD_TEST_0014_FINISHED_REJECTS_RESUME \
+    -DBUILD_TEST_0015_FAILED_REJECTS_RESUME \
+    -DBUILD_TEST_0016_DRAIN_PRESERVES_ERROR \
+    -DBUILD_TEST_0017_REUSED_WORKSPACE_CLEANUP \
+    -DBUILD_TEST_0018_DRAINED_REJECTS_GROWTH \
+    -DBUILD_TEST_0019_DRAIN_IDEMPOTENT \
+    -DBUILD_TEST_0020_FINISH_DRAINS_JOBS \
+    -DBUILD_TEST_0021_RESUME_SINGLE_SLOT \
+    -DBUILD_TEST_0163_REUSE_PIXELS \
+    -DBUILD_TEST_0164_REUSE_PALETTE \
+    -DBUILD_TEST_0165_REUSE_MASK \
+    -DBUILD_TEST_0166_REUSE_SINK \
+    -DBUILD_TEST_0167_REUSE_WIDTH_CHANGE \
+    -DBUILD_TEST_0168_REUSE_HEIGHT_CHANGE \
+    -DBUILD_TEST_0169_REUSE_COLORS_CHANGE \
+    -DBUILD_TEST_0170_REUSE_THREADS_CHANGE \
+    -DBUILD_TEST_0171_REUSE_QUEUE_CHANGE \
+    -DBUILD_TEST_0172_REUSE_ORMODE_CHANGE \
+    -DBUILD_TEST_0173_REUSE_ENCODE_POLICY \
+    -DBUILD_TEST_0174_REUSE_OFFSET_CHANGE \
+    -DBUILD_TEST_0175_REUSE_ABORT_RESTART \
+    -DBUILD_TEST_0176_REUSE_PALETTE_FAILURE \
+    -DBUILD_TEST_0177_REUSE_BODY_FAILURE \
+    -DBUILD_TEST_0178_REUSE_PATH \
+    -DBUILD_TEST_0179_REUSE_GEOMETRY_REBUILD \
+    -DBUILD_TEST_0180_REUSE_RELEASE_STORAGE \
+    -DBUILD_TEST_0181_REUSE_ABORT_STORAGE \
+    -DBUILD_TEST_0182_REUSE_ALLOCATION_FAILURE \
+    -DBUILD_TEST_0183_REUSE_SCRATCH_ALLOCATIONS \
+    -DBUILD_CORE_REUSE \
+    -DBUILD_POOL_REUSE \
     -DBUILD_TEST_0069_QUERY_ENCODE_CPU \
     -DBUILD_TEST_0070_TARGET_ENCODE_CPU \
     -DBUILD_TEST_0071_QUERY_PLAYBACK_CPU \
@@ -4925,6 +4963,44 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    platform/threadpool/0007_drain_completes_jobs.c \
+    platform/threadpool/0008_resume_keeps_workspace.c \
+    platform/threadpool/0009_resume_keeps_thread.c \
+    platform/threadpool/0010_resume_rebinds_policy.c \
+    platform/threadpool/0011_resume_rebinds_hooks.c \
+    platform/threadpool/0012_drained_rejects_push.c \
+    platform/threadpool/0013_open_rejects_resume.c \
+    platform/threadpool/0014_finished_rejects_resume.c \
+    platform/threadpool/0015_failed_rejects_resume.c \
+    platform/threadpool/0016_drain_preserves_error.c \
+    platform/threadpool/0017_reused_workspace_cleanup.c \
+    platform/threadpool/0018_drained_rejects_growth.c \
+    platform/threadpool/0019_drain_idempotent.c \
+    platform/threadpool/0020_finish_drains_jobs.c \
+    platform/threadpool/0021_resume_single_slot.c \
+    encoder/indexed/0163_reuse_pixels.c \
+    encoder/indexed/0164_reuse_palette.c \
+    encoder/indexed/0165_reuse_mask.c \
+    encoder/indexed/0166_reuse_sink.c \
+    encoder/indexed/0167_reuse_width_change.c \
+    encoder/indexed/0168_reuse_height_change.c \
+    encoder/indexed/0169_reuse_colors_change.c \
+    encoder/indexed/0170_reuse_threads_change.c \
+    encoder/indexed/0171_reuse_queue_change.c \
+    encoder/indexed/0172_reuse_ormode_change.c \
+    encoder/indexed/0173_reuse_encode_policy.c \
+    encoder/indexed/0174_reuse_offset_change.c \
+    encoder/indexed/0175_reuse_abort_restart.c \
+    encoder/indexed/0176_reuse_palette_failure.c \
+    encoder/indexed/0177_reuse_body_failure.c \
+    encoder/indexed/0178_reuse_path.c \
+    encoder/indexed/0179_reuse_geometry_rebuild.c \
+    encoder/indexed/0180_reuse_release_storage.c \
+    encoder/indexed/0181_reuse_abort_storage.c \
+    encoder/indexed/0182_reuse_allocation_failure.c \
+    encoder/indexed/0183_reuse_scratch_allocations.c \
+    _support/codec/pool_reuse.c \
+    _support/codec/core_reuse.c \
     delta/comparison/0069_query_encode_cpu.c \
     delta/comparison/0070_target_encode_cpu.c \
     delta/comparison/0071_query_playback_cpu.c \
