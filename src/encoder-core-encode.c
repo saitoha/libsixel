@@ -102,6 +102,7 @@ typedef struct sixel_encode_work {
     size_t map_size;
     uint64_t *occupancy;
     size_t occupancy_words;
+    uint64_t *column_starts;
     uint64_t *band_columns;
     sixel_node_t **columns;
     size_t columns_size;
@@ -308,6 +309,25 @@ sixel_encode_body_ormode_band_offset(sixel_index_t const *pixels,
                                      int offset_top,
                                      sixel_output_t *output);
 
+/* A node is owned by exactly one of the pending, reusable or column lists.
+ * Release the output-owned lists even after an interrupted composition. */
+static void
+sixel_encode_nodes_release(sixel_output_t *output,
+                           sixel_allocator_t *allocator)
+{
+    sixel_node_t *node;
+
+    if (output == NULL) return;
+    while ((node = output->node_top) != NULL) {
+        output->node_top = node->next;
+        sixel_allocator_free(allocator, node);
+    }
+    while ((node = output->node_free) != NULL) {
+        output->node_free = node->next;
+        sixel_allocator_free(allocator, node);
+    }
+}
+
 static void
 sixel_timeline_logger_prepare_default(sixel_allocator_t *allocator,
                                       sixel_timeline_logger_t **logger)
@@ -499,30 +519,13 @@ sixel_parallel_context_is_ormode(sixel_parallel_context_t const *ctx)
 }
 
 static void
-sixel_parallel_worker_release_nodes(sixel_parallel_worker_state_t *state,
-                                    sixel_allocator_t *allocator)
-{
-    sixel_node_t *np;
-
-    if (state == NULL || state->output == NULL) {
-        return;
-    }
-
-    while ((np = state->output->node_free) != NULL) {
-        state->output->node_free = np->next;
-        sixel_allocator_free(allocator, np);
-    }
-    state->output->node_top = NULL;
-}
-
-static void
 sixel_parallel_worker_cleanup(sixel_parallel_worker_state_t *state,
                               sixel_allocator_t *allocator)
 {
     if (state == NULL) {
         return;
     }
-    sixel_parallel_worker_release_nodes(state, allocator);
+    sixel_encode_nodes_release(state->output, allocator);
     if (state->output != NULL) {
         sixel_output_unref(state->output);
         state->output = NULL;
@@ -659,7 +662,9 @@ sixel_parallel_worker_reset(sixel_parallel_worker_state_t *state)
     state->output->save_pixel = 0;
     state->output->active_palette = (-1);
     state->output->node_top = NULL;
-    state->output->node_free = NULL;
+    /* Completed nodes remain private to this worker through frame drain.
+     * Their fields are overwritten before reuse. Retained capacity is the
+     * largest band handled by this worker, never the sum of its bands. */
 }
 
 static SIXELSTATUS
@@ -1515,7 +1520,11 @@ done:
     status = SIXEL_OK;
 
 cleanup:
-    sixel_parallel_worker_release_nodes(state, ctx->allocator);
+    if (SIXEL_FAILED(status)) {
+        /* Discard partial maps and column lists as well as reusable nodes.
+         * A queued job must not inherit an unfinished band on this worker. */
+        sixel_parallel_worker_cleanup(state, ctx->allocator);
+    }
     if (band != NULL && ctx->mutex_ready && ctx->cond_ready) {
         sixel_fence_release();
         sixel_mutex_lock(&ctx->mutex);
@@ -2441,7 +2450,7 @@ sixel_node_new(sixel_node_t **np, sixel_allocator_t *allocator)
 
     *np = (sixel_node_t *)sixel_allocator_malloc(allocator,
                                                  sizeof(sixel_node_t));
-    if (np == NULL) {
+    if (*np == NULL) {
         sixel_helper_set_additional_message(
             "sixel_node_new: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
@@ -2907,6 +2916,7 @@ sixel_encode_work_init(sixel_encode_work_t *work)
     work->map_size = 0;
     work->occupancy = NULL;
     work->occupancy_words = 0;
+    work->column_starts = NULL;
     work->band_columns = NULL;
     work->columns = NULL;
     work->columns_size = 0;
@@ -2952,10 +2962,12 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
     }
     work->map_size = (size_t)len;
 
-    /* One bit per encoded column is independent of the six row bits in map.
-     * Round in size_t and check the product before allocating all colors. */
+    /* Color occupancy is independent of the six row bits in map. One extra
+     * plane records nonempty node buckets; it borrows the same allocation
+     * but has its own lifetime, ending only when all nodes are retired. */
     occupancy_words = ((size_t)width + 63U) / 64U;
-    if (occupancy_words > SIZE_MAX / sizeof(uint64_t) / (size_t)ncolors) {
+    if (occupancy_words >
+            SIZE_MAX / sizeof(uint64_t) / ((size_t)ncolors + 1)) {
         sixel_helper_set_additional_message(
             "sixel_encode_body: occupancy size overflow.");
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -2963,13 +2975,15 @@ sixel_encode_work_allocate(sixel_encode_work_t *work,
     }
     if (occupancy_words > 0) {
         work->occupancy = (uint64_t *)sixel_allocator_calloc(allocator,
-            occupancy_words * (size_t)ncolors, sizeof(uint64_t));
+            occupancy_words * ((size_t)ncolors + 1), sizeof(uint64_t));
         if (work->occupancy == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_encode_body: occupancy allocation failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        work->column_starts = work->occupancy +
+            occupancy_words * (size_t)ncolors;
     }
     work->occupancy_words = occupancy_words;
 
@@ -3068,6 +3082,7 @@ end:
             work->occupancy = NULL;
         }
         work->occupancy_words = 0;
+        work->column_starts = NULL;
         if (work->map != NULL) {
             sixel_allocator_free(allocator, work->map);
             work->map = NULL;
@@ -3082,6 +3097,10 @@ static void
 sixel_encode_work_cleanup(sixel_encode_work_t *work,
                           sixel_allocator_t *allocator)
 {
+    size_t i;
+    size_t count;
+    sixel_node_t *node;
+
     if (work->active_color_index != NULL) {
         sixel_allocator_free(allocator, work->active_color_index);
         work->active_color_index = NULL;
@@ -3093,6 +3112,16 @@ sixel_encode_work_cleanup(sixel_encode_work_t *work,
     }
     work->active_colors_size = 0;
     if (work->columns != NULL) {
+        /* Unemitted nodes remain owned by their buckets, including when
+         * allocation or output fails. Completed nodes belong to output's
+         * reusable list and must not be freed a second time here. */
+        count = work->columns_size / sizeof(*work->columns);
+        for (i = 0; i < count; ++i) {
+            while ((node = work->columns[i]) != NULL) {
+                work->columns[i] = node->next;
+                sixel_allocator_free(allocator, node);
+            }
+        }
         sixel_allocator_free(allocator, work->columns);
         work->columns = NULL;
     }
@@ -3106,6 +3135,7 @@ sixel_encode_work_cleanup(sixel_encode_work_t *work,
         work->occupancy = NULL;
     }
     work->occupancy_words = 0;
+    work->column_starts = NULL;
     if (work->map != NULL) {
         sixel_allocator_free(allocator, work->map);
         work->map = NULL;
@@ -3424,7 +3454,6 @@ sixel_band_compose(sixel_encode_work_t *work,
     sixel_node_t *np;
     sixel_node_t *column_head;
     sixel_node_t *column_tail;
-    sixel_node_t top;
 
     (void)ncolors;
     (void)keycolor;
@@ -3432,12 +3461,9 @@ sixel_band_compose(sixel_encode_work_t *work,
     np = NULL;
     column_head = NULL;
     column_tail = NULL;
-    top.next = NULL;
 
-    if (work->columns != NULL) {
-        memset(work->columns, 0, work->columns_size);
-    }
-    output->node_top = NULL;
+    /* Successful emission empties every bucket and its start bit. Failure
+     * destroys the work area before another band can be admitted. */
 
     for (color_index = 0;
          color_index < state->active_color_count;
@@ -3477,65 +3503,53 @@ sixel_band_compose(sixel_encode_work_t *work,
             np->map = (char *)row;
             np->next = NULL;
 
-            if (work->columns != NULL) {
-                column_head = work->columns[sx];
-                if (column_head == NULL
-                    || column_head->mx <= np->mx) {
-                    np->next = column_head;
-                    work->columns[sx] = np;
-                } else {
-                    column_tail = column_head;
-                    while (column_tail->next != NULL
-                           && column_tail->next->mx > np->mx) {
-                        column_tail = column_tail->next;
-                    }
-                    np->next = column_tail->next;
-                    column_tail->next = np;
-                }
+            work->column_starts[(unsigned int)sx / 64U] |=
+                UINT64_C(1) << ((unsigned int)sx % 64U);
+            column_head = work->columns[sx];
+            /* Preserve the exact list order: farther ends first, with the
+             * most recently inserted node first for equal spans. */
+            if (column_head == NULL || column_head->mx <= np->mx) {
+                np->next = column_head;
+                work->columns[sx] = np;
             } else {
-                top.next = output->node_top;
-                column_tail = &top;
-
-                while (column_tail->next != NULL) {
-                    if (np->sx < column_tail->next->sx) {
-                        break;
-                    } else if (np->sx == column_tail->next->sx
-                               && np->mx > column_tail->next->mx) {
-                        break;
-                    }
+                column_tail = column_head;
+                while (column_tail->next != NULL &&
+                        column_tail->next->mx > np->mx) {
                     column_tail = column_tail->next;
                 }
-
                 np->next = column_tail->next;
                 column_tail->next = np;
-                output->node_top = top.next;
             }
 
             sx = next_column;
         }
     }
 
-    if (work->columns != NULL) {
-        top.next = NULL;
-        column_tail = &top;
-        for (sx = 0; sx < width; sx++) {
-            column_head = work->columns[sx];
-            if (column_head == NULL) {
-                continue;
-            }
-            column_tail->next = column_head;
-            while (column_tail->next != NULL) {
-                column_tail = column_tail->next;
-            }
-            work->columns[sx] = NULL;
-        }
-        output->node_top = top.next;
-    }
-
     status = SIXEL_OK;
 
 end:
     return status;
+}
+
+/* Locate the first remaining start at or beyond the cursor. Bits beyond
+ * the encoded width stay zero because compose marks source-backed starts.
+ * This selects the same node as skipping overlapping intervals in a sorted
+ * list, without rereading each skipped node on every greedy sweep. */
+static int
+sixel_band_next_start(sixel_encode_work_t const *work, int first, int width)
+{
+    size_t word;
+    uint64_t bits;
+
+    if (first >= width) return width;
+    word = (size_t)first / 64U;
+    bits = work->column_starts[word] &
+        (~UINT64_C(0) << ((unsigned int)first % 64U));
+    while (bits == 0) {
+        if (++word >= work->occupancy_words) return width;
+        bits = work->column_starts[word];
+    }
+    return (int)(word * 64U) + sixel_encode_trailing_zeros(bits);
 }
 
 static SIXELSTATUS
@@ -3546,93 +3560,49 @@ sixel_band_emit(sixel_encode_work_t *work,
                 int keycolor,
                 int last_row_index)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
-    sixel_node_t *np;
-    sixel_node_t *next;
-    sixel_node_t *prev;
+    SIXELSTATUS status;
+    sixel_node_t *node;
+    int width;
     int x;
-    int emit_next_line;
+    int sx;
 
-    emit_next_line = (last_row_index >= 6);
-    if (emit_next_line) {
-        /*
-         * Emit DECGNL only after the first band. The first band starts at the
-         * origin, so leading DECGNL would shift short images down by 6 rows.
-         */
+    width = (int)(work->columns_size / sizeof(*work->columns));
+    if (last_row_index >= 6) {
+        /* Empty bands still advance. The first band never emits DECGNL. */
         output->buffer[output->pos] = '-';
         sixel_advance(output, 1);
     }
-
-    for (x = 0; (np = output->node_top) != NULL;) {
-        if (x > np->sx) {
+    x = 0;
+    while ((sx = sixel_band_next_start(work, 0, width)) < width) {
+        if (x > sx) {
             output->buffer[output->pos] = '$';
             sixel_advance(output, 1);
             x = 0;
         }
-
-        if (state->fillable) {
-            memset(np->map + np->sx,
-                   state->fill_mask,
-                   (size_t)(np->mx - np->sx));
-        }
-        status = sixel_put_node(output,
-                                &x,
-                                np,
-                                ncolors,
-                                keycolor);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        /* The outer loop always emits the head, so no search is needed. */
-        next = np->next;
-        output->node_top = next;
-        np->next = output->node_free;
-        output->node_free = np;
-        np = next;
-        prev = NULL;
-
-        while (np != NULL) {
-            if (np->sx < x) {
-                prev = np;
-                np = np->next;
-                continue;
-            }
-
+        do {
+            node = work->columns[sx];
             if (state->fillable) {
-                memset(np->map + np->sx,
-                       state->fill_mask,
-                       (size_t)(np->mx - np->sx));
+                memset(node->map + node->sx, state->fill_mask,
+                    (size_t)(node->mx - node->sx));
             }
-            status = sixel_put_node(output,
-                                    &x,
-                                    np,
-                                    ncolors,
-                                    keycolor);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            /* Only skipped nodes remain in the list. Keep their last node
-             * as the predecessor across consecutive removals, avoiding a
-             * head-to-node search while preserving emission/fill order. */
-            next = np->next;
-            if (prev == NULL) {
-                output->node_top = next;
-            } else {
-                prev->next = next;
-            }
-            np->next = output->node_free;
-            output->node_free = np;
-            np = next;
-        }
+            status = sixel_put_node(output, &x, node, ncolors, keycolor);
+            if (SIXEL_FAILED(status)) return status;
 
+            /* Transfer ownership only after emission. Remaining ties stay
+             * in the bucket; clear its bit only when the last node leaves. */
+            work->columns[sx] = node->next;
+            if (node->next == NULL) {
+                work->column_starts[(unsigned int)sx / 64U] &=
+                    ~(UINT64_C(1) << ((unsigned int)sx % 64U));
+            }
+            node->next = output->node_free;
+            output->node_free = node;
+            sx = sixel_band_next_start(work, x, width);
+        } while (sx < width);
+        /* Size policy underpaints only its first nonoverlapping sweep. */
         state->fillable = 0;
     }
-
-    status = SIXEL_OK;
-
-end:
-    (void)work;
-    return status;
+    return SIXEL_OK;
 }
 
 
@@ -3660,7 +3630,6 @@ sixel_encode_body(
     int encoded_height;
     int offset_left;
     int offset_top;
-    sixel_node_t *np;
     sixel_encode_work_t work;
     sixel_band_state_t band;
     int logging_active;
@@ -3839,11 +3808,7 @@ finalize:
     }
 
 cleanup:
-    while ((np = output->node_free) != NULL) {
-        output->node_free = np->next;
-        sixel_allocator_free(allocator, np);
-    }
-    output->node_top = NULL;
+    sixel_encode_nodes_release(output, allocator);
 
     sixel_encode_work_cleanup(&work, allocator);
 

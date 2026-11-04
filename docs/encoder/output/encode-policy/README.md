@@ -119,6 +119,8 @@ The script rebuilds the selected tree, records commands and provenance, measures
 
 Policy parsing is in [`encoder.c`](../../../../src/encoder.c), the public constants are in [`sixel.h`](../../../../include/sixel.h), and mask serialization is in [`encoder-core-encode.c`](../../../../src/encoder-core-encode.c). Existing focused coverage includes transparent-offset fill clipping in [`0074_transparent_offset_encode_policy_size.t`](../../../../tests/palette/alpha/0074_transparent_offset_encode_policy_size.t) and size-policy handling of empty OR planes in [`0005_encoder_core_ormode_body_skips_empty_planes.c`](../../../../tests/encoder/ormode/0005_encoder_core_ormode_body_skips_empty_planes.c).
 
+The node plan stays in start-column buckets through emission. Each bucket orders nodes by decreasing end column; a newly inserted node precedes existing equal-span nodes. A bitset records nonempty buckets and finds the first start at or beyond the current cursor, so overlapping nodes need not be traversed again on each greedy sweep. The serializer removes a node only after successful emission and clears the bucket bit when its last node leaves. This preserves color-selection bytes, carriage returns, and the first-sweep-only `size` underpaint. Empty bands still advance with `-`, while offsets and final partial bands retain their valid-row masks.
+
 The serializer keeps one output packet and its retained suffix in `sixel_output_t.buffer`. The C array declares two complete `SIXEL_OUTPUT_PACKET_SIZE` packets, and storage allocation uses `sizeof(sixel_output_t)` without an additional trailing allocation. The declared object bounds therefore match the writable storage seen by compiler bounds analysis. After a packet is flushed, the retained position is below one packet; the second packet accommodates bytes appended across that boundary.
 
 ## Test coverage
@@ -132,3 +134,20 @@ The serializer keeps one output packet and its retained suffix in `sixel_output_
 | EP-03 | Unlimited DECGRI preserves bytes when a run crosses an output packet boundary. | [tests/encoder/pipeline/0035_emit_packet_unlimited.c](../../../../tests/encoder/pipeline/0035_emit_packet_unlimited.c) |
 | EP-04 | Limited DECGRI preserves bytes when split runs cross an output packet boundary. | [tests/encoder/pipeline/0036_emit_packet_limited.c](../../../../tests/encoder/pipeline/0036_emit_packet_limited.c) |
 | EP-05 | The declared output array holds two packets and allocation follows the complete object size. | [tests/_static/sh/staticcheck-output-buffer-storage.sh](../../../../tests/_static/sh/staticcheck-output-buffer-storage.sh) |
+| EP-06 | A longer node precedes a shorter node with the same start. | [tests/encoder/pipeline/0064_bucket_longest_first.t](../../../../tests/encoder/pipeline/0064_bucket_longest_first.t) |
+| EP-07 | An equal-span tie emits the most recently inserted node first. | [tests/encoder/pipeline/0065_bucket_equal_span_tie.t](../../../../tests/encoder/pipeline/0065_bucket_equal_span_tie.t) |
+| EP-08 | First-seen color order determines insertion order for equal spans. | [tests/encoder/pipeline/0066_bucket_first_seen_tie.t](../../../../tests/encoder/pipeline/0066_bucket_first_seen_tie.t) |
+| EP-09 | A greedy sweep skips overlapping starts and chooses its next eligible span. | [tests/encoder/pipeline/0067_bucket_greedy_successor.t](../../../../tests/encoder/pipeline/0067_bucket_greedy_successor.t) |
+| EP-10 | Start lookup crosses a 64-column word boundary without skipping a node. | [tests/encoder/pipeline/0068_bucket_start_word_boundary.t](../../../../tests/encoder/pipeline/0068_bucket_start_word_boundary.t) |
+| EP-11 | Padding bits beyond the encoded width never create a node. | [tests/encoder/pipeline/0069_bucket_start_padding.t](../../../../tests/encoder/pipeline/0069_bucket_start_padding.t) |
+| EP-12 | An empty first band still advances before the next paint. | [tests/encoder/pipeline/0070_bucket_empty_first_band.t](../../../../tests/encoder/pipeline/0070_bucket_empty_first_band.t) |
+| EP-13 | Empty middle bands preserve advances without stale bucket starts. | [tests/encoder/pipeline/0071_bucket_empty_middle_band.t](../../../../tests/encoder/pipeline/0071_bucket_empty_middle_band.t) |
+| EP-14 | Horizontal and vertical offsets preserve exact bytes across a band boundary. | [tests/encoder/pipeline/0072_bucket_offset_band_boundary.t](../../../../tests/encoder/pipeline/0072_bucket_offset_band_boundary.t) |
+| EP-15 | Size underpaints only its first nonoverlapping sweep. | [tests/encoder/pipeline/0073_bucket_size_first_sweep.t](../../../../tests/encoder/pipeline/0073_bucket_size_first_sweep.t) |
+| EP-16 | Size fills only the valid rows of a partial band. | [tests/encoder/pipeline/0074_bucket_size_partial_rows.t](../../../../tests/encoder/pipeline/0074_bucket_size_partial_rows.t) |
+| EP-17 | A masked hole disables unsafe size underpaint. | [tests/encoder/pipeline/0075_bucket_size_masked_hole.t](../../../../tests/encoder/pipeline/0075_bucket_size_masked_hole.t) |
+| EP-18 | Monochrome serialization preserves its omitted palette selector. | [tests/encoder/pipeline/0076_bucket_mono_selector.t](../../../../tests/encoder/pipeline/0076_bucket_mono_selector.t) |
+| EP-19 | Parallel final partial bands preserve the band-local palette selector. | [tests/encoder/pipeline/0077_bucket_parallel_final_band.t](../../../../tests/encoder/pipeline/0077_bucket_parallel_final_band.t) |
+| EP-20 | Serial final partial bands preserve the active palette selector. | [tests/encoder/pipeline/0078_bucket_serial_final_band.t](../../../../tests/encoder/pipeline/0078_bucket_serial_final_band.t) |
+
+These small fixed rasters establish literal wire ordering, including transparency and size-policy interactions. They do not assert a content-independent speedup; allocator ownership and failure cleanup are covered by the [threading reference](../../../threading/encoder.md#test-coverage).

@@ -138,6 +138,10 @@ The writer and the thread performing palette application are not counted as
 encode workers. Therefore a two-worker encode can show a caller/controller,
 two encode workers, and one writer in the operating-system thread timeline.
 
+Each encode worker owns its drawing-node storage. Successfully emitted nodes move to that worker's reusable list and remain available until frame drain; no other worker borrows them. Capacity grows only to the largest node plan handled by that worker within the frame, rather than accumulating per band. A reused node has its color, span, map pointer and link overwritten before it is published into a bucket. The serial body retains the same within-frame reuse boundary.
+
+Unemitted nodes belong to their start-column buckets; completed nodes belong to the reusable list. Successful drain releases both owners. Failed composition discards the partial bucket chains, maps and reusable nodes before that worker can accept another job. Abort and typed sink rejection drain outstanding work before frame teardown releases worker storage. The [encoding policy](../encoder/output/encode-policy/README.md#implementation-and-existing-coverage) owns bucket ordering and fill semantics.
+
 ### Typed row publication and drain
 
 In the indexed component path, IndexedFrame owns index and final skip storage. PaletteApply publishes only a completed contiguous source-row prefix, using release/acquire synchronization. encoder_core translates source readiness through the encoded top offset and schedules complete six-row output bands; it accepts the final partial band only after every source row is published. CPU policy scan order and warm-up overlap remain part of the selected policy. GPU completion publishes the whole image once and does not emulate per-row notifications.
@@ -426,6 +430,14 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-58 | A foreign receipt is rejected before prepared workers can change committed RGB. | [tests/encoder/indexed/0125_retained_wrong_receipt_parallel.t](../../tests/encoder/indexed/0125_retained_wrong_receipt_parallel.t) |
 | TE-59 | Each participating background worker balances its CPU-work begin and end callbacks. | [tests/encoder/indexed/0126_retained_workers_balanced.t](../../tests/encoder/indexed/0126_retained_workers_balanced.t) |
 | TE-60 | A thread-disabled build commits a large rectangle serially despite a larger ceiling. | [tests/encoder/indexed/0127_retained_threads_disabled.t](../../tests/encoder/indexed/0127_retained_threads_disabled.t) |
+| TE-61 | Forty-one single-node bands allocate at most one node per participating worker with a two-worker ceiling. | [tests/encoder/pipeline/0057_parallel_node_reuse_bound.t](../../tests/encoder/pipeline/0057_parallel_node_reuse_bound.t) |
+| TE-62 | Successful two-worker frame drain releases all caller-allocator storage. | [tests/encoder/pipeline/0058_parallel_node_drain_release.t](../../tests/encoder/pipeline/0058_parallel_node_drain_release.t) |
+| TE-63 | A serial node-allocation failure returns `SIXEL_BAD_ALLOCATION`. | [tests/encoder/pipeline/0059_serial_node_failure_status.t](../../tests/encoder/pipeline/0059_serial_node_failure_status.t) |
+| TE-64 | Serial node-allocation failure releases pending and reusable storage. | [tests/encoder/pipeline/0060_serial_node_failure_release.t](../../tests/encoder/pipeline/0060_serial_node_failure_release.t) |
+| TE-65 | Parallel node-allocation failure releases pending and reusable storage. | [tests/encoder/pipeline/0061_parallel_node_failure_release.t](../../tests/encoder/pipeline/0061_parallel_node_failure_release.t) |
+| TE-66 | Reusing a serial output after node-allocation failure produces the expected body. | [tests/encoder/pipeline/0062_serial_node_failure_retry.t](../../tests/encoder/pipeline/0062_serial_node_failure_retry.t) |
+| TE-67 | A rejected typed sink releases all caller-allocator storage after parallel drain. | [tests/encoder/pipeline/0063_parallel_node_writer_release.t](../../tests/encoder/pipeline/0063_parallel_node_writer_release.t) |
+| TE-68 | A serial failure while building a same-column chain releases its pending nodes. | [tests/encoder/pipeline/0079_bucket_chain_failure_release.t](../../tests/encoder/pipeline/0079_bucket_chain_failure_release.t) |
 
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/color/space/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.
 

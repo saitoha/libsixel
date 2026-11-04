@@ -37,7 +37,6 @@ sixel_indexed_core_ref(sixel_encoder_core_t *self)
 static SIXELSTATUS
 sixel_indexed_core_release(sixel_indexed_core_t *core, int aborting)
 {
-    sixel_node_t *node;
     SIXELSTATUS status;
 #if SIXEL_ENABLE_THREADS
     SIXELSTATUS wait_status;
@@ -55,15 +54,7 @@ sixel_indexed_core_release(sixel_indexed_core_t *core, int aborting)
     (void)aborting;
 #endif
     if (core->body != NULL) {
-        /* A failed compose can leave nodes in either list. */
-        while ((node = core->body->node_top) != NULL) {
-            core->body->node_top = node->next;
-            sixel_allocator_free(core->allocator, node);
-        }
-        while ((node = core->body->node_free) != NULL) {
-            core->body->node_free = node->next;
-            sixel_allocator_free(core->allocator, node);
-        }
+        sixel_encode_nodes_release(core->body, core->allocator);
         core->body->transparent_mask = NULL;
         core->body->wire_colors = NULL;
         memset(&core->body->body_sink, 0, sizeof(core->body->body_sink));
