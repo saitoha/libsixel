@@ -17,7 +17,8 @@ static char const * const third_chunks[] = {
     "static uint lookup_rgb8(uchar3 q, constant uchar *p, uint n,"
     "constant uchar *c, device const uchar *w) {"
     "uint best = 0u, distance = 0xffffffffu;"
-    "if (*((constant uint *)c)) return n;"
+    "if (*((constant uint *)c) == 1u ||"
+    "(*((constant uint *)c) == 2u && q.r > 128u)) return n;"
     "if (*((device const uint *)w) != 0x12345678u) return 255u;"
     "for (uint i = 0u; i < n; ++i) {"
     "int3 d = int3(q) - int3(p[3u*i], p[3u*i+1u], p[3u*i+2u]);"
@@ -82,6 +83,16 @@ static sixel_gpu_lookup_plan_vtbl_t const third_vtbl = {
     third_ref, third_unref, third_describe, third_begin
 };
 
+static SIXELSTATUS
+third_rows(void *context, int rows)
+{
+    int *prefix;
+
+    prefix = context;
+    *prefix = rows;
+    return SIXEL_OK;
+}
+
 int
 injected_gpu_program_test(int invalid)
 {
@@ -91,10 +102,12 @@ injected_gpu_program_test(int invalid)
     sixel_gpu_program_t *program;
     sixel_gpu_palette_request_t request;
     sixel_gpu_lookup_program_view_t view;
-    unsigned char pixels[6] = {15, 0, 0, 240, 0, 0};
-    sixel_index_t result[2];
+    unsigned char pixels[72] = {15, 0, 0, 240, 0, 0};
+    sixel_index_t result[24];
     SIXELSTATUS status;
     int outcome;
+    int prefix;
+    int i;
 
     device = NULL;
     program = NULL;
@@ -126,9 +139,20 @@ injected_gpu_program_test(int invalid)
     request.ncolors = 2;
     request.method_for_diffuse = SIXEL_DIFFUSE_NONE;
     request.method_for_scan = SIXEL_SCAN_RASTER;
+    prefix = 0;
+    if (invalid == 2) {
+        /* The first range is valid even if the second already failed on GPU. */
+        for (i = 0; i < 24; ++i) pixels[i * 3] = i < 12 ? 15 : 240;
+        request.pixel_count = 24;
+        request.height = 12;
+        request.rows_per_chunk = 6;
+        request.rows_ready = third_rows;
+        request.rows_context = &prefix;
+    }
     status = sixel_gpu_palette_apply_prepared(&request);
     outcome = invalid ? (status == SIXEL_LOGIC_ERROR ? 0 : 1)
         : (status == SIXEL_OK && result[0] == 0 && result[1] == 1 ? 0 : 1);
+    if (invalid == 2 && prefix != 6) outcome = 1;
 end:
     sixel_gpu_program_destroy(program);
     gpu_component_close(&fixture);

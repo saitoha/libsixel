@@ -362,6 +362,30 @@ sixel_palette_apply_cpu(sixel_palette_apply_storage_t *apply)
 }
 
 static SIXELSTATUS
+sixel_palette_apply_gpu_rows(void *context, int rows)
+{
+    sixel_palette_apply_storage_t *apply;
+    SIXELSTATUS status;
+
+    apply = context;
+    if (apply->run->cancel != NULL &&
+            apply->run->cancel(apply->run->cancel_context)) {
+        return SIXEL_INTERRUPTED;
+    }
+    status = apply->plan.output.keycolor < 0 ||
+            apply->plan.output.keycolor_reserved
+        ? sixel_indexed_frame_publish_gpu_rows(apply->run->result, rows)
+        : sixel_indexed_frame_publish_applied(apply->run->result, rows);
+    if (status != SIXEL_OK) return status;
+    apply->prefix = rows;
+    if (apply->run->rows_ready != NULL) {
+        return apply->run->rows_ready(apply->run->result, rows,
+            apply->run->rows_context);
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
 {
     sixel_gpu_palette_request_t request;
@@ -397,6 +421,14 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.ncolors = apply->options.ncolors -
         (apply->options.keycolor_reserved != 0);
     request.program = apply->program;
+    request.cancel = apply->run->cancel;
+    request.cancel_context = apply->run->cancel_context;
+    if (apply->run->rows_ready != NULL) {
+        request.rows_per_chunk = sixel_gpu_palette_rows_per_chunk(
+            apply->pixels.width, apply->pixels.height);
+        request.rows_ready = sixel_palette_apply_gpu_rows;
+        request.rows_context = apply;
+    }
     request.method_for_diffuse = apply->options.method_for_diffuse;
     request.method_for_scan = apply->plan.scan;
     request.transparent_mask = execution->transparent_mask;
@@ -440,20 +472,10 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     if (status != SIXEL_OK) {
         return SIXEL_FAILED(status) ? status : SIXEL_RUNTIME_ERROR;
     }
-    /* The command buffer completed the whole image. Publish it once instead
-     * of emulating CPU row callbacks and repeating their locks and scans. */
-    if (apply->run->cancel != NULL &&
-            apply->run->cancel(apply->run->cancel_context)) {
-        return SIXEL_INTERRUPTED;
-    }
-    status = apply->plan.output.keycolor < 0 ||
-            apply->plan.output.keycolor_reserved
-        ? sixel_indexed_frame_publish_gpu(apply->run->result)
-        : sixel_indexed_frame_publish_applied(apply->run->result,
-            apply->pixels.height);
-    if (status == SIXEL_OK && apply->run->rows_ready != NULL) {
-        status = apply->run->rows_ready(apply->run->result,
-            apply->pixels.height, apply->run->rows_context);
+    /* Legacy/small dispatches publish once. A streamed request has already
+     * published its full prefix; never rescan or rewrite consumed rows. */
+    if (apply->prefix < apply->pixels.height) {
+        status = sixel_palette_apply_gpu_rows(apply, apply->pixels.height);
     }
     return status;
 }

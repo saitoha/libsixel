@@ -51,6 +51,13 @@ typedef struct sixel_gpu_palette_test_hooks {
     int kernel;
     int rebuild;
     int published;
+    /* Apply-command counters exclude builder passes in the first command.
+     * fault_after_chunks selects a zero-based apply command for faults 2/3. */
+    unsigned int fault_after_chunks;
+    unsigned int submitted_chunks;
+    unsigned int completed_chunks;
+    unsigned int peak_inflight;
+    unsigned int notified_rows;
     size_t retained_rgb_upload_bytes;
     size_t retained_valid_upload_bytes;
     /* Physical FHEDT table format, independent of requested refinement. */
@@ -96,6 +103,16 @@ typedef struct sixel_gpu_palette_request {
     int method_for_diffuse;
     int method_for_scan;
     int has_parallel_bands;
+    /* Optional same-thread publication of a completed row prefix. Buffers
+     * and context live until this synchronous request returns, including
+     * draining after callback failure/cancel. The callback must not reenter
+     * GPU execution: the backend retains its serialized workspace lease.
+     * Zero chunk height or a legacy program retains whole-frame dispatch. */
+    int rows_per_chunk;
+    SIXELSTATUS (*rows_ready)(void *context, int rows);
+    void *rows_context;
+    int (*cancel)(void *context);
+    void *cancel_context;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -148,6 +165,10 @@ typedef struct sixel_gpu_palette_request {
     int bluenoise_gradient_width;
     int bluenoise_gradient_height;
 } sixel_gpu_palette_request_t;
+
+/* Internal geometry policy: avoid submission overhead on small rasters. */
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_rows_per_chunk(int width, int height);
 
 /* Copy only query semantics; CPU grid ownership controls are not GPU keys. */
 SIXEL_INTERNAL_API void

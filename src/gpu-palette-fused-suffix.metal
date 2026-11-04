@@ -12,11 +12,16 @@ kernel void sixel_gpu_fused_lookup(
     device const uchar *workspace [[buffer(15)]],
     constant uchar *configuration [[buffer(16)]],
     device atomic_uint *invalid [[buffer(17)]],
+    constant uint2 &range [[buffer(18)]],
     uint gid [[thread_position_in_grid]])
 {
     uchar3 query, source;
     uint best;
 
+    /* Keep dither phase, delta selection and source addressing in the
+     * original image coordinates while dispatching only this row range. */
+    if (gid >= range.y) return;
+    gid += range.x;
     if (prepare_query(result, pixels, transparent_mask, blue_noise,
             gradient, params, accumulation, accumulation_valid_mask,
             accumulation_result_mask, gid, query, source)) return;
