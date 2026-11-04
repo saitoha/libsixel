@@ -15,6 +15,7 @@
 #include <windows.h>
 #endif
 #include "video.h"
+#include "environment.h"
 #include "persistence.h"
 #include "color.h"
 #include "loader.h"
@@ -779,7 +780,7 @@ lsqa_video_run(lsqa_video_options_t const *options,
     FILE *icc;
     char const *profile_path;
     char const *spec;
-    char const *cms;
+    char *cms;
     long profile_size;
     size_t end;
     double pts;
@@ -879,9 +880,10 @@ lsqa_video_run(lsqa_video_options_t const *options,
         fputs(",\"loaders\":", v.report);
         lsqa_video_string(v.report,
             options->loaders == NULL ? "auto" : options->loaders);
-        cms = getenv("SIXEL_LOADER_CMS_ENGINE");
+        cms = lsqa_getenv_dup("SIXEL_LOADER_CMS_ENGINE");
         fputs(",\"cms_engine\":", v.report);
         lsqa_video_string(v.report, cms == NULL ? "auto" : cms);
+        free(cms);
         fprintf(v.report, ",\"compare_colorspace\":\"%s\","
             "\"compare_precision\":\"%s\",\"grayscale\":%s,"
             "\"region_window\":%d,\"reference_fps\":%.17g,"

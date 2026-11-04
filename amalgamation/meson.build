@@ -217,6 +217,7 @@ amalgamation_headers = files(
   '../src/threadpool.h',
   '../src/allocator.h',
   '../assessment/assessment.h',
+  '../assessment/environment.h',
   '../src/timeline-logger.h',
   '../src/timeline-writer.h',
   '../src/status.h',

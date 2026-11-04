@@ -1071,6 +1071,14 @@ run_case_tap "staticcheck-c-test-stdio" \
     sh "$src_root/tests/_static/sh/staticcheck-c-test-stdio.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-assessment-getenv" \
+    sh "$src_root/tests/_static/sh/staticcheck-assessment-getenv.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-metal-stream" \
+    sh "$src_root/tests/_static/sh/staticcheck-metal-stream.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-nightly-msvc-archiver" \
     sh "$src_root/tests/_static/sh/staticcheck-nightly-msvc-archiver.sh" \
     "$src_root" || fail_and_exit $?

@@ -590,6 +590,10 @@ emit_all_headers() {
                 emit_unit "${unit}" \
                     "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
                 ;;
+            assessment/environment.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_LSQA) || defined(BUILD_ASSESSMENT)"
+                ;;
             tests/_support/loader/builtin/loader_builtin_png_metadata_test_common.h)
                 # This header defines code that calls test-only helpers.
                 # Unoptimized native links must not materialize it in the

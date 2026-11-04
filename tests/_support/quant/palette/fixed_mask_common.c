@@ -404,12 +404,13 @@ test_fixed_mask_run(int space, int mode, char const *path, int animated)
                                     2e-6 + fabs(want) * 5e-6)) {
                         goto end;
                     }
-                    want_wire[j] = mode == 17 || mode == 18 ?
+                    /* Every branch produces a SIXEL percentage, 0..100. */
+                    want_wire[j] = (unsigned char)(mode == 17 || mode == 18 ?
                         (j == 0 ? 100 : 0) : full_palette ?
                         (entry * 100 + 127) / 255 :
                         path != NULL ? p3 ? map_p3[entry][j] :
                         (map_rgb[entry][j] * 100 + 127) / 255 :
-                        builtin_native[table].wire[space][p3][slot][j];
+                        builtin_native[table].wire[space][p3][slot][j]);
                 }
                 if (memcmp(wire + entry * 3, want_wire, 3) != 0) {
                     goto end;

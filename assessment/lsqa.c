@@ -62,6 +62,7 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "environment.h"
 #include "scielab.h"
 #include "video.h"
 #include "color.h"
@@ -170,43 +171,6 @@ lsqa_strerror(int errnum, char *buffer, size_t size)
     (void)buffer;
     (void)size;
     return strerror(errnum);
-#endif
-}
-
-static char *
-lsqa_getenv_dup(char const *name)
-{
-#if defined(_MSC_VER) && defined(HAVE__DUPENV_S)
-    char *value;
-    size_t len;
-    errno_t rc;
-
-    value = NULL;
-    len = 0u;
-    rc = _dupenv_s(&value, &len, name);
-    if (rc != 0) {
-        if (value != NULL) {
-            free(value);
-        }
-        return NULL;
-    }
-    return value;
-#else
-    char const *value;
-    size_t len;
-    char *copy;
-
-    value = getenv(name);
-    if (value == NULL) {
-        return NULL;
-    }
-    len = strlen(value);
-    copy = (char *)malloc(len + 1u);
-    if (copy == NULL) {
-        return NULL;
-    }
-    memcpy(copy, value, len + 1u);
-    return copy;
 #endif
 }
 

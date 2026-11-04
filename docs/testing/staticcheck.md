@@ -156,6 +156,8 @@ The CI installer check rejects literal bare command names assigned to `INSTALL` 
 
 The MSVC complete-build check protects the [CI diagnostic policy](../ci/design.md#diagnostic-independence) in the normal and PGO-use Command Prompt stages. Its shell/awk controls reject an omitted C runner, missing default targets, a finite Ninja failure limit, and a missing or delayed exit-status guard. It validates the owned command form without invoking Python, Meson or a compiler. Uninitialized-value and numeric-conversion warnings remain compiler observations; this check prevents their collection from being cut short, rather than attempting C data-flow analysis.
 
+The independent assessment environment check rejects direct `getenv` calls in assessment C sources and headers, excluding only the private snapshot adapter. Its controls distinguish calls across lines and comments from adapters and inert text. The [test harness](../build/test-harness.md#test-coverage) owns this shared-compilation boundary. A separate Metal stream check verifies the generator's owned stdout branch: it must invoke the encoder without `exec` and immediately exit with its status. Controls reject a missing exit, forced success, exec-based termination and intervening file publication. The [support-script reference](../build/support-scripts.md#embedded-metal-sources) owns the GNV execution boundary. Both checks use shell/awk without a target compiler or Python.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -227,6 +229,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-53 | Shared C tests use portable stream adapters; controls reject direct and continued `tmpfile`/`fileno` calls while accepting adapters and inert comments or literals. | [tests/_static/sh/staticcheck-c-test-stdio.sh](../../tests/_static/sh/staticcheck-c-test-stdio.sh) |
 | SC-54 | CI `INSTALL` assignments do not use bare command names that Autoconf rebases as build-relative paths. | [tests/_static/sh/staticcheck-ci-install-path.sh](../../tests/_static/sh/staticcheck-ci-install-path.sh) |
 | SC-55 | MSVC CI builds retain the complete diagnostic target set, unlimited independent failure collection, and immediate failure propagation in both stages. | [tests/_static/sh/staticcheck-ci-msvc-complete-build.sh](../../tests/_static/sh/staticcheck-ci-msvc-complete-build.sh) |
+| SC-56 | Assessment environment consumers use the owned snapshot adapter; controls reject direct and continued calls while accepting inert comments, literals and adapter calls. | [tests/_static/sh/staticcheck-assessment-getenv.sh](../../tests/_static/sh/staticcheck-assessment-getenv.sh) |
+| SC-57 | Metal stdout generation exits with the encoder status before file publication even on shells where native-image exec returns. | [tests/_static/sh/staticcheck-metal-stream.sh](../../tests/_static/sh/staticcheck-metal-stream.sh) |
 
 ### Coverage boundary
 

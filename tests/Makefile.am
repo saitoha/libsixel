@@ -11615,6 +11615,10 @@ EXTRA_DIST += _static/sh/staticcheck-cli-discard-output.sh \
     _static/sh/staticcheck-emscripten-coverage.sh
 
 EXTRA_DIST += _static/sh/staticcheck-c-test-stdio.sh _static/awk/c-test-stdio.awk
+EXTRA_DIST += _static/sh/staticcheck-assessment-getenv.sh \
+    _static/awk/assessment-getenv.awk \
+    _static/sh/staticcheck-metal-stream.sh \
+    tools/metal/data/chunk-boundary.metal
 
 EXTRA_DIST += _support/codec/retained_rows_common.h
 

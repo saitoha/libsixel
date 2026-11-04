@@ -131,11 +131,14 @@ test_repair_palette_case(int mode)
             solver.palette[1] == 0 && solver.swaps == 0 &&
             fabs(solver.cost - 0.05) < 1e-6;
     } else if (mode == 7) {
-        ok = sixel_repair_palette_begin(&replay, repeated, count,
+        /* Read replay outputs only after both producing calls succeed. */
+        if (sixel_repair_palette_begin(&replay, repeated, count,
             (float const (*)[3])candidates, (unsigned int)count,
-            cap, protected_candidate, cutoff, 2) == SIXEL_OK &&
-            repair_test_run(&replay, 1, &replay_evaluations);
-        ok = ok && replay.colors == solver.colors &&
+            cap, protected_candidate, cutoff, 2) != SIXEL_OK ||
+                !repair_test_run(&replay, 1, &replay_evaluations)) {
+            return EXIT_FAILURE;
+        }
+        ok = replay.colors == solver.colors &&
             replay.palette[0] == solver.palette[0] &&
             replay.palette[1] == solver.palette[1] &&
             replay.swaps == solver.swaps && replay.cost == solver.cost &&

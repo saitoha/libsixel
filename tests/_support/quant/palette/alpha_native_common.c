@@ -273,7 +273,7 @@ test_alpha_native_run(int space, int mode, int animated)
             mask[2] = 1;
             expected[2] = -1;
             for (j = 0; j < 3; ++j) {
-                source[6 + j] = mode == 12 && pass == 1 ? -80 : 99;
+                source[6 + j] = mode == 12 && pass == 1 ? -80.0f : 99.0f;
                 bytes[6 + j] = 255;
             }
         }

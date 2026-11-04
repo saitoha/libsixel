@@ -101,6 +101,8 @@ test_progressive_measure_case(int mode)
         target[i] = (unsigned char)(37 * i + 51);
     }
     for (run = 0; run < (mode == 118 ? 2 : 1); ++run) {
+        /* The unmeasured replay must not inherit the measured snapshot. */
+        memset(&record, 0, sizeof(record));
         memset(&sink, 0, sizeof(sink));
         memcpy(sink.data, baseline, sizeof(baseline) - 1);
         sink.size = sizeof(baseline) - 1;

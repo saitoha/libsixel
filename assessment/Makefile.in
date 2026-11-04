@@ -119,7 +119,7 @@ am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c $(srcdir)/assessment.c \
 	$(srcdir)/color.c $(srcdir)/scielab.c $(srcdir)/persistence.c \
 	$(srcdir)/scielab.h $(srcdir)/persistence.h $(srcdir)/video.c \
 	$(srcdir)/video.h $(srcdir)/color.h $(srcdir)/assessment.h \
-	$(top_srcdir)/converters/cli.c
+	$(srcdir)/environment.h $(top_srcdir)/converters/cli.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-assessment.$(OBJEXT) \
@@ -530,6 +530,7 @@ AMALGAMATION_LSQA_LIBS = -lm \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/video.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/color.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.h \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/environment.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(top_srcdir)/converters/cli.c
 
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = 

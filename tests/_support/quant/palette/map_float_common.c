@@ -180,6 +180,8 @@ test_map_solver_run(int mode, int space, char const *path,
         encoder->fignore_delay = 1;
     }
     for (pass = 0; pass < passes; ++pass) {
+        /* Byte-only paths do not publish a float view for this frame. */
+        memset(&view, 0, sizeof(view));
         if (mode == 11) {
             space = pass == 1 ? 3 : 0;
             if (SIXEL_FAILED(sixel_encoder_setopt(encoder,
@@ -243,7 +245,6 @@ test_map_solver_run(int mode, int space, char const *path,
             goto end;
         }
         if (!byte_work) {
-            memset(&view, 0, sizeof(view));
             if (SIXEL_FAILED(dither->palette->vtbl->get_entries_float32(
                     dither->palette, &view)) || view.entries == NULL ||
                     view.entry_count == 0 || view.entry_count > 256 ||

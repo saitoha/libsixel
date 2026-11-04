@@ -197,9 +197,13 @@ solver_pruned(sixel_palette_t *palette, int space)
     sixel_set_kcenter_budget_policy_override(0,
         SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY);
     sixel_set_kcenter_prune_mass_override(0, 0.0);
-    ok = SIXEL_SUCCEEDED(status) &&
-        SIXEL_SUCCEEDED(palette->vtbl->get_entries_float32(palette, &view)) &&
-        view.entry_count == 2 && view.entries != NULL;
+    /* Do not carry output validity through a separate boolean variable. */
+    if (SIXEL_FAILED(status) ||
+            SIXEL_FAILED(palette->vtbl->get_entries_float32(palette, &view)) ||
+            view.entry_count != 2 || view.entries == NULL) {
+        return 0;
+    }
+    ok = 1;
     for (row = 0; ok && row < 2u; ++row) {
         position = (double)view.entries[row * 3] / 1073741824.0;
         ok = isfinite(position) && position >= -64.0 && position <= 63.0 &&

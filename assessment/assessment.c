@@ -80,6 +80,7 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "environment.h"
 #include "color.h"
 #include "scielab.h"
 #include "encoder.h"
@@ -4065,13 +4066,15 @@ assessment_emit_color_context(sixel_assessment_t *assessment,
 {
     char escaped[SIXEL_ASSESSMENT_PATH_CAPACITY * 6 + 1];
     char line[SIXEL_ASSESSMENT_PATH_CAPACITY * 6 + 1024];
-    char const *cms;
+    char *cms;
     int i;
     int n;
 
-    cms = getenv("SIXEL_LOADER_CMS_ENGINE");
-    if (assessment_escape_json(cms == NULL ? "auto" : cms,
-                               escaped, sizeof(escaped)) != 0) {
+    cms = lsqa_getenv_dup("SIXEL_LOADER_CMS_ENGINE");
+    n = assessment_escape_json(cms == NULL ? "auto" : cms,
+                               escaped, sizeof(escaped));
+    free(cms);
+    if (n != 0) {
         return SIXEL_BAD_ARGUMENT;
     }
     n = snprintf(line, sizeof(line),

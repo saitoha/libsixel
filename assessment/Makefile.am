@@ -87,6 +87,7 @@ lsqa_SOURCES = $(srcdir)/lsqa.c \
                $(srcdir)/video.h \
                $(srcdir)/color.h \
                $(srcdir)/assessment.h \
+               $(srcdir)/environment.h \
                $(top_srcdir)/converters/cli.c
 lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
                 -I$(top_srcdir)/include \

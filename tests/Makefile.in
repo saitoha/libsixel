@@ -23804,6 +23804,10 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-emscripten-coverage.sh \
 	_static/sh/staticcheck-c-test-stdio.sh \
 	_static/awk/c-test-stdio.awk \
+	_static/sh/staticcheck-assessment-getenv.sh \
+	_static/awk/assessment-getenv.awk \
+	_static/sh/staticcheck-metal-stream.sh \
+	tools/metal/data/chunk-boundary.metal \
 	_support/codec/retained_rows_common.h \
 	_support/codec/retained_workers_common.h \
 	_support/codec/retained_component_common.h

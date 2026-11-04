@@ -1,11 +1,14 @@
 #!/bin/sh
 # Policy: docs/build/support-scripts.md
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-26
 # A source newline crossing the literal limit starts a second array element.
 set -eux
 echo '1..1'
 set -v
-actual=$(printf '%1024s\n' '' |
-    sh "$TOP_SRCDIR/tools/embed-metal.sh" - -) || {
+# The finite fixture closes at EOF even on GNV's record-oriented streams.
+actual=$(sh "$TOP_SRCDIR/tools/embed-metal.sh" \
+    "$TOP_SRCDIR/tests/tools/metal/data/chunk-boundary.metal" -) || {
     echo 'not ok 1 - Metal literal generation failed'
     exit 0
 }

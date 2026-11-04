@@ -11,7 +11,10 @@ source=$1
 output=$2
 # Stream mode lets callers inspect literal bytes without temporary files.
 if test "$output" = -; then
-    LC_ALL=C exec "${AWK:-awk}" -f "${0%/*}/embed-metal.awk" "$source"
+    # GNV exec can return after a native image; terminate explicitly instead
+    # of falling through to publication with a literal '-' output filename.
+    LC_ALL=C "${AWK:-awk}" -f "${0%/*}/embed-metal.awk" "$source"
+    exit $?
 fi
 directory=${output%/*}
 test "$directory" != "$output" || directory=.

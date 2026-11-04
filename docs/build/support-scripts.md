@@ -47,6 +47,8 @@ Autotools and Meson express the source and generator dependencies before compili
 
 The encoder preserves quotes, backslashes and trigraph spelling and divides text into literals of at most 1024 bytes, below the C99 minimum supported limit. Source files end with a newline. The focused tests below exercise one fixed input each; existing GPU execution tests validate the resulting programs on supported devices.
 
+An output argument of `-` selects stdout and explicitly exits with the encoder status before any file publication. A native-image `exec` can return to the GNV shell, so it cannot enforce this boundary. The chunk-boundary test reads a tracked 1024-byte line plus newline, preserving finite EOF without a shell producer; the escaping test separately covers stdin. The source-only literal check decodes the generator's supported C escapes and counts adjacent literals up to each comma. It rejects oversized chunks and malformed spellings without requiring a compiler; native builds still validate the complete generated C representation.
+
 
 ## Meson compiler adapters
 
@@ -162,4 +164,5 @@ This coverage concerns Metal source embedding. The existing platform adapters re
 | --- | --- | --- |
 | METAL-01 | C escaping preserves Metal spelling. | [tests/tools/metal/0001_literal_escaping.t](../../tests/tools/metal/0001_literal_escaping.t) |
 | METAL-02 | A source newline beyond the chunk boundary starts a second literal. | [tests/tools/metal/0002_literal_chunk_boundary.t](../../tests/tools/metal/0002_literal_chunk_boundary.t) |
-| METAL-03 | A real shader larger than the C99 minimum compiles as embedded literals. | [tests/_static/sh/staticcheck-metal-source-literal-length.sh](../../tests/_static/sh/staticcheck-metal-source-literal-length.sh) |
+| METAL-03 | A real shader larger than the C99 minimum produces C literals bounded to 1024 decoded bytes, including adjacent quoted lines; controls reject an overlong chunk and unsupported escapes. | [tests/_static/sh/staticcheck-metal-source-literal-length.sh](../../tests/_static/sh/staticcheck-metal-source-literal-length.sh) |
+| METAL-04 | Stdout mode terminates with the encoder status before file publication, without relying on native-image exec. | [tests/_static/sh/staticcheck-metal-stream.sh](../../tests/_static/sh/staticcheck-metal-stream.sh) |

@@ -1,5 +1,7 @@
 #!/bin/sh
 # Policy: docs/build/support-scripts.md
+# Policy: docs/misc/platforms/openvms.md
+# Coverage: OV-26
 # Quotes, backslashes and trigraph spelling must survive C compilation.
 set -eux
 echo '1..1'

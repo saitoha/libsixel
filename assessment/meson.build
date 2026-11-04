@@ -18,6 +18,7 @@ lsqa_sources = ['lsqa.c',
                 'video.h',
                 'color.h',
                 'assessment.h',
+                'environment.h',
                 '../converters/cli.c']
 lsqa_dependencies = lsqa_deps
 lsqa_c_args = lsqa_args
