@@ -25,6 +25,8 @@ meson test -C builddir --suite tap --print-errorlogs
 
 Feature options use `enabled`, `disabled`, or `auto` where declared as Meson feature values; boolean options such as `tests` and `amalgamated_lib` use `true` or `false`. Do not translate an Autotools spelling mechanically. The complete list is in [build.md](../../build.md#meson-build-options), and `meson configure builddir` shows the selected configuration.
 
+MSVC and clang-cl use `b_vscrt=md` by default, including `buildtype=plain`. Meson's `from_buildtype` value omits CRT flags for a plain build, allowing separate static CRT instances in the DLL and executable. Shared and both-library configurations therefore link a small probe requiring `_DLL`; a compile-only probe does not receive Meson's CRT selection flags. An incompatible explicit override fails setup with guidance to select a shared CRT or a static libsixel archive. Existing build directories can select the default explicitly with `meson configure builddir -Db_vscrt=md`. The [MSVC reference](../misc/platforms/msvc.md#toolchain-and-crt-contract) owns stream and allocation ownership across the DLL boundary.
+
 ## Generated inputs and dependencies
 
 The root build generates the embedded completion header once, before converters and optional amalgamation consume it. When `amalgamated_lib` or `amalgamated_tools` is enabled, [amalgamation/meson.build](../../amalgamation/meson.build) invokes the shared generator. [src/meson.build](../../src/meson.build) then chooses the normal or amalgamated library inputs, while [converters/meson.build](../../converters/meson.build) chooses the converter inputs.
@@ -68,6 +70,8 @@ Automatic C source discovery does not create a C dispatch-table entry or a TAP w
 ## Static checks, installed commands, and documentation
 
 The [tests/_static/sh/staticcheck-test-runner-link.sh](../../tests/_static/sh/staticcheck-test-runner-link.sh) source check rejects flattening the case archive into the executable, losing whole-archive linking, or diverging compile dependencies. It tests mutations of the production graph without compiling C; actual archive creation and linking remain build observations.
+
+The [tests/_static/sh/staticcheck-msvc-shared-crt.sh](../../tests/_static/sh/staticcheck-msvc-shared-crt.sh) source check protects the CRT default and the shared-build link probe, including both MSVC-style compilers and fatal failure propagation. It does not execute Windows stream operations or validate external consumers' CRT choices.
 
 The `staticcheck` run target invokes the shared `tests/_static/sh/staticcheck-suite.sh`. The source-level invariant set is shared, but checks that require configured Autotools Makefiles can skip in a Meson build. That is a coverage boundary, not proof that a skipped compiler or linkage contract passed.
 

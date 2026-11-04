@@ -837,6 +837,30 @@ AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 SIXEL_COMPARE_SETUP
 LT_INIT
 
+# A DLL and its callers exchange FILE pointers and allocated memory. Separate
+# static CRT instances cannot own those resources on each other's behalf.
+AS_IF([test "x$using_cl" = xyes && test "x$enable_shared" = xyes], [
+  sixel_msvc_crt_selected=no
+  for sixel_crt_flag in $CPPFLAGS $CFLAGS; do
+    case "$sixel_crt_flag" in
+      -MD|-MDd|/MD|/MDd|-MT|-MTd|/MT|/MTd)
+        sixel_msvc_crt_selected=yes ;;
+    esac
+  done
+  AS_IF([test "x$sixel_msvc_crt_selected" = xno], [
+    CFLAGS="$CFLAGS -MD"
+  ])
+  AC_MSG_CHECKING([whether shared MSVC builds use the shared CRT])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifndef _DLL
+#error A shared libsixel requires the shared MSVC CRT
+#endif
+  ]], [[]])], [AC_MSG_RESULT([yes])], [
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([shared libsixel requires -MD or -MDd matching its consumers; use --disable-shared for a static CRT])
+  ])
+])
+
 # Passing thousands of ordinary objects through Libtool's shell argument
 # processing is expensive. Probe the compiler's response-file grammar by
 # linking a referenced object; accepting an unused option is not sufficient.

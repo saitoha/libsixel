@@ -1075,6 +1075,14 @@ run_case_tap "staticcheck-assessment-getenv" \
     sh "$src_root/tests/_static/sh/staticcheck-assessment-getenv.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-msvc-shared-crt" \
+    sh "$src_root/tests/_static/sh/staticcheck-msvc-shared-crt.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-configured-pkg-config" \
+    sh "$src_root/tests/_static/sh/staticcheck-configured-pkg-config.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-metal-stream" \
     sh "$src_root/tests/_static/sh/staticcheck-metal-stream.sh" \
     "$src_root" || fail_and_exit $?

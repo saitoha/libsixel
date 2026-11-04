@@ -14373,9 +14373,10 @@ SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null 
 # wrappers can resolve cross-built Windows binaries under Wine.
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; CKSUM='$(CKSUM)'; export CKSUM; \
-	TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; export TOP_SRCDIR; \
-	TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR; \
-	$(am__append_1) $(am__append_2) \
+	SIXEL_TEST_PKG_CONFIG='$(PKG_CONFIG)'; export \
+	SIXEL_TEST_PKG_CONFIG; TOP_SRCDIR='$(SIXEL_TEST_TOP_SRCDIR)'; \
+	export TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
+	TOP_BUILDDIR; $(am__append_1) $(am__append_2) \
 	QUICKLOOK_HOST_SYSTEM='@host_os@'; export \
 	QUICKLOOK_HOST_SYSTEM; \
 	QUICKLOOK_PLIST_DIR='$(abs_top_builddir)/quicklook-extension/generated-resources'; \
@@ -24053,6 +24054,8 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/awk/assessment-getenv.awk \
 	_static/sh/staticcheck-metal-stream.sh \
 	tools/metal/data/chunk-boundary.metal \
+	_static/sh/staticcheck-msvc-shared-crt.sh \
+	_static/sh/staticcheck-configured-pkg-config.sh \
 	_support/codec/retained_rows_common.h \
 	_support/codec/retained_workers_common.h \
 	_support/codec/retained_component_common.h

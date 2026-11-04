@@ -27,6 +27,8 @@ C implementations behind TAP wrappers, common language helpers, fixture payloads
 
 The runtime case list does not require `find` or Python. [list-tree-files.sh](../../build-aux/list-tree-files.sh) handles recursive support-source discovery for amalgamation, binding signatures and cleanup; it skips symlink directories and private artifact trees. [list-test-reports.sh](../../build-aux/list-test-reports.sh) enumerates reports at the fixed case depth. Normal static checks use the shared [shell source inventory](../../tests/_static/sh/list-source-files.sh), which reports traversal errors and bounds command batches without requiring Python.
 
+The pkg-config metadata test invokes `SIXEL_TEST_PKG_CONFIG`, preserving the configured command as one quoted path. Autotools supplies `PKG_CONFIG`; Meson finds an optional build-machine tool and checks `--version` through the test shell before exporting its exact path. An absent or unusable optional tool leaves this test skipped, while a selected tool's failure to resolve `libsixel.pc` remains a test failure. A fresh PATH lookup can select a different Windows shim or Perl interpreter from the one validated during setup, so the TAP script does not repeat discovery.
+
 ## Autotools execution path
 
 The current [tests/Makefile.am](../../tests/Makefile.am) overrides Automake's `check-TESTS` recipe. Its work can be read as five stages:
@@ -290,5 +292,7 @@ Configure places the fallback on its command search path before Libtool checks. 
 | TH-33 | A staged install exposes headers through its pkg-config metadata and compiles a consumer using the configured native tools, including shell-launched APE tools where required. | [tests/build/install/0001_pkgconfig_headers.py](../../tests/build/install/0001_pkgconfig_headers.py) |
 | TH-34 | The default-destination and presentation capture tests write through a borrowed temporary-stream descriptor and read the captured bytes before closing the owning stream. | [tests/encoder/progressive-refinement/0070_public_default_destination.t](../../tests/encoder/progressive-refinement/0070_public_default_destination.t), [tests/encoder/progressive-refinement/0074_still_capture_history.t](../../tests/encoder/progressive-refinement/0074_still_capture_history.t) |
 | TH-35 | Assessment consumers use the environment snapshot adapter in both executable and C-runner compilations. | [tests/_static/sh/staticcheck-assessment-getenv.sh](../../tests/_static/sh/staticcheck-assessment-getenv.sh) |
+| TH-36 | The metadata test receives and invokes the configured pkg-config command, with a shell usability probe in Meson and no repeated PATH discovery in the test. | [tests/_static/sh/staticcheck-configured-pkg-config.sh](../../tests/_static/sh/staticcheck-configured-pkg-config.sh) |
+| TH-37 | A selected pkg-config resolves the generated metadata and private requirements; absence is reported separately as a skip. | [tests/build/pkgconfig/0001_libsixel_pc_resolves.t](../../tests/build/pkgconfig/0001_libsixel_pc_resolves.t) |
 
 The discovery checks execute production make assignments and the OpenVMS list recipe with tiny source trees in separate build directories. Each file owns one observation. They do not invoke configure, compile the C dispatcher, or reproduce GNV/RMS behavior; native OpenVMS execution remains a platform validation boundary.

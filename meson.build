@@ -26,12 +26,25 @@ project('libsixel',
         license: 'MIT',
         default_options: [
             'buildtype=plain',
+            'b_vscrt=md',
             'c_std=c99',
             'warning_level=3'
         ])
 
 host_system = host_machine.system()
 cc = meson.get_compiler('c')
+# Streams and allocated memory cross the libsixel DLL boundary. Plain builds
+# otherwise omit CRT flags and silently give each module a private static CRT.
+if ['msvc', 'clang-cl'].contains(cc.get_id()) and get_option('default_library') != 'static'
+  if not cc.links('''
+    #ifndef _DLL
+    #error A shared libsixel requires the shared MSVC CRT
+    #endif
+    int main(void) { return 0; }
+    ''', name: 'shared MSVC CRT for DLL consumers')
+    error('Shared libsixel requires b_vscrt=md or mdd (matching its consumers); use default_library=static for a static CRT')
+  endif
+endif
 fs = import('fs')
 conf = configuration_data()
 have_objc = add_languages('objc', required: false, native: false)

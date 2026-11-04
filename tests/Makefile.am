@@ -71,6 +71,7 @@ SIXEL_INSTALLCHECK ?= 0
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
 AM_TESTS_ENVIRONMENT += CKSUM='$(CKSUM)'; export CKSUM;
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_PKG_CONFIG='$(PKG_CONFIG)'; export SIXEL_TEST_PKG_CONFIG;
 # The static suite and nested helpers need the same configured utility.
 export CKSUM
 # MSYS automatic argv conversion cannot find filenames inside icc:... or
@@ -11717,6 +11718,9 @@ EXTRA_DIST += _static/sh/staticcheck-assessment-getenv.sh \
     _static/awk/assessment-getenv.awk \
     _static/sh/staticcheck-metal-stream.sh \
     tools/metal/data/chunk-boundary.metal
+
+EXTRA_DIST += _static/sh/staticcheck-msvc-shared-crt.sh \
+    _static/sh/staticcheck-configured-pkg-config.sh
 
 EXTRA_DIST += _support/codec/retained_rows_common.h
 

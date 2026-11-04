@@ -158,6 +158,8 @@ The MSVC complete-build check protects the [CI diagnostic policy](../ci/design.m
 
 The independent assessment environment check rejects direct `getenv` calls in assessment C sources and headers, excluding only the private snapshot adapter. Its controls distinguish calls across lines and comments from adapters and inert text. The [test harness](../build/test-harness.md#test-coverage) owns this shared-compilation boundary. A separate Metal stream check verifies the generator's owned stdout branch: it must invoke the encoder without `exec` and immediately exit with its status. Controls reject a missing exit, forced success, exec-based termination and intervening file publication. The [support-script reference](../build/support-scripts.md#embedded-metal-sources) owns the GNV execution boundary. Both checks use shell/awk without a target compiler or Python.
 
+The independent MSVC shared-CRT check protects Meson's explicit default and fatal link probe, together with Autotools' shared-build default and effective-flag probe, for the [DLL ownership contract](../misc/platforms/msvc.md#toolchain-and-crt-contract). Controls reject an implicit build-type default, missing clang-cl coverage, a compile-only Meson probe, an inverted `_DLL` condition and warning-only failure handling. A separate configured-pkg-config check protects both build-system exports, the shell usability probe and the TAP invocation; controls reject bare-command rediscovery and reversed or missing configuration. These checks inspect the owned source forms with shell/awk, without executing a compiler or pkg-config. Native Windows runtime tests remain necessary to establish actual CRT interoperability.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -231,6 +233,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-55 | MSVC CI builds retain the complete diagnostic target set, unlimited independent failure collection, and immediate failure propagation in both stages. | [tests/_static/sh/staticcheck-ci-msvc-complete-build.sh](../../tests/_static/sh/staticcheck-ci-msvc-complete-build.sh) |
 | SC-56 | Assessment environment consumers use the owned snapshot adapter; controls reject direct and continued calls while accepting inert comments, literals and adapter calls. | [tests/_static/sh/staticcheck-assessment-getenv.sh](../../tests/_static/sh/staticcheck-assessment-getenv.sh) |
 | SC-57 | Metal stdout generation exits with the encoder status before file publication even on shells where native-image exec returns. | [tests/_static/sh/staticcheck-metal-stream.sh](../../tests/_static/sh/staticcheck-metal-stream.sh) |
+| SC-58 | MSVC-style shared builds retain the shared CRT default and reject incompatible effective compiler settings during setup. | [tests/_static/sh/staticcheck-msvc-shared-crt.sh](../../tests/_static/sh/staticcheck-msvc-shared-crt.sh) |
+| SC-59 | The pkg-config metadata test retains configured tool selection and invocation across both build systems. | [tests/_static/sh/staticcheck-configured-pkg-config.sh](../../tests/_static/sh/staticcheck-configured-pkg-config.sh) |
 
 ### Coverage boundary
 

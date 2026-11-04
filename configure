@@ -15995,6 +15995,57 @@ CC=$lt_save_CC
 
 
 
+# A DLL and its callers exchange FILE pointers and allocated memory. Separate
+# static CRT instances cannot own those resources on each other's behalf.
+if test "x$using_cl" = xyes && test "x$enable_shared" = xyes
+then :
+
+  sixel_msvc_crt_selected=no
+  for sixel_crt_flag in $CPPFLAGS $CFLAGS; do
+    case "$sixel_crt_flag" in
+      -MD|-MDd|/MD|/MDd|-MT|-MTd|/MT|/MTd)
+        sixel_msvc_crt_selected=yes ;;
+    esac
+  done
+  if test "x$sixel_msvc_crt_selected" = xno
+then :
+
+    CFLAGS="$CFLAGS -MD"
+
+fi
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether shared MSVC builds use the shared CRT" >&5
+printf %s "checking whether shared MSVC builds use the shared CRT... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifndef _DLL
+#error A shared libsixel requires the shared MSVC CRT
+#endif
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+    as_fn_error $? "shared libsixel requires -MD or -MDd matching its consumers; use --disable-shared for a static CRT" "$LINENO" 5
+   ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+
 # Passing thousands of ordinary objects through Libtool's shell argument
 # processing is expensive. Probe the compiler's response-file grammar by
 # linking a referenced object; accepting an unused option is not sufficient.

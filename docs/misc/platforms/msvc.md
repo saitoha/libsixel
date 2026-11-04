@@ -8,6 +8,10 @@ This document owns `_MSC_VER`, `_MT`, and `_USE_32BIT_TIME_T` behavior for MSVC 
 
 Autotools detects an MSVC-style compiler before generic compiler discovery, infers the Windows-MSVC host when the user did not supply one, and chooses the matching `link`, `lib` through `ar-lib`, `dumpbin`, strip, and ranlib behavior. Reordering that inference behind `AC_PROG_CC` can make configure select Unix companion tools or misclassify compiler diagnostics.
 
+The libsixel DLL and its consumers must share the same CRT when exchanging `FILE *`, descriptors or allocations. Separate static CRT instances retain separate stream state even when built by the same compiler; passing a stream from a compatibility adapter to the caller's `fread`, `fwrite` or `fclose` can terminate the process. Use matching `/MD` or `/MDd` settings across this boundary, as described by Microsoft's [CRT object ownership guidance](https://learn.microsoft.com/cpp/c-runtime-library/potential-errors-passing-crt-objects-across-dll-boundaries). A static libsixel archive can instead join a consumer's static CRT. [Meson](../../build/meson.md#independent-configuration) defaults to the shared CRT and checks the effective `_DLL` compiler definition for shared-library configurations.
+
+Autotools adds `-MD` for a shared MSVC-style build when `CPPFLAGS` and `CFLAGS` contain no explicit CRT selection. It then compiles an `_DLL` probe with the effective flags and rejects incompatible overrides. `--disable-shared` permits a static CRT; the probe applies equally to cl and clang-cl through the existing compiler-mode detection.
+
 The secure CRT formatting adapter is a deliberate two-pass implementation: `_vscprintf` determines the required size and `_vsnprintf_s` performs the bounded write. File, temporary-name, local-time, and open wrappers use the secure CRT signatures instead of relying on POSIX prototypes that MSVC does not expose.
 
 `sixel_compat_tmpfile()` reserves a name in the user's temporary directory with the wide Windows APIs and opens it with `_wfopen_s` in binary update mode with deletion on final close. It avoids `tmpfile_s`, which creates files in the drive root and can require administrator privileges. A failed open removes the reserved file. Callers obtain descriptors through `sixel_fileno()` and retain stream ownership, as described by the [test harness](../../build/test-harness.md#shared-discovery-and-c-test-dispatch).
@@ -34,6 +38,7 @@ Analyzer-driven initialization and casts should be retained when they make owner
 | MSVC-01 | MSVC intent is inferred before generic compiler discovery and retains its companion-tool defaults. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 | MSVC-02 | Secure formatting, `stat` layout selection, and CRT-aware thread startup retain their MSVC-specific calls. | [tests/_static/sh/staticcheck-platform-compat.sh](../../../tests/_static/sh/staticcheck-platform-compat.sh) |
 | MSVC-03 | Default-output capture can create, write and read a temporary stream through the compatibility adapters; Windows execution exercises the user-temporary-directory branch. | [tests/encoder/progressive-refinement/0070_public_default_destination.t](../../../tests/encoder/progressive-refinement/0070_public_default_destination.t) |
+| MSVC-04 | Both build systems retain shared CRT defaults and reject shared-library configurations without the effective `_DLL` definition for MSVC and clang-cl. | [tests/_static/sh/staticcheck-msvc-shared-crt.sh](../../../tests/_static/sh/staticcheck-msvc-shared-crt.sh) |
 
 ### Coverage boundary
 

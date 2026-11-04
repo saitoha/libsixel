@@ -1,4 +1,16 @@
 sh = find_program('sh')
+# Validate the exact test tool through the shell that will invoke it. In a
+# native Windows job, another PATH lookup can select a Perl pkg-config shim
+# whose interpreter differs from the one used during setup.
+test_pkg_config = find_program('pkg-config', 'pkgconf', native: true, required: false)
+test_pkg_config_path = ''
+if test_pkg_config.found()
+  test_pkg_config_probe = run_command(sh, '-c', '"$1" --version',
+    'test-pkg-config', test_pkg_config.full_path(), check: false)
+  if test_pkg_config_probe.returncode() == 0
+    test_pkg_config_path = test_pkg_config.full_path()
+  endif
+endif
 cp_cmd = find_program('cp', required: true)
 cksum_prog = find_program('cksum', 'cksum.exe', required: true)
 actionlint_prog = find_program('actionlint', required: false)
@@ -85,6 +97,7 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 endif
 
 base_env_settings = [
+  ['SIXEL_TEST_PKG_CONFIG', test_pkg_config_path],
   ['CKSUM', cksum_prog.full_path()],
   ['ARTIFACT_ROOT', artifact_root],
   ['TOP_SRCDIR', meson.project_source_root()],
