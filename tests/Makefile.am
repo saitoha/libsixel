@@ -236,6 +236,43 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_GPU_ROWS_COMMON \
+    -DBUILD_GPU_ROWS_APPLY_COMMON \
+    -DBUILD_TEST_0160_GPU_ROWS_INVALID_LATER \
+    -DBUILD_TEST_0161_GPU_ROWS_APPLY_VISIBLE \
+    -DBUILD_TEST_0162_GPU_ROWS_APPLY_FAILED \
+    -DBUILD_TEST_0128_GPU_ROWS_VPTREE_INDEXES \
+    -DBUILD_TEST_0129_GPU_ROWS_ORDERED_INDEXES \
+    -DBUILD_TEST_0130_GPU_ROWS_RBC_INDEXES \
+    -DBUILD_TEST_0131_GPU_ROWS_MAHALANOBIS_INDEXES \
+    -DBUILD_TEST_0132_GPU_ROWS_CERTLUT_INDEXES \
+    -DBUILD_TEST_0133_GPU_ROWS_PREFIX_ORDER \
+    -DBUILD_TEST_0134_GPU_ROWS_PREFIX_IMMUTABLE \
+    -DBUILD_TEST_0135_GPU_ROWS_WINDOW_BOUND \
+    -DBUILD_TEST_0136_GPU_ROWS_TWELVE \
+    -DBUILD_TEST_0137_GPU_ROWS_BLUENOISE_EQUIVALENCE \
+    -DBUILD_TEST_0138_GPU_ROWS_DELTA_MASK \
+    -DBUILD_TEST_0139_GPU_ROWS_TRANSPARENCY \
+    -DBUILD_TEST_0140_GPU_ROWS_CANCEL_BEFORE \
+    -DBUILD_TEST_0141_GPU_ROWS_CANCEL_DRAIN \
+    -DBUILD_TEST_0142_GPU_ROWS_CALLBACK_FAILURE \
+    -DBUILD_TEST_0143_GPU_ROWS_COMPLETION_FAILURE \
+    -DBUILD_TEST_0144_GPU_ROWS_SUBMISSION_FAILURE \
+    -DBUILD_TEST_0145_GPU_ROWS_FAILED_REUSE \
+    -DBUILD_TEST_0146_GPU_ROWS_NO_CALLBACK \
+    -DBUILD_TEST_0147_GPU_ROWS_ZERO_CHUNK \
+    -DBUILD_TEST_0148_GPU_ROWS_LARGE_CHUNK \
+    -DBUILD_TEST_0149_GPU_ROWS_LEGACY_WHOLE \
+    -DBUILD_TEST_0150_GPU_ROWS_CONCURRENT \
+    -DBUILD_TEST_0151_GPU_PUBLISH_PREFIX \
+    -DBUILD_TEST_0152_GPU_PUBLISH_FINAL \
+    -DBUILD_TEST_0153_GPU_PUBLISH_BACKWARDS \
+    -DBUILD_TEST_0154_GPU_PUBLISH_BOUNDS \
+    -DBUILD_TEST_0155_GPU_PUBLISH_FAILED \
+    -DBUILD_TEST_0156_GPU_ROW_GEOMETRY_SMALL \
+    -DBUILD_TEST_0157_GPU_ROW_GEOMETRY_SHORT \
+    -DBUILD_TEST_0158_GPU_ROW_GEOMETRY_ZOOM \
+    -DBUILD_TEST_0159_GPU_ROW_GEOMETRY_ODD \
     -DBUILD_RETAINED_COMPONENT_COMMON \
     -DBUILD_RETAINED_ROWS_COMMON \
     -DBUILD_RETAINED_WORKERS_COMMON \
@@ -6696,6 +6733,43 @@ test_runner_SOURCES = test_runner.c \
     encoder/indexed/0084_cpu_palette_snapshot.c \
     encoder/indexed/0081_invalid_gpu_index.c \
     _support/processing/gpu-palette/injected_program_common.c \
+    _support/processing/gpu-palette/gpu_rows_common.c \
+    _support/processing/gpu-palette/gpu_rows_apply_common.c \
+    encoder/indexed/0160_gpu_rows_invalid_later.c \
+    encoder/indexed/0161_gpu_rows_apply_visible.c \
+    encoder/indexed/0162_gpu_rows_apply_failed.c \
+    encoder/indexed/0128_gpu_rows_vptree_indexes.c \
+    encoder/indexed/0129_gpu_rows_ordered_indexes.c \
+    encoder/indexed/0130_gpu_rows_rbc_indexes.c \
+    encoder/indexed/0131_gpu_rows_mahalanobis_indexes.c \
+    encoder/indexed/0132_gpu_rows_certlut_indexes.c \
+    encoder/indexed/0133_gpu_rows_prefix_order.c \
+    encoder/indexed/0134_gpu_rows_prefix_immutable.c \
+    encoder/indexed/0135_gpu_rows_window_bound.c \
+    encoder/indexed/0136_gpu_rows_twelve.c \
+    encoder/indexed/0137_gpu_rows_bluenoise_equivalence.c \
+    encoder/indexed/0138_gpu_rows_delta_mask.c \
+    encoder/indexed/0139_gpu_rows_transparency.c \
+    encoder/indexed/0140_gpu_rows_cancel_before.c \
+    encoder/indexed/0141_gpu_rows_cancel_drain.c \
+    encoder/indexed/0142_gpu_rows_callback_failure.c \
+    encoder/indexed/0143_gpu_rows_completion_failure.c \
+    encoder/indexed/0144_gpu_rows_submission_failure.c \
+    encoder/indexed/0145_gpu_rows_failed_reuse.c \
+    encoder/indexed/0146_gpu_rows_no_callback.c \
+    encoder/indexed/0147_gpu_rows_zero_chunk.c \
+    encoder/indexed/0148_gpu_rows_large_chunk.c \
+    encoder/indexed/0149_gpu_rows_legacy_whole.c \
+    encoder/indexed/0150_gpu_rows_concurrent.c \
+    encoder/indexed/0151_gpu_publish_prefix.c \
+    encoder/indexed/0152_gpu_publish_final.c \
+    encoder/indexed/0153_gpu_publish_backwards.c \
+    encoder/indexed/0154_gpu_publish_bounds.c \
+    encoder/indexed/0155_gpu_publish_failed.c \
+    encoder/indexed/0156_gpu_row_geometry_small.c \
+    encoder/indexed/0157_gpu_row_geometry_short.c \
+    encoder/indexed/0158_gpu_row_geometry_zoom.c \
+    encoder/indexed/0159_gpu_row_geometry_odd.c \
     encoder/indexed/0074_auto_unsupported_fallback.c \
     encoder/indexed/0075_force_unsupported_no_fallback.c \
     encoder/indexed/0076_runtime_no_fallback.c \
@@ -11764,3 +11838,5 @@ EXTRA_DIST += _support/codec/retained_rows_common.h
 
 EXTRA_DIST += _support/codec/retained_workers_common.h \
     _support/codec/retained_component_common.h
+
+EXTRA_DIST += _support/processing/gpu-palette/gpu_rows_common.h

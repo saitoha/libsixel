@@ -40,6 +40,9 @@ sixel_indexed_frame_publish_applied(sixel_indexed_frame_t *image, int rows);
  * pluggable-policy output must use the validating publication path. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_indexed_frame_publish_gpu(sixel_indexed_frame_t *image);
+/* Only completed ranges validated by the fixed GPU consumer qualify. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_indexed_frame_publish_gpu_rows(sixel_indexed_frame_t *image, int rows);
 SIXEL_INTERNAL_API void
 sixel_indexed_frame_fail(sixel_indexed_frame_t *image);
 SIXEL_INTERNAL_API SIXELSTATUS

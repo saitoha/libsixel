@@ -428,18 +428,30 @@ sixel_indexed_frame_publish_applied(sixel_indexed_frame_t *image, int rows)
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_indexed_frame_publish_gpu(sixel_indexed_frame_t *image)
+sixel_indexed_frame_publish_gpu_rows(sixel_indexed_frame_t *image, int rows)
 {
-    if (image == NULL || sixel_indexed_frame_get_state(image) !=
-            SIXEL_INDEXED_BUILDING ||
-            sixel_atomic_load_relaxed_i32(&image->rows) != 0) {
+    if (image == NULL || rows < 0 || rows > image->description.height) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (sixel_indexed_frame_get_state(image) != SIXEL_INDEXED_BUILDING ||
+            rows < sixel_atomic_load_relaxed_i32(&image->rows)) {
         return SIXEL_LOGIC_ERROR;
     }
-    /* The fixed kernel selected only validated palette entries and wrote
-     * skip coverage with each keep. No second CPU image scan is needed. */
+    /* The fixed kernel validated indexes and coverage for this completed
+     * prefix. Later GPU ranges cannot modify already published rows. */
     sixel_fence_release();
-    sixel_atomic_store_relaxed_i32(&image->rows, image->description.height);
+    sixel_atomic_store_relaxed_i32(&image->rows, rows);
     return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_indexed_frame_publish_gpu(sixel_indexed_frame_t *image)
+{
+    if (image == NULL || sixel_atomic_load_relaxed_i32(&image->rows) != 0) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    return sixel_indexed_frame_publish_gpu_rows(image,
+        image->description.height);
 }
 
 SIXEL_INTERNAL_API void

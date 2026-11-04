@@ -1573,6 +1573,41 @@ int test_indexed_gpu_lookup_preparation(int argc, char **argv);
 int test_delaunay_gpu_exact(int argc, char **argv);
 int test_delaunay_gpu_failure(int argc, char **argv);
 int test_gpupal_0023_ordered_exact(int argc, char **argv);
+int test_gpu_rows_vptree_indexes(int, char **);
+int test_gpu_rows_ordered_indexes(int, char **);
+int test_gpu_rows_rbc_indexes(int, char **);
+int test_gpu_rows_mahalanobis_indexes(int, char **);
+int test_gpu_rows_certlut_indexes(int, char **);
+int test_gpu_rows_prefix_order(int, char **);
+int test_gpu_rows_prefix_immutable(int, char **);
+int test_gpu_rows_window_bound(int, char **);
+int test_gpu_rows_twelve(int, char **);
+int test_gpu_rows_bluenoise_equivalence(int, char **);
+int test_gpu_rows_delta_mask(int, char **);
+int test_gpu_rows_transparency(int, char **);
+int test_gpu_rows_cancel_before(int, char **);
+int test_gpu_rows_cancel_drain(int, char **);
+int test_gpu_rows_callback_failure(int, char **);
+int test_gpu_rows_completion_failure(int, char **);
+int test_gpu_rows_submission_failure(int, char **);
+int test_gpu_rows_failed_reuse(int, char **);
+int test_gpu_rows_no_callback(int, char **);
+int test_gpu_rows_zero_chunk(int, char **);
+int test_gpu_rows_large_chunk(int, char **);
+int test_gpu_rows_legacy_whole(int, char **);
+int test_gpu_rows_concurrent(int, char **);
+int test_gpu_publish_prefix(int, char **);
+int test_gpu_publish_final(int, char **);
+int test_gpu_publish_backwards(int, char **);
+int test_gpu_publish_bounds(int, char **);
+int test_gpu_publish_failed(int, char **);
+int test_gpu_row_geometry_small(int, char **);
+int test_gpu_row_geometry_short(int, char **);
+int test_gpu_row_geometry_zoom(int, char **);
+int test_gpu_row_geometry_odd(int, char **);
+int test_gpu_rows_invalid_later(int, char **);
+int test_gpu_rows_apply_visible(int, char **);
+int test_gpu_rows_apply_failed(int, char **);
 int test_injected_gpu_program(int, char **);
 int test_vptree_force_no_cpu(int, char **);
 int test_mahalanobis_gpu_cell_boundaries(int, char **);
@@ -6227,6 +6262,76 @@ static test_entry_t const test_entries[] = {
     { "component/allocation_no_fallback", test_lookup_allocation_no_fallback },
     { "component/off_cpu_only", test_lookup_off_cpu_only },
     { "component/cutoff_cpu_only", test_lookup_cutoff_cpu_only },
+    { "component/gpu_rows_vptree_indexes",
+      test_gpu_rows_vptree_indexes },
+    { "component/gpu_rows_ordered_indexes",
+      test_gpu_rows_ordered_indexes },
+    { "component/gpu_rows_rbc_indexes",
+      test_gpu_rows_rbc_indexes },
+    { "component/gpu_rows_mahalanobis_indexes",
+      test_gpu_rows_mahalanobis_indexes },
+    { "component/gpu_rows_certlut_indexes",
+      test_gpu_rows_certlut_indexes },
+    { "component/gpu_rows_prefix_order",
+      test_gpu_rows_prefix_order },
+    { "component/gpu_rows_prefix_immutable",
+      test_gpu_rows_prefix_immutable },
+    { "component/gpu_rows_window_bound",
+      test_gpu_rows_window_bound },
+    { "component/gpu_rows_twelve",
+      test_gpu_rows_twelve },
+    { "component/gpu_rows_bluenoise_equivalence",
+      test_gpu_rows_bluenoise_equivalence },
+    { "component/gpu_rows_delta_mask",
+      test_gpu_rows_delta_mask },
+    { "component/gpu_rows_transparency",
+      test_gpu_rows_transparency },
+    { "component/gpu_rows_cancel_before",
+      test_gpu_rows_cancel_before },
+    { "component/gpu_rows_cancel_drain",
+      test_gpu_rows_cancel_drain },
+    { "component/gpu_rows_callback_failure",
+      test_gpu_rows_callback_failure },
+    { "component/gpu_rows_completion_failure",
+      test_gpu_rows_completion_failure },
+    { "component/gpu_rows_submission_failure",
+      test_gpu_rows_submission_failure },
+    { "component/gpu_rows_failed_reuse",
+      test_gpu_rows_failed_reuse },
+    { "component/gpu_rows_no_callback",
+      test_gpu_rows_no_callback },
+    { "component/gpu_rows_zero_chunk",
+      test_gpu_rows_zero_chunk },
+    { "component/gpu_rows_large_chunk",
+      test_gpu_rows_large_chunk },
+    { "component/gpu_rows_legacy_whole",
+      test_gpu_rows_legacy_whole },
+    { "component/gpu_rows_concurrent",
+      test_gpu_rows_concurrent },
+    { "component/gpu_publish_prefix",
+      test_gpu_publish_prefix },
+    { "component/gpu_publish_final",
+      test_gpu_publish_final },
+    { "component/gpu_publish_backwards",
+      test_gpu_publish_backwards },
+    { "component/gpu_publish_bounds",
+      test_gpu_publish_bounds },
+    { "component/gpu_publish_failed",
+      test_gpu_publish_failed },
+    { "component/gpu_row_geometry_small",
+      test_gpu_row_geometry_small },
+    { "component/gpu_row_geometry_short",
+      test_gpu_row_geometry_short },
+    { "component/gpu_row_geometry_zoom",
+      test_gpu_row_geometry_zoom },
+    { "component/gpu_row_geometry_odd",
+      test_gpu_row_geometry_odd },
+    { "component/gpu_rows_invalid_later",
+      test_gpu_rows_invalid_later },
+    { "component/gpu_rows_apply_visible",
+      test_gpu_rows_apply_visible },
+    { "component/gpu_rows_apply_failed",
+      test_gpu_rows_apply_failed },
     { "component/injected_gpu_program", test_injected_gpu_program },
     { "component/vptree_force_no_cpu", test_vptree_force_no_cpu },
     { "mahalanobis/gpu_cell_boundaries",

@@ -843,6 +843,204 @@ sixel_gpu_palette_metal_fill_params(
 #include "gpu-palette-fused-suffix.inc.h"
 #include "gpu-palette-program.inc.h"
 
+/* Commands own their encoded resources. Keep a bounded window alive until
+ * completion, including after producer cancellation or consumer failure.
+ * Per-slot validation flags prevent a later failed range from poisoning an
+ * earlier completed range. Slots occupy separate CPU cache lines. */
+#define SIXEL_GPU_RANGE_WINDOW 3
+#define SIXEL_GPU_RANGE_FLAG_STRIDE 256U
+
+typedef struct sixel_gpu_metal_dispatch {
+    id<MTLComputePipelineState> pipeline;
+    id<MTLBuffer> buffers[18];
+    int generic;
+    int gemm;
+    int blockcull;
+    int result_direct;
+} sixel_gpu_metal_dispatch_t;
+
+typedef struct sixel_gpu_metal_range {
+    id<MTLCommandBuffer> command;
+    int first;
+    int rows;
+    int completed;
+    unsigned int sequence;
+} sixel_gpu_metal_range_t;
+
+static SIXELSTATUS
+sixel_gpu_metal_apply_ranges(sixel_gpu_palette_request_t const *request,
+    sixel_gpu_metal_dispatch_t const *dispatch,
+    id<MTLCommandBuffer> initial_command,
+    id<MTLComputeCommandEncoder> initial_encoder)
+{
+    sixel_gpu_metal_range_t ranges[SIXEL_GPU_RANGE_WINDOW];
+    sixel_gpu_metal_range_t *range;
+    sixel_gpu_palette_test_hooks_t *hooks;
+    id<MTLCommandBuffer> command;
+    id<MTLComputeCommandEncoder> encoder;
+    NSUInteger threads;
+    NSUInteger count;
+    NSUInteger groups;
+    NSUInteger flag_offset;
+    uint32_t limits[2];
+    uint32_t *invalid;
+    size_t offset;
+    size_t length;
+    int streamed;
+    int chunk;
+    int next;
+    int head;
+    int pending;
+    int slot;
+    int i;
+    unsigned int submitted;
+    SIXELSTATUS status;
+
+    memset(ranges, 0, sizeof(ranges));
+    hooks = request->test_hooks;
+    streamed = dispatch->generic && request->rows_ready != NULL &&
+        request->rows_per_chunk > 0 &&
+        request->rows_per_chunk < request->height;
+    chunk = streamed ? request->rows_per_chunk : request->height;
+    next = head = pending = 0;
+    submitted = 0;
+    encoder = initial_encoder;
+    command = initial_command;
+    status = SIXEL_OK;
+    invalid = dispatch->generic ? [dispatch->buffers[17] contents] : NULL;
+    threads = [dispatch->pipeline maxTotalThreadsPerThreadgroup];
+    if (threads > 256U) threads = 256U;
+    if (dispatch->gemm) threads -= threads % 32U;
+    if (threads == 0U) threads = 1U;
+
+    while (next < request->height || pending != 0) {
+        while (next < request->height && pending < SIXEL_GPU_RANGE_WINDOW) {
+            if (request->cancel != NULL &&
+                    request->cancel(request->cancel_context)) {
+                status = SIXEL_INTERRUPTED;
+                goto end;
+            }
+            slot = (head + pending) % SIXEL_GPU_RANGE_WINDOW;
+            range = &ranges[slot];
+            range->first = next;
+            range->rows = request->height - next;
+            if (range->rows > chunk) range->rows = chunk;
+            range->completed = 0;
+            range->sequence = submitted;
+            if (submitted != 0) {
+                command = [g_sixel_gpu_metal_queue commandBuffer];
+                encoder = [command computeCommandEncoder];
+            }
+            if (command == nil || encoder == nil ||
+                    (hooks != NULL && hooks->fault == 2 &&
+                     hooks->fault_after_chunks == submitted)) {
+                status = SIXEL_RUNTIME_ERROR;
+                goto end;
+            }
+            [encoder setComputePipelineState:dispatch->pipeline];
+            for (i = 0; i < (dispatch->generic ? 18 : 16); ++i) {
+                flag_offset = i == 17
+                    ? (NSUInteger)slot * SIXEL_GPU_RANGE_FLAG_STRIDE : 0U;
+                [encoder setBuffer:dispatch->buffers[i]
+                    offset:flag_offset atIndex:(NSUInteger)i];
+            }
+            limits[0] = (uint32_t)((size_t)next * request->width);
+            limits[1] = (uint32_t)((size_t)range->rows * request->width);
+            count = limits[1];
+            if (dispatch->generic) {
+                /* The previous use of this slot has completed and released
+                 * its command before the CPU clears the validation flag. */
+                invalid[slot * (SIXEL_GPU_RANGE_FLAG_STRIDE / 4U)] = 0;
+                [encoder setBytes:limits length:sizeof(limits) atIndex:18];
+            }
+            if (dispatch->blockcull) {
+                count = (NSUInteger)((request->width + 7) / 8) *
+                    (NSUInteger)((request->height + 7) / 8) * 32U;
+            }
+            groups = (count + threads - 1U) / threads;
+            [encoder dispatchThreadgroups:MTLSizeMake(groups, 1U, 1U)
+                threadsPerThreadgroup:MTLSizeMake(threads, 1U, 1U)];
+            [encoder endEncoding];
+            encoder = nil;
+            range->command = [command retain];
+            [command commit];
+            ++submitted;
+            ++pending;
+            next += range->rows;
+            if (hooks != NULL) {
+                hooks->submitted_chunks = submitted;
+                if ((unsigned int)pending > hooks->peak_inflight) {
+                    hooks->peak_inflight = (unsigned int)pending;
+                }
+            }
+        }
+        range = &ranges[head];
+        [range->command waitUntilCompleted];
+        range->completed = 1;
+        if (hooks != NULL) ++hooks->completed_chunks;
+        if ([range->command status] != MTLCommandBufferStatusCompleted ||
+                (hooks != NULL && hooks->fault == 3 &&
+                 hooks->fault_after_chunks == range->sequence)) {
+            sixel_gpu_palette_metal_set_message(
+                "gpu palette apply: Metal command failed",
+                [range->command error]);
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
+        if (invalid != NULL &&
+                invalid[head * (SIXEL_GPU_RANGE_FLAG_STRIDE / 4U)] != 0) {
+            status = SIXEL_LOGIC_ERROR;
+            goto end;
+        }
+        if (request->cancel != NULL &&
+                request->cancel(request->cancel_context)) {
+            status = SIXEL_INTERRUPTED;
+            goto end;
+        }
+        offset = (size_t)range->first * request->width;
+        length = (size_t)range->rows * request->width;
+        if (!dispatch->result_direct) {
+            memcpy(request->dest + offset,
+                (unsigned char *)[dispatch->buffers[0] contents] + offset,
+                length);
+        }
+        if (request->accumulation_result_mask != NULL) {
+            memcpy(request->accumulation_result_mask + offset,
+                (unsigned char *)[dispatch->buffers[9] contents] + offset,
+                length);
+        }
+        if (streamed) {
+            /* The callback runs on the caller, never a Metal completion
+             * thread. It may block on CPU band backpressure; at most two
+             * later commands continue while this completed prefix is used. */
+            status = request->rows_ready(request->rows_context,
+                range->first + range->rows);
+            if (status != SIXEL_OK) goto end;
+            if (hooks != NULL) {
+                hooks->notified_rows =
+                    (unsigned int)(range->first + range->rows);
+            }
+        }
+        [range->command release];
+        range->command = nil;
+        head = (head + 1) % SIXEL_GPU_RANGE_WINDOW;
+        --pending;
+    }
+end:
+    /* Never return a borrowed buffer, finish a lookup lease, or recycle the
+     * shared backend scratch while any submitted command can still write. */
+    if (encoder != nil) [encoder endEncoding];
+    for (i = 0; i < SIXEL_GPU_RANGE_WINDOW; ++i) {
+        if (ranges[i].command == nil) continue;
+        [ranges[i].command waitUntilCompleted];
+        if (!ranges[i].completed && hooks != NULL) {
+            ++hooks->completed_chunks;
+        }
+        [ranges[i].command release];
+    }
+    return status;
+}
+
 SIXELSTATUS
 sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
 {
@@ -917,9 +1115,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
     NSUInteger build_stage;
     id<MTLComputePipelineState> builders[3];
     NSUInteger sort_width;
-    NSUInteger dispatched;
     int result_buffer_direct;
     int locked;
+    sixel_gpu_metal_dispatch_t dispatch;
 
     if (input == NULL) return SIXEL_BAD_ARGUMENT;
     local = *input;
@@ -1002,7 +1200,6 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
     fhedt_grid_size = 0U;
     lookup_buffer = nil;
     sort_width = 0U;
-    dispatched = 0U;
     result_buffer_direct = 0;
     locked = 0;
 
@@ -1030,6 +1227,10 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
             request->test_hooks->kernel = 0;
             request->test_hooks->rebuild = 0;
             request->test_hooks->published = 0;
+            request->test_hooks->submitted_chunks = 0;
+            request->test_hooks->completed_chunks = 0;
+            request->test_hooks->peak_inflight = 0;
+            request->test_hooks->notified_rows = 0;
             request->test_hooks->retained_rgb_upload_bytes = 0U;
             request->test_hooks->retained_valid_upload_bytes = 0U;
         }
@@ -1054,8 +1255,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
                 length:program_view->constants_size == 0
                     ? sizeof(zero) : program_view->constants_size
                 options:MTLResourceStorageModeShared];
-            invalid_buffer = [g_sixel_gpu_metal_device newBufferWithBytes:&zero
-                length:sizeof(zero) options:MTLResourceStorageModeShared];
+            invalid_buffer = [g_sixel_gpu_metal_device newBufferWithLength:
+                SIXEL_GPU_RANGE_WINDOW * SIXEL_GPU_RANGE_FLAG_STRIDE
+                options:MTLResourceStorageModeShared];
             if (configuration_buffer == nil || invalid_buffer == nil) {
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
@@ -1369,10 +1571,6 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
                 binding_view.needs_build ? "rebuild" : "reuse");
         }
 
-        if (request->test_hooks != NULL && request->test_hooks->fault == 2) {
-            status = SIXEL_RUNTIME_ERROR;
-            goto end;
-        }
         command_buffer = [g_sixel_gpu_metal_queue commandBuffer];
         encoder = [command_buffer computeCommandEncoder];
         if (command_buffer == nil || encoder == nil) {
@@ -1412,6 +1610,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
             /* Build and apply share a command buffer. The encoder boundary
              * makes the immutable table visible without a CPU round trip. */
             [encoder endEncoding];
+            encoder = nil;
             status = sixel_gpu_bitlut_encode(command_buffer, palette_buffer,
                 lookup_buffer, (unsigned int)bitlut_bits, request->ncolors);
             if (SIXEL_FAILED(status)) goto end;
@@ -1423,6 +1622,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
         }
         if (rebuild_fhedt) {
             [encoder endEncoding];
+            encoder = nil;
             status = sixel_gpu_fhedt_build(command_buffer, palette_buffer,
                 lookup_buffer, request);
             if (SIXEL_FAILED(status)) goto end;
@@ -1486,75 +1686,34 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
                 goto end;
             }
         }
-        [encoder setComputePipelineState:pipeline];
-        if (generic) {
-            [encoder setBuffer:configuration_buffer offset:0 atIndex:16];
-            [encoder setBuffer:invalid_buffer offset:0 atIndex:17];
-        }
-        if (!use_gemm) {
-            [encoder setBuffer:grid_buffer offset:0 atIndex:14];
-            [encoder setBuffer:lookup_buffer offset:0 atIndex:15];
-        }
-        [encoder setBuffer:result_buffer offset:0 atIndex:0];
-        [encoder setBuffer:pixel_buffer offset:0 atIndex:1];
-        [encoder setBuffer:palette_buffer offset:0 atIndex:2];
-        [encoder setBuffer:transparent_buffer offset:0 atIndex:3];
-        [encoder setBuffer:blue_noise_buffer offset:0 atIndex:4];
-        [encoder setBuffer:gradient_buffer offset:0 atIndex:5];
-        [encoder setBuffer:params_buffer offset:0 atIndex:6];
-        [encoder setBuffer:accumulation_buffer offset:0 atIndex:7];
-        [encoder setBuffer:accumulation_valid_buffer offset:0 atIndex:8];
-        [encoder setBuffer:accumulation_result_buffer offset:0 atIndex:9];
-        [encoder setBuffer:eytzinger_rank_buffer offset:0 atIndex:10];
-        [encoder setBuffer:eytzinger_sorted_buffer offset:0 atIndex:11];
-        [encoder setBuffer:eytzinger_params_buffer offset:0 atIndex:12];
-        if (use_gemm) {
-            [encoder setBuffer:gemm_tiles_buffer offset:0 atIndex:13];
-        }
-
-        threads_per_group = [pipeline maxTotalThreadsPerThreadgroup];
-        if (threads_per_group > 256U) {
-            threads_per_group = 256U;
-        }
-        if (use_gemm) {
-            /* Whole simdgroups; the kernel's threadgroup arrays hold 8. */
-            threads_per_group -= threads_per_group % 32U;
-        }
-        if (threads_per_group == 0U) {
-            threads_per_group = 1U;
-        }
-        dispatched = (NSUInteger)request->pixel_count;
-        if (use_blockcull) {
-            /* One simdgroup per 8x8 pixel block. */
-            dispatched = (NSUInteger)((request->width + 7) / 8) *
-                (NSUInteger)((request->height + 7) / 8) * 32U;
-        }
-        groups = (dispatched + threads_per_group - 1U) / threads_per_group;
-        [encoder dispatchThreadgroups:MTLSizeMake(groups, 1U, 1U)
-                threadsPerThreadgroup:MTLSizeMake(threads_per_group, 1U, 1U)];
-        [encoder endEncoding];
-        [command_buffer commit];
-        [command_buffer waitUntilCompleted];
-        if (request->test_hooks != NULL && request->test_hooks->fault == 3) {
-            /* GPU writes may already exist. The caller must reject them;
-             * no cache identity or retained history is published here. */
-            status = SIXEL_RUNTIME_ERROR;
-            goto end;
-        }
-        if ([command_buffer status] != MTLCommandBufferStatusCompleted) {
-            sixel_gpu_palette_metal_set_message(
-                "gpu palette apply: Metal command failed",
-                [command_buffer error]);
-            status = SIXEL_RUNTIME_ERROR;
-            goto end;
-        }
-
-        /* The fused consumer validates the provider's index on the GPU.
-         * Never expose partially written output after a contract violation. */
-        if (generic && *(uint32_t *)[invalid_buffer contents] != 0) {
-            status = SIXEL_LOGIC_ERROR;
-            goto end;
-        }
+        memset(&dispatch, 0, sizeof(dispatch));
+        dispatch.pipeline = pipeline;
+        dispatch.generic = generic;
+        dispatch.gemm = use_gemm;
+        dispatch.blockcull = use_blockcull;
+        dispatch.result_direct = result_buffer_direct;
+        dispatch.buffers[0] = result_buffer;
+        dispatch.buffers[1] = pixel_buffer;
+        dispatch.buffers[2] = palette_buffer;
+        dispatch.buffers[3] = transparent_buffer;
+        dispatch.buffers[4] = blue_noise_buffer;
+        dispatch.buffers[5] = gradient_buffer;
+        dispatch.buffers[6] = params_buffer;
+        dispatch.buffers[7] = accumulation_buffer;
+        dispatch.buffers[8] = accumulation_valid_buffer;
+        dispatch.buffers[9] = accumulation_result_buffer;
+        dispatch.buffers[10] = eytzinger_rank_buffer;
+        dispatch.buffers[11] = eytzinger_sorted_buffer;
+        dispatch.buffers[12] = eytzinger_params_buffer;
+        dispatch.buffers[13] = gemm_tiles_buffer;
+        dispatch.buffers[14] = grid_buffer;
+        dispatch.buffers[15] = lookup_buffer;
+        dispatch.buffers[16] = configuration_buffer;
+        dispatch.buffers[17] = invalid_buffer;
+        status = sixel_gpu_metal_apply_ranges(request, &dispatch,
+            command_buffer, encoder);
+        encoder = nil;
+        if (status != SIXEL_OK) goto end;
 
         if (rebuild_bitlut) {
             memcpy(g_sixel_gpu_bitlut_palette, request->palette,
@@ -1583,17 +1742,10 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
         if (request->test_hooks != NULL) {
             request->test_hooks->published = 1;
         }
-        if (result_buffer_direct == 0) {
-            memcpy(request->dest, [result_buffer contents], result_length);
-        }
-        if (request->accumulation_result_mask != NULL) {
-            memcpy(request->accumulation_result_mask,
-                   [accumulation_result_buffer contents],
-                   accumulation_result_length);
-        }
         status = SIXEL_OK;
 
     end:
+        if (encoder != nil) [encoder endEncoding];
         if (binding != NULL) {
             (void)binding->vtbl->finish(binding, status);
             binding->vtbl->unref(binding);

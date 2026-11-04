@@ -393,8 +393,10 @@ sixel_gpu_palette_request_is_supported(
         return 0;
     }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+            request->rows_per_chunk < 0 ||
             request->width <= 0 || request->height <= 0 ||
-            request->pixel_count == 0U) {
+            request->pixel_count == 0U ||
+            request->pixel_count > UINT32_MAX) {
         return 0;
     }
     if ((size_t)request->height > SIZE_MAX / 3U / (size_t)request->width ||
@@ -640,6 +642,22 @@ SIXEL_INTERNAL_API int
 sixel_gpu_palette_plan_available(void)
 {
     return sixel_gpu_palette_has_engine();
+}
+
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_rows_per_chunk(int width, int height)
+{
+    int bands;
+
+    if (width <= 0 || height < 12 ||
+            (size_t)width < (SIXEL_GPU_PALETTE_AUTO_THRESHOLD_DEFAULT +
+                (size_t)height - 1U) / (size_t)height) {
+        return 0;
+    }
+    /* Aim for six groups, aligned to the consumer's six-row bands. Geometry
+     * scales with the raster rather than fixing a video-specific row count. */
+    bands = height / 6 + (height % 6 != 0);
+    return ((bands + 5) / 6) * 6;
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
