@@ -420,6 +420,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0106_PLAYBACK_WAIT_COMPLETION \
     -DBUILD_TEST_0107_PLAYBACK_WAIT_FAILURE \
     -DBUILD_TEST_0108_PLAYBACK_DRAIN_TIMEOUT \
+    -DBUILD_TEST_0184_SHARED_TIMELINE_OWNERSHIP \
     -DBUILD_TEST_0109_PLAYBACK_SERIAL_RESERVATION \
     -DBUILD_TEST_0110_RESERVED_DELTA_CPU_PER_FRAME_T0 \
     -DBUILD_TEST_0111_RESERVED_DELTA_CPU_PER_FRAME_T48 \
@@ -4940,6 +4941,7 @@ test_runner_SOURCES = test_runner.c \
     encoder/planning/0106_playback_wait_completion.c \
     encoder/planning/0107_playback_wait_failure.c \
     encoder/planning/0108_playback_drain_timeout.c \
+    encoder/planning/0184_shared_timeline_ownership.c \
     encoder/planning/0109_playback_serial_reservation.c \
     encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
     encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -11747,6 +11749,7 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/sh/staticcheck-ci-configure-make.sh \
     _static/sh/staticcheck-ci-install-path.sh \
     _static/sh/staticcheck-ci-msvc-complete-build.sh \
+    _static/sh/staticcheck-ci-haiku-test-deps.sh \
     _static/sh/staticcheck-ci-checkout-eol.sh \
     _static/sh/staticcheck-nightly-msvc-archiver.sh \
     _static/sh/staticcheck-comparison-dependencies.sh \

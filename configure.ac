@@ -2810,8 +2810,21 @@ AC_SUBST([FLOAT_LOOKUP_CFLAGS])
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([LIBSIXEL_LDFLAGS])
 
-# Check math library
-AC_CHECK_LIB([m], [floor])
+# Use the real prototype: Clang rejects AC_CHECK_LIB's char floor(void)
+# declaration under -Werror, falsely reporting that libm is unavailable.
+AC_CACHE_CHECK([for floor in -lm], [ac_cv_lib_m_floor], [
+  sixel_math_save_LIBS="$LIBS"
+  LIBS="-lm $LIBS"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <math.h>]], [[
+    double (*volatile math_floor)(double) = floor;
+    return math_floor(0.5) != 0.0;
+  ]])], [ac_cv_lib_m_floor=yes], [ac_cv_lib_m_floor=no])
+  LIBS="$sixel_math_save_LIBS"
+])
+AS_IF([test "x$ac_cv_lib_m_floor" = xyes], [
+  AC_DEFINE([HAVE_LIBM], [1], [Define to 1 if you have the 'm' library (-lm).])
+  LIBS="-lm $LIBS"
+])
 
 # Checks for header files.
 AC_CHECK_HEADERS_PARALLEL([assert.h \

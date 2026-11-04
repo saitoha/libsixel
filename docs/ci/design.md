@@ -147,6 +147,8 @@ does not hide a supported configuration.
 
 ### Diagnostic independence
 
+Haiku runs the Meson suite in slices with `--no-rebuild` to bound the lifetime of each test process. Build the non-default `test_runner` target before the first slice; the ordinary default build does not produce it. The step uses `set -eux` so a failed dependency build or slice stops the job. [The source check](../../tests/_static/sh/staticcheck-ci-haiku-test-deps.sh) rejects a missing, late, or failure-ignoring runner build.
+
 Keep `fail-fast` disabled for diagnostic matrices. One early failure should not
 hide an unrelated compiler, platform, or sanitizer failure.
 
@@ -277,3 +279,4 @@ change and directly required source, test, or generated-file updates.
 | CI-06 | Nightly disables checkout line-ending conversion before materializing shell tests. | [tests/_static/sh/staticcheck-ci-checkout-eol.sh](../../tests/_static/sh/staticcheck-ci-checkout-eol.sh) |
 | CI-07 | Nightly MSVC invokes configure without overriding its archiver or archive flags. | [tests/_static/sh/staticcheck-nightly-msvc-archiver.sh](../../tests/_static/sh/staticcheck-nightly-msvc-archiver.sh) |
 | CI-08 | Normal and PGO-use Command Prompt test builds include the C runner and default targets, continue independent compilations after errors, and immediately propagate failure; dist leaves the runner to its extracted-tree build. | [tests/_static/sh/staticcheck-ci-msvc-complete-build.sh](../../tests/_static/sh/staticcheck-ci-msvc-complete-build.sh) |
+| CI-09 | Haiku builds the non-default runner before disabling automatic dependency rebuild for test slices. | [tests/_static/sh/staticcheck-ci-haiku-test-deps.sh](../../tests/_static/sh/staticcheck-ci-haiku-test-deps.sh) |

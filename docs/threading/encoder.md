@@ -4,6 +4,8 @@ This explanation is for users and contributors inspecting encoder scheduling, al
 
 ## Execution stages
 
+A queued frame carries its own timeline snapshot. Workers may copy that snapshot back only into private work frames; a shared replay frame retains the loader-owned timeline, which can already describe a later loop. This preserves the zero-copy pixel handoff. The ownership regression blocks the first writer, queues a shared frame, advances its loop number, then releases the writer and checks that completion leaves the source timeline unchanged.
+
 With `palette=frame`, the encoder has several opportunities for overlap. The complete pipeline is broader than the final dither/encode window. [Animation threading](animation.md#what-is-and-is-not-shared) describes the separate construction and application lifetimes of latest sessions:
 
 ```text
@@ -438,6 +440,7 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-66 | Reusing a serial output after node-allocation failure produces the expected body. | [tests/encoder/pipeline/0062_serial_node_failure_retry.t](../../tests/encoder/pipeline/0062_serial_node_failure_retry.t) |
 | TE-67 | A rejected typed sink releases all caller-allocator storage after parallel drain. | [tests/encoder/pipeline/0063_parallel_node_writer_release.t](../../tests/encoder/pipeline/0063_parallel_node_writer_release.t) |
 | TE-68 | A serial failure while building a same-column chain releases its pending nodes. | [tests/encoder/pipeline/0079_bucket_chain_failure_release.t](../../tests/encoder/pipeline/0079_bucket_chain_failure_release.t) |
+| TE-69 | A queued job cannot overwrite a later loader-owned loop number on a shared frame; writer gating determines the order without sleeps. | [tests/encoder/planning/0184_shared_timeline_ownership.t](../../tests/encoder/planning/0184_shared_timeline_ownership.t) |
 
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/color/space/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.
 

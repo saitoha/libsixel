@@ -11206,13 +11206,17 @@ sixel_encoder_frame_job_prepare(
         job->context.multiframe = metadata->multiframe;
         /*
          * Frame metadata can be carried out-of-band in pipeline mode.
-         * Mirror it back to the frame object so downstream helpers that read
-         * frame state directly observe the same timeline job->context.
+         * Only private work frames may mirror the job timeline. A replay
+         * loader can already be publishing a later loop on a shared frame;
+         * writing an earlier job here corrupts the loader's next callback.
+         * Shared pixels remain zero-copy and the job owns its timeline.
          */
-        sixel_frame_set_frame_no(frame, job->context.frame_no);
-        sixel_frame_set_loop_count(frame, job->context.loop_no);
-        sixel_frame_set_delay(frame, job->context.delay);
-        sixel_frame_set_multiframe(frame, job->context.multiframe);
+        if (!sixel_encoder_frame_get_handoff_shareable(frame)) {
+            sixel_frame_set_frame_no(frame, job->context.frame_no);
+            sixel_frame_set_loop_count(frame, job->context.loop_no);
+            sixel_frame_set_delay(frame, job->context.delay);
+            sixel_frame_set_multiframe(frame, job->context.multiframe);
+        }
     } else {
         job->context.frame_no = sixel_frame_get_frame_no(frame);
         job->context.loop_no = sixel_frame_get_loop_no(frame);

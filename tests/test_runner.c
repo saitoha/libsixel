@@ -132,6 +132,7 @@ int test_lifecycle_0105(int argc, char **argv);
 int test_lifecycle_0106(int argc, char **argv);
 int test_lifecycle_0107(int argc, char **argv);
 int test_lifecycle_0108(int argc, char **argv);
+int test_shared_timeline_ownership(int argc, char **argv);
 int test_lifecycle_0109(int argc, char **argv);
 int test_reserved_delta_0110(int argc, char **argv);
 int test_reserved_delta_0111(int argc, char **argv);
@@ -4788,6 +4789,8 @@ static test_entry_t const test_entries[] = {
       test_lifecycle_0107 },
     { "planner/pipeline/0108_playback_drain_timeout",
       test_lifecycle_0108 },
+    { "encoder/planning/0184_shared_timeline_ownership",
+      test_shared_timeline_ownership },
     { "planner/pipeline/0109_playback_serial_reservation",
       test_lifecycle_0109 },
     { "planner/pipeline/0110_reserved_delta_cpu_per_frame_t0",

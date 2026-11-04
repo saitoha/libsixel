@@ -266,6 +266,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/planning/0106_playback_wait_completion.c \
 	encoder/planning/0107_playback_wait_failure.c \
 	encoder/planning/0108_playback_drain_timeout.c \
+	encoder/planning/0184_shared_timeline_ownership.c \
 	encoder/planning/0109_playback_serial_reservation.c \
 	encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
 	encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -4879,6 +4880,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0106_playback_wait_completion.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0107_playback_wait_failure.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0108_playback_drain_timeout.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0184_shared_timeline_ownership.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0109_playback_serial_reservation.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0110_reserved_delta_cpu_per_frame_t0.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/planning/test_runner-0111_reserved_delta_cpu_per_frame_t48.$(OBJEXT) \
@@ -11300,6 +11302,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/planning/$(DEPDIR)/test_runner-0120_explicit_clustering_auto_working.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0121_byte_precision_auto.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0122_explicit_working_auto_clustering.Po \
+	encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0002_byte_request_linear_source.Po \
 	encoder/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po \
@@ -14750,6 +14753,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0106_PLAYBACK_WAIT_COMPLETION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0107_PLAYBACK_WAIT_FAILURE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0108_PLAYBACK_DRAIN_TIMEOUT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0184_SHARED_TIMELINE_OWNERSHIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0109_PLAYBACK_SERIAL_RESERVATION \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0110_RESERVED_DELTA_CPU_PER_FRAME_T0 \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0111_RESERVED_DELTA_CPU_PER_FRAME_T48 \
@@ -19302,6 +19306,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0106_playback_wait_completion.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0107_playback_wait_failure.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0108_playback_drain_timeout.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0184_shared_timeline_ownership.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0109_playback_serial_reservation.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0110_reserved_delta_cpu_per_frame_t0.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/planning/0111_reserved_delta_cpu_per_frame_t48.c \
@@ -24146,6 +24151,7 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	_static/sh/staticcheck-ci-configure-make.sh \
 	_static/sh/staticcheck-ci-install-path.sh \
 	_static/sh/staticcheck-ci-msvc-complete-build.sh \
+	_static/sh/staticcheck-ci-haiku-test-deps.sh \
 	_static/sh/staticcheck-ci-checkout-eol.sh \
 	_static/sh/staticcheck-nightly-msvc-archiver.sh \
 	_static/sh/staticcheck-comparison-dependencies.sh \
@@ -24659,6 +24665,9 @@ encoder/planning/test_runner-0107_playback_wait_failure.$(OBJEXT):  \
 	encoder/planning/$(am__dirstamp) \
 	encoder/planning/$(DEPDIR)/$(am__dirstamp)
 encoder/planning/test_runner-0108_playback_drain_timeout.$(OBJEXT):  \
+	encoder/planning/$(am__dirstamp) \
+	encoder/planning/$(DEPDIR)/$(am__dirstamp)
+encoder/planning/test_runner-0184_shared_timeline_ownership.$(OBJEXT):  \
 	encoder/planning/$(am__dirstamp) \
 	encoder/planning/$(DEPDIR)/$(am__dirstamp)
 encoder/planning/test_runner-0109_playback_serial_reservation.$(OBJEXT):  \
@@ -41041,6 +41050,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0120_explicit_clustering_auto_working.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0121_byte_precision_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0122_explicit_working_auto_clustering.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0001_byte_request_float_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0002_byte_request_linear_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/precision/$(DEPDIR)/test_runner-0003_auto_float_source.Po@am__quote@ # am--include-marker
@@ -45496,6 +45506,20 @@ encoder/planning/test_runner-0108_playback_drain_timeout.obj: encoder/planning/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0108_playback_drain_timeout.c' object='encoder/planning/test_runner-0108_playback_drain_timeout.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0108_playback_drain_timeout.obj `if test -f 'encoder/planning/0108_playback_drain_timeout.c'; then $(CYGPATH_W) 'encoder/planning/0108_playback_drain_timeout.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0108_playback_drain_timeout.c'; fi`
+
+encoder/planning/test_runner-0184_shared_timeline_ownership.o: encoder/planning/0184_shared_timeline_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0184_shared_timeline_ownership.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Tpo -c -o encoder/planning/test_runner-0184_shared_timeline_ownership.o `test -f 'encoder/planning/0184_shared_timeline_ownership.c' || echo '$(srcdir)/'`encoder/planning/0184_shared_timeline_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Tpo encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0184_shared_timeline_ownership.c' object='encoder/planning/test_runner-0184_shared_timeline_ownership.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0184_shared_timeline_ownership.o `test -f 'encoder/planning/0184_shared_timeline_ownership.c' || echo '$(srcdir)/'`encoder/planning/0184_shared_timeline_ownership.c
+
+encoder/planning/test_runner-0184_shared_timeline_ownership.obj: encoder/planning/0184_shared_timeline_ownership.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0184_shared_timeline_ownership.obj -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Tpo -c -o encoder/planning/test_runner-0184_shared_timeline_ownership.obj `if test -f 'encoder/planning/0184_shared_timeline_ownership.c'; then $(CYGPATH_W) 'encoder/planning/0184_shared_timeline_ownership.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0184_shared_timeline_ownership.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Tpo encoder/planning/$(DEPDIR)/test_runner-0184_shared_timeline_ownership.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/planning/0184_shared_timeline_ownership.c' object='encoder/planning/test_runner-0184_shared_timeline_ownership.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/planning/test_runner-0184_shared_timeline_ownership.obj `if test -f 'encoder/planning/0184_shared_timeline_ownership.c'; then $(CYGPATH_W) 'encoder/planning/0184_shared_timeline_ownership.c'; else $(CYGPATH_W) '$(srcdir)/encoder/planning/0184_shared_timeline_ownership.c'; fi`
 
 encoder/planning/test_runner-0109_playback_serial_reservation.o: encoder/planning/0109_playback_serial_reservation.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/planning/test_runner-0109_playback_serial_reservation.o -MD -MP -MF encoder/planning/$(DEPDIR)/test_runner-0109_playback_serial_reservation.Tpo -c -o encoder/planning/test_runner-0109_playback_serial_reservation.o `test -f 'encoder/planning/0109_playback_serial_reservation.c' || echo '$(srcdir)/'`encoder/planning/0109_playback_serial_reservation.c

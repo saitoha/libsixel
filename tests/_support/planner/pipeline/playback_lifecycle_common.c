@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "src/encoder.h"
+#include <6cells.h>
 #include "playback_test_common.h"
 
 #define LIFE_CHECK(x) do { if (!(x)) { \
@@ -106,7 +107,8 @@ lifecycle_free(void *pointer)
 #endif
 
 /* 0/1 cancel queued frames, 2 release, 3 complete, 4 fail, 5 drain timeout,
- * 6 synchronous reservations. Each caller owns exactly one observation. */
+ * 6 synchronous reservations, 7 shared timeline ownership.
+ * Each caller owns exactly one observation. */
 int
 playback_lifecycle_test(int mode)
 {
@@ -116,6 +118,7 @@ playback_lifecycle_test(int mode)
     sixel_playback_config_t config;
     sixel_playback_options_t options;
     sixel_playback_stats_t stats;
+    sixel_frame_timeline_t timeline;
     sixel_playback_ticket_t held;
     sixel_encoder_t *encoder;
     sixel_output_t *output;
@@ -158,7 +161,7 @@ playback_lifecycle_test(int mode)
         == SIXEL_OK);
     LIFE_CHECK(sixel_playback_config_init(&config, sizeof(config))
         == SIXEL_OK);
-    config.capacity = mode < 2 ? 4 : 1;
+    config.capacity = mode == 7 ? 2 : (mode < 2 ? 4 : 1);
     config.done = lifecycle_done;
     config.done_context = &s;
     LIFE_CHECK(sixel_playback_new(&s.playback, encoder, output, &config,
@@ -202,6 +205,21 @@ playback_lifecycle_test(int mode)
         source = NULL;
         LIFE_CHECK(!lifecycle_source_freed);
         LIFE_CHECK(sixel_playback_cancel(s.playback) == SIXEL_OK);
+    } else if (mode == 7) {
+        /* The first writer is blocked, so this queued frame cannot start.
+         * Advance its loader-owned timeline before releasing that writer.
+         * The queued job must not restore its earlier loop on the source. */
+        frame = playback_test_small_frame(1);
+        LIFE_CHECK(frame != NULL);
+        memset(&timeline, 0, sizeof(timeline));
+        timeline.frame_no = 1;
+        timeline.multiframe = 1;
+        timeline.handoff_shareable = 1;
+        LIFE_CHECK(sixel_frame_as_interface(frame)->vtbl->set_timeline(
+            sixel_frame_as_interface(frame), &timeline) == SIXEL_OK);
+        LIFE_CHECK(sixel_playback_submit(s.playback, frame,
+            SIXEL_PLAYBACK_NOWAIT, 0, NULL) == SIXEL_OK);
+        sixel_frame_set_loop_count(frame, 1);
     } else if (mode == 6) {
         /* Only expiry with a held slot matters here, not a one-second
          * latency. Keep a positive deadline to exercise the wait path. */
@@ -248,6 +266,12 @@ playback_lifecycle_test(int mode)
         for (i = 1; i < 4; ++i) {
             LIFE_CHECK(s.completed[i] == SIXEL_INTERRUPTED);
         }
+    }
+    if (mode == 7) {
+        LIFE_CHECK(s.count == 2 && !s.bad_sequence);
+        LIFE_CHECK(s.completed[0] == SIXEL_OK &&
+            s.completed[1] == SIXEL_OK);
+        LIFE_CHECK(sixel_frame_get_loop_no(frame) == 1);
     }
     memset(&stats, 0, sizeof(stats));
     stats.struct_size = sizeof(stats);

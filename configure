@@ -20384,32 +20384,27 @@ fi
 
 
 
-# Check math library
+# Use the real prototype: Clang rejects AC_CHECK_LIB's char floor(void)
+# declaration under -Werror, falsely reporting that libm is unavailable.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for floor in -lm" >&5
 printf %s "checking for floor in -lm... " >&6; }
 if test ${ac_cv_lib_m_floor+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  e)
+  sixel_math_save_LIBS="$LIBS"
+  LIBS="-lm $LIBS"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.
-   The 'extern "C"' is for builds by C++ compilers;
-   although this is not generally supported in C code supporting it here
-   has little cost and some practical benefit (sr 110532).  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char floor (void);
+#include <math.h>
 int
 main (void)
 {
-return floor ();
+
+    double (*volatile math_floor)(double) = floor;
+    return math_floor(0.5) != 0.0;
+
   ;
   return 0;
 }
@@ -20423,19 +20418,21 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS ;;
+  LIBS="$sixel_math_save_LIBS"
+ ;;
 esac
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_floor" >&5
 printf "%s\n" "$ac_cv_lib_m_floor" >&6; }
 if test "x$ac_cv_lib_m_floor" = xyes
 then :
-  printf "%s\n" "#define HAVE_LIBM 1" >>confdefs.h
+
+
+printf "%s\n" "#define HAVE_LIBM 1" >>confdefs.h
 
   LIBS="-lm $LIBS"
 
 fi
-
 
 # Checks for header files.
 

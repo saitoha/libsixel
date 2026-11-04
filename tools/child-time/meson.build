@@ -7,6 +7,9 @@ child_time_fallback = 'outer-only: native POSIX executor unavailable'
 if add_languages('c', native: true, required: false)
   child_time_cc = meson.get_compiler('c', native: true)
   child_time_clock = child_time_cc.find_library('rt', required: false)
+  # FreeBSD implements isfinite through libm, even for the native supervisor.
+  child_time_math = child_time_cc.find_library('m', required: false)
+  child_time_dependencies = [child_time_clock, child_time_math]
   child_time_probe = '''
 #if defined(__COSMOPOLITAN__) || defined(__EMSCRIPTEN__) || \
     defined(__wasm__) || defined(__CYGWIN__)
@@ -19,6 +22,7 @@ if add_languages('c', native: true, required: false)
 #include <fcntl.h>
 #include <poll.h>
 #include <time.h>
+#include <math.h>
 int main(void) {
   struct timespec t;
   struct pollfd p;
@@ -26,6 +30,7 @@ int main(void) {
   sigset_t s;
   siginfo_t info;
   int f[2];
+  volatile double duration = 1.0;
   sigemptyset(&s);
   sigaction(SIGCHLD, &a, 0);
   sigprocmask(SIG_BLOCK, &s, 0);
@@ -38,10 +43,10 @@ int main(void) {
   waitpid(-1, 0, WNOHANG);
   waitid(P_PID, 1, &info, WEXITED | WNOWAIT | WNOHANG);
   fork();
-  return clock_gettime(CLOCK_MONOTONIC, &t);
+  return clock_gettime(CLOCK_MONOTONIC, &t) + !isfinite(duration);
 }
 '''
-  if child_time_cc.links(child_time_probe, dependencies: child_time_clock,
+  if child_time_cc.links(child_time_probe, dependencies: child_time_dependencies,
       name: 'native complete-command timing primitives')
     child_time_config = configuration_data()
     foreach feature : ['FORK', 'WAITPID', 'SYS_WAIT_H', 'TIME_H', 'ERRNO_H',
@@ -54,7 +59,7 @@ int main(void) {
     child_time_executor = executable('lso-timeout', '../lso-timeout.c',
       child_time_header, native: true,
       c_args: ['-DLSO_TIMEOUT_NATIVE=1'],
-      dependencies: child_time_clock,
+      dependencies: child_time_dependencies,
       include_directories: include_directories('.'),
       install: false)
     have_child_time_executor = true

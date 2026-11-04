@@ -235,6 +235,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-57 | Metal stdout generation exits with the encoder status before file publication even on shells where native-image exec returns. | [tests/_static/sh/staticcheck-metal-stream.sh](../../tests/_static/sh/staticcheck-metal-stream.sh) |
 | SC-58 | MSVC-style shared builds retain the shared CRT default and reject incompatible effective compiler settings during setup. | [tests/_static/sh/staticcheck-msvc-shared-crt.sh](../../tests/_static/sh/staticcheck-msvc-shared-crt.sh) |
 | SC-59 | The pkg-config metadata test retains configured tool selection and invocation across both build systems. | [tests/_static/sh/staticcheck-configured-pkg-config.sh](../../tests/_static/sh/staticcheck-configured-pkg-config.sh) |
+| SC-60 | Haiku sliced tests retain a successful runner build before `--no-rebuild`, with missing-build, ordering, and failure-propagation controls. | [tests/_static/sh/staticcheck-ci-haiku-test-deps.sh](../../tests/_static/sh/staticcheck-ci-haiku-test-deps.sh) |
 
 ### Coverage boundary
 

@@ -1126,10 +1126,13 @@ runs:
         version: ${{ fromJSON(inputs.matrix_json).cp_version || '' }}
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
-          set -xv
+          set -eux
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           meson compile -C builddir -v
           if test "${{ fromJSON(inputs.matrix_json).cp_os || '' }}" = "haiku"; then
+            # The runner is not a default target. Build it once before slices
+            # disable Meson's automatic test dependency rebuild.
+            meson compile -C builddir test_runner
             # Haiku occasionally raises EINVAL from Python asyncio subprocess
             # creation in long meson test runs. Running slices keeps each mtest
             # process shorter-lived while preserving full test coverage.
