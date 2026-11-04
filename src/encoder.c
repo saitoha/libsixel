@@ -2865,6 +2865,8 @@ sixel_encoder_residual_defaults(sixel_encoder_t *encoder)
     encoder->residual_override = 0;
     encoder->sixdelta_metric = SIXEL_DELTA_METRIC_AUTO;
     encoder->sixdelta_metric_override = 0;
+    encoder->sixdelta_compare = SIXEL_DELTA_COMPARE_TARGET;
+    encoder->sixdelta_compare_override = 0;
     encoder->residual_threshold = 1.5;
     encoder->residual_threshold_override = 0;
     encoder->residual_keep_threshold = 0U;
@@ -10794,6 +10796,7 @@ sixel_encoder_output_without_macro(
         goto end;
     }
     dither->pipeline_6delta_metric = sixel_encoder_delta_metric(encoder);
+    dither->pipeline_6delta_compare = encoder->sixdelta_compare;
     if (encoder->residual_enabled || encoder->refresh_ms != 0U) {
         dither->pipeline_residual_mask = encoder->residual_state.mask;
     }
@@ -15947,7 +15950,8 @@ sixel_encoder_setopt_owned(
 end:
     if (status == SIXEL_OK) {
         /* Reapplying the same effective policy preserves persistence. */
-        if (encoder->refresh_ms != destination->refresh_ms ||
+        if (encoder->sixdelta_compare != destination->sixdelta_compare ||
+                encoder->refresh_ms != destination->refresh_ms ||
                 encoder->residual_enabled != destination->residual_enabled ||
                 sixel_encoder_delta_metric(encoder) !=
                     sixel_encoder_delta_metric(destination) ||

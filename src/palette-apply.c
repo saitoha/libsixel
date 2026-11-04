@@ -447,6 +447,7 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.accumulation_keycolor = execution->delta_keycolor;
     request.sixdelta_threshold = execution->delta_threshold;
     request.sixdelta_metric = execution->delta_metric;
+    request.sixdelta_compare = execution->delta_compare;
     request.residual_mask = &selection;
     request.sixdelta_comparison_palette = apply->comparison;
     request.sixdelta_comparison_palette_size = apply->entries.entry_count * 3;
@@ -494,7 +495,9 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     SIXELSTATUS status;
 
     if (self == NULL || request == NULL || request->source == NULL ||
-            request->result == NULL) {
+            request->result == NULL ||
+            (request->delta.compare != SIXEL_DELTA_COMPARE_TARGET &&
+             request->delta.compare != SIXEL_DELTA_COMPARE_QUERY)) {
         return SIXEL_BAD_ARGUMENT;
     }
     apply = (sixel_palette_apply_storage_t *)self;
@@ -578,6 +581,7 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     execution->row_context = apply;
     execution->selection = request->delta.selection;
     execution->delta_metric = request->delta.metric;
+    execution->delta_compare = request->delta.compare;
     execution->delta_error_mode = request->delta.error_mode;
     execution->delta_threshold = request->delta.threshold;
     /* An explicit emitted table also covers legacy HLS and percentage RGB

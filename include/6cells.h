@@ -1497,6 +1497,18 @@ typedef struct sixel_delta_threshold_map {
     unsigned int selected_threshold;
 } sixel_delta_threshold_map_t;
 
+/* Select the sample used by delta keep decisions. TARGET preserves each
+ * policy's existing target; for A/X/blue-noise it is the unperturbed sample.
+ * QUERY uses the positional lookup input after perturbation and the policy's
+ * normal precision/clamp rules. Both early and post-lookup gates use it.
+ * Other policies keep their existing corrected-target semantics. This never
+ * changes lookup, emitted palette colors, retained RGB, or error propagation.
+ * Zero-initialized execution snapshots preserve the TARGET contract. */
+typedef enum sixel_delta_compare {
+    SIXEL_DELTA_COMPARE_TARGET = 0,
+    SIXEL_DELTA_COMPARE_QUERY = 1
+} sixel_delta_compare_t;
+
 /* Resolved values, with no environment precedence flags or frame pointers.
  * prepare copies these settings; callers may release or change their source
  * configuration afterwards. apply never reads a mutable legacy handle. */
@@ -1570,6 +1582,7 @@ typedef struct sixel_dither_execution {
     void *row_context;
     sixel_timeline_logger_t *logger;
     int band_height;
+    sixel_delta_compare_t delta_compare;
 } sixel_dither_execution_t;
 
 typedef struct sixel_dither_policy_apply_request {
@@ -1644,6 +1657,7 @@ typedef struct sixel_palette_apply_delta {
     unsigned int threshold;
     int metric;
     sixel_delta_threshold_map_t selection;
+    sixel_delta_compare_t compare;
 } sixel_palette_apply_delta_t;
 
 /* Lookup preparation consumes a palette view only for this call. Successful

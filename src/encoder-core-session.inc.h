@@ -372,6 +372,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     run.delta.error_mode = dither->pipeline_6delta_error_mode;
     run.delta.threshold = dither->pipeline_6delta_threshold;
     run.delta.metric = dither->pipeline_6delta_metric;
+    run.delta.compare = dither->pipeline_6delta_compare;
     run.delta.selection = execution.selection;
     if (allocation.mode == SIXEL_DITHER_ENCODE_PIPELINE) {
         run.rows_ready = sixel_session_rows;

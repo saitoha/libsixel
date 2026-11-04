@@ -4816,6 +4816,70 @@ int test_png_color_0023(int argc, char **argv);
 int test_png_color_0024(int argc, char **argv);
 int test_png_color_0025(int argc, char **argv);
 
+int test_delta_compare_0022(int argc, char **argv);
+int test_delta_compare_0023(int argc, char **argv);
+int test_delta_compare_0024(int argc, char **argv);
+int test_delta_compare_0025(int argc, char **argv);
+int test_delta_compare_0026(int argc, char **argv);
+int test_delta_compare_0027(int argc, char **argv);
+int test_delta_compare_0028(int argc, char **argv);
+int test_delta_compare_0029(int argc, char **argv);
+int test_delta_compare_0030(int argc, char **argv);
+int test_delta_compare_0031(int argc, char **argv);
+int test_delta_compare_0032(int argc, char **argv);
+int test_delta_compare_0033(int argc, char **argv);
+int test_delta_compare_0034(int argc, char **argv);
+int test_delta_compare_0035(int argc, char **argv);
+int test_delta_compare_0036(int argc, char **argv);
+int test_delta_compare_0037(int argc, char **argv);
+int test_delta_compare_0038(int argc, char **argv);
+int test_delta_compare_0039(int argc, char **argv);
+int test_delta_compare_0040(int argc, char **argv);
+int test_delta_compare_0041(int argc, char **argv);
+int test_delta_compare_0042(int argc, char **argv);
+int test_delta_compare_0043(int argc, char **argv);
+int test_delta_compare_0044(int argc, char **argv);
+int test_delta_compare_0045(int argc, char **argv);
+int test_delta_compare_0046(int argc, char **argv);
+int test_delta_compare_0047(int argc, char **argv);
+int test_delta_compare_0048(int argc, char **argv);
+int test_delta_compare_0049(int argc, char **argv);
+int test_delta_compare_0050(int argc, char **argv);
+int test_delta_compare_0051(int argc, char **argv);
+int test_delta_compare_0052(int argc, char **argv);
+int test_delta_compare_0053(int argc, char **argv);
+int test_delta_compare_0054(int argc, char **argv);
+int test_delta_compare_0055(int argc, char **argv);
+int test_delta_compare_0056(int argc, char **argv);
+int test_delta_compare_0057(int argc, char **argv);
+int test_delta_compare_0058(int argc, char **argv);
+int test_delta_compare_0059(int argc, char **argv);
+int test_delta_compare_0060(int argc, char **argv);
+int test_delta_compare_0061(int argc, char **argv);
+int test_delta_compare_0062(int argc, char **argv);
+int test_delta_compare_0063(int argc, char **argv);
+int test_delta_compare_0064(int argc, char **argv);
+int test_delta_compare_0065(int argc, char **argv);
+int test_delta_compare_0066(int argc, char **argv);
+int test_delta_compare_0067(int argc, char **argv);
+int test_delta_compare_0068(int argc, char **argv);
+
+int test_delta_compare_0069(int argc, char **argv);
+int test_delta_compare_0070(int argc, char **argv);
+int test_delta_compare_0071(int argc, char **argv);
+int test_delta_compare_0072(int argc, char **argv);
+int test_delta_compare_0073(int argc, char **argv);
+int test_delta_compare_0074(int argc, char **argv);
+int test_delta_compare_0075(int argc, char **argv);
+int test_delta_compare_0076(int argc, char **argv);
+int test_delta_compare_0077(int argc, char **argv);
+int test_delta_compare_0078(int argc, char **argv);
+int test_delta_compare_0079(int argc, char **argv);
+int test_delta_compare_0080(int argc, char **argv);
+int test_delta_compare_0081(int argc, char **argv);
+int test_delta_compare_0082(int argc, char **argv);
+int test_delta_compare_0083(int argc, char **argv);
+
 typedef int (*test_runner_fn)(int argc, char **argv);
 
 typedef struct test_entry {
@@ -4824,6 +4888,68 @@ typedef struct test_entry {
 } test_entry_t;
 
 static test_entry_t const test_entries[] = {
+    { "delta/comparison/0069_query_encode_cpu", test_delta_compare_0069 },
+    { "delta/comparison/0070_target_encode_cpu", test_delta_compare_0070 },
+    { "delta/comparison/0071_query_playback_cpu", test_delta_compare_0071 },
+    { "delta/comparison/0072_query_latest_cpu", test_delta_compare_0072 },
+    { "delta/comparison/0073_query_partial_cpu", test_delta_compare_0073 },
+    { "delta/comparison/0074_query_limit_cpu", test_delta_compare_0074 },
+    { "delta/comparison/0075_query_none_cpu", test_delta_compare_0075 },
+    { "delta/comparison/0076_query_encode_gpu", test_delta_compare_0076 },
+    { "delta/comparison/0077_target_encode_gpu", test_delta_compare_0077 },
+    { "delta/comparison/0078_query_playback_gpu", test_delta_compare_0078 },
+    { "delta/comparison/0079_query_latest_gpu", test_delta_compare_0079 },
+    { "delta/comparison/0080_query_partial_gpu", test_delta_compare_0080 },
+    { "delta/comparison/0081_query_limit_gpu", test_delta_compare_0081 },
+    { "delta/comparison/0082_query_none_gpu", test_delta_compare_0082 },
+    { "delta/comparison/0083_query_fs_cpu", test_delta_compare_0083 },
+    { "delta/comparison/0022_query_a_early_bypass", test_delta_compare_0022 },
+    { "delta/comparison/0023_query_a_post_replace", test_delta_compare_0023 },
+    { "delta/comparison/0024_query_a_early_keep", test_delta_compare_0024 },
+    { "delta/comparison/0025_query_a_post_tie", test_delta_compare_0025 },
+    { "delta/comparison/0026_query_a_float_post", test_delta_compare_0026 },
+    { "delta/comparison/0027_query_a_gpu_legacy_early_bypass", test_delta_compare_0027 },
+    { "delta/comparison/0028_query_a_gpu_legacy_post_replace", test_delta_compare_0028 },
+    { "delta/comparison/0029_query_a_gpu_fused_early_bypass", test_delta_compare_0029 },
+    { "delta/comparison/0030_query_a_gpu_fused_post_replace", test_delta_compare_0030 },
+    { "delta/comparison/0031_query_x_early_bypass", test_delta_compare_0031 },
+    { "delta/comparison/0032_query_x_post_replace", test_delta_compare_0032 },
+    { "delta/comparison/0033_query_x_early_keep", test_delta_compare_0033 },
+    { "delta/comparison/0034_query_x_post_tie", test_delta_compare_0034 },
+    { "delta/comparison/0035_query_x_float_post", test_delta_compare_0035 },
+    { "delta/comparison/0036_query_x_gpu_legacy_early_bypass", test_delta_compare_0036 },
+    { "delta/comparison/0037_query_x_gpu_legacy_post_replace", test_delta_compare_0037 },
+    { "delta/comparison/0038_query_x_gpu_fused_early_bypass", test_delta_compare_0038 },
+    { "delta/comparison/0039_query_x_gpu_fused_post_replace", test_delta_compare_0039 },
+    { "delta/comparison/0040_query_blue_early_bypass", test_delta_compare_0040 },
+    { "delta/comparison/0041_query_blue_post_replace", test_delta_compare_0041 },
+    { "delta/comparison/0042_query_blue_early_keep", test_delta_compare_0042 },
+    { "delta/comparison/0043_query_blue_post_tie", test_delta_compare_0043 },
+    { "delta/comparison/0044_query_blue_float_post", test_delta_compare_0044 },
+    { "delta/comparison/0045_query_blue_gpu_legacy_early_bypass", test_delta_compare_0045 },
+    { "delta/comparison/0046_query_blue_gpu_legacy_post_replace", test_delta_compare_0046 },
+    { "delta/comparison/0047_query_blue_gpu_fused_early_bypass", test_delta_compare_0047 },
+    { "delta/comparison/0048_query_blue_gpu_fused_post_replace", test_delta_compare_0048 },
+    { "delta/comparison/0049_query_blue_cpu_threshold", test_delta_compare_0049 },
+    { "delta/comparison/0050_query_blue_cpu_refresh", test_delta_compare_0050 },
+    { "delta/comparison/0051_query_blue_gpu_legacy_threshold", test_delta_compare_0051 },
+    { "delta/comparison/0052_query_blue_gpu_legacy_refresh", test_delta_compare_0052 },
+    { "delta/comparison/0053_query_blue_gpu_fused_threshold", test_delta_compare_0053 },
+    { "delta/comparison/0054_query_blue_gpu_fused_refresh", test_delta_compare_0054 },
+    { "delta/comparison/0055_compare_invalid_execution", test_delta_compare_0055 },
+    { "delta/comparison/0056_compare_default", test_delta_compare_0056 },
+    { "delta/comparison/0057_compare_long", test_delta_compare_0057 },
+    { "delta/comparison/0058_compare_short", test_delta_compare_0058 },
+    { "delta/comparison/0059_compare_target", test_delta_compare_0059 },
+    { "delta/comparison/0060_compare_reset", test_delta_compare_0060 },
+    { "delta/comparison/0061_compare_environment", test_delta_compare_0061 },
+    { "delta/comparison/0062_compare_precedence", test_delta_compare_0062 },
+    { "delta/comparison/0063_compare_invalid_environment", test_delta_compare_0063 },
+    { "delta/comparison/0064_compare_invalid_atomic", test_delta_compare_0064 },
+    { "delta/comparison/0065_compare_full_reject", test_delta_compare_0065 },
+    { "delta/comparison/0066_compare_progressive_reject", test_delta_compare_0066 },
+    { "delta/comparison/0067_compare_change_preserves_rgb", test_delta_compare_0067 },
+    { "delta/comparison/0068_compare_same_preserves_age", test_delta_compare_0068 },
     { "planner/pipeline/0105_playback_wait_release",
       test_lifecycle_0105 },
     { "planner/pipeline/0106_playback_wait_completion",

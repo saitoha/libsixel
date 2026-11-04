@@ -17,6 +17,7 @@ struct Params {
     uint accumulation_keycolor;
     uint sixdelta_threshold;
     uint sixdelta_metric;
+    uint sixdelta_compare;
     uint residual_threshold;
     uint residual_columns, residual_rows;
     uint residual_tiled;
@@ -109,6 +110,44 @@ static uint color_distance(uchar3 left, uchar3 right)
     int db = int(left.z) - int(right.z);
     return uint(dr * dr + dg * dg + db * db);
 }
+/* Build exactly the byte query consumed by lookup, including truncation
+ * and clipping. The default target gate can skip this work entirely. */
+static uchar3 positional_query(uchar3 source,
+    device const uchar *blue_noise, device const uchar *gradient,
+    constant Params& params, uint x, uint y, uint gid)
+{
+    uchar q[3] = { source.x, source.y, source.z };
+    if (params.mode == 1u) {
+        float weight = gradient_weight(gradient, params, x, y, gid);
+        for (uint d = 0u; d < 3u; ++d) {
+            int val = int(q[d]) + int(tri_noise(blue_noise,
+                                                params,
+                                                int(x),
+                                                int(y),
+                                                int(d)) * weight * 32.0f);
+            val = val < 0 ? 0 : (val > 255 ? 255 : val);
+            q[d] = uchar(val);
+        }
+    }
+    // Match CPU unsigned phases and truncate the bias before addition.
+    if (params.mode == 2u || params.mode == 3u) {
+        for (uint d = 0u; d < 3u; ++d) {
+            uint phase;
+            float noise;
+            if (params.mode == 2u) {
+                phase = (x + d * 67u + y * 236u) * 119u;
+                noise = float(phase & 255u) / 128.0f - 1.0f;
+            } else {
+                phase = ((x + d * 29u) ^ (y * 149u)) * 1234u;
+                noise = float(phase & 511u) / 256.0f - 1.0f;
+            }
+            int val = int(q[d]) +
+                int((noise * params.positional_strength) * 32.0f);
+            q[d] = uchar(clamp(val, 0, 255));
+        }
+    }
+    return uchar3(q[0], q[1], q[2]);
+}
 static bool prepare_query(
     device uchar *result,
     device const uchar *pixels,
@@ -121,18 +160,17 @@ static bool prepare_query(
     device uchar *accumulation_result_mask,
     uint gid,
     thread uchar3& query,
-    thread uchar3& source)
+    thread uchar3& comparison)
 {
     uint x;
     uint y;
-    uchar q[3];
     uint local_threshold, cell;
     bool within;
     int dr;
     int dg;
     int db;
     query = uchar3(0);
-    source = uchar3(0);
+    comparison = uchar3(0);
     if (gid >= params.pixel_count) {
         return true;
     }
@@ -146,17 +184,20 @@ static bool prepare_query(
     }
     x = gid % params.width;
     y = gid / params.width;
-    q[0] = pixels[gid * 3u + 0u];
-    q[1] = pixels[gid * 3u + 1u];
-    q[2] = pixels[gid * 3u + 2u];
-    source = uchar3(q[0], q[1], q[2]);
+    comparison = uchar3(pixels[gid * 3u], pixels[gid * 3u + 1u],
+        pixels[gid * 3u + 2u]);
+    if (params.sixdelta_compare != 0u) {
+        query = positional_query(comparison, blue_noise, gradient,
+            params, x, y, gid);
+        comparison = query;
+    }
     if (params.has_6delta != 0u &&
         gid < params.accumulation_pixel_count &&
         (gid >= params.accumulation_valid_mask_size ||
          accumulation_valid_mask[gid] != 0u)) {
-        dr = int(q[0]) - int(accumulation[gid * 3u + 0u]);
-        dg = int(q[1]) - int(accumulation[gid * 3u + 1u]);
-        db = int(q[2]) - int(accumulation[gid * 3u + 2u]);
+        dr = int(comparison.x) - int(accumulation[gid * 3u + 0u]);
+        dg = int(comparison.y) - int(accumulation[gid * 3u + 1u]);
+        db = int(comparison.z) - int(accumulation[gid * 3u + 2u]);
         dr = dr < 0 ? -dr : dr;
         dg = dg < 0 ? -dg : dg;
         db = db < 0 ? -db : db;
@@ -188,37 +229,10 @@ static bool prepare_query(
             return true;
         }
     }
-    if (params.mode == 1u) {
-        float weight = gradient_weight(gradient, params, x, y, gid);
-        for (uint d = 0u; d < 3u; ++d) {
-            int val = int(q[d]) + int(tri_noise(blue_noise,
-                                                params,
-                                                int(x),
-                                                int(y),
-                                                int(d)) * weight * 32.0f);
-            val = val < 0 ? 0 : (val > 255 ? 255 : val);
-            q[d] = uchar(val);
-        }
+    if (params.sixdelta_compare == 0u) {
+        query = positional_query(comparison, blue_noise, gradient,
+            params, x, y, gid);
     }
-    // Match CPU unsigned phases and truncate the bias before addition.
-    // Keep source untouched for the emitted-color comparison below.
-    if (params.mode == 2u || params.mode == 3u) {
-        for (uint d = 0u; d < 3u; ++d) {
-            uint phase;
-            float noise;
-            if (params.mode == 2u) {
-                phase = (x + d * 67u + y * 236u) * 119u;
-                noise = float(phase & 255u) / 128.0f - 1.0f;
-            } else {
-                phase = ((x + d * 29u) ^ (y * 149u)) * 1234u;
-                noise = float(phase & 511u) / 256.0f - 1.0f;
-            }
-            int val = int(q[d]) +
-                int((noise * params.positional_strength) * 32.0f);
-            q[d] = uchar(clamp(val, 0, 255));
-        }
-    }
-    query = uchar3(q[0], q[1], q[2]);
     return false;
 }
 static void finish_pixel(
@@ -228,7 +242,7 @@ static void finish_pixel(
     device const uchar *accumulation_valid_mask,
     device uchar *accumulation_result_mask,
     uint gid,
-    uchar3 source,
+    uchar3 comparison,
     uint best)
 {
     uchar3 retained;
@@ -239,8 +253,8 @@ static void finish_pixel(
         retained = uchar3(accumulation[gid * 3u + 0u],
                           accumulation[gid * 3u + 1u],
                           accumulation[gid * 3u + 2u]);
-        if (color_distance(source, retained) <=
-            palette_distance(params.sixdelta_palette, source, best)) {
+        if (color_distance(comparison, retained) <=
+            palette_distance(params.sixdelta_palette, comparison, best)) {
             result[gid] = uchar(params.accumulation_keycolor);
             if (gid < params.accumulation_result_mask_size) {
                 accumulation_result_mask[gid] = uchar(1);

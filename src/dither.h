@@ -241,6 +241,7 @@ struct sixel_dither {
     unsigned int pipeline_6delta_hls_count;
     unsigned int pipeline_6delta_threshold; /* early-keep threshold */
     int pipeline_6delta_metric;
+    int pipeline_6delta_compare; /* target or positional lookup query */
     sixel_delta_mask_t pipeline_residual_mask;
     int pipeline_6delta_error_mode; /* kept-pixel error handling */
     /* Nonzero omits the pixel. Bit 1 additionally records a nonexact

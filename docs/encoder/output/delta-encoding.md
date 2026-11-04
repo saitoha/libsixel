@@ -8,7 +8,7 @@ See the [SIXEL format](../../sixel-format/README.md) for the wire syntax, [alpha
 
 ## Quick start
 
-Select `--update-policy=delta` (short form `-Z delta`) to enable 6delta. The default policy is `full`. The delta policy defaults to `threshold=0:error=diffuse`; zero controls the exact early-match gate, while the policy itself controls enablement.
+Select `--update-policy=delta` (short form `-Z delta`) to enable 6delta. The default policy is `full`. The delta policy defaults to `threshold=0:error=diffuse:compare=target`; zero controls the exact early-match gate, while the policy itself controls enablement.
 
 ```sh
 img2sixel --update-policy=delta:threshold=0:error=diffuse \
@@ -24,9 +24,11 @@ The first frame establishes history. Subsequent frames in the same encoder insta
 | --- | --- | --- |
 | `-Z POLICY`, `--update-policy=POLICY` | Select `full` or `delta[:threshold=N][:error=MODE]`. | `full`. |
 | `delta:threshold=N` (short key `T`) | Set the early-keep tolerance, an integer from 0 through 255. | `0`. |
+| `delta:compare=MODE` (short key `C`) | Choose `target` or `query` (unique value prefixes accepted) as the keep comparison sample. | `target`. |
 | `delta:error=MODE` (short key `E`) | Choose `diffuse` or `skip` for kept-pixel error handling. | `diffuse`. |
 | `SIXEL_UPDATE_POLICY` | Select the initial base policy, `full` or `delta`, without suboptions. | Invalid values leave `full`. |
 | `SIXEL_UPDATE_DELTA_THRESHOLD` | Set the delta threshold default without enabling delta. | Invalid values leave `0`. |
+| `SIXEL_UPDATE_DELTA_COMPARE` | Set the comparison default without enabling delta. | Invalid values leave `target`. |
 | `SIXEL_UPDATE_DELTA_ERROR` | Set the delta error-mode default without enabling delta. | Invalid values leave `diffuse`. |
 | `--alpha-policy=auto` | Resolve to `keep` for delta, requesting `P2=1`. | `auto`. |
 
@@ -133,7 +135,11 @@ At zero, a post-lookup keep is no farther from this sample under the helper's RG
 
 ### Dither samples and kept-pixel error
 
-Error-diffusion policies make their comparison using the current error-corrected sample. Positional policies such as A-dither, X-dither, and blue noise use the source sample for the keep comparison while their positional perturbation affects the palette choice. The selected candidate and the meaning of the sample therefore depend on the policy; the threshold is not universally a comparison against untouched input-file bytes.
+Error-diffusion policies make their comparison using the current error-corrected sample. With `compare=target` (the default), positional A-dither, X-dither and blue noise compare the unperturbed source while their noise selects the palette candidate. `compare=query` (`:Cq`) instead uses their perturbed lookup input at both the early-threshold gate and the post-lookup distance contest. Byte input uses the same truncated, clipped query as lookup; native float input keeps its unrounded, potentially extended query. The selected candidate and retained RGB remain actual emitted colors, including the existing palette snap and wire projection. No equality requirement between a float query and retained bytes is introduced.
+
+The setting applies to CPU positional policies and their RGB8 GPU paths. `none` and spatial error diffusion retain their existing comparison samples and error propagation. Query comparison changes neither the palette nor noise strength, phase or temporal evolution. At T0, a retained color still wins a post-lookup distance tie; this is not forced repainting or equality with the selected palette entry. At positive T, the tolerance is measured from the selected sample. `refresh_ms` lowers the local threshold to T0 using that same sample, and a caller's adaptive threshold limit remains authoritative. Changing comparison mode resets residual/refresh age while preserving valid retained RGB; reapplying the same effective mode preserves age.
+
+Query comparison can retain more positional texture by allowing a noisy lookup candidate to replace a color that was preferable to the unperturbed source. This trades source-domain fidelity and potentially output size for spatial noise, without guaranteeing lower banding or improved perceptual quality on every scene. It does not introduce an error buffer or a new temporal mask.
 
 With `--update-policy=delta:error=diffuse`, a kept pixel's quantization error is calculated against retained RGB and propagated through the chosen diffusion kernel. The target is the color left on screen, not the transparency marker's RGB. With `skip`, propagation from a kept pixel is omitted; ordinary painted pixels still use the selected diffusion policy. Skipping can change following pixels and temporal appearance as well as execution time. Positional dithers and `none` have no spatial error diffusion for this switch to suppress.
 
@@ -782,6 +788,69 @@ The IDs below map to existing assertions. A representative fixture establishes i
 | D6-277 | An exactly matching frame does not request refinement. | [tests/delta/palette/0124_delta_refine_exact.t](../../../tests/delta/palette/0124_delta_refine_exact.t) |
 | D6-278 | Approximate early keeps request refinement even when another opaque pixel is painted; the painted count is one. | [tests/delta/palette/0125_delta_refine_partial.t](../../../tests/delta/palette/0125_delta_refine_partial.t) |
 | D6-279 | Nonzero source transparency masks do not impersonate approximate delta keeps. | [tests/delta/output-representation/0091_delta_refine_source_mask.t](../../../tests/delta/output-representation/0091_delta_refine_source_mask.t) |
+| DC-01 | query a early bypass | [tests/delta/comparison/0022_query_a_early_bypass.t](../../../tests/delta/comparison/0022_query_a_early_bypass.t) |
+| DC-02 | query a post replace | [tests/delta/comparison/0023_query_a_post_replace.t](../../../tests/delta/comparison/0023_query_a_post_replace.t) |
+| DC-03 | query a early keep | [tests/delta/comparison/0024_query_a_early_keep.t](../../../tests/delta/comparison/0024_query_a_early_keep.t) |
+| DC-04 | query a post tie | [tests/delta/comparison/0025_query_a_post_tie.t](../../../tests/delta/comparison/0025_query_a_post_tie.t) |
+| DC-05 | query a float post | [tests/delta/comparison/0026_query_a_float_post.t](../../../tests/delta/comparison/0026_query_a_float_post.t) |
+| DC-06 | query a gpu legacy early bypass | [tests/delta/comparison/0027_query_a_gpu_legacy_early_bypass.t](../../../tests/delta/comparison/0027_query_a_gpu_legacy_early_bypass.t) |
+| DC-07 | query a gpu legacy post replace | [tests/delta/comparison/0028_query_a_gpu_legacy_post_replace.t](../../../tests/delta/comparison/0028_query_a_gpu_legacy_post_replace.t) |
+| DC-08 | query a gpu fused early bypass | [tests/delta/comparison/0029_query_a_gpu_fused_early_bypass.t](../../../tests/delta/comparison/0029_query_a_gpu_fused_early_bypass.t) |
+| DC-09 | query a gpu fused post replace | [tests/delta/comparison/0030_query_a_gpu_fused_post_replace.t](../../../tests/delta/comparison/0030_query_a_gpu_fused_post_replace.t) |
+| DC-10 | query x early bypass | [tests/delta/comparison/0031_query_x_early_bypass.t](../../../tests/delta/comparison/0031_query_x_early_bypass.t) |
+| DC-11 | query x post replace | [tests/delta/comparison/0032_query_x_post_replace.t](../../../tests/delta/comparison/0032_query_x_post_replace.t) |
+| DC-12 | query x early keep | [tests/delta/comparison/0033_query_x_early_keep.t](../../../tests/delta/comparison/0033_query_x_early_keep.t) |
+| DC-13 | query x post tie | [tests/delta/comparison/0034_query_x_post_tie.t](../../../tests/delta/comparison/0034_query_x_post_tie.t) |
+| DC-14 | query x float post | [tests/delta/comparison/0035_query_x_float_post.t](../../../tests/delta/comparison/0035_query_x_float_post.t) |
+| DC-15 | query x gpu legacy early bypass | [tests/delta/comparison/0036_query_x_gpu_legacy_early_bypass.t](../../../tests/delta/comparison/0036_query_x_gpu_legacy_early_bypass.t) |
+| DC-16 | query x gpu legacy post replace | [tests/delta/comparison/0037_query_x_gpu_legacy_post_replace.t](../../../tests/delta/comparison/0037_query_x_gpu_legacy_post_replace.t) |
+| DC-17 | query x gpu fused early bypass | [tests/delta/comparison/0038_query_x_gpu_fused_early_bypass.t](../../../tests/delta/comparison/0038_query_x_gpu_fused_early_bypass.t) |
+| DC-18 | query x gpu fused post replace | [tests/delta/comparison/0039_query_x_gpu_fused_post_replace.t](../../../tests/delta/comparison/0039_query_x_gpu_fused_post_replace.t) |
+| DC-19 | query blue early bypass | [tests/delta/comparison/0040_query_blue_early_bypass.t](../../../tests/delta/comparison/0040_query_blue_early_bypass.t) |
+| DC-20 | query blue post replace | [tests/delta/comparison/0041_query_blue_post_replace.t](../../../tests/delta/comparison/0041_query_blue_post_replace.t) |
+| DC-21 | query blue early keep | [tests/delta/comparison/0042_query_blue_early_keep.t](../../../tests/delta/comparison/0042_query_blue_early_keep.t) |
+| DC-22 | query blue post tie | [tests/delta/comparison/0043_query_blue_post_tie.t](../../../tests/delta/comparison/0043_query_blue_post_tie.t) |
+| DC-23 | query blue float post | [tests/delta/comparison/0044_query_blue_float_post.t](../../../tests/delta/comparison/0044_query_blue_float_post.t) |
+| DC-24 | query blue gpu legacy early bypass | [tests/delta/comparison/0045_query_blue_gpu_legacy_early_bypass.t](../../../tests/delta/comparison/0045_query_blue_gpu_legacy_early_bypass.t) |
+| DC-25 | query blue gpu legacy post replace | [tests/delta/comparison/0046_query_blue_gpu_legacy_post_replace.t](../../../tests/delta/comparison/0046_query_blue_gpu_legacy_post_replace.t) |
+| DC-26 | query blue gpu fused early bypass | [tests/delta/comparison/0047_query_blue_gpu_fused_early_bypass.t](../../../tests/delta/comparison/0047_query_blue_gpu_fused_early_bypass.t) |
+| DC-27 | query blue gpu fused post replace | [tests/delta/comparison/0048_query_blue_gpu_fused_post_replace.t](../../../tests/delta/comparison/0048_query_blue_gpu_fused_post_replace.t) |
+| DC-28 | query blue cpu threshold | [tests/delta/comparison/0049_query_blue_cpu_threshold.t](../../../tests/delta/comparison/0049_query_blue_cpu_threshold.t) |
+| DC-29 | query blue cpu refresh | [tests/delta/comparison/0050_query_blue_cpu_refresh.t](../../../tests/delta/comparison/0050_query_blue_cpu_refresh.t) |
+| DC-30 | query blue gpu legacy threshold | [tests/delta/comparison/0051_query_blue_gpu_legacy_threshold.t](../../../tests/delta/comparison/0051_query_blue_gpu_legacy_threshold.t) |
+| DC-31 | query blue gpu legacy refresh | [tests/delta/comparison/0052_query_blue_gpu_legacy_refresh.t](../../../tests/delta/comparison/0052_query_blue_gpu_legacy_refresh.t) |
+| DC-32 | query blue gpu fused threshold | [tests/delta/comparison/0053_query_blue_gpu_fused_threshold.t](../../../tests/delta/comparison/0053_query_blue_gpu_fused_threshold.t) |
+| DC-33 | query blue gpu fused refresh | [tests/delta/comparison/0054_query_blue_gpu_fused_refresh.t](../../../tests/delta/comparison/0054_query_blue_gpu_fused_refresh.t) |
+| DC-34 | compare invalid execution | [tests/delta/comparison/0055_compare_invalid_execution.t](../../../tests/delta/comparison/0055_compare_invalid_execution.t) |
+| DC-35 | compare default | [tests/delta/comparison/0056_compare_default.t](../../../tests/delta/comparison/0056_compare_default.t) |
+| DC-36 | compare long | [tests/delta/comparison/0057_compare_long.t](../../../tests/delta/comparison/0057_compare_long.t) |
+| DC-37 | compare short | [tests/delta/comparison/0058_compare_short.t](../../../tests/delta/comparison/0058_compare_short.t) |
+| DC-38 | compare target | [tests/delta/comparison/0059_compare_target.t](../../../tests/delta/comparison/0059_compare_target.t) |
+| DC-39 | compare reset | [tests/delta/comparison/0060_compare_reset.t](../../../tests/delta/comparison/0060_compare_reset.t) |
+| DC-40 | compare environment | [tests/delta/comparison/0061_compare_environment.t](../../../tests/delta/comparison/0061_compare_environment.t) |
+| DC-41 | compare precedence | [tests/delta/comparison/0062_compare_precedence.t](../../../tests/delta/comparison/0062_compare_precedence.t) |
+| DC-42 | compare invalid environment | [tests/delta/comparison/0063_compare_invalid_environment.t](../../../tests/delta/comparison/0063_compare_invalid_environment.t) |
+| DC-43 | compare invalid atomic | [tests/delta/comparison/0064_compare_invalid_atomic.t](../../../tests/delta/comparison/0064_compare_invalid_atomic.t) |
+| DC-44 | compare full reject | [tests/delta/comparison/0065_compare_full_reject.t](../../../tests/delta/comparison/0065_compare_full_reject.t) |
+| DC-45 | compare progressive reject | [tests/delta/comparison/0066_compare_progressive_reject.t](../../../tests/delta/comparison/0066_compare_progressive_reject.t) |
+| DC-46 | compare change preserves rgb | [tests/delta/comparison/0067_compare_change_preserves_rgb.t](../../../tests/delta/comparison/0067_compare_change_preserves_rgb.t) |
+| DC-47 | compare same preserves age | [tests/delta/comparison/0068_compare_same_preserves_age.t](../../../tests/delta/comparison/0068_compare_same_preserves_age.t) |
+| DC-48 | query encode cpu | [tests/delta/comparison/0069_query_encode_cpu.t](../../../tests/delta/comparison/0069_query_encode_cpu.t) |
+| DC-49 | target encode cpu | [tests/delta/comparison/0070_target_encode_cpu.t](../../../tests/delta/comparison/0070_target_encode_cpu.t) |
+| DC-50 | query playback cpu | [tests/delta/comparison/0071_query_playback_cpu.t](../../../tests/delta/comparison/0071_query_playback_cpu.t) |
+| DC-51 | query latest cpu | [tests/delta/comparison/0072_query_latest_cpu.t](../../../tests/delta/comparison/0072_query_latest_cpu.t) |
+| DC-52 | query partial cpu | [tests/delta/comparison/0073_query_partial_cpu.t](../../../tests/delta/comparison/0073_query_partial_cpu.t) |
+| DC-53 | query limit cpu | [tests/delta/comparison/0074_query_limit_cpu.t](../../../tests/delta/comparison/0074_query_limit_cpu.t) |
+| DC-54 | query none cpu | [tests/delta/comparison/0075_query_none_cpu.t](../../../tests/delta/comparison/0075_query_none_cpu.t) |
+| DC-55 | query encode gpu | [tests/delta/comparison/0076_query_encode_gpu.t](../../../tests/delta/comparison/0076_query_encode_gpu.t) |
+| DC-56 | target encode gpu | [tests/delta/comparison/0077_target_encode_gpu.t](../../../tests/delta/comparison/0077_target_encode_gpu.t) |
+| DC-57 | query playback gpu | [tests/delta/comparison/0078_query_playback_gpu.t](../../../tests/delta/comparison/0078_query_playback_gpu.t) |
+| DC-58 | query latest gpu | [tests/delta/comparison/0079_query_latest_gpu.t](../../../tests/delta/comparison/0079_query_latest_gpu.t) |
+| DC-59 | query partial gpu | [tests/delta/comparison/0080_query_partial_gpu.t](../../../tests/delta/comparison/0080_query_partial_gpu.t) |
+| DC-60 | query limit gpu | [tests/delta/comparison/0081_query_limit_gpu.t](../../../tests/delta/comparison/0081_query_limit_gpu.t) |
+| DC-61 | query none gpu | [tests/delta/comparison/0082_query_none_gpu.t](../../../tests/delta/comparison/0082_query_none_gpu.t) |
+| DC-62 | query fs cpu | [tests/delta/comparison/0083_query_fs_cpu.t](../../../tests/delta/comparison/0083_query_fs_cpu.t) |
+| DC-63 | Short and environment routes bind query comparison and produce identical nonempty output. | [tests/cli/output-options/0025_update_delta_compare_image_regression.t](../../../tests/cli/output-options/0025_update_delta_compare_image_regression.t) |
 
 ### GPU emitted-candidate comparison tests
 

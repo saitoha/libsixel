@@ -1021,6 +1021,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "        by default (-T selects another frame).\n"
         "    delta suboptions: progressive=1|0 (:P1 or :P0),\n"
         "                      threshold=0..255 (:Tvalue),\n"
+        "                      compare=target|query (:Cvalue, default target),\n"
         "                      error=diffuse|skip (:Evalue).\n"
         "    Residual controls (delta only):\n"
         "      residual=0|1 (:Rvalue, default 0)\n"
@@ -1548,6 +1549,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_UPDATE_DELTA_THRESHOLD",
         "set delta:threshold (0..255, default 0). Does not enable delta.\n"
         "The update-policy suboption takes precedence."
+    },
+    {
+        "SIXEL_UPDATE_DELTA_COMPARE",
+        "set delta:compare (target|query, default target).\n"
+        "Query compares positional dither input; does not enable delta.\n"
+        "Explicit suboptions take precedence."
     },
     {
         "SIXEL_UPDATE_DELTA_RESIDUAL",

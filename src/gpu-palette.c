@@ -205,6 +205,8 @@ sixel_gpu_palette_accumulation_is_supported(
         return 0;
     }
     plane_pixels = (size_t)width * (size_t)height;
+    if (request->sixdelta_compare != SIXEL_DELTA_COMPARE_TARGET &&
+            request->sixdelta_compare != SIXEL_DELTA_COMPARE_QUERY) return 0;
     if (request->sixdelta_metric < SIXEL_DELTA_METRIC_AUTO ||
             request->sixdelta_metric > SIXEL_DELTA_METRIC_RGB241) return 0;
     if (request->residual_mask != NULL &&

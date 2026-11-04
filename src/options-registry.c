@@ -1515,6 +1515,11 @@ static sixel_suboption_choice_t const g_update_metric_choices[] = {
     {"rgb241", SIXEL_DELTA_METRIC_RGB241}
 };
 
+static sixel_suboption_choice_t const g_update_compare_choices[] = {
+    { "target", SIXEL_DELTA_COMPARE_TARGET },
+    { "query", SIXEL_DELTA_COMPARE_QUERY }
+};
+
 static sixel_suboption_choice_t const g_update_error_choices[] = {
     { "diffuse", SIXEL_6DELTA_ERROR_DIFFUSE },
     { "skip", SIXEL_6DELTA_ERROR_SKIP }
@@ -1839,6 +1844,11 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "threshold_metric", 'D', "SIXEL_UPDATE_DELTA_THRESHOLD_METRIC",
         NULL, NULL, g_update_metric_choices,
         sixdelta_metric, sixdelta_metric_override),
+    SIXEL_REGISTRY_ENCODER_CHOICE(
+        SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
+        "compare", 'C', "SIXEL_UPDATE_DELTA_COMPARE", NULL, NULL,
+        g_update_compare_choices,
+        sixdelta_compare, sixdelta_compare_override),
     SIXEL_REGISTRY_ENCODER_DOUBLE(
         SIXEL_OPTION_SCHEMA_UPDATE_POLICY, g_update_policy_values + 1,
         "residual_threshold", 'H', "SIXEL_UPDATE_DELTA_RESIDUAL_THRESHOLD",

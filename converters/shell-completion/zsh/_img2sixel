@@ -186,6 +186,8 @@ _updatepolicy() {
     'delta:residual=1[enable persistent residual threshold control]' \
     'delta:residual=0[disable residual threshold control]' \
     'delta:R1:T8:H1.5:K0:F3[residual threshold profile]' \
+    'delta:compare=target[compare unperturbed positional source]' \
+    'delta:compare=query[compare positional lookup query]' \
     'delta:threshold_metric=auto[resolve metric from residual policy]' \
     'delta:threshold_metric=max[component maximum distance]' \
     'delta:threshold_metric=rgb241[normalized weighted RGB distance]' \

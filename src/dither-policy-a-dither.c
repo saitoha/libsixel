@@ -203,6 +203,7 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
     int accumulation_keycolor;
     int is_6delta_keep;
     int record_result;
+    int compare_query;
 
     serpentine = 0;
     y = 0;
@@ -228,6 +229,8 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
     accumulation_keycolor = -1;
     is_6delta_keep = 0;
     record_result = 0;
+    compare_query = dither != NULL &&
+        dither->pipeline_6delta_compare == SIXEL_DELTA_COMPARE_QUERY;
 
     if (dither == NULL || context == NULL
             || context->pixels == NULL
@@ -292,7 +295,7 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
             record_result =
                 absolute_y >= context->output_start ? 1 : 0;
             is_6delta_keep = 0;
-            if (absolute_y >= 0) {
+            if (!compare_query && absolute_y >= 0) {
                 is_6delta_keep =
                     sixel_dither_pipeline_6delta_try_keep_rgb888(
                         dither,
@@ -321,17 +324,39 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
                     val < 0 ? 0 : val > 255 ? 255 : val);
             }
 
+            /* Query mode applies the same perturbed sample at both gates.
+             * Target mode still avoids noise work on an early keep. */
+            is_6delta_keep = 0;
+            if (compare_query && absolute_y >= 0) {
+                is_6delta_keep =
+                    sixel_dither_pipeline_6delta_try_keep_rgb888(
+                        dither,
+                        absolute_index,
+                        x,
+                        absolute_y,
+                        quantized,
+                        record_result,
+                        &accumulation_pixel,
+                        &accumulation_keycolor);
+            }
+            if (is_6delta_keep != 0) {
+                if (record_result != 0) {
+                    context->result[pos] =
+                        (sixel_index_t)accumulation_keycolor;
+                }
+                /* A-dither has no neighboring error state to update. */
+                continue;
+            }
+
             color_index = context->lookup_policy->vtbl->map_pixel_hint(
                 context->lookup_policy,
                 quantized,
                 lookup_hint);
             lookup_hint = color_index;
 
-            /*
-             * Noise chooses the palette candidate, but fidelity is measured
-             * against the original pixel.  Keeping wins ties and avoids an
-             * emitted replacement pixel.
-             */
+            /* Both gates use the selected comparison sample. The candidate
+             * and retained colors stay in their emitted representation;
+             * keeping still wins ties. */
             if (absolute_y >= 0 && context->depth >= 3) {
                 is_6delta_keep =
                     sixel_dither_pipeline_6delta_try_keep_after_lookup(
@@ -339,7 +364,7 @@ sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
                         absolute_index,
                         x,
                         absolute_y,
-                        source_pixel,
+                        compare_query ? quantized : source_pixel,
                         context->palette
                             + (size_t)color_index * (size_t)context->depth,
                         color_index,
@@ -492,10 +517,9 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
                 lookup_hint);
             lookup_hint = color_index;
 
-            /* Noise selects a candidate, but retained-color fidelity uses
-             * the unperturbed source. Native delta compares the wire
-             * cache, so no byte projection of the working sample is needed.
-             * Positional methods have no neighboring residual to update. */
+            /* Compare the selected float sample against the wire cache.
+             * Query mode preserves its native precision and extended range;
+             * positional methods have no neighboring residual to update. */
             if (absolute_y >= 0 && context->depth == 3 &&
                     dither->pipeline_6delta_enabled &&
                     dither->use_rgb101_palette &&
@@ -503,7 +527,9 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
                         (size_t)absolute_y * (size_t)context->width +
                             (size_t)x,
                         x, absolute_y, context->pixelformat,
-                        context->pixels_float + (size_t)pos * 3U,
+                        dither->pipeline_6delta_compare ==
+                            SIXEL_DELTA_COMPARE_QUERY ? lookup_pixel_float :
+                            context->pixels_float + (size_t)pos * 3U,
                         NULL, color_index,
                         absolute_y >= context->output_start, retained)) {
                 color_index = dither->pipeline_accumulation_keycolor;
