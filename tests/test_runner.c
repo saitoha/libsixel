@@ -917,6 +917,30 @@ int test_band_nodes_0076(int argc, char **argv);
 int test_band_nodes_0077(int argc, char **argv);
 int test_band_nodes_0078(int argc, char **argv);
 int test_band_nodes_0079(int argc, char **argv);
+int test_cpu_serialize_0080(int argc, char **argv);
+int test_cpu_serialize_0081(int argc, char **argv);
+int test_cpu_serialize_0082(int argc, char **argv);
+int test_cpu_serialize_0083(int argc, char **argv);
+int test_cpu_serialize_0084(int argc, char **argv);
+int test_cpu_serialize_0085(int argc, char **argv);
+int test_cpu_serialize_0086(int argc, char **argv);
+int test_cpu_serialize_0087(int argc, char **argv);
+int test_cpu_serialize_0088(int argc, char **argv);
+int test_cpu_serialize_0089(int argc, char **argv);
+int test_cpu_serialize_0090(int argc, char **argv);
+int test_cpu_serialize_0091(int argc, char **argv);
+int test_cpu_serialize_0092(int argc, char **argv);
+int test_cpu_serialize_0093(int argc, char **argv);
+int test_cpu_serialize_0094(int argc, char **argv);
+int test_cpu_serialize_0095(int argc, char **argv);
+int test_cpu_serialize_0096(int argc, char **argv);
+int test_cpu_serialize_0097(int argc, char **argv);
+int test_cpu_serialize_0098(int argc, char **argv);
+int test_cpu_serialize_0099(int argc, char **argv);
+int test_cpu_serialize_0100(int argc, char **argv);
+int test_cpu_serialize_0101(int argc, char **argv);
+int test_cpu_serialize_0102(int argc, char **argv);
+int test_cpu_serialize_0103(int argc, char **argv);
 int test_compose_0045(int argc, char **argv);
 int test_compose_0046(int argc, char **argv);
 int test_compose_0047(int argc, char **argv);
@@ -5106,6 +5130,54 @@ static test_entry_t const test_entries[] = {
       test_band_nodes_0078 },
     { "encoder/pipeline/0079_bucket_chain_failure_release",
       test_band_nodes_0079 },
+    { "encoder/pipeline/0080_mask_scalar_tail_15",
+      test_cpu_serialize_0080 },
+    { "encoder/pipeline/0081_mask_vector_lanes_16",
+      test_cpu_serialize_0081 },
+    { "encoder/pipeline/0082_mask_vector_tail_17",
+      test_cpu_serialize_0082 },
+    { "encoder/pipeline/0083_mask_dense_vector_32",
+      test_cpu_serialize_0083 },
+    { "encoder/pipeline/0084_mask_empty_vector_32",
+      test_cpu_serialize_0084 },
+    { "encoder/pipeline/0085_mask_sparse_dense_transition",
+      test_cpu_serialize_0085 },
+    { "encoder/pipeline/0086_mask_sparse_first_seen_order",
+      test_cpu_serialize_0086 },
+    { "encoder/pipeline/0087_mask_sparse_mono_selector",
+      test_cpu_serialize_0087 },
+    { "encoder/pipeline/0088_mask_sparse_offset_parallel",
+      test_cpu_serialize_0088 },
+    { "encoder/pipeline/0089_mask_sparse_invalid_index",
+      test_cpu_serialize_0089 },
+    { "encoder/pipeline/0090_mask_sparse_keycolor",
+      test_cpu_serialize_0090 },
+    { "encoder/pipeline/0091_mask_size_protected_hole",
+      test_cpu_serialize_0091 },
+    { "encoder/pipeline/0092_mask_size_dense_partial_rows",
+      test_cpu_serialize_0092 },
+    { "encoder/pipeline/0093_map_all_sixbit_values",
+      test_cpu_serialize_0093 },
+    { "encoder/pipeline/0094_register_decimal_0",
+      test_cpu_serialize_0094 },
+    { "encoder/pipeline/0095_register_decimal_9",
+      test_cpu_serialize_0095 },
+    { "encoder/pipeline/0096_register_decimal_10",
+      test_cpu_serialize_0096 },
+    { "encoder/pipeline/0097_register_decimal_99",
+      test_cpu_serialize_0097 },
+    { "encoder/pipeline/0098_register_decimal_100",
+      test_cpu_serialize_0098 },
+    { "encoder/pipeline/0099_register_decimal_999",
+      test_cpu_serialize_0099 },
+    { "encoder/pipeline/0100_register_decimal_1000",
+      test_cpu_serialize_0100 },
+    { "encoder/pipeline/0101_register_decimal_65535",
+      test_cpu_serialize_0101 },
+    { "encoder/pipeline/0102_register_decimal_100_packet",
+      test_cpu_serialize_0102 },
+    { "encoder/pipeline/0103_register_decimal_1000_packet",
+      test_cpu_serialize_0103 },
     { "encoder-core/0045_compose_gap_nine",
       test_compose_0045 },
     { "encoder-core/0046_compose_gap_ten",

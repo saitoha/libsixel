@@ -29,6 +29,10 @@ size         #1!4~#3!4~$#0NB{o#2NB{o
 
 These are actual SIXEL characters, not pseudocode. Subtracting ASCII `?` from a data character recovers its six vertical paint bits: `o`, `{`, `B`, and `N` describe the holes in the exact masks, while `~` sets all six bits. Thus `!4~` paints four full-height columns. The size plan first lays down four amber columns and four pink columns, returns left with `$`, and repairs the blue and green pixels. Its 23-byte paint body is two bytes shorter than the 25-byte exact body, yet both decode to the same indexed pixels. A taller image would use `-` between six-row bands.
 
+The CPU classifier reads source rows in order and preserves the first-seen color order used to break equal-span ties. On little-endian AArch64 builds with NEON enabled, it examines 16 mask bytes together and enumerates only the painted lanes of a sparse vector. A zero mask byte paints; every nonzero value skips. Fully painted vectors use the ordinary pixel loop without bit enumeration. Other targets, disabled-NEON builds, and short tails use scalar classification. Mask coordinates remain relative to the source raster even when transparent offsets add virtual margins.
+
+Only classification and safe size-policy underpaint write the private color maps. Each sets row bits below the band height, which is at most six, so the serializer receives values in `[0, 63]`; zero participates in ordinary empty-cell runs. Source palette indices are checked before map access. Palette register numbers below 1000 use direct decimal digit emission, while larger values retain the general formatter. These internal paths preserve wire order, decimal spelling, run boundaries, and packet flushing; they do not change palette selection or image quality.
+
 This boundary is useful when diagnosing an option. If changing `-E` changes decoded pixels for the same indexed input, that is a correctness problem rather than an expected quality tradeoff.
 
 ## Why `size` can save bytes
@@ -149,5 +153,31 @@ The serializer keeps one output packet and its retained suffix in `sixel_output_
 | EP-18 | Monochrome serialization preserves its omitted palette selector. | [tests/encoder/pipeline/0076_bucket_mono_selector.t](../../../../tests/encoder/pipeline/0076_bucket_mono_selector.t) |
 | EP-19 | Parallel final partial bands preserve the band-local palette selector. | [tests/encoder/pipeline/0077_bucket_parallel_final_band.t](../../../../tests/encoder/pipeline/0077_bucket_parallel_final_band.t) |
 | EP-20 | Serial final partial bands preserve the active palette selector. | [tests/encoder/pipeline/0078_bucket_serial_final_band.t](../../../../tests/encoder/pipeline/0078_bucket_serial_final_band.t) |
+| EP-21 | A short scalar tail preserves its first and last painted columns. | [tests/encoder/pipeline/0080_mask_scalar_tail_15.t](../../../../tests/encoder/pipeline/0080_mask_scalar_tail_15.t) |
+| EP-22 | Alternating zero and 255 mask bytes preserve lane order in a full vector. | [tests/encoder/pipeline/0081_mask_vector_lanes_16.t](../../../../tests/encoder/pipeline/0081_mask_vector_lanes_16.t) |
+| EP-23 | A painted scalar tail follows the final vector lane without a gap. | [tests/encoder/pipeline/0082_mask_vector_tail_17.t](../../../../tests/encoder/pipeline/0082_mask_vector_tail_17.t) |
+| EP-24 | Two fully painted vectors retain one exact run. | [tests/encoder/pipeline/0083_mask_dense_vector_32.t](../../../../tests/encoder/pipeline/0083_mask_dense_vector_32.t) |
+| EP-25 | Two fully skipped vectors emit no paint commands. | [tests/encoder/pipeline/0084_mask_empty_vector_32.t](../../../../tests/encoder/pipeline/0084_mask_empty_vector_32.t) |
+| EP-26 | A sparse vector followed by a dense vector preserves its run boundary. | [tests/encoder/pipeline/0085_mask_sparse_dense_transition.t](../../../../tests/encoder/pipeline/0085_mask_sparse_dense_transition.t) |
+| EP-27 | Sparse lanes preserve first-seen color ordering for equal-span nodes. | [tests/encoder/pipeline/0086_mask_sparse_first_seen_order.t](../../../../tests/encoder/pipeline/0086_mask_sparse_first_seen_order.t) |
+| EP-28 | Sparse monochrome output preserves the omitted palette selector. | [tests/encoder/pipeline/0087_mask_sparse_mono_selector.t](../../../../tests/encoder/pipeline/0087_mask_sparse_mono_selector.t) |
+| EP-29 | Parallel sparse lanes preserve source-relative mask coordinates across offset bands. | [tests/encoder/pipeline/0088_mask_sparse_offset_parallel.t](../../../../tests/encoder/pipeline/0088_mask_sparse_offset_parallel.t) |
+| EP-30 | An out-of-range index in a painted vector lane emits no paint. | [tests/encoder/pipeline/0089_mask_sparse_invalid_index.t](../../../../tests/encoder/pipeline/0089_mask_sparse_invalid_index.t) |
+| EP-31 | A transparent index in a painted vector lane emits no paint. | [tests/encoder/pipeline/0090_mask_sparse_keycolor.t](../../../../tests/encoder/pipeline/0090_mask_sparse_keycolor.t) |
+| EP-32 | A nonzero mask byte prevents size underpaint through a protected hole. | [tests/encoder/pipeline/0091_mask_size_protected_hole.t](../../../../tests/encoder/pipeline/0091_mask_size_protected_hole.t) |
+| EP-33 | Dense size underpaint sets only the valid rows in a partial band. | [tests/encoder/pipeline/0092_mask_size_dense_partial_rows.t](../../../../tests/encoder/pipeline/0092_mask_size_dense_partial_rows.t) |
+| EP-34 | All 64 six-bit column values retain their literal SIXEL spelling. | [tests/encoder/pipeline/0093_map_all_sixbit_values.t](../../../../tests/encoder/pipeline/0093_map_all_sixbit_values.t) |
+| EP-35 | Palette register 0 emits one zero digit. | [tests/encoder/pipeline/0094_register_decimal_0.t](../../../../tests/encoder/pipeline/0094_register_decimal_0.t) |
+| EP-36 | Palette register 9 emits one digit. | [tests/encoder/pipeline/0095_register_decimal_9.t](../../../../tests/encoder/pipeline/0095_register_decimal_9.t) |
+| EP-37 | Palette register 10 emits two digits. | [tests/encoder/pipeline/0096_register_decimal_10.t](../../../../tests/encoder/pipeline/0096_register_decimal_10.t) |
+| EP-38 | Palette register 99 emits two digits. | [tests/encoder/pipeline/0097_register_decimal_99.t](../../../../tests/encoder/pipeline/0097_register_decimal_99.t) |
+| EP-39 | Palette register 100 emits three digits. | [tests/encoder/pipeline/0098_register_decimal_100.t](../../../../tests/encoder/pipeline/0098_register_decimal_100.t) |
+| EP-40 | Palette register 999 emits three digits. | [tests/encoder/pipeline/0099_register_decimal_999.t](../../../../tests/encoder/pipeline/0099_register_decimal_999.t) |
+| EP-41 | Palette register 1000 retains the general decimal spelling. | [tests/encoder/pipeline/0100_register_decimal_1000.t](../../../../tests/encoder/pipeline/0100_register_decimal_1000.t) |
+| EP-42 | Palette register 65535 retains all five digits. | [tests/encoder/pipeline/0101_register_decimal_65535.t](../../../../tests/encoder/pipeline/0101_register_decimal_65535.t) |
+| EP-43 | A three-digit register selector survives a packet boundary. | [tests/encoder/pipeline/0102_register_decimal_100_packet.t](../../../../tests/encoder/pipeline/0102_register_decimal_100_packet.t) |
+| EP-44 | A four-digit register selector survives a packet boundary. | [tests/encoder/pipeline/0103_register_decimal_1000_packet.t](../../../../tests/encoder/pipeline/0103_register_decimal_1000_packet.t) |
 
 These small fixed rasters establish literal wire ordering, including transparency and size-policy interactions. They do not assert a content-independent speedup; allocator ownership and failure cleanup are covered by the [threading reference](../../../threading/encoder.md#test-coverage).
+
+The mask cases use fixed 15-, 16-, 17-, 32-, and 33-column rasters to exercise vector boundaries, scalar tails, sparse/dense transitions, invalid and transparent indices, mono output, partial-row underpaint, and parallel offsets. The map fixture independently derives all six-bit column masks from its source pixels. Decimal cases check literal selectors at digit boundaries and across packet flushes. These cases establish output behavior on the configured CPU path, not a speed guarantee or proof of which machine instructions executed.

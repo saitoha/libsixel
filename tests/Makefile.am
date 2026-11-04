@@ -2341,6 +2341,31 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0077_BUCKET_PARALLEL_FINAL_BAND \
     -DBUILD_TEST_0078_BUCKET_SERIAL_FINAL_BAND \
     -DBUILD_TEST_0079_BUCKET_CHAIN_FAILURE_RELEASE \
+    -DBUILD_CPU_SERIALIZE_COMMON \
+    -DBUILD_TEST_0080_MASK_SCALAR_TAIL_15 \
+    -DBUILD_TEST_0081_MASK_VECTOR_LANES_16 \
+    -DBUILD_TEST_0082_MASK_VECTOR_TAIL_17 \
+    -DBUILD_TEST_0083_MASK_DENSE_VECTOR_32 \
+    -DBUILD_TEST_0084_MASK_EMPTY_VECTOR_32 \
+    -DBUILD_TEST_0085_MASK_SPARSE_DENSE_TRANSITION \
+    -DBUILD_TEST_0086_MASK_SPARSE_FIRST_SEEN_ORDER \
+    -DBUILD_TEST_0087_MASK_SPARSE_MONO_SELECTOR \
+    -DBUILD_TEST_0088_MASK_SPARSE_OFFSET_PARALLEL \
+    -DBUILD_TEST_0089_MASK_SPARSE_INVALID_INDEX \
+    -DBUILD_TEST_0090_MASK_SPARSE_KEYCOLOR \
+    -DBUILD_TEST_0091_MASK_SIZE_PROTECTED_HOLE \
+    -DBUILD_TEST_0092_MASK_SIZE_DENSE_PARTIAL_ROWS \
+    -DBUILD_TEST_0093_MAP_ALL_SIXBIT_VALUES \
+    -DBUILD_TEST_0094_REGISTER_DECIMAL_0 \
+    -DBUILD_TEST_0095_REGISTER_DECIMAL_9 \
+    -DBUILD_TEST_0096_REGISTER_DECIMAL_10 \
+    -DBUILD_TEST_0097_REGISTER_DECIMAL_99 \
+    -DBUILD_TEST_0098_REGISTER_DECIMAL_100 \
+    -DBUILD_TEST_0099_REGISTER_DECIMAL_999 \
+    -DBUILD_TEST_0100_REGISTER_DECIMAL_1000 \
+    -DBUILD_TEST_0101_REGISTER_DECIMAL_65535 \
+    -DBUILD_TEST_0102_REGISTER_DECIMAL_100_PACKET \
+    -DBUILD_TEST_0103_REGISTER_DECIMAL_1000_PACKET \
     -DBUILD_COMPOSE_TEST_COMMON \
     -DBUILD_TEST_0017_COMPOSE_GAP_NINE \
     -DBUILD_TEST_0018_COMPOSE_GAP_TEN \
@@ -9262,6 +9287,31 @@ test_runner_SOURCES = test_runner.c \
     encoder/pipeline/0077_bucket_parallel_final_band.c \
     encoder/pipeline/0078_bucket_serial_final_band.c \
     encoder/pipeline/0079_bucket_chain_failure_release.c \
+    _support/processing/encoder-core/cpu_serialize_common.c \
+    encoder/pipeline/0080_mask_scalar_tail_15.c \
+    encoder/pipeline/0081_mask_vector_lanes_16.c \
+    encoder/pipeline/0082_mask_vector_tail_17.c \
+    encoder/pipeline/0083_mask_dense_vector_32.c \
+    encoder/pipeline/0084_mask_empty_vector_32.c \
+    encoder/pipeline/0085_mask_sparse_dense_transition.c \
+    encoder/pipeline/0086_mask_sparse_first_seen_order.c \
+    encoder/pipeline/0087_mask_sparse_mono_selector.c \
+    encoder/pipeline/0088_mask_sparse_offset_parallel.c \
+    encoder/pipeline/0089_mask_sparse_invalid_index.c \
+    encoder/pipeline/0090_mask_sparse_keycolor.c \
+    encoder/pipeline/0091_mask_size_protected_hole.c \
+    encoder/pipeline/0092_mask_size_dense_partial_rows.c \
+    encoder/pipeline/0093_map_all_sixbit_values.c \
+    encoder/pipeline/0094_register_decimal_0.c \
+    encoder/pipeline/0095_register_decimal_9.c \
+    encoder/pipeline/0096_register_decimal_10.c \
+    encoder/pipeline/0097_register_decimal_99.c \
+    encoder/pipeline/0098_register_decimal_100.c \
+    encoder/pipeline/0099_register_decimal_999.c \
+    encoder/pipeline/0100_register_decimal_1000.c \
+    encoder/pipeline/0101_register_decimal_65535.c \
+    encoder/pipeline/0102_register_decimal_100_packet.c \
+    encoder/pipeline/0103_register_decimal_1000_packet.c \
     _support/processing/encoder-core/compose_test_common.c \
     encoder/pipeline/0017_compose_gap_nine.c \
     encoder/pipeline/0018_compose_gap_ten.c \

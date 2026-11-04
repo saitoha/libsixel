@@ -50,6 +50,15 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
+/* Nibble order below assumes little-endian AArch64 lanes. Other targets
+ * retain the scalar classifier, including builds with NEON disabled. */
+#if HAVE_NEON && HAVE_ARM_NEON_H && defined(__aarch64__) && \
+        !defined(__ARM_BIG_ENDIAN)
+# include <arm_neon.h>
+# define SIXEL_ENCODE_NEON_MASK 1
+#else
+# define SIXEL_ENCODE_NEON_MASK 0
+#endif
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -2333,8 +2342,9 @@ sixel_putnum_impl(char *buffer, long value, int pos)
         pos = sixel_putnum_impl(buffer, r.quot, pos);
     }
     /*
-     * r.rem is guaranteed to be in [0, 9] because the divisor is 10, so the
-     * explicit cast documents the safe narrowing from long to char.
+     * Callers serialize nonnegative registers, dimensions, and counts.
+     * Their base-10 remainder lies in [0, 9], so the explicit cast documents
+     * the safe narrowing from long to char.
      */
     *(buffer + pos) = (char)('0' + r.rem);
     return pos + 1;
@@ -2346,6 +2356,20 @@ static int
 sixel_putnum(char *buffer, int value)
 {
     int pos;
+
+    /* Palette registers normally fit three digits. Emit those digits without
+     * recursive ldiv; retain the general formatter for all other values. */
+    if (value >= 0 && value < 1000) {
+        pos = 0;
+        if (value >= 100) {
+            buffer[pos++] = (char)('0' + value / 100);
+        }
+        if (value >= 10) {
+            buffer[pos++] = (char)('0' + value / 10 % 10);
+        }
+        buffer[pos++] = (char)('0' + value % 10);
+        return pos;
+    }
 
 #if HAVE_LDIV
     pos = sixel_putnum_impl(buffer, value, 0);
@@ -2567,16 +2591,11 @@ sixel_put_node(
     mx = np->mx;
     for (i = *x; i < mx; i = end) {
         value = row[i];
-        if (value == 0 || value > '?') {
-            /* Out-of-range masks retain the empty-cell interpretation.
-             * Coalesce them with zero masks before spelling the run. */
-            value = 0;
-            for (end = i + 1; end < mx &&
-                    (row[end] == 0 || row[end] > '?'); end++) {
-            }
-        } else {
-            for (end = i + 1; end < mx && row[end] == value; end++) {
-            }
+        /* Only classify and size underpaint produce these private maps. Both
+         * set row bits below band_height <= 6, so every value is in [0, 63].
+         * Zero is an ordinary empty-cell run; input indices are validated
+         * during classification, before any map access. */
+        for (end = i + 1; end < mx && row[end] == value; end++) {
         }
         sixel_put_run_fast(output, '?' + value, end - i);
     }
@@ -3324,6 +3343,7 @@ sixel_band_classify(sixel_encode_work_t *work,
     int target_x;
     int pix;
     int x;
+    int scalar_end;
     unsigned int rows;
     unsigned int color_rows;
     uint64_t word;
@@ -3337,6 +3357,11 @@ sixel_band_classify(sixel_encode_work_t *work,
     char *map;
     uint64_t *occupancy;
     size_t occupancy_words;
+#if SIXEL_ENCODE_NEON_MASK
+    uint64_t paint_lanes;
+    uint8x16_t paint;
+    int selected_x;
+#endif
 
     map = work->map;
     occupancy = work->occupancy;
@@ -3379,30 +3404,81 @@ sixel_band_classify(sixel_encode_work_t *work,
         source_mask = mask == NULL ? NULL :
             mask + (size_t)source_row * (size_t)width;
         paint_bit = UINT64_C(1) << (48 + row_bit);
-        for (x = 0; x < width; x++) {
+        x = 0;
+        while (x < width) {
+            scalar_end = source_mask == NULL ? width : x + 1;
+#if SIXEL_ENCODE_NEON_MASK
+            if (source_mask != NULL && width - x >= 16) {
+                /* A zero mask byte paints; every nonzero value skips.
+                 * Narrow each byte pair to two nibbles, then retain one
+                 * bit per lane. Consume low bits first to preserve the
+                 * first-seen color order used by equal-span nodes. */
+                paint = vceqq_u8(vld1q_u8(source_mask + x), vdupq_n_u8(0));
+                paint_lanes = vget_lane_u64(vreinterpret_u64_u8(
+                    vshrn_n_u16(vreinterpretq_u16_u8(paint), 4)), 0) &
+                    UINT64_C(0x1111111111111111);
+                if (paint_lanes != UINT64_C(0x1111111111111111)) {
+                    state->fillable = 0;
+                    while (paint_lanes != 0) {
+                        selected_x = x +
+                            sixel_encode_trailing_zeros(paint_lanes) / 4;
+                        paint_lanes &= paint_lanes - 1;
+                        pix = source[selected_x];
+                        if (pix >= ncolors || pix == keycolor) {
+                            if (palstate == NULL) {
+                                state->fillable = 0;
+                            }
+                            continue;
+                        }
+                        if (ncolors <= 2) {
+                            columns[selected_x] |=
+                                ((uint64_t)pix << (8 * row_bit)) | paint_bit;
+                        } else {
+                            target_x = offset_left + selected_x;
+                            map[pix * map_width + target_x] |= (1 << row_bit);
+                            occupancy[(size_t)pix * occupancy_words +
+                                (size_t)target_x / 64U] |=
+                                UINT64_C(1) << ((unsigned int)target_x % 64U);
+                        }
+                        if (active_colors[pix] == 0) {
+                            active_colors[pix] = 1;
+                            active_color_index[active_count++] = pix;
+                        }
+                    }
+                    x += 16;
+                    continue;
+                }
+                /* Dense vectors need no bit scans or per-pixel mask loads.
+                 * The scalar body also handles unmasked rasters and tails. */
+                scalar_end = x + 16;
+            } else
+#endif
             if (source_mask != NULL && source_mask[x] != 0) {
                 state->fillable = 0;
+                x++;
                 continue;
             }
-            pix = source[x];
-            if (pix >= ncolors || pix == keycolor) {
-                if (palstate == NULL) {
-                    state->fillable = 0;
+            for (; x < scalar_end; x++) {
+                pix = source[x];
+                if (pix >= ncolors || pix == keycolor) {
+                    if (palstate == NULL) {
+                        state->fillable = 0;
+                    }
+                    continue;
                 }
-                continue;
-            }
-            if (ncolors <= 2) {
-                columns[x] |= ((uint64_t)pix << (8 * row_bit)) | paint_bit;
-            } else {
-                target_x = offset_left + x;
-                map[pix * map_width + target_x] |= (1 << row_bit);
-                occupancy[(size_t)pix * occupancy_words +
-                    (size_t)target_x / 64U] |=
-                    UINT64_C(1) << ((unsigned int)target_x % 64U);
-            }
-            if (active_colors[pix] == 0) {
-                active_colors[pix] = 1;
-                active_color_index[active_count++] = pix;
+                if (ncolors <= 2) {
+                    columns[x] |= ((uint64_t)pix << (8 * row_bit)) | paint_bit;
+                } else {
+                    target_x = offset_left + x;
+                    map[pix * map_width + target_x] |= (1 << row_bit);
+                    occupancy[(size_t)pix * occupancy_words +
+                        (size_t)target_x / 64U] |=
+                        UINT64_C(1) << ((unsigned int)target_x % 64U);
+                }
+                if (active_colors[pix] == 0) {
+                    active_colors[pix] = 1;
+                    active_color_index[active_count++] = pix;
+                }
             }
         }
     }

@@ -4603,6 +4603,31 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	encoder/pipeline/0077_bucket_parallel_final_band.c \
 	encoder/pipeline/0078_bucket_serial_final_band.c \
 	encoder/pipeline/0079_bucket_chain_failure_release.c \
+	_support/processing/encoder-core/cpu_serialize_common.c \
+	encoder/pipeline/0080_mask_scalar_tail_15.c \
+	encoder/pipeline/0081_mask_vector_lanes_16.c \
+	encoder/pipeline/0082_mask_vector_tail_17.c \
+	encoder/pipeline/0083_mask_dense_vector_32.c \
+	encoder/pipeline/0084_mask_empty_vector_32.c \
+	encoder/pipeline/0085_mask_sparse_dense_transition.c \
+	encoder/pipeline/0086_mask_sparse_first_seen_order.c \
+	encoder/pipeline/0087_mask_sparse_mono_selector.c \
+	encoder/pipeline/0088_mask_sparse_offset_parallel.c \
+	encoder/pipeline/0089_mask_sparse_invalid_index.c \
+	encoder/pipeline/0090_mask_sparse_keycolor.c \
+	encoder/pipeline/0091_mask_size_protected_hole.c \
+	encoder/pipeline/0092_mask_size_dense_partial_rows.c \
+	encoder/pipeline/0093_map_all_sixbit_values.c \
+	encoder/pipeline/0094_register_decimal_0.c \
+	encoder/pipeline/0095_register_decimal_9.c \
+	encoder/pipeline/0096_register_decimal_10.c \
+	encoder/pipeline/0097_register_decimal_99.c \
+	encoder/pipeline/0098_register_decimal_100.c \
+	encoder/pipeline/0099_register_decimal_999.c \
+	encoder/pipeline/0100_register_decimal_1000.c \
+	encoder/pipeline/0101_register_decimal_65535.c \
+	encoder/pipeline/0102_register_decimal_100_packet.c \
+	encoder/pipeline/0103_register_decimal_1000_packet.c \
 	_support/processing/encoder-core/compose_test_common.c \
 	encoder/pipeline/0017_compose_gap_nine.c \
 	encoder/pipeline/0018_compose_gap_ten.c \
@@ -9105,6 +9130,31 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0077_bucket_parallel_final_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0078_bucket_serial_final_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0079_bucket_chain_failure_release.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/encoder-core/test_runner-cpu_serialize_common.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0080_mask_scalar_tail_15.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0081_mask_vector_lanes_16.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0082_mask_vector_tail_17.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0083_mask_dense_vector_32.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0084_mask_empty_vector_32.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0090_mask_sparse_keycolor.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0091_mask_size_protected_hole.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0093_map_all_sixbit_values.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0094_register_decimal_0.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0095_register_decimal_9.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0096_register_decimal_10.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0097_register_decimal_99.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0098_register_decimal_100.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0099_register_decimal_999.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0100_register_decimal_1000.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0101_register_decimal_65535.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0102_register_decimal_100_packet.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0103_register_decimal_1000_packet.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	_support/processing/encoder-core/test_runner-compose_test_common.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0017_compose_gap_nine.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/pipeline/test_runner-0018_compose_gap_ten.$(OBJEXT) \
@@ -9620,6 +9670,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po \
 	_support/processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po \
 	_support/processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po \
+	_support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Po \
 	_support/processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Po \
 	_support/processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po \
 	_support/processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po \
@@ -11068,6 +11119,30 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/pipeline/$(DEPDIR)/test_runner-0077_bucket_parallel_final_band.Po \
 	encoder/pipeline/$(DEPDIR)/test_runner-0078_bucket_serial_final_band.Po \
 	encoder/pipeline/$(DEPDIR)/test_runner-0079_bucket_chain_failure_release.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Po \
+	encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po \
 	encoder/planning/$(DEPDIR)/test_runner-0020_playback_direct_equivalence.Po \
@@ -16533,6 +16608,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0077_BUCKET_PARALLEL_FINAL_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0078_BUCKET_SERIAL_FINAL_BAND \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0079_BUCKET_CHAIN_FAILURE_RELEASE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CPU_SERIALIZE_COMMON \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0080_MASK_SCALAR_TAIL_15 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0081_MASK_VECTOR_LANES_16 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0082_MASK_VECTOR_TAIL_17 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0083_MASK_DENSE_VECTOR_32 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0084_MASK_EMPTY_VECTOR_32 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0085_MASK_SPARSE_DENSE_TRANSITION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0086_MASK_SPARSE_FIRST_SEEN_ORDER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0087_MASK_SPARSE_MONO_SELECTOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0088_MASK_SPARSE_OFFSET_PARALLEL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0089_MASK_SPARSE_INVALID_INDEX \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0090_MASK_SPARSE_KEYCOLOR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0091_MASK_SIZE_PROTECTED_HOLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0092_MASK_SIZE_DENSE_PARTIAL_ROWS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0093_MAP_ALL_SIXBIT_VALUES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0094_REGISTER_DECIMAL_0 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0095_REGISTER_DECIMAL_9 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0096_REGISTER_DECIMAL_10 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0097_REGISTER_DECIMAL_99 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0098_REGISTER_DECIMAL_100 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0099_REGISTER_DECIMAL_999 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0100_REGISTER_DECIMAL_1000 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0101_REGISTER_DECIMAL_65535 \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0102_REGISTER_DECIMAL_100_PACKET \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0103_REGISTER_DECIMAL_1000_PACKET \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_COMPOSE_TEST_COMMON \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_COMPOSE_GAP_NINE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_COMPOSE_GAP_TEN \
@@ -23486,6 +23586,31 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0077_bucket_parallel_final_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0078_bucket_serial_final_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0079_bucket_chain_failure_release.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/encoder-core/cpu_serialize_common.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0080_mask_scalar_tail_15.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0081_mask_vector_lanes_16.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0082_mask_vector_tail_17.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0083_mask_dense_vector_32.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0084_mask_empty_vector_32.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0085_mask_sparse_dense_transition.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0086_mask_sparse_first_seen_order.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0087_mask_sparse_mono_selector.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0088_mask_sparse_offset_parallel.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0089_mask_sparse_invalid_index.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0090_mask_sparse_keycolor.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0091_mask_size_protected_hole.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0092_mask_size_dense_partial_rows.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0093_map_all_sixbit_values.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0094_register_decimal_0.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0095_register_decimal_9.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0096_register_decimal_10.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0097_register_decimal_99.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0098_register_decimal_100.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0099_register_decimal_999.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0100_register_decimal_1000.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0101_register_decimal_65535.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0102_register_decimal_100_packet.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0103_register_decimal_1000_packet.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    _support/processing/encoder-core/compose_test_common.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0017_compose_gap_nine.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/pipeline/0018_compose_gap_ten.c \
@@ -38187,6 +38312,81 @@ encoder/pipeline/test_runner-0078_bucket_serial_final_band.$(OBJEXT):  \
 encoder/pipeline/test_runner-0079_bucket_chain_failure_release.$(OBJEXT):  \
 	encoder/pipeline/$(am__dirstamp) \
 	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+_support/processing/encoder-core/test_runner-cpu_serialize_common.$(OBJEXT):  \
+	_support/processing/encoder-core/$(am__dirstamp) \
+	_support/processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0080_mask_scalar_tail_15.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0081_mask_vector_lanes_16.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0082_mask_vector_tail_17.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0083_mask_dense_vector_32.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0084_mask_empty_vector_32.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0090_mask_sparse_keycolor.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0091_mask_size_protected_hole.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0093_map_all_sixbit_values.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0094_register_decimal_0.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0095_register_decimal_9.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0096_register_decimal_10.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0097_register_decimal_99.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0098_register_decimal_100.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0099_register_decimal_999.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0100_register_decimal_1000.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0101_register_decimal_65535.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0102_register_decimal_100_packet.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
+encoder/pipeline/test_runner-0103_register_decimal_1000_packet.$(OBJEXT):  \
+	encoder/pipeline/$(am__dirstamp) \
+	encoder/pipeline/$(DEPDIR)/$(am__dirstamp)
 _support/processing/encoder-core/test_runner-compose_test_common.$(OBJEXT):  \
 	_support/processing/encoder-core/$(am__dirstamp) \
 	_support/processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
@@ -39082,6 +39282,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/encoder-core/$(DEPDIR)/test_runner-classify_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/encoder-core/$(DEPDIR)/test_runner-clear_map_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/encoder-core/$(DEPDIR)/test_runner-emit_run_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/encoder-core/$(DEPDIR)/test_runner-node_unlink_test_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/processing/encoder-core/$(DEPDIR)/test_runner-or_native_test_common.Po@am__quote@ # am--include-marker
@@ -40530,6 +40731,30 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0077_bucket_parallel_final_band.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0078_bucket_serial_final_band.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0079_bucket_chain_failure_release.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0017_pipeline_auto_worker_counts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0018_pipeline_full_frame_worker_counts.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/planning/$(DEPDIR)/test_runner-0020_playback_direct_equivalence.Po@am__quote@ # am--include-marker
@@ -104887,6 +105112,356 @@ encoder/pipeline/test_runner-0079_bucket_chain_failure_release.obj: encoder/pipe
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0079_bucket_chain_failure_release.c' object='encoder/pipeline/test_runner-0079_bucket_chain_failure_release.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0079_bucket_chain_failure_release.obj `if test -f 'encoder/pipeline/0079_bucket_chain_failure_release.c'; then $(CYGPATH_W) 'encoder/pipeline/0079_bucket_chain_failure_release.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0079_bucket_chain_failure_release.c'; fi`
+
+_support/processing/encoder-core/test_runner-cpu_serialize_common.o: _support/processing/encoder-core/cpu_serialize_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/encoder-core/test_runner-cpu_serialize_common.o -MD -MP -MF _support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Tpo -c -o _support/processing/encoder-core/test_runner-cpu_serialize_common.o `test -f '_support/processing/encoder-core/cpu_serialize_common.c' || echo '$(srcdir)/'`_support/processing/encoder-core/cpu_serialize_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Tpo _support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/encoder-core/cpu_serialize_common.c' object='_support/processing/encoder-core/test_runner-cpu_serialize_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/encoder-core/test_runner-cpu_serialize_common.o `test -f '_support/processing/encoder-core/cpu_serialize_common.c' || echo '$(srcdir)/'`_support/processing/encoder-core/cpu_serialize_common.c
+
+_support/processing/encoder-core/test_runner-cpu_serialize_common.obj: _support/processing/encoder-core/cpu_serialize_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/encoder-core/test_runner-cpu_serialize_common.obj -MD -MP -MF _support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Tpo -c -o _support/processing/encoder-core/test_runner-cpu_serialize_common.obj `if test -f '_support/processing/encoder-core/cpu_serialize_common.c'; then $(CYGPATH_W) '_support/processing/encoder-core/cpu_serialize_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/encoder-core/cpu_serialize_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Tpo _support/processing/encoder-core/$(DEPDIR)/test_runner-cpu_serialize_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/processing/encoder-core/cpu_serialize_common.c' object='_support/processing/encoder-core/test_runner-cpu_serialize_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/processing/encoder-core/test_runner-cpu_serialize_common.obj `if test -f '_support/processing/encoder-core/cpu_serialize_common.c'; then $(CYGPATH_W) '_support/processing/encoder-core/cpu_serialize_common.c'; else $(CYGPATH_W) '$(srcdir)/_support/processing/encoder-core/cpu_serialize_common.c'; fi`
+
+encoder/pipeline/test_runner-0080_mask_scalar_tail_15.o: encoder/pipeline/0080_mask_scalar_tail_15.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0080_mask_scalar_tail_15.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Tpo -c -o encoder/pipeline/test_runner-0080_mask_scalar_tail_15.o `test -f 'encoder/pipeline/0080_mask_scalar_tail_15.c' || echo '$(srcdir)/'`encoder/pipeline/0080_mask_scalar_tail_15.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0080_mask_scalar_tail_15.c' object='encoder/pipeline/test_runner-0080_mask_scalar_tail_15.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0080_mask_scalar_tail_15.o `test -f 'encoder/pipeline/0080_mask_scalar_tail_15.c' || echo '$(srcdir)/'`encoder/pipeline/0080_mask_scalar_tail_15.c
+
+encoder/pipeline/test_runner-0080_mask_scalar_tail_15.obj: encoder/pipeline/0080_mask_scalar_tail_15.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0080_mask_scalar_tail_15.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Tpo -c -o encoder/pipeline/test_runner-0080_mask_scalar_tail_15.obj `if test -f 'encoder/pipeline/0080_mask_scalar_tail_15.c'; then $(CYGPATH_W) 'encoder/pipeline/0080_mask_scalar_tail_15.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0080_mask_scalar_tail_15.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0080_mask_scalar_tail_15.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0080_mask_scalar_tail_15.c' object='encoder/pipeline/test_runner-0080_mask_scalar_tail_15.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0080_mask_scalar_tail_15.obj `if test -f 'encoder/pipeline/0080_mask_scalar_tail_15.c'; then $(CYGPATH_W) 'encoder/pipeline/0080_mask_scalar_tail_15.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0080_mask_scalar_tail_15.c'; fi`
+
+encoder/pipeline/test_runner-0081_mask_vector_lanes_16.o: encoder/pipeline/0081_mask_vector_lanes_16.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0081_mask_vector_lanes_16.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Tpo -c -o encoder/pipeline/test_runner-0081_mask_vector_lanes_16.o `test -f 'encoder/pipeline/0081_mask_vector_lanes_16.c' || echo '$(srcdir)/'`encoder/pipeline/0081_mask_vector_lanes_16.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0081_mask_vector_lanes_16.c' object='encoder/pipeline/test_runner-0081_mask_vector_lanes_16.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0081_mask_vector_lanes_16.o `test -f 'encoder/pipeline/0081_mask_vector_lanes_16.c' || echo '$(srcdir)/'`encoder/pipeline/0081_mask_vector_lanes_16.c
+
+encoder/pipeline/test_runner-0081_mask_vector_lanes_16.obj: encoder/pipeline/0081_mask_vector_lanes_16.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0081_mask_vector_lanes_16.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Tpo -c -o encoder/pipeline/test_runner-0081_mask_vector_lanes_16.obj `if test -f 'encoder/pipeline/0081_mask_vector_lanes_16.c'; then $(CYGPATH_W) 'encoder/pipeline/0081_mask_vector_lanes_16.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0081_mask_vector_lanes_16.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0081_mask_vector_lanes_16.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0081_mask_vector_lanes_16.c' object='encoder/pipeline/test_runner-0081_mask_vector_lanes_16.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0081_mask_vector_lanes_16.obj `if test -f 'encoder/pipeline/0081_mask_vector_lanes_16.c'; then $(CYGPATH_W) 'encoder/pipeline/0081_mask_vector_lanes_16.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0081_mask_vector_lanes_16.c'; fi`
+
+encoder/pipeline/test_runner-0082_mask_vector_tail_17.o: encoder/pipeline/0082_mask_vector_tail_17.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0082_mask_vector_tail_17.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Tpo -c -o encoder/pipeline/test_runner-0082_mask_vector_tail_17.o `test -f 'encoder/pipeline/0082_mask_vector_tail_17.c' || echo '$(srcdir)/'`encoder/pipeline/0082_mask_vector_tail_17.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0082_mask_vector_tail_17.c' object='encoder/pipeline/test_runner-0082_mask_vector_tail_17.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0082_mask_vector_tail_17.o `test -f 'encoder/pipeline/0082_mask_vector_tail_17.c' || echo '$(srcdir)/'`encoder/pipeline/0082_mask_vector_tail_17.c
+
+encoder/pipeline/test_runner-0082_mask_vector_tail_17.obj: encoder/pipeline/0082_mask_vector_tail_17.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0082_mask_vector_tail_17.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Tpo -c -o encoder/pipeline/test_runner-0082_mask_vector_tail_17.obj `if test -f 'encoder/pipeline/0082_mask_vector_tail_17.c'; then $(CYGPATH_W) 'encoder/pipeline/0082_mask_vector_tail_17.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0082_mask_vector_tail_17.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0082_mask_vector_tail_17.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0082_mask_vector_tail_17.c' object='encoder/pipeline/test_runner-0082_mask_vector_tail_17.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0082_mask_vector_tail_17.obj `if test -f 'encoder/pipeline/0082_mask_vector_tail_17.c'; then $(CYGPATH_W) 'encoder/pipeline/0082_mask_vector_tail_17.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0082_mask_vector_tail_17.c'; fi`
+
+encoder/pipeline/test_runner-0083_mask_dense_vector_32.o: encoder/pipeline/0083_mask_dense_vector_32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0083_mask_dense_vector_32.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Tpo -c -o encoder/pipeline/test_runner-0083_mask_dense_vector_32.o `test -f 'encoder/pipeline/0083_mask_dense_vector_32.c' || echo '$(srcdir)/'`encoder/pipeline/0083_mask_dense_vector_32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0083_mask_dense_vector_32.c' object='encoder/pipeline/test_runner-0083_mask_dense_vector_32.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0083_mask_dense_vector_32.o `test -f 'encoder/pipeline/0083_mask_dense_vector_32.c' || echo '$(srcdir)/'`encoder/pipeline/0083_mask_dense_vector_32.c
+
+encoder/pipeline/test_runner-0083_mask_dense_vector_32.obj: encoder/pipeline/0083_mask_dense_vector_32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0083_mask_dense_vector_32.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Tpo -c -o encoder/pipeline/test_runner-0083_mask_dense_vector_32.obj `if test -f 'encoder/pipeline/0083_mask_dense_vector_32.c'; then $(CYGPATH_W) 'encoder/pipeline/0083_mask_dense_vector_32.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0083_mask_dense_vector_32.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0083_mask_dense_vector_32.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0083_mask_dense_vector_32.c' object='encoder/pipeline/test_runner-0083_mask_dense_vector_32.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0083_mask_dense_vector_32.obj `if test -f 'encoder/pipeline/0083_mask_dense_vector_32.c'; then $(CYGPATH_W) 'encoder/pipeline/0083_mask_dense_vector_32.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0083_mask_dense_vector_32.c'; fi`
+
+encoder/pipeline/test_runner-0084_mask_empty_vector_32.o: encoder/pipeline/0084_mask_empty_vector_32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0084_mask_empty_vector_32.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Tpo -c -o encoder/pipeline/test_runner-0084_mask_empty_vector_32.o `test -f 'encoder/pipeline/0084_mask_empty_vector_32.c' || echo '$(srcdir)/'`encoder/pipeline/0084_mask_empty_vector_32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0084_mask_empty_vector_32.c' object='encoder/pipeline/test_runner-0084_mask_empty_vector_32.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0084_mask_empty_vector_32.o `test -f 'encoder/pipeline/0084_mask_empty_vector_32.c' || echo '$(srcdir)/'`encoder/pipeline/0084_mask_empty_vector_32.c
+
+encoder/pipeline/test_runner-0084_mask_empty_vector_32.obj: encoder/pipeline/0084_mask_empty_vector_32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0084_mask_empty_vector_32.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Tpo -c -o encoder/pipeline/test_runner-0084_mask_empty_vector_32.obj `if test -f 'encoder/pipeline/0084_mask_empty_vector_32.c'; then $(CYGPATH_W) 'encoder/pipeline/0084_mask_empty_vector_32.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0084_mask_empty_vector_32.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0084_mask_empty_vector_32.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0084_mask_empty_vector_32.c' object='encoder/pipeline/test_runner-0084_mask_empty_vector_32.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0084_mask_empty_vector_32.obj `if test -f 'encoder/pipeline/0084_mask_empty_vector_32.c'; then $(CYGPATH_W) 'encoder/pipeline/0084_mask_empty_vector_32.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0084_mask_empty_vector_32.c'; fi`
+
+encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.o: encoder/pipeline/0085_mask_sparse_dense_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Tpo -c -o encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.o `test -f 'encoder/pipeline/0085_mask_sparse_dense_transition.c' || echo '$(srcdir)/'`encoder/pipeline/0085_mask_sparse_dense_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0085_mask_sparse_dense_transition.c' object='encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.o `test -f 'encoder/pipeline/0085_mask_sparse_dense_transition.c' || echo '$(srcdir)/'`encoder/pipeline/0085_mask_sparse_dense_transition.c
+
+encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.obj: encoder/pipeline/0085_mask_sparse_dense_transition.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Tpo -c -o encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.obj `if test -f 'encoder/pipeline/0085_mask_sparse_dense_transition.c'; then $(CYGPATH_W) 'encoder/pipeline/0085_mask_sparse_dense_transition.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0085_mask_sparse_dense_transition.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0085_mask_sparse_dense_transition.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0085_mask_sparse_dense_transition.c' object='encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0085_mask_sparse_dense_transition.obj `if test -f 'encoder/pipeline/0085_mask_sparse_dense_transition.c'; then $(CYGPATH_W) 'encoder/pipeline/0085_mask_sparse_dense_transition.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0085_mask_sparse_dense_transition.c'; fi`
+
+encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.o: encoder/pipeline/0086_mask_sparse_first_seen_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Tpo -c -o encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.o `test -f 'encoder/pipeline/0086_mask_sparse_first_seen_order.c' || echo '$(srcdir)/'`encoder/pipeline/0086_mask_sparse_first_seen_order.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0086_mask_sparse_first_seen_order.c' object='encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.o `test -f 'encoder/pipeline/0086_mask_sparse_first_seen_order.c' || echo '$(srcdir)/'`encoder/pipeline/0086_mask_sparse_first_seen_order.c
+
+encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.obj: encoder/pipeline/0086_mask_sparse_first_seen_order.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Tpo -c -o encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.obj `if test -f 'encoder/pipeline/0086_mask_sparse_first_seen_order.c'; then $(CYGPATH_W) 'encoder/pipeline/0086_mask_sparse_first_seen_order.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0086_mask_sparse_first_seen_order.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0086_mask_sparse_first_seen_order.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0086_mask_sparse_first_seen_order.c' object='encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0086_mask_sparse_first_seen_order.obj `if test -f 'encoder/pipeline/0086_mask_sparse_first_seen_order.c'; then $(CYGPATH_W) 'encoder/pipeline/0086_mask_sparse_first_seen_order.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0086_mask_sparse_first_seen_order.c'; fi`
+
+encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.o: encoder/pipeline/0087_mask_sparse_mono_selector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Tpo -c -o encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.o `test -f 'encoder/pipeline/0087_mask_sparse_mono_selector.c' || echo '$(srcdir)/'`encoder/pipeline/0087_mask_sparse_mono_selector.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0087_mask_sparse_mono_selector.c' object='encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.o `test -f 'encoder/pipeline/0087_mask_sparse_mono_selector.c' || echo '$(srcdir)/'`encoder/pipeline/0087_mask_sparse_mono_selector.c
+
+encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.obj: encoder/pipeline/0087_mask_sparse_mono_selector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Tpo -c -o encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.obj `if test -f 'encoder/pipeline/0087_mask_sparse_mono_selector.c'; then $(CYGPATH_W) 'encoder/pipeline/0087_mask_sparse_mono_selector.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0087_mask_sparse_mono_selector.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0087_mask_sparse_mono_selector.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0087_mask_sparse_mono_selector.c' object='encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0087_mask_sparse_mono_selector.obj `if test -f 'encoder/pipeline/0087_mask_sparse_mono_selector.c'; then $(CYGPATH_W) 'encoder/pipeline/0087_mask_sparse_mono_selector.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0087_mask_sparse_mono_selector.c'; fi`
+
+encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.o: encoder/pipeline/0088_mask_sparse_offset_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Tpo -c -o encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.o `test -f 'encoder/pipeline/0088_mask_sparse_offset_parallel.c' || echo '$(srcdir)/'`encoder/pipeline/0088_mask_sparse_offset_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0088_mask_sparse_offset_parallel.c' object='encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.o `test -f 'encoder/pipeline/0088_mask_sparse_offset_parallel.c' || echo '$(srcdir)/'`encoder/pipeline/0088_mask_sparse_offset_parallel.c
+
+encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.obj: encoder/pipeline/0088_mask_sparse_offset_parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Tpo -c -o encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.obj `if test -f 'encoder/pipeline/0088_mask_sparse_offset_parallel.c'; then $(CYGPATH_W) 'encoder/pipeline/0088_mask_sparse_offset_parallel.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0088_mask_sparse_offset_parallel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0088_mask_sparse_offset_parallel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0088_mask_sparse_offset_parallel.c' object='encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0088_mask_sparse_offset_parallel.obj `if test -f 'encoder/pipeline/0088_mask_sparse_offset_parallel.c'; then $(CYGPATH_W) 'encoder/pipeline/0088_mask_sparse_offset_parallel.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0088_mask_sparse_offset_parallel.c'; fi`
+
+encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.o: encoder/pipeline/0089_mask_sparse_invalid_index.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Tpo -c -o encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.o `test -f 'encoder/pipeline/0089_mask_sparse_invalid_index.c' || echo '$(srcdir)/'`encoder/pipeline/0089_mask_sparse_invalid_index.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0089_mask_sparse_invalid_index.c' object='encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.o `test -f 'encoder/pipeline/0089_mask_sparse_invalid_index.c' || echo '$(srcdir)/'`encoder/pipeline/0089_mask_sparse_invalid_index.c
+
+encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.obj: encoder/pipeline/0089_mask_sparse_invalid_index.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Tpo -c -o encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.obj `if test -f 'encoder/pipeline/0089_mask_sparse_invalid_index.c'; then $(CYGPATH_W) 'encoder/pipeline/0089_mask_sparse_invalid_index.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0089_mask_sparse_invalid_index.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0089_mask_sparse_invalid_index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0089_mask_sparse_invalid_index.c' object='encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0089_mask_sparse_invalid_index.obj `if test -f 'encoder/pipeline/0089_mask_sparse_invalid_index.c'; then $(CYGPATH_W) 'encoder/pipeline/0089_mask_sparse_invalid_index.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0089_mask_sparse_invalid_index.c'; fi`
+
+encoder/pipeline/test_runner-0090_mask_sparse_keycolor.o: encoder/pipeline/0090_mask_sparse_keycolor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0090_mask_sparse_keycolor.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Tpo -c -o encoder/pipeline/test_runner-0090_mask_sparse_keycolor.o `test -f 'encoder/pipeline/0090_mask_sparse_keycolor.c' || echo '$(srcdir)/'`encoder/pipeline/0090_mask_sparse_keycolor.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0090_mask_sparse_keycolor.c' object='encoder/pipeline/test_runner-0090_mask_sparse_keycolor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0090_mask_sparse_keycolor.o `test -f 'encoder/pipeline/0090_mask_sparse_keycolor.c' || echo '$(srcdir)/'`encoder/pipeline/0090_mask_sparse_keycolor.c
+
+encoder/pipeline/test_runner-0090_mask_sparse_keycolor.obj: encoder/pipeline/0090_mask_sparse_keycolor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0090_mask_sparse_keycolor.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Tpo -c -o encoder/pipeline/test_runner-0090_mask_sparse_keycolor.obj `if test -f 'encoder/pipeline/0090_mask_sparse_keycolor.c'; then $(CYGPATH_W) 'encoder/pipeline/0090_mask_sparse_keycolor.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0090_mask_sparse_keycolor.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0090_mask_sparse_keycolor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0090_mask_sparse_keycolor.c' object='encoder/pipeline/test_runner-0090_mask_sparse_keycolor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0090_mask_sparse_keycolor.obj `if test -f 'encoder/pipeline/0090_mask_sparse_keycolor.c'; then $(CYGPATH_W) 'encoder/pipeline/0090_mask_sparse_keycolor.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0090_mask_sparse_keycolor.c'; fi`
+
+encoder/pipeline/test_runner-0091_mask_size_protected_hole.o: encoder/pipeline/0091_mask_size_protected_hole.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0091_mask_size_protected_hole.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Tpo -c -o encoder/pipeline/test_runner-0091_mask_size_protected_hole.o `test -f 'encoder/pipeline/0091_mask_size_protected_hole.c' || echo '$(srcdir)/'`encoder/pipeline/0091_mask_size_protected_hole.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0091_mask_size_protected_hole.c' object='encoder/pipeline/test_runner-0091_mask_size_protected_hole.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0091_mask_size_protected_hole.o `test -f 'encoder/pipeline/0091_mask_size_protected_hole.c' || echo '$(srcdir)/'`encoder/pipeline/0091_mask_size_protected_hole.c
+
+encoder/pipeline/test_runner-0091_mask_size_protected_hole.obj: encoder/pipeline/0091_mask_size_protected_hole.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0091_mask_size_protected_hole.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Tpo -c -o encoder/pipeline/test_runner-0091_mask_size_protected_hole.obj `if test -f 'encoder/pipeline/0091_mask_size_protected_hole.c'; then $(CYGPATH_W) 'encoder/pipeline/0091_mask_size_protected_hole.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0091_mask_size_protected_hole.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0091_mask_size_protected_hole.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0091_mask_size_protected_hole.c' object='encoder/pipeline/test_runner-0091_mask_size_protected_hole.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0091_mask_size_protected_hole.obj `if test -f 'encoder/pipeline/0091_mask_size_protected_hole.c'; then $(CYGPATH_W) 'encoder/pipeline/0091_mask_size_protected_hole.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0091_mask_size_protected_hole.c'; fi`
+
+encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.o: encoder/pipeline/0092_mask_size_dense_partial_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Tpo -c -o encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.o `test -f 'encoder/pipeline/0092_mask_size_dense_partial_rows.c' || echo '$(srcdir)/'`encoder/pipeline/0092_mask_size_dense_partial_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0092_mask_size_dense_partial_rows.c' object='encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.o `test -f 'encoder/pipeline/0092_mask_size_dense_partial_rows.c' || echo '$(srcdir)/'`encoder/pipeline/0092_mask_size_dense_partial_rows.c
+
+encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.obj: encoder/pipeline/0092_mask_size_dense_partial_rows.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Tpo -c -o encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.obj `if test -f 'encoder/pipeline/0092_mask_size_dense_partial_rows.c'; then $(CYGPATH_W) 'encoder/pipeline/0092_mask_size_dense_partial_rows.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0092_mask_size_dense_partial_rows.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0092_mask_size_dense_partial_rows.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0092_mask_size_dense_partial_rows.c' object='encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0092_mask_size_dense_partial_rows.obj `if test -f 'encoder/pipeline/0092_mask_size_dense_partial_rows.c'; then $(CYGPATH_W) 'encoder/pipeline/0092_mask_size_dense_partial_rows.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0092_mask_size_dense_partial_rows.c'; fi`
+
+encoder/pipeline/test_runner-0093_map_all_sixbit_values.o: encoder/pipeline/0093_map_all_sixbit_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0093_map_all_sixbit_values.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Tpo -c -o encoder/pipeline/test_runner-0093_map_all_sixbit_values.o `test -f 'encoder/pipeline/0093_map_all_sixbit_values.c' || echo '$(srcdir)/'`encoder/pipeline/0093_map_all_sixbit_values.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0093_map_all_sixbit_values.c' object='encoder/pipeline/test_runner-0093_map_all_sixbit_values.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0093_map_all_sixbit_values.o `test -f 'encoder/pipeline/0093_map_all_sixbit_values.c' || echo '$(srcdir)/'`encoder/pipeline/0093_map_all_sixbit_values.c
+
+encoder/pipeline/test_runner-0093_map_all_sixbit_values.obj: encoder/pipeline/0093_map_all_sixbit_values.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0093_map_all_sixbit_values.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Tpo -c -o encoder/pipeline/test_runner-0093_map_all_sixbit_values.obj `if test -f 'encoder/pipeline/0093_map_all_sixbit_values.c'; then $(CYGPATH_W) 'encoder/pipeline/0093_map_all_sixbit_values.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0093_map_all_sixbit_values.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0093_map_all_sixbit_values.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0093_map_all_sixbit_values.c' object='encoder/pipeline/test_runner-0093_map_all_sixbit_values.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0093_map_all_sixbit_values.obj `if test -f 'encoder/pipeline/0093_map_all_sixbit_values.c'; then $(CYGPATH_W) 'encoder/pipeline/0093_map_all_sixbit_values.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0093_map_all_sixbit_values.c'; fi`
+
+encoder/pipeline/test_runner-0094_register_decimal_0.o: encoder/pipeline/0094_register_decimal_0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0094_register_decimal_0.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Tpo -c -o encoder/pipeline/test_runner-0094_register_decimal_0.o `test -f 'encoder/pipeline/0094_register_decimal_0.c' || echo '$(srcdir)/'`encoder/pipeline/0094_register_decimal_0.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0094_register_decimal_0.c' object='encoder/pipeline/test_runner-0094_register_decimal_0.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0094_register_decimal_0.o `test -f 'encoder/pipeline/0094_register_decimal_0.c' || echo '$(srcdir)/'`encoder/pipeline/0094_register_decimal_0.c
+
+encoder/pipeline/test_runner-0094_register_decimal_0.obj: encoder/pipeline/0094_register_decimal_0.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0094_register_decimal_0.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Tpo -c -o encoder/pipeline/test_runner-0094_register_decimal_0.obj `if test -f 'encoder/pipeline/0094_register_decimal_0.c'; then $(CYGPATH_W) 'encoder/pipeline/0094_register_decimal_0.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0094_register_decimal_0.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0094_register_decimal_0.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0094_register_decimal_0.c' object='encoder/pipeline/test_runner-0094_register_decimal_0.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0094_register_decimal_0.obj `if test -f 'encoder/pipeline/0094_register_decimal_0.c'; then $(CYGPATH_W) 'encoder/pipeline/0094_register_decimal_0.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0094_register_decimal_0.c'; fi`
+
+encoder/pipeline/test_runner-0095_register_decimal_9.o: encoder/pipeline/0095_register_decimal_9.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0095_register_decimal_9.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Tpo -c -o encoder/pipeline/test_runner-0095_register_decimal_9.o `test -f 'encoder/pipeline/0095_register_decimal_9.c' || echo '$(srcdir)/'`encoder/pipeline/0095_register_decimal_9.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0095_register_decimal_9.c' object='encoder/pipeline/test_runner-0095_register_decimal_9.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0095_register_decimal_9.o `test -f 'encoder/pipeline/0095_register_decimal_9.c' || echo '$(srcdir)/'`encoder/pipeline/0095_register_decimal_9.c
+
+encoder/pipeline/test_runner-0095_register_decimal_9.obj: encoder/pipeline/0095_register_decimal_9.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0095_register_decimal_9.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Tpo -c -o encoder/pipeline/test_runner-0095_register_decimal_9.obj `if test -f 'encoder/pipeline/0095_register_decimal_9.c'; then $(CYGPATH_W) 'encoder/pipeline/0095_register_decimal_9.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0095_register_decimal_9.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0095_register_decimal_9.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0095_register_decimal_9.c' object='encoder/pipeline/test_runner-0095_register_decimal_9.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0095_register_decimal_9.obj `if test -f 'encoder/pipeline/0095_register_decimal_9.c'; then $(CYGPATH_W) 'encoder/pipeline/0095_register_decimal_9.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0095_register_decimal_9.c'; fi`
+
+encoder/pipeline/test_runner-0096_register_decimal_10.o: encoder/pipeline/0096_register_decimal_10.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0096_register_decimal_10.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Tpo -c -o encoder/pipeline/test_runner-0096_register_decimal_10.o `test -f 'encoder/pipeline/0096_register_decimal_10.c' || echo '$(srcdir)/'`encoder/pipeline/0096_register_decimal_10.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0096_register_decimal_10.c' object='encoder/pipeline/test_runner-0096_register_decimal_10.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0096_register_decimal_10.o `test -f 'encoder/pipeline/0096_register_decimal_10.c' || echo '$(srcdir)/'`encoder/pipeline/0096_register_decimal_10.c
+
+encoder/pipeline/test_runner-0096_register_decimal_10.obj: encoder/pipeline/0096_register_decimal_10.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0096_register_decimal_10.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Tpo -c -o encoder/pipeline/test_runner-0096_register_decimal_10.obj `if test -f 'encoder/pipeline/0096_register_decimal_10.c'; then $(CYGPATH_W) 'encoder/pipeline/0096_register_decimal_10.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0096_register_decimal_10.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0096_register_decimal_10.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0096_register_decimal_10.c' object='encoder/pipeline/test_runner-0096_register_decimal_10.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0096_register_decimal_10.obj `if test -f 'encoder/pipeline/0096_register_decimal_10.c'; then $(CYGPATH_W) 'encoder/pipeline/0096_register_decimal_10.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0096_register_decimal_10.c'; fi`
+
+encoder/pipeline/test_runner-0097_register_decimal_99.o: encoder/pipeline/0097_register_decimal_99.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0097_register_decimal_99.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Tpo -c -o encoder/pipeline/test_runner-0097_register_decimal_99.o `test -f 'encoder/pipeline/0097_register_decimal_99.c' || echo '$(srcdir)/'`encoder/pipeline/0097_register_decimal_99.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0097_register_decimal_99.c' object='encoder/pipeline/test_runner-0097_register_decimal_99.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0097_register_decimal_99.o `test -f 'encoder/pipeline/0097_register_decimal_99.c' || echo '$(srcdir)/'`encoder/pipeline/0097_register_decimal_99.c
+
+encoder/pipeline/test_runner-0097_register_decimal_99.obj: encoder/pipeline/0097_register_decimal_99.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0097_register_decimal_99.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Tpo -c -o encoder/pipeline/test_runner-0097_register_decimal_99.obj `if test -f 'encoder/pipeline/0097_register_decimal_99.c'; then $(CYGPATH_W) 'encoder/pipeline/0097_register_decimal_99.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0097_register_decimal_99.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0097_register_decimal_99.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0097_register_decimal_99.c' object='encoder/pipeline/test_runner-0097_register_decimal_99.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0097_register_decimal_99.obj `if test -f 'encoder/pipeline/0097_register_decimal_99.c'; then $(CYGPATH_W) 'encoder/pipeline/0097_register_decimal_99.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0097_register_decimal_99.c'; fi`
+
+encoder/pipeline/test_runner-0098_register_decimal_100.o: encoder/pipeline/0098_register_decimal_100.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0098_register_decimal_100.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Tpo -c -o encoder/pipeline/test_runner-0098_register_decimal_100.o `test -f 'encoder/pipeline/0098_register_decimal_100.c' || echo '$(srcdir)/'`encoder/pipeline/0098_register_decimal_100.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0098_register_decimal_100.c' object='encoder/pipeline/test_runner-0098_register_decimal_100.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0098_register_decimal_100.o `test -f 'encoder/pipeline/0098_register_decimal_100.c' || echo '$(srcdir)/'`encoder/pipeline/0098_register_decimal_100.c
+
+encoder/pipeline/test_runner-0098_register_decimal_100.obj: encoder/pipeline/0098_register_decimal_100.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0098_register_decimal_100.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Tpo -c -o encoder/pipeline/test_runner-0098_register_decimal_100.obj `if test -f 'encoder/pipeline/0098_register_decimal_100.c'; then $(CYGPATH_W) 'encoder/pipeline/0098_register_decimal_100.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0098_register_decimal_100.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0098_register_decimal_100.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0098_register_decimal_100.c' object='encoder/pipeline/test_runner-0098_register_decimal_100.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0098_register_decimal_100.obj `if test -f 'encoder/pipeline/0098_register_decimal_100.c'; then $(CYGPATH_W) 'encoder/pipeline/0098_register_decimal_100.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0098_register_decimal_100.c'; fi`
+
+encoder/pipeline/test_runner-0099_register_decimal_999.o: encoder/pipeline/0099_register_decimal_999.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0099_register_decimal_999.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Tpo -c -o encoder/pipeline/test_runner-0099_register_decimal_999.o `test -f 'encoder/pipeline/0099_register_decimal_999.c' || echo '$(srcdir)/'`encoder/pipeline/0099_register_decimal_999.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0099_register_decimal_999.c' object='encoder/pipeline/test_runner-0099_register_decimal_999.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0099_register_decimal_999.o `test -f 'encoder/pipeline/0099_register_decimal_999.c' || echo '$(srcdir)/'`encoder/pipeline/0099_register_decimal_999.c
+
+encoder/pipeline/test_runner-0099_register_decimal_999.obj: encoder/pipeline/0099_register_decimal_999.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0099_register_decimal_999.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Tpo -c -o encoder/pipeline/test_runner-0099_register_decimal_999.obj `if test -f 'encoder/pipeline/0099_register_decimal_999.c'; then $(CYGPATH_W) 'encoder/pipeline/0099_register_decimal_999.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0099_register_decimal_999.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0099_register_decimal_999.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0099_register_decimal_999.c' object='encoder/pipeline/test_runner-0099_register_decimal_999.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0099_register_decimal_999.obj `if test -f 'encoder/pipeline/0099_register_decimal_999.c'; then $(CYGPATH_W) 'encoder/pipeline/0099_register_decimal_999.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0099_register_decimal_999.c'; fi`
+
+encoder/pipeline/test_runner-0100_register_decimal_1000.o: encoder/pipeline/0100_register_decimal_1000.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0100_register_decimal_1000.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Tpo -c -o encoder/pipeline/test_runner-0100_register_decimal_1000.o `test -f 'encoder/pipeline/0100_register_decimal_1000.c' || echo '$(srcdir)/'`encoder/pipeline/0100_register_decimal_1000.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0100_register_decimal_1000.c' object='encoder/pipeline/test_runner-0100_register_decimal_1000.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0100_register_decimal_1000.o `test -f 'encoder/pipeline/0100_register_decimal_1000.c' || echo '$(srcdir)/'`encoder/pipeline/0100_register_decimal_1000.c
+
+encoder/pipeline/test_runner-0100_register_decimal_1000.obj: encoder/pipeline/0100_register_decimal_1000.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0100_register_decimal_1000.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Tpo -c -o encoder/pipeline/test_runner-0100_register_decimal_1000.obj `if test -f 'encoder/pipeline/0100_register_decimal_1000.c'; then $(CYGPATH_W) 'encoder/pipeline/0100_register_decimal_1000.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0100_register_decimal_1000.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0100_register_decimal_1000.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0100_register_decimal_1000.c' object='encoder/pipeline/test_runner-0100_register_decimal_1000.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0100_register_decimal_1000.obj `if test -f 'encoder/pipeline/0100_register_decimal_1000.c'; then $(CYGPATH_W) 'encoder/pipeline/0100_register_decimal_1000.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0100_register_decimal_1000.c'; fi`
+
+encoder/pipeline/test_runner-0101_register_decimal_65535.o: encoder/pipeline/0101_register_decimal_65535.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0101_register_decimal_65535.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Tpo -c -o encoder/pipeline/test_runner-0101_register_decimal_65535.o `test -f 'encoder/pipeline/0101_register_decimal_65535.c' || echo '$(srcdir)/'`encoder/pipeline/0101_register_decimal_65535.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0101_register_decimal_65535.c' object='encoder/pipeline/test_runner-0101_register_decimal_65535.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0101_register_decimal_65535.o `test -f 'encoder/pipeline/0101_register_decimal_65535.c' || echo '$(srcdir)/'`encoder/pipeline/0101_register_decimal_65535.c
+
+encoder/pipeline/test_runner-0101_register_decimal_65535.obj: encoder/pipeline/0101_register_decimal_65535.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0101_register_decimal_65535.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Tpo -c -o encoder/pipeline/test_runner-0101_register_decimal_65535.obj `if test -f 'encoder/pipeline/0101_register_decimal_65535.c'; then $(CYGPATH_W) 'encoder/pipeline/0101_register_decimal_65535.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0101_register_decimal_65535.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0101_register_decimal_65535.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0101_register_decimal_65535.c' object='encoder/pipeline/test_runner-0101_register_decimal_65535.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0101_register_decimal_65535.obj `if test -f 'encoder/pipeline/0101_register_decimal_65535.c'; then $(CYGPATH_W) 'encoder/pipeline/0101_register_decimal_65535.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0101_register_decimal_65535.c'; fi`
+
+encoder/pipeline/test_runner-0102_register_decimal_100_packet.o: encoder/pipeline/0102_register_decimal_100_packet.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0102_register_decimal_100_packet.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Tpo -c -o encoder/pipeline/test_runner-0102_register_decimal_100_packet.o `test -f 'encoder/pipeline/0102_register_decimal_100_packet.c' || echo '$(srcdir)/'`encoder/pipeline/0102_register_decimal_100_packet.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0102_register_decimal_100_packet.c' object='encoder/pipeline/test_runner-0102_register_decimal_100_packet.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0102_register_decimal_100_packet.o `test -f 'encoder/pipeline/0102_register_decimal_100_packet.c' || echo '$(srcdir)/'`encoder/pipeline/0102_register_decimal_100_packet.c
+
+encoder/pipeline/test_runner-0102_register_decimal_100_packet.obj: encoder/pipeline/0102_register_decimal_100_packet.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0102_register_decimal_100_packet.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Tpo -c -o encoder/pipeline/test_runner-0102_register_decimal_100_packet.obj `if test -f 'encoder/pipeline/0102_register_decimal_100_packet.c'; then $(CYGPATH_W) 'encoder/pipeline/0102_register_decimal_100_packet.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0102_register_decimal_100_packet.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0102_register_decimal_100_packet.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0102_register_decimal_100_packet.c' object='encoder/pipeline/test_runner-0102_register_decimal_100_packet.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0102_register_decimal_100_packet.obj `if test -f 'encoder/pipeline/0102_register_decimal_100_packet.c'; then $(CYGPATH_W) 'encoder/pipeline/0102_register_decimal_100_packet.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0102_register_decimal_100_packet.c'; fi`
+
+encoder/pipeline/test_runner-0103_register_decimal_1000_packet.o: encoder/pipeline/0103_register_decimal_1000_packet.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0103_register_decimal_1000_packet.o -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Tpo -c -o encoder/pipeline/test_runner-0103_register_decimal_1000_packet.o `test -f 'encoder/pipeline/0103_register_decimal_1000_packet.c' || echo '$(srcdir)/'`encoder/pipeline/0103_register_decimal_1000_packet.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0103_register_decimal_1000_packet.c' object='encoder/pipeline/test_runner-0103_register_decimal_1000_packet.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0103_register_decimal_1000_packet.o `test -f 'encoder/pipeline/0103_register_decimal_1000_packet.c' || echo '$(srcdir)/'`encoder/pipeline/0103_register_decimal_1000_packet.c
+
+encoder/pipeline/test_runner-0103_register_decimal_1000_packet.obj: encoder/pipeline/0103_register_decimal_1000_packet.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/pipeline/test_runner-0103_register_decimal_1000_packet.obj -MD -MP -MF encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Tpo -c -o encoder/pipeline/test_runner-0103_register_decimal_1000_packet.obj `if test -f 'encoder/pipeline/0103_register_decimal_1000_packet.c'; then $(CYGPATH_W) 'encoder/pipeline/0103_register_decimal_1000_packet.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0103_register_decimal_1000_packet.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Tpo encoder/pipeline/$(DEPDIR)/test_runner-0103_register_decimal_1000_packet.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/pipeline/0103_register_decimal_1000_packet.c' object='encoder/pipeline/test_runner-0103_register_decimal_1000_packet.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/pipeline/test_runner-0103_register_decimal_1000_packet.obj `if test -f 'encoder/pipeline/0103_register_decimal_1000_packet.c'; then $(CYGPATH_W) 'encoder/pipeline/0103_register_decimal_1000_packet.c'; else $(CYGPATH_W) '$(srcdir)/encoder/pipeline/0103_register_decimal_1000_packet.c'; fi`
 
 _support/processing/encoder-core/test_runner-compose_test_common.o: _support/processing/encoder-core/compose_test_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/processing/encoder-core/test_runner-compose_test_common.o -MD -MP -MF _support/processing/encoder-core/$(DEPDIR)/test_runner-compose_test_common.Tpo -c -o _support/processing/encoder-core/test_runner-compose_test_common.o `test -f '_support/processing/encoder-core/compose_test_common.c' || echo '$(srcdir)/'`_support/processing/encoder-core/compose_test_common.c
