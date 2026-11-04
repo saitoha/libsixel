@@ -73,7 +73,7 @@ test_reserved_run(int width, int limited, int packet_tail, int left,
     memset(pixels, 1, (size_t)width * sizeof(*pixels));
     status = sixel_output_new(&output, reserved_run_write, &sink, allocator);
     if (SIXEL_FAILED(status)) goto end;
-    output->has_gri_arg_limit = limited;
+    output->has_gri_arg_limit = (unsigned char)(limited != 0);
     output->transparent_offset_left = left;
     memset(output->buffer, '?', sink.prefix);
     output->pos = (int)sink.prefix;

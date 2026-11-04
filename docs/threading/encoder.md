@@ -440,7 +440,7 @@ The fixed-budget colorspace tests select `greedy` explicitly so their worker cou
 | TE-66 | Reusing a serial output after node-allocation failure produces the expected body. | [tests/encoder/pipeline/0062_serial_node_failure_retry.t](../../tests/encoder/pipeline/0062_serial_node_failure_retry.t) |
 | TE-67 | A rejected typed sink releases all caller-allocator storage after parallel drain. | [tests/encoder/pipeline/0063_parallel_node_writer_release.t](../../tests/encoder/pipeline/0063_parallel_node_writer_release.t) |
 | TE-68 | A serial failure while building a same-column chain releases its pending nodes. | [tests/encoder/pipeline/0079_bucket_chain_failure_release.t](../../tests/encoder/pipeline/0079_bucket_chain_failure_release.t) |
-| TE-69 | A queued job cannot overwrite a later loader-owned loop number on a shared frame; writer gating determines the order without sleeps. | [tests/encoder/planning/0184_shared_timeline_ownership.t](../../tests/encoder/planning/0184_shared_timeline_ownership.t) |
+| TE-69 | A queued job cannot overwrite a later loader-owned loop number on a shared frame; writer gating determines the order without sleeps. The wrapper discards helper stdout so encoder cursor controls cannot corrupt TAP; the observation uses shared state and the helper's status, with stderr retained for diagnostics. | [tests/encoder/planning/0184_shared_timeline_ownership.t](../../tests/encoder/planning/0184_shared_timeline_ownership.t) |
 
 The bit comparisons establish scheduling consistency, not independent color accuracy; the [color arithmetic tests](../../tests/color/space/) own independent numeric references and pool-fault coverage. Actual scaling depends on the image, concurrent work and memory bandwidth.
 

@@ -3764,6 +3764,13 @@ sixel_band_emit(sixel_encode_work_t *work,
         }
         do {
             node = work->columns[sx];
+            /* A marked start must own a node. Check the pointer as well as
+             * the bitset so this invariant is explicit at the dereference. */
+            if (node == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_band_emit: marked column has no node");
+                return SIXEL_LOGIC_ERROR;
+            }
             if (state->fillable) {
                 memset(node->map + node->sx, state->fill_mask,
                     (size_t)(node->mx - node->sx));

@@ -7,8 +7,11 @@ set -eux
 
 pc_file="${TOP_BUILDDIR}/libsixel.pc"
 
-test -n "${SIXEL_TEST_PKG_CONFIG-}" &&
-    test "${SIXEL_TEST_PKG_CONFIG}" != false || {
+test -n "${SIXEL_TEST_PKG_CONFIG-}" || {
+    echo "1..0 # SKIP pkg-config is unavailable"
+    exit 0
+}
+test "${SIXEL_TEST_PKG_CONFIG}" != false || {
     echo "1..0 # SKIP pkg-config is unavailable"
     exit 0
 }

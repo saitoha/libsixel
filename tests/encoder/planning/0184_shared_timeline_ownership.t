@@ -6,15 +6,16 @@ set -eux
 echo '1..1'
 set -v
 status=0
+# Encoder cursor controls are not TAP; this case observes shared state only.
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    encoder/planning/0184_shared_timeline_ownership || status=$?
+    encoder/planning/0184_shared_timeline_ownership >/dev/null || status=$?
 test "$status" -ne 77 || {
-    echo 'ok 1 # SKIP thread support disabled'
+    echo 'ok' '1 # SKIP thread support disabled'
     exit 0
 }
 test "$status" -eq 0 || {
-    echo 'not ok 1 - shared timeline ownership'
+    echo 'not ok' '1 - shared timeline ownership'
     exit 0
 }
-echo 'ok 1 - shared timeline ownership'
+echo 'ok' '1 - shared timeline ownership'
 exit 0
