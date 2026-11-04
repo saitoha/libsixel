@@ -30,10 +30,9 @@ The budget bounds planned work slots rather than all operating-system threads in
 - a temporarily overlapping palette-build worker; and
 - worker pools created independently by other components.
 
-The thread-pool component deliberately owns one short-lived queue and forbids
-global queue or process-budget state. This keeps components independent, but
-it also means that current code does not coordinate all concurrently live
-pools through one process-wide scheduler.
+The thread-pool component owns one private queue and forbids global queue or process-budget state. Its owner can retain idle workers between batches without creating a process-wide scheduler or reserving CPU time while they wait.
+
+Creation opens a batch. `drain()` closes admission, wakes blocked submitters, waits for accepted callbacks and their work hooks, and releases the batch's borrowed execution-policy snapshot. Threads and workspaces remain owned by that pool. Repeated drains preserve the first job error. `resume()` accepts only a healthy drained pool and captures the caller's current policy with one reserved slot per job; callback, userdata and workspace bindings stay fixed. `push()` rejects a drained or finished pool, and growth requires an open batch. `finish()` remains terminal drain and join; final release joins before workspace cleanup. The owner serializes lifecycle operations and must not invoke them from a pool callback. [Encoder threading](encoder.md#six-row-jobs-and-ordered-output) defines the encoder's reuse conditions.
 
 When documenting or measuring a configuration, distinguish these quantities:
 
@@ -177,3 +176,27 @@ publication boundary.
 - `include/6cells.idl` defines the independent thread-pool component boundary.
 
 The stage-specific documents describe these paths in more detail.
+
+## Test coverage
+
+<!-- test-coverage: enforced -->
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| TP-01 | Drain waits for accepted callbacks. | [tests/platform/threadpool/0007_drain_completes_jobs.t](../../tests/platform/threadpool/0007_drain_completes_jobs.t) |
+| TP-02 | Resume retains per-worker workspace contents. | [tests/platform/threadpool/0008_resume_keeps_workspace.t](../../tests/platform/threadpool/0008_resume_keeps_workspace.t) |
+| TP-03 | Resume retains the worker thread. | [tests/platform/threadpool/0009_resume_keeps_thread.t](../../tests/platform/threadpool/0009_resume_keeps_thread.t) |
+| TP-04 | Resume captures the current policy mode. | [tests/platform/threadpool/0010_resume_rebinds_policy.t](../../tests/platform/threadpool/0010_resume_rebinds_policy.t) |
+| TP-05 | Resume uses the new work-hook context without revisiting the expired context. | [tests/platform/threadpool/0011_resume_rebinds_hooks.t](../../tests/platform/threadpool/0011_resume_rebinds_hooks.t) |
+| TP-06 | A drained pool rejects submissions. | [tests/platform/threadpool/0012_drained_rejects_push.t](../../tests/platform/threadpool/0012_drained_rejects_push.t) |
+| TP-07 | An open pool cannot resume. | [tests/platform/threadpool/0013_open_rejects_resume.t](../../tests/platform/threadpool/0013_open_rejects_resume.t) |
+| TP-08 | A finished pool cannot resume. | [tests/platform/threadpool/0014_finished_rejects_resume.t](../../tests/platform/threadpool/0014_finished_rejects_resume.t) |
+| TP-09 | A failed pool cannot resume. | [tests/platform/threadpool/0015_failed_rejects_resume.t](../../tests/platform/threadpool/0015_failed_rejects_resume.t) |
+| TP-10 | Repeated drain preserves the first job error. | [tests/platform/threadpool/0016_drain_preserves_error.t](../../tests/platform/threadpool/0016_drain_preserves_error.t) |
+| TP-11 | Reused workspace cleanup runs once at final release. | [tests/platform/threadpool/0017_reused_workspace_cleanup.t](../../tests/platform/threadpool/0017_reused_workspace_cleanup.t) |
+| TP-12 | A drained pool rejects growth. | [tests/platform/threadpool/0018_drained_rejects_growth.t](../../tests/platform/threadpool/0018_drained_rejects_growth.t) |
+| TP-13 | A healthy drain is idempotent. | [tests/platform/threadpool/0019_drain_idempotent.t](../../tests/platform/threadpool/0019_drain_idempotent.t) |
+| TP-14 | Terminal finish completes accepted jobs. | [tests/platform/threadpool/0020_finish_drains_jobs.t](../../tests/platform/threadpool/0020_finish_drains_jobs.t) |
+| TP-15 | Resumed jobs retain a one-slot nested budget. | [tests/platform/threadpool/0021_resume_single_slot.t](../../tests/platform/threadpool/0021_resume_single_slot.t) |
+
+These synchronized small cases establish lifecycle behavior, not scheduling latency or absence of every concurrent race. Lifecycle calls require owner serialization; simultaneous `resume`, `grow`, `finish` or final release are outside the contract.

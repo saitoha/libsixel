@@ -280,9 +280,17 @@ typedef struct sixel_thread_pool_create_request {
     sixel_thread_pool_workspace_cleanup_function_t workspace_cleanup;
 } sixel_thread_pool_create_request_t;
 
+    /* Seal submissions and wait for all accepted jobs and policy hooks.
+     * Release the batch policy snapshot, retaining threads and workspaces.
+     * Return the first job error; repeated drains preserve that error.
+     * The owner serializes lifecycle calls. Do not call from a pool job. */
+    /* Reopen a healthy drained pool with the caller's current policy.
+     * Callback, userdata and workspace bindings remain unchanged. No jobs
+     * run while drained. Active, failed or finished pools cannot resume.
+     * Creation starts an open batch; finish remains terminal drain/join. */
 /*
  * IDL responsibility:
- * - own one short-lived worker queue and its worker threads
+ * - own one private worker queue and its worker threads
  */
 
 /*
@@ -294,7 +302,7 @@ typedef struct sixel_thread_pool_create_request {
 /*
  * IDL contract:
  * [component, refcounted]
- * [responsibility("own one short-lived worker queue and its worker threads")]
+ * [responsibility("own one private worker queue and its worker threads")]
  * [forbid_state("global_queue", "process_thread_budget")]
  * interface thread_pool {
  *     [lifetime(retained)]
@@ -310,6 +318,10 @@ typedef struct sixel_thread_pool_create_request {
  *     int get_error();
  *     [mutates]
  *     SIXELSTATUS grow(in int additional_threads);
+ *     [mutates]
+ *     SIXELSTATUS drain();
+ *     [mutates]
+ *     SIXELSTATUS resume();
  * };
  */
 
@@ -327,6 +339,8 @@ typedef struct sixel_thread_pool_vtbl {
     SIXELSTATUS (*grow)(
         sixel_thread_pool_t *self,
         int additional_threads);
+    SIXELSTATUS (*drain)(sixel_thread_pool_t *self);
+    SIXELSTATUS (*resume)(sixel_thread_pool_t *self);
 } sixel_thread_pool_vtbl_t;
 
 struct sixel_thread_pool_interface {

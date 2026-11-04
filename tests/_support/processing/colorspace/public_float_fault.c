@@ -381,7 +381,7 @@ float_fault_error(sixel_thread_pool_t *self)
 
 static sixel_thread_pool_vtbl_t const float_fault_vtbl = {
     NULL, float_fault_unref, NULL, float_fault_push, float_fault_finish,
-    float_fault_error, float_fault_grow
+    float_fault_error, float_fault_grow, NULL, NULL
 };
 static sixel_thread_pool_t float_fault_pool = {&float_fault_vtbl};
 

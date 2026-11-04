@@ -19,6 +19,7 @@ typedef struct sixel_indexed_core {
 #if SIXEL_ENABLE_THREADS
     sixel_parallel_context_t parallel;
     int parallel_active;
+    int parallel_cached;
     int worker_capacity;
 #endif
 } sixel_indexed_core_t;
@@ -49,6 +50,13 @@ sixel_indexed_core_release(sixel_indexed_core_t *core, int aborting)
         if (status == SIXEL_OK) status = wait_status;
         sixel_parallel_context_cleanup(&core->parallel);
         core->parallel_active = 0;
+    }
+    if (core->parallel_cached && aborting) {
+        sixel_parallel_context_cleanup(&core->parallel);
+        core->parallel_cached = 0;
+    }
+    if (core->parallel_cached) {
+        sixel_parallel_context_park(&core->parallel);
     }
 #else
     (void)aborting;
@@ -154,7 +162,16 @@ sixel_indexed_core_prepare(sixel_encoder_core_t *self,
 #if SIXEL_ENABLE_THREADS
     core->worker_capacity = request->worker_capacity != 0
         ? request->worker_capacity : request->threads;
-    sixel_parallel_context_init(&core->parallel);
+    if (core->parallel_cached &&
+            (request->threads <= 1 || desc->encoded_height <= 6)) {
+        sixel_parallel_context_cleanup(&core->parallel);
+        core->parallel_cached = 0;
+    }
+    if (!core->parallel_cached) {
+        sixel_parallel_context_init(&core->parallel);
+    }
+    core->parallel_cached = 0;
+    core->parallel.reuse_pool = 1;
     if (request->threads > 1 && desc->encoded_height > 6) {
         status = sixel_parallel_context_begin(&core->parallel,
             core->image->indexes, desc->width, desc->height,
@@ -335,7 +352,11 @@ sixel_indexed_core_finish(sixel_encoder_core_t *self)
             core->worker_capacity);
         if (status != SIXEL_OK) return status;
         status = sixel_parallel_context_wait(&core->parallel, 0);
-        sixel_parallel_context_cleanup(&core->parallel);
+        if (SIXEL_SUCCEEDED(status) && core->parallel.reuse_pool) {
+            core->parallel_cached = 1;
+        } else {
+            sixel_parallel_context_cleanup(&core->parallel);
+        }
         core->parallel_active = 0;
         if (SIXEL_FAILED(status)) {
             core->status = status;
@@ -350,9 +371,7 @@ sixel_indexed_core_finish(sixel_encoder_core_t *self)
         core->body->pos = 0;
     }
     core->status = status;
-    if (SIXEL_SUCCEEDED(status)) {
-        (void)sixel_indexed_core_release(core, 0);
-    }
+    (void)sixel_indexed_core_release(core, SIXEL_FAILED(status));
     return status;
 }
 

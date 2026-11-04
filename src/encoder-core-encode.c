@@ -217,6 +217,8 @@ typedef struct sixel_parallel_context {
     SIXELSTATUS writer_error;
     int queue_capacity;
     int pin_threads;
+    int reuse_pool;
+    int retained_ormode;
 } sixel_parallel_context_t;
 
 typedef struct sixel_parallel_row_notifier {
@@ -553,6 +555,10 @@ sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
 {
     int i;
 
+    if (ctx->pool != NULL) {
+        ctx->pool->vtbl->finish(ctx->pool);
+    }
+    sixel_parallel_writer_stop(ctx, 1);
     if (ctx->workers != NULL) {
         for (i = 0; i < ctx->worker_capacity; i++) {
             sixel_parallel_worker_cleanup(ctx->workers[i], ctx->allocator);
@@ -560,7 +566,6 @@ sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
         free(ctx->workers);
         ctx->workers = NULL;
     }
-    sixel_parallel_writer_stop(ctx, 1);
     if (ctx->bands != NULL) {
         if (ctx->band_count < 0) {
             ctx->band_count = 0;
@@ -655,6 +660,26 @@ sixel_parallel_jobs_allowed(sixel_parallel_context_t *ctx)
 }
 
 static void
+sixel_parallel_context_park(sixel_parallel_context_t *ctx)
+{
+    int i;
+    sixel_parallel_worker_state_t *worker;
+
+    /* Both callbacks and the ordered writer have completed. Capacity stays
+     * private to this core, but no source, palette or sink is retained. */
+    ctx->pixels = NULL;
+    ctx->palstate = NULL;
+    ctx->logger = NULL;
+    ctx->output = NULL;
+    for (i = 0; i < ctx->worker_registered; ++i) {
+        worker = ctx->workers[i];
+        worker->band_buffer = NULL;
+        worker->output->transparent_mask = NULL;
+        worker->output->wire_colors = NULL;
+    }
+}
+
+static void
 sixel_parallel_worker_reset(sixel_parallel_worker_state_t *state)
 {
     if (state == NULL || state->output == NULL) {
@@ -663,17 +688,43 @@ sixel_parallel_worker_reset(sixel_parallel_worker_state_t *state)
 
     sixel_band_state_reset(&state->band);
     /* Successful band finish clears map ranges before the next band.
-     * Workspaces belong to this context and are freed even on failure, so
-     * another encode cannot inherit them. Reset only band-local output. */
+     * Successful scratch may survive a frame boundary; failed scratch is
+     * discarded. Reset only band-local output after a completed band. */
     state->writer_error = SIXEL_OK;
     state->output->pos = 0;
     state->output->save_count = 0;
     state->output->save_pixel = 0;
     state->output->active_palette = (-1);
     state->output->node_top = NULL;
-    /* Completed nodes remain private to this worker through frame drain.
+    /* Completed nodes remain private to this reusable worker context.
      * Their fields are overwritten before reuse. Retained capacity is the
      * largest band handled by this worker, never the sum of its bands. */
+}
+
+static void
+sixel_parallel_worker_bind(sixel_parallel_worker_state_t *state,
+                           sixel_parallel_context_t *ctx)
+{
+    /* Capacity survives; every image-dependent reference is replaced. */
+    state->output->has_8bit_control = ctx->output->has_8bit_control;
+    state->output->has_sixel_scrolling = ctx->output->has_sixel_scrolling;
+    state->output->has_sdm_glitch = ctx->output->has_sdm_glitch;
+    state->output->has_gri_arg_limit = ctx->output->has_gri_arg_limit;
+    state->output->skip_dcs_envelope = 1;
+    state->output->skip_header = 1;
+    state->output->palette_type = ctx->output->palette_type;
+    state->output->colorspace = ctx->output->colorspace;
+    state->output->source_colorspace = ctx->output->source_colorspace;
+    state->output->pixelformat = ctx->output->pixelformat;
+    state->output->penetrate_multiplexer =
+        ctx->output->penetrate_multiplexer;
+    state->output->encode_policy = ctx->output->encode_policy;
+    state->output->ormode = ctx->output->ormode;
+    state->output->keycolor_reserved = ctx->output->keycolor_reserved;
+    state->output->transparent_mask = ctx->output->transparent_mask;
+    state->output->wire_colors = ctx->output->wire_colors;
+
+    state->output->body_status = SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -713,23 +764,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
         return status;
     }
 
-    state->output->has_8bit_control = ctx->output->has_8bit_control;
-    state->output->has_sixel_scrolling = ctx->output->has_sixel_scrolling;
-    state->output->has_sdm_glitch = ctx->output->has_sdm_glitch;
-    state->output->has_gri_arg_limit = ctx->output->has_gri_arg_limit;
-    state->output->skip_dcs_envelope = 1;
-    state->output->skip_header = 1;
-    state->output->palette_type = ctx->output->palette_type;
-    state->output->colorspace = ctx->output->colorspace;
-    state->output->source_colorspace = ctx->output->source_colorspace;
-    state->output->pixelformat = ctx->output->pixelformat;
-    state->output->penetrate_multiplexer =
-        ctx->output->penetrate_multiplexer;
-    state->output->encode_policy = ctx->output->encode_policy;
-    state->output->ormode = ctx->output->ormode;
-    state->output->keycolor_reserved = ctx->output->keycolor_reserved;
-    state->output->transparent_mask = ctx->output->transparent_mask;
-    state->output->wire_colors = ctx->output->wire_colors;
+    sixel_parallel_worker_bind(state, ctx);
 
     state->initialized = 1;
     state->index = (-1);
@@ -1012,6 +1047,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     int encoded_height;
     int threads;
     int i;
+    int reuse;
 
     if (ctx == NULL || pixels == NULL || output == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1023,6 +1059,31 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                                                      &encoded_height);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+
+    nbands = sixel_count_sixel_bands(encoded_height);
+    threads = requested_threads > nbands ? nbands : requested_threads;
+    if (threads < 1) threads = 1;
+    if (worker_capacity < threads) worker_capacity = threads;
+    if (worker_capacity > nbands) worker_capacity = nbands;
+    if (queue_capacity < 1 || queue_capacity > nbands) {
+        queue_capacity = nbands;
+    }
+    reuse = ctx->reuse_pool && ctx->pool != NULL &&
+        ctx->encoded_width == encoded_width &&
+        ctx->encoded_height == encoded_height && ctx->ncolors == ncolors &&
+        ctx->thread_count == threads &&
+        ctx->worker_capacity == worker_capacity &&
+        ctx->queue_capacity == queue_capacity &&
+        ctx->retained_ormode == output->ormode &&
+        ctx->allocator == allocator &&
+        ctx->pin_threads == (pin_threads != 0) &&
+        ctx->writer_error == SIXEL_OK;
+    if (ctx->pool != NULL && !reuse) {
+        /* Incompatible storage is idle here, never visible to a worker. */
+        sixel_parallel_context_cleanup(ctx);
+        sixel_parallel_context_init(ctx);
+        ctx->reuse_pool = 1;
     }
 
     ctx->pixels = pixels;
@@ -1040,106 +1101,101 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->output = output;
     ctx->logger = logger;
     ctx->pin_threads = (pin_threads != 0) ? 1 : 0;
-    ctx->bands = NULL;
-    ctx->band_count = 0;
-    ctx->workers = NULL;
-    ctx->worker_capacity = 0;
-    ctx->band_source_rows_total = NULL;
-    ctx->band_source_rows_ready = NULL;
 
-    nbands = sixel_count_sixel_bands(encoded_height);
-    if (nbands <= 0) {
-        return SIXEL_OK;
-    }
-    threads = requested_threads;
-    if (threads > nbands) {
-        threads = nbands;
-    }
-    if (threads < 1) {
-        threads = 1;
-    }
     ctx->thread_count = threads;
-    if (worker_capacity < threads) {
-        worker_capacity = threads;
-    }
-    if (worker_capacity > nbands) {
-        worker_capacity = nbands;
-    }
     ctx->worker_capacity = worker_capacity;
 
     if (logger != NULL) {
         sixel_timeline_logger_logf(logger,
                           "controller",
                           "encode",
-                          "context_begin",
+                          reuse ? "context_reuse" : "context_begin",
                           -1);
     }
 
-    ctx->bands = (sixel_parallel_band_buffer_t *)calloc((size_t)nbands,
-                                                        sizeof(*ctx->bands));
-    if (ctx->bands == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    for (i = 0; i < nbands; ++i) {
-        ctx->bands[i].data = NULL;
-        ctx->bands[i].size = 0;
-        ctx->bands[i].used = 0;
-        ctx->bands[i].status = SIXEL_OK;
-        ctx->bands[i].ready = 0;
-        ctx->bands[i].dispatched = 0;
-    }
-    ctx->band_count = nbands;
+    if (!reuse) {
+        ctx->bands = (sixel_parallel_band_buffer_t *)calloc((size_t)nbands,
+            sizeof(*ctx->bands));
+        if (ctx->bands == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        for (i = 0; i < nbands; ++i) {
+            ctx->bands[i].data = NULL;
+            ctx->bands[i].size = 0;
+            ctx->bands[i].used = 0;
+            ctx->bands[i].status = SIXEL_OK;
+            ctx->bands[i].ready = 0;
+            ctx->bands[i].dispatched = 0;
+        }
+        ctx->band_count = nbands;
 
-    ctx->band_source_rows_total = (int *)calloc((size_t)nbands,
-                                                sizeof(int));
-    if (ctx->band_source_rows_total == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    ctx->band_source_rows_ready = (int *)calloc((size_t)nbands,
-                                                sizeof(int));
-    if (ctx->band_source_rows_ready == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    sixel_parallel_prepare_band_source_rows(ctx);
+        ctx->band_source_rows_total = (int *)calloc((size_t)nbands,
+                                                    sizeof(int));
+        if (ctx->band_source_rows_total == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        ctx->band_source_rows_ready = (int *)calloc((size_t)nbands,
+                                                    sizeof(int));
+        if (ctx->band_source_rows_ready == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        sixel_parallel_prepare_band_source_rows(ctx);
 
-    ctx->workers = (sixel_parallel_worker_state_t **)
-        calloc((size_t)ctx->worker_capacity, sizeof(*ctx->workers));
-    if (ctx->workers == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
+        ctx->workers = (sixel_parallel_worker_state_t **)
+            calloc((size_t)ctx->worker_capacity, sizeof(*ctx->workers));
+        if (ctx->workers == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
 
-    status = sixel_mutex_init(&ctx->mutex);
-    if (status != SIXEL_OK) {
-        return status;
-    }
-    ctx->mutex_ready = 1;
+        status = sixel_mutex_init(&ctx->mutex);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+        ctx->mutex_ready = 1;
 
-    status = sixel_cond_init(&ctx->cond_band_ready);
-    if (status != SIXEL_OK) {
-        return status;
-    }
-    ctx->cond_ready = 1;
+        status = sixel_cond_init(&ctx->cond_band_ready);
+        if (status != SIXEL_OK) {
+            return status;
+        }
+        ctx->cond_ready = 1;
 
-    ctx->queue_capacity = queue_capacity;
-    if (ctx->queue_capacity < 1) {
-        ctx->queue_capacity = nbands;
-    }
-    if (ctx->queue_capacity > nbands) {
-        ctx->queue_capacity = nbands;
-    }
+        ctx->queue_capacity = queue_capacity;
+        if (ctx->queue_capacity < 1) {
+            ctx->queue_capacity = nbands;
+        }
+        if (ctx->queue_capacity > nbands) {
+            ctx->queue_capacity = nbands;
+        }
 
-    status = sixel_parallel_create_pool(
-        &ctx->pool,
-        threads,
-        ctx->queue_capacity,
-        sizeof(sixel_parallel_worker_state_t),
-        sixel_parallel_worker_main,
-        ctx);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
+        status = sixel_parallel_create_pool(
+            &ctx->pool,
+            threads,
+            ctx->queue_capacity,
+            sizeof(sixel_parallel_worker_state_t),
+            sixel_parallel_worker_main,
+            ctx);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
 
-    ctx->pool->vtbl->set_affinity(ctx->pool, ctx->pin_threads);
+        ctx->pool->vtbl->set_affinity(ctx->pool, ctx->pin_threads);
+        ctx->reuse_pool = ctx->reuse_pool &&
+            ctx->pool->vtbl->drain != NULL && ctx->pool->vtbl->resume != NULL;
+        ctx->retained_ormode = output->ormode;
+    } else {
+        for (i = 0; i < nbands; ++i) {
+            ctx->bands[i].used = 0;
+            ctx->bands[i].status = SIXEL_OK;
+            ctx->bands[i].ready = 0;
+            ctx->bands[i].dispatched = 0;
+        }
+        sixel_parallel_prepare_band_source_rows(ctx);
+        for (i = 0; i < ctx->worker_registered; ++i) {
+            sixel_parallel_worker_bind(ctx->workers[i], ctx);
+        }
+        status = ctx->pool->vtbl->resume(ctx->pool);
+        if (SIXEL_FAILED(status)) return status;
+    }
 
     /* Initialize writer-visible fields before the writer thread starts.
      * Serialize initialization of writer-visible state so the writer thread
@@ -1215,13 +1271,7 @@ sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
     job.band_index = band_index;
     status = ctx->pool->vtbl->push(ctx->pool, job);
     if (SIXEL_FAILED(status)) {
-        if (ctx->mutex_ready) {
-            sixel_mutex_lock(&ctx->mutex);
-            sixel_parallel_context_abort_locked(ctx, status);
-            sixel_mutex_unlock(&ctx->mutex);
-        } else {
-            ctx->writer_error = status;
-        }
+        sixel_parallel_context_abort_locked(ctx, status);
     }
 }
 
@@ -1234,8 +1284,12 @@ sixel_parallel_context_wait(sixel_parallel_context_t *ctx, int force_abort)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    ctx->pool->vtbl->finish(ctx->pool);
-    pool_error = ctx->pool->vtbl->get_error(ctx->pool);
+    if (ctx->reuse_pool && !force_abort) {
+        pool_error = ctx->pool->vtbl->drain(ctx->pool);
+    } else {
+        ctx->pool->vtbl->finish(ctx->pool);
+        pool_error = ctx->pool->vtbl->get_error(ctx->pool);
+    }
     sixel_thread_work_end();
     sixel_parallel_writer_stop(ctx, force_abort || pool_error != SIXEL_OK);
     sixel_thread_work_begin();

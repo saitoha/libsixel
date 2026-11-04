@@ -4887,7 +4887,117 @@ typedef struct test_entry {
     test_runner_fn run;
 } test_entry_t;
 
+int test_0007_drain_completes_jobs(int, char **);
+int test_0008_resume_keeps_workspace(int, char **);
+int test_0009_resume_keeps_thread(int, char **);
+int test_0010_resume_rebinds_policy(int, char **);
+int test_0011_resume_rebinds_hooks(int, char **);
+int test_0012_drained_rejects_push(int, char **);
+int test_0013_open_rejects_resume(int, char **);
+int test_0014_finished_rejects_resume(int, char **);
+int test_0015_failed_rejects_resume(int, char **);
+int test_0016_drain_preserves_error(int, char **);
+int test_0017_reused_workspace_cleanup(int, char **);
+int test_0018_drained_rejects_growth(int, char **);
+int test_0019_drain_idempotent(int, char **);
+int test_0020_finish_drains_jobs(int, char **);
+int test_0021_resume_single_slot(int, char **);
+int test_0163_reuse_pixels(int, char **);
+int test_0164_reuse_palette(int, char **);
+int test_0165_reuse_mask(int, char **);
+int test_0166_reuse_sink(int, char **);
+int test_0167_reuse_width_change(int, char **);
+int test_0168_reuse_height_change(int, char **);
+int test_0169_reuse_colors_change(int, char **);
+int test_0170_reuse_threads_change(int, char **);
+int test_0171_reuse_queue_change(int, char **);
+int test_0172_reuse_ormode_change(int, char **);
+int test_0173_reuse_encode_policy(int, char **);
+int test_0174_reuse_offset_change(int, char **);
+int test_0175_reuse_abort_restart(int, char **);
+int test_0176_reuse_palette_failure(int, char **);
+int test_0177_reuse_body_failure(int, char **);
+int test_0178_reuse_path(int, char **);
+int test_0179_reuse_geometry_rebuild(int, char **);
+int test_0180_reuse_release_storage(int, char **);
+int test_0181_reuse_abort_storage(int, char **);
+int test_0182_reuse_allocation_failure(int, char **);
+int test_0183_reuse_scratch_allocations(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "platform/threadpool/0007_drain_completes_jobs",
+      test_0007_drain_completes_jobs },
+    { "platform/threadpool/0008_resume_keeps_workspace",
+      test_0008_resume_keeps_workspace },
+    { "platform/threadpool/0009_resume_keeps_thread",
+      test_0009_resume_keeps_thread },
+    { "platform/threadpool/0010_resume_rebinds_policy",
+      test_0010_resume_rebinds_policy },
+    { "platform/threadpool/0011_resume_rebinds_hooks",
+      test_0011_resume_rebinds_hooks },
+    { "platform/threadpool/0012_drained_rejects_push",
+      test_0012_drained_rejects_push },
+    { "platform/threadpool/0013_open_rejects_resume",
+      test_0013_open_rejects_resume },
+    { "platform/threadpool/0014_finished_rejects_resume",
+      test_0014_finished_rejects_resume },
+    { "platform/threadpool/0015_failed_rejects_resume",
+      test_0015_failed_rejects_resume },
+    { "platform/threadpool/0016_drain_preserves_error",
+      test_0016_drain_preserves_error },
+    { "platform/threadpool/0017_reused_workspace_cleanup",
+      test_0017_reused_workspace_cleanup },
+    { "platform/threadpool/0018_drained_rejects_growth",
+      test_0018_drained_rejects_growth },
+    { "platform/threadpool/0019_drain_idempotent",
+      test_0019_drain_idempotent },
+    { "platform/threadpool/0020_finish_drains_jobs",
+      test_0020_finish_drains_jobs },
+    { "platform/threadpool/0021_resume_single_slot",
+      test_0021_resume_single_slot },
+    { "encoder/indexed/0163_reuse_pixels",
+      test_0163_reuse_pixels },
+    { "encoder/indexed/0164_reuse_palette",
+      test_0164_reuse_palette },
+    { "encoder/indexed/0165_reuse_mask",
+      test_0165_reuse_mask },
+    { "encoder/indexed/0166_reuse_sink",
+      test_0166_reuse_sink },
+    { "encoder/indexed/0167_reuse_width_change",
+      test_0167_reuse_width_change },
+    { "encoder/indexed/0168_reuse_height_change",
+      test_0168_reuse_height_change },
+    { "encoder/indexed/0169_reuse_colors_change",
+      test_0169_reuse_colors_change },
+    { "encoder/indexed/0170_reuse_threads_change",
+      test_0170_reuse_threads_change },
+    { "encoder/indexed/0171_reuse_queue_change",
+      test_0171_reuse_queue_change },
+    { "encoder/indexed/0172_reuse_ormode_change",
+      test_0172_reuse_ormode_change },
+    { "encoder/indexed/0173_reuse_encode_policy",
+      test_0173_reuse_encode_policy },
+    { "encoder/indexed/0174_reuse_offset_change",
+      test_0174_reuse_offset_change },
+    { "encoder/indexed/0175_reuse_abort_restart",
+      test_0175_reuse_abort_restart },
+    { "encoder/indexed/0176_reuse_palette_failure",
+      test_0176_reuse_palette_failure },
+    { "encoder/indexed/0177_reuse_body_failure",
+      test_0177_reuse_body_failure },
+    { "encoder/indexed/0178_reuse_path",
+      test_0178_reuse_path },
+    { "encoder/indexed/0179_reuse_geometry_rebuild",
+      test_0179_reuse_geometry_rebuild },
+    { "encoder/indexed/0180_reuse_release_storage",
+      test_0180_reuse_release_storage },
+    { "encoder/indexed/0181_reuse_abort_storage",
+      test_0181_reuse_abort_storage },
+    { "encoder/indexed/0182_reuse_allocation_failure",
+      test_0182_reuse_allocation_failure },
+    { "encoder/indexed/0183_reuse_scratch_allocations",
+      test_0183_reuse_scratch_allocations },
+
     { "delta/comparison/0069_query_encode_cpu", test_delta_compare_0069 },
     { "delta/comparison/0070_target_encode_cpu", test_delta_compare_0070 },
     { "delta/comparison/0071_query_playback_cpu", test_delta_compare_0071 },

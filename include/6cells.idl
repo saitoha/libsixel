@@ -175,7 +175,7 @@ struct thread_pool_create_request {
 };
 
 [component, refcounted]
-[responsibility("own one short-lived worker queue and its worker threads")]
+[responsibility("own one private worker queue and its worker threads")]
 [forbid_state("global_queue", "process_thread_budget")]
 interface thread_pool {
     [lifetime(retained)]
@@ -191,6 +191,18 @@ interface thread_pool {
     int get_error();
     [mutates]
     SIXELSTATUS grow(in int additional_threads);
+    /* Seal submissions and wait for all accepted jobs and policy hooks.
+     * Release the batch policy snapshot, retaining threads and workspaces.
+     * Return the first job error; repeated drains preserve that error.
+     * The owner serializes lifecycle calls. Do not call from a pool job. */
+    [mutates]
+    SIXELSTATUS drain();
+    /* Reopen a healthy drained pool with the caller's current policy.
+     * Callback, userdata and workspace bindings remain unchanged. No jobs
+     * run while drained. Active, failed or finished pools cannot resume.
+     * Creation starts an open batch; finish remains terminal drain/join. */
+    [mutates]
+    SIXELSTATUS resume();
 };
 
 [component, refcounted]

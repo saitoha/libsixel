@@ -66,6 +66,7 @@ struct sixel_thread_pool_storage {
     int tail;
     int count;
     int running;
+    int batch_closed;
     int shutting_down;
     int joined;
     int error;
@@ -156,7 +157,6 @@ sixel_thread_pool_worker_main(void *arg)
 
     worker = (sixel_thread_pool_worker_t *)arg;
     pool = worker->pool;
-    sixel_threading_policy_enter(&policy_scope, &pool->policy);
     for (;;) {
         sixel_mutex_lock(&pool->mutex);
         while (pool->count == 0 && !pool->shutting_down) {
@@ -173,6 +173,9 @@ sixel_thread_pool_worker_main(void *arg)
         sixel_cond_signal(&pool->cond_not_full);
         sixel_mutex_unlock(&pool->mutex);
 
+        /* A reused worker must not retain the previous frame's
+         * budget scope or its callback context while idle. */
+        sixel_threading_policy_enter(&policy_scope, &pool->policy);
         if (pool->pin_threads && !worker->pinned && pool->hw_threads > 0) {
             cpu_index = worker->index % pool->hw_threads;
             (void)sixel_thread_pin_self(cpu_index);
@@ -189,6 +192,7 @@ sixel_thread_pool_worker_main(void *arg)
             pool->policy.work(pool->policy.work_context, 1, 0);
         }
 
+        sixel_thread_budget_leave(&policy_scope);
         sixel_mutex_lock(&pool->mutex);
         pool->running -= 1;
         if (rc != SIXEL_OK && pool->error == SIXEL_OK) {
@@ -199,7 +203,6 @@ sixel_thread_pool_worker_main(void *arg)
         }
         sixel_mutex_unlock(&pool->mutex);
     }
-    sixel_thread_budget_leave(&policy_scope);
     return SIXEL_OK;
 }
 
@@ -404,30 +407,32 @@ sixel_thread_pool_storage_destroy(sixel_thread_pool_storage_t *pool)
     sixel_thread_pool_storage_free(pool);
 }
 
-static void
+static SIXELSTATUS
 sixel_thread_pool_storage_push(sixel_thread_pool_storage_t *pool,
                                sixel_thread_pool_job_t job)
 {
     if (pool == NULL) {
-        return;
+        return SIXEL_BAD_ARGUMENT;
     }
     sixel_mutex_lock(&pool->mutex);
-    if (pool->shutting_down) {
+    if (pool->shutting_down || pool->batch_closed) {
         sixel_mutex_unlock(&pool->mutex);
-        return;
+        return SIXEL_LOGIC_ERROR;
     }
-    while (pool->count == pool->qsize && !pool->shutting_down) {
+    while (pool->count == pool->qsize && !pool->shutting_down &&
+            !pool->batch_closed) {
         sixel_cond_wait(&pool->cond_not_full, &pool->mutex);
     }
-    if (pool->shutting_down) {
+    if (pool->shutting_down || pool->batch_closed) {
         sixel_mutex_unlock(&pool->mutex);
-        return;
+        return SIXEL_LOGIC_ERROR;
     }
     pool->jobs[pool->tail] = job;
     pool->tail = (pool->tail + 1) % pool->qsize;
     pool->count += 1;
     sixel_cond_signal(&pool->cond_not_empty);
     sixel_mutex_unlock(&pool->mutex);
+    return SIXEL_OK;
 }
 
 static void
@@ -459,6 +464,7 @@ sixel_thread_pool_storage_finish(sixel_thread_pool_storage_t *pool)
     }
 
     sixel_mutex_lock(&pool->mutex);
+    memset(&pool->policy, 0, sizeof(pool->policy));
     pool->joined = 1;
     sixel_mutex_unlock(&pool->mutex);
 }
@@ -478,7 +484,7 @@ sixel_thread_pool_storage_grow(sixel_thread_pool_storage_t *pool,
     }
 
     sixel_mutex_lock(&pool->mutex);
-    if (pool->shutting_down) {
+    if (pool->shutting_down || pool->batch_closed) {
         sixel_mutex_unlock(&pool->mutex);
         return SIXEL_RUNTIME_ERROR;
     }
@@ -575,6 +581,59 @@ sixel_thread_pool_from_interface(sixel_thread_pool_t *self)
     return (sixel_thread_pool_storage_t *)self;
 }
 
+/* Drain closes admission before waiting. The running count includes work
+ * hooks and policy-scope removal, so returning releases every batch borrow.
+ * Lifecycle operations are serialized by the owner, not called by jobs. */
+static SIXELSTATUS
+sixel_thread_pool_drain(sixel_thread_pool_t *self)
+{
+    sixel_thread_pool_storage_t *pool;
+    SIXELSTATUS status;
+
+    pool = sixel_thread_pool_from_interface(self);
+    if (pool == NULL) return SIXEL_BAD_ARGUMENT;
+    sixel_thread_work_end();
+    sixel_mutex_lock(&pool->mutex);
+    pool->batch_closed = 1;
+    sixel_cond_broadcast(&pool->cond_not_full);
+    while (pool->count != 0 || pool->running != 0) {
+        sixel_cond_wait(&pool->cond_drained, &pool->mutex);
+    }
+    memset(&pool->policy, 0, sizeof(pool->policy));
+    status = pool->error;
+    if (pool->shutting_down && status == SIXEL_OK) {
+        status = SIXEL_LOGIC_ERROR;
+    }
+    sixel_mutex_unlock(&pool->mutex);
+    sixel_thread_work_begin();
+    return status;
+}
+
+static SIXELSTATUS
+sixel_thread_pool_resume(sixel_thread_pool_t *self)
+{
+    sixel_thread_pool_storage_t *pool;
+    sixel_threading_snapshot_t policy;
+
+    pool = sixel_thread_pool_from_interface(self);
+    if (pool == NULL) return SIXEL_BAD_ARGUMENT;
+    (void)sixel_threading_policy_capture(&policy, 0);
+    /* Retained capacity does not grant a new CPU reservation. Each job
+     * still owns one slot of its caller's resolved execution policy. */
+    policy.budget = 1;
+    policy.work_worker = 1;
+    sixel_mutex_lock(&pool->mutex);
+    if (!pool->batch_closed || pool->count != 0 || pool->running != 0 ||
+            pool->shutting_down || pool->error != SIXEL_OK) {
+        sixel_mutex_unlock(&pool->mutex);
+        return SIXEL_LOGIC_ERROR;
+    }
+    pool->policy = policy;
+    pool->batch_closed = 0;
+    sixel_mutex_unlock(&pool->mutex);
+    return SIXEL_OK;
+}
+
 static void
 sixel_thread_pool_ref(sixel_thread_pool_t *self)
 {
@@ -616,6 +675,7 @@ sixel_thread_pool_push(sixel_thread_pool_t *self,
                        sixel_thread_pool_job_t job)
 {
     sixel_thread_pool_storage_t *pool;
+    SIXELSTATUS status;
 
     pool = sixel_thread_pool_from_interface(self);
     if (pool == NULL) {
@@ -624,9 +684,9 @@ sixel_thread_pool_push(sixel_thread_pool_t *self,
     /* The caller is a queue controller while submitting or joining. Its
      * children own their own claims; reacquire only outside the pool lock. */
     sixel_thread_work_end();
-    sixel_thread_pool_storage_push(pool, job);
+    status = sixel_thread_pool_storage_push(pool, job);
     sixel_thread_work_begin();
-    return SIXEL_OK;
+    return status;
 }
 
 static void
@@ -659,7 +719,9 @@ static sixel_thread_pool_vtbl_t const sixel_thread_pool_vtbl = {
     sixel_thread_pool_push,
     sixel_thread_pool_finish,
     sixel_thread_pool_get_error,
-    sixel_thread_pool_grow
+    sixel_thread_pool_grow,
+    sixel_thread_pool_drain,
+    sixel_thread_pool_resume
 };
 
 static sixel_thread_pool_vtbl_t const *

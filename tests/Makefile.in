@@ -134,13 +134,50 @@ libfloatlookuptests_la_OBJECTS = $(am_libfloatlookuptests_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-am__v_lt_1 = 
+am__v_lt_1 =
 libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libfloatlookuptests_la_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	platform/threadpool/0007_drain_completes_jobs.c \
+	platform/threadpool/0008_resume_keeps_workspace.c \
+	platform/threadpool/0009_resume_keeps_thread.c \
+	platform/threadpool/0010_resume_rebinds_policy.c \
+	platform/threadpool/0011_resume_rebinds_hooks.c \
+	platform/threadpool/0012_drained_rejects_push.c \
+	platform/threadpool/0013_open_rejects_resume.c \
+	platform/threadpool/0014_finished_rejects_resume.c \
+	platform/threadpool/0015_failed_rejects_resume.c \
+	platform/threadpool/0016_drain_preserves_error.c \
+	platform/threadpool/0017_reused_workspace_cleanup.c \
+	platform/threadpool/0018_drained_rejects_growth.c \
+	platform/threadpool/0019_drain_idempotent.c \
+	platform/threadpool/0020_finish_drains_jobs.c \
+	platform/threadpool/0021_resume_single_slot.c \
+	encoder/indexed/0163_reuse_pixels.c \
+	encoder/indexed/0164_reuse_palette.c \
+	encoder/indexed/0165_reuse_mask.c \
+	encoder/indexed/0166_reuse_sink.c \
+	encoder/indexed/0167_reuse_width_change.c \
+	encoder/indexed/0168_reuse_height_change.c \
+	encoder/indexed/0169_reuse_colors_change.c \
+	encoder/indexed/0170_reuse_threads_change.c \
+	encoder/indexed/0171_reuse_queue_change.c \
+	encoder/indexed/0172_reuse_ormode_change.c \
+	encoder/indexed/0173_reuse_encode_policy.c \
+	encoder/indexed/0174_reuse_offset_change.c \
+	encoder/indexed/0175_reuse_abort_restart.c \
+	encoder/indexed/0176_reuse_palette_failure.c \
+	encoder/indexed/0177_reuse_body_failure.c \
+	encoder/indexed/0178_reuse_path.c \
+	encoder/indexed/0179_reuse_geometry_rebuild.c \
+	encoder/indexed/0180_reuse_release_storage.c \
+	encoder/indexed/0181_reuse_abort_storage.c \
+	encoder/indexed/0182_reuse_allocation_failure.c \
+	encoder/indexed/0183_reuse_scratch_allocations.c \
+	_support/codec/pool_reuse.c _support/codec/core_reuse.c \
 	delta/comparison/0069_query_encode_cpu.c \
 	delta/comparison/0070_target_encode_cpu.c \
 	delta/comparison/0071_query_playback_cpu.c \
@@ -4865,6 +4902,44 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0007_drain_completes_jobs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0008_resume_keeps_workspace.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0009_resume_keeps_thread.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0010_resume_rebinds_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0011_resume_rebinds_hooks.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0012_drained_rejects_push.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0013_open_rejects_resume.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0014_finished_rejects_resume.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0015_failed_rejects_resume.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0016_drain_preserves_error.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0017_reused_workspace_cleanup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0018_drained_rejects_growth.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0019_drain_idempotent.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0020_finish_drains_jobs.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	platform/threadpool/test_runner-0021_resume_single_slot.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0163_reuse_pixels.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0164_reuse_palette.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0165_reuse_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0166_reuse_sink.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0167_reuse_width_change.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0168_reuse_height_change.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0169_reuse_colors_change.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0170_reuse_threads_change.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0171_reuse_queue_change.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0172_reuse_ormode_change.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0173_reuse_encode_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0174_reuse_offset_change.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0175_reuse_abort_restart.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0176_reuse_palette_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0177_reuse_body_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0178_reuse_path.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0179_reuse_geometry_rebuild.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0180_reuse_release_storage.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0181_reuse_abort_storage.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0182_reuse_allocation_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/indexed/test_runner-0183_reuse_scratch_allocations.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-pool_reuse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-core_reuse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0069_query_encode_cpu.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0070_target_encode_cpu.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	delta/comparison/test_runner-0071_query_playback_cpu.$(OBJEXT) \
@@ -9573,11 +9648,11 @@ am__v_P_1 = :
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 = 
+am__v_GEN_1 =
 AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
-am__v_at_1 = 
+am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
@@ -9606,6 +9681,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po \
 	_support/cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po \
 	_support/cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po \
+	_support/codec/$(DEPDIR)/test_runner-core_reuse.Po \
 	_support/codec/$(DEPDIR)/test_runner-highcolor_band_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-highcolor_mask_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-highcolor_output_common.Po \
@@ -9614,6 +9690,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/codec/$(DEPDIR)/test_runner-indexed_component_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-indexed_equivalence_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-png_delta_common.Po \
+	_support/codec/$(DEPDIR)/test_runner-pool_reuse.Po \
 	_support/codec/$(DEPDIR)/test_runner-retained_component_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po \
@@ -11349,6 +11426,27 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/indexed/$(DEPDIR)/test_runner-0160_gpu_rows_invalid_later.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0161_gpu_rows_apply_visible.Po \
 	encoder/indexed/$(DEPDIR)/test_runner-0162_gpu_rows_apply_failed.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Po \
+	encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po \
 	encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po \
@@ -14188,6 +14286,21 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	platform/threadpool/$(DEPDIR)/test_runner-0003_thread_policy.Po \
 	platform/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po \
 	platform/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Po \
+	platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Po \
 	writer/png/$(DEPDIR)/test_runner-0009_srgb_indexed.Po \
 	writer/png/$(DEPDIR)/test_runner-0010_p3_indexed.Po \
 	writer/png/$(DEPDIR)/test_runner-0011_p3_direct_alpha.Po \
@@ -14255,7 +14368,7 @@ LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CC = $(am__v_CC_@AM_V@)
 am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
 am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 = 
+am__v_CC_1 =
 CCLD = $(CC)
 LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -14263,7 +14376,7 @@ LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 = 
+am__v_CCLD_1 =
 SOURCES = $(libfloatlookuptests_la_SOURCES) $(test_runner_SOURCES) \
 	$(nodist_test_runner_SOURCES)
 DIST_SOURCES = $(am__libfloatlookuptests_la_SOURCES_DIST) \
@@ -14898,6 +15011,44 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_DRAIN_COMPLETES_JOBS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_RESUME_KEEPS_WORKSPACE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_RESUME_KEEPS_THREAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_RESUME_REBINDS_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_RESUME_REBINDS_HOOKS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_DRAINED_REJECTS_PUSH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_OPEN_REJECTS_RESUME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_FINISHED_REJECTS_RESUME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_FAILED_REJECTS_RESUME \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_DRAIN_PRESERVES_ERROR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_REUSED_WORKSPACE_CLEANUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_DRAINED_REJECTS_GROWTH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_DRAIN_IDEMPOTENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_FINISH_DRAINS_JOBS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_RESUME_SINGLE_SLOT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0163_REUSE_PIXELS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0164_REUSE_PALETTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0165_REUSE_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0166_REUSE_SINK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0167_REUSE_WIDTH_CHANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0168_REUSE_HEIGHT_CHANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0169_REUSE_COLORS_CHANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0170_REUSE_THREADS_CHANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0171_REUSE_QUEUE_CHANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0172_REUSE_ORMODE_CHANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0173_REUSE_ENCODE_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0174_REUSE_OFFSET_CHANGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0175_REUSE_ABORT_RESTART \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0176_REUSE_PALETTE_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0177_REUSE_BODY_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0178_REUSE_PATH \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0179_REUSE_GEOMETRY_REBUILD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0180_REUSE_RELEASE_STORAGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0181_REUSE_ABORT_STORAGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0182_REUSE_ALLOCATION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0183_REUSE_SCRATCH_ALLOCATIONS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CORE_REUSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_POOL_REUSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0069_QUERY_ENCODE_CPU \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0070_TARGET_ENCODE_CPU \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0071_QUERY_PLAYBACK_CPU \
@@ -19602,7 +19753,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
 # libsixel amalgamation already contains lookup-policy objects.
 # Avoid duplicate symbol definitions when test_runner links sixel.lib.
-@WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE = 
+@WANT_AMALGAMATED_LIB_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@TEST_RUNNER_LOOKUP_POLICY_SOURCE =
 
 # Test-only code builds for check, never as part of all.
 @WANT_AMALGAMATED_TOOLS_FALSE@EXTRA_LTLIBRARIES = libfloatlookuptests.la
@@ -19618,6 +19769,44 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0007_drain_completes_jobs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0008_resume_keeps_workspace.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0009_resume_keeps_thread.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0010_resume_rebinds_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0011_resume_rebinds_hooks.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0012_drained_rejects_push.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0013_open_rejects_resume.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0014_finished_rejects_resume.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0015_failed_rejects_resume.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0016_drain_preserves_error.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0017_reused_workspace_cleanup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0018_drained_rejects_growth.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0019_drain_idempotent.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0020_finish_drains_jobs.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    platform/threadpool/0021_resume_single_slot.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0163_reuse_pixels.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0164_reuse_palette.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0165_reuse_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0166_reuse_sink.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0167_reuse_width_change.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0168_reuse_height_change.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0169_reuse_colors_change.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0170_reuse_threads_change.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0171_reuse_queue_change.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0172_reuse_ormode_change.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0173_reuse_encode_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0174_reuse_offset_change.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0175_reuse_abort_restart.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0176_reuse_palette_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0177_reuse_body_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0178_reuse_path.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0179_reuse_geometry_rebuild.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0180_reuse_release_storage.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0181_reuse_abort_storage.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0182_reuse_allocation_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/indexed/0183_reuse_scratch_allocations.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/pool_reuse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/core_reuse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0069_query_encode_cpu.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0070_target_encode_cpu.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    delta/comparison/0071_query_playback_cpu.c \
@@ -24401,7 +24590,7 @@ AM_TEST_TIMEOUT = 90
 AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
 # LOG_COMPILE; the drivers consume timeout hints themselves.
-AM_LOG_FLAGS = 
+AM_LOG_FLAGS =
 quicklook_installed_reportdir = $(top_builddir)/quicklook-extension/installcheck
 @OPENVMS_GNV_FALSE@sixel_clean_batch_size = $(if $(filter darwin% linux% freebsd% netbsd% openbsd% dragonfly% solaris% illumos% haiku% aix%,$(host_os)),128,16)
 
@@ -24809,8 +24998,140 @@ lookup/delaunay/libfloatlookuptests_la-0012_delaunay_float_bulk.lo:  \
 	lookup/delaunay/$(am__dirstamp) \
 	lookup/delaunay/$(DEPDIR)/$(am__dirstamp)
 
-libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES) 
+libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES)
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+platform/threadpool/$(am__dirstamp):
+	@$(MKDIR_P) platform/threadpool
+	@: >>platform/threadpool/$(am__dirstamp)
+platform/threadpool/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) platform/threadpool/$(DEPDIR)
+	@: >>platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0007_drain_completes_jobs.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0008_resume_keeps_workspace.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0009_resume_keeps_thread.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0010_resume_rebinds_policy.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0011_resume_rebinds_hooks.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0012_drained_rejects_push.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0013_open_rejects_resume.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0014_finished_rejects_resume.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0015_failed_rejects_resume.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0016_drain_preserves_error.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0017_reused_workspace_cleanup.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0018_drained_rejects_growth.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0019_drain_idempotent.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0020_finish_drains_jobs.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+platform/threadpool/test_runner-0021_resume_single_slot.$(OBJEXT):  \
+	platform/threadpool/$(am__dirstamp) \
+	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/$(am__dirstamp):
+	@$(MKDIR_P) encoder/indexed
+	@: >>encoder/indexed/$(am__dirstamp)
+encoder/indexed/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) encoder/indexed/$(DEPDIR)
+	@: >>encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0163_reuse_pixels.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0164_reuse_palette.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0165_reuse_mask.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0166_reuse_sink.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0167_reuse_width_change.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0168_reuse_height_change.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0169_reuse_colors_change.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0170_reuse_threads_change.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0171_reuse_queue_change.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0172_reuse_ormode_change.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0173_reuse_encode_policy.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0174_reuse_offset_change.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0175_reuse_abort_restart.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0176_reuse_palette_failure.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0177_reuse_body_failure.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0178_reuse_path.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0179_reuse_geometry_rebuild.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0180_reuse_release_storage.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0181_reuse_abort_storage.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0182_reuse_allocation_failure.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+encoder/indexed/test_runner-0183_reuse_scratch_allocations.$(OBJEXT):  \
+	encoder/indexed/$(am__dirstamp) \
+	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
+_support/codec/$(am__dirstamp):
+	@$(MKDIR_P) _support/codec
+	@: >>_support/codec/$(am__dirstamp)
+_support/codec/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/codec/$(DEPDIR)
+	@: >>_support/codec/$(DEPDIR)/$(am__dirstamp)
+_support/codec/test_runner-pool_reuse.$(OBJEXT):  \
+	_support/codec/$(am__dirstamp) \
+	_support/codec/$(DEPDIR)/$(am__dirstamp)
+_support/codec/test_runner-core_reuse.$(OBJEXT):  \
+	_support/codec/$(am__dirstamp) \
+	_support/codec/$(DEPDIR)/$(am__dirstamp)
 delta/comparison/$(am__dirstamp):
 	@$(MKDIR_P) delta/comparison
 	@: >>delta/comparison/$(am__dirstamp)
@@ -30909,12 +31230,6 @@ lookup/gridlut/test_runner-0001_gridlut_exact.$(OBJEXT):  \
 lookup/ordered/test_runner-0001_ordered_exact.$(OBJEXT):  \
 	lookup/ordered/$(am__dirstamp) \
 	lookup/ordered/$(DEPDIR)/$(am__dirstamp)
-encoder/indexed/$(am__dirstamp):
-	@$(MKDIR_P) encoder/indexed
-	@: >>encoder/indexed/$(am__dirstamp)
-encoder/indexed/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) encoder/indexed/$(DEPDIR)
-	@: >>encoder/indexed/$(DEPDIR)/$(am__dirstamp)
 encoder/indexed/test_runner-0080_injected_gpu_program.$(OBJEXT):  \
 	encoder/indexed/$(am__dirstamp) \
 	encoder/indexed/$(DEPDIR)/$(am__dirstamp)
@@ -31749,12 +32064,6 @@ platform/path/$(DEPDIR)/$(am__dirstamp):
 platform/path/test_runner-0001_path_to_libc_runtime.$(OBJEXT):  \
 	platform/path/$(am__dirstamp) \
 	platform/path/$(DEPDIR)/$(am__dirstamp)
-platform/threadpool/$(am__dirstamp):
-	@$(MKDIR_P) platform/threadpool
-	@: >>platform/threadpool/$(am__dirstamp)
-platform/threadpool/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) platform/threadpool/$(DEPDIR)
-	@: >>platform/threadpool/$(DEPDIR)/$(am__dirstamp)
 platform/threadpool/test_runner-0001_threadpool_service.$(OBJEXT):  \
 	platform/threadpool/$(am__dirstamp) \
 	platform/threadpool/$(DEPDIR)/$(am__dirstamp)
@@ -32136,12 +32445,6 @@ dither/dispatch/test_runner-0049_x_dither_prepared_apply.$(OBJEXT):  \
 dither/dispatch/test_runner-0050_bluenoise_prepared_apply.$(OBJEXT):  \
 	dither/dispatch/$(am__dirstamp) \
 	dither/dispatch/$(DEPDIR)/$(am__dirstamp)
-_support/codec/$(am__dirstamp):
-	@$(MKDIR_P) _support/codec
-	@: >>_support/codec/$(am__dirstamp)
-_support/codec/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/codec/$(DEPDIR)
-	@: >>_support/codec/$(DEPDIR)/$(am__dirstamp)
 _support/codec/test_runner-indexed_equivalence_common.$(OBJEXT):  \
 	_support/codec/$(am__dirstamp) \
 	_support/codec/$(DEPDIR)/$(am__dirstamp)
@@ -40011,6 +40314,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0038_cli_color_tty.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0039_cli_color_auto.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/cli/$(DEPDIR)/test_runner-0040_cli_color_job.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-core_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-highcolor_band_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-highcolor_mask_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-highcolor_output_common.Po@am__quote@ # am--include-marker
@@ -40019,6 +40323,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-indexed_component_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-indexed_equivalence_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-png_delta_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-pool_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_component_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po@am__quote@ # am--include-marker
@@ -41754,6 +42059,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0160_gpu_rows_invalid_later.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0161_gpu_rows_apply_visible.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0162_gpu_rows_apply_failed.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0009_srgb_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0010_p3_float_define.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/macro/$(DEPDIR)/test_runner-0011_p3_float_invoke.Po@am__quote@ # am--include-marker
@@ -44593,6 +44919,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0003_thread_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0005_object_policy_isolation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0006_concurrent_object_policies.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0009_srgb_indexed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0010_p3_indexed.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@writer/png/$(DEPDIR)/test_runner-0011_p3_direct_alpha.Po@am__quote@ # am--include-marker
@@ -44741,6 +45082,538 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+platform/threadpool/test_runner-0007_drain_completes_jobs.o: platform/threadpool/0007_drain_completes_jobs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0007_drain_completes_jobs.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Tpo -c -o platform/threadpool/test_runner-0007_drain_completes_jobs.o `test -f 'platform/threadpool/0007_drain_completes_jobs.c' || echo '$(srcdir)/'`platform/threadpool/0007_drain_completes_jobs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Tpo platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0007_drain_completes_jobs.c' object='platform/threadpool/test_runner-0007_drain_completes_jobs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0007_drain_completes_jobs.o `test -f 'platform/threadpool/0007_drain_completes_jobs.c' || echo '$(srcdir)/'`platform/threadpool/0007_drain_completes_jobs.c
+
+platform/threadpool/test_runner-0007_drain_completes_jobs.obj: platform/threadpool/0007_drain_completes_jobs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0007_drain_completes_jobs.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Tpo -c -o platform/threadpool/test_runner-0007_drain_completes_jobs.obj `if test -f 'platform/threadpool/0007_drain_completes_jobs.c'; then $(CYGPATH_W) 'platform/threadpool/0007_drain_completes_jobs.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0007_drain_completes_jobs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Tpo platform/threadpool/$(DEPDIR)/test_runner-0007_drain_completes_jobs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0007_drain_completes_jobs.c' object='platform/threadpool/test_runner-0007_drain_completes_jobs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0007_drain_completes_jobs.obj `if test -f 'platform/threadpool/0007_drain_completes_jobs.c'; then $(CYGPATH_W) 'platform/threadpool/0007_drain_completes_jobs.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0007_drain_completes_jobs.c'; fi`
+
+platform/threadpool/test_runner-0008_resume_keeps_workspace.o: platform/threadpool/0008_resume_keeps_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0008_resume_keeps_workspace.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Tpo -c -o platform/threadpool/test_runner-0008_resume_keeps_workspace.o `test -f 'platform/threadpool/0008_resume_keeps_workspace.c' || echo '$(srcdir)/'`platform/threadpool/0008_resume_keeps_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Tpo platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0008_resume_keeps_workspace.c' object='platform/threadpool/test_runner-0008_resume_keeps_workspace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0008_resume_keeps_workspace.o `test -f 'platform/threadpool/0008_resume_keeps_workspace.c' || echo '$(srcdir)/'`platform/threadpool/0008_resume_keeps_workspace.c
+
+platform/threadpool/test_runner-0008_resume_keeps_workspace.obj: platform/threadpool/0008_resume_keeps_workspace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0008_resume_keeps_workspace.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Tpo -c -o platform/threadpool/test_runner-0008_resume_keeps_workspace.obj `if test -f 'platform/threadpool/0008_resume_keeps_workspace.c'; then $(CYGPATH_W) 'platform/threadpool/0008_resume_keeps_workspace.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0008_resume_keeps_workspace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Tpo platform/threadpool/$(DEPDIR)/test_runner-0008_resume_keeps_workspace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0008_resume_keeps_workspace.c' object='platform/threadpool/test_runner-0008_resume_keeps_workspace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0008_resume_keeps_workspace.obj `if test -f 'platform/threadpool/0008_resume_keeps_workspace.c'; then $(CYGPATH_W) 'platform/threadpool/0008_resume_keeps_workspace.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0008_resume_keeps_workspace.c'; fi`
+
+platform/threadpool/test_runner-0009_resume_keeps_thread.o: platform/threadpool/0009_resume_keeps_thread.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0009_resume_keeps_thread.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Tpo -c -o platform/threadpool/test_runner-0009_resume_keeps_thread.o `test -f 'platform/threadpool/0009_resume_keeps_thread.c' || echo '$(srcdir)/'`platform/threadpool/0009_resume_keeps_thread.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Tpo platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0009_resume_keeps_thread.c' object='platform/threadpool/test_runner-0009_resume_keeps_thread.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0009_resume_keeps_thread.o `test -f 'platform/threadpool/0009_resume_keeps_thread.c' || echo '$(srcdir)/'`platform/threadpool/0009_resume_keeps_thread.c
+
+platform/threadpool/test_runner-0009_resume_keeps_thread.obj: platform/threadpool/0009_resume_keeps_thread.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0009_resume_keeps_thread.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Tpo -c -o platform/threadpool/test_runner-0009_resume_keeps_thread.obj `if test -f 'platform/threadpool/0009_resume_keeps_thread.c'; then $(CYGPATH_W) 'platform/threadpool/0009_resume_keeps_thread.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0009_resume_keeps_thread.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Tpo platform/threadpool/$(DEPDIR)/test_runner-0009_resume_keeps_thread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0009_resume_keeps_thread.c' object='platform/threadpool/test_runner-0009_resume_keeps_thread.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0009_resume_keeps_thread.obj `if test -f 'platform/threadpool/0009_resume_keeps_thread.c'; then $(CYGPATH_W) 'platform/threadpool/0009_resume_keeps_thread.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0009_resume_keeps_thread.c'; fi`
+
+platform/threadpool/test_runner-0010_resume_rebinds_policy.o: platform/threadpool/0010_resume_rebinds_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0010_resume_rebinds_policy.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Tpo -c -o platform/threadpool/test_runner-0010_resume_rebinds_policy.o `test -f 'platform/threadpool/0010_resume_rebinds_policy.c' || echo '$(srcdir)/'`platform/threadpool/0010_resume_rebinds_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Tpo platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0010_resume_rebinds_policy.c' object='platform/threadpool/test_runner-0010_resume_rebinds_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0010_resume_rebinds_policy.o `test -f 'platform/threadpool/0010_resume_rebinds_policy.c' || echo '$(srcdir)/'`platform/threadpool/0010_resume_rebinds_policy.c
+
+platform/threadpool/test_runner-0010_resume_rebinds_policy.obj: platform/threadpool/0010_resume_rebinds_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0010_resume_rebinds_policy.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Tpo -c -o platform/threadpool/test_runner-0010_resume_rebinds_policy.obj `if test -f 'platform/threadpool/0010_resume_rebinds_policy.c'; then $(CYGPATH_W) 'platform/threadpool/0010_resume_rebinds_policy.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0010_resume_rebinds_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Tpo platform/threadpool/$(DEPDIR)/test_runner-0010_resume_rebinds_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0010_resume_rebinds_policy.c' object='platform/threadpool/test_runner-0010_resume_rebinds_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0010_resume_rebinds_policy.obj `if test -f 'platform/threadpool/0010_resume_rebinds_policy.c'; then $(CYGPATH_W) 'platform/threadpool/0010_resume_rebinds_policy.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0010_resume_rebinds_policy.c'; fi`
+
+platform/threadpool/test_runner-0011_resume_rebinds_hooks.o: platform/threadpool/0011_resume_rebinds_hooks.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0011_resume_rebinds_hooks.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Tpo -c -o platform/threadpool/test_runner-0011_resume_rebinds_hooks.o `test -f 'platform/threadpool/0011_resume_rebinds_hooks.c' || echo '$(srcdir)/'`platform/threadpool/0011_resume_rebinds_hooks.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Tpo platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0011_resume_rebinds_hooks.c' object='platform/threadpool/test_runner-0011_resume_rebinds_hooks.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0011_resume_rebinds_hooks.o `test -f 'platform/threadpool/0011_resume_rebinds_hooks.c' || echo '$(srcdir)/'`platform/threadpool/0011_resume_rebinds_hooks.c
+
+platform/threadpool/test_runner-0011_resume_rebinds_hooks.obj: platform/threadpool/0011_resume_rebinds_hooks.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0011_resume_rebinds_hooks.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Tpo -c -o platform/threadpool/test_runner-0011_resume_rebinds_hooks.obj `if test -f 'platform/threadpool/0011_resume_rebinds_hooks.c'; then $(CYGPATH_W) 'platform/threadpool/0011_resume_rebinds_hooks.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0011_resume_rebinds_hooks.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Tpo platform/threadpool/$(DEPDIR)/test_runner-0011_resume_rebinds_hooks.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0011_resume_rebinds_hooks.c' object='platform/threadpool/test_runner-0011_resume_rebinds_hooks.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0011_resume_rebinds_hooks.obj `if test -f 'platform/threadpool/0011_resume_rebinds_hooks.c'; then $(CYGPATH_W) 'platform/threadpool/0011_resume_rebinds_hooks.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0011_resume_rebinds_hooks.c'; fi`
+
+platform/threadpool/test_runner-0012_drained_rejects_push.o: platform/threadpool/0012_drained_rejects_push.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0012_drained_rejects_push.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Tpo -c -o platform/threadpool/test_runner-0012_drained_rejects_push.o `test -f 'platform/threadpool/0012_drained_rejects_push.c' || echo '$(srcdir)/'`platform/threadpool/0012_drained_rejects_push.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Tpo platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0012_drained_rejects_push.c' object='platform/threadpool/test_runner-0012_drained_rejects_push.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0012_drained_rejects_push.o `test -f 'platform/threadpool/0012_drained_rejects_push.c' || echo '$(srcdir)/'`platform/threadpool/0012_drained_rejects_push.c
+
+platform/threadpool/test_runner-0012_drained_rejects_push.obj: platform/threadpool/0012_drained_rejects_push.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0012_drained_rejects_push.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Tpo -c -o platform/threadpool/test_runner-0012_drained_rejects_push.obj `if test -f 'platform/threadpool/0012_drained_rejects_push.c'; then $(CYGPATH_W) 'platform/threadpool/0012_drained_rejects_push.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0012_drained_rejects_push.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Tpo platform/threadpool/$(DEPDIR)/test_runner-0012_drained_rejects_push.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0012_drained_rejects_push.c' object='platform/threadpool/test_runner-0012_drained_rejects_push.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0012_drained_rejects_push.obj `if test -f 'platform/threadpool/0012_drained_rejects_push.c'; then $(CYGPATH_W) 'platform/threadpool/0012_drained_rejects_push.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0012_drained_rejects_push.c'; fi`
+
+platform/threadpool/test_runner-0013_open_rejects_resume.o: platform/threadpool/0013_open_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0013_open_rejects_resume.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Tpo -c -o platform/threadpool/test_runner-0013_open_rejects_resume.o `test -f 'platform/threadpool/0013_open_rejects_resume.c' || echo '$(srcdir)/'`platform/threadpool/0013_open_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Tpo platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0013_open_rejects_resume.c' object='platform/threadpool/test_runner-0013_open_rejects_resume.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0013_open_rejects_resume.o `test -f 'platform/threadpool/0013_open_rejects_resume.c' || echo '$(srcdir)/'`platform/threadpool/0013_open_rejects_resume.c
+
+platform/threadpool/test_runner-0013_open_rejects_resume.obj: platform/threadpool/0013_open_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0013_open_rejects_resume.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Tpo -c -o platform/threadpool/test_runner-0013_open_rejects_resume.obj `if test -f 'platform/threadpool/0013_open_rejects_resume.c'; then $(CYGPATH_W) 'platform/threadpool/0013_open_rejects_resume.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0013_open_rejects_resume.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Tpo platform/threadpool/$(DEPDIR)/test_runner-0013_open_rejects_resume.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0013_open_rejects_resume.c' object='platform/threadpool/test_runner-0013_open_rejects_resume.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0013_open_rejects_resume.obj `if test -f 'platform/threadpool/0013_open_rejects_resume.c'; then $(CYGPATH_W) 'platform/threadpool/0013_open_rejects_resume.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0013_open_rejects_resume.c'; fi`
+
+platform/threadpool/test_runner-0014_finished_rejects_resume.o: platform/threadpool/0014_finished_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0014_finished_rejects_resume.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Tpo -c -o platform/threadpool/test_runner-0014_finished_rejects_resume.o `test -f 'platform/threadpool/0014_finished_rejects_resume.c' || echo '$(srcdir)/'`platform/threadpool/0014_finished_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Tpo platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0014_finished_rejects_resume.c' object='platform/threadpool/test_runner-0014_finished_rejects_resume.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0014_finished_rejects_resume.o `test -f 'platform/threadpool/0014_finished_rejects_resume.c' || echo '$(srcdir)/'`platform/threadpool/0014_finished_rejects_resume.c
+
+platform/threadpool/test_runner-0014_finished_rejects_resume.obj: platform/threadpool/0014_finished_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0014_finished_rejects_resume.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Tpo -c -o platform/threadpool/test_runner-0014_finished_rejects_resume.obj `if test -f 'platform/threadpool/0014_finished_rejects_resume.c'; then $(CYGPATH_W) 'platform/threadpool/0014_finished_rejects_resume.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0014_finished_rejects_resume.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Tpo platform/threadpool/$(DEPDIR)/test_runner-0014_finished_rejects_resume.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0014_finished_rejects_resume.c' object='platform/threadpool/test_runner-0014_finished_rejects_resume.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0014_finished_rejects_resume.obj `if test -f 'platform/threadpool/0014_finished_rejects_resume.c'; then $(CYGPATH_W) 'platform/threadpool/0014_finished_rejects_resume.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0014_finished_rejects_resume.c'; fi`
+
+platform/threadpool/test_runner-0015_failed_rejects_resume.o: platform/threadpool/0015_failed_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0015_failed_rejects_resume.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Tpo -c -o platform/threadpool/test_runner-0015_failed_rejects_resume.o `test -f 'platform/threadpool/0015_failed_rejects_resume.c' || echo '$(srcdir)/'`platform/threadpool/0015_failed_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Tpo platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0015_failed_rejects_resume.c' object='platform/threadpool/test_runner-0015_failed_rejects_resume.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0015_failed_rejects_resume.o `test -f 'platform/threadpool/0015_failed_rejects_resume.c' || echo '$(srcdir)/'`platform/threadpool/0015_failed_rejects_resume.c
+
+platform/threadpool/test_runner-0015_failed_rejects_resume.obj: platform/threadpool/0015_failed_rejects_resume.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0015_failed_rejects_resume.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Tpo -c -o platform/threadpool/test_runner-0015_failed_rejects_resume.obj `if test -f 'platform/threadpool/0015_failed_rejects_resume.c'; then $(CYGPATH_W) 'platform/threadpool/0015_failed_rejects_resume.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0015_failed_rejects_resume.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Tpo platform/threadpool/$(DEPDIR)/test_runner-0015_failed_rejects_resume.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0015_failed_rejects_resume.c' object='platform/threadpool/test_runner-0015_failed_rejects_resume.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0015_failed_rejects_resume.obj `if test -f 'platform/threadpool/0015_failed_rejects_resume.c'; then $(CYGPATH_W) 'platform/threadpool/0015_failed_rejects_resume.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0015_failed_rejects_resume.c'; fi`
+
+platform/threadpool/test_runner-0016_drain_preserves_error.o: platform/threadpool/0016_drain_preserves_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0016_drain_preserves_error.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Tpo -c -o platform/threadpool/test_runner-0016_drain_preserves_error.o `test -f 'platform/threadpool/0016_drain_preserves_error.c' || echo '$(srcdir)/'`platform/threadpool/0016_drain_preserves_error.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Tpo platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0016_drain_preserves_error.c' object='platform/threadpool/test_runner-0016_drain_preserves_error.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0016_drain_preserves_error.o `test -f 'platform/threadpool/0016_drain_preserves_error.c' || echo '$(srcdir)/'`platform/threadpool/0016_drain_preserves_error.c
+
+platform/threadpool/test_runner-0016_drain_preserves_error.obj: platform/threadpool/0016_drain_preserves_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0016_drain_preserves_error.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Tpo -c -o platform/threadpool/test_runner-0016_drain_preserves_error.obj `if test -f 'platform/threadpool/0016_drain_preserves_error.c'; then $(CYGPATH_W) 'platform/threadpool/0016_drain_preserves_error.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0016_drain_preserves_error.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Tpo platform/threadpool/$(DEPDIR)/test_runner-0016_drain_preserves_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0016_drain_preserves_error.c' object='platform/threadpool/test_runner-0016_drain_preserves_error.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0016_drain_preserves_error.obj `if test -f 'platform/threadpool/0016_drain_preserves_error.c'; then $(CYGPATH_W) 'platform/threadpool/0016_drain_preserves_error.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0016_drain_preserves_error.c'; fi`
+
+platform/threadpool/test_runner-0017_reused_workspace_cleanup.o: platform/threadpool/0017_reused_workspace_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0017_reused_workspace_cleanup.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Tpo -c -o platform/threadpool/test_runner-0017_reused_workspace_cleanup.o `test -f 'platform/threadpool/0017_reused_workspace_cleanup.c' || echo '$(srcdir)/'`platform/threadpool/0017_reused_workspace_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Tpo platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0017_reused_workspace_cleanup.c' object='platform/threadpool/test_runner-0017_reused_workspace_cleanup.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0017_reused_workspace_cleanup.o `test -f 'platform/threadpool/0017_reused_workspace_cleanup.c' || echo '$(srcdir)/'`platform/threadpool/0017_reused_workspace_cleanup.c
+
+platform/threadpool/test_runner-0017_reused_workspace_cleanup.obj: platform/threadpool/0017_reused_workspace_cleanup.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0017_reused_workspace_cleanup.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Tpo -c -o platform/threadpool/test_runner-0017_reused_workspace_cleanup.obj `if test -f 'platform/threadpool/0017_reused_workspace_cleanup.c'; then $(CYGPATH_W) 'platform/threadpool/0017_reused_workspace_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0017_reused_workspace_cleanup.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Tpo platform/threadpool/$(DEPDIR)/test_runner-0017_reused_workspace_cleanup.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0017_reused_workspace_cleanup.c' object='platform/threadpool/test_runner-0017_reused_workspace_cleanup.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0017_reused_workspace_cleanup.obj `if test -f 'platform/threadpool/0017_reused_workspace_cleanup.c'; then $(CYGPATH_W) 'platform/threadpool/0017_reused_workspace_cleanup.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0017_reused_workspace_cleanup.c'; fi`
+
+platform/threadpool/test_runner-0018_drained_rejects_growth.o: platform/threadpool/0018_drained_rejects_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0018_drained_rejects_growth.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Tpo -c -o platform/threadpool/test_runner-0018_drained_rejects_growth.o `test -f 'platform/threadpool/0018_drained_rejects_growth.c' || echo '$(srcdir)/'`platform/threadpool/0018_drained_rejects_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Tpo platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0018_drained_rejects_growth.c' object='platform/threadpool/test_runner-0018_drained_rejects_growth.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0018_drained_rejects_growth.o `test -f 'platform/threadpool/0018_drained_rejects_growth.c' || echo '$(srcdir)/'`platform/threadpool/0018_drained_rejects_growth.c
+
+platform/threadpool/test_runner-0018_drained_rejects_growth.obj: platform/threadpool/0018_drained_rejects_growth.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0018_drained_rejects_growth.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Tpo -c -o platform/threadpool/test_runner-0018_drained_rejects_growth.obj `if test -f 'platform/threadpool/0018_drained_rejects_growth.c'; then $(CYGPATH_W) 'platform/threadpool/0018_drained_rejects_growth.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0018_drained_rejects_growth.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Tpo platform/threadpool/$(DEPDIR)/test_runner-0018_drained_rejects_growth.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0018_drained_rejects_growth.c' object='platform/threadpool/test_runner-0018_drained_rejects_growth.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0018_drained_rejects_growth.obj `if test -f 'platform/threadpool/0018_drained_rejects_growth.c'; then $(CYGPATH_W) 'platform/threadpool/0018_drained_rejects_growth.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0018_drained_rejects_growth.c'; fi`
+
+platform/threadpool/test_runner-0019_drain_idempotent.o: platform/threadpool/0019_drain_idempotent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0019_drain_idempotent.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Tpo -c -o platform/threadpool/test_runner-0019_drain_idempotent.o `test -f 'platform/threadpool/0019_drain_idempotent.c' || echo '$(srcdir)/'`platform/threadpool/0019_drain_idempotent.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Tpo platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0019_drain_idempotent.c' object='platform/threadpool/test_runner-0019_drain_idempotent.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0019_drain_idempotent.o `test -f 'platform/threadpool/0019_drain_idempotent.c' || echo '$(srcdir)/'`platform/threadpool/0019_drain_idempotent.c
+
+platform/threadpool/test_runner-0019_drain_idempotent.obj: platform/threadpool/0019_drain_idempotent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0019_drain_idempotent.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Tpo -c -o platform/threadpool/test_runner-0019_drain_idempotent.obj `if test -f 'platform/threadpool/0019_drain_idempotent.c'; then $(CYGPATH_W) 'platform/threadpool/0019_drain_idempotent.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0019_drain_idempotent.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Tpo platform/threadpool/$(DEPDIR)/test_runner-0019_drain_idempotent.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0019_drain_idempotent.c' object='platform/threadpool/test_runner-0019_drain_idempotent.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0019_drain_idempotent.obj `if test -f 'platform/threadpool/0019_drain_idempotent.c'; then $(CYGPATH_W) 'platform/threadpool/0019_drain_idempotent.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0019_drain_idempotent.c'; fi`
+
+platform/threadpool/test_runner-0020_finish_drains_jobs.o: platform/threadpool/0020_finish_drains_jobs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0020_finish_drains_jobs.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Tpo -c -o platform/threadpool/test_runner-0020_finish_drains_jobs.o `test -f 'platform/threadpool/0020_finish_drains_jobs.c' || echo '$(srcdir)/'`platform/threadpool/0020_finish_drains_jobs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Tpo platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0020_finish_drains_jobs.c' object='platform/threadpool/test_runner-0020_finish_drains_jobs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0020_finish_drains_jobs.o `test -f 'platform/threadpool/0020_finish_drains_jobs.c' || echo '$(srcdir)/'`platform/threadpool/0020_finish_drains_jobs.c
+
+platform/threadpool/test_runner-0020_finish_drains_jobs.obj: platform/threadpool/0020_finish_drains_jobs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0020_finish_drains_jobs.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Tpo -c -o platform/threadpool/test_runner-0020_finish_drains_jobs.obj `if test -f 'platform/threadpool/0020_finish_drains_jobs.c'; then $(CYGPATH_W) 'platform/threadpool/0020_finish_drains_jobs.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0020_finish_drains_jobs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Tpo platform/threadpool/$(DEPDIR)/test_runner-0020_finish_drains_jobs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0020_finish_drains_jobs.c' object='platform/threadpool/test_runner-0020_finish_drains_jobs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0020_finish_drains_jobs.obj `if test -f 'platform/threadpool/0020_finish_drains_jobs.c'; then $(CYGPATH_W) 'platform/threadpool/0020_finish_drains_jobs.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0020_finish_drains_jobs.c'; fi`
+
+platform/threadpool/test_runner-0021_resume_single_slot.o: platform/threadpool/0021_resume_single_slot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0021_resume_single_slot.o -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Tpo -c -o platform/threadpool/test_runner-0021_resume_single_slot.o `test -f 'platform/threadpool/0021_resume_single_slot.c' || echo '$(srcdir)/'`platform/threadpool/0021_resume_single_slot.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Tpo platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0021_resume_single_slot.c' object='platform/threadpool/test_runner-0021_resume_single_slot.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0021_resume_single_slot.o `test -f 'platform/threadpool/0021_resume_single_slot.c' || echo '$(srcdir)/'`platform/threadpool/0021_resume_single_slot.c
+
+platform/threadpool/test_runner-0021_resume_single_slot.obj: platform/threadpool/0021_resume_single_slot.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT platform/threadpool/test_runner-0021_resume_single_slot.obj -MD -MP -MF platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Tpo -c -o platform/threadpool/test_runner-0021_resume_single_slot.obj `if test -f 'platform/threadpool/0021_resume_single_slot.c'; then $(CYGPATH_W) 'platform/threadpool/0021_resume_single_slot.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0021_resume_single_slot.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Tpo platform/threadpool/$(DEPDIR)/test_runner-0021_resume_single_slot.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='platform/threadpool/0021_resume_single_slot.c' object='platform/threadpool/test_runner-0021_resume_single_slot.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o platform/threadpool/test_runner-0021_resume_single_slot.obj `if test -f 'platform/threadpool/0021_resume_single_slot.c'; then $(CYGPATH_W) 'platform/threadpool/0021_resume_single_slot.c'; else $(CYGPATH_W) '$(srcdir)/platform/threadpool/0021_resume_single_slot.c'; fi`
+
+encoder/indexed/test_runner-0163_reuse_pixels.o: encoder/indexed/0163_reuse_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0163_reuse_pixels.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Tpo -c -o encoder/indexed/test_runner-0163_reuse_pixels.o `test -f 'encoder/indexed/0163_reuse_pixels.c' || echo '$(srcdir)/'`encoder/indexed/0163_reuse_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Tpo encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0163_reuse_pixels.c' object='encoder/indexed/test_runner-0163_reuse_pixels.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0163_reuse_pixels.o `test -f 'encoder/indexed/0163_reuse_pixels.c' || echo '$(srcdir)/'`encoder/indexed/0163_reuse_pixels.c
+
+encoder/indexed/test_runner-0163_reuse_pixels.obj: encoder/indexed/0163_reuse_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0163_reuse_pixels.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Tpo -c -o encoder/indexed/test_runner-0163_reuse_pixels.obj `if test -f 'encoder/indexed/0163_reuse_pixels.c'; then $(CYGPATH_W) 'encoder/indexed/0163_reuse_pixels.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0163_reuse_pixels.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Tpo encoder/indexed/$(DEPDIR)/test_runner-0163_reuse_pixels.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0163_reuse_pixels.c' object='encoder/indexed/test_runner-0163_reuse_pixels.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0163_reuse_pixels.obj `if test -f 'encoder/indexed/0163_reuse_pixels.c'; then $(CYGPATH_W) 'encoder/indexed/0163_reuse_pixels.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0163_reuse_pixels.c'; fi`
+
+encoder/indexed/test_runner-0164_reuse_palette.o: encoder/indexed/0164_reuse_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0164_reuse_palette.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Tpo -c -o encoder/indexed/test_runner-0164_reuse_palette.o `test -f 'encoder/indexed/0164_reuse_palette.c' || echo '$(srcdir)/'`encoder/indexed/0164_reuse_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Tpo encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0164_reuse_palette.c' object='encoder/indexed/test_runner-0164_reuse_palette.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0164_reuse_palette.o `test -f 'encoder/indexed/0164_reuse_palette.c' || echo '$(srcdir)/'`encoder/indexed/0164_reuse_palette.c
+
+encoder/indexed/test_runner-0164_reuse_palette.obj: encoder/indexed/0164_reuse_palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0164_reuse_palette.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Tpo -c -o encoder/indexed/test_runner-0164_reuse_palette.obj `if test -f 'encoder/indexed/0164_reuse_palette.c'; then $(CYGPATH_W) 'encoder/indexed/0164_reuse_palette.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0164_reuse_palette.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Tpo encoder/indexed/$(DEPDIR)/test_runner-0164_reuse_palette.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0164_reuse_palette.c' object='encoder/indexed/test_runner-0164_reuse_palette.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0164_reuse_palette.obj `if test -f 'encoder/indexed/0164_reuse_palette.c'; then $(CYGPATH_W) 'encoder/indexed/0164_reuse_palette.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0164_reuse_palette.c'; fi`
+
+encoder/indexed/test_runner-0165_reuse_mask.o: encoder/indexed/0165_reuse_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0165_reuse_mask.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Tpo -c -o encoder/indexed/test_runner-0165_reuse_mask.o `test -f 'encoder/indexed/0165_reuse_mask.c' || echo '$(srcdir)/'`encoder/indexed/0165_reuse_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Tpo encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0165_reuse_mask.c' object='encoder/indexed/test_runner-0165_reuse_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0165_reuse_mask.o `test -f 'encoder/indexed/0165_reuse_mask.c' || echo '$(srcdir)/'`encoder/indexed/0165_reuse_mask.c
+
+encoder/indexed/test_runner-0165_reuse_mask.obj: encoder/indexed/0165_reuse_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0165_reuse_mask.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Tpo -c -o encoder/indexed/test_runner-0165_reuse_mask.obj `if test -f 'encoder/indexed/0165_reuse_mask.c'; then $(CYGPATH_W) 'encoder/indexed/0165_reuse_mask.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0165_reuse_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Tpo encoder/indexed/$(DEPDIR)/test_runner-0165_reuse_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0165_reuse_mask.c' object='encoder/indexed/test_runner-0165_reuse_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0165_reuse_mask.obj `if test -f 'encoder/indexed/0165_reuse_mask.c'; then $(CYGPATH_W) 'encoder/indexed/0165_reuse_mask.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0165_reuse_mask.c'; fi`
+
+encoder/indexed/test_runner-0166_reuse_sink.o: encoder/indexed/0166_reuse_sink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0166_reuse_sink.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Tpo -c -o encoder/indexed/test_runner-0166_reuse_sink.o `test -f 'encoder/indexed/0166_reuse_sink.c' || echo '$(srcdir)/'`encoder/indexed/0166_reuse_sink.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Tpo encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0166_reuse_sink.c' object='encoder/indexed/test_runner-0166_reuse_sink.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0166_reuse_sink.o `test -f 'encoder/indexed/0166_reuse_sink.c' || echo '$(srcdir)/'`encoder/indexed/0166_reuse_sink.c
+
+encoder/indexed/test_runner-0166_reuse_sink.obj: encoder/indexed/0166_reuse_sink.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0166_reuse_sink.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Tpo -c -o encoder/indexed/test_runner-0166_reuse_sink.obj `if test -f 'encoder/indexed/0166_reuse_sink.c'; then $(CYGPATH_W) 'encoder/indexed/0166_reuse_sink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0166_reuse_sink.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Tpo encoder/indexed/$(DEPDIR)/test_runner-0166_reuse_sink.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0166_reuse_sink.c' object='encoder/indexed/test_runner-0166_reuse_sink.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0166_reuse_sink.obj `if test -f 'encoder/indexed/0166_reuse_sink.c'; then $(CYGPATH_W) 'encoder/indexed/0166_reuse_sink.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0166_reuse_sink.c'; fi`
+
+encoder/indexed/test_runner-0167_reuse_width_change.o: encoder/indexed/0167_reuse_width_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0167_reuse_width_change.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Tpo -c -o encoder/indexed/test_runner-0167_reuse_width_change.o `test -f 'encoder/indexed/0167_reuse_width_change.c' || echo '$(srcdir)/'`encoder/indexed/0167_reuse_width_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0167_reuse_width_change.c' object='encoder/indexed/test_runner-0167_reuse_width_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0167_reuse_width_change.o `test -f 'encoder/indexed/0167_reuse_width_change.c' || echo '$(srcdir)/'`encoder/indexed/0167_reuse_width_change.c
+
+encoder/indexed/test_runner-0167_reuse_width_change.obj: encoder/indexed/0167_reuse_width_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0167_reuse_width_change.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Tpo -c -o encoder/indexed/test_runner-0167_reuse_width_change.obj `if test -f 'encoder/indexed/0167_reuse_width_change.c'; then $(CYGPATH_W) 'encoder/indexed/0167_reuse_width_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0167_reuse_width_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0167_reuse_width_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0167_reuse_width_change.c' object='encoder/indexed/test_runner-0167_reuse_width_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0167_reuse_width_change.obj `if test -f 'encoder/indexed/0167_reuse_width_change.c'; then $(CYGPATH_W) 'encoder/indexed/0167_reuse_width_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0167_reuse_width_change.c'; fi`
+
+encoder/indexed/test_runner-0168_reuse_height_change.o: encoder/indexed/0168_reuse_height_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0168_reuse_height_change.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Tpo -c -o encoder/indexed/test_runner-0168_reuse_height_change.o `test -f 'encoder/indexed/0168_reuse_height_change.c' || echo '$(srcdir)/'`encoder/indexed/0168_reuse_height_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0168_reuse_height_change.c' object='encoder/indexed/test_runner-0168_reuse_height_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0168_reuse_height_change.o `test -f 'encoder/indexed/0168_reuse_height_change.c' || echo '$(srcdir)/'`encoder/indexed/0168_reuse_height_change.c
+
+encoder/indexed/test_runner-0168_reuse_height_change.obj: encoder/indexed/0168_reuse_height_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0168_reuse_height_change.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Tpo -c -o encoder/indexed/test_runner-0168_reuse_height_change.obj `if test -f 'encoder/indexed/0168_reuse_height_change.c'; then $(CYGPATH_W) 'encoder/indexed/0168_reuse_height_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0168_reuse_height_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0168_reuse_height_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0168_reuse_height_change.c' object='encoder/indexed/test_runner-0168_reuse_height_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0168_reuse_height_change.obj `if test -f 'encoder/indexed/0168_reuse_height_change.c'; then $(CYGPATH_W) 'encoder/indexed/0168_reuse_height_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0168_reuse_height_change.c'; fi`
+
+encoder/indexed/test_runner-0169_reuse_colors_change.o: encoder/indexed/0169_reuse_colors_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0169_reuse_colors_change.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Tpo -c -o encoder/indexed/test_runner-0169_reuse_colors_change.o `test -f 'encoder/indexed/0169_reuse_colors_change.c' || echo '$(srcdir)/'`encoder/indexed/0169_reuse_colors_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0169_reuse_colors_change.c' object='encoder/indexed/test_runner-0169_reuse_colors_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0169_reuse_colors_change.o `test -f 'encoder/indexed/0169_reuse_colors_change.c' || echo '$(srcdir)/'`encoder/indexed/0169_reuse_colors_change.c
+
+encoder/indexed/test_runner-0169_reuse_colors_change.obj: encoder/indexed/0169_reuse_colors_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0169_reuse_colors_change.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Tpo -c -o encoder/indexed/test_runner-0169_reuse_colors_change.obj `if test -f 'encoder/indexed/0169_reuse_colors_change.c'; then $(CYGPATH_W) 'encoder/indexed/0169_reuse_colors_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0169_reuse_colors_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0169_reuse_colors_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0169_reuse_colors_change.c' object='encoder/indexed/test_runner-0169_reuse_colors_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0169_reuse_colors_change.obj `if test -f 'encoder/indexed/0169_reuse_colors_change.c'; then $(CYGPATH_W) 'encoder/indexed/0169_reuse_colors_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0169_reuse_colors_change.c'; fi`
+
+encoder/indexed/test_runner-0170_reuse_threads_change.o: encoder/indexed/0170_reuse_threads_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0170_reuse_threads_change.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Tpo -c -o encoder/indexed/test_runner-0170_reuse_threads_change.o `test -f 'encoder/indexed/0170_reuse_threads_change.c' || echo '$(srcdir)/'`encoder/indexed/0170_reuse_threads_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0170_reuse_threads_change.c' object='encoder/indexed/test_runner-0170_reuse_threads_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0170_reuse_threads_change.o `test -f 'encoder/indexed/0170_reuse_threads_change.c' || echo '$(srcdir)/'`encoder/indexed/0170_reuse_threads_change.c
+
+encoder/indexed/test_runner-0170_reuse_threads_change.obj: encoder/indexed/0170_reuse_threads_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0170_reuse_threads_change.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Tpo -c -o encoder/indexed/test_runner-0170_reuse_threads_change.obj `if test -f 'encoder/indexed/0170_reuse_threads_change.c'; then $(CYGPATH_W) 'encoder/indexed/0170_reuse_threads_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0170_reuse_threads_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0170_reuse_threads_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0170_reuse_threads_change.c' object='encoder/indexed/test_runner-0170_reuse_threads_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0170_reuse_threads_change.obj `if test -f 'encoder/indexed/0170_reuse_threads_change.c'; then $(CYGPATH_W) 'encoder/indexed/0170_reuse_threads_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0170_reuse_threads_change.c'; fi`
+
+encoder/indexed/test_runner-0171_reuse_queue_change.o: encoder/indexed/0171_reuse_queue_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0171_reuse_queue_change.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Tpo -c -o encoder/indexed/test_runner-0171_reuse_queue_change.o `test -f 'encoder/indexed/0171_reuse_queue_change.c' || echo '$(srcdir)/'`encoder/indexed/0171_reuse_queue_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0171_reuse_queue_change.c' object='encoder/indexed/test_runner-0171_reuse_queue_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0171_reuse_queue_change.o `test -f 'encoder/indexed/0171_reuse_queue_change.c' || echo '$(srcdir)/'`encoder/indexed/0171_reuse_queue_change.c
+
+encoder/indexed/test_runner-0171_reuse_queue_change.obj: encoder/indexed/0171_reuse_queue_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0171_reuse_queue_change.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Tpo -c -o encoder/indexed/test_runner-0171_reuse_queue_change.obj `if test -f 'encoder/indexed/0171_reuse_queue_change.c'; then $(CYGPATH_W) 'encoder/indexed/0171_reuse_queue_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0171_reuse_queue_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0171_reuse_queue_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0171_reuse_queue_change.c' object='encoder/indexed/test_runner-0171_reuse_queue_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0171_reuse_queue_change.obj `if test -f 'encoder/indexed/0171_reuse_queue_change.c'; then $(CYGPATH_W) 'encoder/indexed/0171_reuse_queue_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0171_reuse_queue_change.c'; fi`
+
+encoder/indexed/test_runner-0172_reuse_ormode_change.o: encoder/indexed/0172_reuse_ormode_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0172_reuse_ormode_change.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Tpo -c -o encoder/indexed/test_runner-0172_reuse_ormode_change.o `test -f 'encoder/indexed/0172_reuse_ormode_change.c' || echo '$(srcdir)/'`encoder/indexed/0172_reuse_ormode_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0172_reuse_ormode_change.c' object='encoder/indexed/test_runner-0172_reuse_ormode_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0172_reuse_ormode_change.o `test -f 'encoder/indexed/0172_reuse_ormode_change.c' || echo '$(srcdir)/'`encoder/indexed/0172_reuse_ormode_change.c
+
+encoder/indexed/test_runner-0172_reuse_ormode_change.obj: encoder/indexed/0172_reuse_ormode_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0172_reuse_ormode_change.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Tpo -c -o encoder/indexed/test_runner-0172_reuse_ormode_change.obj `if test -f 'encoder/indexed/0172_reuse_ormode_change.c'; then $(CYGPATH_W) 'encoder/indexed/0172_reuse_ormode_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0172_reuse_ormode_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0172_reuse_ormode_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0172_reuse_ormode_change.c' object='encoder/indexed/test_runner-0172_reuse_ormode_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0172_reuse_ormode_change.obj `if test -f 'encoder/indexed/0172_reuse_ormode_change.c'; then $(CYGPATH_W) 'encoder/indexed/0172_reuse_ormode_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0172_reuse_ormode_change.c'; fi`
+
+encoder/indexed/test_runner-0173_reuse_encode_policy.o: encoder/indexed/0173_reuse_encode_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0173_reuse_encode_policy.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Tpo -c -o encoder/indexed/test_runner-0173_reuse_encode_policy.o `test -f 'encoder/indexed/0173_reuse_encode_policy.c' || echo '$(srcdir)/'`encoder/indexed/0173_reuse_encode_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Tpo encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0173_reuse_encode_policy.c' object='encoder/indexed/test_runner-0173_reuse_encode_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0173_reuse_encode_policy.o `test -f 'encoder/indexed/0173_reuse_encode_policy.c' || echo '$(srcdir)/'`encoder/indexed/0173_reuse_encode_policy.c
+
+encoder/indexed/test_runner-0173_reuse_encode_policy.obj: encoder/indexed/0173_reuse_encode_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0173_reuse_encode_policy.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Tpo -c -o encoder/indexed/test_runner-0173_reuse_encode_policy.obj `if test -f 'encoder/indexed/0173_reuse_encode_policy.c'; then $(CYGPATH_W) 'encoder/indexed/0173_reuse_encode_policy.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0173_reuse_encode_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Tpo encoder/indexed/$(DEPDIR)/test_runner-0173_reuse_encode_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0173_reuse_encode_policy.c' object='encoder/indexed/test_runner-0173_reuse_encode_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0173_reuse_encode_policy.obj `if test -f 'encoder/indexed/0173_reuse_encode_policy.c'; then $(CYGPATH_W) 'encoder/indexed/0173_reuse_encode_policy.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0173_reuse_encode_policy.c'; fi`
+
+encoder/indexed/test_runner-0174_reuse_offset_change.o: encoder/indexed/0174_reuse_offset_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0174_reuse_offset_change.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Tpo -c -o encoder/indexed/test_runner-0174_reuse_offset_change.o `test -f 'encoder/indexed/0174_reuse_offset_change.c' || echo '$(srcdir)/'`encoder/indexed/0174_reuse_offset_change.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0174_reuse_offset_change.c' object='encoder/indexed/test_runner-0174_reuse_offset_change.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0174_reuse_offset_change.o `test -f 'encoder/indexed/0174_reuse_offset_change.c' || echo '$(srcdir)/'`encoder/indexed/0174_reuse_offset_change.c
+
+encoder/indexed/test_runner-0174_reuse_offset_change.obj: encoder/indexed/0174_reuse_offset_change.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0174_reuse_offset_change.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Tpo -c -o encoder/indexed/test_runner-0174_reuse_offset_change.obj `if test -f 'encoder/indexed/0174_reuse_offset_change.c'; then $(CYGPATH_W) 'encoder/indexed/0174_reuse_offset_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0174_reuse_offset_change.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Tpo encoder/indexed/$(DEPDIR)/test_runner-0174_reuse_offset_change.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0174_reuse_offset_change.c' object='encoder/indexed/test_runner-0174_reuse_offset_change.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0174_reuse_offset_change.obj `if test -f 'encoder/indexed/0174_reuse_offset_change.c'; then $(CYGPATH_W) 'encoder/indexed/0174_reuse_offset_change.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0174_reuse_offset_change.c'; fi`
+
+encoder/indexed/test_runner-0175_reuse_abort_restart.o: encoder/indexed/0175_reuse_abort_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0175_reuse_abort_restart.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Tpo -c -o encoder/indexed/test_runner-0175_reuse_abort_restart.o `test -f 'encoder/indexed/0175_reuse_abort_restart.c' || echo '$(srcdir)/'`encoder/indexed/0175_reuse_abort_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Tpo encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0175_reuse_abort_restart.c' object='encoder/indexed/test_runner-0175_reuse_abort_restart.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0175_reuse_abort_restart.o `test -f 'encoder/indexed/0175_reuse_abort_restart.c' || echo '$(srcdir)/'`encoder/indexed/0175_reuse_abort_restart.c
+
+encoder/indexed/test_runner-0175_reuse_abort_restart.obj: encoder/indexed/0175_reuse_abort_restart.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0175_reuse_abort_restart.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Tpo -c -o encoder/indexed/test_runner-0175_reuse_abort_restart.obj `if test -f 'encoder/indexed/0175_reuse_abort_restart.c'; then $(CYGPATH_W) 'encoder/indexed/0175_reuse_abort_restart.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0175_reuse_abort_restart.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Tpo encoder/indexed/$(DEPDIR)/test_runner-0175_reuse_abort_restart.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0175_reuse_abort_restart.c' object='encoder/indexed/test_runner-0175_reuse_abort_restart.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0175_reuse_abort_restart.obj `if test -f 'encoder/indexed/0175_reuse_abort_restart.c'; then $(CYGPATH_W) 'encoder/indexed/0175_reuse_abort_restart.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0175_reuse_abort_restart.c'; fi`
+
+encoder/indexed/test_runner-0176_reuse_palette_failure.o: encoder/indexed/0176_reuse_palette_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0176_reuse_palette_failure.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Tpo -c -o encoder/indexed/test_runner-0176_reuse_palette_failure.o `test -f 'encoder/indexed/0176_reuse_palette_failure.c' || echo '$(srcdir)/'`encoder/indexed/0176_reuse_palette_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Tpo encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0176_reuse_palette_failure.c' object='encoder/indexed/test_runner-0176_reuse_palette_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0176_reuse_palette_failure.o `test -f 'encoder/indexed/0176_reuse_palette_failure.c' || echo '$(srcdir)/'`encoder/indexed/0176_reuse_palette_failure.c
+
+encoder/indexed/test_runner-0176_reuse_palette_failure.obj: encoder/indexed/0176_reuse_palette_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0176_reuse_palette_failure.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Tpo -c -o encoder/indexed/test_runner-0176_reuse_palette_failure.obj `if test -f 'encoder/indexed/0176_reuse_palette_failure.c'; then $(CYGPATH_W) 'encoder/indexed/0176_reuse_palette_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0176_reuse_palette_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Tpo encoder/indexed/$(DEPDIR)/test_runner-0176_reuse_palette_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0176_reuse_palette_failure.c' object='encoder/indexed/test_runner-0176_reuse_palette_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0176_reuse_palette_failure.obj `if test -f 'encoder/indexed/0176_reuse_palette_failure.c'; then $(CYGPATH_W) 'encoder/indexed/0176_reuse_palette_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0176_reuse_palette_failure.c'; fi`
+
+encoder/indexed/test_runner-0177_reuse_body_failure.o: encoder/indexed/0177_reuse_body_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0177_reuse_body_failure.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Tpo -c -o encoder/indexed/test_runner-0177_reuse_body_failure.o `test -f 'encoder/indexed/0177_reuse_body_failure.c' || echo '$(srcdir)/'`encoder/indexed/0177_reuse_body_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Tpo encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0177_reuse_body_failure.c' object='encoder/indexed/test_runner-0177_reuse_body_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0177_reuse_body_failure.o `test -f 'encoder/indexed/0177_reuse_body_failure.c' || echo '$(srcdir)/'`encoder/indexed/0177_reuse_body_failure.c
+
+encoder/indexed/test_runner-0177_reuse_body_failure.obj: encoder/indexed/0177_reuse_body_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0177_reuse_body_failure.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Tpo -c -o encoder/indexed/test_runner-0177_reuse_body_failure.obj `if test -f 'encoder/indexed/0177_reuse_body_failure.c'; then $(CYGPATH_W) 'encoder/indexed/0177_reuse_body_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0177_reuse_body_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Tpo encoder/indexed/$(DEPDIR)/test_runner-0177_reuse_body_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0177_reuse_body_failure.c' object='encoder/indexed/test_runner-0177_reuse_body_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0177_reuse_body_failure.obj `if test -f 'encoder/indexed/0177_reuse_body_failure.c'; then $(CYGPATH_W) 'encoder/indexed/0177_reuse_body_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0177_reuse_body_failure.c'; fi`
+
+encoder/indexed/test_runner-0178_reuse_path.o: encoder/indexed/0178_reuse_path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0178_reuse_path.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Tpo -c -o encoder/indexed/test_runner-0178_reuse_path.o `test -f 'encoder/indexed/0178_reuse_path.c' || echo '$(srcdir)/'`encoder/indexed/0178_reuse_path.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Tpo encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0178_reuse_path.c' object='encoder/indexed/test_runner-0178_reuse_path.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0178_reuse_path.o `test -f 'encoder/indexed/0178_reuse_path.c' || echo '$(srcdir)/'`encoder/indexed/0178_reuse_path.c
+
+encoder/indexed/test_runner-0178_reuse_path.obj: encoder/indexed/0178_reuse_path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0178_reuse_path.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Tpo -c -o encoder/indexed/test_runner-0178_reuse_path.obj `if test -f 'encoder/indexed/0178_reuse_path.c'; then $(CYGPATH_W) 'encoder/indexed/0178_reuse_path.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0178_reuse_path.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Tpo encoder/indexed/$(DEPDIR)/test_runner-0178_reuse_path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0178_reuse_path.c' object='encoder/indexed/test_runner-0178_reuse_path.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0178_reuse_path.obj `if test -f 'encoder/indexed/0178_reuse_path.c'; then $(CYGPATH_W) 'encoder/indexed/0178_reuse_path.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0178_reuse_path.c'; fi`
+
+encoder/indexed/test_runner-0179_reuse_geometry_rebuild.o: encoder/indexed/0179_reuse_geometry_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0179_reuse_geometry_rebuild.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Tpo -c -o encoder/indexed/test_runner-0179_reuse_geometry_rebuild.o `test -f 'encoder/indexed/0179_reuse_geometry_rebuild.c' || echo '$(srcdir)/'`encoder/indexed/0179_reuse_geometry_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Tpo encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0179_reuse_geometry_rebuild.c' object='encoder/indexed/test_runner-0179_reuse_geometry_rebuild.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0179_reuse_geometry_rebuild.o `test -f 'encoder/indexed/0179_reuse_geometry_rebuild.c' || echo '$(srcdir)/'`encoder/indexed/0179_reuse_geometry_rebuild.c
+
+encoder/indexed/test_runner-0179_reuse_geometry_rebuild.obj: encoder/indexed/0179_reuse_geometry_rebuild.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0179_reuse_geometry_rebuild.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Tpo -c -o encoder/indexed/test_runner-0179_reuse_geometry_rebuild.obj `if test -f 'encoder/indexed/0179_reuse_geometry_rebuild.c'; then $(CYGPATH_W) 'encoder/indexed/0179_reuse_geometry_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0179_reuse_geometry_rebuild.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Tpo encoder/indexed/$(DEPDIR)/test_runner-0179_reuse_geometry_rebuild.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0179_reuse_geometry_rebuild.c' object='encoder/indexed/test_runner-0179_reuse_geometry_rebuild.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0179_reuse_geometry_rebuild.obj `if test -f 'encoder/indexed/0179_reuse_geometry_rebuild.c'; then $(CYGPATH_W) 'encoder/indexed/0179_reuse_geometry_rebuild.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0179_reuse_geometry_rebuild.c'; fi`
+
+encoder/indexed/test_runner-0180_reuse_release_storage.o: encoder/indexed/0180_reuse_release_storage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0180_reuse_release_storage.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Tpo -c -o encoder/indexed/test_runner-0180_reuse_release_storage.o `test -f 'encoder/indexed/0180_reuse_release_storage.c' || echo '$(srcdir)/'`encoder/indexed/0180_reuse_release_storage.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Tpo encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0180_reuse_release_storage.c' object='encoder/indexed/test_runner-0180_reuse_release_storage.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0180_reuse_release_storage.o `test -f 'encoder/indexed/0180_reuse_release_storage.c' || echo '$(srcdir)/'`encoder/indexed/0180_reuse_release_storage.c
+
+encoder/indexed/test_runner-0180_reuse_release_storage.obj: encoder/indexed/0180_reuse_release_storage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0180_reuse_release_storage.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Tpo -c -o encoder/indexed/test_runner-0180_reuse_release_storage.obj `if test -f 'encoder/indexed/0180_reuse_release_storage.c'; then $(CYGPATH_W) 'encoder/indexed/0180_reuse_release_storage.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0180_reuse_release_storage.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Tpo encoder/indexed/$(DEPDIR)/test_runner-0180_reuse_release_storage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0180_reuse_release_storage.c' object='encoder/indexed/test_runner-0180_reuse_release_storage.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0180_reuse_release_storage.obj `if test -f 'encoder/indexed/0180_reuse_release_storage.c'; then $(CYGPATH_W) 'encoder/indexed/0180_reuse_release_storage.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0180_reuse_release_storage.c'; fi`
+
+encoder/indexed/test_runner-0181_reuse_abort_storage.o: encoder/indexed/0181_reuse_abort_storage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0181_reuse_abort_storage.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Tpo -c -o encoder/indexed/test_runner-0181_reuse_abort_storage.o `test -f 'encoder/indexed/0181_reuse_abort_storage.c' || echo '$(srcdir)/'`encoder/indexed/0181_reuse_abort_storage.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Tpo encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0181_reuse_abort_storage.c' object='encoder/indexed/test_runner-0181_reuse_abort_storage.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0181_reuse_abort_storage.o `test -f 'encoder/indexed/0181_reuse_abort_storage.c' || echo '$(srcdir)/'`encoder/indexed/0181_reuse_abort_storage.c
+
+encoder/indexed/test_runner-0181_reuse_abort_storage.obj: encoder/indexed/0181_reuse_abort_storage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0181_reuse_abort_storage.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Tpo -c -o encoder/indexed/test_runner-0181_reuse_abort_storage.obj `if test -f 'encoder/indexed/0181_reuse_abort_storage.c'; then $(CYGPATH_W) 'encoder/indexed/0181_reuse_abort_storage.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0181_reuse_abort_storage.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Tpo encoder/indexed/$(DEPDIR)/test_runner-0181_reuse_abort_storage.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0181_reuse_abort_storage.c' object='encoder/indexed/test_runner-0181_reuse_abort_storage.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0181_reuse_abort_storage.obj `if test -f 'encoder/indexed/0181_reuse_abort_storage.c'; then $(CYGPATH_W) 'encoder/indexed/0181_reuse_abort_storage.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0181_reuse_abort_storage.c'; fi`
+
+encoder/indexed/test_runner-0182_reuse_allocation_failure.o: encoder/indexed/0182_reuse_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0182_reuse_allocation_failure.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Tpo -c -o encoder/indexed/test_runner-0182_reuse_allocation_failure.o `test -f 'encoder/indexed/0182_reuse_allocation_failure.c' || echo '$(srcdir)/'`encoder/indexed/0182_reuse_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Tpo encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0182_reuse_allocation_failure.c' object='encoder/indexed/test_runner-0182_reuse_allocation_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0182_reuse_allocation_failure.o `test -f 'encoder/indexed/0182_reuse_allocation_failure.c' || echo '$(srcdir)/'`encoder/indexed/0182_reuse_allocation_failure.c
+
+encoder/indexed/test_runner-0182_reuse_allocation_failure.obj: encoder/indexed/0182_reuse_allocation_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0182_reuse_allocation_failure.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Tpo -c -o encoder/indexed/test_runner-0182_reuse_allocation_failure.obj `if test -f 'encoder/indexed/0182_reuse_allocation_failure.c'; then $(CYGPATH_W) 'encoder/indexed/0182_reuse_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0182_reuse_allocation_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Tpo encoder/indexed/$(DEPDIR)/test_runner-0182_reuse_allocation_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0182_reuse_allocation_failure.c' object='encoder/indexed/test_runner-0182_reuse_allocation_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0182_reuse_allocation_failure.obj `if test -f 'encoder/indexed/0182_reuse_allocation_failure.c'; then $(CYGPATH_W) 'encoder/indexed/0182_reuse_allocation_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0182_reuse_allocation_failure.c'; fi`
+
+encoder/indexed/test_runner-0183_reuse_scratch_allocations.o: encoder/indexed/0183_reuse_scratch_allocations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0183_reuse_scratch_allocations.o -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Tpo -c -o encoder/indexed/test_runner-0183_reuse_scratch_allocations.o `test -f 'encoder/indexed/0183_reuse_scratch_allocations.c' || echo '$(srcdir)/'`encoder/indexed/0183_reuse_scratch_allocations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Tpo encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0183_reuse_scratch_allocations.c' object='encoder/indexed/test_runner-0183_reuse_scratch_allocations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0183_reuse_scratch_allocations.o `test -f 'encoder/indexed/0183_reuse_scratch_allocations.c' || echo '$(srcdir)/'`encoder/indexed/0183_reuse_scratch_allocations.c
+
+encoder/indexed/test_runner-0183_reuse_scratch_allocations.obj: encoder/indexed/0183_reuse_scratch_allocations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/indexed/test_runner-0183_reuse_scratch_allocations.obj -MD -MP -MF encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Tpo -c -o encoder/indexed/test_runner-0183_reuse_scratch_allocations.obj `if test -f 'encoder/indexed/0183_reuse_scratch_allocations.c'; then $(CYGPATH_W) 'encoder/indexed/0183_reuse_scratch_allocations.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0183_reuse_scratch_allocations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Tpo encoder/indexed/$(DEPDIR)/test_runner-0183_reuse_scratch_allocations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/indexed/0183_reuse_scratch_allocations.c' object='encoder/indexed/test_runner-0183_reuse_scratch_allocations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/indexed/test_runner-0183_reuse_scratch_allocations.obj `if test -f 'encoder/indexed/0183_reuse_scratch_allocations.c'; then $(CYGPATH_W) 'encoder/indexed/0183_reuse_scratch_allocations.c'; else $(CYGPATH_W) '$(srcdir)/encoder/indexed/0183_reuse_scratch_allocations.c'; fi`
+
+_support/codec/test_runner-pool_reuse.o: _support/codec/pool_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-pool_reuse.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-pool_reuse.Tpo -c -o _support/codec/test_runner-pool_reuse.o `test -f '_support/codec/pool_reuse.c' || echo '$(srcdir)/'`_support/codec/pool_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-pool_reuse.Tpo _support/codec/$(DEPDIR)/test_runner-pool_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/pool_reuse.c' object='_support/codec/test_runner-pool_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-pool_reuse.o `test -f '_support/codec/pool_reuse.c' || echo '$(srcdir)/'`_support/codec/pool_reuse.c
+
+_support/codec/test_runner-pool_reuse.obj: _support/codec/pool_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-pool_reuse.obj -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-pool_reuse.Tpo -c -o _support/codec/test_runner-pool_reuse.obj `if test -f '_support/codec/pool_reuse.c'; then $(CYGPATH_W) '_support/codec/pool_reuse.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/pool_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-pool_reuse.Tpo _support/codec/$(DEPDIR)/test_runner-pool_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/pool_reuse.c' object='_support/codec/test_runner-pool_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-pool_reuse.obj `if test -f '_support/codec/pool_reuse.c'; then $(CYGPATH_W) '_support/codec/pool_reuse.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/pool_reuse.c'; fi`
+
+_support/codec/test_runner-core_reuse.o: _support/codec/core_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-core_reuse.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-core_reuse.Tpo -c -o _support/codec/test_runner-core_reuse.o `test -f '_support/codec/core_reuse.c' || echo '$(srcdir)/'`_support/codec/core_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-core_reuse.Tpo _support/codec/$(DEPDIR)/test_runner-core_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/core_reuse.c' object='_support/codec/test_runner-core_reuse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-core_reuse.o `test -f '_support/codec/core_reuse.c' || echo '$(srcdir)/'`_support/codec/core_reuse.c
+
+_support/codec/test_runner-core_reuse.obj: _support/codec/core_reuse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-core_reuse.obj -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-core_reuse.Tpo -c -o _support/codec/test_runner-core_reuse.obj `if test -f '_support/codec/core_reuse.c'; then $(CYGPATH_W) '_support/codec/core_reuse.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/core_reuse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-core_reuse.Tpo _support/codec/$(DEPDIR)/test_runner-core_reuse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/core_reuse.c' object='_support/codec/test_runner-core_reuse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-core_reuse.obj `if test -f '_support/codec/core_reuse.c'; then $(CYGPATH_W) '_support/codec/core_reuse.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/core_reuse.c'; fi`
 
 delta/comparison/test_runner-0069_query_encode_cpu.o: delta/comparison/0069_query_encode_cpu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT delta/comparison/test_runner-0069_query_encode_cpu.o -MD -MP -MF delta/comparison/$(DEPDIR)/test_runner-0069_query_encode_cpu.Tpo -c -o delta/comparison/test_runner-0069_query_encode_cpu.o `test -f 'delta/comparison/0069_query_encode_cpu.c' || echo '$(srcdir)/'`delta/comparison/0069_query_encode_cpu.c
