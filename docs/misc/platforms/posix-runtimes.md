@@ -2,11 +2,11 @@
 
 ## Scope
 
-This document records libc and kernel-interface exceptions within otherwise POSIX-oriented builds. It owns `__linux__`, `__ANDROID__`, `__GLIBC__`, `__OpenBSD__`, `__NetBSD__`, `__FreeBSD__`, `__DragonFly__`, `_BSD_SOURCE`, `_DEFAULT_SOURCE`, `_DRAGONFLY_SOURCE`, `_GNU_SOURCE`, `_NETBSD_SOURCE`, `_POSIX_C_SOURCE`, `_POSIX_VERSION`, `_SC_NPROCESSORS_ONLN`, and `_XOPEN_SOURCE`. Darwin-specific SDK rules are in [macOS compatibility](macos.md), and the complete inventory is in the [platform compatibility ledger](README.md).
+This document records libc and kernel-interface exceptions within otherwise POSIX-oriented builds. It owns `__linux__`, `__ANDROID__`, `__GLIBC__`, `__OpenBSD__`, `__NetBSD__`, `__FreeBSD__`, `__DragonFly__`, `_BSD_SOURCE`, `_DEFAULT_SOURCE`, `_GNU_SOURCE`, `_NETBSD_SOURCE`, `_POSIX_C_SOURCE`, `_POSIX_VERSION`, `_SC_NPROCESSORS_ONLN`, and `_XOPEN_SOURCE`. Darwin-specific SDK rules are in [macOS compatibility](macos.md), and the complete inventory is in the [platform compatibility ledger](README.md).
 
 ## Feature-test macro contract
 
-Feature-test macros must be set before the first affected system header. Generic build configuration uses `_POSIX_C_SOURCE`, `_XOPEN_SOURCE`, `_DEFAULT_SOURCE`, or `_GNU_SOURCE` according to the APIs being probed. `src/threading.c` locally enables `_BSD_SOURCE`, `_NETBSD_SOURCE`, or `_DRAGONFLY_SOURCE` so `sys/sysctl.h` exposes the legacy kernel types hidden by strict POSIX namespaces.
+Feature-test macros must be set before the first affected system header. Generic build configuration uses `_POSIX_C_SOURCE`, `_XOPEN_SOURCE`, `_DEFAULT_SOURCE`, or `_GNU_SOURCE` according to the APIs being probed. `src/threading.c` locally enables `_BSD_SOURCE` on OpenBSD and `_NETBSD_SOURCE` on NetBSD for declarations hidden by strict POSIX namespaces. DragonFly's headers do not recognize `_DRAGONFLY_SOURCE` as a namespace override.
 
 These macros are declaration controls, not capability proof. Continue to gate calls through configure or Meson results, because a visible prototype can still require a library or differ across libc families.
 

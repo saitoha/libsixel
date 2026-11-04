@@ -201,7 +201,8 @@ test_band_nodes_wire(sixel_index_t *pixels, int width, int height,
     sixel_allocator_t *allocator;
     sixel_output_t *output;
     SIXELSTATUS status;
-    int saved_threads;
+    sixel_threading_policy_options_t policy_options;
+    sixel_thread_budget_scope_t scope;
     int ok;
 
 #if !SIXEL_ENABLE_THREADS
@@ -212,8 +213,16 @@ test_band_nodes_wire(sixel_index_t *pixels, int width, int height,
     ok = 0;
     band_nodes_writes = 0;
     band_nodes_reject = 0;
-    saved_threads = sixel_threads_resolve();
-    sixel_set_encoder_threads(threads);
+    /* Wire expectations distinguish serial and parallel band selectors.
+     * A balanced budget can collapse to one on small hosts, so give this
+     * observation its own explicit policy without changing global defaults. */
+    memset(&policy_options, 0, sizeof(policy_options));
+    policy_options.mode = SIXEL_THREADING_POLICY_GREEDY;
+    policy_options.mode_override = 1;
+    policy_options.budget = (unsigned int)threads;
+    policy_options.budget_override = 1;
+    sixel_threading_object_enter(&scope, &policy_options, 0);
+    if (sixel_threads_resolve() != threads) goto end;
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) goto end;
     status = sixel_output_new(&output, band_nodes_write, NULL, allocator);
@@ -234,6 +243,6 @@ test_band_nodes_wire(sixel_index_t *pixels, int width, int height,
 end:
     sixel_output_unref(output);
     sixel_allocator_unref(allocator);
-    sixel_set_encoder_threads(saved_threads);
+    sixel_thread_budget_leave(&scope);
     return ok ? 0 : 1;
 }

@@ -6,7 +6,6 @@ _CRTIMP	platform	docs/misc/platforms/mingw.md
 _CRT_DECLARE_NONSTDC_NAMES	platform	docs/misc/platforms/windows.md
 _DARWIN_C_SOURCE	platform	docs/misc/platforms/macos.md
 _DEFAULT_SOURCE	platform	docs/misc/platforms/posix-runtimes.md
-_DRAGONFLY_SOURCE	platform	docs/misc/platforms/posix-runtimes.md
 _GNU_SOURCE	platform	docs/misc/platforms/posix-runtimes.md
 _InterlockedCompareExchange	compiler	-
 _InterlockedExchange	compiler	-

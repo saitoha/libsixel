@@ -58,13 +58,6 @@
 # define _NETBSD_SOURCE
 #endif
 
-/*
- * for including sys/sysctl.h on DragonflyBSD
- */
-#if defined(__DragonFly__)
-# define _DRAGONFLY_SOURCE
-#endif
-
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
 /*
  * Expose BSD-flavoured typedefs such as u_int from the macOS SDK when the

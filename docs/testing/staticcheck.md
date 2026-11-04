@@ -236,6 +236,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-58 | MSVC-style shared builds retain the shared CRT default and reject incompatible effective compiler settings during setup. | [tests/_static/sh/staticcheck-msvc-shared-crt.sh](../../tests/_static/sh/staticcheck-msvc-shared-crt.sh) |
 | SC-59 | The pkg-config metadata test retains configured tool selection and invocation across both build systems. | [tests/_static/sh/staticcheck-configured-pkg-config.sh](../../tests/_static/sh/staticcheck-configured-pkg-config.sh) |
 | SC-60 | Haiku sliced tests retain a successful runner build before `--no-rebuild`, with missing-build, ordering, and failure-propagation controls. | [tests/_static/sh/staticcheck-ci-haiku-test-deps.sh](../../tests/_static/sh/staticcheck-ci-haiku-test-deps.sh) |
+| SC-61 | DragonFly CPU discovery retains its BSD namespace in Meson and amalgamation; controls reject an inverted platform guard, either missing prologue guard, and a duplicate strict target flag. | [tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh](../../tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh) |
 
 ### Coverage boundary
 
@@ -246,3 +247,5 @@ Alias removal checks membership and resolves the previous alias into a scalar be
 The suite-registration check covers shell implementations named `staticcheck-*.sh`; inline compile probes remain explicit runner code and are not projected into a second generated inventory. The reciprocal policy-link check proves the behavioral documentation relationship, and the test-plan check proves exhaustive suite membership, but neither proves the completeness or accuracy of prose. Whether a new invariant belongs in staticcheck, whether normalization preserves the right distinctions, and whether a passing static contract has sufficient behavioral coverage remain review decisions.
 
 The output-buffer storage check audits the owned declaration and allocation forms described by the [encoding policy](../encoder/output/encode-policy/README.md#implementation-and-existing-coverage). It uses awk without a compiler or Python. It does not prove arbitrary write bounds; the DECGRI and packet-crossing runtime tests remain necessary.
+
+The DragonFly feature-namespace check scans the Meson target flags and amalgamation prologue with one awk invocation. Its in-memory controls ensure that strict feature modes cannot be reintroduced through either path without detection. It does not invoke a compiler or query the host CPU count; the encoder wire tests separately select an explicit threading policy to keep their parallel observations independent of host topology.

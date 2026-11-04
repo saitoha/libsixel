@@ -119,6 +119,8 @@ Test-local function-like macros share a preprocessor namespace in this build. Us
 
 The generated prologue selects platform feature namespaces before emitting any system header. For OpenVMS timed waits, the prologue reads `time.h` with a temporarily selected extension namespace and restores it before the remaining headers, as described in [OpenVMS header probes](../misc/platforms/openvms.md#configure-probes-and-configstatus). Selecting it inside a later source unit would be too late after the common header preamble.
 
+On DragonFly BSD, the prologue does not introduce `_POSIX_C_SOURCE` or `_XOPEN_SOURCE`: either strict mode hides `_SC_NPROCESSORS_ONLN`, making CPU discovery fall back to one. It preserves a feature mode explicitly selected by the consumer. The [Meson configuration](meson.md#independent-configuration) retains the same default namespace for separately compiled source units.
+
 Consumers select the required parts of the generated source through compilation defines. The Autotools amalgamated test runner additionally uses `TEST_RUNNER_AMALGAMATION_DEFINES`; ordinary test-source registration alone is insufficient. In the amalgamated library path, `dither.c` is compiled separately with the split-dither contract to avoid compiler failures on an excessively large translation unit. Amalgamation therefore describes a generated source delivery mechanism, not a promise that every selected build uses exactly one object file.
 
 Headers containing implementation fragments that depend on declarations at their inclusion site use the `.inc.h` suffix. The generator excludes these fragments from its common header preamble. Quick Look lifecycle controls inject their private Objective-C query and mutation bodies through `SIXEL_USER_PROBE` and `SIXEL_USER_MUTATOR`; those bodies belong inside the private driver and must not enter ordinary C library builds.
@@ -152,5 +154,6 @@ The three gperf recipes remove generated `#line` directives before publishing th
 | AT-03 | Initial and incremental amalgamation output is identical when generated runner inputs appear in the source tree. | [tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh](../../tests/_static/sh/staticcheck-amalgamation-generated-inputs.sh) |
 | AT-04 | Generated gperf headers and all three regeneration recipes exclude generator-relative source directives. | [tests/_static/sh/staticcheck-gperf-source-location.sh](../../tests/_static/sh/staticcheck-gperf-source-location.sh) |
 | AT-05 | Differing function-like test macros cannot escape their source units into the amalgamated runner. | [tests/_static/sh/staticcheck-test-macro-isolation.sh](../../tests/_static/sh/staticcheck-test-macro-isolation.sh) |
+| AT-06 | The generated prologue excludes DragonFly from automatic strict POSIX and X/Open feature modes. | [tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh](../../tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh) |
 
 These checks verify the generator boundary without compiling the generated C or the native Objective-C driver. Platform compilation and lifecycle behavior require their respective build and test jobs.

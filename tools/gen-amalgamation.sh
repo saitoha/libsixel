@@ -732,10 +732,12 @@ cat >>"${output}" <<'EOF_MACROS'
 #if !defined(_DARWIN_C_SOURCE)
 #define _DARWIN_C_SOURCE 1
 #endif
-#if !defined(_POSIX_C_SOURCE)
+/* DragonFly exposes its CPU-count query only in the default BSD namespace.
+ * Do not introduce strict feature modes; preserve caller-selected modes. */
+#if !defined(_POSIX_C_SOURCE) && !defined(__DragonFly__)
 #define _POSIX_C_SOURCE 200809L
 #endif
-#if !defined(_XOPEN_SOURCE)
+#if !defined(_XOPEN_SOURCE) && !defined(__DragonFly__)
 #define _XOPEN_SOURCE 700
 #endif
 /* Read OpenVMS time types before the common preamble, then restore the

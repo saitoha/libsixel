@@ -4,6 +4,8 @@
 
 The root [meson.build](../../meson.build) and [meson_options.txt](../../meson_options.txt) own Meson's feature selection, compiler and function probes, target dependencies, and configuration summary. Per-directory `meson.build` files define the library, converters, assessment tools, extensions, language packages, and tests.
 
+DragonFly BSD retains its default feature namespace instead of receiving the generic `_POSIX_C_SOURCE=200809L` target flag. Its headers hide `_SC_NPROCESSORS_ONLN` under strict POSIX settings, causing CPU discovery to fall back to one and balanced threading to select serial execution. [tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh](../../tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh) protects this exception together with the amalgamation prologue; runtime CPU availability still requires platform execution.
+
 Meson creates `config.h` using `configuration_data()` and `configure_file()`. It configures public headers before consumers such as binding constant generators and builds target relationships directly through library dependencies and generated targets. It does not read the configured Autotools Makefiles or reproduce their recursive phase driver.
 
 The `clock_gettime` probe defines `_POSIX_C_SOURCE=200809L` before including `<time.h>`, matching the timer implementation's declaration requirements in C99 mode. It tries `librt` when the function is not in the default link environment. A missing declaration must not silently disable a working monotonic clock: adaptive palette playback uses that clock to advance its observation history. The existing playback observations exercise this consequence in a configured build.

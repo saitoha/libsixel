@@ -11824,6 +11824,7 @@ EXTRA_DIST += _static/sh/staticcheck-openvms-libtool-object.sh \
     _static/sh/staticcheck-ci-install-path.sh \
     _static/sh/staticcheck-ci-msvc-complete-build.sh \
     _static/sh/staticcheck-ci-haiku-test-deps.sh \
+    _static/sh/staticcheck-dragonfly-feature-namespace.sh \
     _static/sh/staticcheck-ci-checkout-eol.sh \
     _static/sh/staticcheck-nightly-msvc-archiver.sh \
     _static/sh/staticcheck-comparison-dependencies.sh \

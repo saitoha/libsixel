@@ -2155,9 +2155,14 @@ endif
 config_h = configure_file(output: 'config.h', configuration: conf)
 project_inc = include_directories('.', 'include', 'src')
 
-libsixel_posix_defs = cc.get_supported_arguments([
-  '-D_POSIX_C_SOURCE=200809L',
-])
+libsixel_posix_defs = []
+# DragonFly hides _SC_NPROCESSORS_ONLN in a strict POSIX namespace.
+# Keep its default BSD namespace so CPU detection does not fall back to one.
+if host_system != 'dragonfly'
+  libsixel_posix_defs += cc.get_supported_arguments([
+    '-D_POSIX_C_SOURCE=200809L',
+  ])
+endif
 
 if have_threads
   libsixel_posix_defs += cc.get_supported_arguments(['-DSIXEL_ENABLE_THREADS=1'])

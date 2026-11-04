@@ -362,7 +362,6 @@ test -n "$darwin_define_line" && test -n "$darwin_header_line" &&
 
 require_fixed '# define _BSD_SOURCE' src/threading.c
 require_fixed '# define _NETBSD_SOURCE' src/threading.c
-require_fixed '# define _DRAGONFLY_SOURCE' src/threading.c
 require_fixed 'fetchIO *fetch_stream = NULL;' src/chunk.c
 require_fixed 'fetched = fetchIO_read(fetch_stream, bucket, sizeof(bucket));' src/chunk.c
 require_fixed 'HAVE_POSIX_SPAWNP && !defined(__FreeBSD__) && !defined(__DragonFly__)' src/loader-gnome-thumbnailer.c
