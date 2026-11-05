@@ -28,6 +28,8 @@ The [comparison dependency check](../../tests/_static/sh/staticcheck-comparison-
 
 Two independent discovery cases protect the [test harness's bounded inventory output](../build/test-harness.md#shared-discovery-and-c-test-dispatch). One checks complete sorted output while rejecting oversized printf calls; the other injects failure after a successful batch and requires discovery to fail. Both execute the shared shell helper with 65 empty fixture cases and replace printf with a shell function. They require neither a compiler nor Python, and model the external-command boundary even when the host shell provides builtin printf. Native OpenBSD execution separately verifies its actual argument limit.
 
+The independent CLI string-copy check rejects direct `strcpy` and `strcat` calls in C sources and headers under `assessment/` and `converters/`. These consumers use the bounded CRT adapters or byte copies with an established length, preserving MSVC CRT compatibility without disabling deprecation warnings. Shell/awk controls cover continued calls and split identifiers while ignoring comments, literals and adapter names. Macro expansion and indirect calls remain outside this check's scope; Windows builds still validate the actual CRT declarations.
+
 ## Relationship to behavioral tests
 
 `make staticcheck` and `make check` answer different questions. `staticcheck` asks whether the repository is internally well-formed and whether duplicated or generated representations agree. `make check` asks whether built software behaves correctly for concrete inputs, platforms, and feature configurations. Neither subsumes the other.
@@ -275,6 +277,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-77 | JPEG dependency activation requires usable headers and a linked base API in both build systems. | [tests/_static/sh/staticcheck-libjpeg-link-probe.sh](../../tests/_static/sh/staticcheck-libjpeg-link-probe.sh) |
 | SC-78 | Test discovery preserves complete sorted output through bounded printf invocations. | [tests/build/discovery/0010_bounded_output.sh](../../tests/build/discovery/0010_bounded_output.sh) |
 | SC-79 | Test discovery propagates failure of an intermediate printf batch. | [tests/build/discovery/0011_batch_failure.sh](../../tests/build/discovery/0011_batch_failure.sh) |
+| SC-80 | CLI C sources avoid direct string-copy calls rejected by the MSVC CRT; controls distinguish adapters, comments, literals and continued calls. | [tests/_static/sh/staticcheck-cli-string-copy.sh](../../tests/_static/sh/staticcheck-cli-string-copy.sh) |
 
 ### Coverage boundary
 

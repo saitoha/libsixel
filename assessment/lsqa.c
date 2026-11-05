@@ -2814,7 +2814,8 @@ lsqa_parse_selection(const char *arg, Options *opts, int baseline)
         lsqa_set_parse_error("Cannot allocate metric selection.");
         return -1;
     }
-    strcpy(copy, arg);
+    /* Keep the bounded CRT adapter even for an exactly sized allocation. */
+    (void)sixel_compat_strcpy(copy, strlen(arg) + 1u, arg);
     status = 0;
     item = copy;
     do {

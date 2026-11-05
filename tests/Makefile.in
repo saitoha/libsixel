@@ -25087,7 +25087,9 @@ EXTRA_DIST = _support/native_process.py tools/compare/data/octet.bin \
 	build/discovery/0007_openvms_refresh.sh \
 	build/discovery/0008_openvms_failure.sh \
 	build/discovery/0010_bounded_output.sh \
-	build/discovery/0011_batch_failure.sh test-time-allowlist.tsv \
+	build/discovery/0011_batch_failure.sh \
+	_static/sh/staticcheck-cli-string-copy.sh \
+	_static/awk/cli-string-copy.awk test-time-allowlist.tsv \
 	build/install/0001_pkgconfig_headers.py \
 	tools/child-time/0001_marker_backpressure.py \
 	tools/child-time/0002_binding_run_identity.py \

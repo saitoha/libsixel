@@ -12015,6 +12015,9 @@ EXTRA_DIST += build/discovery/fixture.sh \
     build/discovery/0010_bounded_output.sh \
     build/discovery/0011_batch_failure.sh
 
+EXTRA_DIST += _static/sh/staticcheck-cli-string-copy.sh \
+    _static/awk/cli-string-copy.awk
+
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
 
