@@ -270,7 +270,7 @@ check_distribution(NSString *observation, NSString *directory,
     struct stat st;
     subjects = @[@"preview", @"thumbnail", @"host", @"bridge",
                  @"registration-helper", @"package-helper"];
-    first = [subjects indexOfObject:subject ?: @""];
+    first = [subjects indexOfObject:subject ? subject : @""];
     expanded = [directory stringByAppendingPathComponent:@"work/expanded"];
     root = [expanded stringByAppendingPathComponent:@"payload.pkg/Payload"];
     if ([observation isEqual:@"correspondence"]) {

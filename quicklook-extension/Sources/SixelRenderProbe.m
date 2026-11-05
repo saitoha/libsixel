@@ -192,7 +192,8 @@ thumbnail(NSString *input, BOOL *valid)
     }
     if (failure || !result) {
         fprintf(stderr, "thumbnail: %s\n",
-            (failure.description ?: @"no representation").UTF8String);
+            (failure.description ? failure.description :
+                @"no representation").UTF8String);
         return 1;
     }
     *valid = result.type == QLThumbnailRepresentationTypeThumbnail &&

@@ -17,7 +17,9 @@ observed_session(void)
 static NSArray *
 observed_ls(NSString *identifier)
 {
-    return private_state()[@"ls"][identifier] ?: @[];
+    NSArray *records;
+    records = private_state()[@"ls"][identifier];
+    return records ? records : @[];
 }
 
 static NSDictionary *

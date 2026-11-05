@@ -6,6 +6,8 @@ The macOS extension lets Quick Look preview and thumbnail providers decode `.six
 
 The implementation in [quicklook-extension](../../quicklook-extension/) targets macOS 10.15 or newer with an Objective-C compiler and the Apple QuickLook, QuickLookThumbnailing, Cocoa, CoreGraphics and related system frameworks. The deployment target in the compiled Mach-O is determined by the selected compiler/SDK flags and can be newer than the plist minimum; choose and inspect that target before distribution. Configuration checks the available APIs; the broader [platform matrix](../platform-support.md) does not imply that every extension deployment path is exercised.
 
+Installed default-handler observations resolve filename extensions through `UTType` on macOS 11 and newer. The macOS 10.15 path retains the CoreServices function with deprecation suppression scoped to that fallback. UniformTypeIdentifiers remains weak-linked, so building with a current SDK does not remove the older deployment path. Strict Objective-C builds retain full conditional operands and warnings as errors; compilation for an older deployment target does not establish execution on that OS.
+
 `SixelQuickLookHost.app` contains `SixelPreview.appex` and `SixelThumbnail.appex`. `SixelPreviewBridge.app` provides the file-opening bridge, and `register_sixel_preview` sets Launch Services handlers. The bundles declare the `com.saitoha.libsixel.sixel` type for `.six` and `.sixel`. Their SIXEL decoding core is compiled into `libsixelquicklookcore.a` and linked into the providers and bridge, with external image libraries disabled; they still depend on macOS frameworks. The archive is a build artifact, not a separate runtime dependency.
 
 ## Autotools build and installation

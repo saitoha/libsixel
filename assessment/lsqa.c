@@ -63,6 +63,7 @@
 
 #include "assessment.h"
 #include "environment.h"
+#include "compat_stub.h"
 #include "scielab.h"
 #include "video.h"
 #include "color.h"
@@ -119,9 +120,9 @@ enum {
 };
 
 /*
- * Local safety shims avoid MSVC secure CRT warnings without pulling in the
- * libsixel-wide compat layer. Each helper mirrors a single libc routine and
- * falls back to a bounded copy where secure variants are unavailable.
+ * Local string/error shims avoid MSVC secure CRT warnings. Each helper
+ * mirrors a single libc routine and falls back to a bounded copy where
+ * secure variants are unavailable. File opens use the shared path adapter.
  */
 static char const *
 lsqa_strerror(int errnum, char *buffer, size_t size)
@@ -643,7 +644,7 @@ load_defined_frame(char const *path, char const *spec,
         goto cleanup;
     }
     if (icc_path != NULL) {
-        file = fopen(icc_path, "rb");
+        file = sixel_compat_fopen(icc_path, "rb");
         if (file == NULL || fseek(file, 0, SEEK_END) != 0) {
             goto cleanup;
         }

@@ -4,7 +4,7 @@
 # The five-scale metric requires at least 176 pixels in both dimensions.
 set -eux
 
-test -n "${SIXEL2PNG_PATH-}" || {
+test "${HAVE_SIXEL2PNG-}" = 1 || {
     printf '1..0 # SKIP sixel2png is disabled in this build\n'
     exit 0
 }

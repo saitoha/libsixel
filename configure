@@ -657,6 +657,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 BUILD_TEST_COMPARE_FALSE
 BUILD_TEST_COMPARE_TRUE
+sixel_have_compare
 SIXEL_COMPARE_EXEEXT
 CFLAGS_FOR_BUILD
 CC_FOR_BUILD
@@ -34553,6 +34554,8 @@ fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether a native file comparator can run" >&5
 printf %s "checking whether a native file comparator can run... " >&6; }
   sixel_have_compare=no
+  # A relative-only probe misses native Windows CRTs under Cygwin shells.
+  sixel_compare_source=`cd "$srcdir" && pwd`/tools/compare.c
   SIXEL_COMPARE_EXEEXT=
   # MSVC leaves an object beside the build invocation. Use a conftest source
   # name so the capability probe owns every compiler/linker byproduct.
@@ -34564,16 +34567,16 @@ then :
 
     test ! -f conftest-compare.exe || SIXEL_COMPARE_EXEEXT=.exe
     if ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
-        "$srcdir/tools/compare.c" conftest-compare.c &&
+        "$sixel_compare_source" conftest-compare.c &&
         printf '\n' >> conftest-compare.c &&
         { ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
-            "$srcdir/tools/compare.c" conftest-compare.c; \
+            "$sixel_compare_source" conftest-compare.c; \
           test "$?" = 1; } &&
         { ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
             "$srcdir/tools" "$srcdir/tools/compare.c"; \
           test "$?" = 2; } &&
         { ./conftest-compare$SIXEL_COMPARE_EXEEXT -s \
-            "$srcdir/tools/compare.c" conftest-compare.c/missing; \
+            "$sixel_compare_source" conftest-compare.c/missing; \
           test "$?" = 2; }
 then :
   sixel_have_compare=yes
@@ -34585,6 +34588,7 @@ fi
     conftest-compare.exe.manifest
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_have_compare" >&5
 printf "%s\n" "$sixel_have_compare" >&6; }
+
 
    if test "$sixel_have_compare" = yes; then
   BUILD_TEST_COMPARE_TRUE=

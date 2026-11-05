@@ -183,7 +183,7 @@ run(NSString *program, NSArray *arguments, int *status)
         require(task.terminationStatus == 0,
             [NSString stringWithFormat:@"%@ failed: %@", program, output]);
     }
-    return output ?: @"";
+    return output ? output : @"";
 }
 
 /* Set the creation mask in the signing child only. The parent retains its
@@ -430,7 +430,7 @@ signature(NSString *path)
         @"cdhash":hex_data(info[(__bridge NSString *)kSecCodeInfoUnique]),
         @"kind":@"ad-hoc",
         @"entitlements":info[(__bridge NSString *)kSecCodeInfoEntitlementsDict]
-            ?: @{}};
+            ? info[(__bridge NSString *)kSecCodeInfoEntitlementsDict] : @{}};
     return result;
 }
 

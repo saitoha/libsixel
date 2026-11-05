@@ -13,7 +13,10 @@ private_before_mutation(NSString *operation)
     require([journal[@"state"] isEqual:@"pending"] ||
         [journal[@"state"] isEqual:@"restore-pending"],
         @"Private witness: mutation without durable pending journal");
-    calls = [state[@"calls"] mutableCopy] ?: [NSMutableArray array];
+    calls = [state[@"calls"] mutableCopy];
+    if (calls == nil) {
+        calls = [NSMutableArray array];
+    }
     [calls addObject:operation];
     state[@"calls"] = calls;
     write_json(state, [test_root stringByAppendingPathComponent:@"live.json"]);

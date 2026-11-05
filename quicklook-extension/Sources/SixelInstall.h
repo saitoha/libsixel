@@ -195,7 +195,6 @@ static void
 stage_package(NSString *action, NSString *source, NSString *datadir,
               NSString *destdir)
 {
-    NSFileManager *fm;
     NSString *directory;
     NSString *relative;
     NSString *name;
@@ -203,7 +202,6 @@ stage_package(NSString *action, NSString *source, NSString *datadir,
     NSString *from;
     NSMutableDictionary *record;
     struct stat attributes;
-    fm = [NSFileManager defaultManager];
     require([destdir isAbsolutePath] && [datadir isAbsolutePath] &&
         ![[destdir pathComponents] containsObject:@".."] &&
         ![[datadir pathComponents] containsObject:@".."],

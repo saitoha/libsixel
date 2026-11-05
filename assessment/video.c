@@ -16,6 +16,7 @@
 #endif
 #include "video.h"
 #include "environment.h"
+#include "compat_stub.h"
 #include "persistence.h"
 #include "color.h"
 #include "loader.h"
@@ -715,7 +716,7 @@ lsqa_video_save(FILE *spool, char const *path)
         sixel_helper_set_additional_message("cannot read video output spool");
         return SIXEL_RUNTIME_ERROR;
     }
-    out = fopen(path, "wb");
+    out = sixel_compat_fopen(path, "wb");
     if (out == NULL) {
         snprintf(message, sizeof(message), "cannot open video output: %s",
             path);
@@ -818,7 +819,7 @@ lsqa_video_run(lsqa_video_options_t const *options,
         goto cleanup;
     }
     if (profile_path != NULL) {
-        icc = fopen(profile_path, "rb");
+        icc = sixel_compat_fopen(profile_path, "rb");
         if (icc == NULL || fseek(icc, 0, SEEK_END) != 0) { goto cleanup; }
         profile_size = ftell(icc);
         if (profile_size < 128 || profile_size > 16 * 1024 * 1024
@@ -840,14 +841,14 @@ lsqa_video_run(lsqa_video_options_t const *options,
     if (SIXEL_FAILED(status)) { goto cleanup; }
     status = SIXEL_RUNTIME_ERROR;
     if (options->timeline != NULL) {
-        v.timeline = fopen(options->timeline, "rb");
+        v.timeline = sixel_compat_fopen(options->timeline, "rb");
         if (v.timeline == NULL) {
             sixel_helper_set_additional_message("cannot open target timeline");
             goto cleanup;
         }
     }
     if (options->display_timeline != NULL) {
-        v.display = fopen(options->display_timeline, "rb");
+        v.display = sixel_compat_fopen(options->display_timeline, "rb");
         if (v.display == NULL) {
             sixel_helper_set_additional_message("cannot open display timeline");
             goto cleanup;

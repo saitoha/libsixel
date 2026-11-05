@@ -19,14 +19,19 @@ static NSString *test_pkgutil;
 int
 main(int argc, const char *argv[])
 {
+    char const *value;
+
     @autoreleasepool {
-        test_root = @(getenv("QUICKLOOK_PRIVATE_ROOT") ?: "");
-        test_journal = @(getenv("QUICKLOOK_PRIVATE_JOURNAL") ?: "");
-        test_os = @(getenv("QUICKLOOK_PRIVATE_OS") ?: "");
-        test_installer = @(getenv("QUICKLOOK_PRIVATE_INSTALLER") ?:
-            test_os.UTF8String);
-        test_pkgutil = @(getenv("QUICKLOOK_PRIVATE_PKGUTIL") ?:
-            test_os.UTF8String);
+        value = getenv("QUICKLOOK_PRIVATE_ROOT");
+        test_root = @(value ? value : "");
+        value = getenv("QUICKLOOK_PRIVATE_JOURNAL");
+        test_journal = @(value ? value : "");
+        value = getenv("QUICKLOOK_PRIVATE_OS");
+        test_os = @(value ? value : "");
+        value = getenv("QUICKLOOK_PRIVATE_INSTALLER");
+        test_installer = @(value ? value : test_os.UTF8String);
+        value = getenv("QUICKLOOK_PRIVATE_PKGUTIL");
+        test_pkgutil = @(value ? value : test_os.UTF8String);
         if (test_root.length == 0 || test_os.length == 0 ||
             [test_root isEqual:@"/"]) {
             return 90;

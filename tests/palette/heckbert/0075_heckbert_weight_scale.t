@@ -2,6 +2,10 @@
 # Common ratio scaling cancels and explicit weights override environment.
 # Policy: docs/encoder/palette-construction/quantization/README.md
 set -eux
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    echo "1..0 # SKIP img2sixel is disabled in this build"
+    exit 0
+}
 echo "1..1"
 set -v
 first=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xc \

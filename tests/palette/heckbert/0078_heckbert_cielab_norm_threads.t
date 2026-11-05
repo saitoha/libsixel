@@ -2,6 +2,10 @@
 # cielab norm SSE palettes agree at one and eight workers.
 # Policy: docs/encoder/palette-construction/quantization/README.md
 set -eux
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    echo "1..0 # SKIP img2sixel is disabled in this build"
+    exit 0
+}
 echo "1..1"
 set -v
 single=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Goff -p16 -Xcielab \

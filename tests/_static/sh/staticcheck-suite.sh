@@ -1071,6 +1071,18 @@ run_case_tap "staticcheck-c-test-stdio" \
     sh "$src_root/tests/_static/sh/staticcheck-c-test-stdio.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-assessment-fopen" \
+    sh "$src_root/tests/_static/sh/staticcheck-assessment-fopen.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-tool-capabilities" \
+    sh "$src_root/tests/_static/sh/staticcheck-test-tool-capabilities.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-comparator-absolute-probe" \
+    sh "$src_root/tests/_static/sh/staticcheck-comparator-absolute-probe.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-assessment-getenv" \
     sh "$src_root/tests/_static/sh/staticcheck-assessment-getenv.sh" \
     "$src_root" || fail_and_exit $?

@@ -12077,3 +12077,8 @@ EXTRA_DIST += _support/codec/retained_workers_common.h \
     _support/codec/retained_component_common.h
 
 EXTRA_DIST += _support/processing/gpu-palette/gpu_rows_common.h
+
+EXTRA_DIST += _static/sh/staticcheck-assessment-fopen.sh \
+    _static/sh/staticcheck-test-tool-capabilities.sh \
+    _static/sh/staticcheck-comparator-absolute-probe.sh \
+    _static/awk/assessment-fopen.awk

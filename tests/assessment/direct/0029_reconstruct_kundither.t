@@ -2,6 +2,10 @@
 # Policy: docs/quality/color-evaluation.md
 # Direct kundither target reconstruction matches the established opaque result through stdin.
 set -eux
+test "${HAVE_SIXEL2PNG-}" = 1 || {
+    echo "1..0 # SKIP sixel2png is disabled in this build"
+    exit 0
+}
 echo "1..1"
 set -v
 

@@ -168,9 +168,13 @@ esac
 : "${TOP_SRCDIR:=@top_srcdir@}"
 # Keep installed cmp/diff first; use our native helper or source-only fallback
 # only when the shell environment does not provide the comparison utility.
-PATH="$PATH:${TOP_BUILDDIR}/tools/compare:${TOP_SRCDIR}/build-aux/compare"
+if test '@sixel_have_compare@' = yes; then
+  PATH="$PATH:${TOP_BUILDDIR}/tools/compare"
+  : "${SIXEL_TEST_COMPARE:=${TOP_BUILDDIR}/tools/compare/cmp@SIXEL_COMPARE_EXEEXT@}"
+fi
+PATH="$PATH:${TOP_SRCDIR}/build-aux/compare"
 export PATH
-: "${SIXEL_TEST_COMPARE:=${TOP_BUILDDIR}/tools/compare/cmp@SIXEL_COMPARE_EXEEXT@}"
+: "${SIXEL_TEST_COMPARE:=${TOP_SRCDIR}/build-aux/compare/cmp}"
 if test ! -x "$SIXEL_TEST_COMPARE"; then
   SIXEL_TEST_COMPARE="${TOP_SRCDIR}/build-aux/compare/cmp"
 fi

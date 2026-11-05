@@ -78,8 +78,10 @@ observed_application(NSURL *url, BOOL need_signature)
     }
     return @{@"signature":code_identity, @"path":path,
         @"canonicalPath":path.stringByResolvingSymlinksInPath,
-        @"identifier":plist[@"CFBundleIdentifier"] ?: [NSNull null],
-        @"version":plist[@"CFBundleVersion"] ?: [NSNull null]};
+        @"identifier":plist[@"CFBundleIdentifier"]
+            ? plist[@"CFBundleIdentifier"] : [NSNull null],
+        @"version":plist[@"CFBundleVersion"]
+            ? plist[@"CFBundleVersion"] : [NSNull null]};
 }
 
 static NSArray *
@@ -118,8 +120,20 @@ observed_default(NSString *extension)
     CFURLRef url;
     CFErrorRef error;
     NSDictionary *application;
-    uti = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(
-        kUTTagClassFilenameExtension, (__bridge CFStringRef)extension, NULL));
+    /* Preserve the 10.15 deployment path while using the current SDK API. */
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000
+    if (@available(macOS 11.0, *)) {
+        uti = [UTType typeWithFilenameExtension:extension].identifier;
+    } else
+#endif
+    {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        uti = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(
+            kUTTagClassFilenameExtension, (__bridge CFStringRef)extension,
+            NULL));
+#pragma clang diagnostic pop
+    }
     require(uti != nil, @"Cannot resolve extension UTI");
     handler = CFBridgingRelease(LSCopyDefaultRoleHandlerForContentType(
         (__bridge CFStringRef)uti, kLSRolesViewer));
@@ -136,7 +150,7 @@ observed_default(NSString *extension)
     if (error != NULL) {
         CFRelease(error);
     }
-    return @{@"uti":uti, @"handler":handler ?: [NSNull null],
+    return @{@"uti":uti, @"handler":handler ? handler : [NSNull null],
         @"application":application};
 }
 #else
@@ -494,8 +508,10 @@ observe_installed(NSString *observation, NSString *directory,
                 @"Election journal missing or current differs from owned");
         }
         print_observation(@{@"current":records,
-            @"before":context[@"before"][observation] ?: [NSNull null],
-            @"owned":context[@"owned"][observation] ?: [NSNull null]});
+            @"before":context[@"before"][observation]
+            ? context[@"before"][observation] : [NSNull null],
+            @"owned":context[@"owned"][observation]
+            ? context[@"owned"][observation] : [NSNull null]});
     } else if ([kind isEqual:@"default"]) {
         require([@[@"six", @"sixel"] containsObject:name],
             @"Unknown default extension");

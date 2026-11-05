@@ -32,6 +32,8 @@ producer | lsqa --target-colorspace=display-p3 reference.six -
 
 Names and field counts are exact. Invalid xy coordinates, nonfinite numbers, missing fields, unreadable or inapplicable ICC profiles are errors. An ICC profile is a local file, never standard input. The shared parser performs no file access; each adapter owns profile loading and lifetime.
 
+ICC filenames embedded in `-R` or `-T`, video timeline inputs and report outputs use the library's path-compatible file adapter. Native Windows builds accept the supported Cygwin `/cygdrive/...` spelling as well as drive-qualified paths; shell argument conversion cannot be assumed for paths embedded inside a color definition. The [assessment file-open check](../../tests/_static/sh/staticcheck-assessment-fopen.sh) protects adapter use, while the existing ICC and [video evaluation](video-evaluation.md) tests exercise file contents and results on each runtime.
+
 Explicit definitions currently require a standalone SIXEL DCS stream. They apply to the decoded **original palette or paint-time samples**, before background selection and before conversion to extended linear sRGB. SIXEL's integer percentage to RGB8 rounding is unchanged. The raw decoder has no new CMS policy.
 
 Explicit PNG overrides report an error until the pre-normalization loader connection is validated. They must never reinterpret already normalized sRGB as though it were the original P3 samples. `auto` PNG keeps its existing loader CMS behavior. Explicit target definitions with `-d` dequantization are also rejected because that reconstruction needs its own color-space contract.
@@ -216,6 +218,7 @@ See [color difference and color reproduction](color-difference.md) for global an
 | CE-74 | The DELTA_E00_MAX alias selects the same metric. | [tests/assessment/cms/0036_pixel_delta_max_alias.t](../../tests/assessment/cms/0036_pixel_delta_max_alias.t) |
 | CE-75 | Full JSON includes maximum, position and tail counts. | [tests/assessment/cms/0037_pixel_delta_json.t](../../tests/assessment/cms/0037_pixel_delta_json.t) |
 | CE-76 | Neutral sRGB samples independently exercise each tail threshold. | [tests/assessment/delta-e/0016_pixel_delta_tails.t](../../tests/assessment/delta-e/0016_pixel_delta_tails.t) |
+| CE-77 | Assessment source file opens retain the path-compatible adapter; native runtime path behavior is a separate execution check. | [tests/_static/sh/staticcheck-assessment-fopen.sh](../../tests/_static/sh/staticcheck-assessment-fopen.sh) |
 
 ### Quality regression tests
 

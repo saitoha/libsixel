@@ -2,6 +2,10 @@
 # Observe effective Heckbert build settings for profile quality none.
 # Policy: docs/encoder/palette-construction/quantization/README.md
 set -eux
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    echo "1..0 # SKIP img2sixel is disabled in this build"
+    exit 0
+}
 echo "1..1"
 set -v
 trace=$(SIXEL_TRACE_TOPIC=palette_contract ${SIXEL_RUNTIME-} \

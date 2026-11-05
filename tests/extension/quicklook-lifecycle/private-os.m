@@ -27,8 +27,10 @@ main(int argc, const char *argv[])
     NSDictionary *journal;
     NSData *data;
     id value;
+    char const *environment;
     @autoreleasepool {
-        root = @(getenv("QUICKLOOK_PRIVATE_ROOT") ?: "");
+        environment = getenv("QUICKLOOK_PRIVATE_ROOT");
+        root = @(environment ? environment : "");
         if (root.length == 0 || [root isEqual:@"/"]) {
             return 90;
         }
@@ -74,7 +76,8 @@ main(int argc, const char *argv[])
                 [root stringByAppendingString:@"/"]]) {
                 return 89;
             }
-            journal_path = [@(getenv("QUICKLOOK_PRIVATE_JOURNAL") ?: "")
+            environment = getenv("QUICKLOOK_PRIVATE_JOURNAL");
+            journal_path = [@(environment ? environment : "")
                 stringByAppendingPathComponent:@"journal.json"];
             data = [NSData dataWithContentsOfFile:journal_path];
             journal = [NSJSONSerialization JSONObjectWithData:data
@@ -97,10 +100,10 @@ main(int argc, const char *argv[])
             if ([command isEqual:@"-a"]) {
                 plugins[record[@"identifier"]] = @[record];
             } else {
-                plugins[record[@"identifier"]] =
-                    [plugins[record[@"identifier"]] filteredArrayUsingPredicate:
-                    [NSPredicate predicateWithFormat:@"path != %@", path]]
-                    ?: @[];
+                value = [plugins[record[@"identifier"]]
+                    filteredArrayUsingPredicate:
+                    [NSPredicate predicateWithFormat:@"path != %@", path]];
+                plugins[record[@"identifier"]] = value ? value : @[];
             }
             save(state, state_path);
             return 0;
