@@ -1,5 +1,5 @@
 #!/bin/sh
-# Convert metadata into a space-delimited test list.
+# Discover runtime scripts and emit a normalized test inventory.
 # Supported mode:
 #   tests -> scan the tests source tree and print runnable test scripts
 
@@ -55,11 +55,27 @@ esac
 {
     (
         cd "$tests_dir" || exit 1
-        # Category depth is enforced by staticcheck. One bulk glob avoids
-        # a process or metadata probe per case and needs no findutils.
+        # Category depth is enforced by staticcheck. Globbing needs no
+        # per-case metadata probe or findutils. OpenBSD sh runs printf as
+        # an external command, so bound each argv even for a large suite.
         LC_ALL=C
         export LC_ALL
-        printf '%s\n' ./*/*/[0-9][0-9][0-9][0-9]_*.t \
+        # A shell function accepts the full glob without exec. Shifting a
+        # fixed batch avoids rebuilding positional arguments for every path.
+        emit_paths() {
+            while test "$#" -ge 32; do
+                printf '%s\n' \
+                    "${1}" "${2}" "${3}" "${4}" "${5}" "${6}" "${7}" "${8}" \
+                    "${9}" "${10}" "${11}" "${12}" "${13}" "${14}" "${15}" "${16}" \
+                    "${17}" "${18}" "${19}" "${20}" "${21}" "${22}" "${23}" "${24}" \
+                    "${25}" "${26}" "${27}" "${28}" "${29}" "${30}" "${31}" "${32}" || return 1
+                shift 32
+            done
+            if test "$#" -ne 0; then
+                printf '%s\n' "$@" || return 1
+            fi
+        }
+        emit_paths ./*/*/[0-9][0-9][0-9][0-9]_*.t \
             ./bindings/php/[0-9][0-9][0-9][0-9]_*.php \
             ./bindings/python/[0-9][0-9][0-9][0-9]_*.py \
             ./bindings/ruby/[0-9][0-9][0-9][0-9]_*.rb \

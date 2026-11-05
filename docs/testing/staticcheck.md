@@ -26,6 +26,8 @@ IDL-based verification and tests about how tests are written are both first-clas
 
 The [comparison dependency check](../../tests/_static/sh/staticcheck-comparison-dependencies.sh) prevents CI from requiring diffutils and verifies the native and source-only fallback registrations. Separate comparison cases run against the source-only implementation without compiling C, checking binary equality, differences, final newlines, empty inputs, input errors, stdin and multi-buffer input. The same files exercise the selected native comparator during `check`; [test harness](../build/test-harness.md) owns its behavior and [platform requirements](../platform-support.md#build-requirements) owns admission of external dependencies. These source checks do not prove availability of every command on every OS; absence-of-tool builds and runtime checks remain necessary.
 
+Two independent discovery cases protect the [test harness's bounded inventory output](../build/test-harness.md#shared-discovery-and-c-test-dispatch). One checks complete sorted output while rejecting oversized printf calls; the other injects failure after a successful batch and requires discovery to fail. Both execute the shared shell helper with 65 empty fixture cases and replace printf with a shell function. They require neither a compiler nor Python, and model the external-command boundary even when the host shell provides builtin printf. Native OpenBSD execution separately verifies its actual argument limit.
+
 ## Relationship to behavioral tests
 
 `make staticcheck` and `make check` answer different questions. `staticcheck` asks whether the repository is internally well-formed and whether duplicated or generated representations agree. `make check` asks whether built software behaves correctly for concrete inputs, platforms, and feature configurations. Neither subsumes the other.
@@ -271,6 +273,8 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-75 | Direct production C includes isolate external function definitions from the linked library with active private aliases. | [tests/_static/sh/staticcheck-test-source-isolation.sh](../../tests/_static/sh/staticcheck-test-source-isolation.sh) |
 | SC-76 | Embedded float lookup implementation copies remain outside Meson unity aggregation. | [tests/_static/sh/staticcheck-test-float-lookup-unity.sh](../../tests/_static/sh/staticcheck-test-float-lookup-unity.sh) |
 | SC-77 | JPEG dependency activation requires usable headers and a linked base API in both build systems. | [tests/_static/sh/staticcheck-libjpeg-link-probe.sh](../../tests/_static/sh/staticcheck-libjpeg-link-probe.sh) |
+| SC-78 | Test discovery preserves complete sorted output through bounded printf invocations. | [tests/build/discovery/0010_bounded_output.sh](../../tests/build/discovery/0010_bounded_output.sh) |
+| SC-79 | Test discovery propagates failure of an intermediate printf batch. | [tests/build/discovery/0011_batch_failure.sh](../../tests/build/discovery/0011_batch_failure.sh) |
 
 ### Coverage boundary
 

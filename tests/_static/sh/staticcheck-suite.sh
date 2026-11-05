@@ -742,6 +742,14 @@ run_case_plain "staticcheck-test-discovery-openvms-failure" \
     sh "$src_root/tests/build/discovery/0008_openvms_failure.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_plain "staticcheck-test-discovery-bounded-output" \
+    sh "$src_root/tests/build/discovery/0010_bounded_output.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_plain "staticcheck-test-discovery-batch-failure" \
+    sh "$src_root/tests/build/discovery/0011_batch_failure.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-runner-link" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-link.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?

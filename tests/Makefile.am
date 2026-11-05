@@ -12011,7 +12011,9 @@ EXTRA_DIST += build/discovery/fixture.sh \
     build/discovery/0005_empty_selection.sh \
     build/discovery/0006_scan_failure.sh \
     build/discovery/0007_openvms_refresh.sh \
-    build/discovery/0008_openvms_failure.sh
+    build/discovery/0008_openvms_failure.sh \
+    build/discovery/0010_bounded_output.sh \
+    build/discovery/0011_batch_failure.sh
 
 # Timing exceptions are checked against completed test runs.
 EXTRA_DIST += test-time-allowlist.tsv
