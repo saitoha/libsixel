@@ -1,6 +1,6 @@
 # Build the SIXEL codec tutorial programs with any POSIX make:
 #
-#   make            build step1 ... step6
+#   make            build step1 ... step7
 #   make mysixel    build your own codec from mysixel.c
 #   make check      run every self test and cross-step comparison
 #   make bench      time every step on the inputs of the published table
@@ -12,7 +12,8 @@ CC = cc
 CFLAGS = -O2 -Wall -Wextra
 LDLIBS = -lpthread
 O = .
-STEPS = $(O)/step1 $(O)/step2 $(O)/step3 $(O)/step4 $(O)/step5 $(O)/step6
+STEPS = $(O)/step1 $(O)/step2 $(O)/step3 $(O)/step4 $(O)/step5 $(O)/step6 \
+	$(O)/step7
 
 all: $(STEPS)
 
@@ -29,6 +30,8 @@ $(O)/step5: step5.c
 	$(CC) $(CFLAGS) -o $@ common.c step5.c $(LDLIBS)
 $(O)/step6: step6.c step5.c
 	$(CC) $(CFLAGS) -o $@ common.c step6.c $(LDLIBS)
+$(O)/step7: step7.c
+	$(CC) $(CFLAGS) -o $@ common.c step7.c $(LDLIBS)
 
 # Not in `all`: it is yours to finish, so it fails its self test at first.
 mysixel: mysixel.c common.c tutorial.h

@@ -1,0 +1,347 @@
+{
+  "environment": {
+    "compiler": "Apple clang version 21.0.0 (clang-2100.4.1.1)",
+    "date": "2026-11-05",
+    "load_after": 4.51,
+    "load_before": 4.79,
+    "machine": "Apple M3 Max",
+    "revision": "7dba05582",
+    "system": "Darwin 27.0.0"
+  },
+  "light": {
+    "gamma": 6.464525,
+    "linear": 0.935028,
+    "tutorial": 6.743547
+  },
+  "ppd": {
+    "bayer": {
+      "120": 5.782349,
+      "16": 9.313088,
+      "32": 6.685195,
+      "60": 5.927631
+    },
+    "fs": {
+      "120": 5.866773,
+      "16": 9.634213,
+      "32": 6.602767,
+      "60": 5.978468
+    },
+    "nearest": {
+      "120": 16.119645,
+      "16": 16.166463,
+      "32": 16.140341,
+      "60": 16.116481
+    }
+  },
+  "sets": {
+    "gradient-cube27": {
+      "atkinson": {
+        "BandingIndex_grad_rel": -0.552048,
+        "DE00_region_mean": 7.497398,
+        "GMSD": 0.364647,
+        "HighFreqRatio_delta": 0.422484,
+        "MS-SSIM": 0.674005,
+        "StripeScore_rel": -65.021477,
+        "area_error": 7.53,
+        "bytes": 110073,
+        "flat_runs": 1.6,
+        "flat_runs_original": 32.0,
+        "pixel_error": 46.07
+      },
+      "bayer": {
+        "BandingIndex_grad_rel": -0.529775,
+        "DE00_region_mean": 5.864174,
+        "GMSD": 0.392516,
+        "HighFreqRatio_delta": 0.492146,
+        "MS-SSIM": 0.614962,
+        "StripeScore_rel": 9.730118,
+        "area_error": 0.68,
+        "bytes": 94522,
+        "flat_runs": 1.4,
+        "flat_runs_original": 32.0,
+        "pixel_error": 51.54
+      },
+      "fs": {
+        "BandingIndex_grad_rel": -0.589246,
+        "DE00_region_mean": 5.950624,
+        "GMSD": 0.338542,
+        "HighFreqRatio_delta": 0.444022,
+        "MS-SSIM": 0.640787,
+        "StripeScore_rel": -62.477711,
+        "area_error": 0.68,
+        "bytes": 144441,
+        "flat_runs": 1.2,
+        "flat_runs_original": 32.0,
+        "pixel_error": 51.17
+      },
+      "jajuni": {
+        "BandingIndex_grad_rel": -0.588897,
+        "DE00_region_mean": 5.979004,
+        "GMSD": 0.271429,
+        "HighFreqRatio_delta": 0.434649,
+        "MS-SSIM": 0.545693,
+        "StripeScore_rel": -65.519066,
+        "area_error": 0.91,
+        "bytes": 145223,
+        "flat_runs": 1.3,
+        "flat_runs_original": 32.0,
+        "pixel_error": 51.07
+      },
+      "nearest": {
+        "BandingIndex_grad_rel": 0.38375,
+        "DE00_region_mean": 15.909231,
+        "GMSD": 0.096329,
+        "HighFreqRatio_delta": 0.01181,
+        "MS-SSIM": 0.845931,
+        "StripeScore_rel": 9.259445,
+        "area_error": 34.82,
+        "bytes": 1281,
+        "flat_runs": 128.0,
+        "flat_runs_original": 32.0,
+        "pixel_error": 35.89
+      },
+      "random": {
+        "BandingIndex_grad_rel": -0.591793,
+        "DE00_region_mean": 6.109981,
+        "GMSD": 0.339076,
+        "HighFreqRatio_delta": 0.451097,
+        "MS-SSIM": 0.331146,
+        "StripeScore_rel": -66.812447,
+        "area_error": 3.37,
+        "bytes": 89149,
+        "flat_runs": 1.9,
+        "flat_runs_original": 32.0,
+        "pixel_error": 51.29
+      },
+      "serpentine": {
+        "BandingIndex_grad_rel": -0.594205,
+        "DE00_region_mean": 5.883086,
+        "GMSD": 0.335588,
+        "HighFreqRatio_delta": 0.445578,
+        "MS-SSIM": 0.632768,
+        "StripeScore_rel": -64.839569,
+        "area_error": 0.67,
+        "bytes": 145590,
+        "flat_runs": 1.2,
+        "flat_runs_original": 32.0,
+        "pixel_error": 51.2
+      }
+    },
+    "snake-16": {
+      "atkinson": {
+        "BandingIndex_grad_rel": 0.015842,
+        "DE00_region_mean": 2.263166,
+        "GMSD": 0.176577,
+        "HighFreqRatio_delta": 0.054607,
+        "MS-SSIM": 0.945709,
+        "StripeScore_rel": -0.946806,
+        "area_error": 5.45,
+        "bytes": 100793,
+        "flat_runs": 3.7,
+        "flat_runs_original": 4.3,
+        "pixel_error": 11.95
+      },
+      "bayer": {
+        "BandingIndex_grad_rel": -0.011636,
+        "DE00_region_mean": 2.428716,
+        "GMSD": 0.142792,
+        "HighFreqRatio_delta": 0.06966,
+        "MS-SSIM": 0.937931,
+        "StripeScore_rel": 14.705243,
+        "area_error": 5.62,
+        "bytes": 122586,
+        "flat_runs": 2.0,
+        "flat_runs_original": 4.3,
+        "pixel_error": 12.79
+      },
+      "fs": {
+        "BandingIndex_grad_rel": -0.033019,
+        "DE00_region_mean": 2.062797,
+        "GMSD": 0.22358,
+        "HighFreqRatio_delta": 0.158441,
+        "MS-SSIM": 0.914546,
+        "StripeScore_rel": -0.033551,
+        "area_error": 5.26,
+        "bytes": 129015,
+        "flat_runs": 2.3,
+        "flat_runs_original": 4.3,
+        "pixel_error": 17.73
+      },
+      "jajuni": {
+        "BandingIndex_grad_rel": -0.063246,
+        "DE00_region_mean": 2.104508,
+        "GMSD": 0.259894,
+        "HighFreqRatio_delta": 0.132427,
+        "MS-SSIM": 0.896913,
+        "StripeScore_rel": -1.25227,
+        "area_error": 5.3,
+        "bytes": 116884,
+        "flat_runs": 2.8,
+        "flat_runs_original": 4.3,
+        "pixel_error": 16.64
+      },
+      "nearest": {
+        "BandingIndex_grad_rel": 0.119926,
+        "DE00_region_mean": 2.739345,
+        "GMSD": 0.164831,
+        "HighFreqRatio_delta": 0.014468,
+        "MS-SSIM": 0.930418,
+        "StripeScore_rel": -0.281933,
+        "area_error": 6.54,
+        "bytes": 55911,
+        "flat_runs": 11.5,
+        "flat_runs_original": 4.3,
+        "pixel_error": 10.55
+      },
+      "random": {
+        "BandingIndex_grad_rel": -0.066697,
+        "DE00_region_mean": 2.435972,
+        "GMSD": 0.196603,
+        "HighFreqRatio_delta": 0.063818,
+        "MS-SSIM": 0.907186,
+        "StripeScore_rel": -0.958591,
+        "area_error": 5.66,
+        "bytes": 120068,
+        "flat_runs": 2.8,
+        "flat_runs_original": 4.3,
+        "pixel_error": 12.82
+      },
+      "serpentine": {
+        "BandingIndex_grad_rel": -0.02389,
+        "DE00_region_mean": 2.045545,
+        "GMSD": 0.219976,
+        "HighFreqRatio_delta": 0.159337,
+        "MS-SSIM": 0.91473,
+        "StripeScore_rel": -1.308621,
+        "area_error": 5.22,
+        "bytes": 130144,
+        "flat_runs": 2.3,
+        "flat_runs_original": 4.3,
+        "pixel_error": 17.77
+      }
+    },
+    "snake-cube27": {
+      "atkinson": {
+        "BandingIndex_grad_rel": -0.175463,
+        "DE00_region_mean": 7.41585,
+        "GMSD": 0.338606,
+        "HighFreqRatio_delta": 0.451505,
+        "MS-SSIM": 0.779751,
+        "StripeScore_rel": -0.878338,
+        "area_error": 6.59,
+        "bytes": 182827,
+        "flat_runs": 1.6,
+        "flat_runs_original": 4.3,
+        "pixel_error": 43.7
+      },
+      "bayer": {
+        "BandingIndex_grad_rel": -0.10642,
+        "DE00_region_mean": 6.686588,
+        "GMSD": 0.324679,
+        "HighFreqRatio_delta": 0.592351,
+        "MS-SSIM": 0.747787,
+        "StripeScore_rel": 57.242046,
+        "area_error": 1.52,
+        "bytes": 176937,
+        "flat_runs": 1.2,
+        "flat_runs_original": 4.3,
+        "pixel_error": 49.73
+      },
+      "fs": {
+        "BandingIndex_grad_rel": -0.134722,
+        "DE00_region_mean": 6.743547,
+        "GMSD": 0.318755,
+        "HighFreqRatio_delta": 0.51095,
+        "MS-SSIM": 0.777037,
+        "StripeScore_rel": 0.428872,
+        "area_error": 1.02,
+        "bytes": 239701,
+        "flat_runs": 1.2,
+        "flat_runs_original": 4.3,
+        "pixel_error": 48.88
+      },
+      "jajuni": {
+        "BandingIndex_grad_rel": -0.143192,
+        "DE00_region_mean": 6.758529,
+        "GMSD": 0.315195,
+        "HighFreqRatio_delta": 0.505904,
+        "MS-SSIM": 0.721283,
+        "StripeScore_rel": -0.916896,
+        "area_error": 1.73,
+        "bytes": 232268,
+        "flat_runs": 1.3,
+        "flat_runs_original": 4.3,
+        "pixel_error": 48.28
+      },
+      "nearest": {
+        "BandingIndex_grad_rel": 0.283517,
+        "DE00_region_mean": 13.361668,
+        "GMSD": 0.236911,
+        "HighFreqRatio_delta": 0.039239,
+        "MS-SSIM": 0.772104,
+        "StripeScore_rel": 0.420703,
+        "area_error": 26.95,
+        "bytes": 34550,
+        "flat_runs": 19.0,
+        "flat_runs_original": 4.3,
+        "pixel_error": 34.59
+      },
+      "random": {
+        "BandingIndex_grad_rel": -0.522108,
+        "DE00_region_mean": 6.933468,
+        "GMSD": 0.331355,
+        "HighFreqRatio_delta": 0.528134,
+        "MS-SSIM": 0.577921,
+        "StripeScore_rel": -1.928996,
+        "area_error": 3.73,
+        "bytes": 170546,
+        "flat_runs": 1.7,
+        "flat_runs_original": 4.3,
+        "pixel_error": 49.59
+      },
+      "serpentine": {
+        "BandingIndex_grad_rel": -0.121411,
+        "DE00_region_mean": 6.728855,
+        "GMSD": 0.320316,
+        "HighFreqRatio_delta": 0.511566,
+        "MS-SSIM": 0.771874,
+        "StripeScore_rel": -0.96566,
+        "area_error": 1.0,
+        "bytes": 240164,
+        "flat_runs": 1.2,
+        "flat_runs_original": 4.3,
+        "pixel_error": 48.9
+      }
+    }
+  },
+  "speed": {
+    "atkinson": {
+      "snake16": 28.4,
+      "snake256": 175.5
+    },
+    "bayer": {
+      "snake16": 23.9,
+      "snake256": 164.3
+    },
+    "fs": {
+      "snake16": 26.8,
+      "snake256": 166.3
+    },
+    "jajuni": {
+      "snake16": 35.0,
+      "snake256": 187.9
+    },
+    "nearest": {
+      "snake16": 10.8,
+      "snake256": 164.9
+    },
+    "random": {
+      "snake16": 23.3,
+      "snake256": 162.9
+    },
+    "serpentine": {
+      "snake16": 27.4,
+      "snake256": 176.5
+    }
+  }
+}

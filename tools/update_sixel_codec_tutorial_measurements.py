@@ -6,7 +6,8 @@ docs/tutorial/sixel-codec/measurements/results.json. With --check, verify
 that the pages match the file. With --measure, first run the benchmarks and
 write that file: `make bench` for every step, then copies of the sources
 patched with phase timers and single-technique variants, a thread sweep, and
-optionally the same pictures through a libsixel build.
+optionally the same pictures through a libsixel build. With --only-overpaint,
+measure step 7 against step 3 and keep every other result.
 """
 
 from __future__ import annotations
@@ -40,8 +41,9 @@ PAGES = {
     "step4-column-words.md": ("step4",),
     "step5-simd.md": ("step5",),
     "step6-threads.md": ("step6",),
+    "step7-overpaint.md": ("overpaint",),
     "measurements.md": ("environment", "attribution", "phases", "materialize",
-                        "prescan", "threads", "libsixel"),
+                        "prescan", "threads", "libsixel", "overpaint"),
 }
 BENCH_RE = re.compile(
     r"(?P<colors>\d+) colors, (?P<bytes>\d+) bytes: encode (?P<enc>[\d.]+) ms"
@@ -81,12 +83,12 @@ int main(int argc, char **argv)
 {
     FILE *f = fopen(argv[1], "rb");
     int threads = atoi(argv[2]), runs = atoi(argv[3]);
+    int policy = argc > 4 ? SIXEL_ENCODEPOLICY_SIZE : SIXEL_ENCODEPOLICY_FAST;
     unsigned char *stream, *pixels = NULL, *palette = NULL, *copy;
     int width = 0, height = 0, ncolors = 0, i;
     double enc = 1e30, dec = 1e30, t;
     long size;
 
-    (void)argc;
     fseek(f, 0, SEEK_END);
     size = ftell(f);
     rewind(f);
@@ -118,7 +120,7 @@ int main(int argc, char **argv)
         sixel_dither_set_palette(dither, palette);
         sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_PAL8);
         sixel_output_new(&output, sink, NULL, NULL);
-        sixel_output_set_encode_policy(output, SIXEL_ENCODEPOLICY_FAST);
+        sixel_output_set_encode_policy(output, policy);
         bytes = 0;
         t = now();
         if (SIXEL_FAILED(sixel_encode(copy, width, height, 1, dither,
@@ -382,12 +384,7 @@ def measure_threads(out: Path) -> dict:
 def measure_libsixel(build_dir: Path, source_dir: Path, revision: str,
                      out: Path, cc: str) -> dict:
     """Run the same pictures through a libsixel build."""
-    bench = out / "libsixel-bench"
-    source = out / "libsixel-bench.c"
-    source.write_text(LIBSIXEL_BENCH, encoding="utf-8")
-    run([cc, "-O2", f"-I{build_dir}/include", f"-I{source_dir}/include",
-         "-o", str(bench), str(source), f"-L{build_dir}/src", "-lsixel",
-         f"-Wl,-rpath,{build_dir}/src"])
+    bench = compile_libsixel_bench(build_dir, source_dir, out, cc)
     report: dict[str, object] = {"revision": revision}
     for name, _ in INPUTS[1:]:
         stream = out / f"{name}.six"
@@ -403,6 +400,63 @@ def measure_libsixel(build_dir: Path, source_dir: Path, revision: str,
                 result = run([str(bench), str(stream), str(threads), "10"])
                 faster(best, "x", parse_bench(result.stdout))
             report[name][str(threads)] = best["x"]
+    return report
+
+
+def compile_libsixel_bench(build_dir: Path, source_dir: Path, out: Path,
+                           cc: str) -> Path:
+    """Build the benchmark that calls libsixel."""
+    bench = out / "libsixel-bench"
+    source = out / "libsixel-bench.c"
+    source.write_text(LIBSIXEL_BENCH, encoding="utf-8")
+    run([cc, "-O2", f"-I{build_dir}/include", f"-I{source_dir}/include",
+         "-o", str(bench), str(source), f"-L{build_dir}/src", "-lsixel",
+         f"-Wl,-rpath,{build_dir}/src"])
+    return bench
+
+
+def make_pictures(out: Path, cc: str, cflags: str) -> None:
+    """Build the steps and write the benchmark pictures, as `make bench`."""
+    run(["make", "-s", f"O={out}", f"CC={cc}", f"CFLAGS={cflags}", "all"],
+        cwd=CODE)
+    study = ROOT / "docs/encoder/output/high-color/study"
+    commands = {
+        "photo-small": ["step2", "decode", str(study / "snake-256-fs.six")],
+        "photo-fhd": ["step2", "decode", str(study / "snake-fhd-256-fs.six")],
+        "two": ["step1", "synth", "two", "1920", "1080"],
+        "noise": ["step1", "synth", "noise", "1920", "1080"],
+    }
+    for name, (step, *arguments) in commands.items():
+        with (out / f"{name}.ppm").open("wb") as handle:
+            subprocess.run([str(out / step), *arguments], check=True,
+                           stdout=handle)
+
+
+def measure_overpaint(out: Path, rounds: int, arguments: argparse.Namespace,
+                      cc: str) -> dict:
+    """Time step 7 and step 3 in turn, so they share the same conditions."""
+    report: dict[str, dict] = {}
+    for name, _ in INPUTS:
+        report[name] = {}
+        picture = str(out / f"{name}.ppm")
+        for _ in range(rounds):
+            for step in ("step3", "step7"):
+                result = run([str(out / step), "bench", picture, "1", "10"])
+                faster(report[name], step, parse_bench(result.stdout))
+    if arguments.libsixel_build:
+        bench = compile_libsixel_bench(arguments.libsixel_build,
+                                       arguments.libsixel_source, out, cc)
+        for name, _ in INPUTS:
+            stream = out / f"{name}.six"
+            with stream.open("wb") as handle:
+                subprocess.run([str(out / "step2"), "encode",
+                                str(out / f"{name}.ppm")], check=True,
+                               stdout=handle)
+            fast = parse_bench(run([str(bench), str(stream), "1", "1"]).stdout)
+            size = parse_bench(run([str(bench), str(stream), "1", "1",
+                                    "size"]).stdout)
+            report[name]["libsixel_fast_bytes"] = fast["bytes"]
+            report[name]["libsixel_size_bytes"] = size["bytes"]
     return report
 
 
@@ -454,6 +508,8 @@ def measure(arguments: argparse.Namespace) -> None:
         results["materialize"] = measure_materialize(code, out, cc, cflags)
         results["prescan"] = measure_prescan(code, out, cc, cflags)
         results["threads"] = measure_threads(out)
+        results["overpaint"] = measure_overpaint(out, arguments.rounds,
+                                                 arguments, cc)
         if arguments.libsixel_build:
             results["libsixel"] = measure_libsixel(
                 arguments.libsixel_build, arguments.libsixel_source,
@@ -468,6 +524,18 @@ def measure(arguments: argparse.Namespace) -> None:
             environment_now = results.pop("environment")
             results = keep_fastest(previous, results)
             results["environment"] = environment_now
+    RESULTS.write_text(json.dumps(results, indent=2, sort_keys=True) + "\n",
+                       encoding="utf-8")
+
+
+def measure_only_overpaint(arguments: argparse.Namespace) -> None:
+    """Add step 7's numbers to an existing results file."""
+    results = json.loads(RESULTS.read_text(encoding="utf-8"))
+    with tempfile.TemporaryDirectory(prefix="sixel-tutorial-") as temp:
+        out = Path(temp)
+        make_pictures(out, "cc", "-O2 -Wall -Wextra")
+        results["overpaint"] = measure_overpaint(out, arguments.rounds,
+                                                 arguments, "cc")
     RESULTS.write_text(json.dumps(results, indent=2, sort_keys=True) + "\n",
                        encoding="utf-8")
 
@@ -614,6 +682,31 @@ def render_libsixel(results: dict) -> str:
                   "Decode, tutorial", "Decode, libsixel"], rows)
 
 
+def render_overpaint(results: dict) -> str:
+    """Step 7 against step 3, and libsixel's size policy when measured."""
+    report = results["overpaint"]
+    rows = []
+    has_libsixel = "libsixel_size_bytes" in report[INPUTS[0][0]]
+    for name, label in INPUTS:
+        before = report[name]["step3"]
+        after = report[name]["step7"]
+        saved = 100 * (before["bytes"] - after["bytes"]) / before["bytes"]
+        row = [label, f"{before['bytes']:,}", f"{after['bytes']:,}",
+               f"{saved:.1f}%",
+               f"{ms(before['encode_ms'])} → {ms(after['encode_ms'])}",
+               f"{ms(before['decode_ms'])} → {ms(after['decode_ms'])}"]
+        if has_libsixel:
+            fast = report[name]["libsixel_fast_bytes"]
+            size = report[name]["libsixel_size_bytes"]
+            row.append(f"{100 * (fast - size) / fast:.1f}%")
+        rows.append(row)
+    header = ["Input", "Step 3 bytes", "Step 7 bytes", "Saved",
+              "Encode, ms", "Decode, ms"]
+    if has_libsixel:
+        header.append("Saved by libsixel `size`")
+    return table(header, rows)
+
+
 def render(results: dict, block: str) -> str:
     """Return the Markdown of one measurement block."""
     if block.startswith("step"):
@@ -627,6 +720,7 @@ def render(results: dict, block: str) -> str:
         "prescan": render_prescan,
         "threads": render_threads,
         "libsixel": render_libsixel,
+        "overpaint": render_overpaint,
     }[block](results)
 
 
@@ -668,6 +762,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--libsixel-revision", default="unknown")
     parser.add_argument("--no-pages", action="store_true",
                         help="with --measure, leave the pages alone")
+    parser.add_argument("--only-overpaint", action="store_true",
+                        help="measure step 7 and keep every other result")
     parser.add_argument("--check", action="store_true")
     return parser.parse_args()
 
@@ -675,7 +771,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Measure and render as requested."""
     arguments = parse_args()
-    if arguments.measure:
+    if arguments.only_overpaint:
+        measure_only_overpaint(arguments)
+    elif arguments.measure:
         measure(arguments)
     if not (arguments.measure and arguments.no_pages):
         update_pages(arguments.check)

@@ -287,6 +287,62 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	docs/sixel-format/figures/node-scheduling-mobile.svg \
 	docs/sixel-format/figures/node-scheduling-wide.svg \
 	docs/sixel-format/figures/sixel-format-figures.json \
+	docs/tutorial/dithering/README.md \
+	docs/tutorial/dithering/measurements.md \
+	docs/tutorial/dithering/measurements/results.json \
+	docs/tutorial/dithering/step1-nearest.md \
+	docs/tutorial/dithering/step2-ordered.md \
+	docs/tutorial/dithering/step3-error-diffusion.md \
+	docs/tutorial/dithering/step4-kernels.md \
+	docs/tutorial/dithering/step5-good-dither.md \
+	docs/tutorial/dithering/step6-measuring.md \
+	docs/tutorial/dithering/figures/bayer-cells.svg \
+	docs/tutorial/dithering/figures/color-cube27-atkinson.png \
+	docs/tutorial/dithering/figures/color-cube27-fs-average.png \
+	docs/tutorial/dithering/figures/color-cube27-fs.png \
+	docs/tutorial/dithering/figures/color-cube27-nearest-average.png \
+	docs/tutorial/dithering/figures/color-cube27-nearest.png \
+	docs/tutorial/dithering/figures/color-original.png \
+	docs/tutorial/dithering/figures/dither-tutorial-figures.json \
+	docs/tutorial/dithering/figures/error-walk.svg \
+	docs/tutorial/dithering/figures/flat-atkinson-zoom.png \
+	docs/tutorial/dithering/figures/flat-fs-zoom.png \
+	docs/tutorial/dithering/figures/flat-jajuni-zoom.png \
+	docs/tutorial/dithering/figures/flat-serpentine-zoom.png \
+	docs/tutorial/dithering/figures/gray-original.png \
+	docs/tutorial/dithering/figures/gray16-bayer-zoom.png \
+	docs/tutorial/dithering/figures/gray16-bayer.png \
+	docs/tutorial/dithering/figures/gray16-fs-zoom.png \
+	docs/tutorial/dithering/figures/gray16-fs.png \
+	docs/tutorial/dithering/figures/gray16-nearest.png \
+	docs/tutorial/dithering/figures/gray16-random-zoom.png \
+	docs/tutorial/dithering/figures/gray16-random.png \
+	docs/tutorial/dithering/figures/gray4-fs-zoom.png \
+	docs/tutorial/dithering/figures/gray4-fs.png \
+	docs/tutorial/dithering/figures/kernels.svg \
+	docs/tutorial/dithering/figures/nearest-staircase.svg \
+	docs/tutorial/dithering/figures/snake-cube216-fs.png \
+	docs/tutorial/dithering/figures/snake-cube27-bayer.png \
+	docs/tutorial/dithering/figures/snake-cube27-fs.png \
+	docs/tutorial/dithering/figures/snake-cube27-nearest.png \
+	docs/tutorial/dithering/figures/snake-original.png \
+	docs/tutorial/dithering/figures/snake-palette16-fs.png \
+	docs/tutorial/dithering/figures/snake-palette16-nearest.png \
+	docs/tutorial/dithering/figures/snake-palette256-fs.png \
+	docs/tutorial/dithering/code/Makefile \
+	docs/tutorial/dithering/code/check.sh \
+	docs/tutorial/dithering/code/common.c \
+	docs/tutorial/dithering/code/dtool.c \
+	docs/tutorial/dithering/code/main.c \
+	docs/tutorial/dithering/code/mydither.c \
+	docs/tutorial/dithering/code/score.sh \
+	docs/tutorial/dithering/code/step1.c \
+	docs/tutorial/dithering/code/step2.c \
+	docs/tutorial/dithering/code/step3.c \
+	docs/tutorial/dithering/code/step4.c \
+	docs/tutorial/dithering/code/tutorial.h \
+	docs/tutorial/dithering/code/palettes/snake16.ppm \
+	docs/tutorial/dithering/code/palettes/snake256.ppm \
 	docs/tutorial/sixel-codec/README.md \
 	docs/tutorial/sixel-codec/step0-by-hand.md \
 	docs/tutorial/sixel-codec/step1-run-length.md \
@@ -297,6 +353,7 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	docs/tutorial/sixel-codec/step4-column-words.md \
 	docs/tutorial/sixel-codec/step5-simd.md \
 	docs/tutorial/sixel-codec/step6-threads.md \
+	docs/tutorial/sixel-codec/step7-overpaint.md \
 	docs/tutorial/sixel-codec/figures/big-picture.svg \
 	docs/tutorial/sixel-codec/figures/character-table.svg \
 	docs/tutorial/sixel-codec/figures/heart-columns.svg \
@@ -326,6 +383,7 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	docs/tutorial/sixel-codec/figures/step6-amdahl.svg \
 	docs/tutorial/sixel-codec/figures/step6-decoder.svg \
 	docs/tutorial/sixel-codec/figures/step6-encoder.svg \
+	docs/tutorial/sixel-codec/figures/step7-overpaint.svg \
 	docs/tutorial/sixel-codec/figures/stream-anatomy.svg \
 	docs/tutorial/sixel-codec/figures/tree-cursor.svg \
 	docs/tutorial/sixel-codec/code/Makefile \
@@ -338,6 +396,7 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	docs/tutorial/sixel-codec/code/step4.c \
 	docs/tutorial/sixel-codec/code/step5.c \
 	docs/tutorial/sixel-codec/code/step6.c \
+	docs/tutorial/sixel-codec/code/step7.c \
 	docs/tutorial/sixel-codec/code/tutorial.h \
 	docs/ci/design.md \
 	docs/cli/design-policy.md \
@@ -1045,6 +1104,7 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	tools/plot_encoder_execution_map_figures.py \
 	tools/plot_encoding_pipeline_figures.py \
 	tools/plot_sixel_format_figures.py \
+	tools/plot_dither_tutorial_figures.py \
 	tools/plot_sixel_codec_tutorial_figures.py \
 	tools/plot_codec_timeline_figures.py \
 	tools/plot_terminal_graphics_timeline.py \
@@ -1133,7 +1193,9 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	tools/reproduce_encoder_execution_map_figures.sh \
 	tools/reproduce_encoding_pipeline_figures.sh \
 	tools/reproduce_sixel_format_figures.sh \
+	tools/reproduce_dither_tutorial_figures.sh \
 	tools/reproduce_sixel_codec_tutorial_figures.sh \
+	tools/update_dither_tutorial_measurements.py \
 	tools/update_sixel_codec_tutorial_measurements.py \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_merge_policy_measurements.sh \

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="424" viewBox="0 0 720 424" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">A pattern of nudges</title>
+<desc id="figure-description">The 4 by 4 threshold pattern and the dots it gives for gray tones of 25, 50 and 75 percent with black and white.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="424.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">A pattern of nudges</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">A lighter tone passes the threshold in more cells.</text>
+<text x="40.0" y="128.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The 4 × 4 pattern</text>
+<rect x="40.0" y="142.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="59.5" y="169.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
+<rect x="82.0" y="142.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="101.5" y="169.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">8</text>
+<rect x="124.0" y="142.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="143.5" y="169.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">2</text>
+<rect x="166.0" y="142.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="185.5" y="169.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">10</text>
+<rect x="40.0" y="184.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="59.5" y="211.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">12</text>
+<rect x="82.0" y="184.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="101.5" y="211.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">4</text>
+<rect x="124.0" y="184.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="143.5" y="211.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">14</text>
+<rect x="166.0" y="184.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="185.5" y="211.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">6</text>
+<rect x="40.0" y="226.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="59.5" y="253.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">3</text>
+<rect x="82.0" y="226.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="101.5" y="253.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">11</text>
+<rect x="124.0" y="226.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="143.5" y="253.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">1</text>
+<rect x="166.0" y="226.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="185.5" y="253.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">9</text>
+<rect x="40.0" y="268.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="59.5" y="295.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">15</text>
+<rect x="82.0" y="268.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="101.5" y="295.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">7</text>
+<rect x="124.0" y="268.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="143.5" y="295.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">13</text>
+<rect x="166.0" y="268.0" width="39.0" height="39.0" rx="4.0" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+<text x="185.5" y="295.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">5</text>
+<text x="268.0" y="128.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Gray 25%</text>
+<rect x="268.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="300.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="332.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="364.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="268.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="300.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="332.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="364.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="268.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="300.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="332.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="364.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="268.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="300.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="332.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="364.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="416.0" y="128.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Gray 50%</text>
+<rect x="416.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="448.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="480.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="512.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="416.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="448.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="480.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="512.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="416.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="448.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="480.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="512.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="416.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="448.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="480.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="512.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="564.0" y="128.0" fill="#172033" font-size="17" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Gray 75%</text>
+<rect x="564.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="596.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="628.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="660.0" y="142.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="564.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="596.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="628.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="660.0" y="174.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="564.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="596.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="628.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="660.0" y="206.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="564.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="596.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="628.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<rect x="660.0" y="238.0" width="30.0" height="30.0" rx="2.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.0"/>
+<text x="40.0" y="372.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Each cell&#x27;s nudge is (value + 0.5) / 16 − 0.5, times the gap between</text>
+<text x="40.0" y="398.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">palette colors. Then the pixel takes the nearest color as before.</text>
+</svg>

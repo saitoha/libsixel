@@ -122,10 +122,17 @@ site/
 /src/generated-metal/*-shader.inc.h
 
 # Programs and pictures made while following the SIXEL codec tutorial.
-/docs/tutorial/sixel-codec/code/step[1-6]
+/docs/tutorial/sixel-codec/code/step[1-7]
 /docs/tutorial/sixel-codec/code/mysixel
 /docs/tutorial/sixel-codec/code/mine
 /docs/tutorial/sixel-codec/code/step5-scalar
 /docs/tutorial/sixel-codec/code/*.ppm
 /docs/tutorial/sixel-codec/code/*.pgm
 /docs/tutorial/sixel-codec/code/*.six
+
+# Programs and pictures made while following the dithering tutorial.
+/docs/tutorial/dithering/code/step[1-4]
+/docs/tutorial/dithering/code/dtool
+/docs/tutorial/dithering/code/mydither
+/docs/tutorial/dithering/code/mine
+/docs/tutorial/dithering/code/*.ppm

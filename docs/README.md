@@ -12,6 +12,7 @@ This index lists every libsixel document, grouped into parts that run from an ov
 | Improve output quality | [Why quantization quality needs color, display, and vision knowledge](concepts/quality-optimization.md), then [Encoding pipeline](encoder/pipeline/README.md) |
 | Use the library from C | [Functional overview](overview.md), then [Encoding pipeline](encoder/pipeline/README.md) and [Decoding pipeline](decoder/pipeline/README.md) |
 | Learn how a SIXEL codec works by writing one | [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) |
+| Learn how dithering works by writing it | [Dithering, step by step](tutorial/dithering/README.md) |
 | Build libsixel on your platform | [Build, runtime, and platform support](platform-support.md) |
 | Contribute code or documentation | [Testing guide](testing/guide.md), [Staticcheck](testing/staticcheck.md), and [Documentation workflow](documentation/workflow.md) |
 
@@ -32,9 +33,10 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 - [SIXEL patents and royalties](sixel-format/patents-and-royalties.md) summarizes the public evidence that implementing SIXEL requires no license or royalty.
 - [SIXEL codec comparison](sixel-format/comparison/README.md) compares SIXEL's quality, speed, and size with JPEG, GIF, PNG, QOI, WebP, AVIF, and HEIC.
 
-### SIXEL codec tutorial
+### Tutorials
 
-- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated course in which you write a SIXEL encoder and decoder, from a thirty-line codec through a faster parser and memory layout to SIMD and threads.
+- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated course in which you write a SIXEL encoder and decoder, from a thirty-line codec through a faster parser and memory layout to SIMD, threads and smaller streams.
+- [Dithering, step by step](tutorial/dithering/README.md) is an illustrated course in which you write dithers, look at their banding and grain, and learn to measure their quality.
 
 ## Using libsixel
 

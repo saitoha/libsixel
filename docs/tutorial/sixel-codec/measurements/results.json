@@ -236,6 +236,72 @@
       "two": 0.157
     }
   },
+  "overpaint": {
+    "noise": {
+      "libsixel_fast_bytes": 9325121,
+      "libsixel_size_bytes": 9237511,
+      "step3": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 18.82,
+        "encode_ms": 107.86
+      },
+      "step7": {
+        "bytes": 9228951,
+        "colors": 256,
+        "decode_ms": 19.73,
+        "encode_ms": 107.75
+      }
+    },
+    "photo-fhd": {
+      "libsixel_fast_bytes": 1681355,
+      "libsixel_size_bytes": 1462048,
+      "step3": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 4.22,
+        "encode_ms": 21.96
+      },
+      "step7": {
+        "bytes": 1443766,
+        "colors": 255,
+        "decode_ms": 3.98,
+        "encode_ms": 21.24
+      }
+    },
+    "photo-small": {
+      "libsixel_fast_bytes": 329789,
+      "libsixel_size_bytes": 303168,
+      "step3": {
+        "bytes": 328750,
+        "colors": 254,
+        "decode_ms": 0.75,
+        "encode_ms": 3.71
+      },
+      "step7": {
+        "bytes": 302133,
+        "colors": 254,
+        "decode_ms": 0.71,
+        "encode_ms": 3.62
+      }
+    },
+    "two": {
+      "libsixel_fast_bytes": 691964,
+      "libsixel_size_bytes": 353564,
+      "step3": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 1.48,
+        "encode_ms": 2.22
+      },
+      "step7": {
+        "bytes": 347802,
+        "colors": 2,
+        "decode_ms": 0.8,
+        "encode_ms": 1.58
+      }
+    }
+  },
   "phases": {
     "step2": {
       "noise": {

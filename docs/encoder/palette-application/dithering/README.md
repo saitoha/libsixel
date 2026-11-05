@@ -4,7 +4,7 @@
 
 A finite palette cannot represent every input color. Dithering controls how
 the resulting quantization error is distributed across pixels or animation
-frames. It operates while a completed palette is applied:
+frames. [Dithering, step by step](../../../tutorial/dithering/README.md) is a tutorial in which you write the basic methods yourself. Dithering operates while a completed palette is applied:
 
 ```text
 pixels + palette -> dither adjustment -> palette lookup -> indexed pixels

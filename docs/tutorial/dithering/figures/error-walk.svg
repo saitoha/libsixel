@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="456" viewBox="0 0 720 456" role="img" aria-labelledby="figure-title figure-description">
+<title id="figure-title">Handing on the error</title>
+<desc id="figure-description">A row of seven pixels of gray 100 with black and white: error piles up until a pixel turns white, and the negative error then holds the next ones back.</desc>
+<defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
+<rect x="0.0" y="0.0" width="720.0" height="456.0" fill="#F8FAFC" stroke="none"/>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Handing on the error</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Gray 100 with only black and white: following one row.</text>
+<text x="32.0" y="150.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Wanted</text>
+<text x="32.0" y="214.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Shown</text>
+<text x="32.0" y="278.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Error</text>
+<text x="32.0" y="342.0" fill="#556176" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Passed →</text>
+<rect x="118.0" y="122.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="156.0" y="150.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">100</text>
+<rect x="118.0" y="186.0" width="76.0" height="44.0" rx="6.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="156.0" y="214.0" fill="#f4f4f4" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
+<rect x="118.0" y="250.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.2"/>
+<text x="156.0" y="278.0" fill="#0F766E" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+100</text>
+<rect x="118.0" y="314.0" width="76.0" height="44.0" rx="6.0" fill="#CCFBF1" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="156.0" y="342.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+44</text>
+<rect x="202.0" y="122.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="240.0" y="150.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">144</text>
+<rect x="202.0" y="186.0" width="76.0" height="44.0" rx="6.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="240.0" y="214.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">255</text>
+<rect x="202.0" y="250.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.2"/>
+<text x="240.0" y="278.0" fill="#BE185D" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">-111</text>
+<rect x="202.0" y="314.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="240.0" y="342.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">-49</text>
+<rect x="286.0" y="122.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="324.0" y="150.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">51</text>
+<rect x="286.0" y="186.0" width="76.0" height="44.0" rx="6.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="324.0" y="214.0" fill="#f4f4f4" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
+<rect x="286.0" y="250.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.2"/>
+<text x="324.0" y="278.0" fill="#0F766E" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+51</text>
+<rect x="286.0" y="314.0" width="76.0" height="44.0" rx="6.0" fill="#CCFBF1" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="324.0" y="342.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+22</text>
+<rect x="370.0" y="122.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="408.0" y="150.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">122</text>
+<rect x="370.0" y="186.0" width="76.0" height="44.0" rx="6.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="408.0" y="214.0" fill="#f4f4f4" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
+<rect x="370.0" y="250.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.2"/>
+<text x="408.0" y="278.0" fill="#0F766E" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+122</text>
+<rect x="370.0" y="314.0" width="76.0" height="44.0" rx="6.0" fill="#CCFBF1" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="408.0" y="342.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+54</text>
+<rect x="454.0" y="122.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="492.0" y="150.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">154</text>
+<rect x="454.0" y="186.0" width="76.0" height="44.0" rx="6.0" fill="#f4f4f4" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="492.0" y="214.0" fill="#172033" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">255</text>
+<rect x="454.0" y="250.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.2"/>
+<text x="492.0" y="278.0" fill="#BE185D" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">-101</text>
+<rect x="454.0" y="314.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="492.0" y="342.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">-44</text>
+<rect x="538.0" y="122.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="576.0" y="150.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">56</text>
+<rect x="538.0" y="186.0" width="76.0" height="44.0" rx="6.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="576.0" y="214.0" fill="#f4f4f4" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
+<rect x="538.0" y="250.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.2"/>
+<text x="576.0" y="278.0" fill="#0F766E" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+56</text>
+<rect x="538.0" y="314.0" width="76.0" height="44.0" rx="6.0" fill="#CCFBF1" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="576.0" y="342.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+24</text>
+<rect x="622.0" y="122.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="660.0" y="150.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">124</text>
+<rect x="622.0" y="186.0" width="76.0" height="44.0" rx="6.0" fill="#1a1a1a" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="660.0" y="214.0" fill="#f4f4f4" font-size="18" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
+<rect x="622.0" y="250.0" width="76.0" height="44.0" rx="6.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.2"/>
+<text x="660.0" y="278.0" fill="#0F766E" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+124</text>
+<rect x="622.0" y="314.0" width="76.0" height="44.0" rx="6.0" fill="#CCFBF1" stroke="#CBD5E1" stroke-width="1.2"/>
+<text x="660.0" y="342.0" fill="#172033" font-size="19" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">+54</text>
+<text x="32.0" y="404.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Each pixel passes 7/16 of its error to the right; the other 9/16 goes to the</text>
+<text x="32.0" y="430.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">row below, which is not shown. A white pixel overshoots, so it passes negative error on.</text>
+</svg>

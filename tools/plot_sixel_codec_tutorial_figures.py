@@ -144,6 +144,7 @@ ASSET_NAMES = (
     "step6-encoder.svg",
     "step6-decoder.svg",
     "step6-amdahl.svg",
+    "step7-overpaint.svg",
     "sixel-codec-tutorial-figures.json",
 )
 
@@ -307,11 +308,36 @@ def step2_band(rows: Sequence[str], registers: dict[str, int]) -> str:
     return "".join(out)
 
 
+def step7_band(rows: Sequence[str], registers: dict[str, int]) -> str:
+    """Return step 7's bytes: the first graphics line fills its nodes."""
+    out = []
+    color = -1
+    full = sixel_char((1 << len(rows)) - 1)
+    for number, sweep in enumerate(pack_lines(compose_nodes(rows, registers))):
+        if color >= 0:
+            out.append("$")
+        x = 0
+        for node in sweep:
+            if node.color != color:
+                out.append(f"#{node.color}")
+                color = node.color
+            out.append(run("?", node.sx - x))
+            if number == 0:
+                out.append(run(full, node.mx - node.sx))
+            else:
+                out.append(put_span(column_values(rows, node.token),
+                                    node.sx, node.mx))
+            x = node.mx
+    return "".join(out)
+
+
 HEART_BODY = lesson_band(HEART, {"R": 1})
 TREE_BANDS = (lesson_band(TREE[:6], TREE_REGISTERS),
               lesson_band(TREE[6:], TREE_REGISTERS))
 TREE_BODY = "-".join(TREE_BANDS)
 SCENE_LINES = step1_band(SCENE, SCENE_REGISTERS)
+SCENE_EXACT = step2_band(SCENE, SCENE_REGISTERS)
+SCENE_FILLED = step7_band(SCENE, SCENE_REGISTERS)
 SHAPES_NODES = compose_nodes(SHAPES, SHAPES_REGISTERS)
 SHAPES_LINES = pack_lines(SHAPES_NODES)
 SHAPES_BODY = step2_band(SHAPES, SHAPES_REGISTERS)
@@ -468,6 +494,7 @@ JOURNEY = (
     ("4", "64-bit words", "6 pixels in 1 number", MAGENTA),
     ("5", "SIMD", "16 columns at once", MAGENTA),
     ("6", "Threads", "many cores at once", GOLD),
+    ("7", "Overpaint", "applied: fewer bytes", TEAL),
 )
 
 
@@ -475,11 +502,11 @@ def journey() -> str:
     """A staircase of the lessons."""
     height = 640
     body = [title("The journey",
-                  "Each step keeps the output and changes one idea.")]
-    step_w = 93
+                  "Each step changes one idea.")]
+    step_w = 82
     for i, (number, name, idea, color) in enumerate(JOURNEY):
         x = 32 + i * step_w
-        y = 400 - i * 44
+        y = 400 - i * 38
         body.append(rect(x, y, step_w - 6, 560 - y, PAPER, color,
                          1.6, 10))
         body.append(rect(x, y, step_w - 6, 8, color, radius=4))
@@ -488,7 +515,7 @@ def journey() -> str:
         words = name.split(" ")
         for k, word in enumerate(words):
             body.append(text(x + (step_w - 6) / 2, y + 72 + k * 20, word,
-                             16, 750, INK, "middle"))
+                             14, 750, INK, "middle"))
         lines = []
         current = ""
         for word in idea.split(" "):
@@ -502,15 +529,16 @@ def journey() -> str:
         for k, value in enumerate(lines):
             body.append(text(x + (step_w - 6) / 2,
                              y + 80 + len(words) * 20 + k * 19, value,
-                             14, 500, MUTED, "middle"))
+                             13, 500, MUTED, "middle"))
     body.append(note(32, 596, (
-        "Steps 2 to 6 write exactly the same bytes, so each one is a",
-        "pure speed-up you can test.",
+        "Steps 2 to 6 write exactly the same bytes, so each one is a pure",
+        "speed-up you can test. Step 7 changes the bytes, not the pixels.",
     ), 17))
     return document(height, "The journey",
-                    "Seven lessons as a staircase: 0 read SIXEL by hand, "
+                    "Eight lessons as a staircase: 0 read SIXEL by hand, "
                     "1 a simple codec, 2 nodes, 3 fewer decisions, "
-                    "4 64-bit words, 5 SIMD, 6 threads.", body)
+                    "4 64-bit words, 5 SIMD, 6 threads, and the applied "
+                    "lesson 7 overpaint.", body)
 
 
 def speed() -> str:
@@ -1750,6 +1778,41 @@ def step6_amdahl() -> str:
 # ------------------------------------------------------------------ #
 
 
+def step7_overpaint() -> str:
+    """A band painted exactly, and painted with a filled first line."""
+    height = 668
+    size = 26
+    lines = pack_lines(compose_nodes(SCENE, SCENE_REGISTERS))
+    pieces = SCENE_FILLED.split("$")
+    tops = (104, 270, 436)
+    body = [title("Filling the first line, then repairing",
+                  "The same six rows end with the same pixels.")]
+    state = [["."] * len(SCENE[0]) for _ in SCENE]
+    for number, (sweep, piece, top) in enumerate(zip(lines, pieces, tops)):
+        for node in sweep:
+            for r, row in enumerate(SCENE):
+                for c in range(node.sx, node.mx):
+                    if number == 0 or row[c] == node.token:
+                        state[r][c] = node.token
+        body.append(grid(40, top, ["".join(row) for row in state], size))
+        x = 40 + size * len(SCENE[0]) + 34
+        label = ("Line 1 fills its whole span" if number == 0
+                 else f"Line {number + 1} repaints its own pixels")
+        body.append(text(x, top + 24, label, 18, 750, INK))
+        body.append(mono(x, top + 62, ("$" if number else "") + piece, 22,
+                         750, BLUE))
+    body.append(text(40, 626, f"With masks: {SCENE_EXACT}  "
+                     f"({len(SCENE_EXACT)} bytes)", 17, 650, MUTED))
+    body.append(text(40, 652, f"With the fill: {SCENE_FILLED}  "
+                     f"({len(SCENE_FILLED)} bytes)", 17, 750, TEAL))
+    return document(height, "Filling the first line, then repairing",
+                    "The first graphics line fills all eight columns with "
+                    "the sky color. The second repaints the ground and the "
+                    "third the sun, so the band ends with the same pixels. "
+                    f"Body with masks: {SCENE_EXACT}. "
+                    f"Body with the fill: {SCENE_FILLED}.", body)
+
+
 FACTORIES: tuple[tuple[str, Callable[[], str]], ...] = (
     ("big-picture.svg", big_picture),
     ("journey.svg", journey),
@@ -1781,6 +1844,7 @@ FACTORIES: tuple[tuple[str, Callable[[], str]], ...] = (
     ("step6-encoder.svg", step6_encoder),
     ("step6-decoder.svg", step6_decoder),
     ("step6-amdahl.svg", step6_amdahl),
+    ("step7-overpaint.svg", step7_overpaint),
 )
 
 
@@ -1801,7 +1865,9 @@ def manifest() -> dict[str, object]:
             "tree": {"rows": list(TREE), "registers": TREE_REGISTERS,
                      "body": TREE_BODY},
             "scene": {"rows": list(SCENE), "registers": SCENE_REGISTERS,
-                      "step1_lines": SCENE_LINES},
+                      "step1_lines": SCENE_LINES,
+                      "step2_body": SCENE_EXACT,
+                      "step7_body": SCENE_FILLED},
             "shapes": {
                 "rows": list(SHAPES),
                 "registers": SHAPES_REGISTERS,

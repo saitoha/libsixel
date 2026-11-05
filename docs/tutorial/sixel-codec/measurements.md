@@ -105,6 +105,19 @@ The same indexed pictures go through step 5 or step 6 of the tutorial and throug
 | Random noise, 1920×1080 | 14 | 10.2 | 7.93 | 2.35 | 2.75 |
 <!-- measurements:end -->
 
+## Overpainting of step 7
+
+Step 3 and step 7 run in turn on one thread, so they share the same conditions. The last column compares libsixel's `size` and `fast` policies on the same indexed pictures.
+
+<!-- measurements:begin:overpaint -->
+| Input | Step 3 bytes | Step 7 bytes | Saved | Encode, ms | Decode, ms | Saved by libsixel `size` |
+| --- | --- | --- | --- | --- | --- | --- |
+| Photograph, 600×450 | 328,750 | 302,133 | 8.1% | 3.71 → 3.62 | 0.75 → 0.71 | 8.1% |
+| Photograph, 1920×1080 | 1,663,155 | 1,443,766 | 13.2% | 22.0 → 21.2 | 4.22 → 3.98 | 13.0% |
+| Two colors, 1920×1080 | 692,322 | 347,802 | 49.8% | 2.22 → 1.58 | 1.48 → 0.80 | 48.9% |
+| Random noise, 1920×1080 | 9,316,560 | 9,228,951 | 0.9% | 107.9 → 107.8 | 18.8 → 19.7 | 0.9% |
+<!-- measurements:end -->
+
 ## Reproduction
 
 Build libsixel with Meson in a separate directory if you want the comparison, then run the benchmarks and rewrite every table:
@@ -115,4 +128,4 @@ tools/update_sixel_codec_tutorial_measurements.py --measure \
 tools/reproduce_sixel_codec_tutorial_figures.sh
 ```
 
-Each `--measure` keeps the fastest value of every timing at the same revision, because other work on a machine only ever makes a run slower; pass `--fresh` to start over. Without `--measure`, the script only rewrites the tables from the results file, and `--check` verifies them. In the `code` directory, `make bench` prints just the table of the tutorial's main page.
+Each `--measure` keeps the fastest value of every timing at the same revision, because other work on a machine only ever makes a run slower; pass `--fresh` to start over. `--only-overpaint` measures just step 7 and keeps every other result. Without `--measure`, the script only rewrites the tables from the results file, and `--check` verifies them. In the `code` directory, `make bench` prints just the table of the tutorial's main page.

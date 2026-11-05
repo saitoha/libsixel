@@ -1,57 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="640" viewBox="0 0 720 640" role="img" aria-labelledby="figure-title figure-description">
 <title id="figure-title">The journey</title>
-<desc id="figure-description">Seven lessons as a staircase: 0 read SIXEL by hand, 1 a simple codec, 2 nodes, 3 fewer decisions, 4 64-bit words, 5 SIMD, 6 threads.</desc>
+<desc id="figure-description">Eight lessons as a staircase: 0 read SIXEL by hand, 1 a simple codec, 2 nodes, 3 fewer decisions, 4 64-bit words, 5 SIMD, 6 threads, and the applied lesson 7 overpaint.</desc>
 <defs ><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-magenta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><marker id="arrow-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker><filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#172033" flood-opacity="0.10"/></filter></defs>
 <rect x="0.0" y="0.0" width="720.0" height="640.0" fill="#F8FAFC" stroke="none"/>
-<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The journey</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Each step keeps the output and changes one idea.</text>
-<rect x="32.0" y="400.0" width="87.0" height="160.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.6"/>
-<rect x="32.0" y="400.0" width="87.0" height="8.0" rx="4.0" fill="#0F766E" stroke="none"/>
-<text x="75.5" y="444.0" fill="#0F766E" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
-<text x="75.5" y="472.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Read</text>
-<text x="75.5" y="492.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">SIXEL</text>
-<text x="75.5" y="520.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">a heart by</text>
-<text x="75.5" y="539.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">hand</text>
-<rect x="125.0" y="356.0" width="87.0" height="204.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
-<rect x="125.0" y="356.0" width="87.0" height="8.0" rx="4.0" fill="#2563EB" stroke="none"/>
-<text x="168.5" y="400.0" fill="#2563EB" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">1</text>
-<text x="168.5" y="428.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Simple</text>
-<text x="168.5" y="448.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">codec</text>
-<text x="168.5" y="476.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">30 lines</text>
-<text x="168.5" y="495.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">each way</text>
-<rect x="218.0" y="312.0" width="87.0" height="248.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
-<rect x="218.0" y="312.0" width="87.0" height="8.0" rx="4.0" fill="#2563EB" stroke="none"/>
-<text x="261.5" y="356.0" fill="#2563EB" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">2</text>
-<text x="261.5" y="384.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Nodes</text>
-<text x="261.5" y="412.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">read each</text>
-<text x="261.5" y="431.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">pixel once</text>
-<rect x="311.0" y="268.0" width="87.0" height="292.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
-<rect x="311.0" y="268.0" width="87.0" height="8.0" rx="4.0" fill="#2563EB" stroke="none"/>
-<text x="354.5" y="312.0" fill="#2563EB" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">3</text>
-<text x="354.5" y="340.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Fewer</text>
-<text x="354.5" y="360.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">decisions</text>
-<text x="354.5" y="388.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">stop</text>
-<text x="354.5" y="407.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">asking</text>
-<text x="354.5" y="426.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">about each</text>
-<text x="354.5" y="445.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">byte</text>
-<rect x="404.0" y="224.0" width="87.0" height="336.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.6"/>
-<rect x="404.0" y="224.0" width="87.0" height="8.0" rx="4.0" fill="#BE185D" stroke="none"/>
-<text x="447.5" y="268.0" fill="#BE185D" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">4</text>
-<text x="447.5" y="296.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">64-bit</text>
-<text x="447.5" y="316.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">words</text>
-<text x="447.5" y="344.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">6 pixels</text>
-<text x="447.5" y="363.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">in 1</text>
-<text x="447.5" y="382.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">number</text>
-<rect x="497.0" y="180.0" width="87.0" height="380.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.6"/>
-<rect x="497.0" y="180.0" width="87.0" height="8.0" rx="4.0" fill="#BE185D" stroke="none"/>
-<text x="540.5" y="224.0" fill="#BE185D" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">5</text>
-<text x="540.5" y="252.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">SIMD</text>
-<text x="540.5" y="280.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">16 columns</text>
-<text x="540.5" y="299.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">at once</text>
-<rect x="590.0" y="136.0" width="87.0" height="424.0" rx="10.0" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6"/>
-<rect x="590.0" y="136.0" width="87.0" height="8.0" rx="4.0" fill="#D97706" stroke="none"/>
-<text x="633.5" y="180.0" fill="#D97706" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">6</text>
-<text x="633.5" y="208.0" fill="#172033" font-size="16" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Threads</text>
-<text x="633.5" y="236.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">many cores</text>
-<text x="633.5" y="255.0" fill="#556176" font-size="14" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">at once</text>
-<text x="32.0" y="596.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Steps 2 to 6 write exactly the same bytes, so each one is a</text><text x="32.0" y="619.8" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">pure speed-up you can test.</text>
+<text x="32.0" y="50.0" fill="#172033" font-size="28" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">The journey</text><text x="32.0" y="80.0" fill="#556176" font-size="18" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Each step changes one idea.</text>
+<rect x="32.0" y="400.0" width="76.0" height="160.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.6"/>
+<rect x="32.0" y="400.0" width="76.0" height="8.0" rx="4.0" fill="#0F766E" stroke="none"/>
+<text x="70.0" y="444.0" fill="#0F766E" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">0</text>
+<text x="70.0" y="472.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Read</text>
+<text x="70.0" y="492.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">SIXEL</text>
+<text x="70.0" y="520.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">a heart by</text>
+<text x="70.0" y="539.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">hand</text>
+<rect x="114.0" y="362.0" width="76.0" height="198.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
+<rect x="114.0" y="362.0" width="76.0" height="8.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="152.0" y="406.0" fill="#2563EB" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">1</text>
+<text x="152.0" y="434.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Simple</text>
+<text x="152.0" y="454.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">codec</text>
+<text x="152.0" y="482.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">30 lines</text>
+<text x="152.0" y="501.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">each way</text>
+<rect x="196.0" y="324.0" width="76.0" height="236.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
+<rect x="196.0" y="324.0" width="76.0" height="8.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="234.0" y="368.0" fill="#2563EB" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">2</text>
+<text x="234.0" y="396.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Nodes</text>
+<text x="234.0" y="424.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">read each</text>
+<text x="234.0" y="443.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">pixel once</text>
+<rect x="278.0" y="286.0" width="76.0" height="274.0" rx="10.0" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.6"/>
+<rect x="278.0" y="286.0" width="76.0" height="8.0" rx="4.0" fill="#2563EB" stroke="none"/>
+<text x="316.0" y="330.0" fill="#2563EB" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">3</text>
+<text x="316.0" y="358.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Fewer</text>
+<text x="316.0" y="378.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">decisions</text>
+<text x="316.0" y="406.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">stop</text>
+<text x="316.0" y="425.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">asking</text>
+<text x="316.0" y="444.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">about each</text>
+<text x="316.0" y="463.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">byte</text>
+<rect x="360.0" y="248.0" width="76.0" height="312.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.6"/>
+<rect x="360.0" y="248.0" width="76.0" height="8.0" rx="4.0" fill="#BE185D" stroke="none"/>
+<text x="398.0" y="292.0" fill="#BE185D" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">4</text>
+<text x="398.0" y="320.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">64-bit</text>
+<text x="398.0" y="340.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">words</text>
+<text x="398.0" y="368.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">6 pixels</text>
+<text x="398.0" y="387.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">in 1</text>
+<text x="398.0" y="406.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">number</text>
+<rect x="442.0" y="210.0" width="76.0" height="350.0" rx="10.0" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.6"/>
+<rect x="442.0" y="210.0" width="76.0" height="8.0" rx="4.0" fill="#BE185D" stroke="none"/>
+<text x="480.0" y="254.0" fill="#BE185D" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">5</text>
+<text x="480.0" y="282.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">SIMD</text>
+<text x="480.0" y="310.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">16 columns</text>
+<text x="480.0" y="329.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">at once</text>
+<rect x="524.0" y="172.0" width="76.0" height="388.0" rx="10.0" fill="#FFFFFF" stroke="#D97706" stroke-width="1.6"/>
+<rect x="524.0" y="172.0" width="76.0" height="8.0" rx="4.0" fill="#D97706" stroke="none"/>
+<text x="562.0" y="216.0" fill="#D97706" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">6</text>
+<text x="562.0" y="244.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Threads</text>
+<text x="562.0" y="272.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">many cores</text>
+<text x="562.0" y="291.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">at once</text>
+<rect x="606.0" y="134.0" width="76.0" height="426.0" rx="10.0" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.6"/>
+<rect x="606.0" y="134.0" width="76.0" height="8.0" rx="4.0" fill="#0F766E" stroke="none"/>
+<text x="644.0" y="178.0" fill="#0F766E" font-size="30" font-weight="800" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">7</text>
+<text x="644.0" y="206.0" fill="#172033" font-size="14" font-weight="750" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">Overpaint</text>
+<text x="644.0" y="234.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">applied:</text>
+<text x="644.0" y="253.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">fewer</text>
+<text x="644.0" y="272.0" fill="#556176" font-size="13" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">bytes</text>
+<text x="32.0" y="596.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">Steps 2 to 6 write exactly the same bytes, so each one is a pure</text><text x="32.0" y="619.8" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">speed-up you can test. Step 7 changes the bytes, not the pixels.</text>
 </svg>

@@ -29,7 +29,8 @@
     "step5-transpose.svg",
     "step6-encoder.svg",
     "step6-decoder.svg",
-    "step6-amdahl.svg"
+    "step6-amdahl.svg",
+    "step7-overpaint.svg"
   ],
   "fixtures": {
     "heart": {
@@ -61,7 +62,9 @@
         "#0NN^^^NKK",
         "$#1!6?BB",
         "$#2oo___ooo"
-      ]
+      ],
+      "step2_body": "#0NN^^^NKK$#2oo___ooo$#1!6?BB",
+      "step7_body": "#0!8~$#2oo___ooo$#1!6?BB"
     },
     "shapes": {
       "lines": [

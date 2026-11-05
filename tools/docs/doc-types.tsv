@@ -149,6 +149,14 @@ docs/threading/encoder.md	explanation	both	encoder scheduling model + budget ref
 docs/threading/measurement.md	how-to	contributor	measurement reproduction + artifact reference and normative band-seam protocol
 docs/threading/policy-modes.md	explanation	both	mode rationale + platform detection and test evidence
 docs/threading/overview.md	explanation	both	threading mental model + budget terminology and implementation ownership
+docs/tutorial/dithering/README.md	tutorial	both	dithering learning path + links to libsixel internals
+docs/tutorial/dithering/measurements.md	reference	both	measurement record and reproduction for the tutorial
+docs/tutorial/dithering/step1-nearest.md	tutorial	both	dithering lesson
+docs/tutorial/dithering/step2-ordered.md	tutorial	both	dithering lesson
+docs/tutorial/dithering/step3-error-diffusion.md	tutorial	both	dithering lesson
+docs/tutorial/dithering/step4-kernels.md	tutorial	both	dithering lesson + measurements
+docs/tutorial/dithering/step5-good-dither.md	tutorial	both	dithering lesson + measurements
+docs/tutorial/dithering/step6-measuring.md	tutorial	both	hands-on quality measurement + measurements
 docs/tutorial/sixel-codec/README.md	tutorial	both	codec-implementation learning path, CLI harness and exercise skeleton + measured results and links to libsixel internals
 docs/tutorial/sixel-codec/step0-by-hand.md	tutorial	user	
 docs/tutorial/sixel-codec/step1-run-length.md	tutorial	both	codec-implementation lesson + measurements
@@ -158,6 +166,7 @@ docs/tutorial/sixel-codec/step3-fewer-decisions.md	tutorial	both	codec-implement
 docs/tutorial/sixel-codec/step4-column-words.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
 docs/tutorial/sixel-codec/step5-simd.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/step6-threads.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
+docs/tutorial/sixel-codec/step7-overpaint.md	tutorial	both	codec-implementation lesson + measurements
 docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger
 docs/encoder/palette-application/clamp-policy.md	reference	both	feedback bounds and precision contracts
 docs/encoder/output/gamut-mapping.md	reference	both	output policy and numeric contract

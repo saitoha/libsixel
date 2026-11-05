@@ -3,13 +3,15 @@
 #
 # Check the SIXEL codec tutorial programs against each other.
 #
-#   ./check.sh [DIR]    DIR holds step1 ... step6 (default: this directory)
+#   ./check.sh [DIR]    DIR holds step1 ... step7 (default: this directory)
 #
 # 1. Every step round-trips the synthetic self-test images.
 # 2. Encoders 2 to 6 produce byte-identical streams, for every thread count.
 # 3. Decoders 2 to 6 produce identical images from every stream, including
 #    the sample streams in images/ and a few unusual hand-written ones.
 #    Step 1 is compared only where its simplifications do not matter.
+# 4. Step 7 writes a different stream that every decoder reads to the same
+#    pixels, and that stream is never longer than step 3's.
 
 set -u
 
@@ -36,7 +38,7 @@ same() {
     fail "$what"
 }
 
-for s in 1 2 3 4 5; do
+for s in 1 2 3 4 5 7; do
     "$bin/step$s" selftest >/dev/null || fail "step$s selftest"
 done
 for t in 1 3 8; do
@@ -67,8 +69,12 @@ for img in "$work"/*.ppm; do
             "step6 encoding of $name with $t threads differs from step2" \
             env TUTORIAL_THREADS="$t" "$bin/step6" encode "$img"
     done
-    # Every decoder reads both stream styles to the same image.
-    for six in "$work/$name.1.six" "$work/$name.2.six"; do
+    "$bin/step7" encode "$img" >"$work/$name.7.six" || fail "step7 encode $name"
+    if [ "$(wc -c <"$work/$name.7.six")" -gt "$(wc -c <"$work/$name.2.six")" ]; then
+        fail "step7 encoding of $name is longer than step2's"
+    fi
+    # Every decoder reads every stream style to the same image.
+    for six in "$work/$name.1.six" "$work/$name.2.six" "$work/$name.7.six"; do
         "$bin/step1" decode "$six" >"$work/ref.ppm" || fail "step1 decode $six"
         for s in 2 3 4 5; do
             same "$work/ref.ppm" "$work/out.ppm" \
@@ -111,7 +117,7 @@ done
 for h in 32767 32768; do
     printf 'P5 1 %d 1\n' "$h" >"$work/tall.pgm"
     head -c "$h" /dev/zero >>"$work/tall.pgm"
-    for s in 1 2 3 4 5 6; do
+    for s in 1 2 3 4 5 6 7; do
         if "$bin/step$s" encode "$work/tall.pgm" >"$work/tall.six" &&
                 "$bin/step$s" decode "$work/tall.six" >"$work/tall.ppm" &&
                 [ "$(sed -n 2p "$work/tall.ppm")" = "1 $h" ]; then

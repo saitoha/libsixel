@@ -1,0 +1,313 @@
+{
+  "assets": [
+    "bayer-cells.svg",
+    "color-cube27-atkinson.png",
+    "color-cube27-fs-average.png",
+    "color-cube27-fs.png",
+    "color-cube27-nearest-average.png",
+    "color-cube27-nearest.png",
+    "color-original.png",
+    "error-walk.svg",
+    "flat-atkinson-zoom.png",
+    "flat-fs-zoom.png",
+    "flat-jajuni-zoom.png",
+    "flat-serpentine-zoom.png",
+    "gray-original.png",
+    "gray16-bayer-zoom.png",
+    "gray16-bayer.png",
+    "gray16-fs-zoom.png",
+    "gray16-fs.png",
+    "gray16-nearest.png",
+    "gray16-random-zoom.png",
+    "gray16-random.png",
+    "gray4-fs-zoom.png",
+    "gray4-fs.png",
+    "kernels.svg",
+    "nearest-staircase.svg",
+    "snake-cube216-fs.png",
+    "snake-cube27-bayer.png",
+    "snake-cube27-fs.png",
+    "snake-cube27-nearest.png",
+    "snake-original.png",
+    "snake-palette16-fs.png",
+    "snake-palette16-nearest.png",
+    "snake-palette256-fs.png"
+  ],
+  "averages": {
+    "color-cube27-fs-average": "color-cube27-fs",
+    "color-cube27-nearest-average": "color-cube27-nearest"
+  },
+  "pictures": {
+    "color-cube27-atkinson": {
+      "crop": null,
+      "option": "atkinson",
+      "palette": "cube27",
+      "picture": "color",
+      "step": "step4",
+      "zoom": 1
+    },
+    "color-cube27-fs": {
+      "crop": null,
+      "option": null,
+      "palette": "cube27",
+      "picture": "color",
+      "step": "step3",
+      "zoom": 1
+    },
+    "color-cube27-nearest": {
+      "crop": null,
+      "option": null,
+      "palette": "cube27",
+      "picture": "color",
+      "step": "step1",
+      "zoom": 1
+    },
+    "color-original": {
+      "crop": null,
+      "option": null,
+      "palette": null,
+      "picture": "color",
+      "step": null,
+      "zoom": 1
+    },
+    "flat-atkinson-zoom": {
+      "crop": null,
+      "option": "atkinson",
+      "palette": "gray2",
+      "picture": "flat",
+      "step": "step4",
+      "zoom": 4
+    },
+    "flat-fs-zoom": {
+      "crop": null,
+      "option": null,
+      "palette": "gray2",
+      "picture": "flat",
+      "step": "step3",
+      "zoom": 4
+    },
+    "flat-jajuni-zoom": {
+      "crop": null,
+      "option": "jajuni",
+      "palette": "gray2",
+      "picture": "flat",
+      "step": "step4",
+      "zoom": 4
+    },
+    "flat-serpentine-zoom": {
+      "crop": null,
+      "option": "serpentine",
+      "palette": "gray2",
+      "picture": "flat",
+      "step": "step4",
+      "zoom": 4
+    },
+    "gray-original": {
+      "crop": null,
+      "option": null,
+      "palette": null,
+      "picture": "gray",
+      "step": null,
+      "zoom": 1
+    },
+    "gray16-bayer": {
+      "crop": null,
+      "option": null,
+      "palette": "gray16",
+      "picture": "gray",
+      "step": "step2",
+      "zoom": 1
+    },
+    "gray16-bayer-zoom": {
+      "crop": [
+        240,
+        0,
+        160,
+        32
+      ],
+      "option": null,
+      "palette": "gray16",
+      "picture": "gray",
+      "step": "step2",
+      "zoom": 4
+    },
+    "gray16-fs": {
+      "crop": null,
+      "option": null,
+      "palette": "gray16",
+      "picture": "gray",
+      "step": "step3",
+      "zoom": 1
+    },
+    "gray16-fs-zoom": {
+      "crop": [
+        240,
+        0,
+        160,
+        32
+      ],
+      "option": null,
+      "palette": "gray16",
+      "picture": "gray",
+      "step": "step3",
+      "zoom": 4
+    },
+    "gray16-nearest": {
+      "crop": null,
+      "option": null,
+      "palette": "gray16",
+      "picture": "gray",
+      "step": "step1",
+      "zoom": 1
+    },
+    "gray16-random": {
+      "crop": null,
+      "option": "random",
+      "palette": "gray16",
+      "picture": "gray",
+      "step": "step2",
+      "zoom": 1
+    },
+    "gray16-random-zoom": {
+      "crop": [
+        240,
+        0,
+        160,
+        32
+      ],
+      "option": "random",
+      "palette": "gray16",
+      "picture": "gray",
+      "step": "step2",
+      "zoom": 4
+    },
+    "gray4-fs": {
+      "crop": null,
+      "option": null,
+      "palette": "gray4",
+      "picture": "gray",
+      "step": "step3",
+      "zoom": 1
+    },
+    "gray4-fs-zoom": {
+      "crop": [
+        240,
+        0,
+        160,
+        32
+      ],
+      "option": null,
+      "palette": "gray4",
+      "picture": "gray",
+      "step": "step3",
+      "zoom": 4
+    },
+    "snake-cube216-fs": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "cube216",
+      "picture": "snake",
+      "step": "step3",
+      "zoom": 1
+    },
+    "snake-cube27-bayer": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "cube27",
+      "picture": "snake",
+      "step": "step2",
+      "zoom": 1
+    },
+    "snake-cube27-fs": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "cube27",
+      "picture": "snake",
+      "step": "step3",
+      "zoom": 1
+    },
+    "snake-cube27-nearest": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "cube27",
+      "picture": "snake",
+      "step": "step1",
+      "zoom": 1
+    },
+    "snake-original": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": null,
+      "picture": "snake",
+      "step": null,
+      "zoom": 1
+    },
+    "snake-palette16-fs": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "snake16",
+      "picture": "snake",
+      "step": "step3",
+      "zoom": 1
+    },
+    "snake-palette16-nearest": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "snake16",
+      "picture": "snake",
+      "step": "step1",
+      "zoom": 1
+    },
+    "snake-palette256-fs": {
+      "crop": [
+        270,
+        30,
+        330,
+        225
+      ],
+      "option": null,
+      "palette": "snake256",
+      "picture": "snake",
+      "step": "step3",
+      "zoom": 1
+    }
+  },
+  "sources": {
+    "programs": "docs/tutorial/dithering/code"
+  }
+}
