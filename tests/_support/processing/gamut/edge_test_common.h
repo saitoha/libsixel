@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: MIT */
+#ifndef SIXEL_TEST_PROCESSING_GAMUT_EDGE_TEST_COMMON_H
+#define SIXEL_TEST_PROCESSING_GAMUT_EDGE_TEST_COMMON_H
+
 #include "gamut_test_common.h"
 #include "tests/data/color-numeric/edge-reference.h"
 
@@ -52,3 +55,5 @@ edge_reference_check(int space)
     gamut_fixture_free(&fixture);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#endif /* SIXEL_TEST_PROCESSING_GAMUT_EDGE_TEST_COMMON_H */

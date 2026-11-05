@@ -44,6 +44,12 @@
 /* CPU dispatch uses the topic diagnostic hook, but these decoder-only
  * targets do not link loader-common.c. Preserve its topic selection and
  * output contract without pulling image-loader backends into the codec. */
+int
+sixel_trace_topic_is_enabled(char const *topic)
+{
+    return sixel_diagnostics_trace_topic_is_enabled(topic);
+}
+
 SIXEL_INTERNAL_API void
 sixel_trace_topic_message(char const *topic, char const *format, ...)
 {
@@ -61,12 +67,26 @@ sixel_trace_topic_message(char const *topic, char const *format, ...)
     fflush(stderr);
 }
 
-/* Keep the standalone codec's decoder-only failure hook self-contained. */
-char const *
-sixel_test_environment_decoder_parallel_failure(void)
+/* The shared option implementation also reports path lookup diagnostics. */
+int
+loader_trace_is_enabled(void)
 {
-    return sixel_compat_getenv(
-        "_SIXEL_TEST_DECODER_PARALLEL_FAILURE");
+    return sixel_trace_topic_is_enabled("loader");
+}
+
+void
+loader_trace_message(char const *format, ...)
+{
+    va_list args;
+
+    if (!loader_trace_is_enabled()) {
+        return;
+    }
+    fprintf(stderr, "libsixel: ");
+    va_start(args, format);
+    sixel_compat_vfprintf(stderr, format, args);
+    va_end(args);
+    fprintf(stderr, "\n");
 }
 
 /* custom malloc */

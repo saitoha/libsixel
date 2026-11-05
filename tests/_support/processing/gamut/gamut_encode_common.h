@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: MIT */
+#ifndef SIXEL_TEST_GAMUT_ENCODE_COMMON_H
+#define SIXEL_TEST_GAMUT_ENCODE_COMMON_H
+
 #include "gamut_test_common.h"
 #include "tests/data/color-numeric/edge-reference.h"
 #include "tests/data/color-numeric/ray-reference.h"
@@ -132,3 +135,5 @@ end:
     sixel_encoder_unref(encoder);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#endif /* SIXEL_TEST_GAMUT_ENCODE_COMMON_H */

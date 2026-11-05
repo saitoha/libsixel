@@ -317,7 +317,8 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     if (session != NULL) {
         status = session->plane->vtbl->acquire_read(session->plane, &read);
         if (SIXEL_FAILED(status)) goto end;
-        (void)sixel_retained_read_get_view(read, &baseline);
+        status = sixel_retained_read_get_view(read, &baseline);
+        if (SIXEL_FAILED(status)) goto end;
         if (baseline.sequence == UINT64_MAX) {
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;

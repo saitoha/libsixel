@@ -1123,6 +1123,18 @@ run_case_tap "staticcheck-dragonfly-feature-namespace" \
     sh "$src_root/tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-pty-open-flags" \
+    sh "$src_root/tests/_static/sh/staticcheck-pty-open-flags.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-common-header-guards" \
+    sh "$src_root/tests/_static/sh/staticcheck-test-common-header-guards.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-ci-pgo-study-training" \
+    sh "$src_root/tests/_static/sh/staticcheck-ci-pgo-study-training.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-prepare-ahead-capability" \
     sh "$src_root/tests/_static/sh/staticcheck-prepare-ahead-capability.sh" \
     "$src_root" || fail_and_exit $?

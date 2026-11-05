@@ -154,6 +154,8 @@ hide an unrelated compiler, platform, or sanitizer failure.
 
 The Command Prompt Meson jobs explicitly compile `test_runner` together with Ninja's `all` target, using `--ninja-args="['-k', '0', 'all']"` in both the normal and PGO-use stages. The C case archive is not a default target; compiling only `all` leaves its diagnostics to the test command's automatic rebuild, which stops after the first failing compilation. One combined build attempts every independent compilation, retains warnings as errors, and returns failure before testing if any command failed. This collects remaining diagnostics in one run without adding a second compilation pass to successful jobs. Dependencies blocked by a failed generator or missing header still cannot compile.
 
+MSVC PGO generation also runs the default-built `progressive-study` executable with a small PPM input and a bounded repair budget. Each instrumented executable needs its own profile before the use-phase link; library and test-runner profiles cannot train an unexecuted tool. Training failure propagates before optimization. The [training check](../../tests/_static/sh/staticcheck-ci-pgo-study-training.sh) protects that CI step.
+
 The `dist` job omits the explicit runner in its outer build because distribution validation compiles it in the extracted source tree. This avoids compiling the C inventory twice; ordinary MSVC jobs provide the complete diagnostic pass. Meson's internal distribution rebuild remains a separate execution boundary.
 
 Job labels should expose the build system, platform, compiler or ABI, and the
@@ -280,3 +282,4 @@ change and directly required source, test, or generated-file updates.
 | CI-07 | Nightly MSVC invokes configure without overriding its archiver or archive flags. | [tests/_static/sh/staticcheck-nightly-msvc-archiver.sh](../../tests/_static/sh/staticcheck-nightly-msvc-archiver.sh) |
 | CI-08 | Normal and PGO-use Command Prompt test builds include the C runner and default targets, continue independent compilations after errors, and immediately propagate failure; dist leaves the runner to its extracted-tree build. | [tests/_static/sh/staticcheck-ci-msvc-complete-build.sh](../../tests/_static/sh/staticcheck-ci-msvc-complete-build.sh) |
 | CI-09 | Haiku builds the non-default runner before disabling automatic dependency rebuild for test slices. | [tests/_static/sh/staticcheck-ci-haiku-test-deps.sh](../../tests/_static/sh/staticcheck-ci-haiku-test-deps.sh) |
+| CI-10 | MSVC PGO trains the default study executable and propagates training failure. | [tests/_static/sh/staticcheck-ci-pgo-study-training.sh](../../tests/_static/sh/staticcheck-ci-pgo-study-training.sh) |

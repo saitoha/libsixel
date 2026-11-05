@@ -146,12 +146,15 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     if (options.bluenoise_gradient_factor != 0) {
         return SIXEL_FEATURE_ERROR;
     }
+    status = sixel_wire_palette_get_view(request->output.palette, &palette);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     ready = sixel_allocator_calloc(apply->allocator,
         (size_t)request->output.height, 1);
     if (ready == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
-    sixel_wire_palette_get_view(request->output.palette, &palette);
     if (palette.count != (size_t)options.ncolors ||
             options.keycolor_reserved != request->output.keycolor_reserved ||
             (options.keycolor_reserved && (options.ncolors < 2 ||
@@ -590,7 +593,10 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     execution->hls_rgb = apply->comparison;
     execution->hls_count = (unsigned int)apply->entries.entry_count;
     if (request->baseline != NULL && request->delta.enabled) {
-        sixel_retained_read_get_view(request->baseline, &baseline);
+        status = sixel_retained_read_get_view(request->baseline, &baseline);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
         if (request->result->identity.stream != baseline.stream ||
                 request->result->identity.epoch != baseline.epoch ||
                 request->result->identity.base_sequence != baseline.sequence ||

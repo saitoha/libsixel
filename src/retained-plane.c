@@ -297,7 +297,10 @@ sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
     plane = (sixel_retained_plane_storage_t *)self;
     image = request->image;
     description = &image->description;
-    sixel_wire_palette_get_view(description->palette, &palette);
+    status = sixel_wire_palette_get_view(description->palette, &palette);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     sixel_mutex_lock(&plane->gate);
     status = SIXEL_LOGIC_ERROR;
     state = sixel_indexed_frame_get_state(image);

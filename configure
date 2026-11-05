@@ -27416,8 +27416,35 @@ else
         LIBTIFF_LIBS=$pkg_cv_LIBTIFF_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_tiff=yes
-                                   LIBTIFF_PKG_NAME=libtiff-4
+                                                                              CFLAGS="$CFLAGS $LIBTIFF_CFLAGS"
+                                   LIBS_BACKUP=$LIBS
+                                   LIBS="$LIBTIFF_LIBS $LIBS"
+                                   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <tiffio.h>
+int
+main (void)
+{
+TIFF *t = TIFFOpen("", "r");
+                                         if (t) TIFFClose(t);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_tiff=yes
+                                        LIBTIFF_PKG_NAME=libtiff-4
+else case e in #(
+  e) have_tiff=no
+                                        LIBTIFF_CFLAGS=
+                                        LIBTIFF_LIBS= ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+                                   CFLAGS=$CFLAGS_BACKUP
+                                   LIBS=$LIBS_BACKUP
 fi
             fi
         fi

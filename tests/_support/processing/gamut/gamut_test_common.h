@@ -1,4 +1,7 @@
 /* SPDX-License-Identifier: MIT */
+#ifndef SIXEL_TEST_GAMUT_TEST_COMMON_H
+#define SIXEL_TEST_GAMUT_TEST_COMMON_H
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,3 +69,5 @@ gamut_reference_check(int space)
     gamut_fixture_free(&fixture);
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
+#endif /* SIXEL_TEST_GAMUT_TEST_COMMON_H */

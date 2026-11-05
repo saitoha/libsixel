@@ -122,7 +122,10 @@ sixel_indexed_core_prepare(sixel_encoder_core_t *self,
         return SIXEL_BAD_ARGUMENT;
     }
     desc = &request->image->description;
-    sixel_wire_palette_get_view(desc->palette, &palette);
+    status = sixel_wire_palette_get_view(desc->palette, &palette);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     if (request->options.ormode || core->force_ormode) {
         /* OR bitplanes designate register bits, so arbitrary register
          * remapping and retained holes cannot be represented by this mode. */
@@ -215,7 +218,11 @@ sixel_indexed_core_palette(sixel_indexed_core_t *core)
     if (!core->options.emit_palette) {
         return SIXEL_OK;
     }
-    sixel_wire_palette_get_view(core->image->description.palette, &palette);
+    status = sixel_wire_palette_get_view(
+        core->image->description.palette, &palette);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     for (i = 0; i < palette.count; ++i) {
         if ((int)i == core->image->description.keycolor) {
             continue;
@@ -262,7 +269,10 @@ sixel_indexed_core_consume(sixel_encoder_core_t *self, int published_rows)
         return status;
     }
     desc = &core->image->description;
-    sixel_wire_palette_get_view(desc->palette, &palette);
+    status = sixel_wire_palette_get_view(desc->palette, &palette);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     core->rows = published_rows;
     status = sixel_indexed_core_palette(core);
     if (SIXEL_FAILED(status)) {

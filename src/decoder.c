@@ -1970,6 +1970,7 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
         output);
 }
 
+#if SIXEL_ENABLE_THREADS
 /* Dequantization shares an active object's snapshot. Standalone internal
  * callers, including reconstruction tools, resolve decoder-side defaults. */
 static int
@@ -1983,6 +1984,7 @@ sixel_dequantize_threads(void)
     return snapshot.options.mode == SIXEL_THREADING_POLICY_LAZY
         ? 1 : snapshot.budget;
 }
+#endif
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dequantize_k_undither(unsigned char *indexed_pixels,

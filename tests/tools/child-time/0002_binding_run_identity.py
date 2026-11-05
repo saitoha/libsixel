@@ -15,7 +15,8 @@ import native_process
 
 
 def check(executor):
-    if os.environ.get('CROSS_COMPILING') == 'yes' or not executor:
+    if os.environ.get('SIXEL_RUNTIME') or \
+            os.environ.get('CROSS_COMPILING') == 'yes' or not executor:
         return 'a native child-time executor is required'
     if os.name != 'posix':
         return 'POSIX child-time supervision is unavailable'

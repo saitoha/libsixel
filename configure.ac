@@ -4858,8 +4858,22 @@ if test x$with_tiff != xno; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBTIFF,
                                   [libtiff-4],
-                                  [have_tiff=yes
-                                   LIBTIFF_PKG_NAME=libtiff-4],
+                                  [dnl Metadata may describe a different CRT or
+                                   dnl compiler (e.g. MSYS libraries with cl).
+                                   CFLAGS="$CFLAGS $LIBTIFF_CFLAGS"
+                                   LIBS_BACKUP=$LIBS
+                                   LIBS="$LIBTIFF_LIBS $LIBS"
+                                   AC_LINK_IFELSE([AC_LANG_PROGRAM(
+                                       [[#include <tiffio.h>]],
+                                       [[TIFF *t = TIFFOpen("", "r");
+                                         if (t) TIFFClose(t);]])],
+                                       [have_tiff=yes
+                                        LIBTIFF_PKG_NAME=libtiff-4],
+                                       [have_tiff=no
+                                        LIBTIFF_CFLAGS=
+                                        LIBTIFF_LIBS=])
+                                   CFLAGS=$CFLAGS_BACKUP
+                                   LIBS=$LIBS_BACKUP],
                                   [have_tiff=no])
             fi
         fi

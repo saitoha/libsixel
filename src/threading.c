@@ -534,6 +534,10 @@ sixel_win32_thread_start(void *arg)
     sixel_thread_t *thread;
 
     thread = (sixel_thread_t *)arg;
+    /* MSVCRT resets x87 precision in _beginthreadex (53 bits), while a
+     * MinGW caller can use 64 bits. Inherit the captured environment so
+     * analytic color conversion retains the caller's exact result bits. */
+    (void)fesetenv(&thread->environment);
     thread->result = thread->fn(thread->arg);
     return 0;
 }
@@ -662,6 +666,9 @@ sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
     thread->arg = arg;
     thread->result = SIXEL_OK;
     thread->started = 0;
+    if (fegetenv(&thread->environment) != 0) {
+        return SIXEL_RUNTIME_ERROR;
+    }
     handle = _beginthreadex(NULL, 0, sixel_win32_thread_start, thread, 0,
                             NULL);
     if (handle == 0) {

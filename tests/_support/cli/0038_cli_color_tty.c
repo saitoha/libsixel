@@ -366,7 +366,7 @@ color_tty_child(char const *name, int command, int report)
     }
     if (strcmp(name, "identity") == 0) {
         output_copy = dup(STDOUT_FILENO);
-        other_master = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
+        other_master = posix_openpt(O_RDWR | O_NOCTTY);
         if (other_master < 0 || grantpt(other_master) != 0 ||
             unlockpt(other_master) != 0) {
             return 1;
@@ -809,8 +809,10 @@ test_cli_0038_color_tty(int argc, char **argv)
     if (argc != 2) {
         return color_tty_error("one script name is required");
     }
-    master = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if (master < 0 || grantpt(master) != 0 || unlockpt(master) != 0) {
+    master = posix_openpt(O_RDWR | O_NOCTTY);
+    /* FreeBSD accepts only access/controlling-terminal flags at open. */
+    if (master < 0 || fcntl(master, F_SETFL, O_NONBLOCK) < 0 ||
+        grantpt(master) != 0 || unlockpt(master) != 0) {
         return color_tty_error("cannot allocate PTY");
     }
     path = ptsname(master);

@@ -1,6 +1,7 @@
 #!/bin/sh
 # Verify float memo extended exact against uncached analytic conversion.
 # Policy: docs/concepts/pixelformat-precision/README.md
+# Policy: docs/threading/encoder.md
 set -eux
 
 echo "1..1"

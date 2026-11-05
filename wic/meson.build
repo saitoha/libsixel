@@ -39,6 +39,7 @@ wic_sources = files(
   '../src/compat_stub.c',
   '../src/path.c',
   '../src/threading.c',
+  '../src/options.c',
   '../src/options-registry.c',
 )
 

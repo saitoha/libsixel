@@ -42,6 +42,7 @@ struct sixel_clipboard_policy_options;
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD)
 #include <windows.h>
+#include <fenv.h>
 
 typedef DWORD sixel_thread_identity_t;
 
@@ -55,6 +56,7 @@ struct sixel_cond {
 
 struct sixel_thread {
     HANDLE handle;         /* OS thread handle */
+    fenv_t environment;     /* Creator's arithmetic mode, as with pthreads. */
     sixel_thread_fn fn;    /* user callback */
     void *arg;             /* user data */
     int result;            /* callback result */

@@ -420,6 +420,8 @@ Before CPU palette application, compatibility-byte changes are reconciled with t
 
 The CIELAB export witness protects neutral float endpoints; see the [external-palette coverage boundary](../palette-construction/external-palettes.md#coverage-audit-boundary) for its scope.
 
+The PTY test peers allocate their master using `O_RDWR | O_NOCTTY`, then set nonblocking mode with `fcntl`. FreeBSD rejects `O_NONBLOCK` in `posix_openpt`, so passing it during allocation prevents every transport scenario from reaching its assertion. The [PTY flag check](../../../tests/_static/sh/staticcheck-pty-open-flags.sh) rejects this source pattern independently of the host OS.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -611,6 +613,7 @@ These value tests inspect the authoritative working palette, separate wire value
 | OC-73 | P3 fixed-palette export preserves original sRGB values, order, duplicates and unused entries before wire rounding. | [tests/palette/snap-destination/0023_p3_mapfile_export_srgb.t](../../../tests/palette/snap-destination/0023_p3_mapfile_export_srgb.t) |
 | OC-74 | SIGINT and SIGTERM arriving between the cancellation check and a blocked I/O wait interrupt promptly, without consuming the request timeout, and preserve the original terminal state and signal mask. | [tests/cli/terminal-color/0136_sigint_wait_race.t](../../../tests/cli/terminal-color/0136_sigint_wait_race.t), [tests/cli/terminal-color/0137_sigterm_wait_race.t](../../../tests/cli/terminal-color/0137_sigterm_wait_race.t) |
 | OC-537 | Incomplete payload input remains bounded and cleanup restores terminal attributes, accounting for kernel-maintained canonical-transition state. | [tests/cli/terminal-color/0116_flood.t](../../../tests/cli/terminal-color/0116_flood.t) |
+| OC-541 | PTY peers use portable allocation flags before enabling nonblocking I/O. | [tests/_static/sh/staticcheck-pty-open-flags.sh](../../../tests/_static/sh/staticcheck-pty-open-flags.sh) |
 | OC-538 | Closing an active raw phase restores terminal attributes without requiring the OS-owned PENDIN bit to remain unchanged. | [tests/cli/terminal-color/0129_close_active.t](../../../tests/cli/terminal-color/0129_close_active.t) |
 | OC-539 | Replies arriving after timeout cannot reopen a query and cleanup restores the terminal. | [tests/cli/terminal-color/0130_late.t](../../../tests/cli/terminal-color/0130_late.t) |
 | OC-540 | Releasing a raw phase preserves the exact unread bytes for the original canonical reader. | [tests/cli/terminal-color/0132_pending_input.t](../../../tests/cli/terminal-color/0132_pending_input.t) |

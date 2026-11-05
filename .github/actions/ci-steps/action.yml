@@ -979,6 +979,15 @@ runs:
         endlocal
 
 
+    - name: Train progressive study (MSVC PGO)
+      if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'cmd' && endsWith(fromJSON(inputs.matrix_json).label, '-pgo') }}
+      shell: cmd
+      run: |
+        rem Every instrumented default executable needs a profile before use.
+        set "PATH=%CD%\builddir\src;%PATH%"
+        builddir\tools\progressive-study.exe tests\data\inputs\small.ppm builddir\pgo-study.six 1 0.01 0.01 4096 linear
+        if errorlevel 1 exit /b %errorlevel%
+
     - name: Merge Clang PGO raw profiles
       if: >-
         ${{ fromJSON(inputs.matrix_json).exec_type == 'bash'

@@ -522,8 +522,11 @@ color_auto_start(color_auto_peer_t *peer, char const *name,
         pipe(output) != 0) {
         return 0;
     }
-    peer->master = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if (peer->master < 0 || grantpt(peer->master) < 0 ||
+    peer->master = posix_openpt(O_RDWR | O_NOCTTY);
+    /* Set nonblocking mode after the portable PTY allocation call. */
+    if (peer->master < 0 ||
+        fcntl(peer->master, F_SETFL, O_NONBLOCK) < 0 ||
+        grantpt(peer->master) < 0 ||
         unlockpt(peer->master) < 0) {
         return color_auto_error("cannot allocate PTY");
     }

@@ -168,6 +168,8 @@ The independent MSVC archive transport check runs the production shell adapter w
 
 The independent preparation-capability check protects the [helper-lane test contract](../threading/encoder.md#test-coverage). It inspects the shared capability, the production eligibility branch and planning tests that wait on helper gates or compare ahead schedules. Controls reject a thread-only guard, missing skip, and commented-out guard, while an explicit-serial test remains applicable. It checks these owned source forms with awk, without evaluating arbitrary preprocessor expressions or requiring a compiler. Worker-pointer lifetime remains a compiler-analyzer and runtime-test concern.
 
+The [PTY allocation check](../../tests/_static/sh/staticcheck-pty-open-flags.sh) rejects `O_NONBLOCK` in `posix_openpt` calls in CLI test support. The [shared-header check](../../tests/_static/sh/staticcheck-test-common-header-guards.sh) checks include guards on test support `*common.h` files. The [PGO training check](../../tests/_static/sh/staticcheck-ci-pgo-study-training.sh) verifies the study-tool invocation and failure propagation. These separate concerns use shell/awk controls without compilation. The [specialized decoder source check](../../tests/_static/sh/staticcheck-wic-option-sources.sh) requires WIC and Quick Look to include the option implementation as well as the threading registry; link validation still checks their complete symbol closure.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -250,6 +252,10 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-64 | Amalgamation test headers follow transitive consumer selection without unconditional bodies. | [tests/_static/sh/staticcheck-amalgamation-header-scope.sh](../../tests/_static/sh/staticcheck-amalgamation-header-scope.sh) |
 | SC-65 | MSYS2 MSVC CI retains the bounded native archive adapter and its source-only protocol fixture. | [tests/_static/sh/staticcheck-msvc-lib-response.sh](../../tests/_static/sh/staticcheck-msvc-lib-response.sh) |
 | SC-66 | Production and helper-gated planning tests share the preparation capability instead of assuming thread support is sufficient. | [tests/_static/sh/staticcheck-prepare-ahead-capability.sh](../../tests/_static/sh/staticcheck-prepare-ahead-capability.sh) |
+| SC-67 | CLI test peers never pass nonportable nonblocking flags to PTY allocation. | [tests/_static/sh/staticcheck-pty-open-flags.sh](../../tests/_static/sh/staticcheck-pty-open-flags.sh) |
+| SC-68 | Test support common headers have matching include guards. | [tests/_static/sh/staticcheck-test-common-header-guards.sh](../../tests/_static/sh/staticcheck-test-common-header-guards.sh) |
+| SC-69 | MSVC PGO trains the default study executable before profile use. | [tests/_static/sh/staticcheck-ci-pgo-study-training.sh](../../tests/_static/sh/staticcheck-ci-pgo-study-training.sh) |
+| SC-70 | Specialized decoder builds include threading option implementations and registry sources. | [tests/_static/sh/staticcheck-wic-option-sources.sh](../../tests/_static/sh/staticcheck-wic-option-sources.sh) |
 
 ### Coverage boundary
 

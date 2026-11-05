@@ -33,6 +33,7 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(top_srcdir)/src/compat_stub.c \
                          $(top_srcdir)/src/path.c \
                          $(top_srcdir)/src/threading.c \
+                         $(top_srcdir)/src/options.c \
                          $(top_srcdir)/src/options-registry.c
 
 if SIXEL_ENABLE_THREADS

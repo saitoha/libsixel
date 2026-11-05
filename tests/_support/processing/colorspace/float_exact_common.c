@@ -209,6 +209,17 @@ test_color_float_exact(int argc, char **argv)
                                 "src=%d dst=%d threads=%d api=%d status=%d\n",
                                 mode, specimen, spaces[source], spaces[target],
                                 budgets[budget], api, status);
+                            for (i = 0; i < count * 3U; ++i) {
+                                if (memcmp(actual + i, expected + i,
+                                        sizeof(float)) != 0) {
+                                    fprintf(stderr, "component=%lu in=%a "
+                                        "actual=%a expected=%a\n",
+                                        (unsigned long)i, (double)input[i],
+                                        (double)actual[i],
+                                        (double)expected[i]);
+                                    break;
+                                }
+                            }
                             goto end;
                         }
                     }
