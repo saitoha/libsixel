@@ -76,6 +76,7 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
     build-aux/test-dist.am \
     build-aux/copy-test-dist.sh \
     build-aux/test-runner-link.am \
+    build-aux/msvc-lib-response.sh \
     build-aux/cosmoar-meson build-aux/cosmoar-response.awk \
     build-aux/emscripten-node-stdio.js \
     build-aux/test-runner-amalgamation-defines.awk \

@@ -711,6 +711,8 @@ runs:
           # protects the options but also leaves /d/a/... source paths
           # unconverted, so wrap the tools and convert only path-bearing
           # argv fields before calling the native MSVC executables.
+          MSVC_LIB_RESPONSE="$PWD/build-aux/msvc-lib-response.sh"
+          export MSVC_LIB_RESPONSE
           MSVC_WRAPPER_DIR="$(mktemp -d)"
           cat > "$MSVC_WRAPPER_DIR/cl" <<'EOF'
         #!/usr/bin/env bash
@@ -784,14 +786,23 @@ runs:
             ;;
         esac
 
+        # Relative object paths dominate archives; keep them out of subshells.
         converted=()
         for arg in "$@"; do
-          converted+=("$(convert_arg "$arg")")
+          case "$arg" in
+            @/*|/*|-I/*|-L/*)
+              converted+=("$(convert_arg "$arg")")
+              ;;
+            *) converted+=("$arg") ;;
+          esac
         done
 
         # Run the pre-resolved MSVC executable so link.exe cannot fall
         # through to the MSYS2/GNU coreutils program with the same name.
         export MSYS2_ARG_CONV_EXCL='*'
+        if test "$tool" = lib; then
+          exec sh "$MSVC_LIB_RESPONSE" "$real_tool" "${converted[@]}"
+        fi
         exec "$real_tool" "${converted[@]}"
         EOF
           # MSYS2 Python may execute the .exe name even when shutil.which()

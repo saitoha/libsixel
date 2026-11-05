@@ -1123,6 +1123,10 @@ run_case_tap "staticcheck-dragonfly-feature-namespace" \
     sh "$src_root/tests/_static/sh/staticcheck-dragonfly-feature-namespace.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-msvc-lib-response" \
+    sh "$src_root/tests/_static/sh/staticcheck-msvc-lib-response.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-ci-msvc-complete-build" \
     sh "$src_root/tests/_static/sh/staticcheck-ci-msvc-complete-build.sh" \
     "$src_root" || fail_and_exit $?

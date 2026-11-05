@@ -164,6 +164,8 @@ The independent assessment environment check rejects direct `getenv` calls in as
 
 The independent MSVC shared-CRT check protects Meson's explicit default and fatal link probe, together with Autotools' shared-build default and effective-flag probe, for the [DLL ownership contract](../misc/platforms/msvc.md#toolchain-and-crt-contract). Controls reject an implicit build-type default, missing clang-cl coverage, a compile-only Meson probe, an inverted `_DLL` condition and warning-only failure handling. A separate configured-pkg-config check protects both build-system exports, the shell usability probe and the TAP invocation; controls reject bare-command rediscovery and reversed or missing configuration. These checks inspect the owned source forms with shell/awk, without executing a compiler or pkg-config. Native Windows runtime tests remain necessary to establish actual CRT interoperability.
 
+The independent MSVC archive transport check runs the production shell adapter with a large synthetic object inventory and a mock native archiver. It checks bounded native arguments, ordered command files, quoting, cleanup and failure status, together with the CI call site. It uses shell/awk and a mock path converter, without Python, Bash, MSVC or compilation; native LIB interpretation remains Windows build evidence. The [test harness](../build/test-harness.md#test-coverage) owns the transport contract.
+
 ## Test coverage
 
 <!-- test-coverage: enforced -->
@@ -244,6 +246,7 @@ This is deliberately not an inventory of every `staticcheck-*` case. Subject pol
 | SC-62 | WIC saves and restores flags in the same platform branch. | [tests/_static/sh/staticcheck-configure-wic-scope.sh](../../tests/_static/sh/staticcheck-configure-wic-scope.sh) |
 | SC-63 | Meson unity tests select their feature namespace before system headers. | [tests/_static/sh/staticcheck-test-unity-feature-namespace.sh](../../tests/_static/sh/staticcheck-test-unity-feature-namespace.sh) |
 | SC-64 | Amalgamation test headers follow transitive consumer selection without unconditional bodies. | [tests/_static/sh/staticcheck-amalgamation-header-scope.sh](../../tests/_static/sh/staticcheck-amalgamation-header-scope.sh) |
+| SC-65 | MSYS2 MSVC CI retains the bounded native archive adapter and its source-only protocol fixture. | [tests/_static/sh/staticcheck-msvc-lib-response.sh](../../tests/_static/sh/staticcheck-msvc-lib-response.sh) |
 
 ### Coverage boundary
 

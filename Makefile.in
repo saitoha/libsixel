@@ -592,7 +592,8 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	build-aux/compare/cmp build-aux/compare/diff \
 	m4/sixel_compare.m4 build-aux/test-dist.am \
 	build-aux/copy-test-dist.sh build-aux/test-runner-link.am \
-	build-aux/cosmoar-meson build-aux/cosmoar-response.awk \
+	build-aux/msvc-lib-response.sh build-aux/cosmoar-meson \
+	build-aux/cosmoar-response.awk \
 	build-aux/emscripten-node-stdio.js \
 	build-aux/test-runner-amalgamation-defines.awk \
 	build-aux/clean-test-logs.sh build-aux/list-tree-files.sh \
