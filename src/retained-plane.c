@@ -9,6 +9,7 @@
 #include "threading.h"
 #include "retained-plane-rows.h"
 #include "retained-plane-workers.h"
+#include "retained-plane-gpu.h"
 
 typedef struct sixel_retained_plane_storage {
     sixel_retained_plane_interface_t iface;
@@ -25,6 +26,8 @@ typedef struct sixel_retained_plane_storage {
     unsigned int readers;
     sixel_retained_update_t *update;
     sixel_retained_workers_t *workers;
+    sixel_retained_gpu_t *gpu;
+    int gpu_test_fault;
 } sixel_retained_plane_storage_t;
 
 struct sixel_retained_read {
@@ -41,6 +44,9 @@ struct sixel_retained_update {
     unsigned char *paint;
     sixel_retained_rows_t rows;
     int worker_threads;
+    int staging;
+    int staged;
+    sixel_retained_update_stats_t gpu_stats;
 };
 
 /* A ticket gate is used only when a plane is constructed. The 64-bit stream
@@ -84,6 +90,21 @@ sixel_retained_plane_ref(sixel_retained_plane_interface_t *self)
     }
 }
 
+/* CPU views either own allocator memory or borrow the active GPU buffer.
+ * Keep this distinction local to RetainedPlane, including legacy access. */
+static void
+sixel_retained_plane_free_pixels(sixel_retained_plane_storage_t *plane)
+{
+    if (plane->gpu != NULL) {
+        sixel_retained_gpu_free(plane->gpu);
+        plane->gpu = NULL;
+    } else {
+        sixel_allocator_free(plane->allocator, plane->rgb);
+        sixel_allocator_free(plane->allocator, plane->valid);
+    }
+    plane->rgb = plane->valid = NULL;
+}
+
 static void
 sixel_retained_plane_unref(sixel_retained_plane_interface_t *self)
 {
@@ -97,8 +118,7 @@ sixel_retained_plane_unref(sixel_retained_plane_interface_t *self)
     allocator = plane->allocator;
     sixel_retained_workers_free(plane->workers);
     sixel_mutex_destroy(&plane->gate);
-    sixel_allocator_free(allocator, plane->rgb);
-    sixel_allocator_free(allocator, plane->valid);
+    sixel_retained_plane_free_pixels(plane);
     sixel_allocator_free(allocator, plane);
     sixel_allocator_unref(allocator);
 }
@@ -149,8 +169,7 @@ sixel_retained_plane_configure(sixel_retained_plane_interface_t *self,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    sixel_allocator_free(plane->allocator, plane->rgb);
-    sixel_allocator_free(plane->allocator, plane->valid);
+    sixel_retained_plane_free_pixels(plane);
     plane->rgb = rgb;
     plane->valid = valid;
     plane->pixels = pixels;
@@ -158,6 +177,59 @@ sixel_retained_plane_configure(sixel_retained_plane_interface_t *self,
     ++plane->epoch;
     plane->sequence = 0;
     status = SIXEL_OK;
+end:
+    sixel_mutex_unlock(&plane->gate);
+    return status;
+}
+
+static SIXELSTATUS
+sixel_retained_plane_set_device(sixel_retained_plane_interface_t *self,
+    sixel_gpu_device_interface_t *device)
+{
+    sixel_retained_plane_storage_t *plane;
+    sixel_retained_gpu_t *gpu;
+    sixel_retained_gpu_read_view_t view;
+    unsigned char *rgb;
+    unsigned char *valid;
+    SIXELSTATUS status;
+
+    if (self == NULL) return SIXEL_BAD_ARGUMENT;
+    plane = (sixel_retained_plane_storage_t *)self;
+    sixel_mutex_lock(&plane->gate);
+    status = SIXEL_LOGIC_ERROR;
+    if (plane->readers != 0 || plane->update != NULL || plane->rgb == NULL)
+        goto end;
+    status = SIXEL_OK;
+    if (device == NULL && plane->gpu == NULL) goto end;
+    if (device != NULL && sixel_retained_gpu_read(plane->gpu, device,
+            &view) == SIXEL_OK) goto end;
+    if (device != NULL) {
+        gpu = NULL;
+        status = sixel_retained_gpu_new(device, &plane->description,
+            plane->rgb, plane->valid, &gpu);
+        if (status != SIXEL_OK) goto end;
+        sixel_retained_plane_free_pixels(plane);
+        plane->gpu = gpu;
+        sixel_retained_gpu_map(gpu, &plane->rgb, &plane->valid);
+        sixel_retained_workers_free(plane->workers);
+        plane->workers = NULL;
+    } else {
+        /* Reserve the destination before retiring coherent GPU storage.
+         * Quiescence makes both views observe the same last accepted frame. */
+        rgb = sixel_allocator_malloc(plane->allocator, plane->pixels * 3);
+        valid = sixel_allocator_malloc(plane->allocator, plane->pixels);
+        if (rgb == NULL || valid == NULL) {
+            sixel_allocator_free(plane->allocator, rgb);
+            sixel_allocator_free(plane->allocator, valid);
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(rgb, plane->rgb, plane->pixels * 3);
+        memcpy(valid, plane->valid, plane->pixels);
+        sixel_retained_plane_free_pixels(plane);
+        plane->rgb = rgb;
+        plane->valid = valid;
+    }
 end:
     sixel_mutex_unlock(&plane->gate);
     return status;
@@ -234,6 +306,16 @@ sixel_retained_read_get_view(sixel_retained_read_t const *read,
     }
     *view = read->view;
     return SIXEL_OK;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_retained_read_get_gpu_view(sixel_retained_read_t const *read,
+    sixel_gpu_device_interface_t *device, sixel_retained_gpu_read_view_t *view)
+{
+    if (read == NULL || device == NULL || view == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    /* A live read excludes reconfiguration, commit and invalidation. */
+    return sixel_retained_gpu_read(read->plane->gpu, device, view);
 }
 
 /* Bound work by both the caller's current budget and rectangle geometry.
@@ -356,8 +438,18 @@ sixel_retained_plane_begin_update(sixel_retained_plane_interface_t *self,
         (size_t)description->origin_y * update->rows.stride +
         (size_t)description->origin_x;
     sixel_retained_rows_prepare(&update->rows, &palette);
-    update->worker_threads = sixel_retained_plane_prepare_workers(plane,
-        image, request->worker_threads);
+    if (plane->gpu != NULL) {
+        status = sixel_retained_gpu_prepare(plane->gpu, description,
+            &palette, request->record_paint);
+        if (status != SIXEL_OK) {
+            sixel_allocator_free(plane->allocator, update->paint);
+            sixel_allocator_free(plane->allocator, update);
+            goto end;
+        }
+    } else {
+        update->worker_threads = sixel_retained_plane_prepare_workers(plane,
+            image, request->worker_threads);
+    }
     update->ref = 1;
     update->plane = plane;
     update->image = image;
@@ -423,6 +515,65 @@ sixel_retained_update_unref(sixel_retained_update_t *update)
     sixel_retained_plane_unref(&plane->iface);
 }
 
+/* Fault injection observes candidate isolation before or after GPU completion.
+ * The caller owns this plane; no process-global failure state is introduced. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_retained_plane_test_gpu_fault(sixel_retained_plane_interface_t *self,
+    int fault)
+{
+    sixel_retained_plane_storage_t *plane;
+
+    if (self == NULL || fault < 0 || fault > 2) return SIXEL_BAD_ARGUMENT;
+    plane = (sixel_retained_plane_storage_t *)self;
+    sixel_mutex_lock(&plane->gate);
+    if (plane->update != NULL && plane->update->staging) {
+        sixel_mutex_unlock(&plane->gate);
+        return SIXEL_LOGIC_ERROR;
+    }
+    plane->gpu_test_fault = fault;
+    sixel_mutex_unlock(&plane->gate);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_retained_plane_stage(sixel_retained_plane_interface_t *self,
+    sixel_retained_update_t *update)
+{
+    sixel_retained_plane_storage_t *plane;
+    SIXELSTATUS status;
+
+    if (self == NULL || update == NULL ||
+            update->plane != (sixel_retained_plane_storage_t *)self)
+        return SIXEL_BAD_ARGUMENT;
+    plane = update->plane;
+    sixel_mutex_lock(&plane->gate);
+    if (plane->update != update || update->staging ||
+            sixel_indexed_frame_get_state(update->image) !=
+                SIXEL_INDEXED_COMPLETE) {
+        sixel_mutex_unlock(&plane->gate);
+        return SIXEL_LOGIC_ERROR;
+    }
+    if (plane->gpu == NULL || update->staged) {
+        sixel_mutex_unlock(&plane->gate);
+        return SIXEL_OK;
+    }
+    update->staging = 1;
+    sixel_indexed_frame_acquire_user(update->image);
+    sixel_mutex_unlock(&plane->gate);
+    /* RetainedPlane owns the kernel and candidate. The resource-user lease
+     * prevents abort/reconfiguration while GPU completion waits outside gate;
+     * independent body workers can still read immutable indexes and skips. */
+    status = sixel_retained_gpu_stage(plane->gpu, update->image->indexes,
+        update->image->skip, update->paint, &update->gpu_stats,
+        plane->gpu_test_fault);
+    sixel_mutex_lock(&plane->gate);
+    update->staged = status == SIXEL_OK;
+    update->staging = 0;
+    sixel_mutex_unlock(&plane->gate);
+    sixel_indexed_frame_release_user(update->image);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
     sixel_retained_update_t *update, sixel_stream_receipt_t const *receipt,
@@ -453,14 +604,21 @@ sixel_retained_plane_commit(sixel_retained_plane_interface_t *self,
                 &image->identity)) {
         goto end;
     }
+    if (plane->gpu != NULL && !update->staged) goto end;
     memset(&result, 0, sizeof(result));
+    if (plane->gpu != NULL) result = update->gpu_stats;
     result.paint = update->paint;
     result.paint_size = update->paint != NULL ? image->pixels : 0;
-    /* Validation and storage reservation precede this loop. Nothing below
-     * can fail or allocate: expand only painted indexes into their final
-     * destination, preserving holes and unrelated pixels outside the frame. */
-    sixel_retained_workers_run(plane->workers, &update->rows,
-        image->description.height, update->worker_threads, &result);
+    /* Receipt validation precedes publication. GPU candidate construction
+     * already completed; CPU expansion remains allocation-free. Neither path
+     * can fail after changing the committed image or its stream identity. */
+    if (plane->gpu != NULL) {
+        sixel_retained_gpu_commit(plane->gpu);
+        sixel_retained_gpu_map(plane->gpu, &plane->rgb, &plane->valid);
+    } else {
+        sixel_retained_workers_run(plane->workers, &update->rows,
+            image->description.height, update->worker_threads, &result);
+    }
     plane->sequence = update->identity.sequence;
     plane->update = NULL;
     image->update = NULL;
@@ -490,6 +648,7 @@ sixel_retained_plane_invalidate(sixel_retained_plane_interface_t *self,
         if (plane->valid != NULL) {
             memset(plane->valid, 0, plane->pixels);
         }
+        sixel_retained_gpu_cpu_write(plane->gpu);
         ++plane->epoch;
         plane->sequence = 0;
         status = SIXEL_OK;
@@ -502,8 +661,10 @@ static sixel_retained_plane_vtbl_t const g_retained_plane_vtbl = {
     sixel_retained_plane_ref,
     sixel_retained_plane_unref,
     sixel_retained_plane_configure,
+    sixel_retained_plane_set_device,
     sixel_retained_plane_acquire_read,
     sixel_retained_plane_begin_update,
+    sixel_retained_plane_stage,
     sixel_retained_plane_commit,
     sixel_retained_plane_abort,
     sixel_retained_plane_invalidate
@@ -542,9 +703,34 @@ sixel_retained_plane_factory_new(sixel_allocator_t *allocator, void **object)
     return SIXEL_OK;
 }
 
+/* Device migration and candidate publication can replace the committed
+ * allocation. Refresh legacy aliases after the typed session has drained;
+ * this read-only operation neither advances identity nor dirties a candidate.
+ * The encoder operation gate excludes the next transaction during use. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_retained_plane_legacy_rebind(sixel_retained_plane_interface_t *self,
+    unsigned char **rgb, unsigned char **valid)
+{
+    sixel_retained_plane_storage_t *plane;
+
+    if (self == NULL || rgb == NULL || valid == NULL)
+        return SIXEL_BAD_ARGUMENT;
+    plane = (sixel_retained_plane_storage_t *)self;
+    sixel_mutex_lock(&plane->gate);
+    if (plane->update != NULL || plane->rgb == NULL) {
+        sixel_mutex_unlock(&plane->gate);
+        return SIXEL_LOGIC_ERROR;
+    }
+    *rgb = plane->rgb;
+    *valid = plane->valid;
+    sixel_mutex_unlock(&plane->gate);
+    return SIXEL_OK;
+}
+
 /* Legacy highcolor/repair adapters borrow an exclusive mutable view. They
  * already hold the encoder operation gate; the plane gate also excludes
- * typed readers and indexed commits. No second retained allocation exists. */
+ * typed readers and indexed commits. They borrow committed storage only;
+ * the private GPU candidate never becomes a legacy write destination. */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_retained_plane_legacy_map(sixel_retained_plane_interface_t *self,
     unsigned char **rgb, unsigned char **valid)
@@ -561,6 +747,7 @@ sixel_retained_plane_legacy_map(sixel_retained_plane_interface_t *self,
         sixel_mutex_unlock(&plane->gate);
         return SIXEL_LOGIC_ERROR;
     }
+    sixel_retained_gpu_cpu_write(plane->gpu);
     *rgb = plane->rgb;
     *valid = plane->valid;
     return SIXEL_OK;

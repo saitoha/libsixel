@@ -237,6 +237,39 @@ test_runner-test-runner-amalgamation.$(OBJEXT): \
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
+    -DBUILD_TEST_0001_GPU_BIND_RGB \
+    -DBUILD_TEST_0002_GPU_SAME_DEVICE \
+    -DBUILD_TEST_0003_GPU_LIVE_READ_DEVICE \
+    -DBUILD_TEST_0004_GPU_LIVE_UPDATE_DEVICE \
+    -DBUILD_TEST_0005_GPU_STAGE_BUILDING \
+    -DBUILD_TEST_0006_GPU_UNSTAGED_COMMIT \
+    -DBUILD_TEST_0007_GPU_STAGED_ISOLATION \
+    -DBUILD_TEST_0008_GPU_ABORT_ISOLATION \
+    -DBUILD_TEST_0009_GPU_COMMIT_COUNT \
+    -DBUILD_TEST_0010_GPU_PAINT_MASK \
+    -DBUILD_TEST_0011_GPU_PAINT_DISABLED \
+    -DBUILD_TEST_0012_GPU_WRONG_RECEIPT \
+    -DBUILD_TEST_0013_GPU_REPEATED_COMMIT \
+    -DBUILD_TEST_0014_GPU_COMMIT_IDENTITY \
+    -DBUILD_TEST_0015_GPU_CPU_MIGRATION \
+    -DBUILD_TEST_0016_GPU_DISPATCH_FAILURE \
+    -DBUILD_TEST_0017_GPU_COMPLETION_FAILURE \
+    -DBUILD_TEST_0018_GPU_INVALIDATE \
+    -DBUILD_TEST_0019_GPU_LEGACY_MAP \
+    -DBUILD_TEST_0020_GPU_REFINEMENT \
+    -DBUILD_TEST_0021_GPU_FULL_RGB \
+    -DBUILD_TEST_0022_GPU_PARTIAL_RGB \
+    -DBUILD_TEST_0023_GPU_ALL_KEEP \
+    -DBUILD_TEST_0024_GPU_RESIDENT_INDEXES \
+    -DBUILD_TEST_0025_GPU_RESIDENT_SKIP \
+    -DBUILD_TEST_0026_GPU_RESIDENT_RGB_UPLOAD \
+    -DBUILD_TEST_0027_GPU_RESIDENT_VALID_UPLOAD \
+    -DBUILD_TEST_0028_GPU_MOVING_RECTANGLES \
+    -DBUILD_TEST_0029_GPU_ABORT_THEN_MOVE \
+    -DBUILD_TEST_0030_GPU_FAILURE_THEN_MOVE \
+    -DBUILD_TEST_0031_GPU_LEGACY_THEN_MOVE \
+    -DBUILD_TEST_0032_GPU_INVALIDATE_THEN_MOVE \
+    -DBUILD_RETAINED_GPU \
     -DBUILD_BAND_BATCH \
     -DBUILD_TEST_0001_COLD_SINGLE \
     -DBUILD_TEST_0002_LIGHT_ONCE \
@@ -4991,6 +5024,39 @@ libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 
 test_runner_SOURCES = test_runner.c \
+    encoder/retained/0001_gpu_bind_rgb.c \
+    encoder/retained/0002_gpu_same_device.c \
+    encoder/retained/0003_gpu_live_read_device.c \
+    encoder/retained/0004_gpu_live_update_device.c \
+    encoder/retained/0005_gpu_stage_building.c \
+    encoder/retained/0006_gpu_unstaged_commit.c \
+    encoder/retained/0007_gpu_staged_isolation.c \
+    encoder/retained/0008_gpu_abort_isolation.c \
+    encoder/retained/0009_gpu_commit_count.c \
+    encoder/retained/0010_gpu_paint_mask.c \
+    encoder/retained/0011_gpu_paint_disabled.c \
+    encoder/retained/0012_gpu_wrong_receipt.c \
+    encoder/retained/0013_gpu_repeated_commit.c \
+    encoder/retained/0014_gpu_commit_identity.c \
+    encoder/retained/0015_gpu_cpu_migration.c \
+    encoder/retained/0016_gpu_dispatch_failure.c \
+    encoder/retained/0017_gpu_completion_failure.c \
+    encoder/retained/0018_gpu_invalidate.c \
+    encoder/retained/0019_gpu_legacy_map.c \
+    encoder/retained/0020_gpu_refinement.c \
+    encoder/retained/0021_gpu_full_rgb.c \
+    encoder/retained/0022_gpu_partial_rgb.c \
+    encoder/retained/0023_gpu_all_keep.c \
+    encoder/retained/0024_gpu_resident_indexes.c \
+    encoder/retained/0025_gpu_resident_skip.c \
+    encoder/retained/0026_gpu_resident_rgb_upload.c \
+    encoder/retained/0027_gpu_resident_valid_upload.c \
+    encoder/retained/0028_gpu_moving_rectangles.c \
+    encoder/retained/0029_gpu_abort_then_move.c \
+    encoder/retained/0030_gpu_failure_then_move.c \
+    encoder/retained/0031_gpu_legacy_then_move.c \
+    encoder/retained/0032_gpu_invalidate_then_move.c \
+    _support/codec/retained_gpu.c \
     encoder/scheduling/0001_cold_single.c \
     encoder/scheduling/0002_light_once.c \
     encoder/scheduling/0003_light_two.c \

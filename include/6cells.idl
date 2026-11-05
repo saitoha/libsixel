@@ -407,6 +407,9 @@ SIXELAPI SIXELSTATUS sixel_indexed_frame_get_rows(
 SIXELAPI indexed_state sixel_indexed_frame_get_state(
     in indexed_frame const *image);
 
+interface gpu_buffer;
+interface gpu_device;
+
 struct retained_plane_description {
     int width;
     int height;
@@ -425,6 +428,17 @@ struct retained_read_view {
     uint64_t sequence;
 };
 
+/* The buffers are borrowed through the read lease and belong to device.
+ * They represent the full canvas, including pixels outside a partial frame.
+ * Only the device runtime may access their native GPU handles. */
+struct retained_gpu_read_view {
+    gpu_buffer *rgb;
+    gpu_buffer *valid;
+    size_t rgb_stride;
+    size_t valid_stride;
+    retained_plane_description description;
+};
+
 /* worker_threads: Inclusive of the caller; 0 or 1 requests serial execution. */
 struct retained_update_request {
     retained_read *baseline;
@@ -434,7 +448,8 @@ struct retained_update_request {
     int worker_threads;
 };
 
-/* worker_threads: Actual commit participants, including the calling thread. */
+/* worker_threads: Actual CPU commit participants, including the caller.
+ * Zero denotes a completed GPU candidate published without a CPU traversal. */
 struct retained_update_stats {
     size_t painted_pixels;
     int refinement_needed;
@@ -465,6 +480,12 @@ SIXELAPI void sixel_retained_read_ref(in retained_read *read);
 SIXELAPI void sixel_retained_read_unref(in retained_read *read);
 SIXELAPI SIXELSTATUS sixel_retained_read_get_view(
     in retained_read const *read, out retained_read_view *view);
+/* FEATURE_ERROR means this lease has no storage on the requested device.
+ * No upload or device discovery occurs here. A successful view is read-only
+ * until the lease is released; ownership never transfers to PaletteApply. */
+SIXELAPI SIXELSTATUS sixel_retained_read_get_gpu_view(
+    in retained_read const *read, in gpu_device *device,
+    out retained_gpu_read_view *view);
 SIXELAPI void sixel_retained_update_ref(in retained_update *update);
 SIXELAPI void sixel_retained_update_unref(in retained_update *update);
 SIXELAPI void sixel_stream_receipt_ref(in stream_receipt *receipt);
@@ -490,21 +511,39 @@ SIXELAPI void sixel_stream_receipt_unref(in stream_receipt *receipt);
  *
  * commit requires a COMPLETE image, its matching receipt, drained consumers
  * and no read leases. It checks all preconditions before writing, then performs
- * one allocation-free traversal, optionally partitioned into disjoint rows:
+ * either an allocation-free publication of a completed GPU candidate or
+ * one allocation-free CPU traversal, optionally partitioned into disjoint rows:
  * skip keeps, expand painted indexes directly into retained RGB, and collect
  * statistics. Partial-band padding is excluded. All participants finish
  * before publishing sequence or stats; stats.worker_threads reports their
- * actual count including the caller. No worker creation occurs in commit.
+ * actual CPU count including the caller, or zero for GPU publication.
+ * No worker creation or GPU command submission occurs in commit.
  * Success advances sequence even for an all-keep image. Repeated/stale commits
  * fail without mutation. It never waits for physical terminal writes.
  *
- * abort preserves the CPU baseline. invalidate requires quiescence, advances
- * epoch, clears validity and makes delayed old receipts unusable. Neither
+ * abort preserves the committed baseline. invalidate requires quiescence,
+ * advances epoch, clears validity and makes delayed old receipts unusable. Neither
  * operation can undo partially emitted bytes. The session must invalidate and
  * discard dependent output after partial writes or transport queue loss.
  * Calls with live readers/producers return LOGIC_ERROR instead of waiting
  * under a gate. Cancellation first drains those users outside the component.
- * This contract does not yet expose speculative in-place GPU mutation. */
+ *
+ * set_device is idle-only. The same device preserves allocations and history;
+ * NULL selects CPU storage. Migration preserves emitted RGB, validity and
+ * stream identity, and allocation failure leaves the previous state intact.
+ * The GPU path requires coherent host-visible storage and its retained-update
+ * kernel; unsupported devices return FEATURE_ERROR before any output.
+ * CPU and legacy fallback can read or update the same coherent storage while
+ * GPU work is quiescent. No second authoritative history is maintained.
+ *
+ * stage requires a COMPLETE image. On GPU it builds a private full-canvas
+ * candidate from committed history, final indexes/skip and emitted palette,
+ * and collects paint statistics. Pixels outside a partial frame are preserved.
+ * It retains resources and drains commands outside the component gate before
+ * returning; body consumers may still read the immutable indexed image.
+ * CPU staging is a no-op. A stage failure never changes committed history;
+ * commit rejects missing or failed GPU staging. Abort discards the candidate.
+ * Only a matching successful receipt allows candidate publication. */
 [component, refcounted]
 [responsibility("maintain the retained image of one ordered output stream")]
 [forbid_state("lookup_policy", "dither_policy", "sixel_runs")]
@@ -516,11 +555,15 @@ interface retained_plane {
     void unref();
     [mutates]
     SIXELSTATUS configure(in retained_plane_description const *description);
+    [mutates]
+    SIXELSTATUS set_device(in gpu_device *device);
     SIXELSTATUS acquire_read(out retained_read **read);
     [mutates]
     SIXELSTATUS begin_update(
         in retained_update_request const *request,
         out retained_update **update);
+    [mutates]
+    SIXELSTATUS stage(in retained_update *update);
     [mutates]
     SIXELSTATUS commit(
         in retained_update *update, in stream_receipt const *receipt,
@@ -1155,6 +1198,12 @@ interface gpu_buffer {
     [lifetime(release)]
     void unref();
     [const] size_t size();
+    /* Coherent host-visible storage, or FEATURE_ERROR. The mapping borrows
+     * the buffer and remains stable until its last unref. The owner must
+     * exclude conflicting GPU/CPU access and wait for GPU completion before
+     * reading device writes; mapping alone provides no synchronization. */
+    [const, borrows(shared_memory)]
+    SIXELSTATUS shared_memory(out void **memory);
 };
 
 /* This is a cached device capability, not a discovery or fallback service.
@@ -1395,6 +1444,10 @@ interface palette_apply {
     SIXELSTATUS prepare(in palette_apply_prepare_request const *request);
     [mutates]
     SIXELSTATUS run(in palette_apply_run_request const *request);
+    /* Borrow the actual prepared GPU device, or NULL for a CPU plan. This
+     * never probes hardware or changes the prepared execution choice. */
+    [const, borrows(device)]
+    SIXELSTATUS get_device(out gpu_device **device);
 };
 
 [classid("processing/palette-apply")]

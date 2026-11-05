@@ -97,6 +97,15 @@ sixel_indexed_stream_filter(sixel_filter_t *filter,
             image->description.height);
         if (status != SIXEL_OK) goto end;
     }
+    if (graph->session != NULL) {
+        sixel_timeline_logger_logf(logger, "controller", "retained_stage",
+            "start", -1);
+        status = graph->session->plane->vtbl->stage(graph->session->plane,
+            graph->update);
+        sixel_timeline_logger_logf(logger, "controller", "retained_stage",
+            "finish", -1);
+        if (status != SIXEL_OK) goto end;
+    }
     status = graph->core->vtbl->finish(graph->core);
     if (status != SIXEL_OK) goto end;
     graph->consumed = 0;
@@ -121,7 +130,7 @@ sixel_indexed_commit_filter(sixel_filter_t *filter,
     (void)allocator;
     graph = filter->userdata;
     /* The completed stream drained its producer and body consumers. Release
-     * the session read lease before the exclusive, allocation-free loop. */
+     * the session read lease before exclusive, allocation-free publication. */
     sixel_retained_read_unref(*filter->input.retained);
     *filter->input.retained = NULL;
     sixel_timeline_logger_logf(logger, "controller", "retained_commit",
@@ -148,6 +157,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     sixel_output_t *output;
     sixel_encode_session_t *session;
     sixel_palette_apply_interface_t *apply;
+    sixel_gpu_device_interface_t *retained_device;
     sixel_frame_t *source;
     sixel_wire_palette_t *wire;
     sixel_indexed_frame_t *image;
@@ -315,6 +325,11 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     }
     if (status != SIXEL_OK) goto end;
     if (session != NULL) {
+        status = apply->vtbl->get_device(apply, &retained_device);
+        if (status != SIXEL_OK) goto end;
+        status = session->plane->vtbl->set_device(session->plane,
+            retained_device);
+        if (status != SIXEL_OK && status != SIXEL_FEATURE_ERROR) goto end;
         status = session->plane->vtbl->acquire_read(session->plane, &read);
         if (SIXEL_FAILED(status)) goto end;
         status = sixel_retained_read_get_view(read, &baseline);

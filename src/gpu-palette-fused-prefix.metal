@@ -15,6 +15,7 @@ struct Params {
     uint accumulation_pixel_count;
     uint accumulation_valid_mask_size;
     uint accumulation_keycolor;
+    uint accumulation_stride, accumulation_origin;
     uint sixdelta_threshold;
     uint sixdelta_metric;
     uint sixdelta_compare;
@@ -165,6 +166,7 @@ static bool prepare_query(
     uint x;
     uint y;
     uint local_threshold, cell;
+    uint retained_index;
     bool within;
     int dr;
     int dg;
@@ -184,6 +186,8 @@ static bool prepare_query(
     }
     x = gid % params.width;
     y = gid / params.width;
+    retained_index = params.accumulation_origin +
+        y * params.accumulation_stride + x;
     comparison = uchar3(pixels[gid * 3u], pixels[gid * 3u + 1u],
         pixels[gid * 3u + 2u]);
     if (params.sixdelta_compare != 0u) {
@@ -194,10 +198,10 @@ static bool prepare_query(
     if (params.has_6delta != 0u &&
         gid < params.accumulation_pixel_count &&
         (gid >= params.accumulation_valid_mask_size ||
-         accumulation_valid_mask[gid] != 0u)) {
-        dr = int(comparison.x) - int(accumulation[gid * 3u + 0u]);
-        dg = int(comparison.y) - int(accumulation[gid * 3u + 1u]);
-        db = int(comparison.z) - int(accumulation[gid * 3u + 2u]);
+         accumulation_valid_mask[retained_index] != 0u)) {
+        dr = int(comparison.x) - int(accumulation[retained_index * 3u + 0u]);
+        dg = int(comparison.y) - int(accumulation[retained_index * 3u + 1u]);
+        db = int(comparison.z) - int(accumulation[retained_index * 3u + 2u]);
         dr = dr < 0 ? -dr : dr;
         dg = dg < 0 ? -dg : dg;
         db = db < 0 ? -db : db;
@@ -246,13 +250,15 @@ static void finish_pixel(
     uint best)
 {
     uchar3 retained;
+    uint retained_index = params.accumulation_origin +
+        (gid / params.width) * params.accumulation_stride + gid % params.width;
     if (params.has_6delta != 0u &&
         gid < params.accumulation_pixel_count &&
         (gid >= params.accumulation_valid_mask_size ||
-         accumulation_valid_mask[gid] != 0u)) {
-        retained = uchar3(accumulation[gid * 3u + 0u],
-                          accumulation[gid * 3u + 1u],
-                          accumulation[gid * 3u + 2u]);
+         accumulation_valid_mask[retained_index] != 0u)) {
+        retained = uchar3(accumulation[retained_index * 3u + 0u],
+                          accumulation[retained_index * 3u + 1u],
+                          accumulation[retained_index * 3u + 2u]);
         if (color_distance(comparison, retained) <=
             palette_distance(params.sixdelta_palette, comparison, best)) {
             result[gid] = uchar(params.accumulation_keycolor);

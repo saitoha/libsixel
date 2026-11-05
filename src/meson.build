@@ -25,6 +25,9 @@ srcs = [
   'encode-result.c',
   'encode-result.h',
   'retained-plane.c',
+  'retained-plane-gpu.c',
+  'retained-plane-gpu.h',
+  'gpu-runtime-metal.h',
   'retained-plane-rows.c',
   'retained-plane-rows.h',
   'retained-plane-workers.c',
@@ -385,7 +388,7 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
+  srcs += ['retained-plane-metal.m', 'lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
            'progressive-gpu-metal.m']
 endif
 

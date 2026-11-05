@@ -123,11 +123,17 @@ typedef struct sixel_gpu_palette_request {
      */
     int sixdelta_enabled;
     int has_6delta_accumulation;
+    /* Optional owner-pinned canvas storage on the prepared device. CPU views
+     * remain available for validation; native buffers replace per-frame upload.
+     * The read lease outlives the request and every queued command. */
+    sixel_gpu_device_interface_t *retained_device;
+    sixel_gpu_buffer_interface_t *retained_rgb;
+    sixel_gpu_buffer_interface_t *retained_valid;
     unsigned char const *accumulation_pixels;
     size_t accumulation_pixels_size;
     /* Tightly packed retained canvas and this frame's origin within it.
      * Zero dimensions retain the standalone, frame-sized legacy view.
-     * Only the frame rectangle is uploaded; kernels use local pixel indexes. */
+     * Without native storage only the frame rectangle is uploaded. */
     int accumulation_width;
     int accumulation_height;
     int accumulation_origin_x;

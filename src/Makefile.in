@@ -101,6 +101,7 @@ host_triplet = @host@
 
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_5 = \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/retained-plane-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/lookup-policy-gpu-compat.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/lookup-policy-fhedt-gpu.inc.h \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/lookup-policy-bitlut-gpu.inc.h \
@@ -191,7 +192,8 @@ libsixel_la_DEPENDENCIES = $(FLOAT_LOOKUP_LIB) $(am__DEPENDENCIES_1) \
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/output-factory.h $(srcdir)/encode-result.c \
 	$(srcdir)/encode-result.h $(srcdir)/retained-plane.c \
-	$(srcdir)/retained-plane-rows.c \
+	$(srcdir)/retained-plane-gpu.c $(srcdir)/retained-plane-gpu.h \
+	$(srcdir)/gpu-runtime-metal.h $(srcdir)/retained-plane-rows.c \
 	$(srcdir)/retained-plane-rows.h \
 	$(srcdir)/retained-plane-workers.c \
 	$(srcdir)/retained-plane-workers.h $(srcdir)/palette-apply.c \
@@ -434,7 +436,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/gpu-palette-metal.m \
+	$(srcdir)/gpu-palette-metal.m $(srcdir)/retained-plane-metal.m \
 	$(srcdir)/lookup-policy-gpu-compat.m \
 	$(srcdir)/lookup-policy-fhedt-gpu.inc.h \
 	$(srcdir)/lookup-policy-bitlut-gpu.inc.h \
@@ -443,6 +445,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-palette-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-gpu-compat.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-progressive-gpu-metal.lo
@@ -452,6 +455,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encode-result.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-gpu.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-rows.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-workers.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-apply.lo \
@@ -842,6 +846,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-progressive-video.Plo \
 	./$(DEPDIR)/libsixel_la-progressive.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
+	./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo \
+	./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo \
 	./$(DEPDIR)/libsixel_la-retained-plane.Plo \
@@ -1191,6 +1197,7 @@ zshcompletiondir = @zshcompletiondir@
 
 # Metal text is translated into build-tree C literals, not runtime files.
 SIXEL_METAL_INPUTS = \
+    $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-vptree-gpu.metal \
     $(srcdir)/lookup-policy-rbc-gpu.metal \
@@ -1219,6 +1226,7 @@ nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(am__append_3)
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
+    libsixel_la-retained-plane-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-vptree-gpu.lo \
     libsixel_la-lookup-policy-rbc-gpu.lo \
@@ -1257,6 +1265,9 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encode-result.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encode-result.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-gpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-runtime-metal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-rows.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/retained-plane-workers.c \
@@ -2067,6 +2078,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive-video.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-progressive.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-retained-plane.Plo@am__quote@ # am--include-marker
@@ -2157,6 +2170,13 @@ libsixel_la-retained-plane.lo: retained-plane.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='retained-plane.c' object='libsixel_la-retained-plane.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-retained-plane.lo `test -f 'retained-plane.c' || echo '$(srcdir)/'`retained-plane.c
+
+libsixel_la-retained-plane-gpu.lo: retained-plane-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-retained-plane-gpu.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane-gpu.Tpo -c -o libsixel_la-retained-plane-gpu.lo `test -f 'retained-plane-gpu.c' || echo '$(srcdir)/'`retained-plane-gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-retained-plane-gpu.Tpo $(DEPDIR)/libsixel_la-retained-plane-gpu.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='retained-plane-gpu.c' object='libsixel_la-retained-plane-gpu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-retained-plane-gpu.lo `test -f 'retained-plane-gpu.c' || echo '$(srcdir)/'`retained-plane-gpu.c
 
 libsixel_la-retained-plane-rows.lo: retained-plane-rows.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-retained-plane-rows.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane-rows.Tpo -c -o libsixel_la-retained-plane-rows.lo `test -f 'retained-plane-rows.c' || echo '$(srcdir)/'`retained-plane-rows.c
@@ -3484,6 +3504,13 @@ libsixel_la-gpu-palette-metal.lo: gpu-palette-metal.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-gpu-palette-metal.lo `test -f 'gpu-palette-metal.m' || echo '$(srcdir)/'`gpu-palette-metal.m
 
+libsixel_la-retained-plane-metal.lo: retained-plane-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-retained-plane-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-retained-plane-metal.Tpo -c -o libsixel_la-retained-plane-metal.lo `test -f 'retained-plane-metal.m' || echo '$(srcdir)/'`retained-plane-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-retained-plane-metal.Tpo $(DEPDIR)/libsixel_la-retained-plane-metal.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='retained-plane-metal.m' object='libsixel_la-retained-plane-metal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-retained-plane-metal.lo `test -f 'retained-plane-metal.m' || echo '$(srcdir)/'`retained-plane-metal.m
+
 libsixel_la-lookup-policy-gpu-compat.lo: lookup-policy-gpu-compat.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-lookup-policy-gpu-compat.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-gpu-compat.Tpo -c -o libsixel_la-lookup-policy-gpu-compat.lo `test -f 'lookup-policy-gpu-compat.m' || echo '$(srcdir)/'`lookup-policy-gpu-compat.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-gpu-compat.Tpo $(DEPDIR)/libsixel_la-lookup-policy-gpu-compat.Plo
@@ -3878,6 +3905,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo
@@ -4119,6 +4148,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive-video.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-progressive.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-gpu.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-metal.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-rows.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane-workers.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-retained-plane.Plo

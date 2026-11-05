@@ -42,6 +42,7 @@
 #include "bluenoise_64x64.h"
 #include "gpu-dequant.h"
 #include "gpu-palette.h"
+#include "gpu-runtime-metal.h"
 #include "loader-common.h"
 
 enum {
@@ -72,6 +73,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t accumulation_pixel_count;
     uint32_t accumulation_valid_mask_size;
     uint32_t accumulation_keycolor;
+    uint32_t accumulation_stride, accumulation_origin;
     uint32_t sixdelta_threshold;
     uint32_t sixdelta_metric;
     uint32_t sixdelta_compare;
@@ -773,6 +775,11 @@ sixel_gpu_palette_metal_fill_params(
     sixel_gpu_palette_request_t const *request)
 {
     memset(params, 0, sizeof(*params));
+    params->accumulation_stride = (uint32_t)(request->retained_rgb != NULL
+        ? request->accumulation_width : request->width);
+    params->accumulation_origin = request->retained_rgb != NULL
+        ? (uint32_t)((size_t)request->accumulation_origin_y *
+            request->accumulation_width + request->accumulation_origin_x) : 0;
     params->pixel_count = (uint32_t)request->pixel_count;
     params->width = (uint32_t)request->width;
     params->height = (uint32_t)request->height;
@@ -1449,7 +1456,25 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
                 &eytzinger_params,
                 sizeof(eytzinger_params));
         }
-        if (request->has_6delta_accumulation != 0) {
+        if (request->has_6delta_accumulation != 0 &&
+                request->retained_rgb != NULL) {
+            accumulation_buffer = sixel_gpu_metal_buffer(
+                request->retained_device, request->retained_rgb);
+            accumulation_valid_buffer = sixel_gpu_metal_buffer(
+                request->retained_device, request->retained_valid);
+            if (accumulation_buffer == nil ||
+                    accumulation_valid_buffer == nil ||
+                    [accumulation_buffer length] <
+                        request->accumulation_pixels_size ||
+                    [accumulation_valid_buffer length] <
+                        request->accumulation_valid_mask_size) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            /* Leases pin these allocations until every range command drains.
+             * Canvas stride/origin address the rectangle without packing. */
+            accumulation_length = accumulation_valid_length = 0;
+        } else if (request->has_6delta_accumulation != 0) {
             accumulation_buffer = sixel_gpu_metal_upload_retained(
                 &g_sixel_gpu_metal_accumulation_buffer,
                 request->accumulation_pixels, request, 3U);
@@ -1460,7 +1485,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *input)
             accumulation_valid_buffer = sixel_gpu_metal_upload_retained(
                 &g_sixel_gpu_metal_accumulation_valid_buffer,
                 request->accumulation_valid_mask, request, 1U);
-        } else {
+        } else if (accumulation_valid_buffer == nil) {
             accumulation_valid_buffer = g_sixel_gpu_metal_dummy_buffer;
         }
         if (request->accumulation_result_mask != NULL) {

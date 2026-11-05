@@ -51,6 +51,11 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_stream_receipt_new(sixel_stream_receipt_t **result,
     sixel_encode_identity_t const *identity, sixel_allocator_t *allocator);
 
+/* Internal deterministic GPU failure seam: 1 before dispatch, 2 after drain. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_retained_plane_test_gpu_fault(sixel_retained_plane_interface_t *plane,
+    int fault);
+
 /* @classid image/retained-plane */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_retained_plane_factory_new(sixel_allocator_t *allocator, void **object);
@@ -58,6 +63,12 @@ sixel_retained_plane_factory_new(sixel_allocator_t *allocator, void **object);
 /* @classid processing/palette-apply */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_palette_apply_factory_new(sixel_allocator_t *allocator, void **object);
+
+/* Rebind read aliases while the legacy encoder operation gate is held.
+ * The next plane operation may replace storage; writes still require map. */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_retained_plane_legacy_rebind(sixel_retained_plane_interface_t *self,
+    unsigned char **rgb, unsigned char **valid);
 
 /* Only the serialized legacy adapter may use this paired mutable borrow. */
 SIXEL_INTERNAL_API SIXELSTATUS

@@ -4952,7 +4952,105 @@ int test_schedule_0025_batch_sink_restart(int, char **);
 int test_schedule_0026_batch_clock_reset(int, char **);
 int test_schedule_0027_batch_tail_bytes(int, char **);
 
+int test_retained_0001_gpu_bind_rgb(int, char **);
+int test_retained_0002_gpu_same_device(int, char **);
+int test_retained_0003_gpu_live_read_device(int, char **);
+int test_retained_0004_gpu_live_update_device(int, char **);
+int test_retained_0005_gpu_stage_building(int, char **);
+int test_retained_0006_gpu_unstaged_commit(int, char **);
+int test_retained_0007_gpu_staged_isolation(int, char **);
+int test_retained_0008_gpu_abort_isolation(int, char **);
+int test_retained_0009_gpu_commit_count(int, char **);
+int test_retained_0010_gpu_paint_mask(int, char **);
+int test_retained_0011_gpu_paint_disabled(int, char **);
+int test_retained_0012_gpu_wrong_receipt(int, char **);
+int test_retained_0013_gpu_repeated_commit(int, char **);
+int test_retained_0014_gpu_commit_identity(int, char **);
+int test_retained_0015_gpu_cpu_migration(int, char **);
+int test_retained_0016_gpu_dispatch_failure(int, char **);
+int test_retained_0017_gpu_completion_failure(int, char **);
+int test_retained_0018_gpu_invalidate(int, char **);
+int test_retained_0019_gpu_legacy_map(int, char **);
+int test_retained_0020_gpu_refinement(int, char **);
+int test_retained_0021_gpu_full_rgb(int, char **);
+int test_retained_0022_gpu_partial_rgb(int, char **);
+int test_retained_0023_gpu_all_keep(int, char **);
+int test_retained_0024_gpu_resident_indexes(int, char **);
+int test_retained_0025_gpu_resident_skip(int, char **);
+int test_retained_0026_gpu_resident_rgb_upload(int, char **);
+int test_retained_0027_gpu_resident_valid_upload(int, char **);
+int test_retained_0028_gpu_moving_rectangles(int, char **);
+int test_retained_0029_gpu_abort_then_move(int, char **);
+int test_retained_0030_gpu_failure_then_move(int, char **);
+int test_retained_0031_gpu_legacy_then_move(int, char **);
+int test_retained_0032_gpu_invalidate_then_move(int, char **);
+
 static test_entry_t const test_entries[] = {
+    { "encoder/retained/0001_gpu_bind_rgb",
+      test_retained_0001_gpu_bind_rgb },
+    { "encoder/retained/0002_gpu_same_device",
+      test_retained_0002_gpu_same_device },
+    { "encoder/retained/0003_gpu_live_read_device",
+      test_retained_0003_gpu_live_read_device },
+    { "encoder/retained/0004_gpu_live_update_device",
+      test_retained_0004_gpu_live_update_device },
+    { "encoder/retained/0005_gpu_stage_building",
+      test_retained_0005_gpu_stage_building },
+    { "encoder/retained/0006_gpu_unstaged_commit",
+      test_retained_0006_gpu_unstaged_commit },
+    { "encoder/retained/0007_gpu_staged_isolation",
+      test_retained_0007_gpu_staged_isolation },
+    { "encoder/retained/0008_gpu_abort_isolation",
+      test_retained_0008_gpu_abort_isolation },
+    { "encoder/retained/0009_gpu_commit_count",
+      test_retained_0009_gpu_commit_count },
+    { "encoder/retained/0010_gpu_paint_mask",
+      test_retained_0010_gpu_paint_mask },
+    { "encoder/retained/0011_gpu_paint_disabled",
+      test_retained_0011_gpu_paint_disabled },
+    { "encoder/retained/0012_gpu_wrong_receipt",
+      test_retained_0012_gpu_wrong_receipt },
+    { "encoder/retained/0013_gpu_repeated_commit",
+      test_retained_0013_gpu_repeated_commit },
+    { "encoder/retained/0014_gpu_commit_identity",
+      test_retained_0014_gpu_commit_identity },
+    { "encoder/retained/0015_gpu_cpu_migration",
+      test_retained_0015_gpu_cpu_migration },
+    { "encoder/retained/0016_gpu_dispatch_failure",
+      test_retained_0016_gpu_dispatch_failure },
+    { "encoder/retained/0017_gpu_completion_failure",
+      test_retained_0017_gpu_completion_failure },
+    { "encoder/retained/0018_gpu_invalidate",
+      test_retained_0018_gpu_invalidate },
+    { "encoder/retained/0019_gpu_legacy_map",
+      test_retained_0019_gpu_legacy_map },
+    { "encoder/retained/0020_gpu_refinement",
+      test_retained_0020_gpu_refinement },
+    { "encoder/retained/0021_gpu_full_rgb",
+      test_retained_0021_gpu_full_rgb },
+    { "encoder/retained/0022_gpu_partial_rgb",
+      test_retained_0022_gpu_partial_rgb },
+    { "encoder/retained/0023_gpu_all_keep",
+      test_retained_0023_gpu_all_keep },
+    { "encoder/retained/0024_gpu_resident_indexes",
+      test_retained_0024_gpu_resident_indexes },
+    { "encoder/retained/0025_gpu_resident_skip",
+      test_retained_0025_gpu_resident_skip },
+    { "encoder/retained/0026_gpu_resident_rgb_upload",
+      test_retained_0026_gpu_resident_rgb_upload },
+    { "encoder/retained/0027_gpu_resident_valid_upload",
+      test_retained_0027_gpu_resident_valid_upload },
+    { "encoder/retained/0028_gpu_moving_rectangles",
+      test_retained_0028_gpu_moving_rectangles },
+    { "encoder/retained/0029_gpu_abort_then_move",
+      test_retained_0029_gpu_abort_then_move },
+    { "encoder/retained/0030_gpu_failure_then_move",
+      test_retained_0030_gpu_failure_then_move },
+    { "encoder/retained/0031_gpu_legacy_then_move",
+      test_retained_0031_gpu_legacy_then_move },
+    { "encoder/retained/0032_gpu_invalidate_then_move",
+      test_retained_0032_gpu_invalidate_then_move },
+
     { "encoder/scheduling/0001_cold_single",
       test_schedule_0001_cold_single },
     { "encoder/scheduling/0002_light_once",

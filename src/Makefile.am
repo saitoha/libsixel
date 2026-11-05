@@ -12,6 +12,7 @@ SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 
 # Metal text is translated into build-tree C literals, not runtime files.
 SIXEL_METAL_INPUTS = \
+    $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-vptree-gpu.metal \
     $(srcdir)/lookup-policy-rbc-gpu.metal \
@@ -43,6 +44,7 @@ generated-metal/%-shader.inc.h: $(srcdir)/%.metal \
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
+    libsixel_la-retained-plane-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-vptree-gpu.lo \
     libsixel_la-lookup-policy-rbc-gpu.lo \
@@ -126,6 +128,9 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encode-result.c \
                 $(srcdir)/encode-result.h \
                 $(srcdir)/retained-plane.c \
+                $(srcdir)/retained-plane-gpu.c \
+                $(srcdir)/retained-plane-gpu.h \
+                $(srcdir)/gpu-runtime-metal.h \
                 $(srcdir)/retained-plane-rows.c \
                 $(srcdir)/retained-plane-rows.h \
                 $(srcdir)/retained-plane-workers.c \
@@ -527,6 +532,7 @@ endif
 if HAVE_METAL
 libsixel_la_SOURCES += \
 $(srcdir)/gpu-palette-metal.m \
+$(srcdir)/retained-plane-metal.m \
 $(srcdir)/lookup-policy-gpu-compat.m \
 $(srcdir)/lookup-policy-fhedt-gpu.inc.h \
 $(srcdir)/lookup-policy-bitlut-gpu.inc.h \

@@ -141,6 +141,39 @@ libfloatlookuptests_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @WANT_AMALGAMATED_TOOLS_FALSE@am_libfloatlookuptests_la_rpath =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	encoder/retained/0001_gpu_bind_rgb.c \
+	encoder/retained/0002_gpu_same_device.c \
+	encoder/retained/0003_gpu_live_read_device.c \
+	encoder/retained/0004_gpu_live_update_device.c \
+	encoder/retained/0005_gpu_stage_building.c \
+	encoder/retained/0006_gpu_unstaged_commit.c \
+	encoder/retained/0007_gpu_staged_isolation.c \
+	encoder/retained/0008_gpu_abort_isolation.c \
+	encoder/retained/0009_gpu_commit_count.c \
+	encoder/retained/0010_gpu_paint_mask.c \
+	encoder/retained/0011_gpu_paint_disabled.c \
+	encoder/retained/0012_gpu_wrong_receipt.c \
+	encoder/retained/0013_gpu_repeated_commit.c \
+	encoder/retained/0014_gpu_commit_identity.c \
+	encoder/retained/0015_gpu_cpu_migration.c \
+	encoder/retained/0016_gpu_dispatch_failure.c \
+	encoder/retained/0017_gpu_completion_failure.c \
+	encoder/retained/0018_gpu_invalidate.c \
+	encoder/retained/0019_gpu_legacy_map.c \
+	encoder/retained/0020_gpu_refinement.c \
+	encoder/retained/0021_gpu_full_rgb.c \
+	encoder/retained/0022_gpu_partial_rgb.c \
+	encoder/retained/0023_gpu_all_keep.c \
+	encoder/retained/0024_gpu_resident_indexes.c \
+	encoder/retained/0025_gpu_resident_skip.c \
+	encoder/retained/0026_gpu_resident_rgb_upload.c \
+	encoder/retained/0027_gpu_resident_valid_upload.c \
+	encoder/retained/0028_gpu_moving_rectangles.c \
+	encoder/retained/0029_gpu_abort_then_move.c \
+	encoder/retained/0030_gpu_failure_then_move.c \
+	encoder/retained/0031_gpu_legacy_then_move.c \
+	encoder/retained/0032_gpu_invalidate_then_move.c \
+	_support/codec/retained_gpu.c \
 	encoder/scheduling/0001_cold_single.c \
 	encoder/scheduling/0002_light_once.c \
 	encoder/scheduling/0003_light_two.c \
@@ -4930,6 +4963,39 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/path.c
 @WANT_AMALGAMATED_LIB_FALSE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = $(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0001_gpu_bind_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0002_gpu_same_device.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0003_gpu_live_read_device.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0004_gpu_live_update_device.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0005_gpu_stage_building.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0006_gpu_unstaged_commit.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0007_gpu_staged_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0008_gpu_abort_isolation.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0009_gpu_commit_count.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0010_gpu_paint_mask.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0011_gpu_paint_disabled.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0012_gpu_wrong_receipt.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0013_gpu_repeated_commit.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0014_gpu_commit_identity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0015_gpu_cpu_migration.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0016_gpu_dispatch_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0017_gpu_completion_failure.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0018_gpu_invalidate.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0019_gpu_legacy_map.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0020_gpu_refinement.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0021_gpu_full_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0022_gpu_partial_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0023_gpu_all_keep.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0024_gpu_resident_indexes.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0025_gpu_resident_skip.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0026_gpu_resident_rgb_upload.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0027_gpu_resident_valid_upload.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0028_gpu_moving_rectangles.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0029_gpu_abort_then_move.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0030_gpu_failure_then_move.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0031_gpu_legacy_then_move.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	encoder/retained/test_runner-0032_gpu_invalidate_then_move.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	_support/codec/test_runner-retained_gpu.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0001_cold_single.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0002_light_once.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	encoder/scheduling/test_runner-0003_light_two.$(OBJEXT) \
@@ -9749,6 +9815,7 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	_support/codec/$(DEPDIR)/test_runner-png_delta_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-pool_reuse.Po \
 	_support/codec/$(DEPDIR)/test_runner-retained_component_common.Po \
+	_support/codec/$(DEPDIR)/test_runner-retained_gpu.Po \
 	_support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po \
 	_support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po \
 	_support/codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po \
@@ -12032,6 +12099,38 @@ am__depfiles_remade = $(top_builddir)/assessment/$(DEPDIR)/test_runner-assessmen
 	encoder/progressive-transport/$(DEPDIR)/test_runner-0053_gpu_video_pair.Po \
 	encoder/progressive-transport/$(DEPDIR)/test_runner-0054_gpu_pending_before_admission.Po \
 	encoder/progressive-transport/$(DEPDIR)/test_runner-0055_gpu_pending_after_admission.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Po \
+	encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po \
 	encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po \
@@ -15096,6 +15195,39 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GPU_BIND_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_GPU_SAME_DEVICE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_GPU_LIVE_READ_DEVICE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_GPU_LIVE_UPDATE_DEVICE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_GPU_STAGE_BUILDING \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_GPU_UNSTAGED_COMMIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_GPU_STAGED_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_GPU_ABORT_ISOLATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_GPU_COMMIT_COUNT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_GPU_PAINT_MASK \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_GPU_PAINT_DISABLED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_GPU_WRONG_RECEIPT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_GPU_REPEATED_COMMIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_GPU_COMMIT_IDENTITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_GPU_CPU_MIGRATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_GPU_DISPATCH_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_GPU_COMPLETION_FAILURE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_GPU_INVALIDATE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_GPU_LEGACY_MAP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0020_GPU_REFINEMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0021_GPU_FULL_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0022_GPU_PARTIAL_RGB \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0023_GPU_ALL_KEEP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0024_GPU_RESIDENT_INDEXES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0025_GPU_RESIDENT_SKIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0026_GPU_RESIDENT_RGB_UPLOAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0027_GPU_RESIDENT_VALID_UPLOAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0028_GPU_MOVING_RECTANGLES \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_GPU_ABORT_THEN_MOVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_GPU_FAILURE_THEN_MOVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_GPU_LEGACY_THEN_MOVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0032_GPU_INVALIDATE_THEN_MOVE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_RETAINED_GPU \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_BAND_BATCH \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_COLD_SINGLE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_LIGHT_ONCE \
@@ -19882,6 +20014,39 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CPPFLAGS = $(test_runner_CPPFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@libfloatlookuptests_la_CFLAGS = $(test_runner_CFLAGS) $(FLOAT_LOOKUP_CFLAGS)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0001_gpu_bind_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0002_gpu_same_device.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0003_gpu_live_read_device.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0004_gpu_live_update_device.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0005_gpu_stage_building.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0006_gpu_unstaged_commit.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0007_gpu_staged_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0008_gpu_abort_isolation.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0009_gpu_commit_count.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0010_gpu_paint_mask.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0011_gpu_paint_disabled.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0012_gpu_wrong_receipt.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0013_gpu_repeated_commit.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0014_gpu_commit_identity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0015_gpu_cpu_migration.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0016_gpu_dispatch_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0017_gpu_completion_failure.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0018_gpu_invalidate.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0019_gpu_legacy_map.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0020_gpu_refinement.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0021_gpu_full_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0022_gpu_partial_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0023_gpu_all_keep.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0024_gpu_resident_indexes.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0025_gpu_resident_skip.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0026_gpu_resident_rgb_upload.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0027_gpu_resident_valid_upload.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0028_gpu_moving_rectangles.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0029_gpu_abort_then_move.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0030_gpu_failure_then_move.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0031_gpu_legacy_then_move.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    encoder/retained/0032_gpu_invalidate_then_move.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    _support/codec/retained_gpu.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0001_cold_single.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0002_light_once.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    encoder/scheduling/0003_light_two.c \
@@ -25157,6 +25322,117 @@ lookup/delaunay/libfloatlookuptests_la-0012_delaunay_float_bulk.lo:  \
 
 libfloatlookuptests.la: $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_DEPENDENCIES) $(EXTRA_libfloatlookuptests_la_DEPENDENCIES)
 	$(AM_V_CCLD)$(libfloatlookuptests_la_LINK) $(am_libfloatlookuptests_la_rpath) $(libfloatlookuptests_la_OBJECTS) $(libfloatlookuptests_la_LIBADD) $(LIBS)
+encoder/retained/$(am__dirstamp):
+	@$(MKDIR_P) encoder/retained
+	@: >>encoder/retained/$(am__dirstamp)
+encoder/retained/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) encoder/retained/$(DEPDIR)
+	@: >>encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0001_gpu_bind_rgb.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0002_gpu_same_device.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0003_gpu_live_read_device.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0004_gpu_live_update_device.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0005_gpu_stage_building.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0006_gpu_unstaged_commit.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0007_gpu_staged_isolation.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0008_gpu_abort_isolation.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0009_gpu_commit_count.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0010_gpu_paint_mask.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0011_gpu_paint_disabled.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0012_gpu_wrong_receipt.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0013_gpu_repeated_commit.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0014_gpu_commit_identity.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0015_gpu_cpu_migration.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0016_gpu_dispatch_failure.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0017_gpu_completion_failure.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0018_gpu_invalidate.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0019_gpu_legacy_map.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0020_gpu_refinement.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0021_gpu_full_rgb.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0022_gpu_partial_rgb.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0023_gpu_all_keep.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0024_gpu_resident_indexes.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0025_gpu_resident_skip.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0026_gpu_resident_rgb_upload.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0027_gpu_resident_valid_upload.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0028_gpu_moving_rectangles.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0029_gpu_abort_then_move.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0030_gpu_failure_then_move.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0031_gpu_legacy_then_move.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+encoder/retained/test_runner-0032_gpu_invalidate_then_move.$(OBJEXT):  \
+	encoder/retained/$(am__dirstamp) \
+	encoder/retained/$(DEPDIR)/$(am__dirstamp)
+_support/codec/$(am__dirstamp):
+	@$(MKDIR_P) _support/codec
+	@: >>_support/codec/$(am__dirstamp)
+_support/codec/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) _support/codec/$(DEPDIR)
+	@: >>_support/codec/$(DEPDIR)/$(am__dirstamp)
+_support/codec/test_runner-retained_gpu.$(OBJEXT):  \
+	_support/codec/$(am__dirstamp) \
+	_support/codec/$(DEPDIR)/$(am__dirstamp)
 encoder/scheduling/$(am__dirstamp):
 	@$(MKDIR_P) encoder/scheduling
 	@: >>encoder/scheduling/$(am__dirstamp)
@@ -25244,12 +25520,6 @@ encoder/scheduling/test_runner-0026_batch_clock_reset.$(OBJEXT):  \
 encoder/scheduling/test_runner-0027_batch_tail_bytes.$(OBJEXT):  \
 	encoder/scheduling/$(am__dirstamp) \
 	encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
-_support/codec/$(am__dirstamp):
-	@$(MKDIR_P) _support/codec
-	@: >>_support/codec/$(am__dirstamp)
-_support/codec/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) _support/codec/$(DEPDIR)
-	@: >>_support/codec/$(DEPDIR)/$(am__dirstamp)
 _support/codec/test_runner-band_batch.$(OBJEXT):  \
 	_support/codec/$(am__dirstamp) \
 	_support/codec/$(DEPDIR)/$(am__dirstamp)
@@ -40456,6 +40726,7 @@ mostlyclean-compile:
 	-rm -f encoder/precision/*.$(OBJEXT)
 	-rm -f encoder/progressive-refinement/*.$(OBJEXT)
 	-rm -f encoder/progressive-transport/*.$(OBJEXT)
+	-rm -f encoder/retained/*.$(OBJEXT)
 	-rm -f encoder/scheduling/*.$(OBJEXT)
 	-rm -f encoder/sixel-output/*.$(OBJEXT)
 	-rm -f extension/gdk-pixbuf-loader/*.$(OBJEXT)
@@ -40574,6 +40845,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-png_delta_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-pool_reuse.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_component_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_gpu.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_rows_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/$(DEPDIR)/test_runner-retained_workers_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@_support/codec/drcs/$(DEPDIR)/test_runner-drcs_native_test_common.Po@am__quote@ # am--include-marker
@@ -42857,6 +43129,38 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/progressive-transport/$(DEPDIR)/test_runner-0053_gpu_video_pair.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/progressive-transport/$(DEPDIR)/test_runner-0054_gpu_pending_before_admission.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/progressive-transport/$(DEPDIR)/test_runner-0055_gpu_pending_after_admission.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0002_light_once.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@encoder/scheduling/$(DEPDIR)/test_runner-0003_light_two.Po@am__quote@ # am--include-marker
@@ -45358,6 +45662,468 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+encoder/retained/test_runner-0001_gpu_bind_rgb.o: encoder/retained/0001_gpu_bind_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0001_gpu_bind_rgb.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Tpo -c -o encoder/retained/test_runner-0001_gpu_bind_rgb.o `test -f 'encoder/retained/0001_gpu_bind_rgb.c' || echo '$(srcdir)/'`encoder/retained/0001_gpu_bind_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0001_gpu_bind_rgb.c' object='encoder/retained/test_runner-0001_gpu_bind_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0001_gpu_bind_rgb.o `test -f 'encoder/retained/0001_gpu_bind_rgb.c' || echo '$(srcdir)/'`encoder/retained/0001_gpu_bind_rgb.c
+
+encoder/retained/test_runner-0001_gpu_bind_rgb.obj: encoder/retained/0001_gpu_bind_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0001_gpu_bind_rgb.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Tpo -c -o encoder/retained/test_runner-0001_gpu_bind_rgb.obj `if test -f 'encoder/retained/0001_gpu_bind_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0001_gpu_bind_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0001_gpu_bind_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0001_gpu_bind_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0001_gpu_bind_rgb.c' object='encoder/retained/test_runner-0001_gpu_bind_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0001_gpu_bind_rgb.obj `if test -f 'encoder/retained/0001_gpu_bind_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0001_gpu_bind_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0001_gpu_bind_rgb.c'; fi`
+
+encoder/retained/test_runner-0002_gpu_same_device.o: encoder/retained/0002_gpu_same_device.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0002_gpu_same_device.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Tpo -c -o encoder/retained/test_runner-0002_gpu_same_device.o `test -f 'encoder/retained/0002_gpu_same_device.c' || echo '$(srcdir)/'`encoder/retained/0002_gpu_same_device.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Tpo encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0002_gpu_same_device.c' object='encoder/retained/test_runner-0002_gpu_same_device.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0002_gpu_same_device.o `test -f 'encoder/retained/0002_gpu_same_device.c' || echo '$(srcdir)/'`encoder/retained/0002_gpu_same_device.c
+
+encoder/retained/test_runner-0002_gpu_same_device.obj: encoder/retained/0002_gpu_same_device.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0002_gpu_same_device.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Tpo -c -o encoder/retained/test_runner-0002_gpu_same_device.obj `if test -f 'encoder/retained/0002_gpu_same_device.c'; then $(CYGPATH_W) 'encoder/retained/0002_gpu_same_device.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0002_gpu_same_device.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Tpo encoder/retained/$(DEPDIR)/test_runner-0002_gpu_same_device.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0002_gpu_same_device.c' object='encoder/retained/test_runner-0002_gpu_same_device.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0002_gpu_same_device.obj `if test -f 'encoder/retained/0002_gpu_same_device.c'; then $(CYGPATH_W) 'encoder/retained/0002_gpu_same_device.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0002_gpu_same_device.c'; fi`
+
+encoder/retained/test_runner-0003_gpu_live_read_device.o: encoder/retained/0003_gpu_live_read_device.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0003_gpu_live_read_device.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Tpo -c -o encoder/retained/test_runner-0003_gpu_live_read_device.o `test -f 'encoder/retained/0003_gpu_live_read_device.c' || echo '$(srcdir)/'`encoder/retained/0003_gpu_live_read_device.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Tpo encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0003_gpu_live_read_device.c' object='encoder/retained/test_runner-0003_gpu_live_read_device.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0003_gpu_live_read_device.o `test -f 'encoder/retained/0003_gpu_live_read_device.c' || echo '$(srcdir)/'`encoder/retained/0003_gpu_live_read_device.c
+
+encoder/retained/test_runner-0003_gpu_live_read_device.obj: encoder/retained/0003_gpu_live_read_device.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0003_gpu_live_read_device.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Tpo -c -o encoder/retained/test_runner-0003_gpu_live_read_device.obj `if test -f 'encoder/retained/0003_gpu_live_read_device.c'; then $(CYGPATH_W) 'encoder/retained/0003_gpu_live_read_device.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0003_gpu_live_read_device.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Tpo encoder/retained/$(DEPDIR)/test_runner-0003_gpu_live_read_device.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0003_gpu_live_read_device.c' object='encoder/retained/test_runner-0003_gpu_live_read_device.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0003_gpu_live_read_device.obj `if test -f 'encoder/retained/0003_gpu_live_read_device.c'; then $(CYGPATH_W) 'encoder/retained/0003_gpu_live_read_device.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0003_gpu_live_read_device.c'; fi`
+
+encoder/retained/test_runner-0004_gpu_live_update_device.o: encoder/retained/0004_gpu_live_update_device.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0004_gpu_live_update_device.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Tpo -c -o encoder/retained/test_runner-0004_gpu_live_update_device.o `test -f 'encoder/retained/0004_gpu_live_update_device.c' || echo '$(srcdir)/'`encoder/retained/0004_gpu_live_update_device.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Tpo encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0004_gpu_live_update_device.c' object='encoder/retained/test_runner-0004_gpu_live_update_device.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0004_gpu_live_update_device.o `test -f 'encoder/retained/0004_gpu_live_update_device.c' || echo '$(srcdir)/'`encoder/retained/0004_gpu_live_update_device.c
+
+encoder/retained/test_runner-0004_gpu_live_update_device.obj: encoder/retained/0004_gpu_live_update_device.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0004_gpu_live_update_device.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Tpo -c -o encoder/retained/test_runner-0004_gpu_live_update_device.obj `if test -f 'encoder/retained/0004_gpu_live_update_device.c'; then $(CYGPATH_W) 'encoder/retained/0004_gpu_live_update_device.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0004_gpu_live_update_device.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Tpo encoder/retained/$(DEPDIR)/test_runner-0004_gpu_live_update_device.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0004_gpu_live_update_device.c' object='encoder/retained/test_runner-0004_gpu_live_update_device.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0004_gpu_live_update_device.obj `if test -f 'encoder/retained/0004_gpu_live_update_device.c'; then $(CYGPATH_W) 'encoder/retained/0004_gpu_live_update_device.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0004_gpu_live_update_device.c'; fi`
+
+encoder/retained/test_runner-0005_gpu_stage_building.o: encoder/retained/0005_gpu_stage_building.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0005_gpu_stage_building.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Tpo -c -o encoder/retained/test_runner-0005_gpu_stage_building.o `test -f 'encoder/retained/0005_gpu_stage_building.c' || echo '$(srcdir)/'`encoder/retained/0005_gpu_stage_building.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Tpo encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0005_gpu_stage_building.c' object='encoder/retained/test_runner-0005_gpu_stage_building.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0005_gpu_stage_building.o `test -f 'encoder/retained/0005_gpu_stage_building.c' || echo '$(srcdir)/'`encoder/retained/0005_gpu_stage_building.c
+
+encoder/retained/test_runner-0005_gpu_stage_building.obj: encoder/retained/0005_gpu_stage_building.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0005_gpu_stage_building.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Tpo -c -o encoder/retained/test_runner-0005_gpu_stage_building.obj `if test -f 'encoder/retained/0005_gpu_stage_building.c'; then $(CYGPATH_W) 'encoder/retained/0005_gpu_stage_building.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0005_gpu_stage_building.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Tpo encoder/retained/$(DEPDIR)/test_runner-0005_gpu_stage_building.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0005_gpu_stage_building.c' object='encoder/retained/test_runner-0005_gpu_stage_building.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0005_gpu_stage_building.obj `if test -f 'encoder/retained/0005_gpu_stage_building.c'; then $(CYGPATH_W) 'encoder/retained/0005_gpu_stage_building.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0005_gpu_stage_building.c'; fi`
+
+encoder/retained/test_runner-0006_gpu_unstaged_commit.o: encoder/retained/0006_gpu_unstaged_commit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0006_gpu_unstaged_commit.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Tpo -c -o encoder/retained/test_runner-0006_gpu_unstaged_commit.o `test -f 'encoder/retained/0006_gpu_unstaged_commit.c' || echo '$(srcdir)/'`encoder/retained/0006_gpu_unstaged_commit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Tpo encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0006_gpu_unstaged_commit.c' object='encoder/retained/test_runner-0006_gpu_unstaged_commit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0006_gpu_unstaged_commit.o `test -f 'encoder/retained/0006_gpu_unstaged_commit.c' || echo '$(srcdir)/'`encoder/retained/0006_gpu_unstaged_commit.c
+
+encoder/retained/test_runner-0006_gpu_unstaged_commit.obj: encoder/retained/0006_gpu_unstaged_commit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0006_gpu_unstaged_commit.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Tpo -c -o encoder/retained/test_runner-0006_gpu_unstaged_commit.obj `if test -f 'encoder/retained/0006_gpu_unstaged_commit.c'; then $(CYGPATH_W) 'encoder/retained/0006_gpu_unstaged_commit.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0006_gpu_unstaged_commit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Tpo encoder/retained/$(DEPDIR)/test_runner-0006_gpu_unstaged_commit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0006_gpu_unstaged_commit.c' object='encoder/retained/test_runner-0006_gpu_unstaged_commit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0006_gpu_unstaged_commit.obj `if test -f 'encoder/retained/0006_gpu_unstaged_commit.c'; then $(CYGPATH_W) 'encoder/retained/0006_gpu_unstaged_commit.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0006_gpu_unstaged_commit.c'; fi`
+
+encoder/retained/test_runner-0007_gpu_staged_isolation.o: encoder/retained/0007_gpu_staged_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0007_gpu_staged_isolation.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Tpo -c -o encoder/retained/test_runner-0007_gpu_staged_isolation.o `test -f 'encoder/retained/0007_gpu_staged_isolation.c' || echo '$(srcdir)/'`encoder/retained/0007_gpu_staged_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Tpo encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0007_gpu_staged_isolation.c' object='encoder/retained/test_runner-0007_gpu_staged_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0007_gpu_staged_isolation.o `test -f 'encoder/retained/0007_gpu_staged_isolation.c' || echo '$(srcdir)/'`encoder/retained/0007_gpu_staged_isolation.c
+
+encoder/retained/test_runner-0007_gpu_staged_isolation.obj: encoder/retained/0007_gpu_staged_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0007_gpu_staged_isolation.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Tpo -c -o encoder/retained/test_runner-0007_gpu_staged_isolation.obj `if test -f 'encoder/retained/0007_gpu_staged_isolation.c'; then $(CYGPATH_W) 'encoder/retained/0007_gpu_staged_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0007_gpu_staged_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Tpo encoder/retained/$(DEPDIR)/test_runner-0007_gpu_staged_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0007_gpu_staged_isolation.c' object='encoder/retained/test_runner-0007_gpu_staged_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0007_gpu_staged_isolation.obj `if test -f 'encoder/retained/0007_gpu_staged_isolation.c'; then $(CYGPATH_W) 'encoder/retained/0007_gpu_staged_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0007_gpu_staged_isolation.c'; fi`
+
+encoder/retained/test_runner-0008_gpu_abort_isolation.o: encoder/retained/0008_gpu_abort_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0008_gpu_abort_isolation.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Tpo -c -o encoder/retained/test_runner-0008_gpu_abort_isolation.o `test -f 'encoder/retained/0008_gpu_abort_isolation.c' || echo '$(srcdir)/'`encoder/retained/0008_gpu_abort_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Tpo encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0008_gpu_abort_isolation.c' object='encoder/retained/test_runner-0008_gpu_abort_isolation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0008_gpu_abort_isolation.o `test -f 'encoder/retained/0008_gpu_abort_isolation.c' || echo '$(srcdir)/'`encoder/retained/0008_gpu_abort_isolation.c
+
+encoder/retained/test_runner-0008_gpu_abort_isolation.obj: encoder/retained/0008_gpu_abort_isolation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0008_gpu_abort_isolation.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Tpo -c -o encoder/retained/test_runner-0008_gpu_abort_isolation.obj `if test -f 'encoder/retained/0008_gpu_abort_isolation.c'; then $(CYGPATH_W) 'encoder/retained/0008_gpu_abort_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0008_gpu_abort_isolation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Tpo encoder/retained/$(DEPDIR)/test_runner-0008_gpu_abort_isolation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0008_gpu_abort_isolation.c' object='encoder/retained/test_runner-0008_gpu_abort_isolation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0008_gpu_abort_isolation.obj `if test -f 'encoder/retained/0008_gpu_abort_isolation.c'; then $(CYGPATH_W) 'encoder/retained/0008_gpu_abort_isolation.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0008_gpu_abort_isolation.c'; fi`
+
+encoder/retained/test_runner-0009_gpu_commit_count.o: encoder/retained/0009_gpu_commit_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0009_gpu_commit_count.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Tpo -c -o encoder/retained/test_runner-0009_gpu_commit_count.o `test -f 'encoder/retained/0009_gpu_commit_count.c' || echo '$(srcdir)/'`encoder/retained/0009_gpu_commit_count.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Tpo encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0009_gpu_commit_count.c' object='encoder/retained/test_runner-0009_gpu_commit_count.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0009_gpu_commit_count.o `test -f 'encoder/retained/0009_gpu_commit_count.c' || echo '$(srcdir)/'`encoder/retained/0009_gpu_commit_count.c
+
+encoder/retained/test_runner-0009_gpu_commit_count.obj: encoder/retained/0009_gpu_commit_count.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0009_gpu_commit_count.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Tpo -c -o encoder/retained/test_runner-0009_gpu_commit_count.obj `if test -f 'encoder/retained/0009_gpu_commit_count.c'; then $(CYGPATH_W) 'encoder/retained/0009_gpu_commit_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0009_gpu_commit_count.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Tpo encoder/retained/$(DEPDIR)/test_runner-0009_gpu_commit_count.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0009_gpu_commit_count.c' object='encoder/retained/test_runner-0009_gpu_commit_count.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0009_gpu_commit_count.obj `if test -f 'encoder/retained/0009_gpu_commit_count.c'; then $(CYGPATH_W) 'encoder/retained/0009_gpu_commit_count.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0009_gpu_commit_count.c'; fi`
+
+encoder/retained/test_runner-0010_gpu_paint_mask.o: encoder/retained/0010_gpu_paint_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0010_gpu_paint_mask.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Tpo -c -o encoder/retained/test_runner-0010_gpu_paint_mask.o `test -f 'encoder/retained/0010_gpu_paint_mask.c' || echo '$(srcdir)/'`encoder/retained/0010_gpu_paint_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Tpo encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0010_gpu_paint_mask.c' object='encoder/retained/test_runner-0010_gpu_paint_mask.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0010_gpu_paint_mask.o `test -f 'encoder/retained/0010_gpu_paint_mask.c' || echo '$(srcdir)/'`encoder/retained/0010_gpu_paint_mask.c
+
+encoder/retained/test_runner-0010_gpu_paint_mask.obj: encoder/retained/0010_gpu_paint_mask.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0010_gpu_paint_mask.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Tpo -c -o encoder/retained/test_runner-0010_gpu_paint_mask.obj `if test -f 'encoder/retained/0010_gpu_paint_mask.c'; then $(CYGPATH_W) 'encoder/retained/0010_gpu_paint_mask.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0010_gpu_paint_mask.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Tpo encoder/retained/$(DEPDIR)/test_runner-0010_gpu_paint_mask.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0010_gpu_paint_mask.c' object='encoder/retained/test_runner-0010_gpu_paint_mask.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0010_gpu_paint_mask.obj `if test -f 'encoder/retained/0010_gpu_paint_mask.c'; then $(CYGPATH_W) 'encoder/retained/0010_gpu_paint_mask.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0010_gpu_paint_mask.c'; fi`
+
+encoder/retained/test_runner-0011_gpu_paint_disabled.o: encoder/retained/0011_gpu_paint_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0011_gpu_paint_disabled.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Tpo -c -o encoder/retained/test_runner-0011_gpu_paint_disabled.o `test -f 'encoder/retained/0011_gpu_paint_disabled.c' || echo '$(srcdir)/'`encoder/retained/0011_gpu_paint_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Tpo encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0011_gpu_paint_disabled.c' object='encoder/retained/test_runner-0011_gpu_paint_disabled.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0011_gpu_paint_disabled.o `test -f 'encoder/retained/0011_gpu_paint_disabled.c' || echo '$(srcdir)/'`encoder/retained/0011_gpu_paint_disabled.c
+
+encoder/retained/test_runner-0011_gpu_paint_disabled.obj: encoder/retained/0011_gpu_paint_disabled.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0011_gpu_paint_disabled.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Tpo -c -o encoder/retained/test_runner-0011_gpu_paint_disabled.obj `if test -f 'encoder/retained/0011_gpu_paint_disabled.c'; then $(CYGPATH_W) 'encoder/retained/0011_gpu_paint_disabled.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0011_gpu_paint_disabled.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Tpo encoder/retained/$(DEPDIR)/test_runner-0011_gpu_paint_disabled.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0011_gpu_paint_disabled.c' object='encoder/retained/test_runner-0011_gpu_paint_disabled.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0011_gpu_paint_disabled.obj `if test -f 'encoder/retained/0011_gpu_paint_disabled.c'; then $(CYGPATH_W) 'encoder/retained/0011_gpu_paint_disabled.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0011_gpu_paint_disabled.c'; fi`
+
+encoder/retained/test_runner-0012_gpu_wrong_receipt.o: encoder/retained/0012_gpu_wrong_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0012_gpu_wrong_receipt.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Tpo -c -o encoder/retained/test_runner-0012_gpu_wrong_receipt.o `test -f 'encoder/retained/0012_gpu_wrong_receipt.c' || echo '$(srcdir)/'`encoder/retained/0012_gpu_wrong_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Tpo encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0012_gpu_wrong_receipt.c' object='encoder/retained/test_runner-0012_gpu_wrong_receipt.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0012_gpu_wrong_receipt.o `test -f 'encoder/retained/0012_gpu_wrong_receipt.c' || echo '$(srcdir)/'`encoder/retained/0012_gpu_wrong_receipt.c
+
+encoder/retained/test_runner-0012_gpu_wrong_receipt.obj: encoder/retained/0012_gpu_wrong_receipt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0012_gpu_wrong_receipt.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Tpo -c -o encoder/retained/test_runner-0012_gpu_wrong_receipt.obj `if test -f 'encoder/retained/0012_gpu_wrong_receipt.c'; then $(CYGPATH_W) 'encoder/retained/0012_gpu_wrong_receipt.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0012_gpu_wrong_receipt.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Tpo encoder/retained/$(DEPDIR)/test_runner-0012_gpu_wrong_receipt.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0012_gpu_wrong_receipt.c' object='encoder/retained/test_runner-0012_gpu_wrong_receipt.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0012_gpu_wrong_receipt.obj `if test -f 'encoder/retained/0012_gpu_wrong_receipt.c'; then $(CYGPATH_W) 'encoder/retained/0012_gpu_wrong_receipt.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0012_gpu_wrong_receipt.c'; fi`
+
+encoder/retained/test_runner-0013_gpu_repeated_commit.o: encoder/retained/0013_gpu_repeated_commit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0013_gpu_repeated_commit.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Tpo -c -o encoder/retained/test_runner-0013_gpu_repeated_commit.o `test -f 'encoder/retained/0013_gpu_repeated_commit.c' || echo '$(srcdir)/'`encoder/retained/0013_gpu_repeated_commit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Tpo encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0013_gpu_repeated_commit.c' object='encoder/retained/test_runner-0013_gpu_repeated_commit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0013_gpu_repeated_commit.o `test -f 'encoder/retained/0013_gpu_repeated_commit.c' || echo '$(srcdir)/'`encoder/retained/0013_gpu_repeated_commit.c
+
+encoder/retained/test_runner-0013_gpu_repeated_commit.obj: encoder/retained/0013_gpu_repeated_commit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0013_gpu_repeated_commit.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Tpo -c -o encoder/retained/test_runner-0013_gpu_repeated_commit.obj `if test -f 'encoder/retained/0013_gpu_repeated_commit.c'; then $(CYGPATH_W) 'encoder/retained/0013_gpu_repeated_commit.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0013_gpu_repeated_commit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Tpo encoder/retained/$(DEPDIR)/test_runner-0013_gpu_repeated_commit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0013_gpu_repeated_commit.c' object='encoder/retained/test_runner-0013_gpu_repeated_commit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0013_gpu_repeated_commit.obj `if test -f 'encoder/retained/0013_gpu_repeated_commit.c'; then $(CYGPATH_W) 'encoder/retained/0013_gpu_repeated_commit.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0013_gpu_repeated_commit.c'; fi`
+
+encoder/retained/test_runner-0014_gpu_commit_identity.o: encoder/retained/0014_gpu_commit_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0014_gpu_commit_identity.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Tpo -c -o encoder/retained/test_runner-0014_gpu_commit_identity.o `test -f 'encoder/retained/0014_gpu_commit_identity.c' || echo '$(srcdir)/'`encoder/retained/0014_gpu_commit_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Tpo encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0014_gpu_commit_identity.c' object='encoder/retained/test_runner-0014_gpu_commit_identity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0014_gpu_commit_identity.o `test -f 'encoder/retained/0014_gpu_commit_identity.c' || echo '$(srcdir)/'`encoder/retained/0014_gpu_commit_identity.c
+
+encoder/retained/test_runner-0014_gpu_commit_identity.obj: encoder/retained/0014_gpu_commit_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0014_gpu_commit_identity.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Tpo -c -o encoder/retained/test_runner-0014_gpu_commit_identity.obj `if test -f 'encoder/retained/0014_gpu_commit_identity.c'; then $(CYGPATH_W) 'encoder/retained/0014_gpu_commit_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0014_gpu_commit_identity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Tpo encoder/retained/$(DEPDIR)/test_runner-0014_gpu_commit_identity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0014_gpu_commit_identity.c' object='encoder/retained/test_runner-0014_gpu_commit_identity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0014_gpu_commit_identity.obj `if test -f 'encoder/retained/0014_gpu_commit_identity.c'; then $(CYGPATH_W) 'encoder/retained/0014_gpu_commit_identity.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0014_gpu_commit_identity.c'; fi`
+
+encoder/retained/test_runner-0015_gpu_cpu_migration.o: encoder/retained/0015_gpu_cpu_migration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0015_gpu_cpu_migration.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Tpo -c -o encoder/retained/test_runner-0015_gpu_cpu_migration.o `test -f 'encoder/retained/0015_gpu_cpu_migration.c' || echo '$(srcdir)/'`encoder/retained/0015_gpu_cpu_migration.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Tpo encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0015_gpu_cpu_migration.c' object='encoder/retained/test_runner-0015_gpu_cpu_migration.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0015_gpu_cpu_migration.o `test -f 'encoder/retained/0015_gpu_cpu_migration.c' || echo '$(srcdir)/'`encoder/retained/0015_gpu_cpu_migration.c
+
+encoder/retained/test_runner-0015_gpu_cpu_migration.obj: encoder/retained/0015_gpu_cpu_migration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0015_gpu_cpu_migration.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Tpo -c -o encoder/retained/test_runner-0015_gpu_cpu_migration.obj `if test -f 'encoder/retained/0015_gpu_cpu_migration.c'; then $(CYGPATH_W) 'encoder/retained/0015_gpu_cpu_migration.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0015_gpu_cpu_migration.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Tpo encoder/retained/$(DEPDIR)/test_runner-0015_gpu_cpu_migration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0015_gpu_cpu_migration.c' object='encoder/retained/test_runner-0015_gpu_cpu_migration.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0015_gpu_cpu_migration.obj `if test -f 'encoder/retained/0015_gpu_cpu_migration.c'; then $(CYGPATH_W) 'encoder/retained/0015_gpu_cpu_migration.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0015_gpu_cpu_migration.c'; fi`
+
+encoder/retained/test_runner-0016_gpu_dispatch_failure.o: encoder/retained/0016_gpu_dispatch_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0016_gpu_dispatch_failure.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Tpo -c -o encoder/retained/test_runner-0016_gpu_dispatch_failure.o `test -f 'encoder/retained/0016_gpu_dispatch_failure.c' || echo '$(srcdir)/'`encoder/retained/0016_gpu_dispatch_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Tpo encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0016_gpu_dispatch_failure.c' object='encoder/retained/test_runner-0016_gpu_dispatch_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0016_gpu_dispatch_failure.o `test -f 'encoder/retained/0016_gpu_dispatch_failure.c' || echo '$(srcdir)/'`encoder/retained/0016_gpu_dispatch_failure.c
+
+encoder/retained/test_runner-0016_gpu_dispatch_failure.obj: encoder/retained/0016_gpu_dispatch_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0016_gpu_dispatch_failure.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Tpo -c -o encoder/retained/test_runner-0016_gpu_dispatch_failure.obj `if test -f 'encoder/retained/0016_gpu_dispatch_failure.c'; then $(CYGPATH_W) 'encoder/retained/0016_gpu_dispatch_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0016_gpu_dispatch_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Tpo encoder/retained/$(DEPDIR)/test_runner-0016_gpu_dispatch_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0016_gpu_dispatch_failure.c' object='encoder/retained/test_runner-0016_gpu_dispatch_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0016_gpu_dispatch_failure.obj `if test -f 'encoder/retained/0016_gpu_dispatch_failure.c'; then $(CYGPATH_W) 'encoder/retained/0016_gpu_dispatch_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0016_gpu_dispatch_failure.c'; fi`
+
+encoder/retained/test_runner-0017_gpu_completion_failure.o: encoder/retained/0017_gpu_completion_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0017_gpu_completion_failure.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Tpo -c -o encoder/retained/test_runner-0017_gpu_completion_failure.o `test -f 'encoder/retained/0017_gpu_completion_failure.c' || echo '$(srcdir)/'`encoder/retained/0017_gpu_completion_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Tpo encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0017_gpu_completion_failure.c' object='encoder/retained/test_runner-0017_gpu_completion_failure.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0017_gpu_completion_failure.o `test -f 'encoder/retained/0017_gpu_completion_failure.c' || echo '$(srcdir)/'`encoder/retained/0017_gpu_completion_failure.c
+
+encoder/retained/test_runner-0017_gpu_completion_failure.obj: encoder/retained/0017_gpu_completion_failure.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0017_gpu_completion_failure.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Tpo -c -o encoder/retained/test_runner-0017_gpu_completion_failure.obj `if test -f 'encoder/retained/0017_gpu_completion_failure.c'; then $(CYGPATH_W) 'encoder/retained/0017_gpu_completion_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0017_gpu_completion_failure.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Tpo encoder/retained/$(DEPDIR)/test_runner-0017_gpu_completion_failure.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0017_gpu_completion_failure.c' object='encoder/retained/test_runner-0017_gpu_completion_failure.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0017_gpu_completion_failure.obj `if test -f 'encoder/retained/0017_gpu_completion_failure.c'; then $(CYGPATH_W) 'encoder/retained/0017_gpu_completion_failure.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0017_gpu_completion_failure.c'; fi`
+
+encoder/retained/test_runner-0018_gpu_invalidate.o: encoder/retained/0018_gpu_invalidate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0018_gpu_invalidate.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Tpo -c -o encoder/retained/test_runner-0018_gpu_invalidate.o `test -f 'encoder/retained/0018_gpu_invalidate.c' || echo '$(srcdir)/'`encoder/retained/0018_gpu_invalidate.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Tpo encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0018_gpu_invalidate.c' object='encoder/retained/test_runner-0018_gpu_invalidate.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0018_gpu_invalidate.o `test -f 'encoder/retained/0018_gpu_invalidate.c' || echo '$(srcdir)/'`encoder/retained/0018_gpu_invalidate.c
+
+encoder/retained/test_runner-0018_gpu_invalidate.obj: encoder/retained/0018_gpu_invalidate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0018_gpu_invalidate.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Tpo -c -o encoder/retained/test_runner-0018_gpu_invalidate.obj `if test -f 'encoder/retained/0018_gpu_invalidate.c'; then $(CYGPATH_W) 'encoder/retained/0018_gpu_invalidate.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0018_gpu_invalidate.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Tpo encoder/retained/$(DEPDIR)/test_runner-0018_gpu_invalidate.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0018_gpu_invalidate.c' object='encoder/retained/test_runner-0018_gpu_invalidate.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0018_gpu_invalidate.obj `if test -f 'encoder/retained/0018_gpu_invalidate.c'; then $(CYGPATH_W) 'encoder/retained/0018_gpu_invalidate.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0018_gpu_invalidate.c'; fi`
+
+encoder/retained/test_runner-0019_gpu_legacy_map.o: encoder/retained/0019_gpu_legacy_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0019_gpu_legacy_map.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Tpo -c -o encoder/retained/test_runner-0019_gpu_legacy_map.o `test -f 'encoder/retained/0019_gpu_legacy_map.c' || echo '$(srcdir)/'`encoder/retained/0019_gpu_legacy_map.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Tpo encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0019_gpu_legacy_map.c' object='encoder/retained/test_runner-0019_gpu_legacy_map.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0019_gpu_legacy_map.o `test -f 'encoder/retained/0019_gpu_legacy_map.c' || echo '$(srcdir)/'`encoder/retained/0019_gpu_legacy_map.c
+
+encoder/retained/test_runner-0019_gpu_legacy_map.obj: encoder/retained/0019_gpu_legacy_map.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0019_gpu_legacy_map.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Tpo -c -o encoder/retained/test_runner-0019_gpu_legacy_map.obj `if test -f 'encoder/retained/0019_gpu_legacy_map.c'; then $(CYGPATH_W) 'encoder/retained/0019_gpu_legacy_map.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0019_gpu_legacy_map.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Tpo encoder/retained/$(DEPDIR)/test_runner-0019_gpu_legacy_map.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0019_gpu_legacy_map.c' object='encoder/retained/test_runner-0019_gpu_legacy_map.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0019_gpu_legacy_map.obj `if test -f 'encoder/retained/0019_gpu_legacy_map.c'; then $(CYGPATH_W) 'encoder/retained/0019_gpu_legacy_map.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0019_gpu_legacy_map.c'; fi`
+
+encoder/retained/test_runner-0020_gpu_refinement.o: encoder/retained/0020_gpu_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0020_gpu_refinement.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Tpo -c -o encoder/retained/test_runner-0020_gpu_refinement.o `test -f 'encoder/retained/0020_gpu_refinement.c' || echo '$(srcdir)/'`encoder/retained/0020_gpu_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Tpo encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0020_gpu_refinement.c' object='encoder/retained/test_runner-0020_gpu_refinement.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0020_gpu_refinement.o `test -f 'encoder/retained/0020_gpu_refinement.c' || echo '$(srcdir)/'`encoder/retained/0020_gpu_refinement.c
+
+encoder/retained/test_runner-0020_gpu_refinement.obj: encoder/retained/0020_gpu_refinement.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0020_gpu_refinement.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Tpo -c -o encoder/retained/test_runner-0020_gpu_refinement.obj `if test -f 'encoder/retained/0020_gpu_refinement.c'; then $(CYGPATH_W) 'encoder/retained/0020_gpu_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0020_gpu_refinement.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Tpo encoder/retained/$(DEPDIR)/test_runner-0020_gpu_refinement.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0020_gpu_refinement.c' object='encoder/retained/test_runner-0020_gpu_refinement.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0020_gpu_refinement.obj `if test -f 'encoder/retained/0020_gpu_refinement.c'; then $(CYGPATH_W) 'encoder/retained/0020_gpu_refinement.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0020_gpu_refinement.c'; fi`
+
+encoder/retained/test_runner-0021_gpu_full_rgb.o: encoder/retained/0021_gpu_full_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0021_gpu_full_rgb.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Tpo -c -o encoder/retained/test_runner-0021_gpu_full_rgb.o `test -f 'encoder/retained/0021_gpu_full_rgb.c' || echo '$(srcdir)/'`encoder/retained/0021_gpu_full_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0021_gpu_full_rgb.c' object='encoder/retained/test_runner-0021_gpu_full_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0021_gpu_full_rgb.o `test -f 'encoder/retained/0021_gpu_full_rgb.c' || echo '$(srcdir)/'`encoder/retained/0021_gpu_full_rgb.c
+
+encoder/retained/test_runner-0021_gpu_full_rgb.obj: encoder/retained/0021_gpu_full_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0021_gpu_full_rgb.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Tpo -c -o encoder/retained/test_runner-0021_gpu_full_rgb.obj `if test -f 'encoder/retained/0021_gpu_full_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0021_gpu_full_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0021_gpu_full_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0021_gpu_full_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0021_gpu_full_rgb.c' object='encoder/retained/test_runner-0021_gpu_full_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0021_gpu_full_rgb.obj `if test -f 'encoder/retained/0021_gpu_full_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0021_gpu_full_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0021_gpu_full_rgb.c'; fi`
+
+encoder/retained/test_runner-0022_gpu_partial_rgb.o: encoder/retained/0022_gpu_partial_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0022_gpu_partial_rgb.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Tpo -c -o encoder/retained/test_runner-0022_gpu_partial_rgb.o `test -f 'encoder/retained/0022_gpu_partial_rgb.c' || echo '$(srcdir)/'`encoder/retained/0022_gpu_partial_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0022_gpu_partial_rgb.c' object='encoder/retained/test_runner-0022_gpu_partial_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0022_gpu_partial_rgb.o `test -f 'encoder/retained/0022_gpu_partial_rgb.c' || echo '$(srcdir)/'`encoder/retained/0022_gpu_partial_rgb.c
+
+encoder/retained/test_runner-0022_gpu_partial_rgb.obj: encoder/retained/0022_gpu_partial_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0022_gpu_partial_rgb.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Tpo -c -o encoder/retained/test_runner-0022_gpu_partial_rgb.obj `if test -f 'encoder/retained/0022_gpu_partial_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0022_gpu_partial_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0022_gpu_partial_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Tpo encoder/retained/$(DEPDIR)/test_runner-0022_gpu_partial_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0022_gpu_partial_rgb.c' object='encoder/retained/test_runner-0022_gpu_partial_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0022_gpu_partial_rgb.obj `if test -f 'encoder/retained/0022_gpu_partial_rgb.c'; then $(CYGPATH_W) 'encoder/retained/0022_gpu_partial_rgb.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0022_gpu_partial_rgb.c'; fi`
+
+encoder/retained/test_runner-0023_gpu_all_keep.o: encoder/retained/0023_gpu_all_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0023_gpu_all_keep.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Tpo -c -o encoder/retained/test_runner-0023_gpu_all_keep.o `test -f 'encoder/retained/0023_gpu_all_keep.c' || echo '$(srcdir)/'`encoder/retained/0023_gpu_all_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Tpo encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0023_gpu_all_keep.c' object='encoder/retained/test_runner-0023_gpu_all_keep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0023_gpu_all_keep.o `test -f 'encoder/retained/0023_gpu_all_keep.c' || echo '$(srcdir)/'`encoder/retained/0023_gpu_all_keep.c
+
+encoder/retained/test_runner-0023_gpu_all_keep.obj: encoder/retained/0023_gpu_all_keep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0023_gpu_all_keep.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Tpo -c -o encoder/retained/test_runner-0023_gpu_all_keep.obj `if test -f 'encoder/retained/0023_gpu_all_keep.c'; then $(CYGPATH_W) 'encoder/retained/0023_gpu_all_keep.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0023_gpu_all_keep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Tpo encoder/retained/$(DEPDIR)/test_runner-0023_gpu_all_keep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0023_gpu_all_keep.c' object='encoder/retained/test_runner-0023_gpu_all_keep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0023_gpu_all_keep.obj `if test -f 'encoder/retained/0023_gpu_all_keep.c'; then $(CYGPATH_W) 'encoder/retained/0023_gpu_all_keep.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0023_gpu_all_keep.c'; fi`
+
+encoder/retained/test_runner-0024_gpu_resident_indexes.o: encoder/retained/0024_gpu_resident_indexes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0024_gpu_resident_indexes.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Tpo -c -o encoder/retained/test_runner-0024_gpu_resident_indexes.o `test -f 'encoder/retained/0024_gpu_resident_indexes.c' || echo '$(srcdir)/'`encoder/retained/0024_gpu_resident_indexes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Tpo encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0024_gpu_resident_indexes.c' object='encoder/retained/test_runner-0024_gpu_resident_indexes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0024_gpu_resident_indexes.o `test -f 'encoder/retained/0024_gpu_resident_indexes.c' || echo '$(srcdir)/'`encoder/retained/0024_gpu_resident_indexes.c
+
+encoder/retained/test_runner-0024_gpu_resident_indexes.obj: encoder/retained/0024_gpu_resident_indexes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0024_gpu_resident_indexes.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Tpo -c -o encoder/retained/test_runner-0024_gpu_resident_indexes.obj `if test -f 'encoder/retained/0024_gpu_resident_indexes.c'; then $(CYGPATH_W) 'encoder/retained/0024_gpu_resident_indexes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0024_gpu_resident_indexes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Tpo encoder/retained/$(DEPDIR)/test_runner-0024_gpu_resident_indexes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0024_gpu_resident_indexes.c' object='encoder/retained/test_runner-0024_gpu_resident_indexes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0024_gpu_resident_indexes.obj `if test -f 'encoder/retained/0024_gpu_resident_indexes.c'; then $(CYGPATH_W) 'encoder/retained/0024_gpu_resident_indexes.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0024_gpu_resident_indexes.c'; fi`
+
+encoder/retained/test_runner-0025_gpu_resident_skip.o: encoder/retained/0025_gpu_resident_skip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0025_gpu_resident_skip.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Tpo -c -o encoder/retained/test_runner-0025_gpu_resident_skip.o `test -f 'encoder/retained/0025_gpu_resident_skip.c' || echo '$(srcdir)/'`encoder/retained/0025_gpu_resident_skip.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Tpo encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0025_gpu_resident_skip.c' object='encoder/retained/test_runner-0025_gpu_resident_skip.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0025_gpu_resident_skip.o `test -f 'encoder/retained/0025_gpu_resident_skip.c' || echo '$(srcdir)/'`encoder/retained/0025_gpu_resident_skip.c
+
+encoder/retained/test_runner-0025_gpu_resident_skip.obj: encoder/retained/0025_gpu_resident_skip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0025_gpu_resident_skip.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Tpo -c -o encoder/retained/test_runner-0025_gpu_resident_skip.obj `if test -f 'encoder/retained/0025_gpu_resident_skip.c'; then $(CYGPATH_W) 'encoder/retained/0025_gpu_resident_skip.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0025_gpu_resident_skip.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Tpo encoder/retained/$(DEPDIR)/test_runner-0025_gpu_resident_skip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0025_gpu_resident_skip.c' object='encoder/retained/test_runner-0025_gpu_resident_skip.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0025_gpu_resident_skip.obj `if test -f 'encoder/retained/0025_gpu_resident_skip.c'; then $(CYGPATH_W) 'encoder/retained/0025_gpu_resident_skip.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0025_gpu_resident_skip.c'; fi`
+
+encoder/retained/test_runner-0026_gpu_resident_rgb_upload.o: encoder/retained/0026_gpu_resident_rgb_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0026_gpu_resident_rgb_upload.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Tpo -c -o encoder/retained/test_runner-0026_gpu_resident_rgb_upload.o `test -f 'encoder/retained/0026_gpu_resident_rgb_upload.c' || echo '$(srcdir)/'`encoder/retained/0026_gpu_resident_rgb_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Tpo encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0026_gpu_resident_rgb_upload.c' object='encoder/retained/test_runner-0026_gpu_resident_rgb_upload.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0026_gpu_resident_rgb_upload.o `test -f 'encoder/retained/0026_gpu_resident_rgb_upload.c' || echo '$(srcdir)/'`encoder/retained/0026_gpu_resident_rgb_upload.c
+
+encoder/retained/test_runner-0026_gpu_resident_rgb_upload.obj: encoder/retained/0026_gpu_resident_rgb_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0026_gpu_resident_rgb_upload.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Tpo -c -o encoder/retained/test_runner-0026_gpu_resident_rgb_upload.obj `if test -f 'encoder/retained/0026_gpu_resident_rgb_upload.c'; then $(CYGPATH_W) 'encoder/retained/0026_gpu_resident_rgb_upload.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0026_gpu_resident_rgb_upload.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Tpo encoder/retained/$(DEPDIR)/test_runner-0026_gpu_resident_rgb_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0026_gpu_resident_rgb_upload.c' object='encoder/retained/test_runner-0026_gpu_resident_rgb_upload.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0026_gpu_resident_rgb_upload.obj `if test -f 'encoder/retained/0026_gpu_resident_rgb_upload.c'; then $(CYGPATH_W) 'encoder/retained/0026_gpu_resident_rgb_upload.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0026_gpu_resident_rgb_upload.c'; fi`
+
+encoder/retained/test_runner-0027_gpu_resident_valid_upload.o: encoder/retained/0027_gpu_resident_valid_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0027_gpu_resident_valid_upload.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Tpo -c -o encoder/retained/test_runner-0027_gpu_resident_valid_upload.o `test -f 'encoder/retained/0027_gpu_resident_valid_upload.c' || echo '$(srcdir)/'`encoder/retained/0027_gpu_resident_valid_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Tpo encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0027_gpu_resident_valid_upload.c' object='encoder/retained/test_runner-0027_gpu_resident_valid_upload.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0027_gpu_resident_valid_upload.o `test -f 'encoder/retained/0027_gpu_resident_valid_upload.c' || echo '$(srcdir)/'`encoder/retained/0027_gpu_resident_valid_upload.c
+
+encoder/retained/test_runner-0027_gpu_resident_valid_upload.obj: encoder/retained/0027_gpu_resident_valid_upload.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0027_gpu_resident_valid_upload.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Tpo -c -o encoder/retained/test_runner-0027_gpu_resident_valid_upload.obj `if test -f 'encoder/retained/0027_gpu_resident_valid_upload.c'; then $(CYGPATH_W) 'encoder/retained/0027_gpu_resident_valid_upload.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0027_gpu_resident_valid_upload.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Tpo encoder/retained/$(DEPDIR)/test_runner-0027_gpu_resident_valid_upload.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0027_gpu_resident_valid_upload.c' object='encoder/retained/test_runner-0027_gpu_resident_valid_upload.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0027_gpu_resident_valid_upload.obj `if test -f 'encoder/retained/0027_gpu_resident_valid_upload.c'; then $(CYGPATH_W) 'encoder/retained/0027_gpu_resident_valid_upload.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0027_gpu_resident_valid_upload.c'; fi`
+
+encoder/retained/test_runner-0028_gpu_moving_rectangles.o: encoder/retained/0028_gpu_moving_rectangles.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0028_gpu_moving_rectangles.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Tpo -c -o encoder/retained/test_runner-0028_gpu_moving_rectangles.o `test -f 'encoder/retained/0028_gpu_moving_rectangles.c' || echo '$(srcdir)/'`encoder/retained/0028_gpu_moving_rectangles.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Tpo encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0028_gpu_moving_rectangles.c' object='encoder/retained/test_runner-0028_gpu_moving_rectangles.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0028_gpu_moving_rectangles.o `test -f 'encoder/retained/0028_gpu_moving_rectangles.c' || echo '$(srcdir)/'`encoder/retained/0028_gpu_moving_rectangles.c
+
+encoder/retained/test_runner-0028_gpu_moving_rectangles.obj: encoder/retained/0028_gpu_moving_rectangles.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0028_gpu_moving_rectangles.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Tpo -c -o encoder/retained/test_runner-0028_gpu_moving_rectangles.obj `if test -f 'encoder/retained/0028_gpu_moving_rectangles.c'; then $(CYGPATH_W) 'encoder/retained/0028_gpu_moving_rectangles.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0028_gpu_moving_rectangles.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Tpo encoder/retained/$(DEPDIR)/test_runner-0028_gpu_moving_rectangles.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0028_gpu_moving_rectangles.c' object='encoder/retained/test_runner-0028_gpu_moving_rectangles.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0028_gpu_moving_rectangles.obj `if test -f 'encoder/retained/0028_gpu_moving_rectangles.c'; then $(CYGPATH_W) 'encoder/retained/0028_gpu_moving_rectangles.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0028_gpu_moving_rectangles.c'; fi`
+
+encoder/retained/test_runner-0029_gpu_abort_then_move.o: encoder/retained/0029_gpu_abort_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0029_gpu_abort_then_move.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Tpo -c -o encoder/retained/test_runner-0029_gpu_abort_then_move.o `test -f 'encoder/retained/0029_gpu_abort_then_move.c' || echo '$(srcdir)/'`encoder/retained/0029_gpu_abort_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0029_gpu_abort_then_move.c' object='encoder/retained/test_runner-0029_gpu_abort_then_move.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0029_gpu_abort_then_move.o `test -f 'encoder/retained/0029_gpu_abort_then_move.c' || echo '$(srcdir)/'`encoder/retained/0029_gpu_abort_then_move.c
+
+encoder/retained/test_runner-0029_gpu_abort_then_move.obj: encoder/retained/0029_gpu_abort_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0029_gpu_abort_then_move.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Tpo -c -o encoder/retained/test_runner-0029_gpu_abort_then_move.obj `if test -f 'encoder/retained/0029_gpu_abort_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0029_gpu_abort_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0029_gpu_abort_then_move.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0029_gpu_abort_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0029_gpu_abort_then_move.c' object='encoder/retained/test_runner-0029_gpu_abort_then_move.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0029_gpu_abort_then_move.obj `if test -f 'encoder/retained/0029_gpu_abort_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0029_gpu_abort_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0029_gpu_abort_then_move.c'; fi`
+
+encoder/retained/test_runner-0030_gpu_failure_then_move.o: encoder/retained/0030_gpu_failure_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0030_gpu_failure_then_move.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Tpo -c -o encoder/retained/test_runner-0030_gpu_failure_then_move.o `test -f 'encoder/retained/0030_gpu_failure_then_move.c' || echo '$(srcdir)/'`encoder/retained/0030_gpu_failure_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0030_gpu_failure_then_move.c' object='encoder/retained/test_runner-0030_gpu_failure_then_move.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0030_gpu_failure_then_move.o `test -f 'encoder/retained/0030_gpu_failure_then_move.c' || echo '$(srcdir)/'`encoder/retained/0030_gpu_failure_then_move.c
+
+encoder/retained/test_runner-0030_gpu_failure_then_move.obj: encoder/retained/0030_gpu_failure_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0030_gpu_failure_then_move.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Tpo -c -o encoder/retained/test_runner-0030_gpu_failure_then_move.obj `if test -f 'encoder/retained/0030_gpu_failure_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0030_gpu_failure_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0030_gpu_failure_then_move.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0030_gpu_failure_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0030_gpu_failure_then_move.c' object='encoder/retained/test_runner-0030_gpu_failure_then_move.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0030_gpu_failure_then_move.obj `if test -f 'encoder/retained/0030_gpu_failure_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0030_gpu_failure_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0030_gpu_failure_then_move.c'; fi`
+
+encoder/retained/test_runner-0031_gpu_legacy_then_move.o: encoder/retained/0031_gpu_legacy_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0031_gpu_legacy_then_move.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Tpo -c -o encoder/retained/test_runner-0031_gpu_legacy_then_move.o `test -f 'encoder/retained/0031_gpu_legacy_then_move.c' || echo '$(srcdir)/'`encoder/retained/0031_gpu_legacy_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0031_gpu_legacy_then_move.c' object='encoder/retained/test_runner-0031_gpu_legacy_then_move.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0031_gpu_legacy_then_move.o `test -f 'encoder/retained/0031_gpu_legacy_then_move.c' || echo '$(srcdir)/'`encoder/retained/0031_gpu_legacy_then_move.c
+
+encoder/retained/test_runner-0031_gpu_legacy_then_move.obj: encoder/retained/0031_gpu_legacy_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0031_gpu_legacy_then_move.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Tpo -c -o encoder/retained/test_runner-0031_gpu_legacy_then_move.obj `if test -f 'encoder/retained/0031_gpu_legacy_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0031_gpu_legacy_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0031_gpu_legacy_then_move.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0031_gpu_legacy_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0031_gpu_legacy_then_move.c' object='encoder/retained/test_runner-0031_gpu_legacy_then_move.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0031_gpu_legacy_then_move.obj `if test -f 'encoder/retained/0031_gpu_legacy_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0031_gpu_legacy_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0031_gpu_legacy_then_move.c'; fi`
+
+encoder/retained/test_runner-0032_gpu_invalidate_then_move.o: encoder/retained/0032_gpu_invalidate_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0032_gpu_invalidate_then_move.o -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Tpo -c -o encoder/retained/test_runner-0032_gpu_invalidate_then_move.o `test -f 'encoder/retained/0032_gpu_invalidate_then_move.c' || echo '$(srcdir)/'`encoder/retained/0032_gpu_invalidate_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0032_gpu_invalidate_then_move.c' object='encoder/retained/test_runner-0032_gpu_invalidate_then_move.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0032_gpu_invalidate_then_move.o `test -f 'encoder/retained/0032_gpu_invalidate_then_move.c' || echo '$(srcdir)/'`encoder/retained/0032_gpu_invalidate_then_move.c
+
+encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj: encoder/retained/0032_gpu_invalidate_then_move.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj -MD -MP -MF encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Tpo -c -o encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj `if test -f 'encoder/retained/0032_gpu_invalidate_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0032_gpu_invalidate_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0032_gpu_invalidate_then_move.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Tpo encoder/retained/$(DEPDIR)/test_runner-0032_gpu_invalidate_then_move.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='encoder/retained/0032_gpu_invalidate_then_move.c' object='encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o encoder/retained/test_runner-0032_gpu_invalidate_then_move.obj `if test -f 'encoder/retained/0032_gpu_invalidate_then_move.c'; then $(CYGPATH_W) 'encoder/retained/0032_gpu_invalidate_then_move.c'; else $(CYGPATH_W) '$(srcdir)/encoder/retained/0032_gpu_invalidate_then_move.c'; fi`
+
+_support/codec/test_runner-retained_gpu.o: _support/codec/retained_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_gpu.o -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_gpu.Tpo -c -o _support/codec/test_runner-retained_gpu.o `test -f '_support/codec/retained_gpu.c' || echo '$(srcdir)/'`_support/codec/retained_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_gpu.Tpo _support/codec/$(DEPDIR)/test_runner-retained_gpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_gpu.c' object='_support/codec/test_runner-retained_gpu.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_gpu.o `test -f '_support/codec/retained_gpu.c' || echo '$(srcdir)/'`_support/codec/retained_gpu.c
+
+_support/codec/test_runner-retained_gpu.obj: _support/codec/retained_gpu.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT _support/codec/test_runner-retained_gpu.obj -MD -MP -MF _support/codec/$(DEPDIR)/test_runner-retained_gpu.Tpo -c -o _support/codec/test_runner-retained_gpu.obj `if test -f '_support/codec/retained_gpu.c'; then $(CYGPATH_W) '_support/codec/retained_gpu.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_gpu.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) _support/codec/$(DEPDIR)/test_runner-retained_gpu.Tpo _support/codec/$(DEPDIR)/test_runner-retained_gpu.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='_support/codec/retained_gpu.c' object='_support/codec/test_runner-retained_gpu.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o _support/codec/test_runner-retained_gpu.obj `if test -f '_support/codec/retained_gpu.c'; then $(CYGPATH_W) '_support/codec/retained_gpu.c'; else $(CYGPATH_W) '$(srcdir)/_support/codec/retained_gpu.c'; fi`
 
 encoder/scheduling/test_runner-0001_cold_single.o: encoder/scheduling/0001_cold_single.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT encoder/scheduling/test_runner-0001_cold_single.o -MD -MP -MF encoder/scheduling/$(DEPDIR)/test_runner-0001_cold_single.Tpo -c -o encoder/scheduling/test_runner-0001_cold_single.o `test -f 'encoder/scheduling/0001_cold_single.c' || echo '$(srcdir)/'`encoder/scheduling/0001_cold_single.c
@@ -111991,6 +112757,8 @@ distclean-generic:
 	-$(am__rm_f) encoder/progressive-refinement/$(am__dirstamp)
 	-$(am__rm_f) encoder/progressive-transport/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) encoder/progressive-transport/$(am__dirstamp)
+	-$(am__rm_f) encoder/retained/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) encoder/retained/$(am__dirstamp)
 	-$(am__rm_f) encoder/scheduling/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) encoder/scheduling/$(am__dirstamp)
 	-$(am__rm_f) encoder/sixel-output/$(DEPDIR)/$(am__dirstamp)

@@ -15,6 +15,7 @@ struct Params {
     uint accumulation_pixel_count;
     uint accumulation_valid_mask_size;
     uint accumulation_keycolor;
+    uint accumulation_stride, accumulation_origin;
     uint sixdelta_threshold;
     uint sixdelta_metric;
     uint sixdelta_compare;

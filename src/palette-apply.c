@@ -52,6 +52,7 @@ sixel_palette_apply_clear_plan(sixel_palette_apply_storage_t *apply)
         if (apply->lookup != NULL) {
             apply->lookup->vtbl->unref(apply->lookup);
         }
+        if (apply->gpu) apply->plan.device->vtbl->unref(apply->plan.device);
         apply->plan.dither->vtbl->unref(apply->plan.dither);
         sixel_wire_palette_unref(apply->plan.output.palette);
     }
@@ -198,6 +199,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     apply->program = program;
     apply->options = options;
     apply->gpu = program != NULL;
+    if (apply->gpu) request->device->vtbl->ref(request->device);
     apply->ready = ready;
     request->working_palette->vtbl->ref(request->working_palette);
     request->dither->vtbl->ref(request->dither);
@@ -394,6 +396,7 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     sixel_gpu_palette_request_t request;
     sixel_dither_execution_t const *execution;
     sixel_delta_mask_t selection;
+    sixel_retained_gpu_read_view_t retained;
     size_t cells;
     SIXELSTATUS status;
 
@@ -447,6 +450,17 @@ sixel_palette_apply_gpu(sixel_palette_apply_storage_t *apply)
     request.accumulation_origin_y = execution->origin_y;
     request.accumulation_valid_mask = execution->retained_valid;
     request.accumulation_valid_mask_size = execution->retained_valid_size;
+    if (execution->delta_enabled && apply->run->baseline != NULL) {
+        status = sixel_retained_read_get_gpu_view(apply->run->baseline,
+            apply->plan.device, &retained);
+        if (status == SIXEL_OK) {
+            request.retained_device = apply->plan.device;
+            request.retained_rgb = retained.rgb;
+            request.retained_valid = retained.valid;
+        } else if (status != SIXEL_FEATURE_ERROR) {
+            return status;
+        }
+    }
     request.accumulation_keycolor = execution->delta_keycolor;
     request.sixdelta_threshold = execution->delta_threshold;
     request.sixdelta_metric = execution->delta_metric;
@@ -645,11 +659,25 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     return status;
 }
 
+static SIXELSTATUS
+sixel_palette_apply_get_device(sixel_palette_apply_interface_t const *self,
+    sixel_gpu_device_interface_t **device)
+{
+    sixel_palette_apply_storage_t const *apply;
+
+    if (self == NULL || device == NULL) return SIXEL_BAD_ARGUMENT;
+    apply = (sixel_palette_apply_storage_t const *)self;
+    if (!apply->prepared) return SIXEL_LOGIC_ERROR;
+    *device = apply->gpu ? apply->plan.device : NULL;
+    return SIXEL_OK;
+}
+
 static sixel_palette_apply_vtbl_t const g_palette_apply_vtbl = {
     sixel_palette_apply_ref,
     sixel_palette_apply_unref,
     sixel_palette_apply_prepare,
-    sixel_palette_apply_run
+    sixel_palette_apply_run,
+    sixel_palette_apply_get_device
 };
 
 SIXEL_INTERNAL_API SIXELSTATUS

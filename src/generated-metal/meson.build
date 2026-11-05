@@ -1,6 +1,7 @@
 # Embed source at build time; no shader files are loaded at runtime.
 metal_headers = []
 metal_sources = files(
+  '../retained-plane-gpu.metal',
   '../lookup-policy-ordered-gpu.metal',
   '../lookup-policy-vptree-gpu.metal',
   '../lookup-policy-rbc-gpu.metal',

@@ -53,8 +53,21 @@ gpu_buffer_size(sixel_gpu_buffer_interface_t const *self)
     return (size_t)[buffer->native length];
 }
 
+static SIXELSTATUS
+gpu_buffer_shared_memory(sixel_gpu_buffer_interface_t const *self,
+    void **memory)
+{
+    gpu_native_buffer_t const *buffer;
+
+    if (self == NULL || memory == NULL) return SIXEL_BAD_ARGUMENT;
+    buffer = (gpu_native_buffer_t const *)self;
+    *memory = [buffer->native contents];
+    return *memory != NULL ? SIXEL_OK : SIXEL_FEATURE_ERROR;
+}
+
 static sixel_gpu_buffer_vtbl_t const gpu_buffer_vtbl = {
-    gpu_buffer_ref, gpu_buffer_unref, gpu_buffer_size
+    gpu_buffer_ref, gpu_buffer_unref, gpu_buffer_size,
+    gpu_buffer_shared_memory
 };
 
 static void
@@ -101,6 +114,21 @@ static sixel_gpu_device_vtbl_t const gpu_device_vtbl = {
     gpu_device_ref, gpu_device_ref, gpu_device_format, gpu_device_buffer
 };
 static sixel_gpu_device_interface_t gpu_device = { &gpu_device_vtbl };
+
+SIXEL_INTERNAL_API id<MTLDevice>
+sixel_gpu_metal_device(sixel_gpu_device_interface_t *device)
+{
+    return device == &gpu_device ? g_sixel_gpu_metal_device : nil;
+}
+
+SIXEL_INTERNAL_API id<MTLBuffer>
+sixel_gpu_metal_buffer(sixel_gpu_device_interface_t *device,
+    sixel_gpu_buffer_interface_t *buffer)
+{
+    if (device != &gpu_device || buffer == NULL ||
+            buffer->vtbl != &gpu_buffer_vtbl) return nil;
+    return ((gpu_native_buffer_t *)buffer)->native;
+}
 
 SIXELSTATUS
 sixel_gpu_device_acquire(sixel_gpu_device_interface_t **result)

@@ -10626,6 +10626,7 @@ sixel_encoder_output_without_macro(
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     int output_colorspace;
     sixel_encode_session_t session;
+    SIXELSTATUS binding_status;
 
     memset(&session, 0, sizeof(session));
     p = NULL;
@@ -10831,6 +10832,14 @@ sixel_encoder_output_without_macro(
 end:
     if (output != NULL) sixel_output_bind_session(output, NULL);
     sixel_retained_update_unref(session.update);
+    if (session.plane != NULL) {
+        /* Migration can replace storage even before output, and GPU commit
+         * swaps the active allocation. Rebind before residual analysis or
+         * another legacy path can read these aliases; never copy the canvas. */
+        binding_status = sixel_retained_plane_legacy_rebind(session.plane,
+            &encoder->accumulation_pixels, &encoder->accumulation_valid_mask);
+        if (status == SIXEL_OK) status = binding_status;
+    }
     if (SIXEL_FAILED(status) &&
             (session.partial_output || session.committed)) {
         (void)sixel_encoder_invalidate_6delta_plane_owned(encoder);

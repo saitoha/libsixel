@@ -28,7 +28,7 @@ fixture_buffer_size(sixel_gpu_buffer_interface_t const *self)
 }
 
 static sixel_gpu_buffer_vtbl_t const fixture_buffer_vtbl = {
-    fixture_buffer_ref, fixture_buffer_unref, fixture_buffer_size
+    fixture_buffer_ref, fixture_buffer_unref, fixture_buffer_size, NULL
 };
 
 static void
