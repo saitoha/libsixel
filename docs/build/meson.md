@@ -57,6 +57,8 @@ The common registration wraps the original shell/adapter command with a build-ma
 
 Meson writes its own logs under `meson-logs/`. It does not execute the custom Automake `check-TESTS` collector and does not use its `.trs` summary format. [meson-test-with-failures.sh](../../build-aux/meson-test-with-failures.sh) is a reporting adapter that runs `meson test`, preserves its status, and prints failed names from its JSON log; it is not another scheduler.
 
+The float lookup case archive explicitly disables unity. Its cases embed differently configured copies of production code, whose private types and static helpers cannot share a C translation unit. The [test harness](test-harness.md) owns this boundary and its source check.
+
 ## Discovery and regeneration
 
 Both runtime script discovery and C test-source discovery run during Meson setup. A new or renamed file may not appear in an existing configured graph until Meson is reconfigured:

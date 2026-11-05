@@ -63,8 +63,34 @@ function forget_alias(name,    previous) {
         delete renamed[name]
     }
 }
-function scan_calls(line, number,    token, name, count, parts) {
+function scan_calls(line, number,    token, name, count, parts, path, body, n, pending) {
     if (line ~ /^[[:space:]]*#/) {
+        # Fault-injection copies retain calls into the DLL from production
+        # bodies. Scan those calls under the including test's live aliases.
+        if (line ~ /^[[:space:]]*#[[:space:]]*include[[:space:]]+"src\/[^" ]+\.c"/) {
+            path = line
+            sub(/^[^"]*"/, "", path)
+            sub(/".*/, "", path)
+            path = src_root "/" path
+            if (!including[path]) {
+                including[path] = 1
+                n = 0
+                while ((getline body < path) > 0) {
+                    ++n
+                    body = pending body
+                    pending = ""
+                    if (body ~ /\\$/) {
+                        sub(/\\$/, "", body)
+                        pending = body
+                        continue
+                    }
+                    if (body ~ /\(|^[[:space:]]*#/) scan_calls(body, n)
+                }
+                close(path)
+                delete including[path]
+            }
+            return
+        }
         if (line ~ /^[[:space:]]*#[[:space:]]*define[[:space:]]/) {
             sub(/^[[:space:]]*#[[:space:]]*define[[:space:]]+/, "", line)
             count = split(line, parts, /[[:space:]]+/)
@@ -135,10 +161,20 @@ BEGIN {
     }
     self_test = 0
 }
-FNR == 1 { reset_calls() }
-/\(|^[[:space:]]*#/ { scan_calls($0, FNR) }
+FNR == 1 { reset_calls(); pending_call = "" }
+pending_call != "" || /\(|^[[:space:]]*#|\\$/ {
+    call_line = pending_call $0
+    pending_call = ""
+    if (call_line ~ /\\$/) {
+        sub(/\\$/, "", call_line)
+        pending_call = call_line
+        next
+    }
+    if (call_line ~ /\(|^[[:space:]]*#/) scan_calls(call_line, FNR)
+}
 AWK
 sh "$source_files_helper" "$tests_root" --name '*.[ch]' --exec awk \
+    -v src_root="$src_root" \
     -v declarations_file="$source_decls" \
     -f "$src_root/tests/_static/awk/dllexport-declarations.awk" \
     -f "$calls_scanner" > "$calls_file"
@@ -168,7 +204,7 @@ FNR == NR {
     line_no = $2
     exported = $3
     if (exported) visible[name] = 1
-    if (called[name] && name ~ /^(sixel_|loader_|stbi_)/) {
+    if (called[name] && name ~ /^(sixel_|loader_|stbi_|chunk_)/) {
         referenced[name] = line_no
     }
 }

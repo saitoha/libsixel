@@ -12210,3 +12210,6 @@ EXTRA_DIST += _static/sh/staticcheck-palette-option-storage.sh \
 
 EXTRA_DIST += _static/sh/staticcheck-test-source-isolation.sh \
     _static/awk/test-source-isolation.awk
+
+EXTRA_DIST += _static/sh/staticcheck-test-float-lookup-unity.sh \
+    _static/sh/staticcheck-libjpeg-link-probe.sh

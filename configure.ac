@@ -4564,6 +4564,28 @@ if test x$with_jpeg != xno; then
         fi
     fi
     if test x$have_jpeg = xyes; then
+        dnl pkg-config can describe libraries for another compiler or CRT.
+        dnl Validate the base header and symbol before enabling the loader.
+        JPEG_CHECK_CFLAGS_BACKUP=$CFLAGS
+        JPEG_CHECK_LIBS_BACKUP=$LIBS
+        CFLAGS="$CFLAGS $LIBJPEG_CFLAGS"
+        LIBS="$LIBJPEG_LIBS $LIBS"
+        AC_MSG_CHECKING([whether libjpeg headers and library are usable])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM(
+            [[#include <stdio.h>
+#include <jpeglib.h>]],
+            [[struct jpeg_error_mgr error;
+              (void)jpeg_std_error(&error);]])],
+            [have_jpeg=yes],
+            [have_jpeg=no
+             LIBJPEG_CFLAGS=
+             LIBJPEG_LIBS=
+             LIBJPEG_PKG_NAME=])
+        AC_MSG_RESULT([$have_jpeg])
+        CFLAGS=$JPEG_CHECK_CFLAGS_BACKUP
+        LIBS=$JPEG_CHECK_LIBS_BACKUP
+    fi
+    if test x$have_jpeg = xyes; then
         have_jpeg12_api=no
         have_jpeg16_api=no
         have_jpeg_arith_decoder=no

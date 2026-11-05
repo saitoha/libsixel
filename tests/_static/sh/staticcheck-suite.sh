@@ -1083,6 +1083,14 @@ run_case_tap "staticcheck-test-source-isolation" \
     sh "$src_root/tests/_static/sh/staticcheck-test-source-isolation.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-float-lookup-unity" \
+    sh "$src_root/tests/_static/sh/staticcheck-test-float-lookup-unity.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-libjpeg-link-probe" \
+    sh "$src_root/tests/_static/sh/staticcheck-libjpeg-link-probe.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-tool-capabilities" \
     sh "$src_root/tests/_static/sh/staticcheck-test-tool-capabilities.sh" \
     "$src_root" || fail_and_exit $?

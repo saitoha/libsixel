@@ -284,6 +284,9 @@ float_lookup_tests = static_library('sixel_float_lookup_tests',
   include_directories: test_runner_inc,
   dependencies: test_runner_deps,
   c_args: test_feature_c_args + float_lookup_c_args + test_deprecated_c_args,
+  # Each case includes an implementation with its own SIMD/precision macros.
+  # Private function aliases do not isolate static helpers or type names.
+  override_options: ['unity=off'],
   build_by_default: false,
   install: false)
 

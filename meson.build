@@ -1196,6 +1196,24 @@ if not jpeg_opt.disabled()
 endif
 
 if jpeg_dep.found()
+  # Metadata alone may name headers/libraries for a different compiler/CRT.
+  if not cc.links('''
+#include <stdio.h>
+#include <jpeglib.h>
+int main(void) {
+  struct jpeg_error_mgr error;
+  (void)jpeg_std_error(&error);
+  return 0;
+}
+''', dependencies: jpeg_dep, name: 'usable libjpeg headers and library')
+    if jpeg_opt.enabled()
+      error('jpeg=enabled requires usable libjpeg headers and library')
+    endif
+    jpeg_dep = disabler()
+  endif
+endif
+
+if jpeg_dep.found()
   jpeg_has_12_api = cc.links(
     '''
 #include <stdio.h>

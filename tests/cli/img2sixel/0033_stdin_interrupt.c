@@ -69,8 +69,10 @@ test_cli_stdin_interrupt(int argc, char **argv)
     if (argc != 2) {
         return 1;
     }
-    master = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if (master < 0 || grantpt(master) < 0 || unlockpt(master) < 0) {
+    /* FreeBSD rejects O_NONBLOCK at PTY allocation; set it afterward. */
+    master = posix_openpt(O_RDWR | O_NOCTTY);
+    if (master < 0 || fcntl(master, F_SETFL, O_NONBLOCK) < 0 ||
+        grantpt(master) < 0 || unlockpt(master) < 0) {
         goto end;
     }
     path = ptsname(master);

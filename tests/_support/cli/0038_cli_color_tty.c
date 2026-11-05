@@ -874,6 +874,12 @@ test_cli_0038_color_tty(int argc, char **argv)
         if (!color_tty_send(report[1], "d", 1u)) {
             result = 1;
         }
+        /* BSD revokes the PTY when the session leader exits, discarding
+         * queued recovery bytes. Wait until the parent has observed every
+         * byte before releasing the session, even after restoring mode. */
+        if (!color_tty_expect(command[0], "q")) {
+            result = 1;
+        }
         _exit(result);
     }
     close(command[0]);
@@ -882,6 +888,21 @@ test_cli_0038_color_tty(int argc, char **argv)
         return color_tty_error("fork failed");
     }
     result = color_tty_script(argv[1], master, command[1], report[0], child);
+    /* The script must explain every outgoing byte. Backpressure deliberately
+     * leaves queued filler, and flood can leave echoed input after cleanup.
+     * Inspect the queue before allowing the session leader to exit. */
+    extra = master < 0 ? -1 : (int)read(master, &byte, 1u);
+    if (extra > 0 && strcmp(argv[1], "backpressure") != 0 &&
+        strcmp(argv[1], "flood") != 0 &&
+        strcmp(argv[1], "sigint-race") != 0 &&
+        strcmp(argv[1], "sigterm-race") != 0) {
+        fprintf(stderr, "CLI color TTY: unexpected trailing byte 0x%02x\n",
+                (unsigned int)(unsigned char)byte);
+        result = 0;
+    }
+    if (result && !color_tty_send(command[1], "q", 1u)) {
+        result = 0;
+    }
     if (!result) {
         kill(child, SIGKILL);
         /* Releasing the master also unblocks BSD's last-slave close when
@@ -891,15 +912,6 @@ test_cli_0038_color_tty(int argc, char **argv)
     }
     if (waitpid(child, &status, 0) != child || !WIFEXITED(status) ||
         WEXITSTATUS(status) != 0) {
-        result = 0;
-    }
-    /* The script must explain every outgoing byte. Backpressure deliberately
-     * leaves queued filler, and flood can leave echoed input after cleanup. */
-    extra = master < 0 ? -1 : (int)read(master, &byte, 1u);
-    if (extra > 0 && strcmp(argv[1], "backpressure") != 0 &&
-        strcmp(argv[1], "flood") != 0 &&
-        strcmp(argv[1], "sigint-race") != 0 &&
-        strcmp(argv[1], "sigterm-race") != 0) {
         result = 0;
     }
     if (master >= 0) {

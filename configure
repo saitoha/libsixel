@@ -26644,6 +26644,43 @@ fi
         fi
     fi
     if test x$have_jpeg = xyes; then
+                        JPEG_CHECK_CFLAGS_BACKUP=$CFLAGS
+        JPEG_CHECK_LIBS_BACKUP=$LIBS
+        CFLAGS="$CFLAGS $LIBJPEG_CFLAGS"
+        LIBS="$LIBJPEG_LIBS $LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether libjpeg headers and library are usable" >&5
+printf %s "checking whether libjpeg headers and library are usable... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+#include <jpeglib.h>
+int
+main (void)
+{
+struct jpeg_error_mgr error;
+              (void)jpeg_std_error(&error);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_jpeg=yes
+else case e in #(
+  e) have_jpeg=no
+             LIBJPEG_CFLAGS=
+             LIBJPEG_LIBS=
+             LIBJPEG_PKG_NAME= ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_jpeg" >&5
+printf "%s\n" "$have_jpeg" >&6; }
+        CFLAGS=$JPEG_CHECK_CFLAGS_BACKUP
+        LIBS=$JPEG_CHECK_LIBS_BACKUP
+    fi
+    if test x$have_jpeg = xyes; then
         have_jpeg12_api=no
         have_jpeg16_api=no
         have_jpeg_arith_decoder=no

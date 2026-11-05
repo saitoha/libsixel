@@ -48,6 +48,8 @@ The YCCK8, CMYK12, YCCK12 and CMYK16 controls reuse the original coding data of 
 
 ## Implementation and validation
 
+Both build systems compile and link a base `jpeglib.h`/`jpeg_std_error` probe with the discovered dependency flags before enabling the loader. pkg-config metadata can describe another compiler or CRT, so discovery alone is insufficient. An unusable automatic dependency is disabled; an explicitly requested dependency fails configuration. Precision API probes run only after the base dependency succeeds.
+
 [`loader-libjpeg.c`](../../src/loader-libjpeg.c) owns scanline decode, CMYK conversion, ICC extraction, orientation, and the component callback. libjpeg errors are translated into loader status and cleaned up; allocator or callback failures must not be treated as an invitation to append frames from another backend.
 
 The [libjpeg test category](../../tests/loader-jpeg) covers progressive decode, forced selection, signatures, malformed JPEG, output representations, CMYK, and metadata/precision cases. Higher-depth checks are conditional on the linked APIs. This inventory does not guarantee every library release's coding-process coverage or that every profile takes a transform path. Compare effective pixel format and profile diagnostics, not just successful conversion.
@@ -59,6 +61,10 @@ For source-format behavior implemented without libjpeg, see [builtin JPEG](built
 <!-- test-coverage: enforced -->
 
 ### Behavioral contract tests
+
+| ID | Contract | Owning test |
+| --- | --- | --- |
+| JPEG-01 | Both build systems validate the header and linked base API before activating libjpeg. Source inspection does not replace actual compiler/linker checks. | [tests/_static/sh/staticcheck-libjpeg-link-probe.sh](../../tests/_static/sh/staticcheck-libjpeg-link-probe.sh) |
 
 #### Grayscale ICC
 

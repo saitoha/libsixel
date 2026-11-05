@@ -9,6 +9,8 @@
 
 int playback_lifecycle_test(int mode);
 
+#if SIXEL_ENABLE_THREADS
+/* These callbacks belong to the threaded body below, not its skip path. */
 typedef struct playback_0022_counts {
     int completed;
     int interrupted;
@@ -74,6 +76,7 @@ playback_0022_start(sixel_encoder_t *encoder, sixel_output_t *output,
     }
     return playback;
 }
+#endif
 
 int
 test_playback_0022(int argc, char **argv)

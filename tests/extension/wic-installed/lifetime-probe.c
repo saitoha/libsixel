@@ -391,15 +391,25 @@ main(int argc, char **argv)
     char phase[32];
     char fail[16];
     char *args[4];
+    char *request;
     int result;
+    int first;
 
     if (argc != 2 || strcmp(argv[1], "--server")) {
         return run_case(argc, argv);
     }
     puts("READY");
     fflush(stdout);
+    first = 1;
     while (fgets(line, sizeof(line), stdin)) {
-        if (sscanf(line, "%31s %31s %15s", target, phase, fail) != 3) {
+        request = line;
+        /* .NET Framework's redirected UTF-8 writer emits a BOM on its
+         * first write. It is stream metadata, not part of the target. */
+        if (first && strncmp(request, "\357\273\277", 3u) == 0) {
+            request += 3;
+        }
+        first = 0;
+        if (sscanf(request, "%31s %31s %15s", target, phase, fail) != 3) {
             return 2;
         }
         args[0] = argv[0];

@@ -1,5 +1,6 @@
 #!/bin/sh
 # Policy: docs/threading/encoder.md
+# Policy: docs/threading/animation.md
 # Verify playback cancellation and failure complete frames in order.
 set -eux
 

@@ -71,5 +71,8 @@ The retained timelines establish host-specific measurement baselines. They do no
 | AT-03 | With preparation overlap available, submissions after cancellation remain eligible. | [tests/encoder/planning/0190_prepare_ahead_cancel_new_admission.t](../../tests/encoder/planning/0190_prepare_ahead_cancel_new_admission.t) |
 | AT-04 | With preparation overlap available, output failure drains preparation before the next completion releases ownership. | [tests/encoder/planning/0191_prepare_ahead_write_failure_drain.t](../../tests/encoder/planning/0191_prepare_ahead_write_failure_drain.t) |
 | AT-05 | Explicit serial preparation does not enter the helper lane. | [tests/encoder/planning/0192_gpu_ahead_explicit_serial.t](../../tests/encoder/planning/0192_gpu_ahead_explicit_serial.t) |
+| AT-06 | Playback cancellation/failure reports a skip without threads; its private callbacks share that compile-time condition. | [tests/encoder/planning/0022_playback_cancel_failure.t](../../tests/encoder/planning/0022_playback_cancel_failure.t) |
+
+Thread-only cancellation helpers are compiled under the same `SIXEL_ENABLE_THREADS` condition as their test body. A no-thread build retains the public test entry and reports a skip, without compiling unused private callbacks.
 
 The gated cancellation and failure cases select the CPU backend, so their ownership evidence does not depend on Metal initialization or availability. GPU dispatch and output equivalence are covered by the [encoder execution tests](encoder.md#test-coverage). These tests establish ownership and output behavior, not a scheduling deadline.

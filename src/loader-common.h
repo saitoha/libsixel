@@ -233,11 +233,11 @@ loader_timeline_emit_frame_callback(sixel_frame_t *frame,
 
 SIXEL_INTERNAL_API int
 chunk_is_png(sixel_chunk_t const *chunk);
-int chunk_is_jpeg(sixel_chunk_t const *chunk);
+SIXEL_INTERNAL_API int chunk_is_jpeg(sixel_chunk_t const *chunk);
 SIXEL_INTERNAL_API int chunk_is_webp(sixel_chunk_t const *chunk);
 int chunk_is_bmp(sixel_chunk_t const *chunk);
 int chunk_is_gif(sixel_chunk_t const *chunk);
-int chunk_is_tiff(sixel_chunk_t const *chunk);
+SIXEL_INTERNAL_API int chunk_is_tiff(sixel_chunk_t const *chunk);
 int chunk_is_wbmp(sixel_chunk_t const *chunk);
 int chunk_is_tga(sixel_chunk_t const *chunk);
 int chunk_is_gd(sixel_chunk_t const *chunk);
