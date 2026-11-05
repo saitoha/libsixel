@@ -138,6 +138,18 @@ parse_params(unsigned char const **pp, unsigned char const *end,
     return n < max ? n : max;
 }
 
+unsigned char const *
+find_sixel_body(unsigned char const *p, unsigned char const *end)
+{
+    while (p < end && *p != 0x90 &&
+           !(*p == 0x1b && p + 1 < end && p[1] == 'P')) {
+        p++;
+    }
+    while (p < end && *p++ != 'q') {
+    }
+    return p;
+}
+
 void
 buf_reserve(buffer_t *b, size_t extra)
 {

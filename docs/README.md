@@ -34,7 +34,7 @@ What libsixel is, where it came from, and the SIXEL format it implements.
 
 ### SIXEL codec tutorial
 
-- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated course in which you write a SIXEL encoder and decoder, from a thirty-line codec to SIMD and threads.
+- [Writing a SIXEL codec, step by step](tutorial/sixel-codec/README.md) is an illustrated course in which you write a SIXEL encoder and decoder, from a thirty-line codec through a faster parser and memory layout to SIMD and threads.
 
 ## Using libsixel
 

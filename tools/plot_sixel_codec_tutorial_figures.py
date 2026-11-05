@@ -130,30 +130,35 @@ ASSET_NAMES = (
     "step2-nodes.svg",
     "step2-packing.svg",
     "step2-repeat-fill.svg",
-    "step3-memory.svg",
-    "step3-column-word.svg",
-    "step3-swar.svg",
-    "step3-first-colors.svg",
-    "step3-occupancy.svg",
-    "step3-masked-store.svg",
-    "step4-lanes.svg",
-    "step4-block.svg",
-    "step4-transpose.svg",
-    "step5-encoder.svg",
-    "step5-decoder.svg",
-    "step5-amdahl.svg",
+    "step3-dispatch.svg",
+    "step3-branchless.svg",
+    "step4-memory.svg",
+    "step4-column-word.svg",
+    "step4-swar.svg",
+    "step4-first-colors.svg",
+    "step4-occupancy.svg",
+    "step4-masked-store.svg",
+    "step5-lanes.svg",
+    "step5-block.svg",
+    "step5-transpose.svg",
+    "step6-encoder.svg",
+    "step6-decoder.svg",
+    "step6-amdahl.svg",
     "sixel-codec-tutorial-figures.json",
 )
 
 # Measured results from docs/tutorial/sixel-codec/README.md, 2400x1800
 # photograph: (encode ms, decode ms) per step.
-PHOTO_2400 = (
-    (319.8, 33.0),
-    (15.6, 12.4),
-    (15.3, 7.95),
-    (12.7, 7.04),
-    (2.18, 1.98),
-)
+
+def fhd_times() -> list[tuple[float, float]]:
+    """Encode and decode milliseconds of the Full HD photograph per step."""
+    results = json.loads((Path(__file__).resolve().parent.parent /
+                          "docs/tutorial/sixel-codec/measurements/"
+                          "results.json").read_text(encoding="utf-8"))
+    cells = results["bench"]
+    return [(cells[f"step{n}"]["photo-fhd"]["encode_ms"],
+             cells[f"step{n}"]["photo-fhd"]["decode_ms"])
+            for n in range(1, 7)]
 
 
 # ------------------------------------------------------------------ #
@@ -456,12 +461,13 @@ def big_picture() -> str:
 
 
 JOURNEY = (
-    ("0", "Read SIXEL", "draw a heart by hand", TEAL),
+    ("0", "Read SIXEL", "a heart by hand", TEAL),
     ("1", "Simple codec", "30 lines each way", BLUE),
     ("2", "Nodes", "read each pixel once", BLUE),
-    ("3", "64-bit words", "6 pixels in 1 number", MAGENTA),
-    ("4", "SIMD", "16 columns at once", MAGENTA),
-    ("5", "Threads", "many cores at once", GOLD),
+    ("3", "Fewer decisions", "stop asking about each byte", BLUE),
+    ("4", "64-bit words", "6 pixels in 1 number", MAGENTA),
+    ("5", "SIMD", "16 columns at once", MAGENTA),
+    ("6", "Threads", "many cores at once", GOLD),
 )
 
 
@@ -470,10 +476,10 @@ def journey() -> str:
     height = 640
     body = [title("The journey",
                   "Each step keeps the output and changes one idea.")]
-    step_w = 108
+    step_w = 93
     for i, (number, name, idea, color) in enumerate(JOURNEY):
         x = 32 + i * step_w
-        y = 400 - i * 52
+        y = 400 - i * 44
         body.append(rect(x, y, step_w - 6, 560 - y, PAPER, color,
                          1.6, 10))
         body.append(rect(x, y, step_w - 6, 8, color, radius=4))
@@ -487,7 +493,7 @@ def journey() -> str:
         current = ""
         for word in idea.split(" "):
             candidate = (current + " " + word).strip()
-            if len(candidate) > 11 and current:
+            if len(candidate) > 10 and current:
                 lines.append(current)
                 current = word
             else:
@@ -498,26 +504,27 @@ def journey() -> str:
                              y + 80 + len(words) * 20 + k * 19, value,
                              14, 500, MUTED, "middle"))
     body.append(note(32, 596, (
-        "Steps 2 to 5 write exactly the same bytes, so each one is a",
+        "Steps 2 to 6 write exactly the same bytes, so each one is a",
         "pure speed-up you can test.",
     ), 17))
     return document(height, "The journey",
-                    "Six lessons as a staircase: 0 read SIXEL by hand, "
-                    "1 a simple codec, 2 nodes, 3 64-bit words, 4 SIMD, "
-                    "5 threads.", body)
+                    "Seven lessons as a staircase: 0 read SIXEL by hand, "
+                    "1 a simple codec, 2 nodes, 3 fewer decisions, "
+                    "4 64-bit words, 5 SIMD, 6 threads.", body)
 
 
 def speed() -> str:
-    """Large photographs per second, encode and decode, per step."""
-    height = 580
+    """Full HD pictures per second, encode and decode, per step."""
+    times = fhd_times()
+    height = 650
     body = [title("How fast does it get?",
-                  "Large photographs (2400 × 1800) per second, more is better")]
+                  "Full HD photographs per second, more is better")]
     top = 140
     bar_h = 26
-    scale = 440 / 520
+    scale = 440 / max(1000.0 / min(min(pair) for pair in times), 1.0)
     body.append(text(160, top - 18, "encode", 16, 700, BLUE))
     body.append(text(260, top - 18, "decode", 16, 700, MAGENTA))
-    for i, (enc, dec) in enumerate(PHOTO_2400):
+    for i, (enc, dec) in enumerate(times):
         y = top + i * 72
         body.append(text(32, y + 34, f"Step {i + 1}", 19, 750, INK))
         for k, (ms, color) in enumerate(((enc, BLUE), (dec, MAGENTA))):
@@ -527,16 +534,16 @@ def speed() -> str:
             body.append(rect(130, by, w, bar_h, color, radius=4))
             body.append(text(138 + w, by + 19, f"{per_second:.0f}", 16,
                              700, color))
-    body.append(note(32, top + 5 * 72 + 20, (
-        "Measured on an Apple M3 Max. Step 5 uses all cores; the",
+    body.append(note(32, top + 6 * 72 + 20, (
+        "Measured on an Apple M3 Max. Step 6 uses all cores; the",
         "others use one. The README table lists every input.",
     ), 15))
     return document(height, "How fast does it get?",
-                    "Bar chart of large photographs encoded and decoded "
+                    "Bar chart of Full HD photographs encoded and decoded "
                     "per second at each step: encode "
-                    + ", ".join(f"{1000 / e:.0f}" for e, _ in PHOTO_2400)
+                    + ", ".join(f"{1000 / e:.0f}" for e, _ in times)
                     + "; decode "
-                    + ", ".join(f"{1000 / d:.0f}" for _, d in PHOTO_2400)
+                    + ", ".join(f"{1000 / d:.0f}" for _, d in times)
                     + ".", body)
 
 
@@ -1087,7 +1094,95 @@ def step2_repeat_fill() -> str:
 # Step 3.                                                             #
 
 
-def step3_memory() -> str:
+def step3_dispatch() -> str:
+    """Asking about every byte, against staying in a loop."""
+    height = 520
+    size = 44
+    stream = "#1~N^}^NE$"
+    body = [title("How many questions per byte?",
+                  "Most bytes of a stream are data characters in a row.")]
+    x0 = 32
+    body.append(text(x0, 134, "the stream", 15, 750, MUTED))
+    for i, ch in enumerate(stream):
+        data = "?" <= ch <= "~"
+        body.append(cell(x0 + i * size, 146, size - 4,
+                         BLUE_LIGHT if data else MAGENTA_LIGHT, ch, INK,
+                         BLUE if data else MAGENTA, 20))
+    body.append(text(x0, 232, "Back to the top for every byte", 17, 750,
+                     MAGENTA))
+    body.append(note(x0, 258, ("Repeat? Data? $? -? #? \"? ...",), 15))
+    for i in range(len(stream)):
+        body.append(rect(x0 + i * size, 272, size - 4, 30, MAGENTA_LIGHT,
+                         MAGENTA, 1.2, 6))
+        body.append(text(x0 + i * size + (size - 4) / 2, 293, "?", 18, 800,
+                         MAGENTA, "middle"))
+    body.append(text(x0, 348, "Stay in a loop while the bytes are data", 17,
+                     750, TEAL))
+    body.append(note(x0, 374, ("Only one question: still a data character?",),
+                     15))
+    spans = ((0, 2, MAGENTA_LIGHT, MAGENTA, "#1 at once"),
+             (2, 7, TEAL_LIGHT, TEAL, "one loop"),
+             (9, 1, MAGENTA_LIGHT, MAGENTA, "$"))
+    for start, count, fill, accent, label in spans:
+        body.append(rect(x0 + start * size, 388, count * size - 4, 30, fill,
+                         accent, 1.2, 6))
+        body.append(text(x0 + start * size + (count * size - 4) / 2, 408,
+                         label, 13, 750, accent, "middle"))
+    body.append(note(x0, 462, (
+        "Fewer questions leave fewer chances for a wrong guess by the",
+        "processor, and the loop body can run without returning to the top.",
+    ), 16))
+    return document(height, "How many questions per byte?",
+                    "The stream #1~N^}^NE$ handled two ways. Returning to "
+                    "the dispatch asks a question for every byte; an inner "
+                    "loop reads #1 at once and handles the seven data "
+                    "characters in one loop.", body)
+
+
+def step3_branchless() -> str:
+    """Testing six bits, against a mask for every row."""
+    height = 500
+    bits = 0b100110
+    color = 3
+    old = COLUMN
+    body = [title("Painting one character without guessing",
+                  f"'e' is {bits_label(bits)}: rows 1, 2 and 5 get "
+                  f"color {color}.")]
+    columns = ("row", "bit", "with a branch", "with a mask", "result")
+    xs = (32, 92, 160, 360, 590)
+    for x, label in zip(xs, columns):
+        body.append(text(x, 126, label, 15, 750, MUTED))
+    for r in range(6):
+        y = 138 + r * 44
+        bit = bits >> r & 1
+        body.append(text(xs[0], y + 26, str(r), 17, 700, INK))
+        body.append(cell(xs[1], y, 36, GOLD_LIGHT if bit else PAPER, str(bit),
+                         GOLD if bit else MUTED, GOLD if bit else GRID, 18))
+        body.append(mono(xs[2], y + 25,
+                         "paint" if bit else "skip", 16, 700,
+                         MAGENTA))
+        body.append(mono(xs[3], y + 25, f"mask = {'ff' if bit else '00'}", 16,
+                         700, TEAL))
+        value = color if bit else old[r]
+        body.append(cell(xs[4], y, 36, TEAL_LIGHT if bit else PAPER,
+                         str(value), TEAL if bit else MUTED,
+                         TEAL if bit else GRID, 18))
+    body.append(note(32, 420, (
+        "The branch makes the processor guess paint or skip six times per",
+        "character. The mask does the same work every time, so there is",
+        "nothing to guess: *q = (*q & ~mask) | (color & mask);",
+    ), 16))
+    return document(height, "Painting one character without guessing",
+                    "The character e sets rows 1, 2 and 5. A branch chooses "
+                    "paint or skip for each row. A mask of ff or 00 writes "
+                    "every row the same way, with no choice to predict.", body)
+
+
+# ------------------------------------------------------------------ #
+# Step 4.                                                             #
+
+
+def step4_memory() -> str:
     """Rows lie end to end, so a column is scattered."""
     height = 560
     size = 34
@@ -1125,8 +1220,8 @@ def step3_memory() -> str:
         body.append(text(32 + (r * 8 + 4) * small, yy + 50, f"row {r}", 12,
                          650, MUTED, "middle"))
     body.append(note(32, 490, (
-        "In a real image the gap is the image width: 2400 boxes. The six",
-        "pixels of one column land in six different parts of memory.",
+        "In a real image the gap is the image width. Painting one",
+        "character means one store in each of six separate rows.",
     ), 17))
     return document(height, "Where the pixels live in memory",
                     "An eight by six band with letters. Column 2 holds c, "
@@ -1154,7 +1249,7 @@ def word_cells(x: float, y: float, values: Sequence[object], size: float,
     return "".join(body)
 
 
-def step3_column_word() -> str:
+def step4_column_word() -> str:
     """Six pixels of one column packed into one 64-bit number."""
     height = 560
     size = 48
@@ -1186,7 +1281,7 @@ def step3_column_word() -> str:
                     "row 0 in byte 0.", body)
 
 
-def step3_swar() -> str:
+def step4_swar() -> str:
     """Which rows of the column have color 2?"""
     height = 760
     size = 50
@@ -1225,7 +1320,7 @@ def step3_swar() -> str:
                     "the six-bit value 38, character e.", body)
 
 
-def step3_first_colors() -> str:
+def step4_first_colors() -> str:
     """Finding each color of a column once."""
     height = 520
     size = 52
@@ -1267,7 +1362,7 @@ def step3_first_colors() -> str:
                     "2 and 7 only.", body)
 
 
-def step3_occupancy() -> str:
+def step4_occupancy() -> str:
     """A bitmap of occupied columns and the jump to the next one."""
     height = 440
     size = 36
@@ -1305,7 +1400,7 @@ def step3_occupancy() -> str:
                     "bit to the next.", body)
 
 
-def step3_masked_store() -> str:
+def step4_masked_store() -> str:
     """Painting into a column word with a mask."""
     height = 640
     size = 50
@@ -1343,10 +1438,10 @@ def step3_masked_store() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Step 4.                                                             #
+# Step 5.                                                             #
 
 
-def step4_lanes() -> str:
+def step5_lanes() -> str:
     """One instruction compares sixteen pairs."""
     height = 470
     size = 38
@@ -1389,7 +1484,7 @@ BLOCK_ROWS = (
 )
 
 
-def step4_block() -> str:
+def step5_block() -> str:
     """Six compares give one color's characters for 16 columns."""
     height = 590
     size = 38
@@ -1443,7 +1538,7 @@ def lane_strip(x: float, y: float, cells: Sequence[tuple[int, int]],
     return "".join(body)
 
 
-def step4_transpose() -> str:
+def step5_transpose() -> str:
     """Three rounds of interleaving turn columns back into rows."""
     height = 790
     size = 36
@@ -1515,14 +1610,14 @@ def step4_transpose() -> str:
 
 
 # ------------------------------------------------------------------ #
-# Step 5.                                                             #
+# Step 6.                                                              #
 
 
 WORKER_COLORS = (BLUE, MAGENTA, GOLD, TEAL)
 WORKER_LIGHT = (BLUE_LIGHT, MAGENTA_LIGHT, GOLD_LIGHT, TEAL_LIGHT)
 
 
-def step5_encoder() -> str:
+def step6_encoder() -> str:
     """Bands split between threads, outputs glued in order."""
     height = 560
     body = [title("Encoding with four helpers",
@@ -1560,7 +1655,7 @@ def step5_encoder() -> str:
                     "buffers are joined in order.", body)
 
 
-def step5_decoder() -> str:
+def step6_decoder() -> str:
     """Prescan for band starts, then paint in parallel."""
     height = 640
     body = [title("Decoding with helpers: find the bands first",
@@ -1593,8 +1688,8 @@ def step5_decoder() -> str:
         body.append(cell(x0 + i * size, y0, size - 2, fill, ch, INK, stroke,
                          12))
     body.append(text(x0, y0 - 14, "the stream", 15, 750, MUTED))
-    body.append(text(32, 225, "1. Prescan: one quick pass that stops only at "
-                     "'-', '#' and '\"'.", 16, 750, INK))
+    body.append(text(32, 225, "1. Prescan: stop at each '-' and look back "
+                     "for the last '#'.", 16, 750, INK))
     body.append(text(32, 252, "It writes down where each band starts and "
                      "its color:", 16, 550, MUTED))
     for k, (offset, color) in enumerate(starts):
@@ -1621,7 +1716,7 @@ def step5_decoder() -> str:
                     "parallel, with a serial fallback.", body)
 
 
-def step5_amdahl() -> str:
+def step6_amdahl() -> str:
     """The serial part limits the speed-up."""
     height = 470
     body = [title("Why 14 cores do not give 14×",
@@ -1672,18 +1767,20 @@ FACTORIES: tuple[tuple[str, Callable[[], str]], ...] = (
     ("step2-nodes.svg", step2_nodes),
     ("step2-packing.svg", step2_packing),
     ("step2-repeat-fill.svg", step2_repeat_fill),
-    ("step3-memory.svg", step3_memory),
-    ("step3-column-word.svg", step3_column_word),
-    ("step3-swar.svg", step3_swar),
-    ("step3-first-colors.svg", step3_first_colors),
-    ("step3-occupancy.svg", step3_occupancy),
-    ("step3-masked-store.svg", step3_masked_store),
-    ("step4-lanes.svg", step4_lanes),
-    ("step4-block.svg", step4_block),
-    ("step4-transpose.svg", step4_transpose),
-    ("step5-encoder.svg", step5_encoder),
-    ("step5-decoder.svg", step5_decoder),
-    ("step5-amdahl.svg", step5_amdahl),
+    ("step3-dispatch.svg", step3_dispatch),
+    ("step3-branchless.svg", step3_branchless),
+    ("step4-memory.svg", step4_memory),
+    ("step4-column-word.svg", step4_column_word),
+    ("step4-swar.svg", step4_swar),
+    ("step4-first-colors.svg", step4_first_colors),
+    ("step4-occupancy.svg", step4_occupancy),
+    ("step4-masked-store.svg", step4_masked_store),
+    ("step5-lanes.svg", step5_lanes),
+    ("step5-block.svg", step5_block),
+    ("step5-transpose.svg", step5_transpose),
+    ("step6-encoder.svg", step6_encoder),
+    ("step6-decoder.svg", step6_decoder),
+    ("step6-amdahl.svg", step6_amdahl),
 )
 
 
@@ -1695,8 +1792,8 @@ def manifest() -> dict[str, object]:
         "kind": "deterministic explanatory schematic with literal bodies",
         "measurement": False,
         "measured_assets": {
-            "speed.svg": "docs/tutorial/sixel-codec/README.md table, "
-                         "2400x1800 photograph",
+            "speed.svg": "docs/tutorial/sixel-codec/measurements/"
+                         "results.json, photo-fhd",
         },
         "assets": [name for name, _ in FACTORIES],
         "fixtures": {

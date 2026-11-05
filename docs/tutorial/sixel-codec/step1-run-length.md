@@ -96,7 +96,7 @@ int decode_sixel(unsigned char const *p, size_t size, image_t *img)
     unsigned char const *end = p + size;
     int a[5], x = 0, y = 0, color = 0, repeat = 1;
 
-    while (p < end && *p++ != 'q') {}                    /* skip ESC P ... q */
+    p = find_sixel_body(p, end);                         /* skip ESC P ... q */
     while (p < end && *p != 0x1b) {                      /* until ESC \ */
         int ch = *p++;
         if (ch == '"') {                                 /* raster attributes */
@@ -151,19 +151,26 @@ Now write your own. Open [`code/mysixel.c`](code/mysixel.c), which has both func
 
 3. **Then the self test.** `./mysixel selftest` encodes and decodes 50 test pictures of awkward sizes, such as 1×7 and 65×13, and tells you the first pixel that came back wrong. When it prints `50 of 50 round trips passed`, you have written a complete SIXEL codec.
 
-If you get stuck, these are the usual mistakes: forgetting that the last band can be shorter than six rows, writing `$` before the first color of a band, or forgetting to reset `repeat` to 1 after painting.
+If you get stuck, these are the usual mistakes:
+
+- Painting the terminator. The `\` of `ESC \` is in the range of sixel characters, so the loop has to stop at the ESC. If `selftest` says a pixel holds the last register when it should hold another, this is the likely cause.
+- Painting the introducer. The `P` and `q` of `ESC P q` are sixel characters too, which is why `find_sixel_body()` skips them.
+- Writing outside the array, because a pixel was painted without checking `x` and `y + r` against the picture's size.
+- Forgetting that the last band can be shorter than six rows.
+- Writing `$` before the first color of a band.
+- Forgetting to reset `repeat` to 1 after painting, or treating `!0` as zero columns instead of one.
 
 ## What it costs
 
-<!-- measurements:begin -->
+<!-- measurements:begin:step1 -->
 | Input | Encode | Decode | Stream |
 | --- | --- | --- | --- |
-| Photograph, 600×450 | 21.0 ms | 2.42 ms | 275,844 bytes |
-| Photograph, 2400×1800 | 319.8 ms | 33.0 ms | 3,019,374 bytes |
-| Two colors, 2400×1800 | 3.52 ms | 4.61 ms | 1,441,842 bytes |
-| Random noise, 2400×1800 | 592.9 ms | 373.7 ms | 20,629,898 bytes |
+| Photograph, 600×450 | 25.6 ms | 7.43 ms | 394,217 bytes |
+| Photograph, 1920×1080 | 183.1 ms | 57.0 ms | 1,784,680 bytes |
+| Two colors, 1920×1080 | 1.70 ms | 2.09 ms | 692,322 bytes |
+| Random noise, 1920×1080 | 276.9 ms | 170.2 ms | 9,942,096 bytes |
 <!-- measurements:end -->
 
-Look at the two 2400×1800 pictures with the same number of pixels. The two-color pattern takes 3.5 ms to encode, the 216-color photograph 320 ms, about 90 times as long. That is the plan's weak point: the encoder walks over every band once **per color**, so its work grows with colors × pixels. The stream suffers too: every band contains a `$` and a `#n` for every color, even colors that do not appear in that band, and empty runs for colors that appear only on the right.
+Look at the two 1920×1080 pictures with the same number of pixels. The two-color pattern takes 1.7 ms to encode, the 255-color photograph 183 ms, more than 100 times as long. That is the plan's weak point: the encoder walks over every band once **per color**, so its work grows with colors × pixels. The stream suffers too: every band contains a `$` and a `#n` for every color, even colors that do not appear in that band, and empty runs for colors that appear only on the right.
 
 [Step 2](step2-nodes.md) reads every pixel only once, whatever the number of colors.

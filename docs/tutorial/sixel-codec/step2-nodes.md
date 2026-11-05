@@ -95,7 +95,7 @@ Three details make it work well:
 - **The `#`.** A color is selected only when it differs from the previous node's. Two nodes of the same color next to each other on a line share one `#`.
 - **Cleaning up.** Writing a node also clears its slots in `map`, so the chest is empty again when the band is done, without a separate clearing pass.
 
-`color` starts at `-1` in every band, so every band selects its first color explicitly, even if the previous band ended with the same one. That costs a few bytes, but it makes every band readable on its own, which [step 5](step5-threads.md) needs to encode bands in parallel.
+`color` starts at `-1` in every band, so every band selects its first color explicitly, even if the previous band ended with the same one. That costs a few bytes, but it makes every band readable on its own, which [step 6](step6-threads.md) needs to encode bands in parallel.
 
 > **Try it.** Compare the stream sizes of step 1 and step 2 on a photograph and on a picture with scattered colors:
 >
@@ -151,22 +151,25 @@ A single character, the common case in photographs, still uses a plain store, be
 > ./step2 decode noraster.six > b.ppm; echo $?
 > ```
 
+The decoders of steps 2 to 6 still keep things simple in two ways that a stream from another program can notice. A register the stream never defines is black, where a real terminal and libsixel start from the VT340's default colors. And registers above 255 are treated as register 255, where libsixel keeps them apart. A production decoder needs both; this tutorial keeps its images at one byte per pixel.
+
 ## How fast is it?
 
-<!-- measurements:begin -->
+<!-- measurements:begin:step2 -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 1.21 ms | 17× | 1.12 ms | 2.2× | 213,711 bytes |
-| Photograph, 2400×1800 | 15.6 ms | 20× | 12.4 ms | 2.7× | 2,787,156 bytes |
-| Two colors, 2400×1800 | 4.84 ms | 0.7× | 3.77 ms | 1.2× | 1,441,842 bytes |
-| Random noise, 2400×1800 | 339.1 ms | 1.7× | 71.3 ms | 5.2× | 19,399,499 bytes |
+| Photograph, 600×450 | 3.88 ms | 6.6× | 2.00 ms | 3.7× | 328,750 bytes |
+| Photograph, 1920×1080 | 22.1 ms | 8.3× | 11.5 ms | 5.0× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 2.32 ms | 0.7× | 1.83 ms | 1.1× | 692,322 bytes |
+| Random noise, 1920×1080 | 155.3 ms | 1.8× | 32.8 ms | 5.2× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The speed-up compares each step with the step before it. The photograph now encodes 20 times faster, and its stream is 8% smaller, because colors share lines. The two-color pattern does not benefit: step 1 already made only two passes there, and the extra bookkeeping costs a little. The decoder is faster on every input.
+The speed-up compares each step with the step before it. The photograph now encodes 8 times faster, and its stream is 7% smaller, because colors share lines. The two-color pattern does not benefit: step 1 already made only two passes there, and the extra bookkeeping costs a little. The decoder is faster on every input.
 
-Two costs remain, and both depend on something other than the number of pixels:
+Three costs remain:
 
 - **Cutting nodes** scans every slot of every drawer that was used in the band, so it costs width × colors present. In a dithered photograph most of those slots are empty.
-- **Decoding** writes up to six rows of the picture for every character. Those rows are a whole picture width apart in memory, so the computer has to jump around in memory for every column.
+- **Packing** walks the node list again for every line.
+- **Decoding** asks several questions about every byte and six more about every character.
 
-[Step 3](step3-column-words.md) attacks both by changing how the data is laid out in memory. The [SIXEL format overview](../../sixel-format/README.md#nodes-and-greedy-non-overlapping-sweeps) shows the same node packing as libsixel performs it.
+[Step 3](step3-fewer-decisions.md) removes questions, and [step 4](step4-column-words.md) changes how the data sits in memory. The [SIXEL format overview](../../sixel-format/README.md#nodes-and-greedy-non-overlapping-sweeps) shows the same node packing as libsixel performs it.

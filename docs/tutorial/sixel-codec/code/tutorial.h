@@ -15,6 +15,8 @@
 #include <stdint.h>
 
 #define TUTORIAL_MAX_SIDE 32768
+/* A last band can extend past the limit, though paint there is an error. */
+#define TUTORIAL_MAX_BANDS ((TUTORIAL_MAX_SIDE + 5) / 6)
 
 typedef struct image {
     int width;
@@ -49,6 +51,33 @@ void set_hls(image_t *img, int color, int h, int l, int s);
  * zero. Returns the number of parameters present, at most max. */
 int parse_params(unsigned char const **p, unsigned char const *end,
                  int *params, int max);
+
+/* The first body byte after the "ESC P ... q" introducer, or end. */
+unsigned char const *find_sixel_body(unsigned char const *p,
+                                     unsigned char const *end);
+
+/* A number of at most five digits that no ';' or further digit follows, the
+ * form of nearly every "#n" and "!n" in a stream. Advances *pp and returns 1,
+ * or leaves *pp alone and returns 0 so that parse_params() can take over. */
+static inline int
+parse_plain_number(unsigned char const **pp, unsigned char const *end,
+                   int *value)
+{
+    unsigned char const *p = *pp;
+    int v = 0;
+    int digits = 0;
+
+    while (p < end && *p >= '0' && *p <= '9' && digits < 5) {
+        v = v * 10 + (*p++ - '0');
+        digits++;
+    }
+    if (digits == 0 || p == end || *p == ';' || (*p >= '0' && *p <= '9')) {
+        return 0;
+    }
+    *pp = p;
+    *value = v;
+    return 1;
+}
 
 /* Growable output buffer. */
 void buf_reserve(buffer_t *b, size_t extra);

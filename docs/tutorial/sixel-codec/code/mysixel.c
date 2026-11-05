@@ -39,18 +39,26 @@ encode_sixel(image_t const *img, buffer_t *out)
 int
 decode_sixel(unsigned char const *p, size_t size, image_t *img)
 {
-    /* Keep four notes: the cursor x, the top row y of the band, the
-     * selected color and the repeat count. Read one byte at a time:
+    /* First p = find_sixel_body(p, p + size) skips everything up to and
+     * including the q of ESC P q. The picture ends at the next ESC: stop
+     * there, because the \ of ESC \ looks just like a sixel character.
+     *
+     * Keep four notes: the cursor x, the top row y of the band, the
+     * selected color and the repeat count, which starts at 1. Read one
+     * byte at a time:
      *
      *   "     raster: parse_params(&p, end, a, 4), then
      *               image_alloc(img, a[2], a[3])
      *   #     color: parse_params(&p, end, a, 5); a[0] is the register.
      *               With 5 numbers and a[1] == 2, also call
      *               set_rgb_pct(img, a[0], a[2], a[3], a[4]).
-     *   !     repeat: parse_params(&p, end, &repeat, 1)
+     *   !     repeat: parse_params(&p, end, &repeat, 1). !0 means one.
      *   $     x = 0
      *   -     x = 0 and y += 6
-     *   ? ~   paint the set bits of (byte - '?') at column x, then x++
+     *   ? ~   for repeat columns, paint the set bits of (byte - '?') at
+     *         column x, then x++. Skip a pixel when x >= img->width or
+     *         y + r >= img->height, so that a stream cannot write outside
+     *         the array. Then set repeat back to 1.
      *
      * Remember to set img->ncolors to one more than the highest register
      * you saw, and return 0 when the image has pixels. */

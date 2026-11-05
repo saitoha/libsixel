@@ -153,9 +153,11 @@ docs/tutorial/sixel-codec/README.md	tutorial	both	codec-implementation learning 
 docs/tutorial/sixel-codec/step0-by-hand.md	tutorial	user	
 docs/tutorial/sixel-codec/step1-run-length.md	tutorial	both	codec-implementation lesson + measurements
 docs/tutorial/sixel-codec/step2-nodes.md	tutorial	both	codec-implementation lesson + measurements and libsixel encoder lineage
-docs/tutorial/sixel-codec/step3-column-words.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
-docs/tutorial/sixel-codec/step4-simd.md	tutorial	both	codec-implementation lesson + measurements
-docs/tutorial/sixel-codec/step5-threads.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
+docs/tutorial/sixel-codec/measurements.md	reference	both	measurement record and reproduction for the tutorial
+docs/tutorial/sixel-codec/step3-fewer-decisions.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/step4-column-words.md	tutorial	both	codec-implementation lesson + measurements and libsixel band-word design
+docs/tutorial/sixel-codec/step5-simd.md	tutorial	both	codec-implementation lesson + measurements
+docs/tutorial/sixel-codec/step6-threads.md	tutorial	both	codec-implementation lesson + measurements and libsixel threading comparison
 docs/writers/png/README.md	reference	both	writer/API contracts + contributor benchmark and test ledger
 docs/encoder/palette-application/clamp-policy.md	reference	both	feedback bounds and precision contracts
 docs/encoder/output/gamut-mapping.md	reference	both	output policy and numeric contract

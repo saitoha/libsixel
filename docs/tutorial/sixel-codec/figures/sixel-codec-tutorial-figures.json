@@ -16,18 +16,20 @@
     "step2-nodes.svg",
     "step2-packing.svg",
     "step2-repeat-fill.svg",
-    "step3-memory.svg",
-    "step3-column-word.svg",
-    "step3-swar.svg",
-    "step3-first-colors.svg",
-    "step3-occupancy.svg",
-    "step3-masked-store.svg",
-    "step4-lanes.svg",
-    "step4-block.svg",
-    "step4-transpose.svg",
-    "step5-encoder.svg",
-    "step5-decoder.svg",
-    "step5-amdahl.svg"
+    "step3-dispatch.svg",
+    "step3-branchless.svg",
+    "step4-memory.svg",
+    "step4-column-word.svg",
+    "step4-swar.svg",
+    "step4-first-colors.svg",
+    "step4-occupancy.svg",
+    "step4-masked-store.svg",
+    "step5-lanes.svg",
+    "step5-block.svg",
+    "step5-transpose.svg",
+    "step6-encoder.svg",
+    "step6-decoder.svg",
+    "step6-amdahl.svg"
   ],
   "fixtures": {
     "heart": {
@@ -151,7 +153,7 @@
   "generator": "tools/plot_sixel_codec_tutorial_figures.py",
   "kind": "deterministic explanatory schematic with literal bodies",
   "measured_assets": {
-    "speed.svg": "docs/tutorial/sixel-codec/README.md table, 2400x1800 photograph"
+    "speed.svg": "docs/tutorial/sixel-codec/measurements/results.json, photo-fhd"
   },
   "measurement": false,
   "schema": 1,

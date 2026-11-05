@@ -3,11 +3,11 @@
 #
 # Check the SIXEL codec tutorial programs against each other.
 #
-#   ./check.sh [DIR]    DIR holds step1 ... step5 (default: this directory)
+#   ./check.sh [DIR]    DIR holds step1 ... step6 (default: this directory)
 #
 # 1. Every step round-trips the synthetic self-test images.
-# 2. Encoders 2 to 5 produce byte-identical streams, for every thread count.
-# 3. Decoders 2 to 5 produce identical images from every stream, including
+# 2. Encoders 2 to 6 produce byte-identical streams, for every thread count.
+# 3. Decoders 2 to 6 produce identical images from every stream, including
 #    the sample streams in images/ and a few unusual hand-written ones.
 #    Step 1 is compared only where its simplifications do not matter.
 
@@ -36,12 +36,12 @@ same() {
     fail "$what"
 }
 
-for s in 1 2 3 4; do
+for s in 1 2 3 4 5; do
     "$bin/step$s" selftest >/dev/null || fail "step$s selftest"
 done
 for t in 1 3 8; do
-    TUTORIAL_THREADS=$t "$bin/step5" selftest >/dev/null ||
-        fail "step5 selftest with $t threads"
+    TUTORIAL_THREADS=$t "$bin/step6" selftest >/dev/null ||
+        fail "step6 selftest with $t threads"
 done
 
 # Inputs: the sample photograph and synthetic images of awkward sizes.
@@ -57,28 +57,28 @@ for img in "$work"/*.ppm; do
     name=$(basename "$img" .ppm)
     "$bin/step1" encode "$img" >"$work/$name.1.six" || fail "step1 encode $name"
     "$bin/step2" encode "$img" >"$work/$name.2.six" || fail "step2 encode $name"
-    for s in 3 4; do
+    for s in 3 4 5; do
         same "$work/$name.2.six" "$work/$name.$s.six" \
             "step$s encoding of $name differs from step2" \
             "$bin/step$s" encode "$img"
     done
     for t in 1 2 5 16; do
-        same "$work/$name.2.six" "$work/$name.5.six" \
-            "step5 encoding of $name with $t threads differs from step2" \
-            env TUTORIAL_THREADS="$t" "$bin/step5" encode "$img"
+        same "$work/$name.2.six" "$work/$name.6.six" \
+            "step6 encoding of $name with $t threads differs from step2" \
+            env TUTORIAL_THREADS="$t" "$bin/step6" encode "$img"
     done
     # Every decoder reads both stream styles to the same image.
     for six in "$work/$name.1.six" "$work/$name.2.six"; do
         "$bin/step1" decode "$six" >"$work/ref.ppm" || fail "step1 decode $six"
-        for s in 2 3 4; do
+        for s in 2 3 4 5; do
             same "$work/ref.ppm" "$work/out.ppm" \
                 "step$s decoding of $(basename "$six") differs" \
                 "$bin/step$s" decode "$six"
         done
         for t in 1 3 16; do
             same "$work/ref.ppm" "$work/out.ppm" \
-                "step5 decoding of $(basename "$six") with $t threads" \
-                env TUTORIAL_THREADS="$t" "$bin/step5" decode "$six"
+                "step6 decoding of $(basename "$six") with $t threads" \
+                env TUTORIAL_THREADS="$t" "$bin/step6" decode "$six"
         done
     done
 done
@@ -93,7 +93,7 @@ printf 'P2\n7 6\n1\n0 1 1 0 1 1 0\n1 1 1 1 1 1 1\n1 1 1 1 1 1 1\n0 1 1 1 1 1 0\n
     printf '\001\001\001\001\001\001\001\000\001\001\001\001\001\000'
     printf '\000\000\001\001\001\000\000\000\000\000\001\000\000\000'
 } >"$work/heart5.pgm"
-for s in 1 2 3 4 5; do
+for s in 1 2 3 4 5 6; do
     "$bin/step$s" encode "$work/heart.pgm" >"$work/heart.$s.six" ||
         fail "step$s encode heart.pgm"
     same "$work/heart.$s.six" "$work/heart5.$s.six" \
@@ -104,6 +104,22 @@ for s in 1 2 3 4 5; do
     same "$work/heart.$s.six" "$work/heart.stdin.six" \
         "step$s encodes standard input differently" \
         "$bin/step$s" encode <"$work/heart.pgm"
+done
+
+# The tallest pictures: the last band extends past the size limit, and every
+# step must read its own stream.
+for h in 32767 32768; do
+    printf 'P5 1 %d 1\n' "$h" >"$work/tall.pgm"
+    head -c "$h" /dev/zero >>"$work/tall.pgm"
+    for s in 1 2 3 4 5 6; do
+        if "$bin/step$s" encode "$work/tall.pgm" >"$work/tall.six" &&
+                "$bin/step$s" decode "$work/tall.six" >"$work/tall.ppm" &&
+                [ "$(sed -n 2p "$work/tall.ppm")" = "1 $h" ]; then
+            :
+        else
+            fail "step$s cannot read its own 1x$h stream"
+        fi
+    done
 done
 
 # Streams written by other encoders, and unusual ones: no raster
@@ -117,21 +133,22 @@ cp "$images/map8.six" "$images/map64.six" "$work/"
     printf '\033Pq"1;1;8;6#3;2;10;20;30#3!8~#3;2;90;80;70$!4o\033\\' >"$work/redefine.six"
     printf '\033Pq"1;1;2;2--#1;2;50;50;50!0~!2A\033\\' >"$work/emptybands.six"
     printf '\033Pq#1;2;0;0;100~~-~' >"$work/unterminated.six"
+    printf 'quit\033Pq"1;1;3;6#1;2;100;0;0#1~~~\033\\' >"$work/preamble.six"
 }
 for six in "$work"/map8.six "$work"/map64.six "$work"/noraster.six \
            "$work"/beyond.six "$work"/redefine.six "$work"/emptybands.six \
-           "$work"/unterminated.six; do
+           "$work"/unterminated.six "$work"/preamble.six; do
     "$bin/step2" decode "$six" >"$work/ref.ppm" ||
         fail "step2 decode $(basename "$six")"
-    for s in 3 4; do
+    for s in 3 4 5; do
         same "$work/ref.ppm" "$work/out.ppm" \
             "step$s decoding of $(basename "$six") differs from step2" \
             "$bin/step$s" decode "$six"
     done
     for t in 1 2 4; do
         same "$work/ref.ppm" "$work/out.ppm" \
-            "step5 decoding of $(basename "$six") with $t threads" \
-            env TUTORIAL_THREADS="$t" "$bin/step5" decode "$six"
+            "step6 decoding of $(basename "$six") with $t threads" \
+            env TUTORIAL_THREADS="$t" "$bin/step6" decode "$six"
     done
 done
 

@@ -111,5 +111,5 @@
 <text x="396.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 3</text>
 <text x="500.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 4</text>
 <text x="604.0" y="450.0" fill="#556176" font-size="12" font-weight="650" font-family="system-ui, -apple-system, sans-serif" text-anchor="middle">row 5</text>
-<text x="32.0" y="490.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">In a real image the gap is the image width: 2400 boxes. The six</text><text x="32.0" y="513.8" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">pixels of one column land in six different parts of memory.</text>
+<text x="32.0" y="490.0" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">In a real image the gap is the image width. Painting one</text><text x="32.0" y="513.8" fill="#556176" font-size="17" font-weight="500" font-family="system-ui, -apple-system, sans-serif" text-anchor="start">character means one store in each of six separate rows.</text>
 </svg>

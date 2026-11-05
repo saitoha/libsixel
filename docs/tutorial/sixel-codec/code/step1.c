@@ -40,7 +40,7 @@ int decode_sixel(unsigned char const *p, size_t size, image_t *img)
     unsigned char const *end = p + size;
     int a[5], x = 0, y = 0, color = 0, repeat = 1;
 
-    while (p < end && *p++ != 'q') {}                    /* skip ESC P ... q */
+    p = find_sixel_body(p, end);                         /* skip ESC P ... q */
     while (p < end && *p != 0x1b) {                      /* until ESC \ */
         int ch = *p++;
         if (ch == '"') {                                 /* raster attributes */

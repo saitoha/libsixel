@@ -1,0 +1,436 @@
+{
+  "attribution": {
+    "inner loop only": {
+      "noise": 25.22,
+      "photo-fhd": 10.37,
+      "two": 1.11
+    },
+    "masks only": {
+      "noise": 26.44,
+      "photo-fhd": 6.22,
+      "two": 2.0
+    }
+  },
+  "bench": {
+    "step1": {
+      "noise": {
+        "bytes": 9942096,
+        "colors": 256,
+        "decode_ms": 170.22,
+        "encode_ms": 276.86
+      },
+      "photo-fhd": {
+        "bytes": 1784680,
+        "colors": 255,
+        "decode_ms": 57.03,
+        "encode_ms": 183.1
+      },
+      "photo-small": {
+        "bytes": 394217,
+        "colors": 254,
+        "decode_ms": 7.43,
+        "encode_ms": 25.58
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 2.09,
+        "encode_ms": 1.7
+      }
+    },
+    "step2": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 32.83,
+        "encode_ms": 155.35
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 11.46,
+        "encode_ms": 22.13
+      },
+      "photo-small": {
+        "bytes": 328750,
+        "colors": 254,
+        "decode_ms": 2.0,
+        "encode_ms": 3.88
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 1.83,
+        "encode_ms": 2.32
+      }
+    },
+    "step3": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 18.64,
+        "encode_ms": 103.17
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 4.17,
+        "encode_ms": 21.4
+      },
+      "photo-small": {
+        "bytes": 328750,
+        "colors": 254,
+        "decode_ms": 0.76,
+        "encode_ms": 3.65
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 1.47,
+        "encode_ms": 2.17
+      }
+    },
+    "step4": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 15.65,
+        "encode_ms": 68.54
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 3.07,
+        "encode_ms": 11.79
+      },
+      "photo-small": {
+        "bytes": 328750,
+        "colors": 254,
+        "decode_ms": 0.59,
+        "encode_ms": 2.3
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 1.13,
+        "encode_ms": 3.9
+      }
+    },
+    "step5": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 15.24,
+        "encode_ms": 72.91
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 2.67,
+        "encode_ms": 10.73
+      },
+      "photo-small": {
+        "bytes": 328750,
+        "colors": 254,
+        "decode_ms": 0.51,
+        "encode_ms": 2.31
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.7,
+        "encode_ms": 2.7
+      }
+    },
+    "step6": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 2.3,
+        "encode_ms": 14.56
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 0.53,
+        "encode_ms": 2.39
+      },
+      "photo-small": {
+        "bytes": 328750,
+        "colors": 254,
+        "decode_ms": 0.13,
+        "encode_ms": 2.36
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.33,
+        "encode_ms": 0.57
+      }
+    }
+  },
+  "environment": {
+    "cflags": "-O2 -Wall -Wextra",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.4.1.1)",
+    "date": "2026-11-05",
+    "load_after": 3.64,
+    "load_before": 3.31,
+    "machine": "Apple M3 Max",
+    "revision": "17e64f4b8",
+    "system": "Darwin 27.0.0"
+  },
+  "libsixel": {
+    "noise": {
+      "1": {
+        "bytes": 9325121,
+        "colors": 256,
+        "decode_ms": 15.52,
+        "encode_ms": 55.217
+      },
+      "14": {
+        "bytes": 9325124,
+        "colors": 256,
+        "decode_ms": 2.748,
+        "encode_ms": 7.933
+      }
+    },
+    "photo-fhd": {
+      "1": {
+        "bytes": 1681355,
+        "colors": 255,
+        "decode_ms": 2.776,
+        "encode_ms": 8.998
+      },
+      "14": {
+        "bytes": 1681355,
+        "colors": 255,
+        "decode_ms": 0.644,
+        "encode_ms": 1.55
+      }
+    },
+    "revision": "17e64f4b8",
+    "two": {
+      "1": {
+        "bytes": 691964,
+        "colors": 2,
+        "decode_ms": 0.908,
+        "encode_ms": 3.596
+      },
+      "14": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.436,
+        "encode_ms": 0.911
+      }
+    }
+  },
+  "materialize": {
+    "step4": {
+      "noise": 0.574,
+      "photo-fhd": 0.571,
+      "two": 0.577
+    },
+    "step5": {
+      "noise": 0.157,
+      "photo-fhd": 0.167,
+      "two": 0.157
+    }
+  },
+  "phases": {
+    "step2": {
+      "noise": {
+        "classify": 1.729,
+        "compose": 58.436,
+        "emit": 91.188
+      },
+      "photo-fhd": {
+        "classify": 0.731,
+        "compose": 14.27,
+        "emit": 6.99
+      },
+      "two": {
+        "classify": 0.69,
+        "compose": 0.204,
+        "emit": 1.391
+      }
+    },
+    "step3": {
+      "noise": {
+        "classify": 1.739,
+        "compose": 59.7,
+        "emit": 42.221
+      },
+      "photo-fhd": {
+        "classify": 0.728,
+        "compose": 14.376,
+        "emit": 6.182
+      },
+      "two": {
+        "classify": 0.706,
+        "compose": 0.219,
+        "emit": 1.289
+      }
+    },
+    "step4": {
+      "noise": {
+        "classify": 4.064,
+        "compose": 21.778,
+        "emit": 42.505
+      },
+      "photo-fhd": {
+        "classify": 3.347,
+        "compose": 2.196,
+        "emit": 6.157
+      },
+      "two": {
+        "classify": 2.112,
+        "compose": 0.498,
+        "emit": 1.295
+      }
+    },
+    "step5": {
+      "noise": {
+        "classify": 7.467,
+        "compose": 21.375,
+        "emit": 43.579
+      },
+      "photo-fhd": {
+        "classify": 2.169,
+        "compose": 2.206,
+        "emit": 6.415
+      },
+      "two": {
+        "classify": 0.858,
+        "compose": 0.499,
+        "emit": 1.294
+      }
+    }
+  },
+  "prescan": {
+    "noise": 0.356,
+    "photo-fhd": 0.068,
+    "two": 0.123
+  },
+  "threads": {
+    "1": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 15.38,
+        "encode_ms": 74.09
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 2.63,
+        "encode_ms": 10.81
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.8,
+        "encode_ms": 2.65
+      }
+    },
+    "10": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 2.18,
+        "encode_ms": 10.77
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 0.43,
+        "encode_ms": 2.2
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.31,
+        "encode_ms": 0.49
+      }
+    },
+    "14": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 2.35,
+        "encode_ms": 10.21
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 0.53,
+        "encode_ms": 1.58
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.33,
+        "encode_ms": 0.46
+      }
+    },
+    "2": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 8.01,
+        "encode_ms": 40.44
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 1.39,
+        "encode_ms": 6.07
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.52,
+        "encode_ms": 1.4
+      }
+    },
+    "4": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 4.41,
+        "encode_ms": 22.75
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 0.77,
+        "encode_ms": 3.96
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.37,
+        "encode_ms": 0.83
+      }
+    },
+    "8": {
+      "noise": {
+        "bytes": 9316560,
+        "colors": 256,
+        "decode_ms": 2.55,
+        "encode_ms": 12.12
+      },
+      "photo-fhd": {
+        "bytes": 1663155,
+        "colors": 255,
+        "decode_ms": 0.51,
+        "encode_ms": 2.33
+      },
+      "two": {
+        "bytes": 692322,
+        "colors": 2,
+        "decode_ms": 0.32,
+        "encode_ms": 0.54
+      }
+    }
+  }
+}

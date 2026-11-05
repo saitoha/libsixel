@@ -1,266 +1,683 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Step 5: threads.
+ * Step 5: SIMD.
  *
- * Bands are the natural unit of parallel work in both directions.
+ * Step 4 works on one 64-bit word at a time. A 128-bit SIMD register holds
+ * sixteen bytes, so it can look at sixteen columns of a row, or sixteen
+ * bytes of two column words, in one instruction. This step uses only the
+ * baseline vector sets of the two common 64-bit targets, SSE2 on x86-64
+ * and Advanced SIMD (NEON) on AArch64, and keeps the step 4 code as the
+ * portable fallback and for the columns left over at the right edge.
+ * Define TUTORIAL_NO_SIMD to build the fallback alone.
  *
- * Encoder: steps 2 to 4 already start every band with an explicit color
- * selection, so a band's bytes do not depend on the band before it. Each
- * thread encodes a contiguous range of bands into its own buffer with its
- * own step 4 work area, and the buffers are joined in order. The result is
- * byte-identical to steps 2 to 4 for any number of threads.
+ * Encoder: for a block of 16 columns, one compare tests a color against a
+ * whole row, so six compares produce the sixel characters of that color
+ * for all 16 columns. The block is visited once per distinct color in it,
+ * not once per pixel, which pays off whenever neighboring pixels repeat.
  *
- * Decoder: a band's bytes do depend on earlier ones, through the selected
- * color register, and paint may in principle go beyond the declared raster
- * size. A serial prescan looks only for the bytes that matter across bands,
- * '-', '#' and '"', skipping sixteen bytes at a time with the step 4 vector
- * compares. It records where each band starts, which color is selected
- * there, and the palette. Trusting the raster attributes for the canvas
- * size, threads then paint disjoint band ranges with the step 4 loop and
- * transpose their own bands into the image. A stream without raster
- * attributes, or one that paints outside them, is decoded again by the
- * serial step 4 decoder, so the result is always the same.
+ * Decoder: turning column words back into rows is an 8x8 byte transpose,
+ * three rounds of interleaving instructions for eight columns at a time.
  *
- * Set TUTORIAL_THREADS to override the thread count.
+ * The output is still byte-identical to steps 2 to 4.
  */
-#include <pthread.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 
-#define TUTORIAL_STEP5
-#include "step4.c"
+#include "tutorial.h"
 
-#define MAX_THREADS 64
+#define NODE_GAP 9
+#define BYTES_01 UINT64_C(0x0101010101010101)
+#define BYTES_7F UINT64_C(0x7f7f7f7f7f7f7f7f)
 
-/* Use up to one thread per CPU, but give each at least `grain` units of
- * work so that thread start-up stays small compared with the work. */
-static int
-thread_count(size_t work, size_t grain, int max_parts)
+static inline int
+ctz64(uint64_t v)
 {
-    char const *env = getenv("TUTORIAL_THREADS");
-    long n = env != NULL ? atol(env) : sysconf(_SC_NPROCESSORS_ONLN);
+#if defined(__GNUC__) || defined(__clang__)
+    return __builtin_ctzll(v);
+#else
+    int n = 0;
 
-    if (env == NULL && (size_t)n > work / grain) {
-        n = (long)(work / grain);
+    while ((v & 1) == 0) {
+        v >>= 1;
+        n++;
     }
-    if (n > max_parts) {
-        n = max_parts;
-    }
-    if (n > MAX_THREADS) {
-        n = MAX_THREADS;
-    }
-    return n < 1 ? 1 : (int)n;
+    return n;
+#endif
 }
+
+/* Bit 7 of each byte of the result is set when that byte of v is zero:
+ * adding 0x7f to the low seven bits carries into bit 7 unless they are
+ * all zero, and the byte's own bit 7 must be clear as well. */
+static inline uint64_t
+zero_bytes(uint64_t v)
+{
+    return ~(((v & BYTES_7F) + BYTES_7F) | v | BYTES_7F);
+}
+
+/* Bit i of the result is set when byte i of word equals c. The multiply
+ * gathers the eight byte flags into the top byte. */
+static inline unsigned int
+equal_bytes(uint64_t word, unsigned int c)
+{
+    uint64_t zero = zero_bytes(word ^ (c * BYTES_01));
+
+    return (unsigned int)((((zero >> 7) & BYTES_01) *
+                           UINT64_C(0x0102040810204080)) >> 56);
+}
+
+/* Inverse direction: expand six row bits to a mask of 0xff bytes. */
+static inline uint64_t
+row_mask(unsigned int bits)
+{
+    return ((bits * UINT64_C(0x0002040810204081)) & BYTES_01) * 0xff;
+}
+
+/* ------------------------------------------------------------------ */
+/* The few vector operations this step needs                           */
+
+#if defined(TUTORIAL_NO_SIMD)
+/* scalar build for comparison: the step 4 code paths only */
+#elif defined(__SSE2__) || defined(_M_X64)
+#include <emmintrin.h>
+#define HAVE_SIMD 1
+typedef __m128i v128;
+#define v_load(p)     _mm_loadu_si128((__m128i const *)(void const *)(p))
+#define v_store(p, v) _mm_storeu_si128((__m128i *)(void *)(p), (v))
+#define v_set1(c)     _mm_set1_epi8((char)(c))
+#define v_eq(a, b)    _mm_cmpeq_epi8((a), (b))
+#define v_and(a, b)   _mm_and_si128((a), (b))
+#define v_or(a, b)    _mm_or_si128((a), (b))
+#define v_zero()      _mm_setzero_si128()
+/* One bit per byte lane, taken from the lane's top bit. */
+#define v_movemask(v) ((unsigned int)_mm_movemask_epi8(v))
+
+/* Rows r0..r5 of eight columns from eight column words: interleave bytes,
+ * then 16-bit pairs, then 32-bit quads. Each round doubles the run of
+ * same-row bytes until a row is eight bytes long. */
+static inline void
+transpose_columns(uint64_t const *col, unsigned char **rows, int nrows)
+{
+    __m128i a0 = _mm_unpacklo_epi8(_mm_loadl_epi64((void const *)&col[0]),
+                                   _mm_loadl_epi64((void const *)&col[1]));
+    __m128i a1 = _mm_unpacklo_epi8(_mm_loadl_epi64((void const *)&col[2]),
+                                   _mm_loadl_epi64((void const *)&col[3]));
+    __m128i a2 = _mm_unpacklo_epi8(_mm_loadl_epi64((void const *)&col[4]),
+                                   _mm_loadl_epi64((void const *)&col[5]));
+    __m128i a3 = _mm_unpacklo_epi8(_mm_loadl_epi64((void const *)&col[6]),
+                                   _mm_loadl_epi64((void const *)&col[7]));
+    __m128i b0 = _mm_unpacklo_epi16(a0, a1);
+    __m128i b1 = _mm_unpackhi_epi16(a0, a1);
+    __m128i b2 = _mm_unpacklo_epi16(a2, a3);
+    __m128i b3 = _mm_unpackhi_epi16(a2, a3);
+    __m128i out[3];
+    int r;
+
+    out[0] = _mm_unpacklo_epi32(b0, b2);    /* rows 0 and 1 */
+    out[1] = _mm_unpackhi_epi32(b0, b2);    /* rows 2 and 3 */
+    out[2] = _mm_unpacklo_epi32(b1, b3);    /* rows 4 and 5 */
+    for (r = 0; r < nrows; r++) {
+        __m128i v = (r & 1) ? _mm_unpackhi_epi64(out[r / 2], out[r / 2])
+                            : out[r / 2];
+        _mm_storel_epi64((void *)rows[r], v);
+    }
+}
+
+#elif defined(__aarch64__) || defined(_M_ARM64)
+#include <arm_neon.h>
+#define HAVE_SIMD 1
+typedef uint8x16_t v128;
+#define v_load(p)     vld1q_u8((uint8_t const *)(p))
+#define v_store(p, v) vst1q_u8((uint8_t *)(p), (v))
+#define v_set1(c)     vdupq_n_u8((uint8_t)(c))
+#define v_eq(a, b)    vceqq_u8((a), (b))
+#define v_and(a, b)   vandq_u8((a), (b))
+#define v_or(a, b)    vorrq_u8((a), (b))
+#define v_zero()      vdupq_n_u8(0)
+
+/* NEON has no movemask. For compare results, whose lanes are 0x00 or
+ * 0xff, keep each lane's own bit weight and add up each half. */
+static inline unsigned int
+v_movemask(uint8x16_t v)
+{
+    static uint8_t const weights[16] = {
+        1, 2, 4, 8, 16, 32, 64, 128, 1, 2, 4, 8, 16, 32, 64, 128
+    };
+    uint8x16_t m = vandq_u8(v, vld1q_u8(weights));
+
+    return (unsigned int)vaddv_u8(vget_low_u8(m)) |
+           (unsigned int)vaddv_u8(vget_high_u8(m)) << 8;
+}
+
+static inline void
+transpose_columns(uint64_t const *col, unsigned char **rows, int nrows)
+{
+    uint8x16_t x[8];
+    uint8x16_t a[4];
+    uint8x16_t b[4];
+    uint8x16_t out[3];
+    int i;
+    int r;
+
+    for (i = 0; i < 8; i++) {
+        x[i] = vreinterpretq_u8_u64(vdupq_n_u64(col[i]));
+    }
+    for (i = 0; i < 4; i++) {
+        a[i] = vzip1q_u8(x[2 * i], x[2 * i + 1]);
+    }
+    b[0] = vreinterpretq_u8_u16(vzip1q_u16(vreinterpretq_u16_u8(a[0]),
+                                           vreinterpretq_u16_u8(a[1])));
+    b[1] = vreinterpretq_u8_u16(vzip2q_u16(vreinterpretq_u16_u8(a[0]),
+                                           vreinterpretq_u16_u8(a[1])));
+    b[2] = vreinterpretq_u8_u16(vzip1q_u16(vreinterpretq_u16_u8(a[2]),
+                                           vreinterpretq_u16_u8(a[3])));
+    b[3] = vreinterpretq_u8_u16(vzip2q_u16(vreinterpretq_u16_u8(a[2]),
+                                           vreinterpretq_u16_u8(a[3])));
+    out[0] = vreinterpretq_u8_u32(vzip1q_u32(vreinterpretq_u32_u8(b[0]),
+                                             vreinterpretq_u32_u8(b[2])));
+    out[1] = vreinterpretq_u8_u32(vzip2q_u32(vreinterpretq_u32_u8(b[0]),
+                                             vreinterpretq_u32_u8(b[2])));
+    out[2] = vreinterpretq_u8_u32(vzip1q_u32(vreinterpretq_u32_u8(b[1]),
+                                             vreinterpretq_u32_u8(b[3])));
+    for (r = 0; r < nrows; r++) {
+        vst1_u8(rows[r], (r & 1) ? vget_high_u8(out[r / 2])
+                                 : vget_low_u8(out[r / 2]));
+    }
+}
+#endif
 
 /* ------------------------------------------------------------------ */
 /* Encoder                                                             */
 
-typedef struct encode_job {
-    image_t const *img;
-    int first_band;
-    int end_band;
-    buffer_t out;
-    int status;
-} encode_job_t;
+typedef struct node {
+    struct node *next;
+    int color;
+    int sx;
+    int mx;
+    unsigned char *map;
+} node_t;
 
-static void *
-encode_worker(void *arg)
+typedef struct encoder {
+    int width;
+    size_t words;               /* 64-bit words per occupancy row */
+    unsigned char *map;         /* ncolors rows of sixel bits */
+    uint64_t *occupancy;        /* ncolors rows of column bits */
+    uint64_t *columns;          /* one column word per x */
+    unsigned char used[256];    /* colors present in the band */
+    unsigned int seen[256];     /* block stamp of the last visit */
+    unsigned int stamp;
+    uint64_t *starts;           /* columns where pending nodes start */
+    node_t *pool;
+    node_t **heads;             /* pending nodes by start, longest first */
+    int nnodes;
+} encoder_t;
+
+static void
+encoder_free(encoder_t *e)
 {
-    encode_job_t *job = arg;
-    encoder_t e;
-    int b;
-
-    job->status = encoder_init(&e, job->img);
-    if (job->status != 0) {
-        return NULL;
-    }
-    for (b = job->first_band; b < job->end_band; b++) {
-        encode_band(&e, job->img, b * 6, &job->out);
-    }
-    encoder_free(&e);
-    return NULL;
+    free(e->map);
+    free(e->occupancy);
+    free(e->columns);
+    free(e->starts);
+    free(e->pool);
+    free(e->heads);
 }
 
+static int
+encoder_init(encoder_t *e, image_t const *img)
+{
+    int w = img->width;
+
+    memset(e, 0, sizeof(*e));
+    e->width = w;
+    e->words = ((size_t)w + 63) / 64;
+    e->map = calloc((size_t)img->ncolors * w, 1);
+    e->occupancy = calloc((size_t)img->ncolors * e->words, sizeof(uint64_t));
+    e->columns = malloc((size_t)w * sizeof(uint64_t));
+    e->pool = malloc(sizeof(node_t) * (size_t)img->ncolors *
+                     (w / (NODE_GAP + 1) + 1));
+    e->heads = calloc((size_t)w, sizeof(node_t *));
+    e->starts = calloc(e->words, sizeof(uint64_t));
+    if (e->map == NULL || e->occupancy == NULL || e->columns == NULL ||
+            e->pool == NULL || e->heads == NULL || e->starts == NULL) {
+        encoder_free(e);
+        return -1;
+    }
+    return 0;
+}
+
+/* Transpose the band's rows into column words. Accumulating a whole row
+ * at a time keeps every loop a sequential pass that compilers vectorize. */
+static void
+load_columns(encoder_t *e, image_t const *img, int y, int rows, int from)
+{
+    unsigned char const *row;
+    int x;
+    int r;
+
+    memset(e->columns + from, 0, (size_t)(e->width - from) * sizeof(uint64_t));
+    for (r = 0; r < rows; r++) {
+        row = img->pixels + (size_t)(y + r) * e->width;
+        for (x = from; x < e->width; x++) {
+            e->columns[x] |= (uint64_t)row[x] << (8 * r);
+        }
+    }
+}
+
+/* Visit every color of every column once. A byte is the first occurrence
+ * of its color when no lower byte holds the same register; comparing the
+ * word with itself shifted by one to five bytes finds all repeats at once.
+ * Each first occurrence then names a color, and equal_bytes() finds all its
+ * rows. The iterations are independent, so the CPU can overlap them. */
+static void
+classify(encoder_t *e, int rows, int from)
+{
+    uint64_t lanes = UINT64_C(0x8080808080808080) >> (8 * (8 - rows));
+    uint64_t word;
+    uint64_t repeat;
+    uint64_t firsts;
+    unsigned int c;
+    unsigned int bits;
+    int k;
+    int x;
+
+    for (x = from; x < e->width; x++) {
+        word = e->columns[x];
+        repeat = 0;
+        for (k = 1; k < rows; k++) {
+            repeat |= zero_bytes(word ^ (word << (8 * k))) &
+                (~UINT64_C(0) << (8 * k));
+        }
+        for (firsts = lanes & ~repeat; firsts != 0; firsts &= firsts - 1) {
+            c = (unsigned int)(word >> (ctz64(firsts) & ~7)) & 0xff;
+            bits = equal_bytes(word, c) & ((1u << rows) - 1);
+            e->map[(size_t)c * e->width + x] = (unsigned char)bits;
+            e->occupancy[c * e->words + (size_t)x / 64] |=
+                UINT64_C(1) << (x % 64);
+            e->used[c] = 1;
+        }
+    }
+}
+
+#ifdef HAVE_SIMD
+/* Classify columns [0, end) in blocks of 16, end being a multiple of 16.
+ * Scanning the block's pixels finds each distinct color once (the stamp
+ * marks colors already done in this block); six vector compares then give
+ * the sixel characters of that color for all 16 columns, stored with one
+ * 16-byte write. Lanes without the color store zero, which the map already
+ * holds there. */
+static void
+classify_blocks(encoder_t *e, image_t const *img, int y, int rows, int end)
+{
+    unsigned char const *src[6];
+    v128 row[6];
+    v128 weight[6];
+    v128 bits;
+    v128 color;
+    unsigned int occupied;
+    int lane;
+    int x;
+    int r;
+    int k;
+    int c;
+
+    for (r = 0; r < rows; r++) {
+        src[r] = img->pixels + (size_t)(y + r) * e->width;
+        weight[r] = v_set1(1 << r);
+    }
+    for (x = 0; x < end; x += 16) {
+        e->stamp++;
+        for (r = 0; r < rows; r++) {
+            row[r] = v_load(src[r] + x);
+        }
+        for (r = 0; r < rows; r++) {
+            for (lane = 0; lane < 16; lane++) {
+                c = src[r][x + lane];
+                if (e->seen[c] == e->stamp) {
+                    continue;
+                }
+                e->seen[c] = e->stamp;
+                color = v_set1(c);
+                bits = v_zero();
+                for (k = r; k < rows; k++) {    /* rows above r lack c */
+                    bits = v_or(bits, v_and(v_eq(row[k], color), weight[k]));
+                }
+                v_store(e->map + (size_t)c * e->width + x, bits);
+                occupied = ~v_movemask(v_eq(bits, v_zero())) & 0xffff;
+                e->occupancy[(size_t)c * e->words + (size_t)x / 64] |=
+                    (uint64_t)occupied << (x % 64);
+                e->used[c] = 1;
+            }
+        }
+    }
+}
+#endif
+
+static void
+add_node(encoder_t *e, int c, int sx, int mx)
+{
+    node_t *np = &e->pool[e->nnodes++];
+    node_t **link;
+
+    np->color = c;
+    np->sx = sx;
+    np->mx = mx;
+    np->map = e->map + (size_t)c * e->width;
+    for (link = &e->heads[sx]; *link && (*link)->mx >= mx;
+         link = &(*link)->next) {
+    }
+    np->next = *link;
+    *link = np;
+    e->starts[sx / 64] |= UINT64_C(1) << (sx % 64);
+}
+
+/* Same nodes as step 2, found by walking set occupancy bits. The walk also
+ * clears the occupancy bits and used flags for the next band. */
+static void
+compose(encoder_t *e)
+{
+    uint64_t *occ;
+    uint64_t bits;
+    size_t i;
+    int c;
+    int x;
+    int sx;
+    int mx;
+
+    e->nnodes = 0;
+    for (c = 0; c < 256; c++) {
+        if (e->used[c]) {
+            e->used[c] = 0;
+            occ = e->occupancy + (size_t)c * e->words;
+            sx = -1;
+            mx = 0;
+            for (i = 0; i < e->words; i++) {
+                for (bits = occ[i]; bits != 0; bits &= bits - 1) {
+                    x = (int)(i * 64) + ctz64(bits);
+                    if (sx >= 0 && x - mx <= NODE_GAP) {
+                        mx = x + 1;
+                        continue;
+                    }
+                    if (sx >= 0) {
+                        add_node(e, c, sx, mx);
+                    }
+                    sx = x;
+                    mx = x + 1;
+                }
+                occ[i] = 0;
+            }
+            add_node(e, c, sx, mx);
+        }
+    }
+}
+
+/* The first pending start column at or after x, or -1. */
+static int
+next_start(encoder_t const *e, int x)
+{
+    size_t i = (size_t)x / 64;
+    uint64_t bits;
+
+    if (x >= e->width) {
+        return -1;
+    }
+    bits = e->starts[i] & (~UINT64_C(0) << (x % 64));
+    while (bits == 0) {
+        if (++i == e->words) {
+            return -1;
+        }
+        bits = e->starts[i];
+    }
+    return (int)(i * 64) + ctz64(bits);
+}
+
+static void
+put_span(buffer_t *out, unsigned char const *map, int from, int to)
+{
+    int x;
+    int run;
+
+    for (x = from; x < to; x += run) {
+        for (run = 1; x + run < to && map[x + run] == map[x]; run++) {
+        }
+        buf_putrun(out, map[x] + '?', run);
+    }
+}
+
+/* Step 2 walks the node list once per graphics line and skips the nodes
+ * that start left of the cursor. Taking the leftmost pending start column
+ * at or after the cursor, and the longest node there, picks the same nodes
+ * in the same order without visiting the skipped ones. */
+static void
+put_band(encoder_t *e, buffer_t *out)
+{
+    node_t *np;
+    int remaining = e->nnodes;
+    int color = -1;         /* every band selects its first color */
+    int x = 0;
+    int sx;
+
+    while (remaining > 0) {
+        sx = next_start(e, x);
+        if (sx < 0) {
+            buf_putc(out, '$');
+            x = 0;
+            continue;
+        }
+        np = e->heads[sx];
+        e->heads[sx] = np->next;
+        if (np->next == NULL) {
+            e->starts[sx / 64] &= ~(UINT64_C(1) << (sx % 64));
+        }
+        if (np->color != color) {
+            buf_putc(out, '#');
+            buf_putnum(out, np->color);
+            color = np->color;
+        }
+        buf_putrun(out, '?', np->sx - x);
+        put_span(out, np->map, np->sx, np->mx);
+        memset(np->map + np->sx, 0, (size_t)(np->mx - np->sx));
+        x = np->mx;
+        remaining--;
+    }
+}
+
+static void
+encode_band(encoder_t *e, image_t const *img, int y, buffer_t *out)
+{
+    int rows = img->height - y < 6 ? img->height - y : 6;
+    int from = 0;
+
+    if (y > 0) {
+        buf_putc(out, '-');
+    }
+#ifdef HAVE_SIMD
+    from = e->width & ~15;
+    classify_blocks(e, img, y, rows, from);
+#endif
+    load_columns(e, img, y, rows, from);
+    classify(e, rows, from);
+    compose(e);
+    put_band(e, out);
+}
+
+#ifndef TUTORIAL_STEP6
 int
 encode_sixel(image_t const *img, buffer_t *out)
 {
-    encode_job_t jobs[MAX_THREADS] = { { 0 } };
-    pthread_t threads[MAX_THREADS];
-    int created[MAX_THREADS];
-    int bands = (img->height + 5) / 6;
-    int n = thread_count((size_t)img->width * img->height, 1 << 18, bands);
-    int status = 0;
-    int i;
+    encoder_t e;
+    int y;
 
-    for (i = 0; i < n; i++) {
-        jobs[i].img = img;
-        jobs[i].first_band = (int)((long long)bands * i / n);
-        jobs[i].end_band = (int)((long long)bands * (i + 1) / n);
+    if (encoder_init(&e, img) != 0) {
+        return -1;
     }
-    /* The calling thread takes the first range. */
-    for (i = 1; i < n; i++) {
-        created[i] = pthread_create(&threads[i], NULL, encode_worker,
-                                    &jobs[i]) == 0;
-        if (!created[i]) {
-            encode_worker(&jobs[i]);
-        }
-    }
-    encode_worker(&jobs[0]);
-    for (i = 1; i < n; i++) {
-        if (created[i]) {
-            pthread_join(threads[i], NULL);
-        }
-    }
-
     put_header_and_palette(img, out);
-    for (i = 0; i < n; i++) {
-        status |= jobs[i].status;
-        buf_reserve(out, jobs[i].out.size);
-        memcpy(out->data + out->size, jobs[i].out.data, jobs[i].out.size);
-        out->size += jobs[i].out.size;
-        buf_free(&jobs[i].out);
+    for (y = 0; y < img->height; y += 6) {
+        encode_band(&e, img, y, out);
     }
     buf_printf(out, "\033\\");
-    return status != 0 ? -1 : 0;
+    encoder_free(&e);
+    return 0;
 }
+
+#endif /* TUTORIAL_STEP6 */
 
 /* ------------------------------------------------------------------ */
 /* Decoder                                                             */
 
-typedef struct band_start {
-    size_t offset;          /* first byte of the band in the body */
-    int color;              /* register selected at that point */
-} band_start_t;
-
-typedef struct prescan {
-    band_start_t *starts;   /* one per '-' plus the first band */
-    int nstarts;
-    int capacity;
-    int width;              /* largest raster attributes */
-    int height;
-} prescan_t;
-
-static int
-add_start(prescan_t *ps, size_t offset, int color)
+static inline int
+bottom_row(int bits)
 {
-    band_start_t *grown;
+    int r = 5;
 
-    if (ps->nstarts == ps->capacity) {
-        ps->capacity = ps->capacity ? ps->capacity * 2 : 256;
-        grown = realloc(ps->starts, sizeof(band_start_t) * ps->capacity);
-        if (grown == NULL) {
-            return -1;
-        }
-        ps->starts = grown;
+    while ((bits >> r & 1) == 0) {
+        r--;
     }
-    ps->starts[ps->nstarts].offset = offset;
-    ps->starts[ps->nstarts].color = color;
-    ps->nstarts++;
-    return 0;
+    return r;
 }
 
-static int
-prescan(unsigned char const *body, unsigned char const *end, image_t *img,
-        prescan_t *ps)
-{
-    unsigned char const *p = body;
-    int a[5];
-    int n;
-    int color = 0;
+typedef struct decoder {
+    uint64_t *columns;      /* bands * width column words */
+    int width;              /* allocated columns per band */
+    int bands;              /* allocated bands */
+    int used_width;         /* declared or painted extent */
+    int used_height;
+} decoder_t;
 
-    if (add_start(ps, 0, 0) != 0) {
+/* Grow like step 2, moving whole column words. */
+static int
+decoder_reserve(decoder_t *d, int need_w, int need_bands)
+{
+    uint64_t *columns;
+    int w = d->width;
+    int bands = d->bands;
+    int b;
+
+    if (need_w <= w && need_bands <= bands) {
+        return 0;
+    }
+    if (need_w > TUTORIAL_MAX_SIDE || need_bands > TUTORIAL_MAX_BANDS) {
         return -1;
     }
-    while (p < end) {
-#ifdef HAVE_SIMD
-        /* Sixel data, repeats and cursor controls do not matter here. */
-        while (end - p >= 16) {
-            v128 v = v_load(p);
-            unsigned int hits = v_movemask(v_or(v_or(v_eq(v, v_set1('-')),
-                                                     v_eq(v, v_set1('#'))),
-                                                v_eq(v, v_set1('"'))));
-            if (hits != 0) {
-                p += ctz64(hits);
-                break;
-            }
-            p += 16;
-        }
-        if (p == end) {
-            break;
-        }
-#endif
-        switch (*p++) {
-        case '-':
-            if (add_start(ps, (size_t)(p - body), color) != 0) {
-                return -1;
-            }
-            break;
-        case '#':
-            n = parse_params(&p, end, a, 5);
-            color = a[0] > 255 ? 255 : a[0];
-            if (color >= img->ncolors) {
-                img->ncolors = color + 1;
-            }
-            if (n == 5 && a[1] == 1) {
-                set_hls(img, color, a[2], a[3], a[4]);
-            } else if (n == 5 && a[1] == 2) {
-                set_rgb_pct(img, color, a[2], a[3], a[4]);
-            }
-            break;
-        case '"':
-            parse_params(&p, end, a, 4);
-            if (a[2] > 0 && a[3] > 0) {
-                ps->width = a[2] > ps->width ? a[2] : ps->width;
-                ps->height = a[3] > ps->height ? a[3] : ps->height;
-            }
-            break;
-        default:
-            break;
-        }
+    while (w < need_w) {
+        w = w < 64 ? 64 : w * 2;
     }
+    while (bands < need_bands) {
+        bands = bands < 16 ? 16 : bands * 2;
+    }
+    w = w > TUTORIAL_MAX_SIDE ? TUTORIAL_MAX_SIDE : w;
+    bands = bands > TUTORIAL_MAX_BANDS ? TUTORIAL_MAX_BANDS : bands;
+    columns = calloc((size_t)w * bands, sizeof(uint64_t));
+    if (columns == NULL) {
+        return -1;
+    }
+    for (b = 0; b < d->bands; b++) {
+        memcpy(columns + (size_t)b * w, d->columns + (size_t)b * d->width,
+               (size_t)d->width * sizeof(uint64_t));
+    }
+    free(d->columns);
+    d->columns = columns;
+    d->width = w;
+    d->bands = bands;
     return 0;
 }
 
-typedef struct decode_job {
-    decoder_t *d;
-    image_t *img;
-    unsigned char const *begin;
-    unsigned char const *end;
-    int first_band;
-    int end_band;
-    int color;
-    int painted_height;     /* one past the lowest painted row */
-    int outside;            /* painted outside the canvas */
-} decode_job_t;
-
-/* The step 4 paint loop for bands [first_band, end_band), followed by the
- * transpose of those bands. The prescan has already applied the palette,
- * so '#' only selects a register here. */
-static void *
-decode_worker(void *arg)
+/* Copy row r of every column word into the image: the transpose back,
+ * eight columns at a time when SIMD is available. */
+static void
+materialize(decoder_t const *d, image_t *img, int first_band, int end_band)
 {
-    decode_job_t *job = arg;
-    decoder_t *d = job->d;
-    unsigned char const *p = job->begin;
-    unsigned char const *end = job->end;
-    uint64_t color6 = (uint64_t)job->color * UINT64_C(0x010101010101);
+    unsigned char *rows[6];
+    int nrows;
+    int b;
+    int r;
+    int x;
+
+    for (b = first_band; b < end_band; b++) {
+        uint64_t const *col = d->columns + (size_t)b * d->width;
+
+        nrows = img->height - b * 6 < 6 ? img->height - b * 6 : 6;
+        for (r = 0; r < nrows; r++) {
+            rows[r] = img->pixels + (size_t)(b * 6 + r) * img->width;
+        }
+        x = 0;
+#ifdef HAVE_SIMD
+        for (; x + 8 <= img->width; x += 8) {
+            transpose_columns(col + x, rows, nrows);
+            for (r = 0; r < nrows; r++) {
+                rows[r] += 8;
+            }
+        }
+#endif
+        for (r = 0; r < nrows; r++) {
+            int i;
+
+            for (i = x; i < img->width; i++) {
+                rows[r][i - x] = (unsigned char)(col[i] >> (8 * r));
+            }
+        }
+    }
+}
+
+static int
+decode_serial(unsigned char const *p, size_t size, image_t *img)
+{
+    unsigned char const *end = p + size;
+    decoder_t d = { NULL, 0, 0, 0, 0 };
     uint64_t *col;
+    uint64_t color6 = 0;
     uint64_t mask;
     uint64_t paint;
     int a[5];
-    int band = job->first_band;
-    int band_rows = 0;      /* rows painted in this band */
+    int n;
     int x = 0;
+    int y = 0;
+    int band = 0;           /* y / 6 */
+    int band_rows = 0;      /* rows painted in this band */
+    int last;
     int i;
-    int bits;
+    int color = 0;
     int repeat;
+    int bits;
     int ch;
 
-    while (p < end) {
+    img->ncolors = 0;
+    p = find_sixel_body(p, end);
+    while (p < end && *p != 0x1b) {
+        /* The inner loop of step 3, with one word store per character. */
+        if (band < d.bands) {
+            col = d.columns + (size_t)band * d.width;
+            last = -1;
+            while (p < end && *p >= '?' && *p <= '~' && x < d.width) {
+                bits = *p++ - '?';
+                mask = row_mask((unsigned int)bits);
+                col[x] = (col[x] & ~mask) | (color6 & mask);
+                band_rows |= bits;
+                if (bits != 0) {
+                    last = x;
+                }
+                x++;
+            }
+            if (last >= d.used_width) {
+                d.used_width = last + 1;
+            }
+            if (p == end || *p == 0x1b) {
+                break;
+            }
+        }
         ch = *p++;
+        if (ch == '#' && parse_plain_number(&p, end, &n)) {
+            color = n > 255 ? 255 : n;
+            color6 = (uint64_t)color * UINT64_C(0x010101010101);
+            if (color >= img->ncolors) {
+                img->ncolors = color + 1;
+            }
+            continue;
+        }
         repeat = 1;
         if (ch == '!') {
-            parse_params(&p, end, &repeat, 1);
+            if (!parse_plain_number(&p, end, &repeat)) {
+                parse_params(&p, end, &repeat, 1);
+            }
             repeat = repeat > 0 ? repeat : 1;
             if (p == end) {
                 break;
@@ -270,15 +687,20 @@ decode_worker(void *arg)
         if (ch >= '?' && ch <= '~') {
             bits = ch - '?';
             if (bits != 0) {
-                if (band >= d->bands || repeat > d->width - x) {
-                    job->outside = 1;
-                    return NULL;
+                if (x + repeat > d.width || band >= d.bands) {
+                    if (x + repeat > TUTORIAL_MAX_SIDE ||
+                            decoder_reserve(&d, x + repeat, band + 1) != 0) {
+                        goto fail;
+                    }
                 }
                 mask = row_mask((unsigned int)bits);
                 paint = color6 & mask;
-                col = d->columns + (size_t)band * d->width + x;
+                col = d.columns + (size_t)band * d.width + x;
                 for (i = 0; i < repeat; i++) {
                     col[i] = (col[i] & ~mask) | paint;
+                }
+                if (x + repeat > d.used_width) {
+                    d.used_width = x + repeat;
                 }
                 band_rows |= bits;
             }
@@ -286,126 +708,55 @@ decode_worker(void *arg)
         } else if (ch == '$') {
             x = 0;
         } else if (ch == '-') {
-            if (band_rows != 0) {
-                job->painted_height = band * 6 + bottom_row(band_rows) + 1;
+            if (band_rows != 0 && y + bottom_row(band_rows) >= d.used_height) {
+                d.used_height = y + bottom_row(band_rows) + 1;
             }
             band_rows = 0;
             x = 0;
-            band++;
+            y = y < TUTORIAL_MAX_SIDE ? y + 6 : y;
+            band = y / 6;
         } else if (ch == '#') {
-            parse_params(&p, end, a, 5);
-            color6 = (uint64_t)(a[0] > 255 ? 255 : a[0]) *
-                UINT64_C(0x010101010101);
+            n = parse_params(&p, end, a, 5);
+            color = a[0] > 255 ? 255 : a[0];
+            color6 = (uint64_t)color * UINT64_C(0x010101010101);
+            if (color >= img->ncolors) {
+                img->ncolors = color + 1;
+            }
+            if (n == 5 && a[1] == 1) {
+                set_hls(img, color, a[2], a[3], a[4]);
+            } else if (n == 5 && a[1] == 2) {
+                set_rgb_pct(img, color, a[2], a[3], a[4]);
+            }
         } else if (ch == '"') {
             parse_params(&p, end, a, 4);
+            if (a[2] > 0 && a[3] > 0) {
+                if (decoder_reserve(&d, a[2], (a[3] + 5) / 6) != 0) {
+                    goto fail;
+                }
+                d.used_width = a[2] > d.used_width ? a[2] : d.used_width;
+                d.used_height = a[3] > d.used_height ? a[3] : d.used_height;
+            }
         }
     }
-    if (band_rows != 0) {
-        job->painted_height = band * 6 + bottom_row(band_rows) + 1;
+    if (band_rows != 0 && y + bottom_row(band_rows) >= d.used_height) {
+        d.used_height = y + bottom_row(band_rows) + 1;
     }
-    if (job->end_band > d->bands) {
-        job->end_band = d->bands;
+    if (d.used_width == 0 || d.used_height == 0 ||
+            image_alloc(img, d.used_width, d.used_height) != 0) {
+        goto fail;
     }
-    if (job->first_band < job->end_band) {
-        materialize(d, job->img, job->first_band, job->end_band);
-    }
-    return NULL;
-}
-
-int
-decode_sixel(unsigned char const *data, size_t size, image_t *img)
-{
-    unsigned char const *p = data;
-    unsigned char const *end = data + size;
-    unsigned char const *body;
-    unsigned char const *stop;
-    prescan_t ps = { NULL, 0, 0, 0, 0 };
-    decoder_t d = { NULL, 0, 0, 0, 0 };
-    decode_job_t jobs[MAX_THREADS];
-    pthread_t threads[MAX_THREADS];
-    int created[MAX_THREADS];
-    int njobs = 0;
-    int height;
-    int n;
-    int b;
-    int i;
-    int rc = -1;
-
-    img->ncolors = 0;
-    while (p < end && *p++ != 'q') {
-    }
-    body = p;
-    stop = memchr(body, 0x1b, (size_t)(end - body));
-    stop = stop != NULL ? stop : end;
-    if (prescan(body, stop, img, &ps) != 0) {
-        goto end;
-    }
-    if (ps.width == 0 || ps.height == 0) {
-        rc = decode_serial(data, size, img);    /* no size to trust */
-        goto end;
-    }
-    /* Allocate whole bands; the height is trimmed once paint is known. */
-    d.width = ps.width;
-    d.bands = (ps.height + 5) / 6;
-    d.columns = calloc((size_t)d.width * d.bands, sizeof(uint64_t));
-    if (d.columns == NULL || image_alloc(img, d.width, d.bands * 6) != 0) {
-        goto end;
-    }
-
-    /* Cut the body into n byte ranges of similar size, each starting at a
-     * band start, so every thread gets a similar amount of parsing. */
-    n = thread_count((size_t)(stop - body), 1 << 16, ps.nstarts);
-    for (i = 0, b = 0; i < n; i++) {
-        size_t target = (size_t)(stop - body) * i / n;
-
-        while (b < ps.nstarts && ps.starts[b].offset < target) {
-            b++;
-        }
-        if (b == ps.nstarts || (njobs > 0 && jobs[njobs - 1].first_band == b)) {
-            continue;
-        }
-        memset(&jobs[njobs], 0, sizeof(jobs[njobs]));
-        jobs[njobs].d = &d;
-        jobs[njobs].img = img;
-        jobs[njobs].begin = body + ps.starts[b].offset;
-        jobs[njobs].first_band = b;
-        jobs[njobs].color = ps.starts[b].color;
-        if (njobs > 0) {
-            jobs[njobs - 1].end = jobs[njobs].begin - 1;     /* drop '-' */
-            jobs[njobs - 1].end_band = b;
-        }
-        njobs++;
-    }
-    jobs[njobs - 1].end = stop;
-    jobs[njobs - 1].end_band = ps.nstarts;
-
-    for (i = 1; i < njobs; i++) {
-        created[i] = pthread_create(&threads[i], NULL, decode_worker,
-                                    &jobs[i]) == 0;
-        if (!created[i]) {
-            decode_worker(&jobs[i]);
-        }
-    }
-    decode_worker(&jobs[0]);
-    height = ps.height;
-    for (i = 0; i < njobs; i++) {
-        if (i > 0 && created[i]) {
-            pthread_join(threads[i], NULL);
-        }
-        if (jobs[i].outside) {
-            height = -1;
-        } else if (height >= 0 && jobs[i].painted_height > height) {
-            height = jobs[i].painted_height;
-        }
-    }
-    if (height < 0) {
-        rc = decode_serial(data, size, img);    /* paint outside the raster */
-        goto end;
-    }
-    img->height = height;                       /* rows stay in place */
-    rc = 0;
-end:
-    free(ps.starts);
+    materialize(&d, img, 0, (d.used_height + 5) / 6);
     free(d.columns);
-    return rc;
+    return 0;
+fail:
+    free(d.columns);
+    return -1;
 }
+
+#ifndef TUTORIAL_STEP6
+int
+decode_sixel(unsigned char const *p, size_t size, image_t *img)
+{
+    return decode_serial(p, size, img);
+}
+#endif /* TUTORIAL_STEP6 */

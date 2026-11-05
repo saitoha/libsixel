@@ -291,9 +291,12 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	docs/tutorial/sixel-codec/step0-by-hand.md \
 	docs/tutorial/sixel-codec/step1-run-length.md \
 	docs/tutorial/sixel-codec/step2-nodes.md \
-	docs/tutorial/sixel-codec/step3-column-words.md \
-	docs/tutorial/sixel-codec/step4-simd.md \
-	docs/tutorial/sixel-codec/step5-threads.md \
+	docs/tutorial/sixel-codec/measurements.md \
+	docs/tutorial/sixel-codec/measurements/results.json \
+	docs/tutorial/sixel-codec/step3-fewer-decisions.md \
+	docs/tutorial/sixel-codec/step4-column-words.md \
+	docs/tutorial/sixel-codec/step5-simd.md \
+	docs/tutorial/sixel-codec/step6-threads.md \
 	docs/tutorial/sixel-codec/figures/big-picture.svg \
 	docs/tutorial/sixel-codec/figures/character-table.svg \
 	docs/tutorial/sixel-codec/figures/heart-columns.svg \
@@ -309,18 +312,20 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	docs/tutorial/sixel-codec/figures/step2-nodes.svg \
 	docs/tutorial/sixel-codec/figures/step2-packing.svg \
 	docs/tutorial/sixel-codec/figures/step2-repeat-fill.svg \
-	docs/tutorial/sixel-codec/figures/step3-column-word.svg \
-	docs/tutorial/sixel-codec/figures/step3-first-colors.svg \
-	docs/tutorial/sixel-codec/figures/step3-masked-store.svg \
-	docs/tutorial/sixel-codec/figures/step3-memory.svg \
-	docs/tutorial/sixel-codec/figures/step3-occupancy.svg \
-	docs/tutorial/sixel-codec/figures/step3-swar.svg \
-	docs/tutorial/sixel-codec/figures/step4-block.svg \
-	docs/tutorial/sixel-codec/figures/step4-lanes.svg \
-	docs/tutorial/sixel-codec/figures/step4-transpose.svg \
-	docs/tutorial/sixel-codec/figures/step5-amdahl.svg \
-	docs/tutorial/sixel-codec/figures/step5-decoder.svg \
-	docs/tutorial/sixel-codec/figures/step5-encoder.svg \
+	docs/tutorial/sixel-codec/figures/step3-branchless.svg \
+	docs/tutorial/sixel-codec/figures/step3-dispatch.svg \
+	docs/tutorial/sixel-codec/figures/step4-column-word.svg \
+	docs/tutorial/sixel-codec/figures/step4-first-colors.svg \
+	docs/tutorial/sixel-codec/figures/step4-masked-store.svg \
+	docs/tutorial/sixel-codec/figures/step4-memory.svg \
+	docs/tutorial/sixel-codec/figures/step4-occupancy.svg \
+	docs/tutorial/sixel-codec/figures/step4-swar.svg \
+	docs/tutorial/sixel-codec/figures/step5-block.svg \
+	docs/tutorial/sixel-codec/figures/step5-lanes.svg \
+	docs/tutorial/sixel-codec/figures/step5-transpose.svg \
+	docs/tutorial/sixel-codec/figures/step6-amdahl.svg \
+	docs/tutorial/sixel-codec/figures/step6-decoder.svg \
+	docs/tutorial/sixel-codec/figures/step6-encoder.svg \
 	docs/tutorial/sixel-codec/figures/stream-anatomy.svg \
 	docs/tutorial/sixel-codec/figures/tree-cursor.svg \
 	docs/tutorial/sixel-codec/code/Makefile \
@@ -332,6 +337,7 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	docs/tutorial/sixel-codec/code/step3.c \
 	docs/tutorial/sixel-codec/code/step4.c \
 	docs/tutorial/sixel-codec/code/step5.c \
+	docs/tutorial/sixel-codec/code/step6.c \
 	docs/tutorial/sixel-codec/code/tutorial.h \
 	docs/ci/design.md \
 	docs/cli/design-policy.md \
@@ -1128,6 +1134,7 @@ EXTRA_DIST = tools/embed-metal.sh tools/embed-metal.awk \
 	tools/reproduce_encoding_pipeline_figures.sh \
 	tools/reproduce_sixel_format_figures.sh \
 	tools/reproduce_sixel_codec_tutorial_figures.sh \
+	tools/update_sixel_codec_tutorial_measurements.py \
 	tools/reproduce_lookup_policy_measurements.sh \
 	tools/reproduce_merge_policy_measurements.sh \
 	tools/reproduce_palette_pipeline_measurements.sh \

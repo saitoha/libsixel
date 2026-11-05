@@ -203,7 +203,7 @@ canvas_reserve(canvas_t *cv, int need_w, int need_h)
     if (need_w <= w && need_h <= h) {
         return 0;
     }
-    if (need_w > TUTORIAL_MAX_SIDE || need_h > TUTORIAL_MAX_SIDE) {
+    if (need_w > TUTORIAL_MAX_SIDE || need_h > TUTORIAL_MAX_BANDS * 6) {
         return -1;
     }
     while (w < need_w) {
@@ -213,7 +213,7 @@ canvas_reserve(canvas_t *cv, int need_w, int need_h)
         h = h < 64 ? 64 : h * 2;
     }
     w = w > TUTORIAL_MAX_SIDE ? TUTORIAL_MAX_SIDE : w;
-    h = h > TUTORIAL_MAX_SIDE ? TUTORIAL_MAX_SIDE : h;
+    h = h > TUTORIAL_MAX_BANDS * 6 ? TUTORIAL_MAX_BANDS * 6 : h;
     pixels = calloc((size_t)w * h, 1);
     if (pixels == NULL) {
         return -1;
@@ -264,8 +264,7 @@ decode_sixel(unsigned char const *p, size_t size, image_t *img)
     int ch;
 
     img->ncolors = 0;
-    while (p < end && *p++ != 'q') {
-    }
+    p = find_sixel_body(p, end);
     while (p < end && *p != 0x1b) {
         ch = *p++;
         repeat = 1;

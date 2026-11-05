@@ -120,3 +120,12 @@ site/
 
 # Embedded Metal source fragments are generated in the build tree.
 /src/generated-metal/*-shader.inc.h
+
+# Programs and pictures made while following the SIXEL codec tutorial.
+/docs/tutorial/sixel-codec/code/step[1-6]
+/docs/tutorial/sixel-codec/code/mysixel
+/docs/tutorial/sixel-codec/code/mine
+/docs/tutorial/sixel-codec/code/step5-scalar
+/docs/tutorial/sixel-codec/code/*.ppm
+/docs/tutorial/sixel-codec/code/*.pgm
+/docs/tutorial/sixel-codec/code/*.six

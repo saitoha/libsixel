@@ -1,30 +1,29 @@
-# Step 3: Six Pixels in One Number
+# Step 4: Six Pixels in One Number
 
-Steps 1 and 2 changed *what* the program does. This step changes *where the data sits in memory*, and that alone makes the decoder 1.6 times faster. The idea: a sixel character is about one column of six pixels, so keep those six pixels together. The source is [`code/step3.c`](code/step3.c); its output is byte for byte the same as step 2's.
+[Step 3](step3-fewer-decisions.md) made each decision cheaper, but painting one character still means six separate stores, and the encoder still scans every slot of every used color. This lesson changes *where the data sits in memory*: a sixel character is about one column of six pixels, so keep those six pixels together in one 64-bit number. The source is [`code/step4.c`](code/step4.c); its output is byte for byte the same as steps 2 and 3.
 
 **You will learn:**
 
-- why the six pixels of a column are far apart in memory,
-- how to pack them into one 64-bit number, a *column word*,
+- how to pack the six pixels of a column into one 64-bit number, a *column word*,
 - how to answer "which rows have color *c*?" for all six rows at once,
-- how a row of bits lets the program skip empty columns,
-- why a trick that speeds up one picture can slow down another.
+- how a row of bits lets the encoder skip empty columns,
+- what the layout costs, and why a trick that speeds up one picture can slow down another.
 
 ## Where the pixels live in memory
 
 Memory is one long street of numbered boxes, one byte each. A picture is stored row after row: first all of row 0, then all of row 1, and so on. The pixel at column `x` of row `y` lives in box `y * width + x`.
 
-![An eight by six band with letters. Column 2 holds c, k, s, A, I, Q, which are eight boxes apart when the rows are laid end to end in memory](figures/step3-memory.svg)
+![An eight by six band with letters. Column 2 holds c, k, s, A, I, Q, which are eight boxes apart when the rows are laid end to end in memory](figures/step4-memory.svg)
 
-A sixel character needs the six pixels of one column, but those pixels are a whole row apart. In a picture 2400 pixels wide, they are 2400 boxes apart. The processor reads memory in small blocks of 64 bytes (called *cache lines*), so to get one column it has to fetch six different blocks, and it uses only one byte of each.
+A sixel character needs the six pixels of one column, but those pixels are a whole row apart. In a picture 1920 pixels wide, they are 1920 boxes apart, so painting one character takes six separate stores, each with its own address.
 
 ## Six pixels in one number
 
 The fix is to turn each column on its side. A 64-bit integer (`uint64_t`) is eight bytes long. Put the register number of row 0 in byte 0, row 1 in byte 1, and so on up to row 5. Bytes 6 and 7 stay zero. This number is a **column word**:
 
-![A column with register numbers 5, 2, 2, 5, 7, 2 is packed into the low six bytes of one 64-bit word, row 0 in byte 0](figures/step3-column-word.svg)
+![A column with register numbers 5, 2, 2, 5, 7, 2 is packed into the low six bytes of one 64-bit word, row 0 in byte 0](figures/step4-column-word.svg)
 
-The figure draws byte 0 on the right, the way we write the ones digit of a number on the right. A band of width `w` becomes an array of `w` column words, one after another in memory, so walking across the band walks along the street. The encoder builds them one row at a time, which keeps the loops simple enough that the compiler can speed them up on its own:
+The figure draws byte 0 on the right, the way we write the ones digit of a number on the right. A band of width `w` becomes an array of `w` column words, one after another in memory, so walking across the band walks along the street, and one store covers a whole column. The encoder builds them one row at a time, which keeps the loops simple enough that the compiler can speed them up on its own:
 
 ```c
 for (r = 0; r < rows; r++) {
@@ -35,13 +34,13 @@ for (r = 0; r < rows; r++) {
 }
 ```
 
-This is the same layout libsixel's decoder uses, described under [ordinary-mode band columns](../../decoder/pipeline/README.md#ordinary-mode-band-columns).
+libsixel's decoder uses the same layout.
 
 ## Asking all six rows at once
 
 The encoder's question for each column is: "which rows have color *c*?" The answer is the sixel character. With six separate bytes that takes six comparisons. With the column in one number, a few operations on the whole number answer it for all rows at once. This is called **SWAR**, "SIMD within a register". Follow it with the column 5, 2, 2, 5, 7, 2 and color 2:
 
-![The column 5, 2, 2, 5, 7, 2 is XORed with copies of 2. Zero bytes mark rows 1, 2 and 5, which gather to the six-bit value 38, character e](figures/step3-swar.svg)
+![The column 5, 2, 2, 5, 7, 2 is XORed with copies of 2. Zero bytes mark rows 1, 2 and 5, which gather to the six-bit value 38, character e](figures/step4-swar.svg)
 
 1. **Copies of the color.** `c * 0x0101010101010101` puts `c` into every byte: multiplying by `0x01` in every byte position is the same as adding eight shifted copies of `c`.
 2. **XOR.** The exclusive or `^` of two equal numbers is 0, and of two different numbers is not 0. So after `word ^ copies`, the rows that have color 2 have become zero bytes.
@@ -81,7 +80,7 @@ equal_bytes(uint64_t word, unsigned int c)
 
 A column can hold up to six different colors, but often holds fewer. The column above holds only three: 5, 2 and 7. So the encoder visits each column once per color *in it*, not once per row. A row starts a new color if no row above it has the same color:
 
-![In the column 5, 2, 2, 5, 7, 2 rows 0, 1 and 4 start a new color, so the column is visited for colors 5, 2 and 7 only](figures/step3-first-colors.svg)
+![In the column 5, 2, 2, 5, 7, 2 rows 0, 1 and 4 start a new color, so the column is visited for colors 5, 2 and 7 only](figures/step4-first-colors.svg)
 
 The code finds all those rows at once, with the same zero-byte trick: it compares the word with copies of itself shifted down by one to five rows, which compares every row with every row above it.
 
@@ -110,7 +109,7 @@ for (x = 0; x < e->width; x++) {
 
 Step 2 cut nodes by scanning every slot of every used drawer, most of them empty. Step 3 also keeps, for every color, a row of lights: one bit per column, on when the color appears there. Sixty-four lights fit in one 64-bit word. To find the next occupied column, the code does not look at the empty ones at all; `ctz64()` jumps straight to the next light that is on:
 
-![Sixteen columns, of which 2, 3, 9 and 14 are occupied. Count trailing zeros jumps from one set bit to the next](figures/step3-occupancy.svg)
+![Sixteen columns, of which 2, 3, 9 and 14 are occupied. Count trailing zeros jumps from one set bit to the next](figures/step4-occupancy.svg)
 
 ```c
 for (i = 0; i < e->words; i++) {
@@ -122,36 +121,13 @@ for (i = 0; i < e->words; i++) {
 }
 ```
 
-The same idea speeds up packing. Step 2 walked the whole list of nodes for every line and skipped the ones that did not fit. Step 3 keeps a row of lights for the columns where at least one node starts. The next node for a line is the longest node at the first light at or after the cursor, which one jump finds:
-
-```c
-static int
-next_start(encoder_t const *e, int x)
-{
-    size_t i = (size_t)x / 64;
-    uint64_t bits;
-
-    if (x >= e->width) {
-        return -1;
-    }
-    bits = e->starts[i] & (~UINT64_C(0) << (x % 64));  /* lights at >= x */
-    while (bits == 0) {
-        if (++i == e->words) {
-            return -1;
-        }
-        bits = e->starts[i];
-    }
-    return (int)(i * 64) + ctz64(bits);
-}
-```
-
-It picks exactly the nodes that step 2's walk would pick, in the same order, so the stream does not change by a single byte.
+[Step 3](step3-fewer-decisions.md) used the same kind of row for the start columns of nodes. Here the occupancy bits come almost for free, because the classifier already visits each (color, column) pair exactly once.
 
 ## The decoder paints column words
 
 The decoder also keeps each band as an array of column words. A sixel character with color *c* must replace the bytes of the rows it paints and keep the others. With a **mask**, a number that is `0xff` in the bytes to replace and `0x00` elsewhere, that is a single operation:
 
-![The data character e sets rows 1, 2 and 5. A mask with ff in those bytes replaces them with color 3 and keeps the other rows](figures/step3-masked-store.svg)
+![The data character e sets rows 1, 2 and 5. A mask with ff in those bytes replaces them with color 3 and keeps the other rows](figures/step4-masked-store.svg)
 
 ```c
 mask = row_mask((unsigned int)bits);    /* 0xff in every painted row */
@@ -172,25 +148,25 @@ row_mask(unsigned int bits)
 }
 ```
 
-When the stream ends, `materialize()` turns the column words back into rows of the picture, once per pixel. [Step 4](step4-simd.md) shows how to do that quickly.
+Step 3's inner loop stays, with this one store in place of six. When the stream ends, `materialize()` turns the column words back into rows of the picture, once per pixel. [Step 5](step5-simd.md) shows how to do that quickly.
 
 Unpainted bytes stay zero, which is also register 0, so the tutorial needs no record of which pixels were painted. libsixel's decoder keeps such a record in byte 6 of the word, because its callers can ask which pixels were painted and because a pixel painted with register 0 must look different from an untouched one.
 
-> **Try it.** Write `zero_bytes()`, `equal_bytes()` and `row_mask()` in a small test program and check them on the examples in the figures: `equal_bytes()` of the column 5, 2, 2, 5, 7, 2 with color 2 must be 38, and `row_mask(38)` must be `0x0000ff0000ffff00`. Then try every color from 0 to 255 against a few random columns and compare with a plain loop over the six bytes.
+> **Try it: write the bit tricks yourself.** Write `zero_bytes()`, `equal_bytes()` and `row_mask()` in a small test program and check them on the examples in the figures: `equal_bytes()` of the column 5, 2, 2, 5, 7, 2 with color 2 must be 38, and `row_mask(38)` must be `0x0000ff0000ffff00`. Then try every color from 0 to 255 against a few random columns and compare with a plain loop over the six bytes.
 
 ## How fast is it?
 
-<!-- measurements:begin -->
+<!-- measurements:begin:step4 -->
 | Input | Encode | Speed-up | Decode | Speed-up | Stream |
 | --- | --- | --- | --- | --- | --- |
-| Photograph, 600×450 | 1.20 ms | 1.0× | 0.71 ms | 1.6× | 213,711 bytes |
-| Photograph, 2400×1800 | 15.3 ms | 1.0× | 7.95 ms | 1.6× | 2,787,156 bytes |
-| Two colors, 2400×1800 | 8.27 ms | 0.6× | 4.24 ms | 0.9× | 1,441,842 bytes |
-| Random noise, 2400×1800 | 150.7 ms | 2.2× | 56.2 ms | 1.3× | 19,399,499 bytes |
+| Photograph, 600×450 | 2.30 ms | 1.6× | 0.59 ms | 1.3× | 328,750 bytes |
+| Photograph, 1920×1080 | 11.8 ms | 1.8× | 3.07 ms | 1.4× | 1,663,155 bytes |
+| Two colors, 1920×1080 | 3.90 ms | 0.6× | 1.13 ms | 1.3× | 692,322 bytes |
+| Random noise, 1920×1080 | 68.5 ms | 1.5× | 15.7 ms | 1.2× | 9,316,560 bytes |
 <!-- measurements:end -->
 
-The decoder is about 1.6 times faster on the photographs and 1.3 times on noise. On the two-color pattern it is slightly slower: step 2 paints only two lines per band there, and the extra pass that turns column words back into rows, about 1.3 ms for 2400×1800 pixels, costs more than the jumping around in memory saved.
+**Decoder.** One store instead of six makes decoding about 1.4 times faster on the photograph and 1.3 times on the two-color pattern, including the extra pass at the end, which takes about 0.6 ms for a Full HD picture. Register 0 and an untouched pixel look the same in the tutorial's words, because unpainted bytes stay zero. libsixel's decoder keeps a record of painted rows in byte 6 of the word, as described under [ordinary-mode band columns](../../decoder/pipeline/README.md#ordinary-mode-band-columns), because its callers can ask which pixels were painted and a pixel painted with register 0 must differ from an untouched one.
 
-The encoder's result depends on the picture, and that is the main lesson of this step. Cutting nodes became more than twice as fast, and on random noise, where every band uses all 256 colors in scattered columns, the whole encoder is more than twice as fast. But finding the colors of a column now takes a few dozen operations for each color in it, while step 2 needed only six simple stores per column. On the two-color pattern, where step 2's node cutting was already cheap, step 3 is slower overall.
+**Encoder.** The result depends on the picture, and that is the main lesson of this step. Cutting nodes takes 2.2 ms instead of 14.4 ms on the photograph, so the whole encoder is 1.8 times faster. But finding the colors of a column now takes a few dozen operations per color in it, 3.4 ms instead of 0.7 ms for classifying. On the two-color pattern, where cutting nodes was already cheap, that makes the encoder slower overall (3.9 ms instead of 2.2 ms). The [measurement record](measurements.md) lists every phase.
 
-libsixel faces the same trade-off and decides differently: its [`sixel_band_classify()`](../../../src/encoder-core-encode.c) uses column words only for palettes of one or two colors, and step 2's plain stores, plus the lights, otherwise. Which one wins depends on the rest of the program, which is why every idea in this tutorial is measured instead of assumed to help.
+libsixel faces the same trade-off and decides differently: its [`sixel_band_classify()`](../../../src/encoder-core-encode.c) uses column words only for palettes of one or two colors, and plain per-pixel stores plus occupancy bits otherwise. Which one wins depends on the rest of the program, which is why every idea in this tutorial is measured instead of assumed to help.

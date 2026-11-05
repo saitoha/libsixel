@@ -1,6 +1,6 @@
 # Build the SIXEL codec tutorial programs with any POSIX make:
 #
-#   make            build step1 ... step5
+#   make            build step1 ... step6
 #   make mysixel    build your own codec from mysixel.c
 #   make check      run every self test and cross-step comparison
 #   make bench      time every step on the inputs of the published table
@@ -12,7 +12,7 @@ CC = cc
 CFLAGS = -O2 -Wall -Wextra
 LDLIBS = -lpthread
 O = .
-STEPS = $(O)/step1 $(O)/step2 $(O)/step3 $(O)/step4 $(O)/step5
+STEPS = $(O)/step1 $(O)/step2 $(O)/step3 $(O)/step4 $(O)/step5 $(O)/step6
 
 all: $(STEPS)
 
@@ -25,8 +25,10 @@ $(O)/step3: step3.c
 	$(CC) $(CFLAGS) -o $@ common.c step3.c $(LDLIBS)
 $(O)/step4: step4.c
 	$(CC) $(CFLAGS) -o $@ common.c step4.c $(LDLIBS)
-$(O)/step5: step5.c step4.c
+$(O)/step5: step5.c
 	$(CC) $(CFLAGS) -o $@ common.c step5.c $(LDLIBS)
+$(O)/step6: step6.c step5.c
+	$(CC) $(CFLAGS) -o $@ common.c step6.c $(LDLIBS)
 
 # Not in `all`: it is yours to finish, so it fails its self test at first.
 mysixel: mysixel.c common.c tutorial.h
@@ -35,17 +37,23 @@ mysixel: mysixel.c common.c tutorial.h
 check: all
 	./check.sh $(O)
 
+# Photographs with an adaptive 256-color palette and error diffusion, as
+# libsixel writes them, plus a two-color pattern and random noise.
+STUDY = ../../../encoder/output/high-color/study
+RUNS = 10
 bench: all
-	$(O)/step1 synth two 2400 1800 > $(O)/two.ppm
-	$(O)/step1 synth noise 2400 1800 > $(O)/noise.ppm
+	$(O)/step2 decode $(STUDY)/snake-256-fs.six > $(O)/photo-small.ppm
+	$(O)/step2 decode $(STUDY)/snake-fhd-256-fs.six > $(O)/photo-fhd.ppm
+	$(O)/step1 synth two 1920 1080 > $(O)/two.ppm
+	$(O)/step1 synth noise 1920 1080 > $(O)/noise.ppm
 	@for s in $(STEPS); do \
-	    echo "$$s photo-600 $$($$s bench ../../../../images/snake.ppm 1 10)"; \
-	    echo "$$s photo-2400 $$($$s bench ../../../../images/snake.ppm 4 10)"; \
-	    echo "$$s two-2400 $$($$s bench $(O)/two.ppm 1 10)"; \
-	    echo "$$s noise-2400 $$($$s bench $(O)/noise.ppm 1 10)"; \
+	    for i in photo-small photo-fhd two noise; do \
+	        echo "$$(basename $$s) $$i $$($$s bench $(O)/$$i.ppm 1 $(RUNS))"; \
+	    done; \
 	done
 
 clean:
-	rm -f $(STEPS) $(O)/mysixel $(O)/two.ppm $(O)/noise.ppm
+	rm -f $(STEPS) $(O)/mysixel $(O)/photo-small.ppm $(O)/photo-fhd.ppm \
+	    $(O)/two.ppm $(O)/noise.ppm
 
 .PHONY: all check bench clean
