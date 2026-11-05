@@ -193,3 +193,4 @@ docs/encoder/palette-application/lookup-policy/delaunay.md	reference	both	policy
 docs/encoder/palette-application/lookup-policy/gridlut.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/ordered.md	reference	both	policy-specific mathematics and cost
 docs/encoder/palette-application/lookup-policy/blockcull.md	reference	both	policy-specific mathematics and cost
+docs/encoder/palette-application/dithering/phased.md	reference	both	

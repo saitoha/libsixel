@@ -22,6 +22,7 @@ typedef struct ordered_plan {
     sixel_mutex_t gate;
     unsigned char palette[768];
     unsigned int count;
+    sixel_gpu_lookup_query_kind_t query_kind;
     int busy;
     int valid;
     sixel_gpu_lookup_build_pass_t passes[2];
@@ -79,6 +80,7 @@ ordered_describe(sixel_gpu_lookup_plan_interface_t const *self,
     memset(view, 0, sizeof(*view));
     view->program_format = "metal.lookup-rgb8.v1";
     view->logical_name = "ordered";
+    view->query_kind = plan->query_kind;
     view->chunks = ordered_chunks;
     view->chunk_count = sizeof(ordered_chunks) / sizeof(ordered_chunks[0]);
     view->palette = plan->palette;
@@ -246,6 +248,10 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
             strcmp(device->vtbl->program_format(device),
                 "metal.lookup-rgb8.v1") != 0) return SIXEL_FEATURE_ERROR;
+    if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE &&
+            request->query_kind != SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->ncolors < 1 || request->ncolors > 256) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -262,6 +268,7 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     plan = preparer->cached;
     if (plan == NULL || plan->device != device ||
             plan->count != request->ncolors ||
+            plan->query_kind != request->query_kind ||
             memcmp(plan->palette, entries.entries, request->ncolors * 3U)) {
         plan = sixel_allocator_calloc(preparer->allocator, 1, sizeof(*plan));
         if (plan == NULL) {
@@ -283,6 +290,7 @@ ordered_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
         plan->device = device;
         device->vtbl->ref(device);
         plan->count = request->ncolors;
+        plan->query_kind = request->query_kind;
         memcpy(plan->palette, entries.entries, plan->count * 3U);
         width = 32;
         while (width < plan->count) width *= 2;

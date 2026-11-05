@@ -689,6 +689,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "          size=SIZE           -> 64 (embedded tile size)\n"
         "          scan=SCANTYPE       -> auto, raster, or serpentine\n"
         "                                 (default raster)\n"
+        "      phased     -> GPU spatial diffusion (RGB8, ordered lookup)\n"
+        "        gain=standard|small-error (default standard)\n"
+        "        scan=auto|serpentine; no CPU fallback\n"
         "      lso2       -> libsixel variable error diffusion tables\n"
         "        sub-option:\n"
         "          scan=SCANTYPE      -> auto, raster, or serpentine\n"
@@ -696,6 +699,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      compact suboption names (uppercase letter + value):\n"
         "        all methods: scan=N, band_overwrap=O, band_width=B,\n"
         "                     deadzone=D, perturb=U, perturb_seed=R\n"
+        "        phased: gain=G\n"
         "        sierra: variant=V\n"
         "        a_dither, x_dither: strength=T\n"
         "        bluenoise: strength=T, gradient_factor=G, phase=P,\n"
@@ -1617,6 +1621,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_SCAN",
         "default diffusion scan order. Accepts auto, serpentine, or raster.\n"
         "Overridden by the scan suboption."
+    },
+    {
+        "SIXEL_DITHER_PHASED_GAIN",
+        "default phased gain: standard or small-error.\n"
+        "Overridden by -d phased:gain=VALUE."
     },
     {
         "SIXEL_DITHER_SIERRA_VARIANT",

@@ -1090,7 +1090,8 @@ enum {
     SIXEL_DIFFUSION_BASE_A_DITHER,
     SIXEL_DIFFUSION_BASE_X_DITHER,
     SIXEL_DIFFUSION_BASE_BLUENOISE,
-    SIXEL_DIFFUSION_BASE_LSO2
+    SIXEL_DIFFUSION_BASE_LSO2,
+    SIXEL_DIFFUSION_BASE_PHASED
 };
 
 #define SIXEL_DIFFUSION_BASE_SET_CARRY \
@@ -1116,7 +1117,8 @@ static sixel_option_value_schema_t const g_diffusion_values[] = {
     {
         "bluenoise", SIXEL_DIFFUSE_BLUENOISE_DITHER, 6u
     },
-    { "lso2", SIXEL_DIFFUSE_LSO2, 0u }
+    { "lso2", SIXEL_DIFFUSE_LSO2, 0u },
+    { "phased", SIXEL_DIFFUSE_PHASED, 0u }
 };
 
 enum {
@@ -1534,6 +1536,11 @@ static sixel_suboption_choice_t const g_diffusion_scan_choices[] = {
     { "auto", SIXEL_SCAN_AUTO },
     { "serpentine", SIXEL_SCAN_SERPENTINE },
     { "raster", SIXEL_SCAN_RASTER }
+};
+
+static sixel_suboption_choice_t const g_phased_gain_choices[] = {
+    { "standard", SIXEL_PHASED_GAIN_STANDARD },
+    { "small-error", SIXEL_PHASED_GAIN_SMALL_ERROR }
 };
 
 static sixel_suboption_choice_t const g_bluenoise_channel_choices[] = {
@@ -2225,6 +2232,12 @@ static sixel_suboption_key_t const g_suboptions[] = {
         "-F merge_lloyd must be 0 or in range 1-30.",
         merge_policy_lloyd,
         merge_policy_lloyd_override),
+    SIXEL_REGISTRY_ENCODER_DIRECT_CHOICE(
+        SIXEL_OPTION_SCHEMA_DIFFUSION,
+        g_diffusion_values + SIXEL_DIFFUSION_BASE_PHASED,
+        "gain", 'G', "SIXEL_DITHER_PHASED_GAIN", NULL, NULL,
+        g_phased_gain_choices, phased_gain),
+
     SIXEL_REGISTRY_ENCODER_DOUBLE_ENV_CLAMP(
         SIXEL_OPTION_SCHEMA_MERGE_POLICY, NULL,
         "channel_l", 'C', "SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L",

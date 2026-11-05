@@ -10,6 +10,8 @@ lookup(color candidate, completed palette) -> palette index
 
 It is not a SIXEL wire-format term and does not mean reading a palette register whose index is already known.
 
+For GPU spatial [`phased` dithering](../dithering/phased.md), `ordered` provides fractional code-value queries over an emitted RGB8 palette; lookup `auto` resolves to that capability. Other GPU policies currently accept byte queries only and are rejected for this dither. This is separate from native float32 image and colorspace support.
+
 ## Pipeline position
 
 Conceptually, lookup runs during palette application, after palette construction and before SIXEL byte generation:

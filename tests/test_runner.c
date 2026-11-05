@@ -1583,6 +1583,27 @@ int test_delaunay_gpu_exact(int argc, char **argv);
 int test_delaunay_gpu_failure(int argc, char **argv);
 int test_gpupal_0023_ordered_exact(int argc, char **argv);
 int test_gpu_rows_vptree_indexes(int, char **);
+int test_phased_cancel_before(int, char **);
+int test_phased_cancel_after(int, char **);
+int test_phased_cancel_reuse(int, char **);
+int test_phased_prepare_failure_atomic(int, char **);
+int test_phased_palette256(int, char **);
+int test_phased_reprepare_reset(int, char **);
+int test_phased_preparer_lifetime(int, char **);
+int test_phased_standard_indexes(int, char **);
+int test_phased_small_error_indexes(int, char **);
+int test_phased_scratch_reset(int, char **);
+int test_phased_configuration_snapshot(int, char **);
+int test_phased_gpu_off_rejected(int, char **);
+int test_phased_byte_lookup_rejected(int, char **);
+int test_phased_auto_small_image(int, char **);
+int test_phased_float_image_rejected(int, char **);
+int test_phased_raster_rejected(int, char **);
+int test_phased_invalid_gain_atomic(int, char **);
+int test_phased_delta_t0(int, char **);
+int test_phased_delta_refresh(int, char **);
+int test_phased_partial_rectangle(int, char **);
+int test_phased_retained_immutable(int, char **);
 int test_gpu_rows_ordered_indexes(int, char **);
 int test_gpu_rows_rbc_indexes(int, char **);
 int test_gpu_rows_mahalanobis_indexes(int, char **);
@@ -6708,6 +6729,27 @@ static test_entry_t const test_entries[] = {
     { "component/cutoff_cpu_only", test_lookup_cutoff_cpu_only },
     { "component/gpu_rows_vptree_indexes",
       test_gpu_rows_vptree_indexes },
+    { "phased/cancel_before", test_phased_cancel_before },
+    { "phased/cancel_after", test_phased_cancel_after },
+    { "phased/cancel_reuse", test_phased_cancel_reuse },
+    { "phased/prepare_failure_atomic", test_phased_prepare_failure_atomic },
+    { "phased/palette256", test_phased_palette256 },
+    { "phased/reprepare_reset", test_phased_reprepare_reset },
+    { "phased/preparer_lifetime", test_phased_preparer_lifetime },
+    { "phased/standard_indexes", test_phased_standard_indexes },
+    { "phased/small_error_indexes", test_phased_small_error_indexes },
+    { "phased/scratch_reset", test_phased_scratch_reset },
+    { "phased/configuration_snapshot", test_phased_configuration_snapshot },
+    { "phased/gpu_off_rejected", test_phased_gpu_off_rejected },
+    { "phased/byte_lookup_rejected", test_phased_byte_lookup_rejected },
+    { "phased/auto_small_image", test_phased_auto_small_image },
+    { "phased/float_image_rejected", test_phased_float_image_rejected },
+    { "phased/raster_rejected", test_phased_raster_rejected },
+    { "phased/invalid_gain_atomic", test_phased_invalid_gain_atomic },
+    { "phased/delta_t0", test_phased_delta_t0 },
+    { "phased/delta_refresh", test_phased_delta_refresh },
+    { "phased/partial_rectangle", test_phased_partial_rectangle },
+    { "phased/retained_immutable", test_phased_retained_immutable },
     { "component/gpu_rows_ordered_indexes",
       test_gpu_rows_ordered_indexes },
     { "component/gpu_rows_rbc_indexes",

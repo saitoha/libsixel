@@ -1578,6 +1578,11 @@ typedef enum sixel_delta_compare {
 /* Resolved values, with no environment precedence flags or frame pointers.
  * prepare copies these settings; callers may release or change their source
  * configuration afterwards. apply never reads a mutable legacy handle. */
+typedef enum sixel_phased_gain {
+    SIXEL_PHASED_GAIN_STANDARD = 0,
+    SIXEL_PHASED_GAIN_SMALL_ERROR = 1
+} sixel_phased_gain_t;
+
 typedef struct sixel_dither_policy_options {
     int method_for_diffuse;
     int ncolors;
@@ -1596,6 +1601,7 @@ typedef struct sixel_dither_policy_options {
     int bluenoise_channel_rgb;
     int bluenoise_size;
     float bluenoise_gradient_factor;
+    sixel_phased_gain_t phased_gain;
 } sixel_dither_policy_options_t;
 
 typedef struct sixel_dither_policy_prepare_request {
@@ -1732,12 +1738,24 @@ typedef struct sixel_palette_apply_delta {
  * owned by the concrete preparer. No environment lookup occurs here.
  * ncolors is the searchable prefix, in 1..palette.entry_count. The caller
  * excludes any reserved transparency slot; lookup must not add it back. */
+/* Query precision is independent of source-image storage. FRACTIONAL uses
+ * finite float coordinates in the closed byte-code cube [0,255]^3. It is
+ * not a float32 image/working-colorspace capability. Providers explicitly
+ * accept this contract or return FEATURE_ERROR before output; a byte-only
+ * provider must not silently round a fractional query. Zero keeps the
+ * existing integer-query contract. */
+typedef enum sixel_gpu_lookup_query_kind {
+    SIXEL_GPU_LOOKUP_QUERY_BYTE = 0,
+    SIXEL_GPU_LOOKUP_QUERY_FRACTIONAL = 1
+} sixel_gpu_lookup_query_kind_t;
+
 typedef struct sixel_lookup_execution_request {
     sixel_palette_t *working_palette;
     unsigned int ncolors;
     int pixelformat;
     int colorspace;
     int parallel_dither_active;
+    sixel_gpu_lookup_query_kind_t query_kind;
 } sixel_lookup_execution_request_t;
 
 /* CPU and GPU preparation are separate capabilities. Creating either
@@ -1912,11 +1930,19 @@ typedef struct sixel_gpu_lookup_build_pass {
  * an ordinary palette index under the concrete policy's declared semantics;
  * transparency and delta keep are handled by the application component.
  * It does not read pixel position, previous queries or retained history.
- * This ABI does not claim to support float or collective block lookup.
+ * Image storage remains RGB8; collective block lookup is not supported.
  *
  * Providers own builders, constants, workspace layout and query code together.
  * VP-tree and ordered maintain separate implementations and caches. There is
  * no shared distance-row, candidate-builder or search service. */
+/* Query kind is an ABI specialization and part of cache identity.
+ * BYTE exposes the uchar3 entry above. FRACTIONAL additionally exposes
+ * uint lookup_rgb8_fractional(float3 query, constant uchar *palette,
+ *     uint ncolors, constant uchar *configuration,
+ *     device const uchar *workspace);
+ * This entry follows the provider's declared search semantics on the
+ * continuous byte-code cube. The original BYTE entry remains intact.
+ * A consumer verifies this field before compiling or submitting work. */
 typedef struct sixel_gpu_lookup_program_view {
     char const *program_format;
     char const *logical_name;
@@ -1930,6 +1956,7 @@ typedef struct sixel_gpu_lookup_program_view {
     size_t workspace_size;
     sixel_gpu_lookup_build_pass_t const *build_passes;
     size_t build_pass_count;
+    sixel_gpu_lookup_query_kind_t query_kind;
 } sixel_gpu_lookup_program_view_t;
 
 typedef struct sixel_gpu_lookup_binding_view {
@@ -2110,6 +2137,161 @@ struct sixel_gpu_lookup_preparer_interface {
     sixel_gpu_lookup_preparer_vtbl_t const *vtbl;
 };
 
+/* A GPU dither receives lookup as an independent preparation capability.
+ * It selects the query precision required by its own arithmetic, freezes a
+ * lookup plan, and compiles before prepare succeeds. It never branches on a
+ * lookup policy name, inspects its workspace, or creates a CPU lookup.
+ * The working and emitted palettes have equal counts; a dither declares
+ * which representation its lookup and residual use. PHASED uses the emitted
+ * RGB8 entries, excluding the reserved transparency entry. */
+typedef struct sixel_gpu_dither_prepare_request {
+    sixel_palette_t *working_palette;
+    sixel_gpu_lookup_preparer_interface_t *lookup;
+    sixel_gpu_device_interface_t *device;
+    sixel_indexed_frame_description_t output;
+    int pixelformat;
+    int colorspace;
+    int scan;
+} sixel_gpu_dither_prepare_request_t;
+
+/* All views are borrowed until run returns after draining GPU work. Result
+ * is BUILDING and matches the prepared description. The source and baseline
+ * are immutable. Only result indexes/final skip/RGB may be written; this
+ * component does not publish rows, seal result, or commit retained history.
+ * PaletteApply owns publication, cancellation outcome and final sealing. */
+typedef struct sixel_gpu_dither_run_request {
+    sixel_frame_interface_t *source;
+    sixel_retained_read_t *baseline;
+    sixel_indexed_frame_t *result;
+    sixel_palette_apply_delta_t delta;
+    sixel_timeline_logger_t *logger;
+    sixel_cancel_function cancel;
+    void *cancel_context;
+} sixel_gpu_dither_run_request_t;
+
+/* The plan owns frozen configuration, compiled programs, scratch capacity
+ * and retained device/lookup objects. Scratch is private to each invocation
+ * or exclusively leased through completion; it is initialized on every run
+ * and carries no residual between images. Image scratch allocation, program
+ * compilation and admission occur during preparation before output. Lookup
+ * lease records follow the provider binding contract. Runtime failures are not retry
+ * signals. Every begun lookup lease is finished exactly once after draining,
+ * including cancellation and failed command encoding or execution.
+ *
+ * The concrete dither owns its pass ordering and state transitions. Backend
+ * resource services expose device/buffer operations, not shared candidate,
+ * distance, or search algorithms. No CPU implementation is implied. */
+typedef struct sixel_gpu_dither_plan_interface
+    sixel_gpu_dither_plan_interface_t;
+
+/*
+ * IDL responsibility:
+ * - execute one prepared GPU dither into unpublished pixels
+ */
+
+/*
+ * IDL forbidden state:
+ * - terminal_callback
+ * - transport_queue
+ * - retained_owner
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("execute one prepared GPU dither into unpublished pixels")]
+ * [forbid_state("terminal_callback", "transport_queue", "retained_owner")]
+ * interface gpu_dither_plan {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     SIXELSTATUS run(in gpu_dither_run_request const *request);
+ * };
+ */
+
+typedef struct sixel_gpu_dither_plan_vtbl {
+    void (*ref)(sixel_gpu_dither_plan_interface_t *self);
+    void (*unref)(sixel_gpu_dither_plan_interface_t *self);
+    SIXELSTATUS (*run)(
+        sixel_gpu_dither_plan_interface_t *self,
+        sixel_gpu_dither_run_request_t const *request);
+} sixel_gpu_dither_plan_vtbl_t;
+
+struct sixel_gpu_dither_plan_interface {
+    sixel_gpu_dither_plan_vtbl_t const *vtbl;
+};
+
+/* configure copies resolved settings, preserving them on failure. A caller
+ * serializes configure/prepare; reconfiguration cannot change existing plans.
+ * get_configuration has no device discovery, allocation or compilation
+ * effect; an unconfigured preparer returns LOGIC_ERROR. prepare returns
+ * one retained plan, or leaves *plan NULL. FEATURE_ERROR denotes unsupported
+ * input/device/lookup before output; all other errors remain failures.
+ * Releasing this preparer never invalidates a returned plan. */
+typedef struct sixel_gpu_dither_preparer_interface
+    sixel_gpu_dither_preparer_interface_t;
+
+/*
+ * IDL responsibility:
+ * - prepare GPU dither from resolved method settings
+ */
+
+/*
+ * IDL forbidden state:
+ * - image_pixels
+ * - output_pixels
+ * - frame_history
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("prepare GPU dither from resolved method settings")]
+ * [forbid_state("image_pixels", "output_pixels", "frame_history")]
+ * interface gpu_dither_preparer {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     SIXELSTATUS configure(in dither_policy_prepare_request const *request);
+ *     [const] SIXELSTATUS get_configuration(
+ *         out dither_policy_prepare_request *configuration);
+ *     [const]
+ *     SIXELSTATUS prepare(in gpu_dither_prepare_request const *request,
+ *         out gpu_dither_plan **plan);
+ * };
+ */
+
+typedef struct sixel_gpu_dither_preparer_vtbl {
+    void (*ref)(sixel_gpu_dither_preparer_interface_t *self);
+    void (*unref)(sixel_gpu_dither_preparer_interface_t *self);
+    SIXELSTATUS (*configure)(
+        sixel_gpu_dither_preparer_interface_t *self,
+        sixel_dither_policy_prepare_request_t const *request);
+    SIXELSTATUS (*get_configuration)(
+        sixel_gpu_dither_preparer_interface_t const *self,
+        sixel_dither_policy_prepare_request_t *configuration);
+    SIXELSTATUS (*prepare)(
+        sixel_gpu_dither_preparer_interface_t const *self,
+        sixel_gpu_dither_prepare_request_t const *request,
+        sixel_gpu_dither_plan_interface_t **plan);
+} sixel_gpu_dither_preparer_vtbl_t;
+
+struct sixel_gpu_dither_preparer_interface {
+    sixel_gpu_dither_preparer_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL coclass:
+ * [classid("dither/phased.gpu")]
+ * coclass dither_policy_phased_gpu {
+ *     [default] interface gpu_dither_preparer;
+ * };
+ */
+
 /* Preparers carry already resolved settings. The composition root supplies
  * the CPU/GPU capabilities of the same selected policy. A NULL capability is
  * unavailable, not a request for enum-based discovery. At least one preparer
@@ -2131,6 +2313,7 @@ typedef struct sixel_palette_apply_prepare_request {
     int band_overlap;
     int gpu_policy;
     size_t gpu_auto_threshold;
+    sixel_gpu_dither_preparer_interface_t *gpu_dither;
 } sixel_palette_apply_prepare_request_t;
 
 /* Called serially by the producer with a monotonically increasing ready-row
@@ -2154,7 +2337,19 @@ typedef struct sixel_palette_apply_run_request {
     void *cancel_context;
 } sixel_palette_apply_run_request_t;
 
-/* prepare retains compatible prepared dither and palette objects and the
+/* dither is the optional CPU capability; gpu_dither is the optional GPU
+ * capability. At least one is required. If both exist, their frozen
+ * configuration must agree. Missing CPU capability is never replaced by a
+ * different method. GPU OFF with no CPU dither returns FEATURE_ERROR. AUTO's
+ * small-image CPU cutoff applies only when a CPU dither exists.
+ *
+ * An injected gpu_dither owns its prepared execution and receives the lookup
+ * capability directly. PaletteApply does not inspect its algorithm, passes,
+ * private state or method enum. The existing stateless GPU adapter remains
+ * available when gpu_dither is NULL. A GPU-only preparation failure returns
+ * before any output; runtime failure never switches to CPU.
+ *
+ * prepare retains compatible prepared dither and palette objects and the
  * supplied preparation capabilities. GPU eligibility of the application
  * shape is separate from lookup eligibility, which the provider owns.
  * GPU off or a below-threshold auto request prepares CPU lookup. Otherwise

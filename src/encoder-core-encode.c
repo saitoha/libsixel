@@ -5403,6 +5403,12 @@ sixel_encoder_core_encode_dispatch(
     }
 
     (void)request->depth;
+    if (request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR &&
+            request->dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED) {
+        sixel_helper_set_additional_message(
+            "phased requires indexed RGB8 GPU palette application");
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
         status = sixel_encode_highcolor(request->pixels,
                                         request->width,
@@ -5412,6 +5418,11 @@ sixel_encoder_core_encode_dispatch(
     } else {
         status = sixel_encode_indexed_session(request);
         if (status != SIXEL_FALSE) return status;
+        if (request->dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED) {
+            sixel_helper_set_additional_message(
+                "phased requires the RGB8 GPU component path");
+            return SIXEL_FEATURE_ERROR;
+        }
         status = sixel_encode_dither(request->pixels,
                                      request->width,
                                      request->height,

@@ -100,6 +100,7 @@ host_triplet = @host@
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/quicklook_thumbnailing.m
 
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_5 = \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/dither-policy-phased-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/gpu-palette-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/retained-plane-metal.m \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/lookup-policy-gpu-compat.m \
@@ -300,8 +301,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-a-dither.c \
 	$(srcdir)/dither-policy-x-dither.c \
 	$(srcdir)/dither-policy-bluenoise.c \
-	$(srcdir)/dither-policy-lso2.c $(srcdir)/dither-policy-none.h \
-	$(srcdir)/dither-policy-fs.h \
+	$(srcdir)/dither-policy-phased.c \
+	$(srcdir)/phased-coefficients.h $(srcdir)/dither-policy-lso2.c \
+	$(srcdir)/dither-policy-none.h $(srcdir)/dither-policy-fs.h \
 	$(srcdir)/dither-policy-atkinson.h \
 	$(srcdir)/dither-policy-jajuni.h \
 	$(srcdir)/dither-policy-stucki.h \
@@ -309,6 +311,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-sierra1.h \
 	$(srcdir)/dither-policy-sierra2.h \
 	$(srcdir)/dither-policy-sierra3.h \
+	$(srcdir)/dither-policy-phased.h \
 	$(srcdir)/dither-policy-lso2.h \
 	$(srcdir)/dither-policy-a-dither.h \
 	$(srcdir)/dither-policy-x-dither.h \
@@ -436,6 +439,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/quicklook_thumbnailing.m \
+	$(srcdir)/dither-policy-phased-metal.m \
 	$(srcdir)/gpu-palette-metal.m $(srcdir)/retained-plane-metal.m \
 	$(srcdir)/lookup-policy-gpu-compat.m \
 	$(srcdir)/lookup-policy-fhedt-gpu.inc.h \
@@ -444,7 +448,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/progressive-gpu-metal.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-gpu-palette-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-dither-policy-phased-metal.lo \
+@HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-retained-plane-metal.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-gpu-compat.lo \
 @HAVE_METAL_TRUE@@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-metal.lo \
@@ -534,6 +539,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-a-dither.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-x-dither.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-bluenoise.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-phased.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-lso2.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-clamp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-carry.lo \
@@ -701,6 +707,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-none.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-phased-metal.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-phased.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo \
@@ -1187,6 +1195,7 @@ pythondir = @pythondir@
 runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
+sixel_have_compare = @sixel_have_compare@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -1197,6 +1206,7 @@ zshcompletiondir = @zshcompletiondir@
 
 # Metal text is translated into build-tree C literals, not runtime files.
 SIXEL_METAL_INPUTS = \
+    $(srcdir)/dither-policy-phased-gpu.metal \
     $(srcdir)/retained-plane-gpu.metal \
     $(srcdir)/lookup-policy-ordered-gpu.metal \
     $(srcdir)/lookup-policy-vptree-gpu.metal \
@@ -1226,6 +1236,7 @@ nodist_libsixel_la_SOURCES = $(SIXEL_METAL_FRAGMENTS) $(am__append_3)
 # The phased top-level build requests objects directly, bypassing all and
 # BUILT_SOURCES. Declare each actual consumer as well as the all prerequisite.
 SIXEL_METAL_CONSUMERS = \
+    libsixel_la-dither-policy-phased-metal.lo \
     libsixel_la-retained-plane-metal.lo \
     libsixel_la-lookup-policy-ordered-gpu.lo \
     libsixel_la-lookup-policy-vptree-gpu.lo \
@@ -1417,6 +1428,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-a-dither.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-x-dither.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-bluenoise.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-phased.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/phased-coefficients.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-lso2.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fs.h \
@@ -1427,6 +1440,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra1.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra2.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra3.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-phased.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-lso2.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-a-dither.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-x-dither.h \
@@ -1729,8 +1743,8 @@ libsixel_la_LIBADD = $(FLOAT_LOOKUP_LIB) -lm \
 
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf $(srcdir)/classid-factory.gperf \
-	$(srcdir)/classid-service.gperf $(SIXEL_METAL_INPUTS) \
-	generated-metal/meson.build
+	$(srcdir)/classid-service.gperf phased.key \
+	$(SIXEL_METAL_INPUTS) generated-metal/meson.build
 @BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@LIBSIXEL_IMPORT_LIB_ALIAS_DEPS = $(top_builddir)/src/.libs/sixel.dll.lib
 GPERF_OPT = --ignore-case --language=ANSI-C
 GPERF_FACTORY_CLASSID_OPT = --language=ANSI-C \
@@ -1771,6 +1785,7 @@ DITHER_POLICY_CLASSID_INPUTS = \
     $(srcdir)/dither-policy-sierra1.h \
     $(srcdir)/dither-policy-sierra2.h \
     $(srcdir)/dither-policy-sierra3.h \
+    $(srcdir)/dither-policy-phased.h \
     $(srcdir)/dither-policy-lso2.h \
     $(srcdir)/dither-policy-a-dither.h \
     $(srcdir)/dither-policy-x-dither.h \
@@ -1933,6 +1948,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-none.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-phased-metal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-phased.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo@am__quote@ # am--include-marker
@@ -2724,6 +2741,13 @@ libsixel_la-dither-policy-bluenoise.lo: dither-policy-bluenoise.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-bluenoise.lo `test -f 'dither-policy-bluenoise.c' || echo '$(srcdir)/'`dither-policy-bluenoise.c
 
+libsixel_la-dither-policy-phased.lo: dither-policy-phased.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-phased.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-phased.Tpo -c -o libsixel_la-dither-policy-phased.lo `test -f 'dither-policy-phased.c' || echo '$(srcdir)/'`dither-policy-phased.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-phased.Tpo $(DEPDIR)/libsixel_la-dither-policy-phased.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-phased.c' object='libsixel_la-dither-policy-phased.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-phased.lo `test -f 'dither-policy-phased.c' || echo '$(srcdir)/'`dither-policy-phased.c
+
 libsixel_la-dither-policy-lso2.lo: dither-policy-lso2.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-lso2.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-lso2.Tpo -c -o libsixel_la-dither-policy-lso2.lo `test -f 'dither-policy-lso2.c' || echo '$(srcdir)/'`dither-policy-lso2.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-lso2.Tpo $(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
@@ -3497,6 +3521,13 @@ libsixel_la-quicklook_thumbnailing.lo: quicklook_thumbnailing.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-quicklook_thumbnailing.lo `test -f 'quicklook_thumbnailing.m' || echo '$(srcdir)/'`quicklook_thumbnailing.m
 
+libsixel_la-dither-policy-phased-metal.lo: dither-policy-phased-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-dither-policy-phased-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-phased-metal.Tpo -c -o libsixel_la-dither-policy-phased-metal.lo `test -f 'dither-policy-phased-metal.m' || echo '$(srcdir)/'`dither-policy-phased-metal.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-phased-metal.Tpo $(DEPDIR)/libsixel_la-dither-policy-phased-metal.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='dither-policy-phased-metal.m' object='libsixel_la-dither-policy-phased-metal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-dither-policy-phased-metal.lo `test -f 'dither-policy-phased-metal.m' || echo '$(srcdir)/'`dither-policy-phased-metal.m
+
 libsixel_la-gpu-palette-metal.lo: gpu-palette-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-gpu-palette-metal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette-metal.Tpo -c -o libsixel_la-gpu-palette-metal.lo `test -f 'gpu-palette-metal.m' || echo '$(srcdir)/'`gpu-palette-metal.m
 @am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-palette-metal.Tpo $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
@@ -3760,6 +3791,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-phased-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-phased.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo
@@ -4003,6 +4036,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-phased-metal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-phased.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo

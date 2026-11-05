@@ -179,6 +179,9 @@ dither_lookup_prepare(sixel_lookup_preparer_interface_t const *self,
         return SIXEL_BAD_ARGUMENT;
     }
     *result = NULL;
+    if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA) {
         return SIXEL_FEATURE_ERROR;
@@ -276,6 +279,10 @@ sixel_dither_lookup_preparers(sixel_dither_t *dither,
     status = sixel_dither_get_lookup_configuration(dither,
         request->pixelformat, &configuration);
     if (SIXEL_FAILED(status)) return status;
+    if (dither->gpu_dither != NULL &&
+            dither->lut_policy == SIXEL_LUT_POLICY_AUTO) {
+        configuration.kind = SIXEL_LUT_POLICY_ORDERED;
+    }
     if (dither->gpu_lookup == NULL || memcmp(&configuration,
             &dither->gpu_lookup_configuration, sizeof(configuration)) != 0) {
         gpu = NULL;

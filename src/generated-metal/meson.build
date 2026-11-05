@@ -2,6 +2,7 @@
 metal_headers = []
 metal_sources = files(
   '../retained-plane-gpu.metal',
+  '../dither-policy-phased-gpu.metal',
   '../lookup-policy-ordered-gpu.metal',
   '../lookup-policy-vptree-gpu.metal',
   '../lookup-policy-rbc-gpu.metal',

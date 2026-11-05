@@ -57,6 +57,7 @@ if ! awk -f "$generator" \
     "$src_root"/src/dither-policy-sierra1.h \
     "$src_root"/src/dither-policy-sierra2.h \
     "$src_root"/src/dither-policy-sierra3.h \
+    "$src_root"/src/dither-policy-phased.h \
     "$src_root"/src/dither-policy-lso2.h \
     "$src_root"/src/dither-policy-a-dither.h \
     "$src_root"/src/dither-policy-x-dither.h \

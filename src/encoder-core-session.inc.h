@@ -288,8 +288,11 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     status = sixel_frame_init_borrowed(source, request->pixels,
         request->width, request->height, SIXEL_PIXELFORMAT_RGB888, NULL, -1);
     if (SIXEL_FAILED(status)) goto end;
-    status = dither->dither_policy->vtbl->get_configuration(
-        dither->dither_policy, &configuration);
+    status = dither->gpu_dither != NULL
+        ? dither->gpu_dither->vtbl->get_configuration(dither->gpu_dither,
+            &configuration)
+        : dither->dither_policy->vtbl->get_configuration(
+            dither->dither_policy, &configuration);
     if (SIXEL_FAILED(status)) goto end;
 #if SIXEL_ENABLE_THREADS
     sixel_parallel_dither_configure(request->height, threads, pixels,
@@ -302,6 +305,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
 #endif
     prepare.working_palette = dither->palette;
     prepare.dither = dither->dither_policy;
+    prepare.gpu_dither = dither->gpu_dither;
     prepare.output = description;
     prepare.pixelformat = SIXEL_PIXELFORMAT_RGB888;
     prepare.colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -319,7 +323,7 @@ sixel_encode_indexed_session(sixel_legacy_encode_request_t const *request)
     if (SIXEL_FAILED(status)) goto end;
     apply = object;
     status = apply->vtbl->prepare(apply, &prepare);
-    if (status == SIXEL_FEATURE_ERROR) {
+    if (status == SIXEL_FEATURE_ERROR && prepare.dither != NULL) {
         /* Unsupported plans keep the legacy admission/framing behavior. */
         status = SIXEL_FALSE;
     }

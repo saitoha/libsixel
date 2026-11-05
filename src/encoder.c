@@ -1300,6 +1300,8 @@ sixel_encoder_dither_diffuse_name(int method_for_diffuse)
         return "x_dither";
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         return "bluenoise";
+    case SIXEL_DIFFUSE_PHASED:
+        return "phased";
     case SIXEL_DIFFUSE_LSO2:
         return "lso2";
     case SIXEL_DIFFUSE_SIERRA1:
@@ -2895,10 +2897,11 @@ sixel_encoder_validate_residual(sixel_encoder_t const *encoder,
              encoder->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
              encoder->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
              encoder->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
-             encoder->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
+             encoder->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER &&
+             encoder->method_for_diffuse != SIXEL_DIFFUSE_PHASED)) {
         sixel_helper_set_additional_message(
             "delta residual/rgb241 requires gamma RGB8, RGB output "
-            "and none, a_dither, x_dither or bluenoise dither.");
+            "and none, a_dither, x_dither, bluenoise or phased dither.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (encoder->refresh_ms != 0U &&
@@ -2955,10 +2958,11 @@ sixel_encoder_prepare_residual(sixel_encoder_t *encoder,
             (dither->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
              dither->method_for_diffuse != SIXEL_DIFFUSE_A_DITHER &&
              dither->method_for_diffuse != SIXEL_DIFFUSE_X_DITHER &&
-             dither->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER)) {
+             dither->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER &&
+             dither->method_for_diffuse != SIXEL_DIFFUSE_PHASED)) {
         sixel_helper_set_additional_message(
             "delta residual/rgb241 needs an RGB8 target and "
-            "none, a_dither, x_dither or bluenoise application.");
+            "none, a_dither, x_dither, bluenoise or phased application.");
         return SIXEL_BAD_ARGUMENT;
     }
     if (!encoder->residual_enabled && !encoder->refresh_ms) return SIXEL_OK;
@@ -5960,6 +5964,7 @@ sixel_encode_dag_node_palette_bind(sixel_encode_dag_context_t *context)
     context->dither->bluenoise_strength_override =
         context->encoder->bluenoise_strength_override;
     context->dither->bluenoise_strength = context->encoder->bluenoise_strength;
+    context->dither->phased_gain = context->encoder->phased_gain;
     context->dither->bluenoise_gradient_factor_override =
         context->encoder->bluenoise_gradient_factor_override;
     context->dither->bluenoise_gradient_factor =
@@ -12306,6 +12311,7 @@ sixel_encoder_new(
     (*ppencoder)->bluenoise_size = 64;
     (*ppencoder)->bluenoise_gradient_factor_override = 0;
     (*ppencoder)->bluenoise_gradient_factor = 0.0f;
+    (*ppencoder)->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_largest_override = 0;
@@ -13528,6 +13534,7 @@ sixel_encoder_apply_diffusion_resolution(
     encoder->x_dither_strength = 0.100f;
     encoder->bluenoise_strength = 0.055f;
     encoder->bluenoise_gradient_factor = 0.0f;
+    encoder->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
     encoder->bluenoise_phase_x = 0;
     encoder->bluenoise_phase_y = 0;
     encoder->bluenoise_seed = 0;

@@ -291,6 +291,8 @@ sixel_gpu_program_prepare(sixel_gpu_device_interface_t *device,
     if (program->legacy) {
         status = sixel_gpu_palette_metal_prepare_locked()
             ? SIXEL_OK : SIXEL_FEATURE_ERROR;
+    } else if (program->view.query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE) {
+        status = SIXEL_FEATURE_ERROR;
     } else if (strcmp(program->view.program_format,
             "metal.lookup-rgb8.v1") != 0) {
         status = SIXEL_FEATURE_ERROR;

@@ -31,6 +31,7 @@ SIXEL_INTERNAL_API void
 sixel_dither_policy_capture_options(sixel_dither_t const *dither,
     sixel_dither_policy_options_t *options)
 {
+    options->phased_gain = dither->phased_gain;
     options->method_for_diffuse = dither->method_for_diffuse;
     options->ncolors = dither->ncolors;
     options->keycolor_reserved = dither->keycolor_reserved;
@@ -71,6 +72,7 @@ SIXEL_INTERNAL_API void
 sixel_dither_policy_apply_options(sixel_dither_t *dither,
     sixel_dither_policy_options_t const *options)
 {
+    dither->phased_gain = options->phased_gain;
     dither->method_for_diffuse = options->method_for_diffuse;
     dither->ncolors = options->ncolors;
     dither->keycolor_reserved = options->keycolor_reserved;

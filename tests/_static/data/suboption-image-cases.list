@@ -187,3 +187,4 @@ tests/cli/quantizer-options/0153_quantize_heckbert_cut_image_regression.t
 tests/cli/quantizer-options/0154_quantize_heckbert_order_image_regression.t
 tests/cli/quantizer-options/0155_quantize_heckbert_weights_image_regression.t
 tests/cli/output-options/0025_update_delta_compare_image_regression.t
+tests/cli/dither-options/0043_diffusion_phased_gain_image_regression.t

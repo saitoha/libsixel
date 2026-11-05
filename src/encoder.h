@@ -201,6 +201,7 @@ struct sixel_encoder {
     int bluenoise_channel_rgb;
     int bluenoise_size_override;
     int bluenoise_size;
+    int phased_gain; /* Frozen phased coefficient curve. */
     int bluenoise_gradient_factor_override;
     float bluenoise_gradient_factor;
     int method_for_scan;

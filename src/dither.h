@@ -144,6 +144,7 @@ struct sixel_dither {
     int bluenoise_channel_rgb;      /* non-zero for rgb channel mode */
     int bluenoise_size_override;    /* CLI bluenoise size flag */
     int bluenoise_size;             /* parsed bluenoise tile size */
+    int phased_gain; /* Frozen phased coefficient curve. */
     int bluenoise_gradient_factor_override; /* CLI gradient gamma override */
     float bluenoise_gradient_factor; /* parsed gradient gamma */
     int quality_mode;               /* quality of histogram */
@@ -195,6 +196,7 @@ struct sixel_dither {
     sixel_gpu_lookup_preparer_interface_t *gpu_lookup;
     sixel_lookup_policy_configuration_t gpu_lookup_configuration;
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
+    sixel_gpu_dither_preparer_interface_t *gpu_dither;
     struct sixel_dither_policy_interface *dither_policy; /* apply strategy */
     char const *dither_policy_class_name; /* selected class id cache */
     int quantize_model;             /* palette solver selector */

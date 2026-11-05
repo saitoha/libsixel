@@ -244,6 +244,9 @@ rbc_prepare(sixel_gpu_lookup_preparer_interface_t const *self,
     if (request == NULL || device == NULL || result == NULL ||
             request->working_palette == NULL) return SIXEL_BAD_ARGUMENT;
     *result = NULL;
+    if (request->query_kind != SIXEL_GPU_LOOKUP_QUERY_BYTE) {
+        return SIXEL_FEATURE_ERROR;
+    }
     if (request->pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
             request->colorspace != SIXEL_COLORSPACE_GAMMA ||
             strcmp(device->vtbl->program_format(device),

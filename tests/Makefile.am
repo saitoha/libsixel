@@ -406,6 +406,27 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0162_GPU_ROWS_APPLY_FAILED \
     -DBUILD_TEST_0128_GPU_ROWS_VPTREE_INDEXES \
     -DBUILD_TEST_0129_GPU_ROWS_ORDERED_INDEXES \
+    -DBUILD_TEST_0015_CANCEL_BEFORE \
+    -DBUILD_TEST_0016_CANCEL_AFTER \
+    -DBUILD_TEST_0017_CANCEL_REUSE \
+    -DBUILD_TEST_0018_PREPARE_FAILURE_ATOMIC \
+    -DBUILD_TEST_0019_PALETTE256 \
+    -DBUILD_TEST_0020_REPREPARE_RESET \
+    -DBUILD_TEST_0021_PREPARER_LIFETIME \
+    -DBUILD_TEST_0001_STANDARD_INDEXES \
+    -DBUILD_TEST_0002_SMALL_ERROR_INDEXES \
+    -DBUILD_TEST_0003_SCRATCH_RESET \
+    -DBUILD_TEST_0004_CONFIGURATION_SNAPSHOT \
+    -DBUILD_TEST_0005_GPU_OFF_REJECTED \
+    -DBUILD_TEST_0006_BYTE_LOOKUP_REJECTED \
+    -DBUILD_TEST_0007_AUTO_SMALL_IMAGE \
+    -DBUILD_TEST_0008_FLOAT_IMAGE_REJECTED \
+    -DBUILD_TEST_0009_RASTER_REJECTED \
+    -DBUILD_TEST_0010_INVALID_GAIN_ATOMIC \
+    -DBUILD_TEST_0011_DELTA_T0 \
+    -DBUILD_TEST_0012_DELTA_REFRESH \
+    -DBUILD_TEST_0013_PARTIAL_RECTANGLE \
+    -DBUILD_TEST_0014_RETAINED_IMMUTABLE \
     -DBUILD_TEST_0130_GPU_ROWS_RBC_INDEXES \
     -DBUILD_TEST_0131_GPU_ROWS_MAHALANOBIS_INDEXES \
     -DBUILD_TEST_0132_GPU_ROWS_CERTLUT_INDEXES \
@@ -2867,6 +2888,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0003_ORDERED_PARALLEL_CACHE \
     -DBUILD_TEST_0004_ORDERED_DELTA_HISTORY \
     -DBUILD_ORDERED_STATE_COMMON \
+    -DBUILD_FIXTURE \
     -DBUILD_TEST_0010_ORD_GAMMA_RANGE \
     -DBUILD_TEST_0011_ORD_LINEAR_RANGE \
     -DBUILD_TEST_0012_ORD_OKLAB_RANGE \
@@ -7085,6 +7107,30 @@ test_runner_SOURCES = test_runner.c \
     encoder/indexed/0161_gpu_rows_apply_visible.c \
     encoder/indexed/0162_gpu_rows_apply_failed.c \
     encoder/indexed/0128_gpu_rows_vptree_indexes.c \
+    dither/phased/0015_cancel_before.c \
+    dither/phased/0016_cancel_after.c \
+    dither/phased/0017_cancel_reuse.c \
+    dither/phased/0018_prepare_failure_atomic.c \
+    dither/phased/0019_palette256.c \
+    dither/phased/0020_reprepare_reset.c \
+    dither/phased/0021_preparer_lifetime.c \
+    dither/phased/0001_standard_indexes.c \
+    dither/phased/0002_small_error_indexes.c \
+    dither/phased/0003_scratch_reset.c \
+    dither/phased/0004_configuration_snapshot.c \
+    dither/phased/0005_gpu_off_rejected.c \
+    dither/phased/0006_byte_lookup_rejected.c \
+    dither/phased/0007_auto_small_image.c \
+    dither/phased/0008_float_image_rejected.c \
+    dither/phased/0009_raster_rejected.c \
+    dither/phased/0010_invalid_gain_atomic.c \
+    dither/phased/0011_delta_t0.c \
+    dither/phased/0012_delta_refresh.c \
+    dither/phased/0013_partial_rectangle.c \
+    dither/phased/0014_retained_immutable.c \
+    _support/phased/fixture.c \
+    _support/phased/fixture.h \
+    _support/phased/expected.h \
     encoder/indexed/0129_gpu_rows_ordered_indexes.c \
     encoder/indexed/0130_gpu_rows_rbc_indexes.c \
     encoder/indexed/0131_gpu_rows_mahalanobis_indexes.c \

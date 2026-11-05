@@ -61,6 +61,7 @@
 #include "lookup-policy-fhedt.h"
 #include "oklch-lattice256.h"
 #include "dither-policy.h"
+#include "dither-policy-phased.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
 #include "timeline-logger.h"
@@ -738,6 +739,29 @@ sixel_dither_prepare_dither_policy(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED) {
+        sixel_dither_policy_capture_options(dither, &request.options);
+        request.method_for_scan = method_for_scan;
+        request.pixelformat = pixelformat;
+        if (dither->gpu_dither == NULL) {
+            status = sixel_dither_policy_phased_gpu_new(dither->allocator,
+                (void **)&dither->gpu_dither);
+            if (SIXEL_FAILED(status)) return status;
+        }
+        status = dither->gpu_dither->vtbl->configure(dither->gpu_dither,
+            &request);
+        if (SIXEL_FAILED(status)) return status;
+        if (dither->dither_policy != NULL) {
+            dither->dither_policy->vtbl->unref(dither->dither_policy);
+            dither->dither_policy = NULL;
+            dither->dither_policy_class_name = NULL;
+        }
+        return SIXEL_OK;
+    }
+    if (dither->gpu_dither != NULL) {
+        dither->gpu_dither->vtbl->unref(dither->gpu_dither);
+        dither->gpu_dither = NULL;
+    }
     select_request.method_for_diffuse = dither->method_for_diffuse;
     select_request.ncolors = dither->ncolors;
     select_request.pixelformat = pixelformat;
@@ -2229,6 +2253,8 @@ sixel_dither_new(
     memset(&(*ppdither)->gpu_lookup_configuration, 0,
         sizeof((*ppdither)->gpu_lookup_configuration));
     (*ppdither)->lookup_policy = NULL;
+    (*ppdither)->gpu_dither = NULL;
+    (*ppdither)->phased_gain = SIXEL_PHASED_GAIN_STANDARD;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
@@ -2345,6 +2371,9 @@ sixel_dither_destroy(
             dither->dither_policy->vtbl->unref(dither->dither_policy);
             dither->dither_policy = NULL;
             dither->dither_policy_class_name = NULL;
+        }
+        if (dither->gpu_dither != NULL) {
+            dither->gpu_dither->vtbl->unref(dither->gpu_dither);
         }
         if (dither->gpu_lookup != NULL) {
             dither->gpu_lookup->vtbl->unref(dither->gpu_lookup);
@@ -4131,12 +4160,17 @@ sixel_dither_prepare_indexed_components(sixel_dither_t *dither,
     if (prepare_lookup && parallel && !shared) return SIXEL_FALSE;
     scan = dither->method_for_scan;
     if (scan == SIXEL_SCAN_AUTO) {
-        scan = dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2
+        scan = (dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2 ||
+            dither->method_for_diffuse == SIXEL_DIFFUSE_PHASED)
             ? SIXEL_SCAN_SERPENTINE : SIXEL_SCAN_RASTER;
     }
     status = sixel_dither_prepare_dither_policy(dither, scan,
         SIXEL_PIXELFORMAT_RGB888);
     if (SIXEL_FAILED(status)) return status;
+    if (dither->gpu_dither != NULL) {
+        if (prepare_lookup) return SIXEL_FEATURE_ERROR;
+        return SIXEL_OK;
+    }
     status = dither->dither_policy->vtbl->get_configuration(
         dither->dither_policy, &configuration);
     if (SIXEL_FAILED(status)) return status;

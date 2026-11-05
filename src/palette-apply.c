@@ -22,6 +22,7 @@ typedef struct sixel_palette_apply_storage {
     unsigned char comparison[SIXEL_PALETTE_MAX * 3];
     sixel_lookup_policy_interface_t *lookup;
     sixel_gpu_program_t *program;
+    sixel_gpu_dither_plan_interface_t *gpu_dither;
     int gpu;
     int prepared;
     int running;
@@ -53,11 +54,26 @@ sixel_palette_apply_clear_plan(sixel_palette_apply_storage_t *apply)
             apply->lookup->vtbl->unref(apply->lookup);
         }
         if (apply->gpu) apply->plan.device->vtbl->unref(apply->plan.device);
-        apply->plan.dither->vtbl->unref(apply->plan.dither);
+        if (apply->plan.dither != NULL) {
+            apply->plan.dither->vtbl->unref(apply->plan.dither);
+        }
+        if (apply->gpu_dither != NULL) {
+            apply->gpu_dither->vtbl->unref(apply->gpu_dither);
+        }
+        if (apply->plan.cpu_lookup != NULL) {
+            apply->plan.cpu_lookup->vtbl->unref(apply->plan.cpu_lookup);
+        }
+        if (apply->plan.gpu_lookup != NULL) {
+            apply->plan.gpu_lookup->vtbl->unref(apply->plan.gpu_lookup);
+        }
+        if (apply->plan.gpu_dither != NULL) {
+            apply->plan.gpu_dither->vtbl->unref(apply->plan.gpu_dither);
+        }
         sixel_wire_palette_unref(apply->plan.output.palette);
     }
     sixel_gpu_program_destroy(apply->program);
     apply->program = NULL;
+    apply->gpu_dither = NULL;
     apply->lookup = NULL;
     sixel_allocator_free(apply->allocator, apply->ready);
     apply->ready = NULL;
@@ -92,7 +108,10 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     sixel_lookup_execution_request_t execution;
     sixel_lookup_policy_interface_t *lookup;
     sixel_gpu_lookup_plan_interface_t *gpu_plan;
+    sixel_gpu_dither_prepare_request_t dither_request;
+    sixel_dither_policy_prepare_request_t gpu_configuration;
     sixel_gpu_program_t *program;
+    sixel_gpu_dither_plan_interface_t *gpu_dither;
     unsigned char *ready;
     size_t pixels;
     size_t i;
@@ -100,7 +119,7 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     SIXELSTATUS status;
 
     if (self == NULL || request == NULL || request->working_palette == NULL ||
-            request->dither == NULL ||
+            (request->dither == NULL && request->gpu_dither == NULL) ||
             request->output.palette == NULL || request->output.width <= 0 ||
             request->output.height <= 0 || request->worker_threads < 1 ||
             request->band_height < 0 || request->band_overlap < 0) {
@@ -115,8 +134,12 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     if (apply->running) {
         return SIXEL_LOGIC_ERROR;
     }
-    status = request->dither->vtbl->get_configuration(request->dither,
-        &configuration);
+    memset(&configuration, 0, sizeof(configuration));
+    status = request->dither != NULL
+        ? request->dither->vtbl->get_configuration(request->dither,
+            &configuration)
+        : request->gpu_dither->vtbl->get_configuration(request->gpu_dither,
+            &configuration);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -127,6 +150,14 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     if (configuration.pixelformat != request->pixelformat ||
             configuration.method_for_scan != request->scan) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (request->dither != NULL && request->gpu_dither != NULL) {
+        memset(&gpu_configuration, 0, sizeof(gpu_configuration));
+        status = request->gpu_dither->vtbl->get_configuration(
+            request->gpu_dither, &gpu_configuration);
+        if (SIXEL_FAILED(status)) return status;
+        if (memcmp(&configuration, &gpu_configuration,
+                sizeof(configuration)) != 0) return SIXEL_BAD_ARGUMENT;
     }
     options = configuration.options;
     pixels = (size_t)request->output.width * request->output.height;
@@ -139,8 +170,10 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     lookup = NULL;
     gpu_plan = NULL;
     program = NULL;
+    gpu_dither = NULL;
     gpu = request->gpu_policy != SIXEL_GPU_POLICY_OFF &&
-        !(request->gpu_policy == SIXEL_GPU_POLICY_AUTO &&
+        !(request->dither != NULL &&
+          request->gpu_policy == SIXEL_GPU_POLICY_AUTO &&
           pixels < request->gpu_auto_threshold);
     /* Gradient analysis has its own prepared source map in the legacy
      * adapter. Do not silently discard a requested modulation. */
@@ -164,7 +197,23 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
         return SIXEL_BAD_ARGUMENT;
     }
     status = SIXEL_FEATURE_ERROR;
-    if (gpu && request->gpu_lookup != NULL && request->device != NULL &&
+    if (gpu && request->gpu_dither != NULL &&
+            request->gpu_lookup != NULL && request->device != NULL) {
+        memset(&dither_request, 0, sizeof(dither_request));
+        dither_request.working_palette = request->working_palette;
+        dither_request.lookup = request->gpu_lookup;
+        dither_request.device = request->device;
+        dither_request.output = request->output;
+        dither_request.pixelformat = request->pixelformat;
+        dither_request.colorspace = request->colorspace;
+        dither_request.scan = request->scan;
+        status = request->gpu_dither->vtbl->prepare(request->gpu_dither,
+            &dither_request, &gpu_dither);
+        if (status == SIXEL_OK && gpu_dither == NULL) {
+            status = SIXEL_LOGIC_ERROR;
+        }
+    } else if (gpu && request->gpu_dither == NULL &&
+            request->gpu_lookup != NULL && request->device != NULL &&
             (options.method_for_diffuse == SIXEL_DIFFUSE_NONE ||
              options.method_for_diffuse == SIXEL_DIFFUSE_A_DITHER ||
              options.method_for_diffuse == SIXEL_DIFFUSE_X_DITHER ||
@@ -182,27 +231,37 @@ sixel_palette_apply_prepare(sixel_palette_apply_interface_t *self,
     }
     if (status == SIXEL_FEATURE_ERROR &&
             request->gpu_policy != SIXEL_GPU_POLICY_FORCE &&
-            request->cpu_lookup != NULL) {
+            request->dither != NULL && request->cpu_lookup != NULL) {
         status = request->cpu_lookup->vtbl->prepare(request->cpu_lookup,
             &execution, &lookup);
     }
-    if (status == SIXEL_OK && program == NULL && lookup == NULL) {
+    if (status == SIXEL_OK && program == NULL && lookup == NULL &&
+            gpu_dither == NULL) {
         status = SIXEL_LOGIC_ERROR;
     }
     if (status != SIXEL_OK) {
         sixel_allocator_free(apply->allocator, ready);
         return status;
     }
+    /* Retain capabilities before releasing the previous plan, including
+     * when the caller reuses one of that plan's preparation objects. */
+    if (request->cpu_lookup != NULL)
+        request->cpu_lookup->vtbl->ref(request->cpu_lookup);
+    if (request->gpu_lookup != NULL)
+        request->gpu_lookup->vtbl->ref(request->gpu_lookup);
+    if (request->gpu_dither != NULL)
+        request->gpu_dither->vtbl->ref(request->gpu_dither);
     sixel_palette_apply_clear_plan(apply);
     apply->plan = *request;
     apply->lookup = lookup;
     apply->program = program;
+    apply->gpu_dither = gpu_dither;
     apply->options = options;
-    apply->gpu = program != NULL;
+    apply->gpu = program != NULL || gpu_dither != NULL;
     if (apply->gpu) request->device->vtbl->ref(request->device);
     apply->ready = ready;
     request->working_palette->vtbl->ref(request->working_palette);
-    request->dither->vtbl->ref(request->dither);
+    if (request->dither != NULL) request->dither->vtbl->ref(request->dither);
     sixel_wire_palette_ref(request->output.palette);
     for (i = 0; i < palette.count; ++i) {
         memcpy(apply->comparison + i * 3, palette.colors[i].emitted_rgb, 3);
@@ -505,6 +564,7 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     sixel_palette_apply_storage_t *apply;
     sixel_indexed_frame_description_t const *desc;
     sixel_frame_transparency_t transparency;
+    sixel_gpu_dither_run_request_t gpu_run;
     sixel_retained_read_view_t baseline;
     sixel_dither_execution_t *execution;
     size_t i;
@@ -641,8 +701,33 @@ sixel_palette_apply_run(sixel_palette_apply_interface_t *self,
     apply->prefix = 0;
     apply->status = SIXEL_OK;
     sixel_indexed_frame_acquire_user(request->result);
-    status = apply->gpu ? sixel_palette_apply_gpu(apply) :
-        sixel_palette_apply_cpu(apply);
+    if (apply->gpu_dither != NULL) {
+        memset(&gpu_run, 0, sizeof(gpu_run));
+        gpu_run.source = request->source;
+        gpu_run.baseline = request->baseline;
+        gpu_run.result = request->result;
+        gpu_run.delta = request->delta;
+        gpu_run.logger = request->logger;
+        gpu_run.cancel = request->cancel;
+        gpu_run.cancel_context = request->cancel_context;
+        status = apply->gpu_dither->vtbl->run(apply->gpu_dither, &gpu_run);
+        if (status == SIXEL_OK && request->cancel != NULL &&
+                request->cancel(request->cancel_context)) {
+            status = SIXEL_INTERRUPTED;
+        }
+        /* An injected producer is validated before any row is published. */
+        if (status == SIXEL_OK) {
+            status = sixel_indexed_frame_publish_applied(request->result,
+                desc->height);
+        }
+        if (status == SIXEL_OK && request->rows_ready != NULL) {
+            status = request->rows_ready(request->result, desc->height,
+                request->rows_context);
+        }
+    } else {
+        status = apply->gpu ? sixel_palette_apply_gpu(apply) :
+            sixel_palette_apply_cpu(apply);
+    }
     if (status == SIXEL_OK) {
         status = apply->status;
     }

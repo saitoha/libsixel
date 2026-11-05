@@ -776,6 +776,11 @@ sub-option:
 .br
 \fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
+\fBphased\fP -> GPU spatial diffusion (RGB8, ordered lookup).
+.br
+\fBgain=standard|small-error\fP (default standard); scan=auto|serpentine.
+No CPU fallback is available.
+.br
 \fBlso2\fP -> libsixel variable error diffusion tables
 .br
 sub-option:
@@ -785,7 +790,7 @@ sub-option:
 Compact diffusion suboption names use one uppercase letter plus the value:
 all methods scan=N, band_overwrap=O, band_width=B, deadzone=D,
 perturb=U, perturb_seed=R;
-sierra variant=V; a_dither/x_dither strength=T;
+phased gain=G; sierra variant=V; a_dither/x_dither strength=T;
 bluenoise strength=T, gradient_factor=G, phase=P, seed=S,
 channel=C, size=Z.
 
@@ -1981,6 +1986,10 @@ from 0 through 441. The decoder suboption takes precedence.
 set the default diffusion scan order to auto, serpentine, or raster.
 The scan suboption takes precedence.
 .TP 5
+.B SIXEL_DITHER_PHASED_GAIN
+Default phased gain: standard or small-error.
+Overridden by \fB-d phased:gain=VALUE\fP.
+.TP
 .B SIXEL_DITHER_SIERRA_VARIANT
 .br
 set the default Sierra variant to 1, 2, or 3.

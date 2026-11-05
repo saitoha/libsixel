@@ -153,6 +153,9 @@ srcs = [
   'dither-policy-a-dither.c',
   'dither-policy-x-dither.c',
   'dither-policy-bluenoise.c',
+  'dither-policy-phased.c',
+  'dither-policy-phased.h',
+  'phased-coefficients.h',
   'dither-policy-lso2.c',
   'dither-clamp.c',
   'dither-carry.c',
@@ -388,7 +391,7 @@ srcs = [
 ]
 
 if have_metal
-  srcs += ['retained-plane-metal.m', 'lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
+  srcs += ['dither-policy-phased-metal.m', 'retained-plane-metal.m', 'lookup-policy-gpu-compat.m', 'gpu-palette-metal.m', 'palette-kmeans-metal.m',
            'progressive-gpu-metal.m']
 endif
 
